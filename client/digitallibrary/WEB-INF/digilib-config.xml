@@ -11,7 +11,7 @@
 
   <!-- List of directories where images are searched.
        Directories with low-resolution images are first in list. -->
-  <parameter name="basedir-list" value="/docuserver/scaled/small:/docuserver/images:/docuserver/scans/quellen" />
+  <parameter name="basedir-list" value="/docuserver/images:/docuserver/scaled/small" />
 
   <!-- Java class to use for image operations -->
   <parameter name="docuimage-class" value="digilib.image.JAIDocuImage" />
