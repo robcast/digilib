@@ -26,11 +26,15 @@
 
 package digilib.servlet;
 
-import java.io.File;
-import java.util.StringTokenizer;
+import java.io.*;
+import java.util.*;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
+
+import com.hp.hpl.mesa.rdf.jena.mem.ModelMem;
+import com.hp.hpl.mesa.rdf.jena.model.*;
+import com.hp.hpl.mesa.rdf.jena.common.*;
 
 import digilib.image.DocuImage;
 
@@ -90,7 +94,7 @@ public class DigilibRequest {
 
 	private DocuImage image; // internal DocuImage instance for this request
 	private ServletRequest servletRequest; // internal ServletRequest
-
+        private boolean boolRDF=false; // uses RDF Parameters
 
 
 	/** Creates a new instance of DigilibRequest and sets default values. */
@@ -107,6 +111,7 @@ public class DigilibRequest {
 	public DigilibRequest(ServletRequest request) {
 		reset();
 		setWithRequest(request);
+		
 	}
 
 	/** Populate the request object with data from a ServletRequest.
@@ -118,7 +123,10 @@ public class DigilibRequest {
 		servletRequest = request;
 		// decide if it's old-style or new-style
 		String qs = ((HttpServletRequest) request).getQueryString();
-		if (request.getParameter("fn") != null) {
+		if (request.getParameter("rdf") != null) {
+			boolRDF=true;
+		        setWithRDF(request);                        
+		} else if (request.getParameter("fn") != null) {
 			setWithParamRequest(request);
 		} else if ((qs != null) && (qs.indexOf("&") > -1)) {
 			setWithParamRequest(request);
@@ -443,6 +451,146 @@ public class DigilibRequest {
 			setRequestPath(s);
 		}
 	}
+
+/**
+ *
+ *
+ */
+    public void setWithRDF(ServletRequest request) {
+	String strRDF;
+	strRDF = request.getParameter("rdf");
+	if (strRDF != null) {
+	    //System.out.println(strRDF);
+	    Hashtable hashRDF=rdf2hash(strRDF);
+	    //System.out.println(hashRDF.toString());
+	    String s;
+	    s = (String)hashRDF.get("fn");
+	    if (s != null) {
+		setFn(s);
+	    }
+	    s = (String)hashRDF.get("pn");
+	    if (s != null) {
+		setPn(s);
+	    }
+	    s = (String)hashRDF.get("ws");
+	    if (s != null) {
+		setWs(s);
+	    }
+	    s = (String)hashRDF.get("mo");
+	    if (s != null) {
+		setMo(s);
+	    }
+	    s = (String)hashRDF.get("mk");
+	    if (s != null) {
+		setMk(s);
+	    }
+	    s = (String)hashRDF.get("wx");
+	    if (s != null) {
+		setWx(s);
+	    }
+	    s = (String)hashRDF.get("wy");
+	    if (s != null) {
+		setWy(s);
+	    }
+	    s = (String)hashRDF.get("ww");
+	    if (s != null) {
+		setWw(s);
+	    }
+	    s = (String)hashRDF.get("wh");
+	    if (s != null) {
+		setWh(s);
+	    }
+	    s = (String)hashRDF.get("dw");
+	    if (s != null) {
+		setDw(s);
+	    }
+	    s = (String)hashRDF.get("dh");
+	    if (s != null) {
+		setDh(s);
+	    }
+	    s = (String)hashRDF.get("rot");
+	    if (s != null) {
+		setRot(s);
+	    }
+	    s = (String)hashRDF.get("cont");
+	    if (s != null) {
+		setCont(s);
+	    }
+	    s = (String)hashRDF.get("brgt");
+	    if (s != null) {
+		setBrgt(s);
+	    }
+	    s = (String)hashRDF.get("rgbm");
+	    if (s != null) {
+		setRgbm(s);
+	    }
+	    s = (String)hashRDF.get("rgba");
+	    if (s != null) {
+		setRgba(s);
+	    }
+	    s = (String)hashRDF.get("pt");
+	    if (s != null) {
+		setPt(s);
+	    }
+	    s = (String)hashRDF.get("lv");
+	    if (s != null) {
+		setLv(s);
+	    }
+	    s = ((HttpServletRequest) request).getPathInfo();
+	    if (s != null) {
+		setRequestPath(s);
+	    }
+	}
+    }
+    
+    private Hashtable rdf2hash(String strRDF){
+	Hashtable hashParams=new Hashtable();
+	try {
+	    // create an empty model
+	    Model model = new ModelMem();
+	    StringReader sr=new StringReader(strRDF);
+	    model.read(sr,"");
+            // get Property fn -> digilib
+            Property p=model.getProperty("http://echo.unibe.ch/digilib/rdf#","fn");
+	    //System.out.println(p.toString());
+            if (p!=null){
+                // get URI
+                String strURI=null;
+                NodeIterator i=model.listObjectsOfProperty(p);
+                if (i.hasNext()){
+                    strURI="urn:echo:"+i.next().toString();
+                    Resource r=model.getResource(strURI);
+		    //System.out.println(r.toString());
+                    Selector selector = new SelectorImpl(r,null,(RDFNode)null);
+                    // list the statements in the graph
+                    StmtIterator iter = model.listStatements(selector);
+                    // add predicate and object to Hashtable
+                    while (iter.hasNext()) {
+                        Statement stmt      = iter.next();         // get next statement
+                        Resource  subject   = stmt.getSubject();   // get the subject
+                        Property  predicate = stmt.getPredicate(); // get the predicate
+                        RDFNode   object    = stmt.getObject();    // get the object
+			
+                        String strKey=predicate.toString();
+                        String strValue="";
+			
+                        if (object instanceof Resource) {
+                            strValue=object.toString();
+                        } else {
+                            // object is a literal
+                            strValue=object.toString();
+                        }
+			String strDigilibKey=strKey.substring(strKey.indexOf("#")+1,strKey.length());
+                        hashParams.put(strDigilibKey,strValue);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Failed: " + e);
+        }
+        return hashParams;
+    }
+    
 
 	/** Reset all request parameters to null. */
 	public void reset() {
@@ -1109,5 +1257,9 @@ public class DigilibRequest {
 			//util.dprintln(4, "trytoGetParam(int) failed on param "+s);
 		}
 	}
+
+	public boolean isRDF(){
+	  return boolRDF;
+        }
 
 }
