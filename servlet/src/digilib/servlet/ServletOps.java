@@ -63,8 +63,8 @@ public class ServletOps {
 	/**
 	 * get a real File for a config File.
 	 * 
-	 * If the File is not absolute the path is
-	 * appended to the WEB-INF directory of the web-app.
+	 * If the File is not absolute the path is appended to the WEB-INF directory
+	 * of the web-app.
 	 * 
 	 * @param file
 	 * @param sc
@@ -74,8 +74,8 @@ public class ServletOps {
 		// is the filename absolute?
 		if (!f.isAbsolute()) {
 			// relative path -> use getRealPath to resolve in WEB-INF
-			String fn = sc.getServletContext()
-					.getRealPath("WEB-INF/" + f.getPath());
+			String fn = sc.getServletContext().getRealPath(
+					"WEB-INF/" + f.getPath());
 			f = new File(fn);
 		}
 		return f;
@@ -140,8 +140,8 @@ public class ServletOps {
 	 * @throws FileOpException
 	 *             Exception is thrown for a IOException.
 	 */
-	public static void sendFile(File f, String mt, HttpServletResponse response)
-			throws FileOpException {
+	public static void sendFile(File f, String mt,
+			HttpServletResponse response) throws FileOpException {
 		logger.debug("sendRawFile(" + mt + ", " + f + ")");
 		if (mt == null) {
 			// auto-detect mime-type
@@ -154,7 +154,8 @@ public class ServletOps {
 		// open file
 		try {
 			if (mt.equals("application/octet-stream")) {
-				response.addHeader("Content-Disposition", "attachment; filename=\""+f.getName()+"\"");
+				response.addHeader("Content-Disposition",
+						"attachment; filename=\"" + f.getName() + "\"");
 			}
 			FileInputStream inFile = new FileInputStream(f);
 			OutputStream outStream = response.getOutputStream();
@@ -165,6 +166,7 @@ public class ServletOps {
 				outStream.write(dataBuffer, 0, len);
 			}
 			inFile.close();
+			response.flushBuffer();
 		} catch (IOException e) {
 			throw new FileOpException("Unable to send file.");
 		}

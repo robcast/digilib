@@ -85,13 +85,8 @@ public class Texter extends HttpServlet {
 		dlConfig = (DigilibConfiguration) context
 				.getAttribute("digilib.servlet.configuration");
 		if (dlConfig == null) {
-			// create new Configuration
-			try {
-				dlConfig = new DigilibConfiguration(config);
-				context.setAttribute("digilib.servlet.configuration", dlConfig);
-			} catch (Exception e) {
-				throw new ServletException(e);
-			}
+			// no Configuration
+			throw new ServletException("No Configuration!");
 		}
 		// say hello in the log file
 		logger.info("***** Digital Image Library Text Servlet (version "
