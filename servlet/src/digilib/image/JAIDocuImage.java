@@ -44,7 +44,7 @@ public class JAIDocuImage extends DocuImageImpl {
 	public JAIDocuImage() {
 	}
 
-	/** Contructor taking a utils object.
+	/** Contructor taking an utils object.
 	 * @param u utils object.
 	 */
 	public JAIDocuImage(Utils u) {
@@ -348,5 +348,44 @@ public class JAIDocuImage extends DocuImageImpl {
 		img = enhImg;
 	}
 
+
+	/* (non-Javadoc)
+	 * @see digilib.image.DocuImage#enhanceRGB(float[], float[])
+	 */
+	public void enhanceRGB(float[] rgbm, float[] rgba)
+		throws ImageOpException {
+			RenderedImage enhImg;
+			int nb = rgbm.length;
+			double[] ma = new double[nb];
+			double[] aa = new double[nb];
+			for (int i = 0; i < nb; i++) {
+				ma[i] = rgbm[i];
+				aa[i] = rgba[i];
+			}
+			// use Rescale operation
+			ParameterBlock param = new ParameterBlock();
+			param.addSource(img);
+			param.add(ma);
+			param.add(aa);
+			enhImg = JAI.create("rescale", param);
+
+			util.dprintln(
+				3,
+				"ENHANCE_RGB: *"
+					+ rgbm
+					+ ", +"
+					+ rgba
+					+ " ->"
+					+ enhImg.getWidth()
+					+ "x"
+					+ enhImg.getHeight());
+			//DEBUG
+
+			if (enhImg == null) {
+				util.dprintln(2, "ERROR(enhance): error in enhanceRGB");
+				throw new ImageOpException("Unable to enhanceRGB");
+			}
+			img = enhImg;
+	}
 
 }
