@@ -116,6 +116,7 @@ public class JAIDocuImage extends DocuImageImpl {
 
 	/* scales the current image */
 	public void scale(double scale, double scaleY) throws ImageOpException {
+		logger.debug("scale");
 		if ((scale < 1)
 			&& (img.getColorModel().getPixelSize() == 1)
 			&& (quality > 0)) {
@@ -408,6 +409,13 @@ public class JAIDocuImage extends DocuImageImpl {
 			throw new ImageOpException("Unable to enhanceRGB");
 		}
 		img = enhImg;
+	}
+
+	/* (non-Javadoc)
+	 * @see digilib.image.DocuImage#dispose()
+	 */
+	public void dispose() {
+		img = null;
 	}
 
 }
