@@ -26,7 +26,6 @@
 
 package digilib.servlet;
 
-import java.io.File;
 import java.io.StringReader;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -50,6 +49,7 @@ import com.hp.hpl.mesa.rdf.jena.model.Statement;
 import com.hp.hpl.mesa.rdf.jena.model.StmtIterator;
 
 import digilib.image.DocuImage;
+import digilib.io.FileOps;
 
 /** Class holding the parameters of a digilib user request.
  * The parameters are mostly named like the servlet parameters:<br>
@@ -466,18 +466,14 @@ public class DigilibRequest extends ParameterMap {
 	/** The image file path to be accessed.
 	 * 
 	 * The mage file path is assembled from the servlets RequestPath and
-	 * Parameter fn. The file path never starts with a directory separator.
+	 * Parameter fn and normalized.
 	 * 
 	 * @return String the effective filepath.
 	 */
 	public String getFilePath() {
 		String s = getAsString("request.path");
 		s += getAsString("fn");
-		if (s.startsWith(File.separator)) {
-			return s.substring(1);
-		} else {
-			return s;
-		}
+		return FileOps.normalName(s);
 	}
 
 	/* Property getter and setter */

@@ -178,6 +178,32 @@ public class FileOps {
 		return "";
 	}
 
+	/** Normalize a path name.
+	 * 
+	 * Removes leading and trailing slashes. Returns null if there is other
+	 * unwanted stuff in the path name. 
+	 * 
+	 * @param pathname
+	 * @return
+	 */
+	public static String normalName(String pathname) {
+		// upper-dir references are unwanted
+		if (pathname.indexOf("../") >= 0) {
+			return null;
+		}
+		int a = 0;
+		int e = pathname.length();
+		// leading and trailing "/" are removed
+		if (pathname.startsWith("/")) {
+			a++;
+		}
+		if (pathname.endsWith("/")) {
+			e--; 
+		}
+		return pathname.substring(a, e);
+	}
+	
+	
 	/**
 	 * FileFilter for image types (helper class for getFile)
 	 */

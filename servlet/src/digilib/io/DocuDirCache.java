@@ -92,7 +92,7 @@ public class DocuDirCache {
 	public void put(DocuDirectory newdir) {
 		String s = newdir.getDirName();
 		if (map.containsKey(s)) {
-			logger.warn("Baah, duplicate key in DocuDirCache.put!");
+			logger.warn("Duplicate key in DocuDirCache.put -- ignoring!");
 		} else {
 			map.put(s, newdir);
 			numFiles += newdir.size();

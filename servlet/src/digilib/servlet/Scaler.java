@@ -59,7 +59,7 @@ import digilib.io.ImageFileset;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.18b5";
+	public static final String dlVersion = "1.18b6";
 
 	// logger for accounting requests
 	Logger accountlog = Logger.getLogger("account.request");
@@ -765,7 +765,7 @@ public class Scaler extends HttpServlet {
 
 		} // end of "big" try
 		catch (IOException e) {
-			logger.fatal("ERROR: File IO Error: ", e);
+			logger.fatal("ERROR: File IO Error: "+e);
 			try {
 				if (errorMsgHtml) {
 					ServletOps.htmlMessage(
@@ -777,7 +777,7 @@ public class Scaler extends HttpServlet {
 			} catch (FileOpException ex) {
 			} // so we don't get a loop
 		} catch (AuthOpException e) {
-			logger.fatal("ERROR: Authorization error: ", e);
+			logger.fatal("ERROR: Authorization error: "+e);
 			try {
 				if (errorMsgHtml) {
 					ServletOps.htmlMessage(
@@ -789,7 +789,7 @@ public class Scaler extends HttpServlet {
 			} catch (FileOpException ex) {
 			} // so we don't get a loop
 		} catch (ImageOpException e) {
-			logger.fatal("ERROR: Image Error: ", e);
+			logger.fatal("ERROR: Image Error: "+e);
 			try {
 				if (errorMsgHtml) {
 					ServletOps.htmlMessage(
@@ -802,7 +802,7 @@ public class Scaler extends HttpServlet {
 			} // so we don't get a loop
 		} catch (RuntimeException e) {
 			// JAI likes to throw RuntimeExceptions ;-(
-			logger.fatal("ERROR: Other Image Error: ", e);
+			logger.fatal("ERROR: Other Image Error: "+e);
 			try {
 				if (errorMsgHtml) {
 					ServletOps.htmlMessage(

@@ -58,7 +58,7 @@ public class AliasingDocuDirCache extends DocuDirCache {
 			throw new FileOpException("ERROR loading mapping file: " + e);
 		}
 		if (pathMap == null) {
-			throw new FileOpException("ERROR unable to load mapping file!");
+			throw new FileOpException("ERROR: unable to load mapping file!");
 		}
 
 		/*
@@ -70,6 +70,7 @@ public class AliasingDocuDirCache extends DocuDirCache {
 			String dir = (String) pathMap.get(link);
 			DocuDirectory destDir = new DocuDirectory(dir, this);
 			if (destDir.isValid()) {
+				logger.debug("Aliasing dir: "+link);
 				// add the alias name
 				putName(link, destDir);
 				// add the real dir
@@ -85,7 +86,7 @@ public class AliasingDocuDirCache extends DocuDirCache {
 	 */
 	public void putName(String name, DocuDirectory newdir) {
 		if (map.containsKey(name)) {
-			logger.warn("Baah, duplicate key in AliasingDocuDirCache.put!");
+			logger.warn("Duplicate key in AliasingDocuDirCache.put -- ignored!");
 		} else {
 			map.put(name, newdir);
 		}
