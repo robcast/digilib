@@ -19,11 +19,10 @@ Authors: ROC 03.06.2004
   Changed for digiLib in Zope by DW 24.03.2004
 */
 
-function getInt (n) {
+function getInt(n) {
     // returns always an integer
-    n = parseInt (n);
-    if (isNaN (n))
-	return 0;
+    n = parseInt(n);
+    if (isNaN(n)) return 0;
     return n;
 }
 
