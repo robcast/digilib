@@ -1,0 +1,50 @@
+<html>
+<head>
+<style type="text/css">
+.menu1 {position:absolute; top:122; left:41; width:44; height:138; clip:rect(0,44,138,0); visibility:hidden}
+.item1 {position:absolute; left:43; width:40; height:14; clip:rect(0,40,14,0); visibility:hidden}
+
+.text {font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 10px; color: #FFFFFF; text-decoration: none}
+</style>
+<script language="JavaScript" src="buttons/menu.js"></script>
+<script language="JavaScript">
+// because on a netscape 4.xx bug (messing up with layers on resize) we cache the window
+// resize event and redisplay the navigation frame
+if (document.layers && !document.getElementById) {
+	window.onresize = function() {parent.rightFrame.location.reload();}
+}
+
+function reloadTable(row, col) {
+	parent.att[2] = row;
+	parent.att[3] = col;
+	parent.loadThumbTable();
+}
+
+// turn off the contexthelp
+var showHelp = false;
+</script>
+</head>
+
+<body bgcolor="#CCCCCC" leftmargin="8" marginwidth="8" topmargin="20" marginheight="20" onload="preloadImages();">
+<a href="#" onClick="parent.Backpage(); return false;" onmouseover="overButton(0)" onmouseout="awayButton(0)"><img src="buttons/back0.gif" width="73" height="30" border="0"></a><br>
+<a href="#" onClick="parent.Nextpage(); return false;" onmouseover="overButton(1)" onmouseout="awayButton(1)"><img src="buttons/next0.gif" width="73" height="30" border="0"></a><br><br>
+<a href="#" onclick="hideMenu(); showMenu(1); return false;" onmouseover="overButton(2)" onmouseout="awayButton(2)"><img src="buttons/matrix0.gif" width="73" height="30" border="0"></a><br>
+
+<div id="menu1" class="menu1"></div>
+ <div id="menu11" class="item1" style="top:124"><center><a href="#" class="text" onClick="hideMenu(); reloadTable(1, 2); return false;" onmouseover="overItem(11)" onmouseout="awayItem(11)">1x2</a></center></div>
+ <div id="menu12" class="item1" style="top:139"><center><a href="#" class="text" onClick="hideMenu(); reloadTable(2, 3); return false;" onmouseover="overItem(12)" onmouseout="awayItem(12)">2x3</a></center></div>
+ <div id="menu13" class="item1" style="top:154"><center><a href="#" class="text" onClick="hideMenu(); reloadTable(2, 4); return false;" onmouseover="overItem(13)" onmouseout="awayItem(13)">2x4</a></center></div>
+ <div id="menu14" class="item1" style="top:169"><center><a href="#" class="text" onClick="hideMenu(); reloadTable(3, 2); return false;" onmouseover="overItem(14)" onmouseout="awayItem(14)">3x2</a></center></div>
+ <div id="menu15" class="item1" style="top:184"><center><a href="#" class="text" onClick="hideMenu(); reloadTable(3, 3); return false;" onmouseover="overItem(15)" onmouseout="awayItem(15)">3x3</a></center></div>
+ <div id="menu16" class="item1" style="top:199"><center><a href="#" class="text" onClick="hideMenu(); reloadTable(3, 4); return false;" onmouseover="overItem(16)" onmouseout="awayItem(16)">3x4</a></center></div>
+ <div id="menu17" class="item1" style="top:214"><center><a href="#" class="text" onClick="hideMenu(); reloadTable(3, 5); return false;" onmouseover="overItem(17)" onmouseout="awayItem(17)">3x5</a></center></div>
+ <div id="menu18" class="item1" style="top:229"><center><a href="#" class="text" onClick="hideMenu(); reloadTable(4, 5); return false;" onmouseover="overItem(18)" onmouseout="awayItem(18)">4x5</a></center></div>
+ <div id="menu19" class="item1" style="top:244"><center><a href="#" class="text" onClick="hideMenu(); reloadTable(4, 6); return false;" onmouseover="overItem(19)" onmouseout="awayItem(19)">4x6</a></center></div>
+
+<script language="Javascript">
+// initial background color of the menues (has to be done like this, 
+// otherwise menues in ns4 you will have wrong dimensions)
+changeBc("menu1", "#666666");
+</script>
+</body>
+</html>
