@@ -42,7 +42,7 @@ public class Utils {
    *    dprintln(1, "blabla");
    *    will be printed on stdout if debug >= 1
    */
-  public static void dprintln(int dbg, String s) {
+  public void dprintln(int dbg, String s) {
     if (debugLevel >= dbg) {
       String ind = "";
       // indent by debuglevel
