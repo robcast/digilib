@@ -216,8 +216,8 @@ function originalSize(dpi_v, dpi_h) {
   // change scale to 1
   dlParams.ws.value = 1.0;
 
-  dlParams.ddpix.value = dpi_h;
-  dlParams.ddpiy.value = dpi_v;
+  dlParams.ddpix.value = cropFloat(dpi_h);
+  dlParams.ddpiy.value = cropFloat(dpi_v);
   
   display(3);
 
@@ -232,12 +232,12 @@ function originalSize(dpi_v, dpi_h) {
  */
 function scale(factor) {
 
-	dlParams.ws.value = factor;
+  dlParams.ws.value = factor;
 
   removeMoFlag('clip');
   removeMoFlag('osize');
 
-	display(3);
+  display(3);
 
 }
 
@@ -248,42 +248,42 @@ function scale(factor) {
  */
 function placeMarks() {
 
-	if ( dlParams.mk.value != '' ) {
+  if ( dlParams.mk.value != '' ) {
 
-		var mark = dlParams.mk.value.split(";");
-		var mark_count = mark.length;
+    var mark = dlParams.mk.value.split(";");
+    var mark_count = mark.length;
 
-		// maximum of marks is 8
-		// we do not report this error because this is already done in function 'mark'
-		if ( mark_count > 8 ) mark_count = 8;
+    // maximum of marks is 8
+    // we do not report this error because this is already done in function 'mark'
+    if ( mark_count > 8 ) mark_count = 8;
 
-		var picWidth  = (document.all) ? parseInt(document.all.lay1.offsetWidth) : (typeof(document.getElementById) == "function") ? parseInt(document.pic.offsetWidth) : parseInt(document.lay1.clip.width);
-		var picHeight = (document.all) ? parseInt(document.all.lay1.offsetHeight) : (typeof(document.getElementById) == "function") ? parseInt(document.pic.offsetHeight) : parseInt(document.lay1.clip.height);
+    var picWidth  = (document.all) ? parseInt(document.all.lay1.offsetWidth) : (typeof(document.getElementById) == "function") ? parseInt(document.pic.offsetWidth) : parseInt(document.lay1.clip.width);
+    var picHeight = (document.all) ? parseInt(document.all.lay1.offsetHeight) : (typeof(document.getElementById) == "function") ? parseInt(document.pic.offsetHeight) : parseInt(document.lay1.clip.height);
 
-		// catch the cases where the picture had not been loaded already and
-		// make a timeout so that the coordinates are calculated with the real dimensions
-		if (  (picWidth > 30) || (document.pic.complete) ) {
+    // catch the cases where the picture had not been loaded already and
+    // make a timeout so that the coordinates are calculated with the real dimensions
+    if (  (picWidth > 30) || (document.pic.complete) ) {
 
-  		var xOffset = (document.all) ? parseInt(document.all.lay1.style.left) : (typeof(document.getElementById) == "function") ? parseInt(document.getElementById('lay1').style.left) : document.lay1.left;
-  		var yOffset = (document.all) ? parseInt(document.all.lay1.style.top) : (typeof(document.getElementById) == "function") ? parseInt(document.getElementById('lay1').style.top) : document.lay1.top;
+      var xOffset = (document.all) ? parseInt(document.all.lay1.style.left) : (typeof(document.getElementById) == "function") ? parseInt(document.getElementById('lay1').style.left) : document.lay1.left;
+      var yOffset = (document.all) ? parseInt(document.all.lay1.style.top) : (typeof(document.getElementById) == "function") ? parseInt(document.getElementById('lay1').style.top) : document.lay1.top;
 
-			for (var i = 0; i < mark_count; i++) {
-				mark[i] = mark[i].split("/");
+      for (var i = 0; i < mark_count; i++) {
+        mark[i] = mark[i].split("/");
 
-				if ( (parseFloat(mark[i][0]) >= parseFloat(dlParams.wx.value)) && 
-				     (parseFloat(mark[i][1]) >= parseFloat(dlParams.wy.value)) &&
-				     (parseFloat(mark[i][0]) <= (parseFloat(dlParams.wx.value) + parseFloat(dlParams.ww.value))) &&
-				     (parseFloat(mark[i][1]) <= (parseFloat(dlParams.wy.value) + parseFloat(dlParams.wh.value))) ) {
+        if ( (parseFloat(mark[i][0]) >= parseFloat(dlParams.wx.value)) && 
+             (parseFloat(mark[i][1]) >= parseFloat(dlParams.wy.value)) &&
+             (parseFloat(mark[i][0]) <= (parseFloat(dlParams.wx.value) + parseFloat(dlParams.ww.value))) &&
+             (parseFloat(mark[i][1]) <= (parseFloat(dlParams.wy.value) + parseFloat(dlParams.wh.value))) ) {
 
-					mark[i][0] = (mark[i][0] - dlParams.wx.value)/dlParams.ww.value;
- 					mark[i][1] = (mark[i][1] - dlParams.wy.value)/dlParams.wh.value;
+          mark[i][0] = (mark[i][0] - dlParams.wx.value)/dlParams.ww.value;
+          mark[i][1] = (mark[i][1] - dlParams.wy.value)/dlParams.wh.value;
  					
           // mirror
           if ( dlParams.mo.value.indexOf('hmir') > -1 ) {
-  					mark[i][0] = 1 - mark[i][0];
+  	    mark[i][0] = 1 - mark[i][0];
           }
           if ( dlParams.mo.value.indexOf('vmir') > -1 ) {
-  					mark[i][1] = 1 - mark[i][1];
+  	    mark[i][1] = 1 - mark[i][1];
           }
 
           // just the beginning - not working currently
@@ -299,26 +299,26 @@ function placeMarks() {
           var origPicHeight = Math.sqrt(Math.pow(ws, 2) + Math.pow(hc, 2));
           // end of the beginning ;-)
           
-					mark[i][0] = parseInt(xOffset + picWidth * mark[i][0]);
- 					mark[i][1] = parseInt(yOffset + picHeight * mark[i][1]);
+          mark[i][0] = parseInt(xOffset + picWidth * mark[i][0]);
+          mark[i][1] = parseInt(yOffset + picHeight * mark[i][1]);
 
-					if ( (document.all) || (typeof(document.getElementById) == "function") ) {
+          if ( (document.all) || (typeof(document.getElementById) == "function") ) {
             // suboptimal to place -5 pixels and not half size of mark-image
             // should be changed in the future
             document.getElementById("dot" + i).style.left = mark[i][0]-5;
             document.getElementById("dot" + i).style.top = mark[i][1]-5;
             document.getElementById("dot" + i).style.visibility = "visible";
           } else {
-     				document.layers[i+1].moveTo(mark[i][0]-5, mark[i][1]-5);
-    				document.layers[i+1].visibility = "show";
+     	    document.layers[i+1].moveTo(mark[i][0]-5, mark[i][1]-5);
+    	    document.layers[i+1].visibility = "show";
           }
-				}
-			}
+        }
+      }
 
-		} else {
-			setTimeout("placeMarks()", 100);
-		}
-	}
+    } else {
+      setTimeout("placeMarks()", 100);
+    }
+  }
 }
 
 
