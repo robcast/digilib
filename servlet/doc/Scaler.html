@@ -58,7 +58,11 @@ Unknown parameters will be silently ignored.</p>
       <b>clip</b>: send the file in its
       original resolution, cropped to fit <code>[dw,dh]</code>.<br> If
       none of these flags is set heuristics is used (send unzoomed GIF
-      as-is).</li>
+      as-is).<br>
+      <b>osize</b>: scale to original size based on the image resolution
+      (from the image metadata) and display resolution (from parameter 
+      <code>ddpi</code>)
+      </li>
       
       <li><b>errtxt</b>: send error response as HTML.<br>
       <b>errimg</b>: response as image (default).</li>
@@ -98,6 +102,17 @@ Unknown parameters will be silently ignored.</p>
   similar to the <code>brgt</code> parameter. The factors for red,
   green and blue are separated by slashes (for example
   100/0/25). Default: 0/0/0</li>
+  
+  <li><b>ddpi</b>: resolution of client display for <code>osize</code> mode. 
+  Either <code>ddpi</code> or <code>ddpix</code> and <code>ddpiy</code> must
+  be set to use <code>osize</code> mode.</li>
+  
+  <li><b>ddpix</b>: resolution of client display in x direction for 
+  <code>osize</code> mode.</li>
+
+  
+  <li><b>ddpiy</b>: resolution of client display in y direction for 
+  <code>osize</code> mode.</li>
   
 </ul>
 The image will be scaled equally in horizontal and vertical direction such that
