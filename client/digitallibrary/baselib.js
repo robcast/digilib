@@ -23,7 +23,7 @@ Authors:
 
 function base_init() {
     // init function
-    baseScriptVersion = "1.1b";
+    baseScriptVersion = "1.1.1b";
     dlParams = new Object();
     browserType = getBrowserType();
 }
