@@ -45,13 +45,13 @@ public class ImageFileset extends DocuDirent {
 	private ArrayList list = null;
 
 	/** aspect ratio (width/height) */
-	private double aspect = 0;
+	private float aspect = 0;
 
 	/** resolution of the biggest image (DPI) */
-	private double resX = 0;
+	private float resX = 0;
 
 	/** resolution of the biggest image (DPI) */
-	private double resY = 0;
+	private float resY = 0;
 
 	/**
 	 * Creator for empty fileset.
@@ -278,8 +278,8 @@ public class ImageFileset extends DocuDirent {
 				}
 			}
 			if (FileOps.classForFilename(dirFiles[fileIdx]) == FileOps.CLASS_IMAGE) {
-				logger.debug("adding file " + dirFiles[fileIdx]
-						+ " to Fileset " + this.getName());
+				/* logger.debug("adding file " + dirFiles[fileIdx]
+						+ " to Fileset " + this.getName()); */
 				add(new ImageFile(dirFiles[fileIdx], this, dirs[dirIdx]));
 			}
 		}
@@ -319,17 +319,17 @@ public class ImageFileset extends DocuDirent {
 		}
 		metaChecked = true;
 		String s;
-		double dpi = 0;
-		double dpix = 0;
-		double dpiy = 0;
-		double sizex = 0;
-		double sizey = 0;
-		double pixx = 0;
-		double pixy = 0;
+		float dpi = 0;
+		float dpix = 0;
+		float dpiy = 0;
+		float sizex = 0;
+		float sizey = 0;
+		float pixx = 0;
+		float pixy = 0;
 		// DPI is valid for X and Y
 		if (fileMeta.containsKey("original-dpi")) {
 			try {
-				dpi = Double.parseDouble((String) fileMeta.get("original-dpi"));
+				dpi = Float.parseFloat((String) fileMeta.get("original-dpi"));
 			} catch (NumberFormatException e) {
 			}
 			if (dpi != 0) {
@@ -342,9 +342,9 @@ public class ImageFileset extends DocuDirent {
 		if (fileMeta.containsKey("original-dpi-x")
 				&& fileMeta.containsKey("original-dpi-y")) {
 			try {
-				dpix = Double.parseDouble((String) fileMeta
+				dpix = Float.parseFloat((String) fileMeta
 						.get("original-dpi-x"));
-				dpiy = Double.parseDouble((String) fileMeta
+				dpiy = Float.parseFloat((String) fileMeta
 						.get("original-dpi-y"));
 			} catch (NumberFormatException e) {
 			}
@@ -360,19 +360,19 @@ public class ImageFileset extends DocuDirent {
 				&& fileMeta.containsKey("original-pixel-x")
 				&& fileMeta.containsKey("original-pixel-y")) {
 			try {
-				sizex = Double.parseDouble((String) fileMeta
+				sizex = Float.parseFloat((String) fileMeta
 						.get("original-size-x"));
-				sizey = Double.parseDouble((String) fileMeta
+				sizey = Float.parseFloat((String) fileMeta
 						.get("original-size-y"));
-				pixx = Double.parseDouble((String) fileMeta
+				pixx = Float.parseFloat((String) fileMeta
 						.get("original-pixel-x"));
-				pixy = Double.parseDouble((String) fileMeta
+				pixy = Float.parseFloat((String) fileMeta
 						.get("original-pixel-y"));
 			} catch (NumberFormatException e) {
 			}
 			if ((sizex != 0) && (sizey != 0) && (pixx != 0) && (pixy != 0)) {
-				resX = pixx / (sizex * 100 / 2.54);
-				resY = pixy / (sizey * 100 / 2.54);
+				resX = pixx / (sizex * 100 / 2.54f);
+				resY = pixy / (sizey * 100 / 2.54f);
 				return;
 			}
 		}
@@ -381,14 +381,14 @@ public class ImageFileset extends DocuDirent {
 	/**
 	 * @return
 	 */
-	public double getResX() {
+	public float getResX() {
 		return resX;
 	}
 
 	/**
 	 * @return
 	 */
-	public double getResY() {
+	public float getResY() {
 		return resY;
 	}
 
@@ -411,7 +411,7 @@ public class ImageFileset extends DocuDirent {
 	 * 
 	 * @return
 	 */
-	public double getAspect() {
+	public float getAspect() {
 		return aspect;
 	}
 

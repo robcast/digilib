@@ -129,7 +129,7 @@ public class ImageFile {
 	 * 
 	 * @return
 	 */
-	public double getAspect() {
+	public float getAspect() {
 		return (pixelSize != null) ? pixelSize.getAspect() : 0;
 	}
 

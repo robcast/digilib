@@ -175,7 +175,7 @@ public class DocuDirectory extends Directory {
 		// first file extension to try for scaled directories
 		String scalext = null;
 		// read all filenames
-		logger.debug("reading directory " + dir.getPath());
+		//logger.debug("reading directory " + dir.getPath());
 		/*
 		 * using ReadableFileFilter is safer (we won't get directories with file
 		 * extensions) but slower.
@@ -186,7 +186,7 @@ public class DocuDirectory extends Directory {
 		} else {
 			allFiles = dir.listFiles();
 		}
-		logger.debug("  done");
+		//logger.debug("  done");
 		if (allFiles == null) {
 			// not a directory
 			return false;
@@ -204,9 +204,9 @@ public class DocuDirectory extends Directory {
 			File d = new File(baseDirNames[j], dirName);
 			if (d.isDirectory()) {
 				dirs[j] = new Directory(d);
-				logger.debug("  reading scaled directory " + d.getPath());
+				//logger.debug("  reading scaled directory " + d.getPath());
 				dirs[j].readDir();
-				logger.debug("    done");
+				//logger.debug("    done");
 			}
 		}
 

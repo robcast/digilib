@@ -30,14 +30,9 @@ import javax.servlet.ServletException;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-import org.apache.log4j.xml.DOMConfigurator;
 
-import digilib.auth.AuthOps;
-import digilib.auth.XMLAuthOps;
 import digilib.image.DocuImage;
 import digilib.image.DocuImageImpl;
-import digilib.io.AliasingDocuDirCache;
-import digilib.io.DocuDirCache;
 import digilib.io.FileOps;
 import digilib.io.XMLListLoader;
 
@@ -146,6 +141,8 @@ public class DigilibConfiguration extends ParameterMap {
 		newParameter("max-image-size", new Integer(0), null, 'f');
 		// use safe (but slower) directory indexing
 		newParameter("safe-dir-index", Boolean.FALSE, null, 'f');
+		// number of working threads
+		newParameter("worker-threads", new Integer(1), null, 'f');
 
 	}
 
@@ -225,47 +222,6 @@ public class DigilibConfiguration extends ParameterMap {
 			}
 		}
 
-		/*
-		 * further initialization
-		 */
-
-		// set up logger
-		File logConf =
-			ServletOps.getConfigFile((File)getValue("log-config-file"), c);
-		DOMConfigurator.configure(logConf.getAbsolutePath());
-		setValue("log-config-file", logConf);
-		// directory cache
-		String[] bd = (String[]) getValue("basedir-list");
-		int[] fcs =
-			{ FileOps.CLASS_IMAGE, FileOps.CLASS_TEXT, FileOps.CLASS_SVG };
-		DocuDirCache dirCache;
-		if (getAsBoolean("use-mapping")) {
-			// with mapping file
-			File mapConf =
-				ServletOps.getConfigFile((File)getValue("mapping-file"), c);
-			dirCache = new AliasingDocuDirCache(bd, fcs, mapConf, this);
-			setValue("mapping-file", mapConf);
-		} else {
-			// without mapping
-			dirCache = new DocuDirCache(bd, fcs, this);
-		}
-		setValue("servlet.dir.cache", dirCache);
-		// useAuthentication
-		if (getAsBoolean("use-authorization")) {
-			// DB version
-			//authOp = new DBAuthOpsImpl(util);
-			// XML version
-			File authConf =
-				ServletOps.getConfigFile((File)getValue("auth-file"), c);
-			AuthOps authOp = new XMLAuthOps(authConf);
-			setValue("servlet.auth.op", authOp);
-			setValue("auth-file", authConf);
-		}
-		// DocuImage class
-		String s = getAsString("docuimage-class");
-		Class cl = Class.forName(getAsString("docuimage-class"));
-		docuImageClass = Class.forName(getAsString("docuimage-class"));
-		setValue("servlet.docuimage.class", docuImageClass.getName());
 	}
 
 	/**
@@ -287,4 +243,16 @@ public class DigilibConfiguration extends ParameterMap {
 		return di;
 	}
 
+	/**
+	 * @return Returns the docuImageClass.
+	 */
+	public Class getDocuImageClass() {
+		return docuImageClass;
+	}
+	/**
+	 * @param docuImageClass The docuImageClass to set.
+	 */
+	public void setDocuImageClass(Class docuImageClass) {
+		this.docuImageClass = docuImageClass;
+	}
 }
