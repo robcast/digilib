@@ -21,15 +21,22 @@
         <servlet-class>
             digilib.servlet.Scaler
         </servlet-class>
-        <!-- parameters to the servlet -->
-        <init-param>
-            <param-name>
-                config-file
-            </param-name>
-            <param-value>
-                /docuserver/www/digitallibrary/WEB-INF/digilib-config.xml
-            </param-value>
-        </init-param>
+        <!-- Load this servlet at server startup time -->
+        <load-on-startup>
+            5
+        </load-on-startup>
+  </servlet>
+  <!-- The Texter servlet -->
+  <servlet>
+        <servlet-name>
+            Texter
+        </servlet-name>
+        <description>
+            The servlet for text.
+        </description>
+        <servlet-class>
+            digilib.servlet.Texter
+        </servlet-class>
         <!-- Load this servlet at server startup time -->
         <load-on-startup>
             5
@@ -50,14 +57,6 @@
             </param-name>
             <param-value>
                 WARNING
-            </param-value>
-        </init-param>
-        <init-param>
-            <param-name>
-                config-file
-            </param-name>
-            <param-value>
-                /docuserver/www/digitallibrary/WEB-INF/digilib-config.xml
             </param-value>
         </init-param>
         <load-on-startup>
@@ -81,7 +80,24 @@
             /authenticated/servlet/Scaler/*
         </url-pattern>
   </servlet-mapping>
-  <!-- The mapping for the JSP servlet -->
+  <!-- The mapping for the Texter servlet -->
+  <servlet-mapping>
+        <servlet-name>
+            Texter
+        </servlet-name>
+        <url-pattern>
+            /servlet/Texter/*
+        </url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+        <servlet-name>
+            Texter
+        </servlet-name>
+        <url-pattern>
+            /authenticated/servlet/Texter/*
+        </url-pattern>
+  </servlet-mapping>
+   <!-- The mapping for the JSP servlet -->
   <servlet-mapping>
         <servlet-name>
             doc-jsp

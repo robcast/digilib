@@ -1,7 +1,7 @@
 <!-- Digilib servlet config file -->
 
 <digilib-config>
-  <parameter name="debug-level" value="0" />
+  <parameter name="debug-level" value="10" />
 
   <!--  Image to be sent to indicate general failure. -->
   <parameter name="error-image" value="/docuserver/images/icons/broken.gif" />
@@ -14,8 +14,11 @@
   <parameter name="basedir-list" value="/docuserver/images:/docuserver/scaled/small" />
 
   <!-- Java class to use for image operations -->
-  <parameter name="docuimage-class" value="digilib.image.JAIDocuImage" />
+  <parameter name="docuimage-class" value="digilib.image.ImageLoaderDocuImage" />
 
+  <!-- mimimum amount of scaling done with antialiasing -->
+  <parameter name="subsample-minimum" value="2"/>
+  
   <!-- is sending whole image files with mo=file allowed? -->
   <parameter name="sendfile-allowed" value="true" />
 
@@ -24,10 +27,10 @@
        (see tomcat-users.xml).
        Authorization for resources (directories) is evaluated by the servlet 
        (see auth-file). -->
-  <parameter name="use-authorization" value="true" />
+  <parameter name="use-authorization" value="false" />
 
   <!-- 	  URL location of XML file with authorization requirements. -->
-  <parameter name="auth-file" value="/docuserver/www/digitallibrary/WEB-INF/digilib-auth.xml" />
+  <parameter name="auth-file" value="digilib-auth.xml" />
 
   <!-- Part of URL to indicate authenticated access to Tomcat. -->
   <parameter name="auth-url-path" value="authenticated/" />
