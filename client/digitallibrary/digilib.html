@@ -5,20 +5,24 @@
 </head>
 
 <script LANGUAGE="JavaScript">
-
 <!-- Beginning of JavaScript --------
 
-this.location = "http://"+location.host+"/docuserver/digitallibrary/digilib.jsp"+location.search;
+// this.location = "http://"+location.host+"/docuserver/digitallibrary/digilib.jsp"+location.search;
+
+this.location.replace(this.location.href.replace(/\.html/, ".jsp"));
 
 // -- End of JavaScript code -------------- -->
+</script>
 
-</SCRIPT>
 <body>
 <h1>Digital Library Redirect</h1>
 
-<p>You should automatically be redirected to the Digital Library page.</p>
+<p>You should automatically be redirected to the Digital Library page. 
+    (<tt>digilib.<b>jsp</b></tt>)</p>
 
-<p>If this doesn't happen please <a href="digilib.jsp">click here</a>.</p>
+<p>If this doesn't happen make shure JavaScript is enabled in your browser. 
+    The Digital Library pages need JavaScript to work. If your problem still 
+    remains, please contact the administrator.</p>
 
 <hr>
 <address>robert.casties@philo.unibe.ch</address>
