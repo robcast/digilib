@@ -114,7 +114,7 @@ public class DocuFileset {
 
 	/** Get the next bigger DocuFile than the given size.
 	 * 
-	 * Returns the DocuFile from the set that has a width and height 
+	 * Returns the DocuFile from the set that has a width or height 
 	 * bigger or equal the given size. 
 	 * Returns null if there isn't any bigger image.
 	 * Needs DocuInfo instance to checkFile().
@@ -130,7 +130,7 @@ public class DocuFileset {
 				f.check(info);
 			}
 			if ((f.getSize().getHeight() >= size.getHeight())
-				&& (f.getSize().getWidth() >= size.getWidth())) {
+				|| (f.getSize().getWidth() >= size.getWidth())) {
 				return f;
 			}
 		}

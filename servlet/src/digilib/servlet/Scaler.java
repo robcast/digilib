@@ -58,7 +58,7 @@ import digilib.io.FileOps;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.12b6";
+	public static final String dlVersion = "1.12b7";
 
 	// Utils instance with debuglevel
 	Utils util;
@@ -90,7 +90,10 @@ public class Scaler extends HttpServlet {
 
 		// Debuggin!
 		//TCTool tctool = new TCTool();
-		System.out.println("***** Digital Image Library Servlet (version "+dlVersion+") *****");
+		System.out.println(
+			"***** Digital Image Library Servlet (version "
+				+ dlVersion
+				+ ") *****");
 
 		// get our ServletContext
 		ServletContext context = config.getServletContext();
@@ -433,7 +436,8 @@ public class Scaler extends HttpServlet {
 			boolean imageSendable = mimetypeSendable && !imagoOptions;
 
 			/* if not autoRes and image smaller than requested 
-			 * size then send as is. 
+			 * size then send as is.
+			 * if autoRes and image has requested size then send as is. 
 			 * if not autoScale and not scaleToFit nor cropToFit 
 			 * then send as is (mo=file)
 			 */
@@ -441,6 +445,12 @@ public class Scaler extends HttpServlet {
 				&& imageSendable
 				&& (fileToLoad.getSize().width <= expectedSourceSize.width)
 				&& (fileToLoad.getSize().height <= expectedSourceSize.height))
+				|| (autoRes
+					&& ((fileToLoad.getSize().width == expectedSourceSize.width)
+					|| (fileToLoad.getSize().height <= expectedSourceSize.height)))
+				|| (autoRes
+					&& ((fileToLoad.getSize().width <= expectedSourceSize.width)
+					|| (fileToLoad.getSize().height == expectedSourceSize.height)))
 				|| (!autoRes && !scaleToFit && !cropToFit && !absoluteScale)) {
 
 				util.dprintln(1, "Sending File as is.");
