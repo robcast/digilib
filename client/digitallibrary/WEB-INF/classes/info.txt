@@ -1,0 +1,4 @@
+# hier zusaetzliche klassen zum kompilieren, diese muessen im laufenden
+# tomcat system in WEB-INF/lib sein.
+
+export CLASSPATH=$CLASSPATH:/opt/javalibs/xerces/xercesImpl.jar:/opt/javalibs/xerces/xml-apis.jar:/opt/javalibs/xalan/bin/xalan.jar:/opt/tomcat/common/lib/servlet-api.jar
