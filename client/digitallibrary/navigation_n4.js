@@ -67,8 +67,7 @@ function init(fn, pn, ws, mo, mk, wx, wy, ww, wh) {
 
 function loadPicture(detailGrade, keepArea) {
 
-	var newURL  = "dlImage.jsp?"
-	newURL += "fn=" + att[0] + "&pn=" + att[1] + "&ws=" + att[2] + "&mo=" + att[3];
+	var newQuery = "fn=" + att[0] + "&pn=" + att[1] + "&ws=" + att[2] + "&mo=" + att[3];
 
 	if (detailGrade == 0) {
 		att[4] = "0/0";
@@ -81,13 +80,13 @@ function loadPicture(detailGrade, keepArea) {
 		att[8] = 1;
 	}
 
-	newURL += "&mk=" + att[4] + "&wx=" + att[5] + "&wy=" + att[6] + "&ww=" + att[7] + "&wh=" + att[8];
-	newURL += "&dw=" + (innerWidth-30) + "&dh=" + (innerHeight-30);
+	newQuery += "&mk=" + att[4] + "&wx=" + att[5] + "&wy=" + att[6] + "&ww=" + att[7] + "&wh=" + att[8];
+	newQuery += "&dw=" + (innerWidth-30) + "&dh=" + (innerHeight-30);
 
 	// debug window - checking the parameters passed to the next image
-	//alert ("DEBUG MESSAGE (complete URL in loadPicture):\n\n" + newURL);
+	//alert ("DEBUG MESSAGE (query-string in loadPicture):\n\n" + newQuery);
 
-	location.href = newURL;
+	location.href = location.pathname + "?" + newQuery;
 }
 
 

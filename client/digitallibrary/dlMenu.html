@@ -14,7 +14,7 @@
 // because on a netscape 4.xx bug (messing up with layers on resize) we cache the window
 // resize event and redisplay the navigation frame
 if (document.layers && !document.getElementById) {
-	window.onresize = function() {parent.mainFrame.rightFrame.location.reload();}
+	window.onresize = function() {parent.rightFrame.location.reload();}
 }
 
 
@@ -47,12 +47,12 @@ var keepArea = true;
 // changes to the correct mark of menu33 (fit GIFs)
 // I know it is not very nice to do it this way
 function checkAtt3() {
-	if (parent.mainFrame.att) {
+	if (parent.mainFrame && parent.mainFrame.att) {
 		if (parent.mainFrame.att.length >= 3) {
 			if (parent.mainFrame.att[3].indexOf('f') > -1) changeMark(33);
-		} else {
-			setTimeout("checkAtt3()", 100);
 		}
+	} else {
+		setTimeout("checkAtt3()", 100);
 	}
 }
 
@@ -60,19 +60,19 @@ function checkAtt3() {
 </head>
 
 <body bgcolor="#CCCCCC" leftmargin="8" marginwidth="8" topmargin="5" marginheight="5" onload="preloadImages();" onunload="closeContextHelp()">
-<a href="#" onClick="parent.mainFrame.backPage(keepArea); return false;" onmouseover="overButton(0)" onmouseout="awayButton(0)"><img src="buttons/back0.gif" width="73" height="30" border="0"></a><br>
-<a href="#" onClick="parent.mainFrame.nextPage(keepArea); return false;" onmouseover="overButton(1)" onmouseout="awayButton(1)"><img src="buttons/next0.gif" width="73" height="30" border="0"></a><br>
-<a href="#" onClick="parent.mainFrame.page(keepArea); return false;" onmouseover="overButton(2)" onmouseout="awayButton(2)"><img src="buttons/page0.gif" width="73" height="30" border="0"></a><br>
-<a href="#" onClick="parent.mainFrame.digicat(); return false;" onmouseover="overButton(3)" onmouseout="awayButton(3)"><img src="buttons/digicat0.gif" width="73" height="30" border="0"></a><br><br>
-<a href="#" onClick="parent.mainFrame.mark(); return false;" onmouseover="overButton(4)" onmouseout="awayButton(4)"><img src="buttons/mark0.gif" width="73" height="30" border="0"></a><br>
-<a href="#" onclick="hideMenu(); showMenu(1); return false;" onmouseover="overButton(5)" onmouseout="awayButton(5)"><img src="buttons/reference0.gif" width="73" height="30" border="0"></a><br><br>
-<a href="#" onClick="parent.mainFrame.zoomArea(); return false;" onmouseover="overButton(6)" onmouseout="awayButton(6)"><img src="buttons/zoomarea0.gif" width="73" height="30" border="0"></a><br>
-<a href="#" onClick="parent.mainFrame.zoomPoint(); return false;" onmouseover="overButton(7)" onmouseout="awayButton(7)"><img src="buttons/zoompoint0.gif" width="73" height="30" border="0"></a><br>
-<a href="#" onClick="parent.mainFrame.zoomOut(); return false;" onmouseover="overButton(8)" onmouseout="awayButton(8)"><img src="buttons/zoomout0.gif" width="73" height="30" border="0"></a><br>
-<a href="#" onClick="parent.mainFrame.moveTo(); return false;" onmouseover="overButton(9)" onmouseout="awayButton(9)"><img src="buttons/moveto0.gif" width="73" height="30" border="0"></a><br><br>
-<a href="#" onclick="hideMenu(); showMenu(2); return false;" onmouseover="overButton(10)" onmouseout="awayButton(10)"><img src="buttons/scale0.gif" width="73" height="30" border="0"></a><br><br>
-<a href="#" onClick="parent.mainFrame.makePDF(); return false;" onmouseover="overButton(11)" onmouseout="awayButton(11)"><img src="buttons/makepdf0.gif" width="73" height="30" border="0"></a><br><br>
-<a href="#" onclick="hideMenu(); showMenu(3); return false;" onmouseover="overButton(12)" onmouseout="awayButton(12)"><img src="buttons/questionmark0.gif" width="73" height="30" border="0"></a>
+<a href="javascript:parent.mainFrame.backPage(keepArea)" onmouseover="overButton(0)" onmouseout="awayButton(0)"><img src="buttons/back0.gif" width="73" height="30" border="0"></a><br>
+<a href="javascript:parent.mainFrame.nextPage(keepArea)" onmouseover="overButton(1)" onmouseout="awayButton(1)"><img src="buttons/next0.gif" width="73" height="30" border="0"></a><br>
+<a href="javascript:parent.mainFrame.page(keepArea)" onmouseover="overButton(2)" onmouseout="awayButton(2)"><img src="buttons/page0.gif" width="73" height="30" border="0"></a><br>
+<a href="javascript:parent.mainFrame.digicat()" onmouseover="overButton(3)" onmouseout="awayButton(3)"><img src="buttons/digicat0.gif" width="73" height="30" border="0"></a><br><br>
+<a href="javascript:parent.mainFrame.mark()" onmouseover="overButton(4)" onmouseout="awayButton(4)"><img src="buttons/mark0.gif" width="73" height="30" border="0"></a><br>
+<a href="javascript:hideMenu(); showMenu(1)" onmouseover="overButton(5)" onmouseout="awayButton(5)"><img src="buttons/reference0.gif" width="73" height="30" border="0"></a><br><br>
+<a href="javascript:parent.mainFrame.zoomArea()" onmouseover="overButton(6)" onmouseout="awayButton(6)"><img src="buttons/zoomarea0.gif" width="73" height="30" border="0"></a><br>
+<a href="javascript:parent.mainFrame.zoomPoint()" onmouseover="overButton(7)" onmouseout="awayButton(7)"><img src="buttons/zoompoint0.gif" width="73" height="30" border="0"></a><br>
+<a href="javascript:parent.mainFrame.zoomOut()" onmouseover="overButton(8)" onmouseout="awayButton(8)"><img src="buttons/zoomout0.gif" width="73" height="30" border="0"></a><br>
+<a href="javascript:parent.mainFrame.moveTo()" onmouseover="overButton(9)" onmouseout="awayButton(9)"><img src="buttons/moveto0.gif" width="73" height="30" border="0"></a><br><br>
+<a href="javascript:hideMenu(); showMenu(2)" onmouseover="overButton(10)" onmouseout="awayButton(10)"><img src="buttons/scale0.gif" width="73" height="30" border="0"></a><br><br>
+<a href="javascript:parent.mainFrame.makePDF()" onmouseover="overButton(11)" onmouseout="awayButton(11)"><img src="buttons/makepdf0.gif" width="73" height="30" border="0"></a><br><br>
+<a href="javascript:hideMenu(); showMenu(3)" onmouseover="overButton(12)" onmouseout="awayButton(12)"><img src="buttons/questionmark0.gif" width="73" height="30" border="0"></a>
 
 <div id="menu1" class="menu" style="top:211; left:31; width:54; height:33; clip:rect(0,54,33,0)"></div>
  <div id="menu11" class="item1" style="top:213"><center><a href="#" class="text" onClick="hideMenu(); parent.mainFrame.ref(0); return false;" onmouseover="overItem(11)" onmouseout="awayItem(11)">LaTeX</a></center></div>

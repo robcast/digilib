@@ -65,14 +65,16 @@ String imageLocation = "http://" + request.getServerName() + "/docuserver/digita
 <script language="JavaScript">
 
 // browser version test to include the corresponding navigation-file
-if ((navigator.appName.toLowerCase() == "netscape") && (parseFloat(navigator.appVersion) < 5.0)) {
-	document.write('<script src="navigation_n4.js"><\/script>');
-} else if (navigator.appName.toLowerCase() == "netscape") {
-	document.write('<script src="navigation_n6.js"><\/script>');
-} else if ((navigator.appName.toLowerCase() == "microsoft internet explorer") && (parseFloat(navigator.appVersion) >= 4.0)) {
+if (navigator.userAgent.toLowerCase().indexOf("opera") > -1) {
+	document.write('<script src="navigation_o6.js"><\/script>');
+} else if (navigator.userAgent.toLowerCase().indexOf("msie") > -1) {
 	document.write('<script src="navigation_ie.js"><\/script>');
+} else if (navigator.userAgent.toLowerCase().indexOf("mozilla\/4") > -1) {
+	document.write('<script src="navigation_n4.js"><\/script>');
+} else if (navigator.userAgent.toLowerCase().indexOf("mozilla\/5") > -1) {
+	document.write('<script src="navigation_n6.js"><\/script>');
 } else {
-	// alert('Your browser is not directly supported by this client right now.\n\nLoading now the optimised version for Netscape 6, that sticks the most to the w3c specifications.');
+	alert('Your browser is not directly supported by this client right now.\n\nLoading now the optimised version for Netscape 6, that sticks the most to the w3c specifications.');
 	document.write('<script src="navigation_n6.js"><\/script>');
 }
 
