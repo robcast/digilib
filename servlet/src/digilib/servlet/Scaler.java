@@ -61,7 +61,7 @@ public class Scaler extends HttpServlet {
 	private static final long serialVersionUID = -325080527268912852L;
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.21b1";
+	public static final String dlVersion = "1.21b3";
 
 	// logger for accounting requests
 	Logger accountlog = Logger.getLogger("account.request");
