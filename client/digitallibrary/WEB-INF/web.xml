@@ -10,17 +10,21 @@
   <description>
         This is the web frontend of the Digital Document Library.
   </description>
-  <!-- The Relato servlet -->
+  <!-- The Initaliser servlet -->
   <servlet>
         <servlet-name>
-            Relato
+            Initialiser
         </servlet-name>
         <description>
-            The relato servlet
+            The inialisation servlet (must run first).
         </description>
         <servlet-class>
-            Relato
+            digilib.servlet.Initialiser
         </servlet-class>
+        <!-- Load this servlet at server startup time -->
+        <load-on-startup>
+            1
+        </load-on-startup>
   </servlet>
   <!-- The Scaler servlet -->
   <servlet>
@@ -49,10 +53,6 @@
         <servlet-class>
             digilib.servlet.Texter
         </servlet-class>
-        <!-- Load this servlet at server startup time -->
-        <load-on-startup>
-            5
-        </load-on-startup>
   </servlet>
   <!-- The Raster servlet -->
   <servlet>
@@ -65,10 +65,30 @@
         <servlet-class>
             digilib.servlet.Raster
         </servlet-class>
-        <!-- Load this servlet at server startup time -->
-        <load-on-startup>
-            5
-        </load-on-startup>
+  </servlet>
+  <!-- The Mapper servlet -->
+  <servlet>
+        <servlet-name>
+            Mapper
+        </servlet-name>
+        <description>
+            The servlet to create image maps.
+        </description>
+        <servlet-class>
+            digilib.servlet.Mapper
+        </servlet-class>
+  </servlet>
+  <!-- The Relato servlet -->
+  <servlet>
+        <servlet-name>
+            Relato
+        </servlet-name>
+        <description>
+            The relato servlet
+        </description>
+        <servlet-class>
+            Relato
+        </servlet-class>
   </servlet>
   <!-- We want to mess around with the default JSP servlet... -->
   <servlet>
@@ -91,15 +111,6 @@
             3
         </load-on-startup>
   </servlet>
-  <!-- The mapping for the Relato servlet -->
-  <servlet-mapping>
-        <servlet-name>
-            Relato
-        </servlet-name>
-        <url-pattern>
-            /Relato
-        </url-pattern>
-  </servlet-mapping>
   <!-- The mapping for the Scaler servlet -->
   <servlet-mapping>
         <servlet-name>
@@ -149,6 +160,32 @@
         </servlet-name>
         <url-pattern>
             /authenticated/servlet/Raster/*
+        </url-pattern>
+  </servlet-mapping>
+  <!-- The mapping for the Mapper servlet -->
+  <servlet-mapping>
+        <servlet-name>
+            Mapper
+        </servlet-name>
+        <url-pattern>
+            /servlet/Mapper/*
+        </url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+        <servlet-name>
+            Mapper
+        </servlet-name>
+        <url-pattern>
+            /authenticated/servlet/Mapper/*
+        </url-pattern>
+  </servlet-mapping>
+  <!-- The mapping for the Relato servlet -->
+  <servlet-mapping>
+        <servlet-name>
+            Relato
+        </servlet-name>
+        <url-pattern>
+            /Relato
         </url-pattern>
   </servlet-mapping>
    <!-- The mapping for the JSP servlet -->
