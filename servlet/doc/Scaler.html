@@ -1,18 +1,18 @@
 <!doctype html public "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
-<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-<TITLE>Scaler servlet</TITLE>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Scaler servlet</title>
 </head>
-<BODY>
-<H1>Scaler</H1>
+<body>
+<h1>Scaler</h1>
 
-<p>A Servlet for scaling images. (Version 1.16b2)</p>
+<p>A Servlet for scaling images. (Version 1.5.2)</p>
 
 <h2>Web API</h2>
 
 <p>The Scaler servlet takes parameters in the http request format:
-<code>Scaler/request_path/?param1=value1&param2=value2&...</code>
+<code>Scaler/request_path/?param1=value1&amp;param2=value2&amp;...</code>
 Unknown parameters will be silently ignored.</p>
 
 <p>Recognised parameters:</p>
@@ -52,8 +52,18 @@ Unknown parameters will be silently ignored.</p>
     <li><b>mo</b> flags for the mode of operation separated by ",".
     <ul>
       <li><b>fit</b>: always scale the image to fit
-      <code>[dw,dh]</code>.<br>
+      <code>[dw,dh]</code> (default).<br>
+
+      <b>clip</b>: send the file in its
+      original resolution, cropped to fit <code>[dw,dh]</code>.
+      <br>
       
+      <b>osize</b>: scale to original size based on the image resolution
+      (from the image metadata) and display resolution (from parameter 
+      <code>ddpi</code>). Fails if either resolution is unknown.
+      </li>
+      
+      <li>
       <b>file</b>: send the file as-is (may
       be very large and all sorts of image types!). If configuration
       doesn't allow sending files
@@ -62,16 +72,7 @@ Unknown parameters will be silently ignored.</p>
 
       <b>rawfile</b>: send the file as-is with a mime-type of
       <code>application/octet-stream</code> so it can be downloaded with
-      the browser.<br>
-      
-      <b>clip</b>: send the file in its
-      original resolution, cropped to fit <code>[dw,dh]</code>.<br> If
-      none of these flags is set heuristics is used (send unzoomed GIF
-      as-is).<br>
-      
-      <b>osize</b>: scale to original size based on the image resolution
-      (from the image metadata) and display resolution (from parameter 
-      <code>ddpi</code>). Fails if either resolution is unknown.
+      the browser.
       </li>
       
       <li><b>errtxt</b>: send error response as HTML.<br>
@@ -84,12 +85,16 @@ Unknown parameters will be silently ignored.</p>
       
       <b>hires</b>: always use unscaled image.<br>
       
-      If the image is zoomed (ww, wh &lt; 1) the unscaled image is
-      used in any case.</li>
+      If the image is zoomed (ww, wh &lt; 1) the use of the scaled
+      image files depends on the requested resolution.</li>
       
       <li><b>vmir</b>: mirror image vertically.<br>
       
       <b>hmir</b>: mirror image horizontally.</li>
+
+      <li><b>jpg</b>: the resulting image is always sent as JPEG
+      (otherwise TIFF and PNG images are sent as PNG).
+      </li>
     </ul>
   </li>
 
@@ -148,5 +153,5 @@ Unknown parameters will be silently ignored.</p>
   ratio of the image.
   </p>
 
-</BODY>
+</body>
 </html>
