@@ -1,0 +1,42 @@
+<!-- Digilib Server Configuration File -->
+
+<Server port="8005" shutdown="SHUTDOWN" debug="0">
+
+  <!-- Define an Apache-Connector Service -->
+  <Service name="Tomcat-Docuserver">
+
+    <!-- Define a non-SSL HTTP/1.1 Connector on port 8080 -->
+    <Connector className="org.apache.catalina.connector.http.HttpConnector"
+               port="8080" minProcessors="5" maxProcessors="75"
+               acceptCount="10" debug="0" connectionTimeout="60000"/>
+
+    <!-- Replace "localhost" with what your Apache "ServerName" is set to -->
+    <Engine className="org.apache.catalina.connector.warp.WarpEngine"
+     name="Apache" debug="1" appBase="webapps" defaultHost="hera.unibe.ch">
+
+      <!-- Global logger unless overridden at lower levels -->
+      <Logger className="org.apache.catalina.logger.FileLogger"
+              prefix="apache_log." suffix=".txt"
+              timestamp="true"/>
+
+      <!-- Define the default virtual host. Hostname must match the engine's. -->
+      <Host name="hera.unibe.ch" debug="0" appBase="/docuserver/tmp/digilib-test/docuserver">
+
+        <Context path="/docuserver/digitallibrary" docBase="/docuserver/tmp/digilib-test/docuserver/digitallibrary" debug="0" reloadable="false">
+	</Context>
+
+<!--
+        <Context path="/manager" docBase="/opt/tomcat/webapps/manager" debug="0" reloadable="false">
+	</Context>
+-->
+
+      </Host>
+
+      <!-- Because this Realm is here, an instance will be shared globally -->
+      <Realm className="org.apache.catalina.realm.MemoryRealm" />
+
+    </Engine>
+
+  </Service>
+
+</Server>
