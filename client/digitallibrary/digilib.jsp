@@ -25,9 +25,7 @@ public void jspInit() {
 // parsing the query
 // -----------------
 
-//digilib.servlet.DigilibRequest dlRequest = new digilib.servlet.DigilibRequest(request);
-digilib.servlet.DigilibRequest dlRequest = new digilib.servlet.DigilibRequest();
-dlRequest.setWithRequest(request);
+digilib.servlet.DigilibRequest dlRequest = new digilib.servlet.DigilibRequest(request);
 // check if authentication is needed and redirect if necessary
 docBean.doAuthentication(dlRequest, response);
 
@@ -48,35 +46,35 @@ docBean.doAuthentication(dlRequest, response);
       // we might want to talk about it for a future
       // release
 
-if (dlRequest.getLv() == 3) {
+if (dlRequest.getAsInt("lv") == 3) {
   String userAgent = request.getHeader("User-Agent").toLowerCase();
   
   if (userAgent.indexOf("mozilla/5.0") == 0) {
 
     // mozilla 5 that does not support xul-sidebars
-    if (userAgent.indexOf("opera")     > -1) dlRequest.setLv(2);
-    if (userAgent.indexOf("chimera")   > -1) dlRequest.setLv(2);
-    if (userAgent.indexOf("camino")    > -1) dlRequest.setLv(2);
-    if (userAgent.indexOf("konqueror") > -1) dlRequest.setLv(2);
-    if (userAgent.indexOf("safari")    > -1) dlRequest.setLv(2);
-    if (userAgent.indexOf("galeon")    > -1) dlRequest.setLv(2);
-    if (userAgent.indexOf("skipstone") > -1) dlRequest.setLv(2);
-    if (userAgent.indexOf("k-meleon")  > -1) dlRequest.setLv(2);
-    if (userAgent.indexOf("firebird")  > -1) dlRequest.setLv(2);
+    if (userAgent.indexOf("opera")     > -1) dlRequest.setValue("lv", 2);
+    if (userAgent.indexOf("chimera")   > -1) dlRequest.setValue("lv", 2);
+    if (userAgent.indexOf("camino")    > -1) dlRequest.setValue("lv", 2);
+    if (userAgent.indexOf("konqueror") > -1) dlRequest.setValue("lv", 2);
+    if (userAgent.indexOf("safari")    > -1) dlRequest.setValue("lv", 2);
+    if (userAgent.indexOf("galeon")    > -1) dlRequest.setValue("lv", 2);
+    if (userAgent.indexOf("skipstone") > -1) dlRequest.setValue("lv", 2);
+    if (userAgent.indexOf("k-meleon")  > -1) dlRequest.setValue("lv", 2);
+    if (userAgent.indexOf("firebird")  > -1) dlRequest.setValue("lv", 2);
 
     // the chance is quite big, that the browser supports xul-sidebars
-    dlRequest.setLv(1);
+    dlRequest.setValue("lv", 1);
   
   } else {
 
     // redirect to level 2 because of definitive lack of sidebar support
-    dlRequest.setLv(2);
+    dlRequest.setValue("lv", 2);
   }
 }
 
 
 
-switch (dlRequest.getLv()) {
+switch (dlRequest.getAsInt("lv")) {
 
   // LEVEL 0 --------------------------------------------------------------
 
@@ -96,7 +94,7 @@ switch (dlRequest.getLv()) {
 
 <%
     // checking if the height and width of this client is already known
-    if ((dlRequest.getDw() == 0) || (dlRequest.getDh() == 0)) {
+    if ((dlRequest.getAsInt("dw") == 0) || (dlRequest.getAsInt("dh") == 0)) {
 %>
 
 <html>
@@ -140,9 +138,9 @@ function redirect() {
     } else {
 
       // add number of pages
-      dlRequest.setPt(docBean.getNumPages(dlRequest));
+      dlRequest.setValue("pt", docBean.getNumPages(dlRequest));
 
-      String imageLocation = dlRequest.getBaseURL() + "/servlet/Scaler/?" + dlRequest.getAsString();
+      String imageLocation = dlRequest.getAsString("base.url") + "/servlet/Scaler/?" + dlRequest.getAsString();
 %>
 
 <html>
@@ -158,28 +156,28 @@ function redirect() {
 
 <script type="text/javascript">
 
-var baseUrl = "<%= dlRequest.getBaseURL() %>";
+var baseUrl = "<%= dlRequest.getAsString("base.url") %>";
 
 newParameter('fn', '<%= dlRequest.getFilePath() %>', '', 1);  
-newParameter('pn', '<%= dlRequest.getPn() %>', '1', 1);
-newParameter('ws', '<%= dlRequest.getWs() %>', '1.0', 1);
-newParameter('mo', '<%= dlRequest.getMo() %>', '', 1);
-newParameter('mk', '<%= dlRequest.getMk() %>', '', 3);
-newParameter('wx', '<%= dlRequest.getWx() %>', '0.0', 2);
-newParameter('wy', '<%= dlRequest.getWy() %>', '0.0', 2);
-newParameter('ww', '<%= dlRequest.getWw() %>', '1.0', 2);
-newParameter('wh', '<%= dlRequest.getWh() %>', '1.0', 2);
+newParameter('pn', '<%= dlRequest.getAsString("pn") %>', '1', 1);
+newParameter('ws', '<%= dlRequest.getAsString("ws") %>', '1.0', 1);
+newParameter('mo', '<%= dlRequest.getAsString("mo") %>', '', 1);
+newParameter('mk', '<%= dlRequest.getAsString("mk") %>', '', 3);
+newParameter('wx', '<%= dlRequest.getAsString("wx") %>', '0.0', 2);
+newParameter('wy', '<%= dlRequest.getAsString("wy") %>', '0.0', 2);
+newParameter('ww', '<%= dlRequest.getAsString("ww") %>', '1.0', 2);
+newParameter('wh', '<%= dlRequest.getAsString("wh") %>', '1.0', 2);
 
-newParameter('pt', '<%= dlRequest.getPt() %>', '<%= dlRequest.getPt() %>', 9);
+newParameter('pt', '<%= dlRequest.getAsString("pt") %>', '<%= dlRequest.getAsString("pt") %>', 9);
 
-newParameter('brgt', '<%= dlRequest.getBrgt() %>', '0.0', 1);
-newParameter('cont', '<%= dlRequest.getCont() %>', '0.0', 1);
-newParameter('rot', '<%= dlRequest.getRot() %>', '0.0', 1);
-newParameter('rgba', '<%= dlRequest.getRgba_s() %>', '', 1);
-newParameter('rgbm', '<%= dlRequest.getRgbm_s() %>', '', 1);
+newParameter('brgt', '<%= dlRequest.getAsString("brgt") %>', '0.0', 1);
+newParameter('cont', '<%= dlRequest.getAsString("cont") %>', '0.0', 1);
+newParameter('rot', '<%= dlRequest.getAsString("rot") %>', '0.0', 1);
+newParameter('rgba', '<%= dlRequest.getAsString("rgba") %>', '', 1);
+newParameter('rgbm', '<%= dlRequest.getAsString("rgbm") %>', '', 1);
 
-newParameter('ddpix', '<%= dlRequest.getDdpix() %>', '', 9);
-newParameter('ddpiy', '<%= dlRequest.getDdpiy() %>', '', 9);
+newParameter('ddpix', '<%= dlRequest.getAsString("ddpix") %>', '', 9);
+newParameter('ddpiy', '<%= dlRequest.getAsString("ddpiy") %>', '', 9);
 
 </script>
 
@@ -222,7 +220,7 @@ newParameter('ddpiy', '<%= dlRequest.getDdpiy() %>', '', 9);
 
 <%
     // retrieve request in new paramter format and redirect to level 1
-    dlRequest.setLv(1);
+    dlRequest.setValue("lv", 1);
     String query = "digilib.jsp?" + dlRequest.getAsString();
 %>
 
