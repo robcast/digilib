@@ -1,0 +1,186 @@
+DIGILIB-CLIENT
+==============
+
+
+Table of contents
+-----------------
+
+1 Introduction
+
+2 Files
+
+2.1 digilib.jsp
+2.2 dlImage.jsp
+2.3 navigation_XX.js
+2.4 dlMenu.html
+
+2.5 Modules
+2.5.1 pdfMaker.js
+2.5.2 pagesTotal.js
+
+3 Future
+
+4 Information
+
+4.1 Supported browsers and platforms
+
+1 Introduction
+--------------
+
+Digilib is a client-server-software that transforms high-resolution images to formats that are acceptable for internet network connetions. the client software is based on HTML and JavaScript so that everybody can use it with a normal browser. To see in full detail which browsers and platforms are supported check chapter 4.1. This software provides lots of features like zooming areas of pictures, setting marks to the pictures, jumping to different pictures while always being able to generate URLs so that people can distibute these and everybody can see the same picture with ist marks.
+It has been put lots of attention providing files that are as intependant of each other as possible so that embedding it in other kind of pages will be as simple as it can be. Stuff like providing modules or a different menubar are just some of the stuff you can easily do without having to change the files provided.
+
+Some of the the client-files contain JSP code, to do some serverside configuration. Because of the fact that the serverside software has to use a java module for the web-server there is no need to install more stuff than what is needed by the server-scripts.
+
+This software is still work in progress and it is quite probable that lots of stuff will change in the future, so check this file with every new version of software you downloaded.
+
+
+2 Files
+-------
+
+There are quite some files the client software needs to run all the interactive user-interface. To give you a detailed view of the files there is a subsection provided in this document explaining what each file does and how it interacts with the others.
+
+2.1 digilib.jsp
+---------------
+
+This is the file you will request from the server and which will call the other files. The main purposes of this file are:
+	- User authentication when wanting to access restriced documents. Check out the
+	  serverside documentation for detailed explanation of how to set it up.
+	- Converting the query-string to the servlet style parameters (because of some 
+	  historical reasons the two parameter-sets are not equal and a project at the 
+	  Univerity of Berne based on digilib requires the first kind of parameters. So
+	  for the moment we have to live with it...)
+	- Building the frameset for the different frames like the one actually holding
+	  the image, one for navigation, etc. . It's up to the developer of a certain
+	  application to change it to its needs.
+
+The crutial point in this file is the way the query on the URL (get-method) is made. After 'digilib.jsp?' there is a comma-separated list of parameters. It is to say that principally all of them are optional, but the first of them describing the url of the image-directory should really be set. Here is the list of the diffenent attributes in digilib.jsp?[att0]+[att1]+[att2]+[att3]+[att4]+ ... +[att8]
+
+	[att0]   Directory where the image can be found (check the documentation for
+	         serverside).
+	[att1]   The page number (equals the index of the image in the sorted directory).
+	[att2]   The dimension relative to the visible height/width in the frame (1.0 means 
+	         that the image fits exactly into the frame, while 2.0 means twice that size).
+	[att3]   Attribute to pass extra options to the servlet (for example 'fit' means that 
+	         normally not resized gif-images will be scaled).
+	[att4]   Here are the marks passed separated by ';', while the coordinates are 
+	         separated with '/'. The cooridnates are in a relative format (0.0 - 1.0). 
+	         Example ... +0.33/0.5;0.25/0.25+ ... means that there are two marks one a
+ 	         third from the left and half down the image and the second a quarter from left
+	         and top of the image.
+	[att5]   Relative (0.0 - 1.0) value giving the most left pixels visible in the zoomed 
+	         image.
+	[att6]   Dito with the topmost pixels.
+	[att7]   Gives the visible width of the image (also 0.0 - 1.0).
+	[att8]   Same with the height.
+
+It is important to understand that all cooridnates that are used by digilib are passed as relative values where the width/height of an image is 1. This way it is possible that the images are displayed the same way on all kind of different screen-sizes and so making opening the possibility of sharing a url between people that will see the same on their screens.
+
+2.2 dlImage.jsp
+---------------
+
+The parameterlist in 'dlImage.jsp' is quite the same as in 'digilib.jsp' but is represented in another format. As in chapter 2.1 we are discussing here the parameterlist. The parameters are no longer separated with the plus-sign put with an ampersand '&', which is the official way of passing different parameters through the URL. The parameters have all a name followed by a value, like ' .../dlImage.jsp?fn=histbot/botany&pn=3& ... '. I will give you now a list of parameters dlImage.jsp understands by default by indication the name and its equivalent in digilib.jsp and if needed some special comments. It is possible and the somehow the aim of dlImage to pass more parameters to this file for additional functionality. Check out section 2.5.1 where is a good example of how to modify dlImage.jsp for adding new functionality.
+
+	fn		= att0
+	pn		= att1
+	ws		= att2
+	mo		= att3
+	mk		= att4
+	wx		= att5
+	wy		= att6
+	ww		= att7
+	wh		= att8
+
+	dx		= Width of the frame containing the to be displayed image in pixels.
+	dh		= Dito with the height.
+	
+DlImage.jsp can react in two completely different ways on a request. When requesting the file it checks whether the width and height of the frame are passed as parameters in the URL. This is not the case on every first view of a session. If the dimensions are not set, then dlImage sends a dummy page to the client, calculates the width and height of the frame (which is only possible with a correct html-file) and resends the request to dlImage.jsp this time with the indicated dimensions.
+
+The other way dlImage.jsp reacts is its noraml reaction. This means that it parses the parameterslist and fills in some default values if they are missing (check out the source-code to see them). Then the file is going to include some script files that do offer the functionality. Part of these JavaScript-files are browser dependant, some are not. The most important files are named with navigation_XX.js where XX is a shortcut for the browser. The other files (the ones not browser-dependant) are some sample modules that are discussed in section 2.5.
+Then it is time to build the actual HTML for the frame. There is one layer holding the picture (the way the parameters should be passed is described in the serverside dokumentaion). The layers named 'dotX' are the layers holding the marks, the ones named 'eckX' are the corners when zooming a rectangle.
+Last but not least the parameters are passed to the navigation-script or the the module using them (<body bgcolor="#666666" onload='init_XXXXX("<%= fn ... ")'>).
+
+2.3 navigation_XX.js
+--------------------
+
+Let's look at the crucail points about navigation_XX.js-files. Most important is that the parameters passed to the init-function are stored in an array globally accesible (the code in init shows this). The name of the array is 'att'. There is also a function called 'loadPicture' that puts together a new URL (dlImage.jsp?...) for loading a new picture or another part of the same. Then we have lots of functions dealing with different parts of the digilib functionality:
+
+	backPage     Loading the previous picture in the directory
+	nextPage     Loading the next picture in the directory
+	page         Loading a picture in the same directory by index
+	digicat      Loading a new window containing thumbnails of images in the directoy
+	             (some closely related project called 'digiCat')
+	ref          Generating HTML- or LaTeX-style links for the special part of picture
+	             including marks to build into other documents. The URL is made with 
+	             digilib.jsp?...+... .
+	mark         Sets a mark to the current picture
+	zoomArea     Zooms an area of the current picture
+	zoomPoint    Zooms in around the selected point on the picture
+	moveTo       Moves the center of a image area to this point while maintaining the same
+	             zooming grade (sometimes this is known as 'pan')
+	scale        Scales an image relative to the dimensions of the image-frame (normally
+	             the image fits right into it)
+
+The other functions are helpers that are should not be directly accessed from outside the frame.
+
+2.4 dlMenu.html
+---------------
+
+This file generates the navigation-frame with buttons and menus. From this point the calls are made to navigation_XX.js. Please consider this frame as a sample the we at the University of Berne are currently using. If you are good in graphics design feel free to create your own buttons.
+The files related to dlMenu.html are in a subdirectory called 'buttons' where the gif-images are stored and also the menu.js-scripts handling the menus.
+
+2.5 Modules
+-----------
+
+The modules form a very important part of the whole project. This software aims to be easy to upgrade with new functionality. Because of the fact that JavaScript is not a full featured programming language modularisation  in so that intuitive and simple. Still we have found a way of providing enough freedom to build new modules and adding features to digilib. The example of two sample modules (that are nevertheless useful), we would like to show how we think one should implement another module to add new functionality.
+
+2.5.1 pdfMaker.js
+
+In the subdirectory 'modules' is a very simple module called pdfMaker.js. This very basic module only has one function (makePDF) that does nothing more than giving a prompt where one can enter a number of image-indices and call a serverside script that creates a PDF-file with the different picures. To make this module work it has first to be loaded by dlImage.jsp. Because it is browser-independant there is only one version of it. Aften being loaded it has access to the whole 'att'-array which is quite stupidely shown in makePDF by giving the index of the currently displayed image as default value.
+One other thing that has to be done is to enter a new button to navigation.html so that the new function can be called... quite logic i know.
+
+2.5.2 pagesTotal.js
+
+'pagesTotal.js' is a lot more complicated than the first module and shows some more things to think of when making a module. It aims to show the current pagenumber (index) and the total number of images in the directory in a separated frame. The first thing that has to be done is implementing a new frame in diglib.jsp to provide space to write down the information.
+As we know the current index is stored in the parameter 'pn' in dlImage.jsp and easily accessible in the scripts with 'att[1]', where as the total number of pages is only known by the server. To get this information one has to make a call to a server function. This is done in digilib.jsp (query += "&pt=" + DB.getNumPages(request);) the resulting number that should not cheange during a session is stored in a new parameter 'pt' that is sent in the parameter-list to dlImage.jsp.
+In dlImage we have to load the module (configure 2.5.1). Next thing is to make the 'pt' accessible through all the scripts (adding a new cell to the 'att'-array) by creating an init'function in the module. While the original function is called 'init' the one in pagesTotal is called 'init_pagesTotal' and acception the additional parameter 'pt'. In 'init_pagesTotal' there is a call to the original 'init' with all parameters but 'pt' and so filling the first nine cells of the att-array. Then it's time to add a new cell with 'pt' as its value. Further on there is a call to function 'pagesTotal' that writes the data into the new frame.
+As you can see there are some functions overriding the original ones. 'nextPage', 'page' and 'loadPicture' are rewritten in the module to make use of the new functionality. In the first two functions we can make now some additional checks that we cannot run past the last image. 'loadPicture' has to be improved so that 'pt' will be in the URL sent when loading a new picture or area.
+
+
+3 Future
+--------
+
+There are some future plans concerning the cilent software. While there is no actual list of things that have to be done, but some vague ideas of improvements:
+
+	- Cleaning up the different stiles of holding the parameters.
+	- Makeing some handy generic functions like mouseclicks or mousemoves so that they can 
+	  be used in modules.
+	- Makeing the implementation of modules clearer, easier and safer than it is now. In
+	  JavaScript there are some (rudimentary?) object-oriented ideas that might help
+	  improving it - but I didn't got it until now.
+	- Make it work on more platforms/browsers. Lots of trial and error has to be done to
+	  make it work with 'Opera'.
+	- You can always make the code clearer, smaller, better, faster, ... :-)
+
+
+4 Information
+-------------
+
+4.1 Supported browsers and platforms
+------------------------------------
+
+Here is a very incomplete list of browsers and platforms known to work with digilib. We provide three different navigation-scripts to work with different implementations of JavaScript in different browsers. These are Netscape 4, Internet Explorer (working on versions 4 - 6) and the Mozilla5-engine. Due to some bugs in the browsers and special behaviours of different platforms we cannot garantee that digilib works on every platform supported by for example the Mozilla5-engine. Anyone having success on a different platform than the ones indicated below, please send a note.
+
+- Netscape 4.7x (Windows, MacOS 9.0/9.1, MacOS X, Linux, Solaris)
+- Mozilla 0.9.x (Windows, Linux, MacOS X)
+- Internet Explorer 4.01+ (Windows)
+- Internet Explorer 5 (MacOS 9.0/9.1, MacOS X)
+
+It is known and already mentioned that 'Opera' is currently not supported by digilib, but still this is some task that is planned for the future.
+
+
+-------------------------------------------------------------------------------------------
+University of Berne - Switzerland
+History and Philosophy of Science
+
+18.02.2002    Christian Luginbuehl (luginbuehl@student.unibe.ch)						
