@@ -117,7 +117,7 @@ public class DocuDirectory extends Directory {
 	 * @return
 	 */
 	public ImageFileset get(int index) {
-		if ((list == null) || (list[0] != null) || (index >= list[0].size())) {
+		if ((list == null) || (list[0] == null) || (index >= list[0].size())) {
 			return null;
 		}
 		return (ImageFileset) list[0].get(index);

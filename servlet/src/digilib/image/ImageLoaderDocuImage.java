@@ -37,6 +37,7 @@ import java.util.Iterator;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
+import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 
 import digilib.io.FileOpException;
@@ -125,11 +126,11 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		}
 		//System.gc();
 		RandomAccessFile rf = new RandomAccessFile(f.getFile(), "r");
-		ImageInputStream istream = ImageIO.createImageInputStream(rf);
-		//Iterator readers = ImageIO.getImageReaders(istream);
+		ImageInputStream istream = new FileImageInputStream(rf);
+		Iterator readers = ImageIO.getImageReaders(istream);
 		//String ext = f.getName().substring(f.getName().lastIndexOf('.')+1);
 		//Iterator readers = ImageIO.getImageReadersBySuffix(ext);
-		Iterator readers = ImageIO.getImageReadersByMIMEType(f.getMimetype());
+		//Iterator readers = ImageIO.getImageReadersByMIMEType(f.getMimetype());
 		reader = (ImageReader) readers.next();
 		/* are there more readers? */
 		logger.debug("ImageIO: this reader: " + reader.getClass());
@@ -156,7 +157,9 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			// set up reader parameters
 			ImageReadParam readParam = reader.getDefaultReadParam();
 			readParam.setSourceRegion(region);
-			readParam.setSourceSubsampling(prescale, prescale, 0, 0);
+			if (prescale > 1) {
+				readParam.setSourceSubsampling(prescale, prescale, 0, 0);
+			}
 			// read image
 			logger.debug("loading..");
 			img = reader.read(0, readParam);
@@ -228,14 +231,16 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 				renderHint);
 		BufferedImage scaledImg = null;
 		// enforce destination image type (*Java2D BUG*)
-		if (quality > 0) {
+		int type = img.getType();
+		// FIXME: which type would be best?
+		if ((quality > 0)&&(type != 0)) {
 			logger.debug("creating destination image");
 			Rectangle2D dstBounds = scaleOp.getBounds2D(img);
 			scaledImg =
 				new BufferedImage(
 					(int) dstBounds.getWidth(),
 					(int) dstBounds.getHeight(),
-					img.getType());
+					type);
 		}
 		logger.debug("scaling...");
 		scaledImg = scaleOp.filter(img, scaledImg);
@@ -259,6 +264,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		logger.debug("blur: " + radius);
 		// minimum radius is 2
 		int klen = Math.max(radius, 2);
+		// FIXME: use constant kernels for most common sizes
 		int ksize = klen * klen;
 		// kernel is constant 1/k
 		float f = 1f / ksize;

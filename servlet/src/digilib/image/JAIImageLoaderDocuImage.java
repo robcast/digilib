@@ -31,11 +31,12 @@ import java.util.Iterator;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
+import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.JAI;
 
-import digilib.io.ImageFile;
 import digilib.io.FileOpException;
+import digilib.io.ImageFile;
 
 /** DocuImage implementation using the Java Advanced Imaging API and the ImageLoader
  * API of Java 1.4.
@@ -95,9 +96,9 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 		logger.debug("preloadImage: "+f.getFile());
 		//System.gc();
 		RandomAccessFile rf = new RandomAccessFile(f.getFile(), "r");
-		ImageInputStream istream = ImageIO.createImageInputStream(rf);
-		//Iterator readers = ImageIO.getImageReaders(istream);
-		Iterator readers = ImageIO.getImageReadersByMIMEType(f.getMimetype());
+		ImageInputStream istream = new FileImageInputStream(rf);
+		Iterator readers = ImageIO.getImageReaders(istream);
+		//Iterator readers = ImageIO.getImageReadersByMIMEType(f.getMimetype());
 		reader = (ImageReader) readers.next();
 		if (reader == null) {
 			throw new FileOpException("Unable to load File!");
