@@ -1,31 +1,35 @@
 /* Parameter -- General digilib parameter class.
 
-  Digital Image Library servlet components
+ Digital Image Library servlet components
 
-  Copyright (C) 2003 Robert Casties (robcast@mail.berlios.de)
+ Copyright (C) 2003 Robert Casties (robcast@mail.berlios.de)
 
-  This program is free software; you can redistribute  it and/or modify it
-  under  the terms of  the GNU General  Public License as published by the
-  Free Software Foundation;  either version 2 of the  License, or (at your
-  option) any later version.
-   
-  Please read license.txt for the full details. A copy of the GPL
-  may be found at http://www.gnu.org/copyleft/lgpl.html
+ This program is free software; you can redistribute  it and/or modify it
+ under  the terms of  the GNU General  Public License as published by the
+ Free Software Foundation;  either version 2 of the  License, or (at your
+ option) any later version.
+ 
+ Please read license.txt for the full details. A copy of the GPL
+ may be found at http://www.gnu.org/copyleft/lgpl.html
 
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-  
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ 
  *
  * Created on 02.09.2003 by casties
  * 
  */
 package digilib.servlet;
 
-/** General digilib parameter class.
+import java.io.File;
+import java.io.IOException;
+
+/**
+ * General digilib parameter class.
  * 
  * @author casties
- *
+ *  
  */
 public class Parameter {
 	/** real value */
@@ -40,14 +44,16 @@ public class Parameter {
 	/** parameter type */
 	protected int type = 0;
 
-	/** Default constructor.
-	 * 
+	/**
+	 * Default constructor.
+	 *  
 	 */
 	public Parameter() {
 		super();
 	}
 
-	/** Constructor with name, default, and value.
+	/**
+	 * Constructor with name, default, and value.
 	 * 
 	 * @param value
 	 * @param defval
@@ -58,7 +64,9 @@ public class Parameter {
 		this.defval = defval;
 	}
 
-	/** Constructor with name, default, value, and type.
+	/**
+	 * Constructor with name, default, value, and type.
+	 * 
 	 * @param value
 	 * @param defval
 	 */
@@ -69,7 +77,8 @@ public class Parameter {
 		this.type = type;
 	}
 
-	/** Is the value valid.
+	/**
+	 * Is the value valid.
 	 * 
 	 * @return
 	 */
@@ -77,11 +86,12 @@ public class Parameter {
 		return (value != null);
 	}
 
-	/** Try to set the value from a String.
+	/**
+	 * Try to set the value from a String.
 	 * 
-	 * Tries to convert the String to the same type as the default value.
-	 * Sets the value anyway if the default is null.
-	 * Returns if the value could be set. 
+	 * Tries to convert the String to the same type as the default value. Sets
+	 * the value anyway if the default is null. Returns if the value could be
+	 * set.
 	 * 
 	 * @param val
 	 * @return
@@ -96,6 +106,11 @@ public class Parameter {
 		// take String as is
 		if (c == String.class) {
 			this.value = val;
+			return true;
+		}
+		// set File
+		if (c == File.class) {
+			this.value = new File(val);
 			return true;
 		}
 		// set Boolean if string == "true"
@@ -116,26 +131,30 @@ public class Parameter {
 			}
 		} catch (NumberFormatException e) {
 		}
-		// then it's unknown		
+		// then it's unknown
 		return false;
 	}
 
-	/** Get the default as Object.
-	 *  
+	/**
+	 * Get the default as Object.
+	 * 
 	 * @return
 	 */
 	public Object getDefault() {
 		return defval;
 	}
 
-	/** Set the default.
+	/**
+	 * Set the default.
+	 * 
 	 * @param defval
 	 */
 	public void setDefault(Object defval) {
 		this.defval = defval;
 	}
 
-	/** Get the value as Object.
+	/**
+	 * Get the value as Object.
 	 * 
 	 * Returns the default if the value is not set.
 	 * 
@@ -157,7 +176,17 @@ public class Parameter {
 
 	public String getAsString() {
 		Object s = getValue();
-		return (s != null) ? s.toString() : "";
+		if (s == null) {
+			return "";
+		}
+		if (s.getClass() == File.class) {
+			try {
+				return ((File) s).getCanonicalPath();
+			} catch (IOException e) {
+				return "ERR: " + s.toString();
+			}
+		}
+		return s.toString();
 	}
 
 	public boolean getAsBoolean() {
@@ -184,11 +213,12 @@ public class Parameter {
 			}
 		} catch (Exception e) {
 		}
-		
+
 		return fa;
 	}
 
-	/** Set the value.
+	/**
+	 * Set the value.
 	 * 
 	 * @param value
 	 */
@@ -196,22 +226,24 @@ public class Parameter {
 		this.value = value;
 	}
 
-	/** Set the value.
+	/**
+	 * Set the value.
 	 * 
 	 * @param value
 	 */
 	public void setValue(int value) {
 		this.value = new Integer(value);
 	}
-	
-	/** Set the value.
+
+	/**
+	 * Set the value.
 	 * 
 	 * @param value
 	 */
 	public void setValue(float value) {
 		this.value = new Float(value);
 	}
-	
+
 	/**
 	 * @return
 	 */

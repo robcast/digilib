@@ -32,7 +32,8 @@ import java.util.HashMap;
  */
 public class ParameterMap extends HashMap {
 
-	
+	private static final long serialVersionUID = 1530820988748391313L;
+
 	/** Default constructor.
 	 * 
 	 */
