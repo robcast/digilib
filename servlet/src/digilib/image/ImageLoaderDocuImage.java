@@ -20,6 +20,7 @@
 
 package digilib.image;
 
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
@@ -35,22 +36,21 @@ import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
+import digilib.io.DocuFile;
 import digilib.io.FileOpException;
+import digilib.io.FileOps;
 
 /** Implementation of DocuImage using the ImageLoader API of Java 1.4 and Java2D. */
 public class ImageLoaderDocuImage extends DocuImageImpl {
 
-	private BufferedImage img;
-
-	private int interpol;
-
-	// ImageIO image reader
-	ImageReader reader;
-
-	/* preload is supported. */
-	public boolean isPreloadSupported() {
-		return true;
-	}
+	/** image object */
+	protected BufferedImage img;
+	/** interpolation type */
+	protected int interpol;
+	/** ImageIO image reader */
+	protected ImageReader reader;
+	/** File that was read */
+	protected File imgFile;
 
 	/* loadSubimage is supported. */
 	public boolean isSubimageSupported() {
@@ -68,7 +68,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			interpol = AffineTransformOp.TYPE_NEAREST_NEIGHBOR;
 		}
 	}
-	
+
 	public int getHeight() {
 		int h = 0;
 		try {
@@ -97,9 +97,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		return w;
 	}
 
-	/**
-	 *  load image file
-	 */
+	/* load image file */
 	public void loadImage(File f) throws FileOpException {
 		util.dprintln(10, "loadImage!");
 		System.gc();
@@ -114,7 +112,9 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		}
 	}
 
-	/* Get an ImageReader for the image file. */
+	/** Get an ImageReader for the image file.
+	 * 
+	 */
 	public void preloadImage(File f) throws FileOpException {
 		System.gc();
 		try {
@@ -130,6 +130,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			util.dprintln(3, "ERROR(loadImage): unable to load file");
 			throw new FileOpException("Unable to load File!");
 		}
+		imgFile = f;
 	}
 
 	/* Load an image file into the Object. */
@@ -137,7 +138,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		throws FileOpException {
 		System.gc();
 		try {
-			if (reader == null) {
+			if ((reader == null) || (imgFile != f)) {
 				preloadImage(f);
 			}
 			// set up reader parameters
@@ -156,9 +157,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		}
 	}
 
-	/**
-	 *  write image of type mt to Stream
-	 */
+	/* write image of type mt to Stream */
 	public void writeImage(String mt, OutputStream ostream)
 		throws FileOpException {
 		util.dprintln(10, "writeImage!");
@@ -220,102 +219,139 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		img = croppedImg;
 	}
 
-	public void enhance(double mult, double add) throws ImageOpException {
-		/* The number of constants must match the number of bands in the image.
-		 * We only handle 1 (greyscale) or 3 (RGB) bands.
+	public void enhance(float mult, float add) throws ImageOpException {
+		/* Only one constant should work regardless of the number of bands 
+		 * according to the JDK spec.
+		 * Doesn't work on JDK 1.4 for OSX and Linux (at least).
 		 */
-		float[] dm;
-		float[] da;
-		int ncol = img.getColorModel().getNumColorComponents(); 
-		if (ncol == 3) {
-			float[] f1 = {(float)mult, (float)mult, (float)mult};
-			dm = f1;
-			float[] f2 = {(float)add, (float)add, (float)add};
-			da = f2;
-		} else if (ncol == 1) {
-			float[] f1 = {(float)mult};
-			dm = f1;
-			float[] f2 = {(float)add};
-			da = f2;
-		} else {
-			util.dprintln(2, "ERROR(enhance): unknown number of color bands ("+ncol+")");
+		/*		RescaleOp scaleOp =
+					new RescaleOp(
+						(float)mult, (float)add,
+						null);
+				scaleOp.filter(img, img);
+		*/
+		/* The number of constants must match the number of bands in the image.
+		 */
+		int ncol = img.getColorModel().getNumColorComponents();
+		float[] dm = new float[ncol];
+		float[] da = new float[ncol];
+		for (int i = 0; i < ncol; i++) {
+			dm[i] = (float) mult;
+			da[i] = (float) add;
+		}
+		RescaleOp scaleOp = new RescaleOp(dm, da, null);
+		scaleOp.filter(img, img);
+
+	}
+
+	public void enhanceRGB(float[] rgbm, float[] rgba)
+		throws ImageOpException {
+		/* The number of constants must match the number of bands in the image.
+		 * We do only 3 (RGB) bands.
+		 */
+		int ncol = img.getColorModel().getNumColorComponents();
+		if ((ncol != 3) || (rgbm.length != 3) || (rgba.length != 3)) {
+			util.dprintln(
+				2,
+				"ERROR(enhance): unknown number of color bands or coefficients ("
+					+ ncol
+					+ ")");
 			return;
 		}
-		RescaleOp scaleOp =
-			new RescaleOp(
-				dm, da,
-				null);
+		RescaleOp scaleOp = new RescaleOp(rgbOrdered(rgbm), rgbOrdered(rgba), null);
 		scaleOp.filter(img, img);
-
-		/* Operation with only one constant should work regardless of the number of bands 
-		 * according to the JDK spec.
-		 * Doesn't work on JDK 1.4 for OSX PR10 (at least).
-		 */
-		/*
-		RescaleOp scaleOp =
-			new RescaleOp(
-				(float)mult, (float)add,
-				null);
-		scaleOp.filter(img, img);
-		*/
-	}
-	
-	public void rotate(double angle) throws ImageOpException {
-		// setup rotation
-		double rangle = Math.toRadians(angle);
-		double x = getWidth()/2;
-		double y = getHeight()/2;
-		AffineTransformOp rotOp =
-			new AffineTransformOp(
-				AffineTransform.getRotateInstance(rangle, x, y),
-				interpol);
-		BufferedImage rotImg = rotOp.filter(img, null);
-
-		if (rotImg == null) {
-			util.dprintln(2, "ERROR: error in rotate");
-			throw new ImageOpException("Unable to rotate");
-		}
-		img = rotImg;
 	}
 
-	public void mirror(double angle) throws ImageOpException {
-		// setup mirror
-		double mx = 1;
-		double my = 1;
-		double tx = 0;
-		double ty = 0;
-		if (Math.abs(angle - 0) < epsilon) {
-			// 0 degree
-			mx = -1;
-			tx = getWidth();
-		} else if (Math.abs(angle - 90) < epsilon) {
-			// 90 degree
-			my = -1;
-			ty = getHeight();
-		} else if (Math.abs(angle - 180) < epsilon) {
-			// 180 degree
-			mx = -1;
-			tx = getWidth();
-		} else if (Math.abs(angle - 270) < epsilon) {
-			// 270 degree
-			my = -1;
-			ty = getHeight();
-		} else if (Math.abs(angle - 360) < epsilon) {
-			// 360 degree
-			mx = -1;
-			tx = getWidth();
+	/** Ensures that the array f is in the right order to map the images RGB components. 
+	 */
+	public float[] rgbOrdered(float[] fa) {
+		float[] fb = new float[3];
+		int t = img.getType();
+		if ((t == BufferedImage.TYPE_3BYTE_BGR)
+			|| (t == BufferedImage.TYPE_4BYTE_ABGR)
+			|| (t == BufferedImage.TYPE_4BYTE_ABGR_PRE)) {
+			// BGR Type (actually it looks like RBG...)
+			fb[0] = fa[0];
+			fb[1] = fa[2];
+			fb[2] = fa[1];
+		} else {
+			fb = fa;
 		}
-		AffineTransformOp mirOp =
-			new AffineTransformOp(
-				new AffineTransform(mx, 0 , 0, my, tx, ty),
-				interpol);
-		BufferedImage mirImg = mirOp.filter(img, null);
-
-		if (mirImg == null) {
-			util.dprintln(2, "ERROR: error in mirror");
-			throw new ImageOpException("Unable to mirror");
-		}
-		img = mirImg;
+		return fb;
 	}
+
+public void rotate(double angle) throws ImageOpException {
+	// setup rotation
+	double rangle = Math.toRadians(angle);
+	double x = getWidth() / 2;
+	double y = getHeight() / 2;
+	AffineTransformOp rotOp =
+		new AffineTransformOp(
+			AffineTransform.getRotateInstance(rangle, x, y),
+			interpol);
+	BufferedImage rotImg = rotOp.filter(img, null);
+
+	if (rotImg == null) {
+		util.dprintln(2, "ERROR: error in rotate");
+		throw new ImageOpException("Unable to rotate");
+	}
+	img = rotImg;
+}
+
+public void mirror(double angle) throws ImageOpException {
+	// setup mirror
+	double mx = 1;
+	double my = 1;
+	double tx = 0;
+	double ty = 0;
+	if (Math.abs(angle - 0) < epsilon) {
+		// 0 degree
+		mx = -1;
+		tx = getWidth();
+	} else if (Math.abs(angle - 90) < epsilon) {
+		// 90 degree
+		my = -1;
+		ty = getHeight();
+	} else if (Math.abs(angle - 180) < epsilon) {
+		// 180 degree
+		mx = -1;
+		tx = getWidth();
+	} else if (Math.abs(angle - 270) < epsilon) {
+		// 270 degree
+		my = -1;
+		ty = getHeight();
+	} else if (Math.abs(angle - 360) < epsilon) {
+		// 360 degree
+		mx = -1;
+		tx = getWidth();
+	}
+	AffineTransformOp mirOp =
+		new AffineTransformOp(
+			new AffineTransform(mx, 0, 0, my, tx, ty),
+			interpol);
+	BufferedImage mirImg = mirOp.filter(img, null);
+
+	if (mirImg == null) {
+		util.dprintln(2, "ERROR: error in mirror");
+		throw new ImageOpException("Unable to mirror");
+	}
+	img = mirImg;
+}
+
+/* check image size and type and store in DocuFile f */
+public boolean checkFile(DocuFile f) throws IOException {
+	// see if f is already loaded
+	if ((reader == null) || (imgFile != f.getFile())) {
+		preloadImage(f.getFile());
+	}
+	Dimension d = new Dimension();
+	d.setSize(reader.getWidth(0), reader.getHeight(0));
+	f.setSize(d);
+//	String t = reader.getFormatName();
+	String t = FileOps.mimeForFile(f.getFile());
+	f.setMimetype(t);
+	f.setChecked(true);
+	return true;
+}
 
 }

@@ -78,7 +78,7 @@ public class FileOps {
     }
     // if fn is a directory name then open directory
     if (f.isDirectory()) {
-      File[] fl = f.listFiles(new ImgFileFilter());
+      File[] fl = f.listFiles(new ImageFileFilter());
       Arrays.sort(fl);
       if ((n > 0) && (n <= fl.length)) {
          return fl[n - 1];
@@ -102,7 +102,7 @@ public class FileOps {
     }
     // if fn is a directory name then return the number of files
     if (f.isDirectory()) {
-      return f.listFiles(new ImgFileFilter()).length;
+      return f.listFiles(new ImageFileFilter()).length;
     }
     // then fn must be something strange...
     return 0;
@@ -161,7 +161,7 @@ public class FileOps {
   /**
    *  FileFilter for image types (helper class for getFile)
    */
-  private class ImgFileFilter implements FileFilter {
+  static class ImageFileFilter implements FileFilter {
 
     public boolean accept(File f) {
       if (f.isFile()) {

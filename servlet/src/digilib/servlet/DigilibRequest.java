@@ -26,6 +26,7 @@
 
 package digilib.servlet;
 
+import java.io.File;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletRequest;
@@ -73,12 +74,16 @@ public class DigilibRequest {
 	private String pt_s;
 	private String baseURL; // base URL (from http:// to below /servlet)
 	private float rot; // rotation angle in degrees
-	private String rot_s; 
+	private String rot_s;
 	private float cont; // contrast enhancement factor
-	private String cont_s;	
+	private String cont_s;
 	private float brgt; // brightness enhancement factor
-	private String brgt_s;	
-	
+	private String brgt_s;
+	private float[] rgbm; // color multiplicative factors
+	private String rgbm_s;
+	private float[] rgba; // color additive factors
+	private String rgba_s;
+
 	private DocuImage image; // internal DocuImage instance for this request
 	private ServletRequest servletRequest; // internal ServletRequest
 
@@ -109,7 +114,7 @@ public class DigilibRequest {
 		String qs = ((HttpServletRequest) request).getQueryString();
 		if (request.getParameter("fn") != null) {
 			setWithParamRequest(request);
-		} else if ((qs != null)&&(qs.indexOf("&") > -1)) {
+		} else if ((qs != null) && (qs.indexOf("&") > -1)) {
 			setWithParamRequest(request);
 		} else {
 			setWithOldString(qs);
@@ -313,6 +318,12 @@ public class DigilibRequest {
 		if (brgt_s != null) {
 			s += "&brgt=" + brgt_s;
 		}
+		if (rgbm_s != null) {
+			s += "&rgbm=" + rgbm_s;
+		}
+		if (rgba_s != null) {
+			s += "&reda=" + rgba_s;
+		}
 		if (pt_s != null) {
 			s += "&pt=" + pt_s;
 		}
@@ -401,6 +412,14 @@ public class DigilibRequest {
 		if (s != null) {
 			setBrgt(s);
 		}
+		s = request.getParameter("rgbm");
+		if (s != null) {
+			setRgbm(s);
+		}
+		s = request.getParameter("rgba");
+		if (s != null) {
+			setRgba(s);
+		}
 		s = request.getParameter("pt");
 		if (s != null) {
 			setPt(s);
@@ -441,6 +460,10 @@ public class DigilibRequest {
 		cont_s = null;
 		brgt = 0;
 		brgt_s = null;
+		rgbm = null;
+		rgbm_s = null;
+		rgba = null;
+		rgba_s = null;
 		baseURL = null;
 		image = null;
 		servletRequest = null;
@@ -476,6 +499,9 @@ public class DigilibRequest {
 		cont_s = null;
 		brgt = 0;
 		brgt_s = null;
+		rgbm = null;
+		rgbm_s = null;
+		rgba = null;
 		baseURL = null;
 		image = null;
 		servletRequest = null;
@@ -498,14 +524,18 @@ public class DigilibRequest {
 	/** The image file path to be accessed.
 	 * 
 	 * The mage file path is assembled from the servlets RequestPath and
-	 * Parameter fn.
+	 * Parameter fn. The file path never starts with a directory separator.
 	 * 
-	 * @return String the effektive filepath.
+	 * @return String the effective filepath.
 	 */
 	public String getFilePath() {
 		String s = getRequestPath();
 		s += getFn();
-		return s;
+		if (s.startsWith(File.separator)) {
+			return s.substring(1);
+		} else {
+			return s;
+		}
 	}
 
 	/* Property getter and setter */
@@ -918,7 +948,7 @@ public class DigilibRequest {
 			//util.dprintln(4, "trytoGetParam(int) failed on param "+s);
 		}
 	}
-	
+
 	/**
 	 * Returns the brgt.
 	 * @return float
@@ -944,4 +974,63 @@ public class DigilibRequest {
 			//util.dprintln(4, "trytoGetParam(int) failed on param "+s);
 		}
 	}
+
+	/**
+	 * @return float[]
+	 */
+	public float[] getRgba() {
+		return rgba;
+	}
+
+	/**
+	 * @return float[]
+	 */
+	public float[] getRgbm() {
+		return rgbm;
+	}
+
+	/**
+	 * Sets the rgba.
+	 * @param rgba The rgba to set
+	 */
+	public void setRgba(float[] rgba) {
+		this.rgba = rgba;
+	}
+	public void setRgba(String s) {
+		try {
+			String[] sa = s.split("/");
+			float[] fa = new float[3];
+			for (int i = 0; i < 3; i++) {
+				float f = Float.parseFloat(sa[i]);
+				fa[i] = f;
+			}
+			this.rgba_s = s;
+			this.rgba = fa;
+		} catch (Exception e) {
+			//util.dprintln(4, "trytoGetParam(int) failed on param "+s);
+		}
+	}
+
+	/**
+	 * Sets the rgbm.
+	 * @param rgbm The rgbm to set
+	 */
+	public void setRgbm(float[] rgbm) {
+		this.rgbm = rgbm;
+	}
+	public void setRgbm(String s) {
+		try {
+			String[] sa = s.split("/");
+			float[] fa = new float[3];
+			for (int i = 0; i < 3; i++) {
+				float f = Float.parseFloat(sa[i]);
+				fa[i] = f;
+			}
+			this.rgbm_s = s;
+			this.rgbm = fa;
+		} catch (Exception e) {
+			//util.dprintln(4, "trytoGetParam(int) failed on param "+s);
+		}
+	}
+
 }

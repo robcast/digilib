@@ -318,7 +318,7 @@ public class JAIDocuImage extends DocuImageImpl {
 	}
 
 	/* contrast and brightness enhancement */
-	public void enhance(double mult, double add) throws ImageOpException {
+	public void enhance(float mult, float add) throws ImageOpException {
 		RenderedImage enhImg;
 		double[] ma = { mult };
 		double[] aa = { add };

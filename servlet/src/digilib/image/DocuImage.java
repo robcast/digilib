@@ -22,8 +22,10 @@ package digilib.image;
 
 import java.awt.Rectangle;
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 
+import digilib.io.DocuFile;
 import digilib.io.FileOpException;
 
 /** The basic class for the representation of a digilib image.
@@ -64,18 +66,16 @@ public interface DocuImage {
 	public void loadSubimage(File f, Rectangle region, int subsample)
 		throws FileOpException;
 
-	/** This DocuImage support the preloadImage operation for getWidth/getHeight.
+	/** Checks the size and type of the DocuFile f.
 	 * 
-	 * @return boolean
-	 */
-	public boolean isPreloadSupported();
-
-	/** Preload image file into a state to use getWidth/getHeight.
+	 * The image size and type of the DocuFile f is determined and stored in
+	 * the DocuFile object. Returns true if successfull.
 	 * 
-	 * @param f
-	 * @throws FileOpException
+	 * @param f DocuFile to be checked.
+	 * @return boolean true if check was successfull.
+	 * @throws FileOpException Exception thrown on error.
 	 */
-	public void preloadImage(File f) throws FileOpException;
+	public boolean checkFile(DocuFile f) throws IOException;
 
 	/** Writes the current image to a ServletResponse.
 	 *
@@ -102,6 +102,12 @@ public interface DocuImage {
 	 * @return Image height in pixels.
 	 */
 	public int getHeight();
+
+	/** The mime-type of the current image.
+	 * 
+	 * @return String the mime-type of this image.
+	 */
+	public String getMimetype();
 
 	/** Crops the current image.
 	 * 
@@ -175,7 +181,7 @@ public interface DocuImage {
 	 */
 	public void mirror(double angle) throws ImageOpException;
 
-	/** Enhaces brightness and contrast of the current image.
+	/** Enhances brightness and contrast of the current image.
 	 * 
 	 * Replaces the current image with a brightness and contrast enhanced image.
 	 * Contrast is enhanced by multiplying the pixel value with the constant
@@ -186,7 +192,22 @@ public interface DocuImage {
 	 * @param add additive constant for brightness enhancement
 	 * @throws ImageOpException
 	 */
-	public void enhance(double mult, double add) throws ImageOpException;
+	public void enhance(float mult, float add) throws ImageOpException;
+
+	/** Manipulates the colors of the current image.
+	 * 
+	 * Replaces the current image with a color modified image.
+	 * For the red, green and blue color channels all pixel values are multiplied
+	 * by the constant
+	 * <code>m</code> and added to the constant
+	 * <code>a</code>. Operation: p1 = (p0*m)+a.
+	 * 
+	 * @param rgbm multiplicative constants for red, green, blue
+	 * @param rgba additive constant for red, green, blue
+	 * @throws ImageOpException
+	 */
+	public void enhanceRGB(float[] rgbm, float[] rgba)
+		throws ImageOpException;
 
 	/**
 	 * Returns the interpolation quality.

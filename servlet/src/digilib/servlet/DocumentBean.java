@@ -38,6 +38,8 @@ public class DocumentBean {
 	private FileOps fileOp = new FileOps(util);
 	// use authorization database
 	private boolean useAuthentication = true;
+	// DocuDirCache
+	private DocuDirCache dirCache = null;
 
 	// DigilibConfiguration object
 	private DigilibConfiguration dlConfig;
@@ -77,6 +79,8 @@ public class DocumentBean {
 
 		// get util
 		util = dlConfig.getUtil();
+		// get cache
+		dirCache = dlConfig.getDirCache();
 
 		/*
 		 *  authentication
@@ -130,7 +134,7 @@ public class DocumentBean {
 		HttpServletResponse response)
 		throws Exception {
 		util.dprintln(10, "doAuthentication");
-		if (! useAuthentication) {
+		if (!useAuthentication) {
 			// shortcut if no authentication
 			return true;
 		}
@@ -168,10 +172,11 @@ public class DocumentBean {
 	 */
 	public int getNumPages(DigilibRequest request) throws Exception {
 		util.dprintln(10, "getNumPages");
-		return fileOp.getNumFilesVariant(
-			dlConfig.getBaseDirs(),
-			"/" + request.getFilePath(),
-			true);
+		DocuDirectory dd = dirCache.getDirectory(request.getFilePath());
+		if (dd != null) {
+			return dd.size();
+		}
+		return 0;
 	}
 
 	/**

@@ -20,13 +20,20 @@
 
 package digilib.servlet;
 
-import digilib.auth.*;
-import digilib.image.*;
-import digilib.io.XMLListLoader;
+import java.io.File;
+import java.util.Hashtable;
+import java.util.StringTokenizer;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+
 import digilib.Utils;
-import javax.servlet.*;
-import java.util.*;
-import java.io.*;
+import digilib.auth.AuthOps;
+import digilib.auth.XMLAuthOps;
+import digilib.image.DocuImage;
+import digilib.image.DocuImageImpl;
+import digilib.io.DocuDirCache;
+import digilib.io.XMLListLoader;
 
 /** Class to hold the digilib servlet configuration parameters.
  * The parameters can be read from the digilib-config file and be passed to
@@ -54,12 +61,9 @@ public class DigilibConfiguration {
 	// image file to send if access is denied
 	private String denyImgFileName = "/docuserver/images/icons/denied.gif";
 	private String denyImgParam = "denied-image";
-	// base directories in order of preference (prescaled versions first)
+	// base directories in order of preference (prescaled versions last)
 	private String[] baseDirs =
-		{
-			"/docuserver/scaled/small",
-			"/docuserver/images",
-			"/docuserver/scans/quellen" };
+		{ "/docuserver/images", "/docuserver/scaled/small" };
 	private String baseDirParam = "basedir-list";
 	// use authentication information
 	private boolean useAuthentication = true;
@@ -89,6 +93,8 @@ public class DigilibConfiguration {
 	// degree of subsampling on image load
 	private float subsampleDistance = 0;
 	private String subsampleDistanceParam = "subsample-distance";
+	// DocuDirCache instance
+	private DocuDirCache dirCache = null;
 
 	/** Constructor taking a ServletConfig.
 	 * Reads the config file location from an init parameter and loads the
@@ -125,7 +131,7 @@ public class DigilibConfiguration {
 		/* 
 		 * read parameters
 		 */
-		 
+
 		// debugLevel
 		debugLevel = tryToGetInitParam(debugLevelParam, debugLevel);
 		util.setDebugLevel(debugLevel);
@@ -142,10 +148,12 @@ public class DigilibConfiguration {
 		String baseDirList =
 			tryToGetInitParam(
 				baseDirParam,
-				"/docuserver/scaled/small:/docuserver/images:/docuserver/scans/quellen");
+				"/docuserver/images/:/docuserver/scaled/small/");
 		// split list into directories
 		String[] sa = splitPathArray(baseDirList);
 		baseDirs = (sa != null) ? sa : baseDirs;
+		// directory cache
+		dirCache = new DocuDirCache(baseDirs);
 		// useAuthentication
 		useAuthentication = tryToGetInitParam(useAuthParam, useAuthentication);
 		if (useAuthentication) {
@@ -156,7 +164,8 @@ public class DigilibConfiguration {
 			authOp = new XMLAuthOps(util, authConfPath);
 		}
 		// subsampleDistance
-		subsampleDistance = tryToGetInitParam(subsampleDistanceParam, subsampleDistance);
+		subsampleDistance =
+			tryToGetInitParam(subsampleDistanceParam, subsampleDistance);
 	}
 
 	/**
@@ -174,7 +183,13 @@ public class DigilibConfiguration {
 		// add directories into array
 		String[] pathArray = new String[n];
 		for (int i = 0; i < n; i++) {
-			pathArray[i] = dirs.nextToken();
+			String s = dirs.nextToken();
+			// make shure the dir name ends with a directory separator
+			if (s.endsWith(File.separator)) {
+				pathArray[i] = s;
+			} else {
+				pathArray[i] = s + File.separator;
+			}
 		}
 		return pathArray;
 	}
@@ -336,7 +351,7 @@ public class DigilibConfiguration {
 		String s = "";
 		java.util.Iterator i = java.util.Arrays.asList(baseDirs).iterator();
 		while (i.hasNext()) {
-			s += ( i.next() + "; ");
+			s += (i.next() + "; ");
 		}
 		return s;
 	}
@@ -347,6 +362,7 @@ public class DigilibConfiguration {
 	 */
 	public void setBaseDirs(String[] baseDirs) {
 		this.baseDirs = baseDirs;
+		dirCache = new DocuDirCache(baseDirs);
 	}
 
 	/**
@@ -474,6 +490,21 @@ public class DigilibConfiguration {
 	 */
 	public void setSubsampleDistance(float subsampleDistance) {
 		this.subsampleDistance = subsampleDistance;
+	}
+
+	/**
+	 * @return DocuDirCache
+	 */
+	public DocuDirCache getDirCache() {
+		return dirCache;
+	}
+
+	/**
+	 * Sets the dirCache.
+	 * @param dirCache The dirCache to set
+	 */
+	public void setDirCache(DocuDirCache dirCache) {
+		this.dirCache = dirCache;
 	}
 
 }

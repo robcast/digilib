@@ -20,11 +20,15 @@
 
 package digilib.image;
 
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.io.File;
+import java.io.IOException;
 
 import digilib.Utils;
+import digilib.io.DocuFile;
 import digilib.io.FileOpException;
+import digilib.io.FileOps;
 
 /** Simple abstract implementation of the <code>DocuImage</code> interface.
  *
@@ -42,8 +46,11 @@ public abstract class DocuImageImpl implements DocuImage {
 	/** Interpolation quality. */
 	protected int quality = 0;
 	
-	// epsilon for float comparisons
+	/** epsilon for float comparisons. */
 	public final double epsilon = 1e-5;
+	
+	/** image mime-type */
+	protected String mimeType = null;
 
 	/** Default constructor. */
 	public DocuImageImpl() {
@@ -116,6 +123,23 @@ public abstract class DocuImageImpl implements DocuImage {
 		scale(scale);
 	}
 	
+	/* this is a rather stupid implementation, eventually loading the whole file. */
+	public boolean checkFile(DocuFile f) throws IOException {
+		loadImage(f.getFile());
+		int w = getWidth();
+		int h = getHeight();
+		Dimension s = new Dimension(w, h);
+		f.setSize(s);
+		String m = FileOps.mimeForFile(f.getFile());
+		mimeType = m;
+		f.setMimetype(m);
+		return true;
+	}
+
+	public String getMimetype() {
+		return mimeType;
+	}
+
 	public void rotate(double angle) throws ImageOpException {
 		// just a do-nothing implementation
 	}
@@ -124,27 +148,23 @@ public abstract class DocuImageImpl implements DocuImage {
 		// just a do-nothing implementation
 	}
 
-	public void enhance(double mult, double add) throws ImageOpException {
+	public void enhance(float mult, float add) throws ImageOpException {
 		// just a do-nothing implementation
-	}
-
-	public void preloadImage(File f) throws FileOpException {
-		// just a do-nothing implementation
-	}
-
-	public boolean isPreloadSupported() {
-		// preload per default not supported
-		return false;
 	}
 
 	public boolean isSubimageSupported() {
-		// partial loading per default not supported
+		// partial loading not supported per default
 		return false;
 	}
 
 	public void loadSubimage(File f, Rectangle region, int subsample)
 		throws FileOpException {
 		// empty implementation
+	}
+
+	public void enhanceRGB(float[] rgbm, float[] rgba)
+		throws ImageOpException {
+		// emtpy implementation
 	}
 
 }

@@ -20,6 +20,7 @@
 
 package digilib.servlet;
 
+import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -39,6 +40,9 @@ import digilib.auth.AuthOpException;
 import digilib.auth.AuthOps;
 import digilib.image.DocuImage;
 import digilib.image.ImageOpException;
+import digilib.io.DocuDirCache;
+import digilib.io.DocuFile;
+import digilib.io.DocuFileset;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
 
@@ -52,7 +56,7 @@ import digilib.io.FileOps;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.6b3";
+	public static final String dlVersion = "1.8b1";
 
 	// Utils instance with debuglevel
 	Utils util;
@@ -62,6 +66,8 @@ public class Scaler extends HttpServlet {
 	AuthOps authOp;
 	// ServletOps instance
 	ServletOps servletOp;
+	// DocuDirCache instance
+	DocuDirCache dirCache;
 
 	// DigilibParameters instance
 	DigilibConfiguration dlConfig;
@@ -84,11 +90,12 @@ public class Scaler extends HttpServlet {
 		// see if there is a Configuration instance
 		dlConfig =
 			(DigilibConfiguration) context.getAttribute(
-				"digilib.servlet.parameters");
+				"digilib.servlet.configuration");
 		if (dlConfig == null) {
 			// create new Configuration
 			try {
 				dlConfig = new DigilibConfiguration(config);
+				context.setAttribute("digilib.servlet.configuration", dlConfig);
 			} catch (Exception e) {
 				throw new ServletException(e);
 			}
@@ -104,6 +111,8 @@ public class Scaler extends HttpServlet {
 		fileOp = new FileOps(util);
 		// AuthOps instance
 		servletOp = new ServletOps(util);
+		// DocuDirCache instance
+		dirCache = dlConfig.getDirCache();
 	}
 
 	/** Process the HTTP Get request*/
@@ -192,9 +201,12 @@ public class Scaler extends HttpServlet {
 		// rotation angle
 		double paramROT = dlRequest.getRot();
 		// contrast enhancement
-		double paramCONT = dlRequest.getCont();
+		float paramCONT = dlRequest.getCont();
 		// brightness enhancement
-		double paramBRGT = dlRequest.getBrgt();
+		float paramBRGT = dlRequest.getBrgt();
+		// color modification
+		float[] paramRGBM = dlRequest.getRgbm();
+		float[] paramRGBA = dlRequest.getRgba();
 
 		/* operation mode: "fit": always fit to page, 
 		 * "clip": send original resolution cropped, "file": send whole file (if
@@ -249,7 +261,7 @@ public class Scaler extends HttpServlet {
 		//"big" try for all file/image actions
 		try {
 
-			// DocuImage instance
+			// new DocuImage instance
 			DocuImage docuImage = dlConfig.getDocuImageInstance();
 			if (docuImage == null) {
 				throw new ImageOpException("Unable to load DocuImage class!");
@@ -297,17 +309,20 @@ public class Scaler extends HttpServlet {
 			}
 
 			// find the file
-			File fileToLoad =
-				fileOp.getFileVariant(
-					dlConfig.getBaseDirs(),
-					loadPathName,
-					dlRequest.getPn(),
-					preScaledFirst);
+			DocuFile fileToLoad;
+			DocuFileset fileset = dirCache.getFileset(loadPathName, dlRequest.getPn());
+			// simplistic selection of resolution
+			if (preScaledFirst) {
+				fileToLoad = (DocuFile)fileset.lastElement();
+			} else {
+				fileToLoad = (DocuFile)fileset.firstElement();
+			}
+			util.dprintln(1, "Loading: " + fileToLoad.getFile());
 
-			util.dprintln(1, "Loading: " + fileToLoad);
-
-			// get the source image type (if it's known)
-			mimeType = FileOps.mimeForFile(fileToLoad);
+			// check the source image
+			docuImage.checkFile(fileToLoad);
+			// get the source image type
+			mimeType = fileToLoad.getMimetype();
 
 			/* if autoScale and not zoomed and source is GIF/PNG 
 			 * then send as is.
@@ -320,7 +335,7 @@ public class Scaler extends HttpServlet {
 
 				util.dprintln(1, "Sending File as is.");
 
-				servletOp.sendFile(fileToLoad, response);
+				servletOp.sendFile(fileToLoad.getFile(), response);
 
 				util.dprintln(
 					1,
@@ -330,22 +345,24 @@ public class Scaler extends HttpServlet {
 				return;
 			}
 
-			// finally load the file
-			if (docuImage.isPreloadSupported()) {
-				// only preload if supported
-				docuImage.preloadImage(fileToLoad);
-			} else {
-				docuImage.loadImage(fileToLoad);
-			}
-
 			/*
 			 *  crop and scale the image
 			 */
 
+			int imgWidth = 0;
+			int imgHeight = 0;
 			// get image size
-			int imgWidth = docuImage.getWidth();
-			int imgHeight = docuImage.getHeight();
-
+			if (fileToLoad.getSize() == null) {
+				// size unknown so far 
+				imgWidth = docuImage.getWidth();
+				imgHeight = docuImage.getHeight();
+				// remember size
+				fileToLoad.setSize(new Dimension(imgWidth, imgHeight));
+			} else {
+				imgWidth = fileToLoad.getSize().width;
+				imgHeight = fileToLoad.getSize().height;
+			}
+			
 			util.dprintln(2, "IMG: " + imgWidth + "x" + imgHeight);
 			util.dprintln(
 				2,
@@ -520,7 +537,7 @@ public class Scaler extends HttpServlet {
 				}
 
 				docuImage.loadSubimage(
-					fileToLoad,
+					fileToLoad.getFile(),
 					imgArea.getBounds(),
 					(int) subsamp);
 
@@ -535,6 +552,8 @@ public class Scaler extends HttpServlet {
 				docuImage.scale(scaleXY);
 
 			} else {
+				// else load the whole file
+				docuImage.loadImage(fileToLoad.getFile());
 				docuImage.crop(
 					(int) areaXoff,
 					(int) areaYoff,
@@ -558,9 +577,26 @@ public class Scaler extends HttpServlet {
 			// contrast and brightness enhancement
 			if ((paramCONT != 0) || (paramBRGT != 0)) {
 				double mult = Math.pow(2, paramCONT);
-				docuImage.enhance(mult, paramBRGT);
+				docuImage.enhance((float)mult, (float)paramBRGT);
 			}
 
+			// color modification
+			if ((paramRGBM != null) || (paramRGBA != null)) {
+				// make shure we actually have two arrays 
+				if (paramRGBM == null) {
+					paramRGBM = new float[3];
+				}
+				if (paramRGBA == null) {
+					paramRGBA = new float[3];
+				}
+				// calculate "contrast" values
+				float[] mult = new float[3];
+				for (int i = 0; i < 3; i++) {
+					mult[i] = (float)Math.pow(2, (double)paramRGBM[i]);
+				}
+				docuImage.enhanceRGB(mult, paramRGBA);
+			}
+			
 			util.dprintln(
 				2,
 				"time " + (System.currentTimeMillis() - startTime) + "ms");
