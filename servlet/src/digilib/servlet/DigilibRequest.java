@@ -87,6 +87,16 @@ public class DigilibRequest {
 	private DocuImage image; // internal DocuImage instance for this request
 	private ServletRequest servletRequest; // internal ServletRequest
 
+// lugi - begin
+
+	private int lv; // level of digilib (0 = just image, 1 = one HTML page
+	                //                   2 = in frameset, 3 = XUL-'frameset'
+	                //                   4 = XUL-Sidebar )
+	private String lv_s;
+
+// lugi - end
+
+
 	/** Creates a new instance of DigilibRequest and sets default values. */
 	public DigilibRequest() {
 		setToDefault();
@@ -128,6 +138,15 @@ public class DigilibRequest {
 	 * @param queryString String with paramters in the old "+++" form.
 	 */
 	public void setWithOldString(String queryString) {
+
+// lugi - begin
+
+		// default level ( might be initialized
+		// in the reset method - robert? )
+		lv = 2;
+		lv_s = "2";
+
+// lugi - end
 
 		if (queryString == null) {
 			return;
@@ -282,10 +301,10 @@ public class DigilibRequest {
 		if (pn_s != null) {
 			s += "&pn=" + pn_s;
 		}
-		if (dw_s != null) {
+		if (dw_s != null && dw_s != "0") {
 			s += "&dw=" + dw_s;
 		}
-		if (dh_s != null) {
+		if (dh_s != null && dh_s != "0") {
 			s += "&dh=" + dh_s;
 		}
 		if (wx_s != null) {
@@ -322,11 +341,20 @@ public class DigilibRequest {
 			s += "&rgbm=" + rgbm_s;
 		}
 		if (rgba_s != null) {
-			s += "&rgba=" + rgba_s;
+			s += "&reda=" + rgba_s;
 		}
 		if (pt_s != null) {
 			s += "&pt=" + pt_s;
 		}
+
+// lugi - begin
+
+		if (lv_s != null) {
+			s += "&lv=" + lv_s;
+		}
+
+// lugi - end
+
 		return s;
 	}
 
@@ -424,6 +452,19 @@ public class DigilibRequest {
 		if (s != null) {
 			setPt(s);
 		}
+
+// lugi - begin
+
+		s = request.getParameter("lv");
+		if (s != null) {
+			setLv(s);
+		} else {
+			setLv(2); // default level ( might be initialized
+			          // in the reset method - robert? )
+		}
+
+// lugi - end
+
 		s = ((HttpServletRequest) request).getPathInfo();
 		if (s != null) {
 			setRequestPath(s);
@@ -433,6 +474,14 @@ public class DigilibRequest {
 	/** Reset all request parameters to null. */
 	public void reset() {
 		request_path = null; // url of the page/document
+
+// lugi -begin
+
+		lv = 0; // level of digilib cf. variable declatation
+		lv_s = null;
+
+// lugi - end
+
 		fn = null; // url of the page/document
 		pn = 0; // page number
 		pn_s = null;
@@ -475,10 +524,10 @@ public class DigilibRequest {
 		fn = ""; // url of the page/document
 		pn = 1; // page number
 		pn_s = "1";
-		dw = 500; // width of client in pixels
-		dw_s = "500";
-		dh = 500; // height of client in pixels
-		dh_s = "500";
+		dw = 0; // width of client in pixels
+		dw_s = "0";
+		dh = 0; // height of client in pixels
+		dh_s = "0";
 		wx = 0f; // left edge of image (float from 0 to 1)
 		wx_s = "0";
 		wy = 0f; // top edge in image (float from 0 to 1)
@@ -539,6 +588,36 @@ public class DigilibRequest {
 	}
 
 	/* Property getter and setter */
+
+// lugi - begin
+
+	/** Getter for property lv.
+	 * @return Value of property lv.
+	 *
+	 */
+	public int getLv() {
+		return lv;
+	}
+
+	/** Setter for property lv.
+	 * @param lv New value of property lv.
+	 *
+	 */
+	public void setLv(int lv) {
+		this.lv = lv;
+		lv_s = Integer.toString(lv);
+	}
+	public void setLv(String lv) {
+		try {
+			int i = Integer.parseInt(lv);
+			this.lv = i;
+			this.lv_s = lv;
+		} catch (Exception e) {
+			//util.dprintln(4, "trytoGetParam(int) failed on param "+s);
+		}
+	}
+
+// lugi - end
 
 	/** Getter for property dh.
 	 * @return Value of property dh.
@@ -801,7 +880,7 @@ public class DigilibRequest {
 	 *
 	 */
 	public String getMk() {
-		return (mk != null) ? mk : "";
+		return (mk != null) ? mk : "0/0";
 	}
 
 	/** Setter for property mk.
@@ -902,7 +981,7 @@ public class DigilibRequest {
 	 * @return float
 	 */
 	public float getRot() {
-		return rot;
+		return rot;                    
 	}
 
 	/**
@@ -911,7 +990,7 @@ public class DigilibRequest {
 	 */
 	public void setRot(float rot) {
 		this.rot = rot;
-		rot_s = Float.toString(rot);
+		this.rot_s = Float.toString(rot);        // lugi - cleanup : war rot_s statt this.rot_s
 	}
 	public void setRot(String rot) {
 		try {
@@ -937,7 +1016,7 @@ public class DigilibRequest {
 	 */
 	public void setCont(float cont) {
 		this.cont = cont;
-		rot_s = Float.toString(cont);
+		this.cont_s = Float.toString(cont);        // lugi - bugfix : war rot_s statt this.cont_s
 	}
 	public void setCont(String cont) {
 		try {
@@ -954,7 +1033,7 @@ public class DigilibRequest {
 	 * @return float
 	 */
 	public float getBrgt() {
-		return brgt;
+		return this.brgt;
 	}
 
 	/**
@@ -963,7 +1042,7 @@ public class DigilibRequest {
 	 */
 	public void setBrgt(float brgt) {
 		this.brgt = brgt;
-		brgt_s = Float.toString(brgt);
+		this.brgt_s = Float.toString(brgt);
 	}
 	public void setBrgt(String brgt) {
 		try {
@@ -979,15 +1058,41 @@ public class DigilibRequest {
 	 * @return float[]
 	 */
 	public float[] getRgba() {
-		return rgba;
+		return this.rgba;
 	}
 
 	/**
 	 * @return float[]
 	 */
 	public float[] getRgbm() {
-		return rgbm;
+		return this.rgbm;
 	}
+
+// lugi - begin
+
+	/** 
+	 * @return string property Rgba.
+	 */
+	public String getRgba_s() {
+    if (rgba_s != null) {
+      return this.rgba_s;
+    } else {
+      return "";
+    }
+	}
+
+	/** 
+	 * @return string property Rgbm.
+	 */
+	public String getRgbm_s() {
+		if (rgbm_s != null) {
+		  return this.rgbm_s;
+		} else {
+		  return "";
+		}
+	}
+
+// lugi - end
 
 	/**
 	 * Sets the rgba.
@@ -995,6 +1100,7 @@ public class DigilibRequest {
 	 */
 	public void setRgba(float[] rgba) {
 		this.rgba = rgba;
+		this.rgba_s = rgba[0] + "/" + rgba[1] + "/" + rgba[2];      // lugi - bugfix : save string representation was missing
 	}
 	public void setRgba(String s) {
 		try {
@@ -1017,6 +1123,7 @@ public class DigilibRequest {
 	 */
 	public void setRgbm(float[] rgbm) {
 		this.rgbm = rgbm;
+		this.rgbm_s = rgbm[0] + "/" + rgbm[1] + "/" + rgbm[2];      // lugi - bugfix : save string representation was missing
 	}
 	public void setRgbm(String s) {
 		try {
