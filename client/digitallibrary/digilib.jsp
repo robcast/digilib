@@ -152,10 +152,9 @@ function redirect() {
 <script src="navigation.js" type="text/javascript"> </script>
 
 <!-- modules -->
-<script src="modules_new/fitGIFs.js" type="text/javascript"> </script>
-<script src="modules_new/pagesTotal.js" type="text/javascript"> </script>
-<script src="modules_new/newReferences.js" type="text/javascript"> </script>
-<script src="modules_new/imago.js" type="text/javascript"> </script>
+<script src="modules/pagesTotal.js" type="text/javascript"> </script>
+<script src="modules/newReferences.js" type="text/javascript"> </script>
+<script src="modules/imago.js" type="text/javascript"> </script>
 
 <script type="text/javascript">
 
@@ -165,25 +164,28 @@ newParameter('fn', '<%= dlRequest.getFilePath() %>', '', 1);
 newParameter('pn', '<%= dlRequest.getPn() %>', '1', 1);
 newParameter('ws', '<%= dlRequest.getWs() %>', '1.0', 1);
 newParameter('mo', '<%= dlRequest.getMo() %>', '', 1);
-newParameter('mk', '<%= dlRequest.getMk() %>', '', 2);
-newParameter('wx', '<%= dlRequest.getWx() %>', '0.0', 3);
-newParameter('wy', '<%= dlRequest.getWy() %>', '0.0', 3);
-newParameter('ww', '<%= dlRequest.getWw() %>', '1.0', 3);
-newParameter('wh', '<%= dlRequest.getWh() %>', '1.0', 3);
+newParameter('mk', '<%= dlRequest.getMk() %>', '', 3);
+newParameter('wx', '<%= dlRequest.getWx() %>', '0.0', 2);
+newParameter('wy', '<%= dlRequest.getWy() %>', '0.0', 2);
+newParameter('ww', '<%= dlRequest.getWw() %>', '1.0', 2);
+newParameter('wh', '<%= dlRequest.getWh() %>', '1.0', 2);
 
-newParameter('pt', '<%= dlRequest.getPt() %>', '<%= dlRequest.getPt() %>', 3);
+newParameter('pt', '<%= dlRequest.getPt() %>', '<%= dlRequest.getPt() %>', 9);
 
-newParameter('brgt', '<%= dlRequest.getBrgt() %>', '0.0', 3);
-newParameter('cont', '<%= dlRequest.getCont() %>', '0.0', 3);
-newParameter('rot', '<%= dlRequest.getRot() %>', '0.0', 3);
-newParameter('rgba', '<%= dlRequest.getRgba_s() %>', '', 3);
-newParameter('rgbm', '<%= dlRequest.getRgbm_s() %>', '', 3);
+newParameter('brgt', '<%= dlRequest.getBrgt() %>', '0.0', 1);
+newParameter('cont', '<%= dlRequest.getCont() %>', '0.0', 1);
+newParameter('rot', '<%= dlRequest.getRot() %>', '0.0', 1);
+newParameter('rgba', '<%= dlRequest.getRgba_s() %>', '', 1);
+newParameter('rgbm', '<%= dlRequest.getRgbm_s() %>', '', 1);
+
+newParameter('ddpix', '<%= dlRequest.getDdpix() %>', '', 9);
+newParameter('ddpiy', '<%= dlRequest.getDdpiy() %>', '', 9);
 
 </script>
 
 </head>
 
-<body bgcolor="#666666" onload="init();">
+<body bgcolor="#666666" onload="init_pagesTotal();">
 
  <div id="lay1" style="position: absolute; left: 10px; top: 10px; visibility: visible"><img name="pic" src="<%= imageLocation %>" border="0"></div>
 
