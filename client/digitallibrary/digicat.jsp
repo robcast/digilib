@@ -24,7 +24,7 @@ digilib.servlet.DigilibRequest dlRequest = new digilib.servlet.DigilibRequest(re
 docBean.doAuthentication(dlRequest, response);
 
 // add number of pages
-dlRequest.setPt(docBean.getNumPages(dlRequest));
+dlRequest.setValue("pt", docBean.getNumPages(dlRequest));
 %>
 
 <html>
@@ -32,7 +32,7 @@ dlRequest.setPt(docBean.getNumPages(dlRequest));
 
 <script language="JavaScript">
 
-var baseUrl = "<%= dlRequest.getBaseURL() %>";
+var baseUrl = "<%= dlRequest.getAsString("base.url") %>";
 
 // the document's query string (minus "?")
 var query = location.search.substring(1);
