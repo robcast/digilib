@@ -3,14 +3,14 @@
 
 <digilib-config>
   <!--  Image to be sent to indicate general failure. -->
-  <parameter name="error-image" value="/data01/docuserver/images/icons/broken.gif" />
+  <parameter name="error-image" value="/docuserver/images/icons/broken.gif" />
 
   <!--  Image to be sent to indicate authorization failure. -->
-  <parameter name="denied-image" value="/data01/docuserver/images/icons/alert.red.gif" />
+  <parameter name="denied-image" value="/docuserver/images/icons/alert.red.gif" />
 
   <!-- List of directories where images are searched.
        Directories with low-resolution images are LAST!!! in list. --> 
-  <parameter name="basedir-list" value="/data01/docuserver/images:/data01/docuserver/scaled/small" />
+  <parameter name="basedir-list" value="/docuserver/images:/docuserver/scaled/small:/docuserver/scaled/thumb" />
 
   <!-- Java class to use for image operations -->
   <parameter name="docuimage-class" value="digilib.image.ImageLoaderDocuImage" />
@@ -27,15 +27,21 @@
   <!-- the a maximum size of any sent image. (0 means no limit) -->
   <parameter name="max-image-size" value="0" />
 
+  <!-- use safe but slow directory indexing -->
+  <parameter name="safe-dir-index" value="false" />
+
+  <!-- number of working threads -->
+  <parameter name="worker-threads" value="2" />
+
   <!-- Restrict access to authorized users.
        User authentication and roles are provided by the servlet container 
        (see tomcat-users.xml).
        Authorization for resources (directories) is evaluated by the servlet 
        (see auth-file). -->
-  <parameter name="use-authorization" value="true" />
+  <parameter name="use-authorization" value="false" />
 
-  <!-- 	  URL location of XML file with authorization requirements. -->
-  <parameter name="auth-file" value="/data01/docuserver/www/digilib_config/digilib-auth.xml" />
+  <!-- URL location of XML file with authorization requirements. -->
+  <parameter name="auth-file" value="digilib-auth.xml" />
 
   <!-- Part of URL to indicate authenticated access to Tomcat. -->
   <parameter name="auth-url-path" value="authenticated" />
