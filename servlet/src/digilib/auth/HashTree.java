@@ -37,7 +37,7 @@ import java.util.*;
  */
 public class HashTree {
 
-    private HashMap table;
+    private Map table;
 
     private String twigSep = "/";
 
@@ -53,7 +53,7 @@ public class HashTree {
      * @param twig_separator
      * @param leaf_separator
      */
-    public HashTree(HashMap t, String twig_separator, String leaf_separator) {
+    public HashTree(Map t, String twig_separator, String leaf_separator) {
         table = t;
         twigSep = twig_separator;
         leafSep = leaf_separator;

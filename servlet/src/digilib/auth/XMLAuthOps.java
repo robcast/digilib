@@ -21,8 +21,8 @@
 package digilib.auth;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -69,8 +69,8 @@ public class XMLAuthOps extends AuthOpsImpl {
 	 */
 	public void init() throws AuthOpException {
 		logger.debug("xmlauthops.init (" + configFile + ")");
-		HashMap pathList = null;
-		HashMap ipList = null;
+		Map pathList = null;
+		Map ipList = null;
 		try {
 			// load authPaths
 			XMLListLoader pathLoader =
