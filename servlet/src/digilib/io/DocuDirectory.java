@@ -196,15 +196,7 @@ public class DocuDirectory extends Directory {
 				// sort the file names alphabetically and iterate the list
 				Arrays.sort(fl);
 				for (int i = 0; i < nf; i++) {
-					DocuDirent f = null;
-					// what class of file do we have?
-					if (fc == FileOps.CLASS_IMAGE) {
-						// image file
-						f = new ImageFileset(dirs, fl[i], scalext);
-					} else if (fc == FileOps.CLASS_TEXT) {
-						// text file
-						f = new TextFile(fl[i]);
-					}
+					DocuDirent f = FileOps.fileForClass(fc, fl[i], dirs, scalext);
 					// add the file to our list
 					list[fc].add(f);
 					f.setParent(this);
@@ -373,7 +365,7 @@ public class DocuDirectory extends Directory {
 		// linear search -> worst performance
 		int n = list[fc].size();
 		for (int i = 0; i < n; i++) {
-			ImageFileset fs = (ImageFileset) list[fc].get(i);
+			DocuDirent fs = (DocuDirent) list[fc].get(i);
 			if (fs.getName().equals(fn)) {
 				// filename matches
 				return i;
@@ -381,7 +373,7 @@ public class DocuDirectory extends Directory {
 		}
 		// try again without extension
 		for (int i = 0; i < n; i++) {
-			ImageFileset fs = (ImageFileset) list[fc].get(i);
+			DocuDirent fs = (DocuDirent) list[fc].get(i);
 			if (fs.getBasename().equals(FileOps.basename(fn))) {
 				// basename matches
 				return i;
@@ -390,35 +382,35 @@ public class DocuDirectory extends Directory {
 		return -1;
 	}
 
-	/** Finds the ImageFileset with the name <code>fn</code>.
+	/** Finds the DocuDirent with the name <code>fn</code>.
 	 * 
-	 * Searches the directory for the ImageFileset with the name <code>fn</code> and returns 
+	 * Searches the directory for the DocuDirent with the name <code>fn</code> and returns 
 	 * it. Returns null if the file cannot be found. 
 	 *  
 	 * @param fn filename
-	 * @return ImageFileset
+	 * @return DocuDirent
 	 */
-	public ImageFileset find(String fn) {
+	public DocuDirent find(String fn) {
 		int fc = FileOps.classForFilename(fn);
 		int i = indexOf(fn, fc);
 		if (i >= 0) {
-			return (ImageFileset) list[0].get(i);
+			return (DocuDirent) list[0].get(i);
 		}
 		return null;
 	}
 
-	/** Finds the ImageFileset with the name <code>fn</code> and class <code>fc</code>.
+	/** Finds the DocuDirent with the name <code>fn</code> and class <code>fc</code>.
 	 * 
-	 * Searches the directory for the ImageFileset with the name <code>fn</code> and returns 
+	 * Searches the directory for the DocuDirent with the name <code>fn</code> and returns 
 	 * it. Returns null if the file cannot be found. 
 	 *  
 	 * @param fn filename
-	 * @return ImageFileset
+	 * @return DocuDirent
 	 */
-	public ImageFileset find(String fn, int fc) {
+	public DocuDirent find(String fn, int fc) {
 		int i = indexOf(fn, fc);
 		if (i >= 0) {
-			return (ImageFileset) list[fc].get(i);
+			return (DocuDirent) list[fc].get(i);
 		}
 		return null;
 	}

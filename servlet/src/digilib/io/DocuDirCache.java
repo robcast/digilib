@@ -149,10 +149,10 @@ public class DocuDirCache {
 	}
 
 	/**
-	 * Returns the ImageFileset with the pathname <code>fn</code> and the
+	 * Returns the DocuDirent with the pathname <code>fn</code> and the
 	 * index <code>in</code> and the class <code>fc</code>.
 	 * 
-	 * If <code>fn</code> is a file then the corresponding Fileset is
+	 * If <code>fn</code> is a file then the corresponding DocuDirent is
 	 * returned and the index is ignored.
 	 * 
 	 * @param fn
@@ -214,7 +214,7 @@ public class DocuDirCache {
 		if (dd.isValid()) {
 			try {
 				return dd.get(n, fc);
-			} catch (ArrayIndexOutOfBoundsException e) {
+			} catch (IndexOutOfBoundsException e) {
 			}
 		}
 		return null;
