@@ -175,7 +175,7 @@ public class DigilibConfiguration {
 	public String[] splitPathArray(String paths) {
 		// split list into directories
 		StringTokenizer dirs =
-			new StringTokenizer(paths, java.io.File.pathSeparator);
+			new StringTokenizer(paths, File.pathSeparator);
 		int n = dirs.countTokens();
 		if (n < 1) {
 			return null;

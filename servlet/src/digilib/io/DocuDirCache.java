@@ -100,8 +100,8 @@ public class DocuDirCache {
 			} else {
 				// maybe it's a file
 				if (f.canRead()) {
-					// get the parent directory
-					String d = fn.substring(0, fn.lastIndexOf(File.separator));
+					// get the parent directory string (like we store it in the cache)
+					String d = fn.substring(0, fn.lastIndexOf("/"));
 					// try it in the cache
 					dd = (DocuDirectory) map.get(d);
 					if (dd == null) {

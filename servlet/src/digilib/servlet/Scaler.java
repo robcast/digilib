@@ -56,7 +56,7 @@ import digilib.io.FileOps;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.9b2";
+	public static final String dlVersion = "1.9b3";
 
 	// Utils instance with debuglevel
 	Utils util;
