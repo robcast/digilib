@@ -15,28 +15,30 @@ function install() {
 <body>
 
 <h3>Alcatraz XUL Package</h3>
-<p>contains only DIGILIB-Buttons at the moment</p>
+<p>contains a sidebar and beta-verion of a toolbar</p>
 <h4>Installation:</h4>
 <p>(maybe it is a good idea to print this side or to set a bookmark because you will have to close the browser during the installation)</p>
 <ol>
-
- <li>be sure to proceed with the installation with appropriate rights to write in mozilla/chrome directory (windows: administrator; unix: root)</li>
-
- <li>
   press the &quot;install alcatraz&quot; button<br><br>
   <form>
    <input type="button" name="install alcatraz" value="install alcatraz" onClick="install();"><br>
   </form>
-  (this button installs alcatraz.jar in mozillas chrome directory, alcatraz.jar must be readable for any user who uses alcatraz components)<br>
  </li>
 
- <li>restart mozilla</li>
+ <li>restart mozilla (and you will find the new toolbar installed)</li>
 
  <li>enter chrome://alcatraz/content/sidebar/install.xul in the input field of the URL bar</li>
 
  <li>a dialog is asking you to install the Alcatraz-Sidebar, open the Sidebar (F9) and press the button</li>
 
 </ol>
+
+<p><b>Beware :</b> Due to the very early stage of the toolbar and the missing tools to
+easily remove it, the installation with toolbar is primarily for developers. If you
+still installed the toolbar-version and now want to get rid of it, you have to delete the lines
+in <pre>[loacal_chrome]/overlayinfo/browser/content/overlays.rdf</pre> and 
+<pre>[local_chrome]/overlayinfo/navigator/content/overlays.rdf</pre> containing
+'alcatraz_toolbar'. Then restart mozilla and pray that the toolbar has disappeared ...</p>
 
 <hr>
 
