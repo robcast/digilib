@@ -126,7 +126,7 @@ public class JAIDocuImage extends DocuImageImpl {
 
 	/* scales the current image */
 	public void scale(double scale) throws ImageOpException {
-		float sf = (float)scale;
+		float sf = (float) scale;
 		// setup scale
 		ParameterBlock param = new ParameterBlock();
 		param.addSource(img);
@@ -200,8 +200,8 @@ public class JAIDocuImage extends DocuImageImpl {
 		RenderedImage rotImg;
 		// convert degrees to radians
 		double rangle = Math.toRadians(angle);
-		float x = getWidth()/2;
-		float y = getHeight()/2;
+		double x = img.getWidth() / 2;
+		double y = img.getHeight() / 2;
 
 		// optimize rotation by right angles
 		TransposeType rotOp = null;
@@ -231,17 +231,12 @@ public class JAIDocuImage extends DocuImageImpl {
 			// setup "normal" rotation
 			ParameterBlock param = new ParameterBlock();
 			param.addSource(img);
-			param.add(x);
-			param.add(y);
+			param.add((float) x);
+			param.add((float) y);
 			param.add((float) rangle);
 			param.add(interpol);
-			// hint with border extender
-			RenderingHints hint =
-				new RenderingHints(
-					JAI.KEY_BORDER_EXTENDER,
-					BorderExtender.createInstance(BorderExtender.BORDER_COPY));
 
-			rotImg = JAI.create("rotate", param, hint);
+			rotImg = JAI.create("rotate", param);
 		}
 
 		util.dprintln(
@@ -273,10 +268,9 @@ public class JAIDocuImage extends DocuImageImpl {
 	 */
 	public void mirror(double angle) throws ImageOpException {
 		RenderedImage mirImg;
-
 		// only mirroring by right angles
 		TransposeType rotOp = null;
-		if (Math.abs(angle - 0) < epsilon) {
+		if (Math.abs(angle) < epsilon) {
 			// 0 degree
 			rotOp = TransposeDescriptor.FLIP_HORIZONTAL;
 		} else if (Math.abs(angle - 90) < epsilon) {
@@ -292,29 +286,17 @@ public class JAIDocuImage extends DocuImageImpl {
 			// 360 degree
 			rotOp = TransposeDescriptor.FLIP_HORIZONTAL;
 		}
-		if (rotOp != null) {
-			// use Transpose operation
-			ParameterBlock param = new ParameterBlock();
-			param.addSource(img);
-			param.add(rotOp);
-			mirImg = JAI.create("transpose", param);
+		// use Transpose operation
+		ParameterBlock param = new ParameterBlock();
+		param.addSource(img);
+		param.add(rotOp);
+		mirImg = JAI.create("transpose", param);
 
-			util.dprintln(
-				3,
-				"MIRROR: "
-					+ angle
-					+ " ->"
-					+ mirImg.getWidth()
-					+ "x"
-					+ mirImg.getHeight());
-			//DEBUG
-
-			if (mirImg == null) {
-				util.dprintln(2, "ERROR(mirror): error in mirror");
-				throw new ImageOpException("Unable to mirror");
-			}
-			img = mirImg;
+		if (mirImg == null) {
+			util.dprintln(2, "ERROR(mirror): error in flip");
+			throw new ImageOpException("Unable to flip");
 		}
+		img = mirImg;
 	}
 
 	/* contrast and brightness enhancement */
@@ -348,44 +330,43 @@ public class JAIDocuImage extends DocuImageImpl {
 		img = enhImg;
 	}
 
-
 	/* (non-Javadoc)
 	 * @see digilib.image.DocuImage#enhanceRGB(float[], float[])
 	 */
 	public void enhanceRGB(float[] rgbm, float[] rgba)
 		throws ImageOpException {
-			RenderedImage enhImg;
-			int nb = rgbm.length;
-			double[] ma = new double[nb];
-			double[] aa = new double[nb];
-			for (int i = 0; i < nb; i++) {
-				ma[i] = rgbm[i];
-				aa[i] = rgba[i];
-			}
-			// use Rescale operation
-			ParameterBlock param = new ParameterBlock();
-			param.addSource(img);
-			param.add(ma);
-			param.add(aa);
-			enhImg = JAI.create("rescale", param);
+		RenderedImage enhImg;
+		int nb = rgbm.length;
+		double[] ma = new double[nb];
+		double[] aa = new double[nb];
+		for (int i = 0; i < nb; i++) {
+			ma[i] = rgbm[i];
+			aa[i] = rgba[i];
+		}
+		// use Rescale operation
+		ParameterBlock param = new ParameterBlock();
+		param.addSource(img);
+		param.add(ma);
+		param.add(aa);
+		enhImg = JAI.create("rescale", param);
 
-			util.dprintln(
-				3,
-				"ENHANCE_RGB: *"
-					+ rgbm
-					+ ", +"
-					+ rgba
-					+ " ->"
-					+ enhImg.getWidth()
-					+ "x"
-					+ enhImg.getHeight());
-			//DEBUG
+		util.dprintln(
+			3,
+			"ENHANCE_RGB: *"
+				+ rgbm
+				+ ", +"
+				+ rgba
+				+ " ->"
+				+ enhImg.getWidth()
+				+ "x"
+				+ enhImg.getHeight());
+		//DEBUG
 
-			if (enhImg == null) {
-				util.dprintln(2, "ERROR(enhance): error in enhanceRGB");
-				throw new ImageOpException("Unable to enhanceRGB");
-			}
-			img = enhImg;
+		if (enhImg == null) {
+			util.dprintln(2, "ERROR(enhance): error in enhanceRGB");
+			throw new ImageOpException("Unable to enhanceRGB");
+		}
+		img = enhImg;
 	}
 
 }

@@ -161,7 +161,7 @@ public interface DocuImage {
 	/** Rotates the current image.
 	 * 
 	 * Replaces the current image with a rotated image. The image is rotated
-	 * around the point <code>x</code>,<code>y</code> by <code>angle</code> 
+	 * around the center by the <code>angle</code> 
 	 * given in degrees [0, 360] clockwise.
 	 * Image size and aspect ratio are likely to change.
 	 * 
@@ -174,7 +174,7 @@ public interface DocuImage {
 	 * Replaces  the current image with a mirrored image. The mirror axis goes
 	 * through the center of the image and is rotated by <code>angle</code>
 	 * degrees. Currently only horizontal and vertical mirroring (0 and 90
-	 * degree) are supported.
+	 * degree) are supported. 
 	 * 
 	 * @param angle angle of mirror axis
 	 * @throws ImageOpException

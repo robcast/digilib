@@ -23,6 +23,7 @@ package digilib.image;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
@@ -278,22 +279,39 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		return fb;
 	}
 
-	public void rotate(double angle) throws ImageOpException {
+	public void rotate(double angle)
+		throws ImageOpException {
 		// setup rotation
 		double rangle = Math.toRadians(angle);
-		double x = getWidth() / 2;
-		double y = getHeight() / 2;
-		AffineTransformOp rotOp =
-			new AffineTransformOp(
-				AffineTransform.getRotateInstance(rangle, x, y),
-				interpol);
+		// create offset to make shure the rotated image has no negative coordinates
+		double w = img.getWidth();
+		double h = img.getHeight();
+		double xoff = (w / 2) * Math.sin(rangle);
+		double yoff = (h / 2) * Math.sin(rangle);
+		double off = Math.max(xoff, yoff)+10;
+		// move image
+		AffineTransform trafo = AffineTransform.getTranslateInstance(off, off);
+		// new center of rotation 
+		double x = (w / 2) + off;
+		double y = (h / 2) + off;
+		trafo.rotate(rangle, x, y);
+		// transform image
+		AffineTransformOp rotOp = new AffineTransformOp(trafo, interpol);
 		BufferedImage rotImg = rotOp.filter(img, null);
+		// calculate new bounding box
+		Rectangle2D bounds = rotOp.getBounds2D(img);
 
 		if (rotImg == null) {
 			util.dprintln(2, "ERROR: error in rotate");
 			throw new ImageOpException("Unable to rotate");
 		}
-		img = rotImg;
+		// crop new image (with self-made rounding)
+		img =
+			rotImg.getSubimage(
+				(int) (bounds.getX()+0.5),
+				(int) (bounds.getY()+0.5),
+				(int) (bounds.getWidth()+0.5),
+				(int) (bounds.getHeight()+0.5));
 	}
 
 	public void mirror(double angle) throws ImageOpException {
