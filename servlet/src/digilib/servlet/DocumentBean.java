@@ -35,6 +35,8 @@ import digilib.auth.AuthOpException;
 import digilib.auth.AuthOps;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
+import digilib.io.FileOps;
+import digilib.io.ImageFileset;
 
 public class DocumentBean {
 
@@ -178,6 +180,36 @@ public class DocumentBean {
 	}
 
 	/**
+	 * Sets the current DigilibRequest. Also completes information in the request.
+	 * 
+	 * @param dlRequest
+	 *            The dlRequest to set.
+	 */
+	public void setRequest(DigilibRequest dlRequest) throws Exception {
+		this.dlRequest = dlRequest;
+		if (dirCache == null) {
+			return;
+		}
+		String fn = dlRequest.getFilePath();
+		// get information about the file
+		ImageFileset fileset = (ImageFileset) dirCache.getFile(fn, dlRequest
+				.getAsInt("pn"), FileOps.CLASS_IMAGE);
+		if (fileset == null) {
+			return;
+		}
+		// add file name
+		dlRequest.setValue("img.fn", fileset.getName());
+		// add dpi
+		dlRequest.setValue("img.dpix", new Double(fileset.getResX()));
+		dlRequest.setValue("img.dpiy", new Double(fileset.getResY()));
+		// get number of pages in directory
+		DocuDirectory dd = dirCache.getDirectory(fn);
+		if (dd != null) {
+			dlRequest.setValue("pt", dd.size());
+		}
+	}
+
+	/**
 	 * get the first page number in the directory (not yet functional)
 	 */
 	public int getFirstPage(DigilibRequest request) {
@@ -265,11 +297,4 @@ public class DocumentBean {
 		return dlRequest;
 	}
 
-	/**
-	 * @param dlRequest
-	 *            The dlRequest to set.
-	 */
-	public void setRequest(DigilibRequest dlRequest) {
-		this.dlRequest = dlRequest;
-	}
 }
