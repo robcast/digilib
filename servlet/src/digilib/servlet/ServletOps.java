@@ -32,7 +32,7 @@ import digilib.io.*;
 public class ServletOps {
 
   private Utils util = null;
-  private Hashtable confTable = null;
+  private HashMap confTable = null;
 
   public ServletOps() {
     util = new Utils();
