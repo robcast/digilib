@@ -17,9 +17,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
 Authors: 
   Christian Luginbuehl, 01.05.2003 (first version)
   DW 24.03.2004 (Changed for digiLib in Zope)
-  Robert Casties, 1.11.2004
+  Robert Casties, 2.11.2004
 
 */
+
+function base_init() {
+    // init function
+    baseScriptVersion = "1.1b";
+    dlParams = new Object();
+    browserType = getBrowserType();
+}
+
 
 function getInt(n) {
     // returns always an integer
@@ -33,30 +41,33 @@ function defined(x) {
     return (typeof arguments[0] != "undefined");
 }
 
-// auxiliary function to crop senseless precision
 function cropFloat(x) {
+    // auxiliary function to crop senseless precision
     return parseInt(10000*x)/10000;
 }
 
-// browser sniffer
-var browserType = Object();
-browserType.doDHTML = false;
-browserType.versIE = 0;
+function getBrowserType() {
+    // browser sniffer
+    var bt = Object();
+    bt.doDHTML = false;
+    bt.versIE = 0;
 
-if ((! document.cssonly && document.layers) || document.all || document.getElementById) {
-    var vers = navigator.appVersion.split('MSIE ');
-    vers = vers[vers.length - 1];
-    browserType.versIE = getInt(vers);
-    browserType.isIE = navigator.userAgent.indexOf('MSIE') >= 0;
-    browserType.isMac = navigator.platform.indexOf('Mac') >= 0;
-    browserType.isWin = navigator.platform.indexOf('Win') >= 0;
-    browserType.isN4 = (navigator.userAgent.indexOf('Mozilla/4.') >= 0) && ! browserType.isIE;
-    browserType.isIEWin = browserType.versIE > 0 && browserType.isWin;
-    if (navigator.appVersion.indexOf('MSIE') < 0 || ! browserType.isMac || browserType.versIE >= 5) {
-	browserType.doDHTML = true;
-	browserType.isOpera = navigator.userAgent.indexOf(' Opera ') >= 0;
-	browserType.isKonq = navigator.userAgent.indexOf(' Konqueror') >= 0;
+    if ((! document.cssonly && document.layers) || document.all || document.getElementById) {
+	var vers = navigator.appVersion.split('MSIE ');
+	vers = vers[vers.length - 1];
+	bt.versIE = getInt(vers);
+	bt.isIE = navigator.userAgent.indexOf('MSIE') >= 0;
+	bt.isMac = navigator.platform.indexOf('Mac') >= 0;
+	bt.isWin = navigator.platform.indexOf('Win') >= 0;
+	bt.isN4 = (navigator.userAgent.indexOf('Mozilla/4.') >= 0) && ! bt.isIE;
+	bt.isIEWin = bt.versIE > 0 && bt.isWin;
+	if (navigator.appVersion.indexOf('MSIE') < 0 || ! bt.isMac || bt.versIE >= 5) {
+	    bt.doDHTML = true;
+	    bt.isOpera = navigator.userAgent.indexOf(' Opera ') >= 0;
+	    bt.isKonq = navigator.userAgent.indexOf(' Konqueror') >= 0;
+	}
     }
+    return bt;
 }
 
 // fixes for javascript < 1.2
@@ -249,8 +260,6 @@ function getScale(size) {
 /* **********************************************
  *     parameter routines
  * ******************************************** */
-
-var dlParams = new Object();
 
 function newParameter(name, defaultValue, detail) {
     // create a new parameter with a name and a default value
@@ -489,66 +498,66 @@ function evtPosition(evt) {
 
 function registerEvent(type, elem, handler) {
     // register the given event handler on the indicated element
-     if (elem.addEventListener) {
-	 elem.addEventListener(type, handler, false);
-     } else {
-	 if (type = "mousedown") {
-	     if (elem.captureEvents) {
-		 elem.captureEvents(Event.MOUSEDOWN);
-	     }
-	     elem.onmousedown = handler;
-	 } else if (type = "mouseup") {
-	     if (elem.captureEvents) {
-		 elem.captureEvents(Event.MOUSEUP);
-	     }
-	     elem.onmouseup = handler;
-	 } else if (type = "mousemove") {
-	     if (elem.captureEvents) {
-		 elem.captureEvents(Event.MOUSEMOVE);
-	     }
-	     elem.onmousemove = handler;
-	 } else if (type = "keypress") {
-	     if (elem.captureEvents) {
-		 elem.captureEvents(Event.KEYPRESS);
-	     }
-	     elem.onkeypress = handler;
-	 } else {
-	     alert("registerEvent: unknown event type "+type);
-	     return false;
-	 }
+    if (elem.addEventListener) {
+	elem.addEventListener(type, handler, false);
+    } else {
+	if (type == "mousedown") {
+	    if (elem.captureEvents) {
+		elem.captureEvents(Event.MOUSEDOWN);
+	    }
+	    elem.onmousedown = handler;
+	} else if (type == "mouseup") {
+	    if (elem.captureEvents) {
+		elem.captureEvents(Event.MOUSEUP);
+	    }
+	    elem.onmouseup = handler;
+	} else if (type == "mousemove") {
+	    if (elem.captureEvents) {
+		elem.captureEvents(Event.MOUSEMOVE);
+	    }
+	    elem.onmousemove = handler;
+	} else if (type == "keypress") {
+	    if (elem.captureEvents) {
+		elem.captureEvents(Event.KEYPRESS);
+	    }
+	    elem.onkeypress = handler;
+	} else {
+	    alert("registerEvent: unknown event type "+type);
+	    return false;
+	}
     }
     return true;
 }
 
 function unregisterEvent(type, elem, handler) {
     // unregister the given event handler from the indicated element
-     if (elem.removeEventListener) {
-	 elem.removeEventListener(type, handler, false);
-     } else {
-	 if (type = "mousedown") {
-	     if (elem.releaseEvents) {
-		 elem.releaseEvents(Event.MOUSEDOWN);
-	     }
-	     elem.onmousedown = null;
-	 } else if (type = "mouseup") {
-	     if (elem.releaseEvents) {
-		 elem.releaseEvents(Event.MOUSEUP);
-	     }
-	     elem.onmouseup = null;
-	 } else if (type = "mousemove") {
-	     if (elem.releaseEvents) {
-		 elem.releaseEvents(Event.MOUSEMOVE);
-	     }
-	     elem.onmousemove = null;
-	 } else if (type = "keypress") {
-	     if (elem.releaseEvents) {
-		 elem.releaseEvents(Event.KEYPRESS);
-	     }
-	     elem.onkeypress = null;
-	 } else {
-	     alert("unregisterEvent: unknown event type "+type);
-	     return false;
-	 }
+    if (elem.removeEventListener) {
+	elem.removeEventListener(type, handler, false);
+    } else {
+	if (type == "mousedown") {
+	    if (elem.releaseEvents) {
+		elem.releaseEvents(Event.MOUSEDOWN);
+	    }
+	    elem.onmousedown = null;
+	} else if (type == "mouseup") {
+	    if (elem.releaseEvents) {
+		elem.releaseEvents(Event.MOUSEUP);
+	    }
+	    elem.onmouseup = null;
+	} else if (type == "mousemove") {
+	    if (elem.releaseEvents) {
+		elem.releaseEvents(Event.MOUSEMOVE);
+	    }
+	    elem.onmousemove = null;
+	} else if (type == "keypress") {
+	    if (elem.releaseEvents) {
+		elem.releaseEvents(Event.KEYPRESS);
+	    }
+	    elem.onkeypress = null;
+	} else {
+	    alert("unregisterEvent: unknown event type "+type);
+	    return false;
+	}
     }
     return true;
 }
