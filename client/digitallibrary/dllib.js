@@ -17,13 +17,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
 Authors:
   Christian Luginbuehl, 01.05.2003 (first version)
   DW 24.03.2004 (Changed for digiLib in Zope)
-  Robert Casties, 27.10.2004
+  Robert Casties, 2.11.2004
 
   ! Requires baselib.js !
 
 */
-
-var dlScriptVersion = "1.0b4";
 
 
 function identify() {
@@ -36,9 +34,6 @@ function identify() {
 /*
  * more parameter handling
  */
-
-var dlArea = new Rectangle(0.0, 0.0, 1.0, 1.0);
-var dlMaxArea = new Rectangle(0.0, 0.0, 1.0, 1.0);
 
 function parseArea() {
     // returns area Rectangle from current parameters
@@ -53,8 +48,6 @@ function setParamFromArea(rect) {
     setParameter("wh", cropFloat(rect.height));
     return true;
 }
-
-var dlTrafo = new Transform();
 
 function parseTrafo(elem) {
     // returns Transform from current dlArea and picsize
@@ -78,8 +71,6 @@ function parseTrafo(elem) {
     return trafo;
 }
 
-
-var dlMarks = new Array();
 
 function parseMarks() {
     // returns marks array from current parameters
@@ -123,8 +114,6 @@ function deleteMark() {
     setParameter("mk", getAllMarks());
     return true;
 }
-
-var dlFlags = new Object();
 
 function hasFlag(mode) {
     // returns if mode flag is set
@@ -202,12 +191,21 @@ function bestPicSize(elem, inset) {
  *     digilib specific routines
  * ******************************************** */
 
-var elemScaler = null;
-var picElem = null;
-
 
 function dl_param_init() {
     // parameter initialisation before onload
+    if (!baseScriptVersion) {
+	base_init();
+    }
+    dlScriptVersion = "1.1b";
+    dlArea = new Rectangle(0.0, 0.0, 1.0, 1.0);
+    dlMaxArea = new Rectangle(0.0, 0.0, 1.0, 1.0);
+    dlTrafo = new Transform();
+    dlMarks = new Array();
+    dlFlags = new Object();
+    elemScaler = null;
+    picElem = null;
+    ZOOMFACTOR = Math.sqrt(2);
 
     // put the query parameters (sans "?") in the parameters array
     parseParameters(location.search.slice(1));
@@ -220,6 +218,9 @@ function dl_param_init() {
 
 function dl_init() {
     // initalisation on load
+    if (!dlScriptVersion) {
+	dl_param_init();
+    }
     elemScaler = getElement("scaler", true);
     picElem = getElement("pic", true);
     if (picElem == null && elemScaler) {
@@ -412,8 +413,6 @@ function zoomArea() {
     registerEvent("mousedown", elemScaler, zoomClick);
     registerEvent("mousedown", eck4, zoomClick);
 }
-
-var ZOOMFACTOR = Math.sqrt(2);
 
 function zoomBy(factor) {
     // zooms by the given factor
