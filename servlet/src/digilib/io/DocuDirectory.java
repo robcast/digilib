@@ -77,7 +77,10 @@ public class DocuDirectory {
 	}
 
 	public DocuFileset get(int index) {
-		return (list != null) ? (DocuFileset) list.get(index) : null;
+		if ((list == null)||(index >= list.size())) {
+			return null;
+		} 
+		return (DocuFileset)list.get(index);
 	}
 
 	/** Read the directory and fill this object.

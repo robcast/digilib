@@ -20,15 +20,11 @@
 
 package digilib.image;
 
-import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.io.File;
-import java.io.IOException;
 
 import digilib.Utils;
-import digilib.io.DocuFile;
 import digilib.io.FileOpException;
-import digilib.io.FileOps;
 
 /** Simple abstract implementation of the <code>DocuImage</code> interface.
  *
@@ -123,19 +119,6 @@ public abstract class DocuImageImpl implements DocuImage {
 		scale(scale);
 	}
 	
-	/* this is a rather stupid implementation, eventually loading the whole file. */
-	public boolean checkFile(DocuFile f) throws IOException {
-		loadImage(f.getFile());
-		int w = getWidth();
-		int h = getHeight();
-		Dimension s = new Dimension(w, h);
-		f.setSize(s);
-		String m = FileOps.mimeForFile(f.getFile());
-		mimeType = m;
-		f.setMimetype(m);
-		return true;
-	}
-
 	public String getMimetype() {
 		return mimeType;
 	}

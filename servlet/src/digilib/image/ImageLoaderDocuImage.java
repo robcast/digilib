@@ -20,7 +20,6 @@
 
 package digilib.image;
 
-import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
@@ -38,9 +37,7 @@ import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
-import digilib.io.DocuFile;
 import digilib.io.FileOpException;
-import digilib.io.FileOps;
 
 /** Implementation of DocuImage using the ImageLoader API of Java 1.4 and Java2D. */
 public class ImageLoaderDocuImage extends DocuImageImpl {
@@ -357,22 +354,6 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			throw new ImageOpException("Unable to mirror");
 		}
 		img = mirImg;
-	}
-
-	/* check image size and type and store in DocuFile f */
-	public boolean checkFile(DocuFile f) throws IOException {
-		// see if f is already loaded
-		if ((reader == null) || (imgFile != f.getFile())) {
-			preloadImage(f.getFile());
-		}
-		Dimension d = new Dimension();
-		d.setSize(reader.getWidth(0), reader.getHeight(0));
-		f.setSize(d);
-		String t = reader.getFormatName();
-		t = FileOps.mimeForFile(f.getFile());
-		f.setMimetype(t);
-		f.setChecked(true);
-		return true;
 	}
 
 }

@@ -14,7 +14,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 
 */
 
@@ -22,10 +22,8 @@ package digilib.image;
 
 import java.awt.Rectangle;
 import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
 
-import digilib.io.DocuFile;
 import digilib.io.FileOpException;
 
 /** The basic class for the representation of a digilib image.
@@ -65,17 +63,6 @@ public interface DocuImage {
 	 */
 	public void loadSubimage(File f, Rectangle region, int subsample)
 		throws FileOpException;
-
-	/** Checks the size and type of the DocuFile f.
-	 * 
-	 * The image size and type of the DocuFile f is determined and stored in
-	 * the DocuFile object. Returns true if successfull.
-	 * 
-	 * @param f DocuFile to be checked.
-	 * @return boolean true if check was successfull.
-	 * @throws FileOpException Exception thrown on error.
-	 */
-	public boolean checkFile(DocuFile f) throws IOException;
 
 	/** Writes the current image to a ServletResponse.
 	 *

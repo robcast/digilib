@@ -19,9 +19,13 @@
  */
 package digilib.io;
 
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.ListIterator;
+
+import digilib.image.DocuInfo;
 
 /**
  * @author casties
@@ -49,8 +53,8 @@ public class DocuFileset {
 
 	/** Adds a DocuFile to this Fileset.
 	 * 
-	 * The files should be added in the order of lower resolutions. The first
-	 * file is considered the hires "original". 
+	 * The files should be added in the order of higher to lower resolutions. 
+	 * The first file is considered the hires "original". 
 	 * 
 	 * @param f file to add
 	 * @return true (always)
@@ -59,7 +63,7 @@ public class DocuFileset {
 		f.setParent(this);
 		return list.add(f);
 	}
-	
+
 	/** The number of image files in this Fileset.
 	 * 
 	 * @return number of image files
@@ -67,7 +71,7 @@ public class DocuFileset {
 	public int size() {
 		return (list != null) ? list.size() : 0;
 	}
-	
+
 	/** Get the DocuFile at the index.
 	 * 
 	 * @param index
@@ -76,8 +80,57 @@ public class DocuFileset {
 	public DocuFile get(int index) {
 		return (DocuFile) list.get(index);
 	}
-	
-	
+
+	/** Get the next smaller DocuFile than the given size.
+	 * 
+	 * Returns the DocuFile from the set that has a width and height 
+	 * smaller or equal the given size. 
+	 * Returns null if there isn't any smaller image.
+	 * Needs DocuInfo instance to checkFile().
+	 * 
+	 * @param size
+	 * @param info
+	 * @return
+	 */
+	public DocuFile getNextSmaller(Dimension size, DocuInfo info) {
+		for (Iterator i = getHiresIterator(); i.hasNext();) {
+			DocuFile f = (DocuFile) i.next();
+			if (!f.isChecked()) {
+				f.check(info);
+			}
+			if ((f.getSize().getHeight() <= size.getHeight())
+				&& (f.getSize().getWidth() <= size.getWidth())) {
+				return f;
+			}
+		}
+		return null;
+	}
+
+	/** Get the next bigger DocuFile than the given size.
+	 * 
+	 * Returns the DocuFile from the set that has a width and height 
+	 * bigger or equal the given size. 
+	 * Returns null if there isn't any bigger image.
+	 * Needs DocuInfo instance to checkFile().
+	 * 
+	 * @param size
+	 * @param info
+	 * @return
+	 */
+	public DocuFile getNextBigger(Dimension size, DocuInfo info) {
+		for (ListIterator i = getLoresIterator(); i.hasPrevious();) {
+			DocuFile f = (DocuFile) i.previous();
+			if (!f.isChecked()) {
+				f.check(info);
+			}
+			if ((f.getSize().getHeight() >= size.getHeight())
+				&& (f.getSize().getWidth() >= size.getWidth())) {
+				return f;
+			}
+		}
+		return null;
+	}
+
 	/** Get an Iterator for this Fileset starting at the highest resolution 
 	 * images.
 	 * 
@@ -86,7 +139,7 @@ public class DocuFileset {
 	public ListIterator getHiresIterator() {
 		return list.listIterator();
 	}
-	
+
 	/** Get an Iterator for this Fileset starting at the lowest resolution 
 	 * images.
 	 * 
@@ -98,7 +151,7 @@ public class DocuFileset {
 	public ListIterator getLoresIterator() {
 		return list.listIterator(list.size());
 	}
-	
+
 	/** Reads meta-data for this Fileset if there is any.
 	 * (not yet implemented)
 	 */
@@ -116,7 +169,7 @@ public class DocuFileset {
 		}
 		return null;
 	}
-	
+
 	/** Returns the parent DocuDirectory.
 	 * @return DocuDirectory
 	 */

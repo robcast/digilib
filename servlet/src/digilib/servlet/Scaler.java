@@ -39,6 +39,8 @@ import digilib.Utils;
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthOps;
 import digilib.image.DocuImage;
+import digilib.image.DocuInfo;
+import digilib.image.ImageLoaderDocuInfo;
 import digilib.image.ImageOpException;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuFile;
@@ -56,7 +58,7 @@ import digilib.io.FileOps;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.9b3";
+	public static final String dlVersion = "1.10b1";
 
 	// Utils instance with debuglevel
 	Utils util;
@@ -168,12 +170,12 @@ public class Scaler extends HttpServlet {
 		boolean scaleToFit = true;
 		// scale the image by a fixed factor only
 		boolean absoluteScale = false;
-		// crop the image if needed
-		boolean cropToFit = true;
-		// use heuristics (GIF?) to scale or send as is
-		boolean autoScale = true;
-		// try prescaled images first
-		boolean preScaledFirst = true;
+		// only crop the image to fit
+		boolean cropToFit = false;
+		// try different resolution images automatically 
+		boolean autoRes = true;
+		// use hires images (if autoRes == false) 
+		boolean hiresOnly = false;
 		// interpolation to use for scaling
 		int scaleQual = 0;
 		// send html error message (or image file)
@@ -194,6 +196,13 @@ public class Scaler extends HttpServlet {
 		int paramDW = dlRequest.getDw();
 		// destination image height
 		int paramDH = dlRequest.getDh();
+		// dw and dh shouldn't be empty, if they are, set dw=dh
+		if (paramDW <= 0) {
+			paramDW = paramDH;
+		}
+		if (paramDH <= 0) {
+			paramDH = paramDW;
+		}
 		// relative area x_offset (0..1)
 		double paramWX = dlRequest.getWx();
 		// relative area y_offset
@@ -222,29 +231,29 @@ public class Scaler extends HttpServlet {
 			scaleToFit = false;
 			absoluteScale = false;
 			cropToFit = true;
-			autoScale = false;
-			preScaledFirst = false;
+			autoRes = true;
 		} else if (dlRequest.isOption("fit")) {
 			scaleToFit = true;
 			absoluteScale = false;
-			cropToFit = true;
-			autoScale = false;
+			cropToFit = false;
+			autoRes = true;
 		} else if (dlRequest.isOption("scale")) {
 			scaleToFit = false;
 			absoluteScale = true;
-			cropToFit = true;
-			autoScale = false;
-			preScaledFirst = false;
+			cropToFit = false;
+			autoRes = false;
+			hiresOnly = true;
 		} else if (dlRequest.isOption("file")) {
 			scaleToFit = false;
 			absoluteScale = false;
 			if (dlConfig.isSendFileAllowed()) {
 				cropToFit = false;
 			} else {
+				// crop to fit if send file not allowed
 				cropToFit = true;
 			}
-			autoScale = false;
-			preScaledFirst = false;
+			autoRes = false;
+			hiresOnly = true;
 		}
 		// operation mode: "errtxt": error message in html, "errimg": error image
 		if (dlRequest.isOption("errtxt")) {
@@ -261,10 +270,15 @@ public class Scaler extends HttpServlet {
 			scaleQual = 2;
 		}
 		// operation mode: "lores": try to use scaled image, "hires": use unscaled image
+		//   "autores": try best fitting resolution
 		if (dlRequest.isOption("lores")) {
-			preScaledFirst = true;
+			autoRes = false;
+			hiresOnly = false;
 		} else if (dlRequest.isOption("hires")) {
-			preScaledFirst = false;
+			autoRes = false;
+			hiresOnly = true;
+		} else if (dlRequest.isOption("autores")) {
+			autoRes = true;
 		}
 
 		//"big" try for all file/image actions
@@ -275,6 +289,9 @@ public class Scaler extends HttpServlet {
 			if (docuImage == null) {
 				throw new ImageOpException("Unable to load DocuImage class!");
 			}
+
+			// new DocuInfo instance
+			DocuInfo docuInfo = new ImageLoaderDocuInfo();
 
 			// set interpolation quality
 			docuImage.setQuality(scaleQual);
@@ -313,7 +330,7 @@ public class Scaler extends HttpServlet {
 				}
 			}
 
-			// find the file
+			// find the file(set)
 			DocuFile fileToLoad;
 			DocuFileset fileset =
 				dirCache.getFileset(loadPathName, dlRequest.getPn());
@@ -326,36 +343,69 @@ public class Scaler extends HttpServlet {
 						+ ") not found.");
 			}
 
-			// if it's zoomed, try hires version (to be optimized...)
-			if ((paramWW < 1f) || (paramWH < 1f)) {
-				preScaledFirst = false;
+			/*
+			 * calculate expected source image size
+			 * 
+			 */
+			Dimension expectedSourceSize = new Dimension();
+			if (scaleToFit) {
+				double scale = (1 / Math.min(paramWW, paramWH)) * paramWS;
+				expectedSourceSize.setSize(paramDW * scale, paramDH * scale);
+			} else {
+				expectedSourceSize.setSize(
+					paramDW * paramWS,
+					paramDH * paramWS);
 			}
 
-			// simplistic selection of resolution
-			if (preScaledFirst) {
-				// get last element
-				fileToLoad = fileset.get(fileset.size() - 1);
+			/* 
+			 * select a resolution
+			 */
+			if (autoRes) {
+				// autores: use next bigger resolution
+				fileToLoad =
+					fileset.getNextBigger(expectedSourceSize, docuInfo);
+				if (fileToLoad == null) {
+					// this is the biggest we have
+					fileToLoad = fileset.get(0);
+				}
 			} else {
-				// get first element
-				fileToLoad = fileset.get(0);
+				// enforced hires or lores
+				if (hiresOnly) {
+					// get first element
+					fileToLoad = fileset.get(0);
+				} else {
+					// enforced lores uses next smaller resolution
+					fileToLoad =
+						fileset.getNextSmaller(expectedSourceSize, docuInfo);
+					if (fileToLoad == null) {
+						// this is the smallest we have
+						fileToLoad = fileset.get(fileset.size() - 1);
+					}
+				}
 			}
 			util.dprintln(1, "Loading: " + fileToLoad.getFile());
 
 			// check the source image
-			docuImage.checkFile(fileToLoad);
+			if (!fileToLoad.isChecked()) {
+				fileToLoad.check(docuInfo);
+			}
 			// get the source image type
 			mimeType = fileToLoad.getMimetype();
+			boolean imageSendable =
+				mimeType.equals("image/jpeg")
+					|| mimeType.equals("image/png")
+					|| mimeType.equals("image/gif");
 
-			/* if autoScale and not zoomed and source is GIF/PNG 
-			 * then send as is.
+			/* if not autoRes and image smaller than requested 
+			 * size then send as is. 
 			 * if not autoScale and not scaleToFit nor cropToFit 
-			 * then send as is
+			 * then send as is (mo=file)
 			 */
-			if ((autoScale
-				&& (mimeType == "image/gif" || mimeType == "image/png")
-				&& (paramWW == 1f)
-				&& (paramWH == 1f))
-				|| (!autoScale && !scaleToFit && !cropToFit)) {
+			if ((!autoRes
+				&& imageSendable
+				&& (fileToLoad.getSize().width <= expectedSourceSize.width)
+				&& (fileToLoad.getSize().height <= expectedSourceSize.height))
+				|| (!autoRes && !scaleToFit && !cropToFit)) {
 
 				util.dprintln(1, "Sending File as is.");
 

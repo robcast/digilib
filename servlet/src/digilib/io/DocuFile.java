@@ -23,6 +23,9 @@ package digilib.io;
 
 import java.awt.Dimension;
 import java.io.File;
+import java.io.IOException;
+
+import digilib.image.DocuInfo;
 
 /**
  * @author casties
@@ -49,6 +52,15 @@ public class DocuFile {
 			return file.getName();
 		}
 		return null;
+	}
+
+
+	public void check(DocuInfo info) {
+		try {
+			info.checkFile(this);
+		} catch (IOException e) {
+			checked = false;
+		}
 	}
 
 	/**
