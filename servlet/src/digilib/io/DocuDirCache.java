@@ -111,7 +111,7 @@ public class DocuDirCache {
 			// cache miss
 			misses++;
 			// see if it's a directory
-			File f = new File(baseDirNames[0] + fn);
+			File f = new File(baseDirNames[0], fn);
 			if (f.isDirectory()) {
 				dd = new DocuDirectory(fn, this);
 				if (dd.isValid()) {
@@ -175,7 +175,7 @@ public class DocuDirCache {
 			// cache miss
 			misses++;
 			// see if it's a directory
-			File f = new File(baseDirNames[0] + fn);
+			File f = new File(baseDirNames[0], fn);
 			if (f.isDirectory()) {
 				dd = new DocuDirectory(fn, this);
 				if (dd.isValid()) {

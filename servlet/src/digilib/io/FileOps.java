@@ -78,6 +78,32 @@ public class FileOps {
 	}
 
 	/**
+	 * convert a string with a list of pathnames into an array of strings
+	 * using the system's path separator string
+	 */
+	public static String[] pathToArray(String paths) {
+		// split list into directories
+		StringTokenizer dirs =
+			new StringTokenizer(paths, File.pathSeparator);
+		int n = dirs.countTokens();
+		if (n < 1) {
+			return null;
+		}
+		// add directories into array
+		String[] pathArray = new String[n];
+		for (int i = 0; i < n; i++) {
+			String s = dirs.nextToken();
+			// make shure the dir name ends with a directory separator
+			if (s.endsWith(File.separator)) {
+				pathArray[i] = s;
+			} else {
+				pathArray[i] = s + File.separator;
+			}
+		}
+		return pathArray;
+	}
+
+	/**
 	 *  get a filehandle for a file or directory name
 	 *    returns File number n if fn is directory (starts with 1)
 	 */

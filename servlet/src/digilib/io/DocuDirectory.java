@@ -126,12 +126,12 @@ public class DocuDirectory extends Directory {
 		// array of base dirs
 		Directory[] dirs = new Directory[nb];
 		// the first directory has to exist
-		dir = new File(baseDirNames[0] + dirName);
+		dir = new File(baseDirNames[0],  dirName);
 
 		if (dir.isDirectory()) {
 			// fill array with the remaining directories
 			for (int j = 1; j < nb; j++) {
-				File d = new File(baseDirNames[j] + dirName);
+				File d = new File(baseDirNames[j],  dirName);
 				if (d.isDirectory()) {
 					dirs[j] = new Directory(d);
 				}
