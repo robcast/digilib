@@ -25,6 +25,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
 import java.awt.image.RescaleOp;
 import java.io.File;
 import java.io.IOException;
@@ -176,32 +178,18 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			}
 
 			/* JPEG doesn't do transparency so we have to convert any RGBA image
-			 * to RGB :-(
+			 * to RGB :-( *Java2D BUG*
 			 */
 			if ((type == "jpeg") && (img.getColorModel().hasAlpha())) {
 				util.dprintln(2, "BARF: JPEG with transparency!!");
 				int w = img.getWidth();
 				int h = img.getHeight();
 				// BufferedImage.TYPE_INT_RGB seems to be fastest (JDK1.4.1, OSX)
-				BufferedImage img2;
-				img2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+				int destType = BufferedImage.TYPE_INT_RGB;
+				BufferedImage img2 = new BufferedImage(w, h, destType);
 				img2.createGraphics().drawImage(img, null, 0, 0);
 				img = img2;
 			}
-
-			/* try ImageWriter.write
-			Iterator writers = ImageIO.getImageWritersByFormatName(type);
-			ImageWriter writer = (ImageWriter) writers.next();
-			System.out.println("this writer: " + writer.getClass());
-			while (writers.hasNext()) {
-				System.out.println("next writer: " + writers.next().getClass());
-			}
-			//ImageWriteParam param = writer.getDefaultWriteParam();
-			IIOImage iimg = new IIOImage(img, null, null); 
-			ImageOutputStream iostream = new MemoryCacheImageOutputStream(ostream);
-			writer.setOutput(iostream);
-			writer.write(iimg);
-			*/
 
 			// render output
 			if (ImageIO.write(img, type, ostream)) {
@@ -217,14 +205,43 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	}
 
 	public void scale(double scale) throws ImageOpException {
-		// setup scale
+		/*
+		 * for downscaling in high quality the image is blurred first
+		 */
+		if ((scale <= 0.5) && (quality > 1)) {
+			int bl = (int) Math.floor(1 / scale);
+			blur(bl);
+		}
+		/*
+		 * and scaled
+		 */
 		AffineTransformOp scaleOp =
 			new AffineTransformOp(
 				AffineTransform.getScaleInstance(scale, scale),
 				interpol);
-		BufferedImage scaledImg = scaleOp.createCompatibleDestImage(img, null);
-		scaleOp.filter(img, scaledImg);
-
+		BufferedImage scaledImg = null;
+		// enforce grey destination image for greyscale *Java2D BUG*
+		if ((quality > 0)
+			&& ((img.getType() == BufferedImage.TYPE_BYTE_GRAY)
+				|| (img.getType() == BufferedImage.TYPE_BYTE_BINARY)
+				|| (img.getType() == BufferedImage.TYPE_USHORT_GRAY))) {
+			Rectangle2D dstBounds = scaleOp.getBounds2D(img);
+			scaledImg =
+				new BufferedImage(
+					(int) dstBounds.getWidth(),
+					(int) dstBounds.getHeight(),
+					img.getType());
+		}
+		scaledImg = scaleOp.filter(img, scaledImg);
+		//DEBUG
+		util.dprintln(
+			3,
+			"SCALE: "
+				+ scale
+				+ " ->"
+				+ scaledImg.getWidth()
+				+ "x"
+				+ scaledImg.getHeight());
 		if (scaledImg == null) {
 			util.dprintln(2, "ERROR(cropAndScale): error in scale");
 			throw new ImageOpException("Unable to scale");
@@ -232,17 +249,39 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		img = scaledImg;
 	}
 
+	public void blur(int radius) throws ImageOpException {
+		BufferedImage blurredImg;
+		//DEBUG
+		util.dprintln(4, "blur: " + radius);
+		// minimum radius is 2
+		int klen = Math.max(radius, 2);
+		int ksize = klen * klen;
+		// kernel is constant 1/k
+		float f = 1f / ksize;
+		float[] kern = new float[ksize];
+		for (int i = 0; i < ksize; i++) {
+			kern[i] = f;
+		}
+		Kernel blur = new Kernel(klen, klen, kern);
+		// blur with convolve operation
+		ConvolveOp blurOp = new ConvolveOp(blur, ConvolveOp.EDGE_NO_OP, null);
+		blurredImg = blurOp.filter(img, null);
+		if (blurredImg == null) {
+			util.dprintln(2, "ERROR(cropAndScale): error in scale");
+			throw new ImageOpException("Unable to scale");
+		}
+		img = blurredImg;
+	}
+
 	public void crop(int x_off, int y_off, int width, int height)
 		throws ImageOpException {
 		// setup Crop
 		BufferedImage croppedImg = img.getSubimage(x_off, y_off, width, height);
-
 		util.dprintln(
 			3,
 			"CROP:" + croppedImg.getWidth() + "x" + croppedImg.getHeight());
 		//DEBUG
 		//    util.dprintln(2, "  time "+(System.currentTimeMillis()-startTime)+"ms");
-
 		if (croppedImg == null) {
 			util.dprintln(2, "ERROR(cropAndScale): error in crop");
 			throw new ImageOpException("Unable to crop");
@@ -250,19 +289,17 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		img = croppedImg;
 	}
 
-	public void enhance(float mult, float add) throws ImageOpException {
-		/* Only one constant should work regardless of the number of bands 
-		 * according to the JDK spec.
-		 * Doesn't work on JDK 1.4 for OSX and Linux (at least).
-		 */
-		/*		RescaleOp scaleOp =
-					new RescaleOp(
-						(float)mult, (float)add,
-						null);
-				scaleOp.filter(img, img);
-		*/
-		/* The number of constants must match the number of bands in the image.
-		 */
+	public void enhance(float mult, float add)
+		throws ImageOpException { /* Only one constant should work regardless of the number of bands 
+			 * according to the JDK spec.
+			 * Doesn't work on JDK 1.4 for OSX and Linux (at least).
+			 */ /*		RescaleOp scaleOp =
+						new RescaleOp(
+							(float)mult, (float)add,
+							null);
+					scaleOp.filter(img, img);
+			*/ /* The number of constants must match the number of bands in the image.
+			 */
 		int ncol = img.getColorModel().getNumColorComponents();
 		float[] dm = new float[ncol];
 		float[] da = new float[ncol];
@@ -272,14 +309,12 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		}
 		RescaleOp scaleOp = new RescaleOp(dm, da, null);
 		scaleOp.filter(img, img);
-
 	}
 
 	public void enhanceRGB(float[] rgbm, float[] rgba)
-		throws ImageOpException {
-		/* The number of constants must match the number of bands in the image.
-		 * We do only 3 (RGB) bands.
-		 */
+		throws ImageOpException { /* The number of constants must match the number of bands in the image.
+			 * We do only 3 (RGB) bands.
+			 */
 		int ncol = img.getColorModel().getNumColorComponents();
 		if ((ncol != 3) || (rgbm.length != 3) || (rgba.length != 3)) {
 			util.dprintln(
@@ -292,10 +327,8 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		RescaleOp scaleOp =
 			new RescaleOp(rgbOrdered(rgbm), rgbOrdered(rgba), null);
 		scaleOp.filter(img, img);
-	}
-
-	/** Ensures that the array f is in the right order to map the images RGB components. 
-	 */
+	} /** Ensures that the array f is in the right order to map the images RGB components. 
+				 */
 	public float[] rgbOrdered(float[] fa) {
 		float[] fb = new float[3];
 		int t = img.getType();
@@ -336,7 +369,6 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		BufferedImage rotImg = rotOp.filter(img, null);
 		// calculate new bounding box
 		//Rectangle2D bounds = rotOp.getBounds2D(img);
-
 		if (rotImg == null) {
 			util.dprintln(2, "ERROR: error in rotate");
 			throw new ImageOpException("Unable to rotate");
@@ -358,24 +390,19 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		double my = 1;
 		double tx = 0;
 		double ty = 0;
-		if (Math.abs(angle - 0) < epsilon) {
-			// 0 degree
+		if (Math.abs(angle - 0) < epsilon) { // 0 degree
 			mx = -1;
 			tx = getWidth();
-		} else if (Math.abs(angle - 90) < epsilon) {
-			// 90 degree
+		} else if (Math.abs(angle - 90) < epsilon) { // 90 degree
 			my = -1;
 			ty = getHeight();
-		} else if (Math.abs(angle - 180) < epsilon) {
-			// 180 degree
+		} else if (Math.abs(angle - 180) < epsilon) { // 180 degree
 			mx = -1;
 			tx = getWidth();
-		} else if (Math.abs(angle - 270) < epsilon) {
-			// 270 degree
+		} else if (Math.abs(angle - 270) < epsilon) { // 270 degree
 			my = -1;
 			ty = getHeight();
-		} else if (Math.abs(angle - 360) < epsilon) {
-			// 360 degree
+		} else if (Math.abs(angle - 360) < epsilon) { // 360 degree
 			mx = -1;
 			tx = getWidth();
 		}
@@ -384,7 +411,6 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 				new AffineTransform(mx, 0, 0, my, tx, ty),
 				interpol);
 		BufferedImage mirImg = mirOp.filter(img, null);
-
 		if (mirImg == null) {
 			util.dprintln(2, "ERROR: error in mirror");
 			throw new ImageOpException("Unable to mirror");

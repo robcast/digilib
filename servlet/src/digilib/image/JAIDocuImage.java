@@ -130,52 +130,40 @@ public class JAIDocuImage extends DocuImageImpl {
 
 	/* scales the current image */
 	public void scale(double scale) throws ImageOpException {
-		RenderedImage scaledImg = null;
 		if ((scale < 1)
 			&& (img.getColorModel().getPixelSize() == 1)
 			&& (quality > 0)) {
 			/*
 			 * "SubsampleBinaryToGray" for downscaling BW
 			 */
-			scaledImg = scaleBinary((float) scale, img);
+			scaleBinary((float) scale);
 		} else if ((scale <= 0.5) && (quality > 1)) {
 			/*
 			 * blur and "Scale" for downscaling color images
 			 */
 			int subsample = (int) Math.floor(1 / scale);
-			RenderedImage prescaledImg = img;
-			prescaledImg = blur(subsample, img);
-			scaledImg = scaleAll((float) scale, prescaledImg);
+			blur(subsample);
+			scaleAll((float) scale);
 		} else {
 			/*
 			 * "Scale" for the rest
 			 */
-			scaledImg = scaleAll((float) scale, img);
+			scaleAll((float) scale);
 		}
 
 		//DEBUG
 		util.dprintln(
 			3,
-			"SCALE: "
-				+ scale
-				+ " ->"
-				+ scaledImg.getWidth()
-				+ "x"
-				+ scaledImg.getHeight());
+			"SCALE: " + scale + " ->" + img.getWidth() + "x" + img.getHeight());
 
-		if (scaledImg == null) {
-			util.dprintln(2, "ERROR(scale): error in scale");
-			throw new ImageOpException("Unable to scale");
-		}
-		img = scaledImg;
 	}
 
-	private RenderedImage scaleAll(float scale, RenderedImage image) {
+	public void scaleAll(float scale) throws ImageOpException {
 		RenderedImage scaledImg;
 		//DEBUG
 		util.dprintln(4, "scaleAll: " + scale);
 		ParameterBlockJAI param = new ParameterBlockJAI("Scale");
-		param.addSource(image);
+		param.addSource(img);
 		param.setParameter("xScale", scale);
 		param.setParameter("yScale", scale);
 		param.setParameter("interpolation", interpol);
@@ -186,10 +174,15 @@ public class JAIDocuImage extends DocuImageImpl {
 				BorderExtender.createInstance(BorderExtender.BORDER_COPY));
 		// scale
 		scaledImg = JAI.create("Scale", param, hint);
-		return scaledImg;
+
+		if (scaledImg == null) {
+			util.dprintln(2, "ERROR(scale): error in scale");
+			throw new ImageOpException("Unable to scale");
+		}
+		img = scaledImg;
 	}
 
-	private RenderedImage blur(int radius, RenderedImage image) {
+	public void blur(int radius) throws ImageOpException {
 		RenderedImage blurredImg;
 		//DEBUG
 		util.dprintln(4, "blur: " + radius);
@@ -202,7 +195,7 @@ public class JAIDocuImage extends DocuImageImpl {
 		}
 		KernelJAI blur = new KernelJAI(klen, klen, kern);
 		ParameterBlockJAI param = new ParameterBlockJAI("Convolve");
-		param.addSource(image);
+		param.addSource(img);
 		param.setParameter("kernel", blur);
 		// hint with border extender
 		RenderingHints hint =
@@ -210,16 +203,20 @@ public class JAIDocuImage extends DocuImageImpl {
 				JAI.KEY_BORDER_EXTENDER,
 				BorderExtender.createInstance(BorderExtender.BORDER_COPY));
 		blurredImg = JAI.create("Convolve", param, hint);
-		return blurredImg;
+		if (blurredImg == null) {
+			util.dprintln(2, "ERROR(scale): error in scale");
+			throw new ImageOpException("Unable to scale");
+		}
+		img = blurredImg;
 	}
 
-	RenderedImage scaleBinary(float scale, RenderedImage image) {
+	public void scaleBinary(float scale) throws ImageOpException {
 		RenderedImage scaledImg;
 		//DEBUG
 		util.dprintln(4, "scaleBinary: " + scale);
 		ParameterBlockJAI param =
 			new ParameterBlockJAI("SubsampleBinaryToGray");
-		param.addSource(image);
+		param.addSource(img);
 		param.setParameter("xScale", scale);
 		param.setParameter("yScale", scale);
 		// hint with border extender
@@ -229,7 +226,11 @@ public class JAIDocuImage extends DocuImageImpl {
 				BorderExtender.createInstance(BorderExtender.BORDER_COPY));
 		// scale
 		scaledImg = JAI.create("SubsampleBinaryToGray", param, hint);
-		return scaledImg;
+		if (scaledImg == null) {
+			util.dprintln(2, "ERROR(scale): error in scale");
+			throw new ImageOpException("Unable to scale");
+		}
+		img = scaledImg;
 	}
 
 	/* crops the current image */
