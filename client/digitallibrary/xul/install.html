@@ -1,0 +1,61 @@
+<html>
+  <head>
+    <title>Alcatraz XUL Package</title>
+    <script type="text/javascript">
+      <!--
+      function doneFn ( name , result ){
+        if (result) {
+          //alert("An error occured: " + result);
+        }
+      }
+
+      function installXPI(xpiname){
+         var xpi = new Object();
+         xpi[xpiname] = xpiname;
+         InstallTrigger.install(xpi,doneFn);
+      }
+
+      function addSidebarPanel(name, url) {
+ 	if ((typeof window.sidebar == "object") && (typeof window.sidebar.addPanel == "function")) 
+	{ 
+		window.sidebar.addPanel (name,url,""); 
+	} 
+	else 
+	{ 
+		alert ("To use this functionality a Netscape 6+ or Mozilla browser is needed !"); 
+	}
+      } 
+
+      //-->
+    </script>
+  </head>
+  <body>
+    <h3>Alcatraz XUL Package</h3>
+    <p>contains only DIGILIB-Buttons at the moment</p>
+        <h4>Installation:</h4>
+    <p>(maybe it is a good idea to print this side or to set a bookmark because you will have to close the browser during the installation)</p>
+    <ol>
+    <li>be sure to proceed with the installation with appropriate rights to write in mozilla/chrome directory (windows: administrator; unix: root)</li>
+    <li>
+       press the &quot;install alcatraz&quot; button<br><br>
+    <form>
+      <input type="button" name="install alcatraz" value="install alcatraz" onClick="installXPI('alcatraz.xpi');"><br>
+    </form>
+      (this button installs alcatraz.jar in mozillas chrome directory, alcatraz.jar must be readable for any user who uses alcatraz components)<br>      
+    </li>
+    <li>restart mozilla</li>
+    <li>
+       enter chrome://alcatraz/content/sidebar/install.xul in the input field of the URL bar
+    </li>
+    <li>
+       a dialog is asking you to install the DIGILIB-Buttons, press the button
+    </li>
+    </ol>
+    <hr>
+    <address><a href="mailto:engler@philo.unibe.ch">Daniel Engler</a></address>
+<!-- Created: Mon May 12 19:44:41 CEST 2003 -->
+<!-- hhmts start -->
+Last modified: Tue May 13 20:17:00 CEST 2003
+<!-- hhmts end -->
+  </body>
+</html>
