@@ -22,8 +22,8 @@
 package digilib.servlet;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -186,7 +186,7 @@ public class DigilibConfiguration extends ParameterMap {
 		XMLListLoader lilo =
 			new XMLListLoader("digilib-config", "parameter", "name", "value");
 		// read config file into HashMap
-		HashMap confTable = lilo.loadURL(f.toURL().toString());
+		Map confTable = lilo.loadURL(f.toURL().toString());
 
 		// set config file path parameter
 		setValue("servlet.config.file", f.getCanonicalPath());
