@@ -33,6 +33,7 @@ pageContext.setAttribute("docBean", docBean, pageContext.REQUEST_SCOPE);
     <script type="text/javascript" src="baselib.js"></script>
     <script type="text/javascript" src="dllib.js"></script>
 <script type="text/javascript">
+  base_init();
   var dlTarget = window.name;
   var baseUrl = '<%= dlRequest.getAsString("base.url") %>';
   var toolbarEnabledURL = window.location.href;
