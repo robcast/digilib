@@ -1,4 +1,5 @@
 /*
+
 Copyright (C) 2003 WTWG, Uni Bern
  
 This program is free software; you can redistribute it and/or
@@ -15,118 +16,84 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  
-Author: Christian Luginbuehl, 01.05.2003 , Version Alcatraz 0.3
+Author: Christian Luginbuehl, 22.05.2003 , Version Alcatraz 0.4
+
 */
-/****************************************************************************
- * - sample module for digilib                                              *
- *                                                                          *
- *                       christian luginbuehl (luginbuehl@student.unibe.ch) *
- ****************************************************************************/
 
-// overriding (some kind of inheriting) init in navigation13_XX.js
-function init_pagesTotal(pu, pn, ws, mo, mk, wx, wy, ww, wh, pt) {
+/*************************************************************************
+ *  pagesTotal.js : digilib-module                                       *
+ *                                                                       *
+ *  desc: displaying the total number of pages in a designated frame,    *
+ *        when calling pagesTotal(). also overrides nextPage() and       *
+ *        page() functions, by adding last-page tests.                   *
+ *                                                                       *
+ *************************************************************************/
 
-	// debug window to check the parameters passed
-	//alert ("DEBUG message (parameters in init pagesTotal.js):\n\npu = " + pu + "\npn = " + pn + "\nws = " + ws + "\nmo = " + mo + "\nmk = " + mk + "\nwx = " + wx + "\nwy = " + wy + "\nww = " + ww + "\nwh = " + wh + "\npt = " + pt);
 
-	// calling original init
-	init(pu, pn, ws, mo, mk, wx, wy, ww, wh);
+/**
+ * shows 'page XX of YY' in a designated frame
+ */
+function showTotalPages() {
 
-	att.pt = parseInt(pt);
-	
-	pagesTotal();
+  var pf = parent.pageFrame;
 
-	focus();
+  if ( pf ) {
+    pf.document.open();
+    pf.document.write('<html><head></head>');
+    pf.document.write('<body bgcolor="#CCCCCC" topmargin="5" marginheight="5">');
+    pf.document.write('<p style="font-family: Verdana, Arial, Helvetica, sans-serif; text-align: center; color: #CC3333; font-size: 11px">');
+    pf.document.write(dlParams.pn.value + '<b> of </b>' + dlParams.pt.value + '</p></body></html>');
+    pf.document.close();
+  }
+
 }
 
 
 /**
- * shows page XX of YY in a dedicated frame
- *
- * ATTENTION: some stuff is still to do, because of some incompatibilities between servlet and client
- *            i should be able to read the total number of pages in dlImage.jsp
+ * extending init from novaigation.js
  */
-function pagesTotal() {
+function init_pagesTotal() {
 
-	if (parent.pageFrame) {
-		parent.pageFrame.document.open();
-		parent.pageFrame.document.write('<html><head></head><body bgcolor="#CCCCCC" topmargin="5" marginheight="5">');
-		parent.pageFrame.document.write('<p style="font-family: Verdana, Arial, Helvetica, sans-serif; text-align: center; color: #CC3333; font-size: 11px">');
-		parent.pageFrame.document.write(att.pn + '<b> of </b>' + att.pt + '</p></body></html>');
-		parent.pageFrame.document.close();
-	}
+  init();
+  
+  showTotalPages();
+
 }
 
 
 /**
- * overriding nextPage in navigation
+ * overriding 'page' in navigation.js
  */
-function nextPage(keepArea) {
+function page(page, details) {
 
-    att.pn = parseInt(att.pn) + 1;
-
-    if (att.pn <= att.pt || isNaN(att.pt)) {
-        loadPicture(0, keepArea);
+  if ( details == null ) {
+    details = 1;
+  }
+  
+  if ( page && page.indexOf('-') == 0 ) {
+    if ( dlParams.pn.value > 1 ) {
+      page = Math.max(parseInt(dlParams.pn.value) - parseInt(page.slice(1)), 1);
+      dlParams.pn.value = page;
+      display(details);
     } else {
-	    att.pn = parseInt(att.pn) - 1;
-        alert("You are already on the last page!");
+      alert("You are already on the first page!");
     }
-}
 
+  } else if ( page && page.indexOf('+') == 0 ) {
+    if ( parseInt(dlParams.pn.value) < parseInt(dlParams.pt.value) ) {
+      page = Math.min(parseInt(dlParams.pn.value) + parseInt(page.slice(1)), dlParams.pt.value);
+      dlParams.pn.value = page;
+      display(details);
+    } else {
+      alert("You are already on the last page!");
+    }
+  } else if ( page && page == parseInt(page) ) {
+    if ( (page > 0) && (page <= parseInt(dlParams.pt.value)) ) {
+      dlParams.pn.value = parseInt(page);
+      display(details);
+    } else {
+      alert ("Illegal page number (1 - " + dlParams.pt.value + ")!");
+    }
+  }
 
-/**
- * overriding 'page' in navigation
- */
-function page(keepArea) {
-
-	do {
-    	var page = prompt("Goto Page (1 - " + att.pt + "):", 1);
-    	
-	} while ((page != null) && ((isNaN(page)) || (page < 1) || (page > att.pt)));
-
-   	if ((page != null) && (page != att.pn)) {
-		att.pn = page;
-		loadPicture(0, keepArea);
-	}
-}
-
-
-/**
- * overriding 'loadPicture' in navigation
- */
-function loadPicture(detailGrade, keepArea) {
-
-	// the different detailGrades:
-	// 		0 -> back, next, page
-	//		1 -> zoomout
-	//		2 -> zoomarea, zoompoint, moveto, scaledef
-
-	var newQuery = "fn=" + att.fn + "&pn=" + att.pn + "&ws=" + att.ws + "&mo=" + att.mo;
-
-	if (detailGrade == 0) {
-		att.mk = "0/0";
-	}
-
-	if ((detailGrade == 1) || (detailGrade == 0 && !keepArea)) {
-		att.wx = 0;
-		att.wy = 0;
-		att.ww = 1;
-		att.wh = 1;
-	}
-
-	newQuery += "&mk=" + att.mk + "&wx=" + att.wx + "&wy=" + att.wy + "&ww=" + att.ww + "&wh=" + att.wh;
-
-	if (navigator.appName.toLowerCase() == "netscape") {	// mozilla-browsers (netscape 4.xx, netscape 6.xx, etc.)
-		newQuery += "&dw=" + (innerWidth-30) + "&dh=" + (innerHeight-30);
-	} else {												// ie, opera
-		newQuery += "&dw=" + (document.body.clientWidth-30) + "&dh=" + (document.body.clientHeight-30);
-	}
-	
-	newQuery += "&pt=" + att.pt;
-	newQuery += "&lv=1";
-
-	// debug window - checking the parameters passed to the next image
-	//alert ("DEBUG MESSAGE (query-string in loadPicture):\n\n" + newQuery);
-
-	location.href = location.protocol + "//" + location.host + location.pathname + "?" + newQuery;
 }
