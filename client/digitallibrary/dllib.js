@@ -17,13 +17,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
 Authors:
   Christian Luginbuehl, 01.05.2003 (first version)
   DW 24.03.2004 (Changed for digiLib in Zope)
-  Robert Casties, 04.08.2004
+  Robert Casties, 27.10.2004
 
   ! Requires baselib.js !
 
 */
 
-var dlScriptVersion = "1.0b2";
+var dlScriptVersion = "1.0b4";
+
+
+function identify() {
+	// used for identifying a digilib instance
+	// Relato uses that function - lugi
+	return "Digilib 0.6";
+}
+
 
 /*
  * more parameter handling
@@ -291,6 +299,7 @@ function setMark(reload) {
 	alert("Only 8 marks are possible at the moment!");
 	return;
     }
+    window.focus();
 
     function markEvent(evt) {
 	// event handler adding a new mark
@@ -483,4 +492,12 @@ function getRef() {
 	hyperlinkRef += "?" + par;
     }
     return hyperlinkRef;
+}
+
+function getRefWin(type, msg) {
+    // shows an alert with a reference to the current digilib set
+    if (! msg) {
+	msg = "Link for HTML documents";
+    }
+    prompt(msg, getRef());
 }

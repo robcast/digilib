@@ -24,7 +24,7 @@ digilib.servlet.DigilibRequest dlRequest = docBean.getRequest();
 <script type="text/javascript">
 var ps = bestPicSize(getElement('scaler'), 10);
 document.write('<img id="pic" src="<%=
-  dlRequest.getAsString("base.url") + "/servlet/Scaler?" + dlRequest.getAsString()
+  dlRequest.getAsString("base.url") + "/servlet/Scaler?" + dlRequest.getAsString('s')
 %>&dw='+ps.width+'&dh='+ps.height+'" />');
 </script>
 </div>

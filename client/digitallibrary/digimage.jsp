@@ -65,18 +65,18 @@ pageContext.setAttribute("docBean", docBean, pageContext.REQUEST_SCOPE);
 }
 %>
 
- <div id="dot0" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="mark1.gif" border="0"></div>
- <div id="dot1" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="mark2.gif" border="0"></div>
- <div id="dot2" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="mark3.gif" border="0"></div>
- <div id="dot3" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="mark4.gif" border="0"></div>
- <div id="dot4" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="mark5.gif" border="0"></div>
- <div id="dot5" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="mark6.gif" border="0"></div>
- <div id="dot6" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="mark7.gif" border="0"></div>
- <div id="dot7" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="mark8.gif" border="0"></div>
- <div id="eck1" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="olinks.gif" border="0"></div>
- <div id="eck2" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="orechts.gif" border="0"></div>
- <div id="eck3" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="ulinks.gif" border="0"></div>
- <div id="eck4" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="urechts.gif" border="0"></div>
+ <div id="dot0" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="img/mark1.gif" border="0"></div>
+ <div id="dot1" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="img/mark2.gif" border="0"></div>
+ <div id="dot2" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="img/mark3.gif" border="0"></div>
+ <div id="dot3" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="img/mark4.gif" border="0"></div>
+ <div id="dot4" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="img/mark5.gif" border="0"></div>
+ <div id="dot5" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="img/mark6.gif" border="0"></div>
+ <div id="dot6" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="img/mark7.gif" border="0"></div>
+ <div id="dot7" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="img/mark8.gif" border="0"></div>
+ <div id="eck1" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="img/olinks.gif" border="0"></div>
+ <div id="eck2" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="img/orechts.gif" border="0"></div>
+ <div id="eck3" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="img/ulinks.gif" border="0"></div>
+ <div id="eck4" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="img/urechts.gif" border="0"></div>
 
 </body>
 
