@@ -1,25 +1,6 @@
 <%@ page language="java" %>
 
 <%!
-/*
-Copyright (C) 2003 WTWG, Uni Bern
- 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
- 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
- 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
- 
-Author: Christian Luginbuehl, 01.05.2003 , Version Alcatraz 0.3
-*/
 // authentication stuff - robert
 // -----------------------------
 // create DocumentBean instance for all JSP requests
@@ -59,7 +40,7 @@ docBean.doAuthentication(dlRequest, response);
 
 
 // level 3 representation hack - lugi
-      // it would be musch more interesting to check
+      // it would be much more interesting to check
       // if the sidebar is actually installed and in
       // the case it isn't - automatically do it.
       // however this requires client-side tests and
@@ -135,8 +116,18 @@ function redirect() {
     client = "&dw=" + (innerWidth-30) + "&dh=" + (innerHeight-30);
 
   }
-
-  location.replace(document.URL + client);
+<%
+  if (dlRequest.isRDF()){
+    String strAllParams=dlRequest.getAsString();
+%>
+    location.replace(document.URL+"?"+"<%=strAllParams%>" + client);
+<%
+  }else{
+%>
+    location.replace(document.URL + client);
+<%
+  }
+%>
 }
 
 </script>
@@ -158,37 +149,41 @@ function redirect() {
 <head>
 <title>Digital Document Library - Alcatraz (Level 1)</title>
 
-<script language="JavaScript">
+<script src="navigation.js" type="text/javascript"> </script>
+
+<!-- modules -->
+<script src="modules_new/fitGIFs.js" type="text/javascript"> </script>
+<script src="modules_new/pagesTotal.js" type="text/javascript"> </script>
+<script src="modules_new/newReferences.js" type="text/javascript"> </script>
+<script src="modules_new/imago.js" type="text/javascript"> </script>
+
+<script type="text/javascript">
 
 var baseUrl = "<%= dlRequest.getBaseURL() %>";
 
-// browser version test to include the corresponding navigation-file
-if (navigator.userAgent.toLowerCase().indexOf("opera") > -1) {
-  document.write('<script src="navigation_o6.js"><\/script>');
-} else if (navigator.userAgent.toLowerCase().indexOf("msie") > -1) {
-  document.write('<script src="navigation_ie.js"><\/script>');
-} else if (navigator.userAgent.toLowerCase().indexOf("mozilla\/4") > -1) {
-  document.write('<script src="navigation_n4.js"><\/script>');
-} else if (navigator.userAgent.toLowerCase().indexOf("mozilla\/5") > -1) {
-  document.write('<script src="navigation_n6.js"><\/script>');
-} else {
-  alert('Your browser is not directly supported by this client right now.\n\nLoading now the optimised version for Netscape 6, that sticks the most to the w3c specifications.');
-  document.write('<script src="navigation_n6.js"><\/script>');
-}
+newParameter('fn', '<%= dlRequest.getFilePath() %>', '', 1);  
+newParameter('pn', '<%= dlRequest.getPn() %>', '1', 1);
+newParameter('ws', '<%= dlRequest.getWs() %>', '1.0', 1);
+newParameter('mo', '<%= dlRequest.getMo() %>', '', 1);
+newParameter('mk', '<%= dlRequest.getMk() %>', '', 2);
+newParameter('wx', '<%= dlRequest.getWx() %>', '0.0', 3);
+newParameter('wy', '<%= dlRequest.getWy() %>', '0.0', 3);
+newParameter('ww', '<%= dlRequest.getWw() %>', '1.0', 3);
+newParameter('wh', '<%= dlRequest.getWh() %>', '1.0', 3);
 
-// add module to show the total number of pages (not browser dependant!)
-document.write('<script src="modules\/pagesTotal.js"><\/script>\n');
-document.write('<script src="modules\/mirror.js"><\/script>\n');
-document.write('<script src="modules\/imago.js"><\/script>\n');
-document.write('<script src="modules\/pixelByPixel.js"><\/script>\n');
-document.write('<script src="modules\/newReferences.js"><\/script>\n');
-document.write('<script src="modules\/fitGIFs.js"><\/script>\n');
+newParameter('pt', '<%= dlRequest.getPt() %>', '<%= dlRequest.getPt() %>', 3);
+
+newParameter('brgt', '<%= dlRequest.getBrgt() %>', '0.0', 3);
+newParameter('cont', '<%= dlRequest.getCont() %>', '0.0', 3);
+newParameter('rot', '<%= dlRequest.getRot() %>', '0.0', 3);
+newParameter('rgba', '<%= dlRequest.getRgba_s() %>', '', 3);
+newParameter('rgbm', '<%= dlRequest.getRgbm_s() %>', '', 3);
 
 </script>
 
 </head>
 
-<body bgcolor="#666666" onload='init_imago("<%= dlRequest.getFilePath() %>", "<%= dlRequest.getPn() %>", "<%= dlRequest.getWs() %>", "<%= dlRequest.getMo() %>", "<%= dlRequest.getMk() %>", "<%= dlRequest.getWx() %>", "<%= dlRequest.getWy() %>", "<%= dlRequest.getWw() %>", "<%= dlRequest.getWh() %>", "<%= dlRequest.getPt() %>", "<%= dlRequest.getBrgt() %>", "<%= dlRequest.getCont() %>", "<%= dlRequest.getRot() %>", "<%= dlRequest.getRgba_s() %>", "<%= dlRequest.getRgbm_s() %>")'>
+<body bgcolor="#666666" onload="init();">
 
  <div id="lay1" style="position: absolute; left: 10px; top: 10px; visibility: visible"><img name="pic" src="<%= imageLocation %>" border="0"></div>
 
