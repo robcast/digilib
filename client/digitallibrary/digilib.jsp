@@ -1,6 +1,4 @@
-<%@ page language="java" %>
-
-<%!
+<%@ page language="java" %><%!
 // authentication stuff - robert
 // -----------------------------
 // create DocumentBean instance for all JSP requests
@@ -15,8 +13,7 @@ public void jspInit() {
         System.out.println(e);
     }
 }
-%>
-<%
+%><%
 
 // parsing the query
 // -----------------
@@ -29,12 +26,12 @@ String digiURL = "digimage.jsp?" + dlRequest.getAsString();
 
 %><html>
 <head>
-<title>Digital Document Library (L2)</title>
+<title>Digital Document Library</title>
 </head>
 
 <frameset cols="*,90" border="0" onload="pageFrame.show()">
   <frame name="mainFrame" src="<%= digiURL %>" scrolling="auto">
-  <frameset rows="20,*" border="0">
+  <frameset rows="25,*" border="0">
     <frame name="pageFrame" src="oldskin/pageWin.html" scrolling="no" noresize>
     <frame name="rightFrame" src="oldskin/dlMenu.html" scrolling="no" noresize>
   </frameset>
