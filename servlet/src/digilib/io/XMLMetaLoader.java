@@ -41,7 +41,8 @@ public class XMLMetaLoader {
 	private String fileTag = "file";
 	private String fileNameTag = "name";
 	private String filePathTag = "path";
-	private String infoTag = "img";
+	private String imgTag = "img";
+	private String collectTag = "context";
 
 	public XMLMetaLoader() {
 	}
@@ -55,6 +56,8 @@ public class XMLMetaLoader {
 		private HashMap files;
 		private HashMap meta;
 		private StringBuffer content;
+		private boolean collecting;
+		private StringBuffer collectedContent;
 		private String fileName;
 		private String filePath;
 
@@ -75,10 +78,28 @@ public class XMLMetaLoader {
 			return qn;
 		}
 
+		/**
+		 * returns all attributes as a String
+		 * 
+		 * @param attrs
+		 * @return 
+		 */
+		private String getAttrString(Attributes attrs) {
+			StringBuffer s = new StringBuffer();
+			for (int i = 0; i < attrs.getLength(); i++) {
+				String key = getName(attrs.getLocalName(i), attrs.getQName(i));
+				s.append(" "+key+"=\""+attrs.getValue(i));
+			}
+			return s.toString();
+		}
+
+			
 		// Parser calls this once at the beginning of a document
 		public void startDocument() throws SAXException {
 			tags = new LinkedList();
 			files = new HashMap();
+			collecting = false;
+			collectedContent = null;
 		}
 
 		// Parser calls this for each element in a document
@@ -98,11 +119,26 @@ public class XMLMetaLoader {
 			if (name.equals(metaTag)) {
 				// new meta tag
 				meta = new HashMap();
+				collectedContent = new StringBuffer();
 			} else if (name.equals(fileTag)) {
 				// new file tag
 				fileName = null;
 				filePath = null;
 				meta = new HashMap();
+				collectedContent = new StringBuffer();
+			} else if (name.equals(collectTag)) {
+				// start collecting
+				collecting = true;
+				if (collectedContent == null) {
+					collectedContent = new StringBuffer();
+				}
+			}
+			
+			// record mode
+			if (collecting) {
+				collectedContent.append("<"+name);
+				collectedContent.append(getAttrString(atts));
+				collectedContent.append(">");
 			}
 		}
 
@@ -110,6 +146,9 @@ public class XMLMetaLoader {
 		public void characters(char[] ch, int start, int length)
 			throws SAXException {
 			// append data to current string buffer
+			if (content == null) {
+				content = new StringBuffer();
+			}
 			content.append(ch, start, length);
 		}
 
@@ -123,22 +162,25 @@ public class XMLMetaLoader {
 			String name = getName(localName, qName);
 			// exit the tag
 			tags.removeLast();
+			String lastTag = (tags.isEmpty()) ? "" : (String) tags.getLast();
 
 			// was it a file/name tag?
-			if (name.equals(fileNameTag) && tags.contains(fileTag)) {
+			if (name.equals(fileNameTag) && lastTag.equals(fileTag)) {
 				// save name as filename
 				if ((content != null) && (content.length() > 0)) {
 					fileName = content.toString().trim();
 				}
+				content = null;
 				return;
 			}
 
 			// was it a file/path tag?
-			if (name.equals(filePathTag) && tags.contains(fileTag)) {
+			if (name.equals(filePathTag) && lastTag.equals(fileTag)) {
 				// save path as filepath 
 				if ((content != null) && (content.length() > 0)) {
 					filePath = content.toString().trim();
 				}
+				content = null;
 				return;
 			}
 
@@ -157,11 +199,13 @@ public class XMLMetaLoader {
 						}
 					} else {
 						// no file name, no file
+						content = null;
 						return;
 					}
 					// save meta in file list 
 					files.put(fn, meta);
 				}
+				content = null;
 				return;
 			}
 
@@ -171,17 +215,43 @@ public class XMLMetaLoader {
 				if ((meta != null) && (meta.size() > 0)) {
 					files.put("", meta);
 				}
+				content = null;
 				return;
 			}
 
-			// is this inside an info (=img) tag?
-			if (tags.contains(infoTag)) {
+			// is this inside an digilib info (=img) tag?
+			if (lastTag.equals(imgTag)) {
 				// then add whatever this is
 				if ((content != null) && (content.length() > 0)) {
 					meta.put(name, content.toString().trim());
 				}
+				content = null;
+				return;
 			}
 
+			// is this the end of collectTag?
+			if (name.equals(collectTag)) {
+				collecting = false;
+				collectedContent.append("</"+collectTag+">\n");
+				// store collected stuff
+				meta.put(collectTag, collectedContent.toString());
+				//logger.debug("collected: '"+collectedContent+"'");
+				content = null;
+				return;
+			}
+
+			// write collected content
+			if (collecting) {
+				String s = "";
+				if ((content != null) && (content.length() > 0)) {
+					s = content.toString().trim();
+				}
+				//logger.debug("collect:"+name+" = "+s);
+				collectedContent.append(s);
+				collectedContent.append("</"+name+">\n");
+				content = null;
+				return;
+			}
 		}
 
 	}

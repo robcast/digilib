@@ -46,6 +46,8 @@ public class DocuDirectory extends Directory {
 	private String dirName = null;
 	// directory metadata
 	private HashMap dirMeta = null;
+	// state of metadata is valid
+	private boolean metaChecked = false;
 	// unresolved file metadata
 	private HashMap unresolvedFileMeta = null;
 	// time of last access of this object (not the filesystem)
@@ -257,6 +259,7 @@ public class DocuDirectory extends Directory {
 			}
 		}
 		readParentMeta();
+		metaChecked = true;
 	}
 
 	/** Read metadata from all known parent directories.
@@ -450,6 +453,18 @@ public class DocuDirectory extends Directory {
 	 */
 	public HashMap getDirMeta() {
 		return dirMeta;
+	}
+	
+	/**
+	 * Checks metadata
+	 *  
+	 */
+	public void checkMeta() {
+		if (metaChecked) {
+			return;
+		} else {
+			readMeta();
+		}
 	}
 
 	/**

@@ -36,10 +36,13 @@ public class ImageFileset extends DocuDirent {
 
 	/** list of files (ImageFile) */
 	private ArrayList list = null;
+
 	/** aspect ratio (width/height) */
 	private double aspect = 0;
+
 	/** resolution of the biggest image (DPI) */
 	private double resX = 0;
+
 	/** resolution of the biggest image (DPI) */
 	private double resY = 0;
 
@@ -62,13 +65,13 @@ public class ImageFileset extends DocuDirent {
 	 * 
 	 * 
 	 * @see fill
-	 *      
+	 * 
 	 * @param dirs
-	 *           array of base directories
+	 *            array of base directories
 	 * @param file
-	 *           first file to read
+	 *            first file to read
 	 * @param scalext
-	 *           extension for scaled images
+	 *            extension for scaled images
 	 */
 	public ImageFileset(Directory[] dirs, File file, String scalext) {
 		int nb = dirs.length;
@@ -85,7 +88,7 @@ public class ImageFileset extends DocuDirent {
 	 * 
 	 * 
 	 * @param f
-	 *           file to add
+	 *            file to add
 	 * @return true (always)
 	 */
 	public boolean add(ImageFile f) {
@@ -125,8 +128,8 @@ public class ImageFileset extends DocuDirent {
 	/**
 	 * Get the next smaller ImageFile than the given size.
 	 * 
-	 * Returns the ImageFile from the set that has a width and height smaller
-	 * or equal the given size. Returns null if there isn't any smaller image.
+	 * Returns the ImageFile from the set that has a width and height smaller or
+	 * equal the given size. Returns null if there isn't any smaller image.
 	 * Needs DocuInfo instance to checkFile().
 	 * 
 	 * 
@@ -154,8 +157,8 @@ public class ImageFileset extends DocuDirent {
 	 * Get the next bigger ImageFile than the given size.
 	 * 
 	 * Returns the ImageFile from the set that has a width or height bigger or
-	 * equal the given size. Returns null if there isn't any bigger image.
-	 * Needs DocuInfo instance to checkFile().
+	 * equal the given size. Returns null if there isn't any bigger image. Needs
+	 * DocuInfo instance to checkFile().
 	 * 
 	 * 
 	 * @param size
@@ -228,11 +231,11 @@ public class ImageFileset extends DocuDirent {
 	 * 
 	 * 
 	 * @param dirs
-	 *           list of base directories
+	 *            list of base directories
 	 * @param fl
-	 *           file (from first base dir)
+	 *            file (from first base dir)
 	 * @param scalext
-	 *           first extension to try in other base dirs
+	 *            first extension to try in other base dirs
 	 */
 	void fill(Directory[] dirs, File fl, String scalext) {
 		int nb = dirs.length;
@@ -286,12 +289,22 @@ public class ImageFileset extends DocuDirent {
 			readMeta();
 			if (fileMeta == null) {
 				// try directory metadata
+				((DocuDirectory) parent).checkMeta();
 				if (((DocuDirectory) parent).getDirMeta() != null) {
 					fileMeta = ((DocuDirectory) parent).getDirMeta();
 				} else {
-					// no metadata available
-					metaChecked = true;
-					return;
+					// try parent directory metadata
+					DocuDirectory gp = (DocuDirectory) parent.getParent();
+					if (gp != null) {
+						gp.checkMeta();
+						if (gp.getDirMeta() != null) {
+							fileMeta = gp.getDirMeta();
+						} else {
+							// no metadata available
+							metaChecked = true;
+							return;
+						}
+					}
 				}
 			}
 		}
@@ -318,12 +331,12 @@ public class ImageFileset extends DocuDirent {
 		}
 		// DPI-X and DPI-Y
 		if (fileMeta.containsKey("original-dpi-x")
-			&& fileMeta.containsKey("original-dpi-y")) {
+				&& fileMeta.containsKey("original-dpi-y")) {
 			try {
-				dpix =
-					Double.parseDouble((String) fileMeta.get("original-dpi-x"));
-				dpiy =
-					Double.parseDouble((String) fileMeta.get("original-dpi-y"));
+				dpix = Double.parseDouble((String) fileMeta
+						.get("original-dpi-x"));
+				dpiy = Double.parseDouble((String) fileMeta
+						.get("original-dpi-y"));
 			} catch (NumberFormatException e) {
 			}
 			if ((dpix != 0) && (dpiy != 0)) {
@@ -334,22 +347,18 @@ public class ImageFileset extends DocuDirent {
 		}
 		// SIZE-X and SIZE-Y and PIXEL-X and PIXEL-Y
 		if (fileMeta.containsKey("original-size-x")
-			&& fileMeta.containsKey("original-size-y")
-			&& fileMeta.containsKey("original-pixel-x")
-			&& fileMeta.containsKey("original-pixel-y")) {
+				&& fileMeta.containsKey("original-size-y")
+				&& fileMeta.containsKey("original-pixel-x")
+				&& fileMeta.containsKey("original-pixel-y")) {
 			try {
-				sizex =
-					Double.parseDouble(
-						(String) fileMeta.get("original-size-x"));
-				sizey =
-					Double.parseDouble(
-						(String) fileMeta.get("original-size-y"));
-				pixx =
-					Double.parseDouble(
-						(String) fileMeta.get("original-pixel-x"));
-				pixy =
-					Double.parseDouble(
-						(String) fileMeta.get("original-pixel-y"));
+				sizex = Double.parseDouble((String) fileMeta
+						.get("original-size-x"));
+				sizey = Double.parseDouble((String) fileMeta
+						.get("original-size-y"));
+				pixx = Double.parseDouble((String) fileMeta
+						.get("original-pixel-x"));
+				pixy = Double.parseDouble((String) fileMeta
+						.get("original-pixel-y"));
 			} catch (NumberFormatException e) {
 			}
 			if ((sizex != 0) && (sizey != 0) && (pixx != 0) && (pixy != 0)) {
@@ -387,7 +396,7 @@ public class ImageFileset extends DocuDirent {
 	/**
 	 * Returns the aspect ratio.
 	 * 
-	 * Aspect ratio is (width/height). So it's <1 for portrait and  >1 for
+	 * Aspect ratio is (width/height). So it's <1 for portrait and >1 for
 	 * landscape.
 	 * 
 	 * 
