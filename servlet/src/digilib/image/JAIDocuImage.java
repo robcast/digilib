@@ -23,7 +23,6 @@ package digilib.image;
 import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -36,6 +35,7 @@ import javax.media.jai.operator.TransposeDescriptor;
 import javax.media.jai.operator.TransposeType;
 
 import digilib.Utils;
+import digilib.io.DocuFile;
 import digilib.io.FileOpException;
 
 /** A DocuImage implementation using Java Advanced Imaging Library. */
@@ -56,9 +56,9 @@ public class JAIDocuImage extends DocuImageImpl {
 	}
 
 	/* Load an image file into the Object. */
-	public void loadImage(File f) throws FileOpException {
+	public void loadImage(DocuFile f) throws FileOpException {
 		System.gc();
-		img = JAI.create("fileload", f.getAbsolutePath());
+		img = JAI.create("fileload", f.getFile().getAbsolutePath());
 		if (img == null) {
 			util.dprintln(3, "ERROR(loadImage): unable to load file");
 			throw new FileOpException("Unable to load File!");
@@ -129,7 +129,7 @@ public class JAIDocuImage extends DocuImageImpl {
 	}
 
 	/* scales the current image */
-	public void scale(double scale) throws ImageOpException {
+	public void scale(double scale, double scaleY) throws ImageOpException {
 		if ((scale < 1)
 			&& (img.getColorModel().getPixelSize() == 1)
 			&& (quality > 0)) {

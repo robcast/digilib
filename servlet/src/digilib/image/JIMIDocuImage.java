@@ -23,7 +23,6 @@ package digilib.image;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageFilter;
 import java.awt.image.ImageProducer;
-import java.io.File;
 import java.io.OutputStream;
 
 import com.sun.jimi.core.Jimi;
@@ -33,6 +32,7 @@ import com.sun.jimi.core.filters.ReplicatingScaleFilter;
 import com.sun.jimi.core.raster.JimiRasterImage;
 
 import digilib.Utils;
+import digilib.io.DocuFile;
 import digilib.io.FileOpException;
 
 /** Implementation of DocuImage using the JIMI image Library. */
@@ -53,10 +53,10 @@ public class JIMIDocuImage extends DocuImageImpl {
 	/**
 	 *  load image file
 	 */
-	public void loadImage(File f) throws FileOpException {
+	public void loadImage(DocuFile f) throws FileOpException {
 		System.gc();
 		try {
-			img = Jimi.getRasterImage(f.toURL());
+			img = Jimi.getRasterImage(f.getFile().toURL());
 		} catch (java.net.MalformedURLException e) {
 			util.dprintln(3, "ERROR(loadImage): MalformedURLException");
 		} catch (JimiException e) {
@@ -94,7 +94,7 @@ public class JIMIDocuImage extends DocuImageImpl {
 		return imgHeight;
 	}
 
-	public void scale(double scale) throws ImageOpException {
+	public void scale(double scale, double scaleY) throws ImageOpException {
 
 		ImageFilter scaleFilter;
 		int destWidth = (int) (scale * (float) imgWidth);

@@ -21,9 +21,9 @@
 package digilib.image;
 
 import java.awt.Rectangle;
-import java.io.File;
 
 import digilib.Utils;
+import digilib.io.DocuFile;
 import digilib.io.FileOpException;
 
 /** Simple abstract implementation of the <code>DocuImage</code> interface.
@@ -116,7 +116,7 @@ public abstract class DocuImageImpl implements DocuImage {
 
 		setQuality(qual);
 		crop(x_off, y_off, width, height);
-		scale(scale);
+		scale(scale, scale);
 	}
 	
 	public String getMimetype() {
@@ -140,7 +140,7 @@ public abstract class DocuImageImpl implements DocuImage {
 		return false;
 	}
 
-	public void loadSubimage(File f, Rectangle region, int subsample)
+	public void loadSubimage(DocuFile f, Rectangle region, int subsample)
 		throws FileOpException {
 		// empty implementation
 	}

@@ -20,7 +20,6 @@
 
 package digilib.image;
 
-import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
@@ -37,7 +36,6 @@ import javax.media.jai.JAI;
 
 import digilib.io.DocuFile;
 import digilib.io.FileOpException;
-import digilib.io.FileOps;
 
 /** DocuImage implementation using the Java Advanced Imaging API and the ImageLoader
  * API of Java 1.4.
@@ -83,9 +81,9 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 	}
 
 	/* Load an image file into the Object. */
-	public void loadImage(File f) throws FileOpException {
+	public void loadImage(DocuFile f) throws FileOpException {
 		System.gc();
-		img = JAI.create("ImageRead", f.getAbsolutePath());
+		img = JAI.create("ImageRead", f.getFile().getAbsolutePath());
 		if (img == null) {
 			util.dprintln(3, "ERROR(loadImage): unable to load file");
 			throw new FileOpException("Unable to load File!");
@@ -93,11 +91,12 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 	}
 
 	/* Get an ImageReader for the image file. */
-	public void preloadImage(File f) throws IOException {
+	public void preloadImage(DocuFile f) throws IOException {
 		System.gc();
-		RandomAccessFile rf = new RandomAccessFile(f, "r");
+		RandomAccessFile rf = new RandomAccessFile(f.getFile(), "r");
 		ImageInputStream istream = ImageIO.createImageInputStream(rf);
-		Iterator readers = ImageIO.getImageReaders(istream);
+		//Iterator readers = ImageIO.getImageReaders(istream);
+		Iterator readers = ImageIO.getImageReadersByMIMEType(f.getMimetype());
 		reader = (ImageReader) readers.next();
 		reader.setInput(istream);
 		if (reader == null) {
@@ -107,11 +106,11 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 	}
 
 	/* Load an image file into the Object. */
-	public void loadSubimage(File f, Rectangle region, int prescale)
+	public void loadSubimage(DocuFile f, Rectangle region, int prescale)
 		throws FileOpException {
 		System.gc();
 		try {
-			if ((reader == null) || (imgFile != f)) {
+			if ((reader == null) || (imgFile != f.getFile())) {
 				preloadImage(f);
 			}
 			ImageInputStream istream = (ImageInputStream) reader.getInput();
@@ -134,8 +133,9 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 			util.dprintln(3, "ERROR(loadImage): unable to load file");
 			throw new FileOpException("Unable to load File!");
 		}
-		imgFile = f;
+		imgFile = f.getFile();
 	}
+
 
 	/* Write the current image to an OutputStream. */
 	public void writeImage(String mt, OutputStream ostream)
@@ -159,24 +159,6 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 		} catch (IOException e) {
 			throw new FileOpException("Error writing image.");
 		}
-	}
-
-	/* (non-Javadoc)
-	 * @see digilib.image.DocuImage#checkFile(digilib.io.DocuFile)
-	 */
-	public boolean checkFile(DocuFile f) throws IOException {
-		// see if f is already loaded
-		if ((reader == null) || (imgFile != f.getFile())) {
-			preloadImage(f.getFile());
-		}
-		Dimension d = new Dimension();
-		d.setSize(reader.getWidth(0), reader.getHeight(0));
-		f.setSize(d);
-		//	String t = reader.getFormatName();
-		String t = FileOps.mimeForFile(f.getFile());
-		f.setMimetype(t);
-		f.setChecked(true);
-		return true;
 	}
 
 	/* (non-Javadoc)

@@ -95,6 +95,8 @@ public class DigilibConfiguration {
 	private String minSubsampleParam = "subsample-minimum";
 	// DocuDirCache instance
 	private DocuDirCache dirCache = null;
+	// DocuImage class instance
+	private Class docuImageClass = null;
 
 	/** Constructor taking a ServletConfig.
 	 * Reads the config file location from an init parameter and loads the
@@ -256,7 +258,10 @@ public class DigilibConfiguration {
 	public DocuImage getDocuImageInstance() {
 		DocuImageImpl di = null;
 		try {
-			di = (DocuImageImpl) Class.forName(docuImageType).newInstance();
+			if (docuImageClass == null) {
+				docuImageClass = Class.forName(docuImageType);
+			}
+			di = (DocuImageImpl) docuImageClass.newInstance();
 			di.setUtils(util);
 		} catch (Exception e) {
 		}

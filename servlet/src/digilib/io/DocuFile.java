@@ -21,11 +21,9 @@
  
 package digilib.io;
 
-import java.awt.Dimension;
 import java.io.File;
-import java.io.IOException;
 
-import digilib.image.DocuInfo;
+import digilib.image.ImageSize;
 
 /**
  * @author casties
@@ -33,18 +31,26 @@ import digilib.image.DocuInfo;
 public class DocuFile {
 	
 	// file object
-	private File file = null;
+	private String filename = null;
 	// parent DocuFileset
 	private DocuFileset parent = null;
+	// parent directory
+	private Directory dir = null;
 	// mime file type
 	private String mimetype = null;
 	// image size in pixels
-	private Dimension pixelSize = null;
-	// image size and type are valid
-	private boolean checked = false;
+	private ImageSize pixelSize = null;
 
-	public DocuFile(File f) {
-		file = f;
+	public DocuFile(String fn, DocuFileset parent, Directory dir) {
+		this.filename = fn;
+		this.parent = parent;
+		this.dir = dir;
+	}
+	
+	public DocuFile(String fn) {
+		File f = new File(fn);
+		this.dir = new Directory(f.getParentFile());
+		this.filename = f.getName();
 	}
 	
 	/** Returns the file name (without path).
@@ -52,36 +58,22 @@ public class DocuFile {
 	 * @return
 	 */
 	public String getName() {
-		if (file != null) {
-			return file.getName();
-		}
-		return null;
+		return filename;
 	}
 
-
-	/** Checks the file using the provided DocuInfo instance.
-	 *  
-	 * @param info
-	 */
-	public void check(DocuInfo info) {
-		try {
-			info.checkFile(this);
-		} catch (IOException e) {
-			checked = false;
-		}
-	}
 
 	/**
 	 * @return File
 	 */
 	public File getFile() {
-		return file;
+		File f = new File(dir.getDir(), filename);
+		return f;
 	}
 
 	/**
-	 * @return Dimension
+	 * @return ImageSize
 	 */
-	public Dimension getSize() {
+	public ImageSize getSize() {
 		return pixelSize;
 	}
 
@@ -93,19 +85,10 @@ public class DocuFile {
 	}
 
 	/**
-	 * Sets the file.
-	 * @param file The file to set
-	 */
-	public void setFile(File f) {
-		this.file = f;
-		mimetype = FileOps.mimeForFile(f);
-	}
-
-	/**
 	 * Sets the imageSize.
 	 * @param imageSize The imageSize to set
 	 */
-	public void setSize(Dimension imageSize) {
+	public void setSize(ImageSize imageSize) {
 		this.pixelSize = imageSize;
 	}
 
@@ -136,15 +119,7 @@ public class DocuFile {
 	 * @return boolean
 	 */
 	public boolean isChecked() {
-		return checked;
-	}
-
-	/**
-	 * Sets the checked.
-	 * @param checked The checked to set
-	 */
-	public void setChecked(boolean checked) {
-		this.checked = checked;
+		return (pixelSize != null);
 	}
 
 }

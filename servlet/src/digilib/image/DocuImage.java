@@ -14,16 +14,16 @@
 
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 */
 
 package digilib.image;
 
 import java.awt.Rectangle;
-import java.io.File;
 import java.io.OutputStream;
 
+import digilib.io.DocuFile;
 import digilib.io.FileOpException;
 
 /** The basic class for the representation of a digilib image.
@@ -46,7 +46,7 @@ public interface DocuImage {
 	 * @param f Image File.
 	 * @throws FileOpException Exception thrown if any error occurs.
 	 */
-	public void loadImage(File f) throws FileOpException;
+	public void loadImage(DocuFile f) throws FileOpException;
 
 	/** This DocuImage support the loadSubImage operation.
 	 * 
@@ -61,7 +61,7 @@ public interface DocuImage {
 	 * @param subsample
 	 * @throws FileOpException
 	 */
-	public void loadSubimage(File f, Rectangle region, int subsample)
+	public void loadSubimage(DocuFile f, Rectangle region, int subsample)
 		throws FileOpException;
 
 	/** Writes the current image to a ServletResponse.
@@ -119,7 +119,7 @@ public interface DocuImage {
 	 * @param scale scaling factor
 	 * @throws ImageOpException
 	 */
-	public void scale(double scale) throws ImageOpException;
+	public void scale(double scaleX, double scaleY) throws ImageOpException;
 
 	/** Crops and scales the current image.
 	 *

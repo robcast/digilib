@@ -17,11 +17,10 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 
  * Created on 11.06.2003
- *
  */
+
 package digilib.image;
 
-import java.awt.Dimension;
 import java.io.IOException;
 
 import digilib.io.DocuFile;
@@ -37,19 +36,17 @@ public class ImageLoaderDocuInfo implements DocuInfo {
 
 	/* check image size and type and store in DocuFile f */
 	public boolean checkFile(DocuFile f) throws IOException {
-		// see if f is already loaded
-		if ((img.reader == null) || (img.imgFile != f.getFile())) {
-			img.preloadImage(f.getFile());
-		}
-		Dimension d =
-			new Dimension(img.reader.getWidth(0), img.reader.getHeight(0));
+		ImageLoaderDocuImage img = new ImageLoaderDocuImage();
+		img.preloadImage(f);
+		img.reader = img.reader;
+		ImageSize d =
+			new ImageSize(img.reader.getWidth(0), img.reader.getHeight(0));
 		f.setSize(d);
 		String t = img.reader.getFormatName();
 		t = FileOps.mimeForFile(f.getFile());
 		f.setMimetype(t);
-		f.setChecked(true);
 		// clean up
-		img.reader.reset();
+		//img.reader.reset();
 		//img.reader = null;
 		return true;
 	}

@@ -19,14 +19,15 @@
  */
 package digilib.io;
 
-import java.awt.Dimension;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ListIterator;
 
 import digilib.image.DocuInfo;
+import digilib.image.ImageSize;
 
 /**
  * @author casties
@@ -98,15 +99,19 @@ public class DocuFileset {
 	 * @param info
 	 * @return
 	 */
-	public DocuFile getNextSmaller(Dimension size, DocuInfo info) {
+	public DocuFile getNextSmaller(ImageSize size, DocuInfo info) {
 		for (Iterator i = getHiresIterator(); i.hasNext();) {
 			DocuFile f = (DocuFile) i.next();
-			if (!f.isChecked()) {
-				f.check(info);
-			}
-			if ((f.getSize().getHeight() <= size.getHeight())
-				&& (f.getSize().getWidth() <= size.getWidth())) {
-				return f;
+			try {
+				if (!f.isChecked()) {
+					info.checkFile(f);
+				}
+				if (f.getSize().isTotallySmallerThan(size)) {
+					return f;
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 		return null;
@@ -123,15 +128,19 @@ public class DocuFileset {
 	 * @param info
 	 * @return
 	 */
-	public DocuFile getNextBigger(Dimension size, DocuInfo info) {
+	public DocuFile getNextBigger(ImageSize size, DocuInfo info) {
 		for (ListIterator i = getLoresIterator(); i.hasPrevious();) {
 			DocuFile f = (DocuFile) i.previous();
-			if (!f.isChecked()) {
-				f.check(info);
-			}
-			if ((f.getSize().getHeight() >= size.getHeight())
-				|| (f.getSize().getWidth() >= size.getWidth())) {
-				return f;
+			try {
+				if (!f.isChecked()) {
+					info.checkFile(f);
+				}
+				if (f.getSize().isBiggerThan(size)) {
+					return f;
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 		return null;

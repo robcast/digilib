@@ -15,7 +15,6 @@
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
 */
 
 package digilib.image;
@@ -39,6 +38,7 @@ import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
+import digilib.io.DocuFile;
 import digilib.io.FileOpException;
 
 /** Implementation of DocuImage using the ImageLoader API of Java 1.4 and Java2D. */
@@ -99,11 +99,11 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	}
 
 	/* load image file */
-	public void loadImage(File f) throws FileOpException {
+	public void loadImage(DocuFile f) throws FileOpException {
 		util.dprintln(10, "loadImage!");
 		System.gc();
 		try {
-			img = ImageIO.read(f);
+			img = ImageIO.read(f.getFile());
 			if (img == null) {
 				util.dprintln(3, "ERROR(loadImage): unable to load file");
 				throw new FileOpException("Unable to load File!");
@@ -116,37 +116,40 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	/** Get an ImageReader for the image file.
 	 * 
 	 */
-	public void preloadImage(File f) throws IOException {
+	public void preloadImage(DocuFile f) throws IOException {
 		if (reader != null) {
 			// clean up old reader
 			reader.dispose();
 			reader = null;
 		}
 		System.gc();
-		RandomAccessFile rf = new RandomAccessFile(f, "r");
+		RandomAccessFile rf = new RandomAccessFile(f.getFile(), "r");
 		ImageInputStream istream = ImageIO.createImageInputStream(rf);
-		Iterator readers = ImageIO.getImageReaders(istream);
+		//Iterator readers = ImageIO.getImageReaders(istream);
+		//String ext = f.getName().substring(f.getName().lastIndexOf('.')+1);
+		//Iterator readers = ImageIO.getImageReadersBySuffix(ext);
+		Iterator readers = ImageIO.getImageReadersByMIMEType(f.getMimetype());
 		reader = (ImageReader) readers.next();
-		/* are there more readers?
+		/* are there more readers? */
 		System.out.println("this reader: " + reader.getClass());
 		while (readers.hasNext()) {
 			System.out.println("next reader: " + readers.next().getClass());
 		}
-		*/
+		//*/
 		reader.setInput(istream);
 		if (reader == null) {
 			util.dprintln(3, "ERROR(loadImage): unable to load file");
 			throw new FileOpException("Unable to load File!");
 		}
-		imgFile = f;
+		imgFile = f.getFile();
 	}
 
 	/* Load an image file into the Object. */
-	public void loadSubimage(File f, Rectangle region, int prescale)
+	public void loadSubimage(DocuFile f, Rectangle region, int prescale)
 		throws FileOpException {
 		System.gc();
 		try {
-			if ((reader == null) || (imgFile != f)) {
+			if ((reader == null) || (imgFile != f.getFile())) {
 				preloadImage(f);
 			}
 			// set up reader parameters
@@ -164,7 +167,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			throw new FileOpException("Unable to load File!");
 		}
 	}
-
+	
 	/* write image of type mt to Stream */
 	public void writeImage(String mt, OutputStream ostream)
 		throws FileOpException {
@@ -209,7 +212,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		}
 	}
 
-	public void scale(double scale) throws ImageOpException {
+	public void scale(double scale, double scaleY) throws ImageOpException {
 		/*
 		 * for downscaling in high quality the image is blurred first
 		 */

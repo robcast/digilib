@@ -33,7 +33,7 @@ import org.xml.sax.SAXException;
 /**
  * @author casties
  */
-public class DocuDirectory {
+public class DocuDirectory extends Directory {
 
 	// list of files (DocuFileSet)
 	private ArrayList list = null;
@@ -43,8 +43,6 @@ public class DocuDirectory {
 	private String[] baseDirNames = null;
 	// directory name (digilib canonical form)
 	private String dirName = null;
-	// default/hires directory
-	private File dir = null;
 	// directory metadata
 	private HashMap dirMeta = null;
 	// time of last access of this object (not the filesystem)
@@ -101,7 +99,7 @@ public class DocuDirectory {
 		// number of base dirs
 		int nb = baseDirNames.length;
 		// array of base dirs
-		File[] dirs = new File[nb];
+		Directory[] dirs = new Directory[nb];
 		// the first directory has to exist
 		dir = new File(baseDirNames[0] + dirName);
 
@@ -110,7 +108,7 @@ public class DocuDirectory {
 			for (int j = 1; j < nb; j++) {
 				File d = new File(baseDirNames[j] + dirName);
 				if (d.isDirectory()) {
-					dirs[j] = d;
+					dirs[j] = new Directory(d);
 				}
 			}
 
@@ -133,7 +131,7 @@ public class DocuDirectory {
 						fn.substring(0, fn.lastIndexOf('.') + 1);
 					// add the first DocuFile to a new DocuFileset 
 					DocuFileset fs = new DocuFileset(nb);
-					fs.add(new DocuFile(fl[i]));
+					fs.add(new DocuFile(fn, fs, this));
 					// iterate the remaining base directories
 					for (int j = 1; j < nb; j++) {
 						if (dirs[j] == null) {
@@ -142,14 +140,14 @@ public class DocuDirectory {
 						File f;
 						if (fext != null) {
 							// use the last extension
-							f = new File(dirs[j], fnx + fext);
+							f = new File(dirs[j].getDir(), fnx + fext);
 						} else {
 							// try the same filename as the original
-							f = new File(dirs[j], fn);
+							f = new File(dirs[j].getDir(), fn);
 						}
 						// if the file exists, add to the DocuFileset
 						if (f.canRead()) {
-							fs.add(new DocuFile(f));
+							fs.add(new DocuFile(f.getName(), fs, dirs[j]));
 						} else {
 							// try other file extensions
 							Iterator exts = FileOps.getImageExtensionIterator();
@@ -157,11 +155,11 @@ public class DocuDirectory {
 								String s = (String) exts.next();
 								f =
 									new File(
-										dirs[j],
+										dirs[j].getDir(),
 										fnx + s);
 								// if the file exists, add to the DocuFileset
 								if (f.canRead()) {
-									fs.add(new DocuFile(f));
+									fs.add(new DocuFile(f.getName(), fs, dirs[j]));
 									fext = s;
 									break;
 								}

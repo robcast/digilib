@@ -14,13 +14,12 @@
 
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 */
 
 package digilib.servlet;
 
-import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Rectangle2D;
@@ -40,8 +39,9 @@ import digilib.auth.AuthOpException;
 import digilib.auth.AuthOps;
 import digilib.image.DocuImage;
 import digilib.image.DocuInfo;
-import digilib.image.ImageLoaderDocuInfo;
+import digilib.image.ImageLoaderImageInfoDocuInfo;
 import digilib.image.ImageOpException;
+import digilib.image.ImageSize;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuFile;
 import digilib.io.DocuFileset;
@@ -58,7 +58,7 @@ import digilib.io.FileOps;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.13a2";
+	public static final String dlVersion = "1.14b1";
 
 	// Utils instance with debuglevel
 	Utils util;
@@ -176,9 +176,11 @@ public class Scaler extends HttpServlet {
 		boolean absoluteScale = false;
 		// only crop the image to fit
 		boolean cropToFit = false;
-		// try different resolution images automatically 
-		boolean autoRes = true;
-		// use hires images (if autoRes == false) 
+		// send the file as is
+		boolean sendFile = false;
+		// use low resolution images only
+		boolean loresOnly = false;
+		// use hires images only
 		boolean hiresOnly = false;
 		// interpolation to use for scaling
 		int scaleQual = 1;
@@ -246,29 +248,44 @@ public class Scaler extends HttpServlet {
 			scaleToFit = false;
 			absoluteScale = false;
 			cropToFit = true;
-			autoRes = true;
+			sendFile = false;
+			hiresOnly = true;
 		} else if (dlRequest.isOption("fit")) {
 			scaleToFit = true;
 			absoluteScale = false;
 			cropToFit = false;
-			autoRes = true;
+			sendFile = false;
+			hiresOnly = false;
 		} else if (dlRequest.isOption("osize")) {
 			scaleToFit = false;
 			absoluteScale = true;
 			cropToFit = false;
-			autoRes = false;
+			sendFile = false;
 			hiresOnly = true;
 		} else if (dlRequest.isOption("file")) {
 			scaleToFit = false;
 			absoluteScale = false;
 			if (dlConfig.isSendFileAllowed()) {
 				cropToFit = false;
+				sendFile = true;
 			} else {
 				// crop to fit if send file not allowed
 				cropToFit = true;
+				sendFile = false;
 			}
-			autoRes = false;
 			hiresOnly = true;
+		}
+		// operation mode: "lores": try to use scaled image, "hires": use unscaled image
+		//   "autores": try best fitting resolution
+		if (dlRequest.isOption("lores")) {
+			loresOnly = true;
+			hiresOnly = false;
+		} else if (dlRequest.isOption("hires")) {
+			loresOnly = false;
+			hiresOnly = true;
+		} else if (dlRequest.isOption("autores")) {
+			loresOnly = false;
+			hiresOnly = false;
 		}
 		// operation mode: "errtxt": error message in html, "errimg": error image
 		if (dlRequest.isOption("errtxt")) {
@@ -284,32 +301,15 @@ public class Scaler extends HttpServlet {
 		} else if (dlRequest.isOption("q2")) {
 			scaleQual = 2;
 		}
-		// operation mode: "lores": try to use scaled image, "hires": use unscaled image
-		//   "autores": try best fitting resolution
-		if (dlRequest.isOption("lores")) {
-			autoRes = false;
-			hiresOnly = false;
-		} else if (dlRequest.isOption("hires")) {
-			autoRes = false;
-			hiresOnly = true;
-		} else if (dlRequest.isOption("autores")) {
-			autoRes = true;
-		}
 
 		//"big" try for all file/image actions
 		try {
 
-			// new DocuImage instance
-			DocuImage docuImage = dlConfig.getDocuImageInstance();
-			if (docuImage == null) {
-				throw new ImageOpException("Unable to load DocuImage class!");
-			}
+			// DocuFileset of the image to load
+			DocuFileset fileset = null;
 
 			// new DocuInfo instance
-			DocuInfo docuInfo = new ImageLoaderDocuInfo();
-
-			// set interpolation quality
-			docuImage.setQuality(scaleQual);
+			DocuInfo docuInfo = new ImageLoaderImageInfoDocuInfo();
 
 			/*
 			 *  find the file to load/send
@@ -347,8 +347,7 @@ public class Scaler extends HttpServlet {
 
 			// find the file(set)
 			DocuFile fileToLoad;
-			DocuFileset fileset =
-				dirCache.getFileset(loadPathName, dlRequest.getPn());
+			fileset = dirCache.getFileset(loadPathName, dlRequest.getPn());
 			if (fileset == null) {
 				throw new FileOpException(
 					"File "
@@ -362,40 +361,39 @@ public class Scaler extends HttpServlet {
 			 * calculate expected source image size
 			 * 
 			 */
-			Dimension expectedSourceSize = new Dimension();
+			ImageSize expectedSourceSize = new ImageSize();
 			if (scaleToFit) {
 				double scale = (1 / Math.min(paramWW, paramWH)) * paramWS;
-				expectedSourceSize.setSize(paramDW * scale, paramDH * scale);
+				expectedSourceSize.setSize(
+					(int) (paramDW * scale),
+					(int) (paramDH * scale));
 			} else {
 				expectedSourceSize.setSize(
-					paramDW * paramWS,
-					paramDH * paramWS);
+					(int) (paramDW * paramWS),
+					(int) (paramDH * paramWS));
 			}
 
 			/* 
 			 * select a resolution
 			 */
-			if (autoRes) {
+			if (hiresOnly) {
+				// get first element (= highest resolution)
+				fileToLoad = fileset.get(0);
+			} else if (loresOnly) {
+				// enforced lores uses next smaller resolution
+				fileToLoad =
+					fileset.getNextSmaller(expectedSourceSize, docuInfo);
+				if (fileToLoad == null) {
+					// this is the smallest we have
+					fileToLoad = fileset.get(fileset.size() - 1);
+				}
+			} else {
 				// autores: use next higher resolution
 				fileToLoad =
 					fileset.getNextBigger(expectedSourceSize, docuInfo);
 				if (fileToLoad == null) {
 					// this is the highest we have
 					fileToLoad = fileset.get(0);
-				}
-			} else {
-				// enforced hires or lores
-				if (hiresOnly) {
-					// get first element
-					fileToLoad = fileset.get(0);
-				} else {
-					// enforced lores uses next smaller resolution
-					fileToLoad =
-						fileset.getNextSmaller(expectedSourceSize, docuInfo);
-					if (fileToLoad == null) {
-						// this is the smallest we have
-						fileToLoad = fileset.get(fileset.size() - 1);
-					}
 				}
 			}
 			util.dprintln(1, "Loading: " + fileToLoad.getFile());
@@ -416,10 +414,13 @@ public class Scaler extends HttpServlet {
 
 			// check the source image
 			if (!fileToLoad.isChecked()) {
-				fileToLoad.check(docuInfo);
+				docuInfo.checkFile(fileToLoad);
 			}
 			// get the source image type
 			mimeType = fileToLoad.getMimetype();
+			// get the source image size
+			ImageSize imgSize = fileToLoad.getSize();
+
 			// decide if the image can be sent as is
 			boolean mimetypeSendable =
 				mimeType.equals("image/jpeg")
@@ -441,17 +442,11 @@ public class Scaler extends HttpServlet {
 			 * if not autoScale and not scaleToFit nor cropToFit 
 			 * then send as is (mo=file)
 			 */
-			if ((!autoRes
+			if ((loresOnly
 				&& imageSendable
-				&& (fileToLoad.getSize().width <= expectedSourceSize.width)
-				&& (fileToLoad.getSize().height <= expectedSourceSize.height))
-				|| (autoRes
-					&& ((fileToLoad.getSize().width == expectedSourceSize.width)
-					&& (fileToLoad.getSize().height <= expectedSourceSize.height)))
-				|| (autoRes
-					&& ((fileToLoad.getSize().width <= expectedSourceSize.width)
-					&& (fileToLoad.getSize().height == expectedSourceSize.height)))
-				|| (!autoRes && !scaleToFit && !cropToFit && !absoluteScale)) {
+				&& fileToLoad.getSize().isSmallerThan(expectedSourceSize))
+				|| (!(loresOnly || hiresOnly) && fileToLoad.getSize().fitsIn(expectedSourceSize))
+				|| sendFile) {
 
 				util.dprintln(1, "Sending File as is.");
 
@@ -465,25 +460,22 @@ public class Scaler extends HttpServlet {
 				return;
 			}
 
+			// new DocuImage instance
+			DocuImage docuImage = dlConfig.getDocuImageInstance();
+			if (docuImage == null) {
+				throw new ImageOpException("Unable to load DocuImage class!");
+			}
+
+			// set interpolation quality
+			docuImage.setQuality(scaleQual);
+
 			/*
 			 *  crop and scale the image
 			 */
 
-			int imgWidth = 0;
-			int imgHeight = 0;
-			// get image size
-			if (fileToLoad.getSize() == null) {
-				// size unknown so far 
-				imgWidth = docuImage.getWidth();
-				imgHeight = docuImage.getHeight();
-				// remember size
-				fileToLoad.setSize(new Dimension(imgWidth, imgHeight));
-			} else {
-				imgWidth = fileToLoad.getSize().width;
-				imgHeight = fileToLoad.getSize().height;
-			}
-
-			util.dprintln(2, "IMG: " + imgWidth + "x" + imgHeight);
+			util.dprintln(
+				2,
+				"IMG: " + imgSize.getWidth() + "x" + imgSize.getHeight());
 			util.dprintln(
 				2,
 				"time " + (System.currentTimeMillis() - startTime) + "ms");
@@ -500,13 +492,19 @@ public class Scaler extends HttpServlet {
 			// coordinates using Java2D
 			// image size in pixels
 			Rectangle2D imgBounds =
-				new Rectangle2D.Double(0, 0, imgWidth, imgHeight);
+				new Rectangle2D.Double(
+					0,
+					0,
+					imgSize.getWidth(),
+					imgSize.getHeight());
 			// user window area in [0,1] coordinates
 			Rectangle2D relUserArea =
 				new Rectangle2D.Double(paramWX, paramWY, paramWW, paramWH);
 			// transform from relative [0,1] to image coordinates.
 			AffineTransform imgTrafo =
-				AffineTransform.getScaleInstance(imgWidth, imgHeight);
+				AffineTransform.getScaleInstance(
+					imgSize.getWidth(),
+					imgSize.getHeight());
 			// transform user coordinate area to image coordinate area
 			Rectangle2D userImgArea =
 				imgTrafo.createTransformedShape(relUserArea).getBounds2D();
@@ -643,7 +641,7 @@ public class Scaler extends HttpServlet {
 				}
 
 				docuImage.loadSubimage(
-					fileToLoad.getFile(),
+					fileToLoad,
 					outerUserImgArea.getBounds(),
 					(int) subsamp);
 
@@ -655,18 +653,18 @@ public class Scaler extends HttpServlet {
 						+ "x"
 						+ docuImage.getHeight());
 
-				docuImage.scale(scaleXY);
+				docuImage.scale(scaleXY, scaleXY);
 
 			} else {
 				// else load and crop the whole file
-				docuImage.loadImage(fileToLoad.getFile());
+				docuImage.loadImage(fileToLoad);
 				docuImage.crop(
 					(int) areaXoff,
 					(int) areaYoff,
 					(int) areaWidth,
 					(int) areaHeight);
 
-				docuImage.scale(scaleXY);
+				docuImage.scale(scaleXY, scaleXY);
 			}
 
 			// mirror image
@@ -770,7 +768,6 @@ public class Scaler extends HttpServlet {
 				}
 			} catch (FileOpException ex) {
 			} // so we don't get a loop
-			return;
 		} catch (AuthOpException e) {
 			util.dprintln(1, "ERROR: Authorization error: " + e);
 			try {
@@ -785,7 +782,6 @@ public class Scaler extends HttpServlet {
 				}
 			} catch (FileOpException ex) {
 			} // so we don't get a loop
-			return;
 		} catch (ImageOpException e) {
 			util.dprintln(1, "ERROR: Image Error: " + e);
 			try {
@@ -800,7 +796,6 @@ public class Scaler extends HttpServlet {
 				}
 			} catch (FileOpException ex) {
 			} // so we don't get a loop
-			return;
 		} catch (RuntimeException e) {
 			// JAI likes to throw RuntimeExceptions ;-(
 			util.dprintln(1, "ERROR: Other Image Error: " + e);
@@ -816,7 +811,7 @@ public class Scaler extends HttpServlet {
 				}
 			} catch (FileOpException ex) {
 			} // so we don't get a loop
-			return;
+
 		}
 	}
 
