@@ -1,23 +1,3 @@
-/* navcat_ie -- JS library for digilib (IE version)
-
-  Digital Image Library servlet components
-
-  Copyright (C) 2001, 2002 Christian Luginbuehl (luginbuehl@student.unibe.ch)
-
-  This program is free software; you can redistribute  it and/or modify it
-  under  the terms of  the GNU General  Public License as published by the
-  Free Software Foundation;  either version 2 of the  License, or (at your
-  option) any later version.
-   
-  Please read license.txt for the full details. A copy of the GPL
-  may be found at http://www.gnu.org/copyleft/lgpl.html
-
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-*/
-
 // these two global variables have to be initialised before the frist use of the functions below
 // to fill in the attributes you can use the function initPicture provided below
 // - array with all attributes
