@@ -103,10 +103,10 @@ public class Scaler extends HttpServlet {
     // FileOps instance
     fileOp = new FileOps(util);
     // global DocuImage instance (don't reuse inside a request!)
-    //globalImage = new JAIDocuImage(util);
+    globalImage = new JAIDocuImage(util);
     // globalImage = new JIMIDocuImage(util);
     //globalImage = new ImageLoaderDocuImage(util);
-    globalImage = new JAIImageLoaderDocuImage(util);
+    //globalImage = new JAIImageLoaderDocuImage(util);
   }
 
   /**Process the HTTP Get request*/
@@ -211,10 +211,10 @@ public class Scaler extends HttpServlet {
     try {
 
     // DocuImage instance
-    //DocuImage docuImage = new JAIDocuImage(util);
+    DocuImage docuImage = new JAIDocuImage(util);
     //DocuImage docuImage = new JIMIDocuImage(util);
     //DocuImage docuImage = new ImageLoaderDocuImage(util);
-    DocuImage docuImage = new JAIImageLoaderDocuImage(util);
+    //DocuImage docuImage = new JAIImageLoaderDocuImage(util);
 
     /**
      *  find the file to load/send
@@ -361,6 +361,17 @@ public class Scaler extends HttpServlet {
       try {
         if (errorMsgHtml) {
           servletOp.htmlMessage("ERROR: Image Operation Error: "+e, response);
+        } else {
+          globalImage.sendFile(errorImgFile, response);
+        }
+      } catch (FileOpException ex) {} // so we don't get a loop
+      return;
+    }
+    catch (RuntimeException e) {
+      Utils.dprintln(1, "ERROR: Any other Error: "+e);
+      try {
+        if (errorMsgHtml) {
+          servletOp.htmlMessage("ERROR: Other Error: "+e, response);
         } else {
           globalImage.sendFile(errorImgFile, response);
         }
