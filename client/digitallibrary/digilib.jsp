@@ -186,8 +186,8 @@ newParameter('rot', '<%= dlRequest.getAsString("rot") %>', '0.0', 1);
 newParameter('rgba', '<%= dlRequest.getAsString("rgba") %>', '', 1);
 newParameter('rgbm', '<%= dlRequest.getAsString("rgbm") %>', '', 1);
 
-newParameter('ddpix', '<%= dlRequest.getAsString("ddpix") %>', '', 9);
-newParameter('ddpiy', '<%= dlRequest.getAsString("ddpiy") %>', '', 9);
+newParameter('ddpix', '<%= dlRequest.getAsString("ddpix") %>', '', 1);
+newParameter('ddpiy', '<%= dlRequest.getAsString("ddpiy") %>', '', 1);
 
 </script>
 
