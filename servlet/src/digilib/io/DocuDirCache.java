@@ -115,11 +115,14 @@ public class DocuDirCache {
 							return null;
 						}
 					} else {
-						// not a real cache miss then
+						// then it was not a real cache miss
 						misses--;
 					}
 					// get the file's index
 					n = dd.indexOf(f.getName());
+				} else {
+					// it's not even a file :-(
+					return null;
 				}
 			}
 		} else {
@@ -177,6 +180,9 @@ public class DocuDirCache {
 						// not a real cache miss then
 						misses--;
 					}
+				} else {
+					// it's not even a file :-(
+					return null;
 				}
 			}
 		} else {
