@@ -1,27 +1,26 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
 <html>
 <head>
-<title>Installation of digilib</title>
+<title>Installation of alcatraz/digilib</title>
 </head>
 
 <body>
 <h1>What you need to install digilib</h1>
 
 <ul>
-  <li>Java JDK &gt;1.2 (preferred 1.3)</li>
+  <li>Java JDK &gt;1.2 (preferred 1.4 and up)</li>
+  
   <li><a href="http://jakarta.apache.org/tomcat/index.html" >Jakarta
-  tomcat</a> version 4.0.1 from
+  Tomcat</a> version 4 or later (preferred 4.1 and up) from
   <a href="http://jakarta.apache.org<" >http://jakarta.apache.org</a></li>
+  
   <li>The digilib distribution packages (from
   <a href="http://developer.berlios.de" >http://developer.berlios.de</a>)
   <ul>
-    <li>digilib scripts and servlets package
-    <a href="http://download.berlios.de/digilib/digilib-core-1.0.zip"><code>digilib-core.zip</code></a></li>
+    <li>alcatraz/digilib scripts and servlets package
+    <a href="http://download.berlios.de/digilib/alcatraz-core-0.3.zip"><code>alcatraz-core.zip</code></a></li>
     <li>digilib configuration files for tomcat 4 package
-    <a href="http://download.berlios.de/digilib/digilib-tomconf-1.0.zip"><code>digilib-tomconf.zip</code></a></li>
-    <li>digilib external libraries package <a href="http://download.berlios.de/digilib/digilib-ext-1.0.zip"><code>digilib-ext.zip</code></a>
-    (Not essential. Contains documentation to JAI 1.1.1 and Xerces
-    1.4.3)</li>
+    <a href="http://download.berlios.de/digilib/alcatraz-tomconf-0.1.zip"><code>alcatraz-tomconf.zip</code></a> (Not essential)</li>
   </ul>
   </li>
 </ul>
@@ -31,35 +30,48 @@
 <h2>On Linux</h2>
 
 <ol>
-  <li>Make shure Java JDK is installed</li>
+  <li>Make shure the Java JDK is installed (a JRE won't do).</li>
+
   <li>Create a base directory for docuserver (the default used here is
   <code>/docuserver</code>) and for the web interface
   (<code>/docuserver/www</code>).</li>
-  <li>Unpack the <code>digilib-core</code> package in the web
+
+  <li>Unpack the <code>alcatraz-core</code> package in the web
   interface directory (<code>/docuserver/www</code>). This will create
   the digilib directory <code>digitallibrary</code>.</li>
-  <li>(optional) Unpack the <code>digilib-ext</code> package in the
-  docuserver directory.</li>
-  <li>Unpack Jakarta tomcat 4.0.1 in <code>/opt</code> This should
-  produce a directory <code>/opt/jakarta-tomcat-4.0.1</code>. Create a
-  link <code>/opt/tomcat</code> to the new directory.</li>
-  <li>Unpack the configuration files package
+
+  <li>Unpack Jakarta Tomcat 4.1.24 in <code>/docuserver</code> This should
+  produce a directory <code>/docuserver/jakarta-tomcat-4.1.24</code>. Create a
+  link <code>/docuserver/tomcat</code> to the new directory.</li>
+
+  <li>(optional) Unpack the configuration files package
   <code>digilib-tomconf</code> in the tomcat directory.</li>
-  <li>Adjust hostname and HTML-base directory in the file
-  <code>server.xml</code> (in the directory
-  <code>/opt/tomcat/conf</code>, see below for details))</li>
+
+  <li>Create a link from the digilib directory into the Tomcat webapps
+  directory <code>/docuserver/tomcat/webapps</code> (type <code>ln -s
+  /docuserver/www/digitallibrary /docuserver/tomcat/webapps</code>) This is
+  the default installation running on port 8080 as
+  <code>http://myserver:8080/digitallibrary/</code>.</li>
+
   <li>Adjust the path to the JDK and its options in
   <code>catalina.sh</code> (in the directory
-  <code>/opt/tomcat/bin</code>, see below for details)</li>
+  <code>/docuserver/tomcat/bin</code>, see below for details)</li>
+
   <li>(optional) For SuSE Linux you can use the startup skript
   <code>tomcat/bin/rctomcat</code>
   to start and stop the tomcat server. Copy the script into
   <code>/etc/init.d</code> as <code>tomcat</code> and set runlevel
   links accordingly.</li>
+
   <li>(optional) Set the tomcat directory and all files to be owned by
-  the user
-  <code>wwwrun</code> (or whatever your webserver runs) and use this
-  account to start the tomcat server.</li>
+  the user <code>wwwrun</code> (or whatever your webserver runs) and
+  use this account to start the tomcat server.</li>
+
+  <li>to use Mozilla-XUL functionality a user have to open the page
+  http://myserver:8080/digitallibrary/xul/install_sidebar.jsp
+  in a mozilla compatible browser and press the button 'install button
+  list into sidebar'</li>
+
 </ol>
 
 
@@ -82,9 +94,9 @@ webserver. There are two possible connectors for Apache and Tomcat4:
 
 <h3>catalina.sh</h3>
 
-<p>The file <code>catalina.sh</code> (in <code>/opt/tomcat/bin</code>
-has been modified to provide the path to the JDK and runtime options
-for the Java VM. Somewhere at the beginning of the file are two lines
+<p>The file <code>catalina.sh</code> (in <code>/docuserver/tomcat/bin</code>
+can be modified to provide the path to the JDK and runtime options
+for the Java VM. Somewhere at the beginning of the file you can put two lines
 like this:</p>
 
 <pre>
@@ -98,82 +110,14 @@ with the <code>-mx512m</code> option.</p>
 
 <p>You can delete those two lines if you set these variables in your
 shell before starting tomcat in that same shell. These lines are
-needed if you want to use the startup script for linux mentioned
-above.</p>
-
-
-<h3>server.xml</h3>
-
-<p>The environment of the tomcat server is configured in the file
-<code>server.xml</code> in <code>/opt/tomcat/conf</code>. Extensive <a
-href="http://jakarta.apache.org/tomcat/tomcat-4.0-doc/index.html">documentation
-about all options</a> can by found on the webpages of the tomcat
-project.</p>
-
-<p>A minimal configuration file for running digilib is provided in the
-<code>digilib-tomconf</code> package. For standard operation only a
-few adjustments have to be made. The configuration file should look
-like this:</p>
-
-<pre>
-&lt;!-- Digilib Server Configuration File --&gt;
-
-&lt;Server port="8005" shutdown="SHUTDOWN" debug="0"&gt;
-
-  &lt;!-- Define an Apache-Connector Service --&gt;
-  &lt;Service name="Tomcat-Docuserver"&gt;
-
-    &lt;!-- Define a non-SSL HTTP/1.1 Connector on port 8080 --&gt;
-    &lt;Connector className="org.apache.catalina.connector.http.HttpConnector"
-               port=<b>"8080"</b> minProcessors="5" maxProcessors="75"
-               acceptCount="10" debug="0" connectionTimeout="60000"/&gt;
-
-    &lt;!-- Replace "localhost" with what your Apache "ServerName" is set to --&gt;
-    &lt;Engine className="org.apache.catalina.connector.warp.WarpEngine"
-     name="Apache" debug="1" appBase="webapps" defaultHost=<b>"hera.unibe.ch"</b>&gt;
-
-      &lt;!-- Global logger unless overridden at lower levels --&gt;
-      &lt;Logger className="org.apache.catalina.logger.FileLogger"
-              prefix="apache_log." suffix=".txt"
-              timestamp="true"/&gt;
-
-      &lt;!-- Define the default virtual host. Hostname must match the engine's. --&gt;
-      &lt;Host name=<b>"hera.unibe.ch"</b> debug="0" appBase=<b>"/docuserver/www"</b>&gt;
-
-        &lt;Context path="/docuserver/digitallibrary" docBase=<b>"/docuserver/www/digitallibrary"</b> debug="0" reloadable="false"&gt;
-	&lt;/Context&gt;
-
-      &lt;/Host&gt;
-
-      &lt;!-- Because this Realm is here, an instance will be shared globally --&gt;
-      &lt;Realm className="org.apache.catalina.realm.MemoryRealm" /&gt;
-
-    &lt;/Engine&gt;
-
-  &lt;/Service&gt;
-
-&lt;/Server&gt;
-</pre>
-
-<p>You can change the portnumber of your server to be something other
-than <b>8080</b> in the <code>port</code> property. If you want to use the
-default webserver port 80 you have to run tomcat as the root user (it
-is less secure to do this!).</p>
-
-<p>You have to change the occurences of <b>hera.unibe.ch</b> (in
-the <code>defaultHost</code> and <code>name</code> properties) to your
-hostname.</p>
-
-<p>Then you can adjust the <b>/docuserver/www</b> path to the
-directory where you installed the <code>digilib-core</code>
-package. You should not change the <code>path</code> property but only
-the <code>appBase</code> and <code>docBase</code> properties!</p>
+needed if you want to use the startup script mentioned above under
+linux .</p>
 
 
 <h3>tomcat-users.xml</h3>
 
 <p>All passwords and usernames have to be set up in the file
-<code>tomcat-users.xml</code> in <code>/opt/tomcat/conf</code> if you
+<code>tomcat-users.xml</code> in <code>/docuserver/tomcat/conf</code> if you
 want to use authentication in digilib. The file looks like this:</p>
 
 <pre>
@@ -192,8 +136,13 @@ restricted resource. A user can have one or more
 an authenticated user is allowed to access a document (see
 <code>digilib-auth.xml</code> below).</p>
 
+<p>If you want to use the webinterface to configure Tomcat, you have to
+add administrational account with the roles <code>admin</code> and
+<code>manager</code>.</p>
+
 <p>tomcat has to be restarted before changes to
 <code>tomcat-users.xml</code> have effect!</p>
+
 
 <h2>Digilib</h2>
 
@@ -204,7 +153,7 @@ file <code>web.xml</code> in the <code>WEB-INF</code> subdirectory of
 the digilib directory
 (<code>/docuserver/www/digitallibrary/WEB-INF</code>).</p>
 
-<p>The only parameter you might have to adjust is the position of the
+<p>The only parameter you will have to adjust is the position of the
 digilib configuration file. The parameter occurs twice in the file and
 looks like this:</p>
 
@@ -218,10 +167,11 @@ looks like this:</p>
 &lt;/init-param&gt;
 </pre>
 
-<p>Change the path to where you installed the configuration files.</p>
+<p>Change the path to point where you installed the configuration files.</p>
 
-<p>Make shure to change the parameter in both places! It is needed
-both for the servlet and the JSP pages!</p>
+<p>Make shure to change the parameter in both places in the config
+file! It is needed both for the servlet and the JSP pages!</p>
+
 
 <h3>digilib-config.xml</h3>
 
@@ -246,8 +196,9 @@ options. The file looks like this:</p>
   &lt;parameter name="denied-image" value=<b>"/docuserver/images/icons/alert.red.gif"</b> /&gt;
 
   &lt;!-- List of directories where images are searched.
-       Directories with low-resolution images are first in list. --&gt;
-  &lt;parameter name="basedir-list" value=<b>"/docuserver/scaled/small:/docuserver/images:/docuserver/scans/quellen"</b> /&gt;
+       The authoritative directory with the high-resolution images
+       is first in list. --&gt;
+  &lt;parameter name="basedir-list" value=<b>"/docuserver/images:/docuserver/scaled/small"</b> /&gt;
 
   &lt;!-- Restrict access to authorized users.
        User authentication and roles are provided by the servlet container 
@@ -256,7 +207,7 @@ options. The file looks like this:</p>
        (see auth-file). --&gt;
   &lt;parameter name="use-authorization" value="true" /&gt;
 
-  &lt;!-- 	  URL location of XML file with authorization requirements. --&gt;
+  &lt;!-- Location of XML file with authorization requirements. --&gt;
   &lt;parameter name="auth-file" value=<b>"/docuserver/www/digitallibrary/WEB-INF/digilib-auth.xml"</b> /&gt;
 
   &lt;!-- Part of URL to indicate authenticated access to Tomcat. --&gt;
@@ -267,7 +218,8 @@ options. The file looks like this:</p>
 <p>You have to adjust the <code>basedir-list</code> parameter to the
 directories where your images are installed. You need only one
 directory if you do not have prescaled low resolution versions of your
-images.</p>
+images. The directory with the high-resolution versions must be the
+first entry in the list.</p>
 
 <p>You can supply your own images for the &quot;error&quot; and
 &quot;access denied&quot; messages by the servlet. Standard images
@@ -332,5 +284,5 @@ and password.</p>
 
 <hr>
 <address>robert.casties@philo.unibe.ch</address>
-<!-- hhmts start --> Last modified: Thu Jan 17 19:12:01 CET 2002 <!-- hhmts end -->
+<!-- hhmts start -->Last modified: Tue May 13 23:35:13 CEST 2003 <!-- hhmts end -->
 </body> </html>
