@@ -23,63 +23,97 @@ package digilib.io;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 public class FileOps {
 
-	public static String[] fileTypes =
-		{
-			"jpg",
-			"image/jpeg",
-			"jpeg",
-			"image/jpeg",
-			"jp2",
-			"image/jp2",
-			"png",
-			"image/png",
-			"gif",
-			"image/gif",
-			"tif",
-			"image/tiff",
-			"tiff",
-			"image/tiff",
-			"txt",
-			"text/plain",
-			"html",
-			"text/html",
-			"htm",
-			"text/html",
-			"xml",
-			"text/xml",
-			"svg",
-			"image/svg+xml" };
+	/**
+	 * Array of file extensions and corresponding mime-types.
+	 */
+	private static String[][] ft = { { "jpg", "image/jpeg" },
+			{ "jpeg", "image/jpeg" }, { "jp2", "image/jp2" },
+			{ "png", "image/png" }, { "gif", "image/gif" },
+			{ "tif", "image/tiff" }, { "tiff", "image/tiff" },
+			{ "txt", "text/plain" }, { "html", "text/html" },
+			{ "htm", "text/html" }, { "xml", "text/xml" },
+			{ "svg", "image/svg+xml" } };
 
-	public static String[] imageExtensions =
-		{ "jpg", "jpeg", "jp2", "png", "gif", "tif", "tiff" };
+	public static Map fileTypes;
 
-	public static String[] textExtensions = { "txt", "html", "htm", "xml" };
+	public static List imageExtensions;
 
-	public static String[] svgExtensions = { "svg" };
+	public static List textExtensions;
+
+	public static List svgExtensions;
 
 	public static final int CLASS_NONE = -1;
+
 	public static final int CLASS_IMAGE = 0;
+
 	public static final int CLASS_TEXT = 1;
+
 	public static final int CLASS_SVG = 2;
+
 	public static final int NUM_CLASSES = 3;
+
+	public static final Integer HINT_BASEDIRS = new Integer(1);
+
+	public static final Integer HINT_FILEEXT = new Integer(2);
+
+	public static final Integer HINT_DIRS = new Integer(3);
+
+	/**
+	 * static initializer for FileOps
+	 */
+	static {
+		fileTypes = new HashMap();
+		imageExtensions = new ArrayList();
+		textExtensions = new ArrayList();
+		svgExtensions = new ArrayList();
+		for (int i = 0; i < ft.length; i++) {
+			String ext = ft[i][0];
+			String mt = ft[i][1];
+			fileTypes.put(ext, mt);
+			if (classForMimetype(mt) == CLASS_IMAGE) {
+				imageExtensions.add(ext);
+			} else if (classForMimetype(mt) == CLASS_TEXT) {
+				textExtensions.add(ext);
+			} else if (classForMimetype(mt) == CLASS_SVG) {
+				svgExtensions.add(ext);
+			}
+		}
+	}
+
+	/**
+	 * returns the file class for a mime-type
+	 * 
+	 * @param mt
+	 * @return
+	 */
+	public static int classForMimetype(String mt) {
+		if (mt == null) {
+			return CLASS_NONE;
+		}
+		if (mt.startsWith("image/svg")) {
+			return CLASS_SVG;
+		} else if (mt.startsWith("image")) {
+			return CLASS_IMAGE;
+		} else if (mt.startsWith("text")) {
+			return CLASS_TEXT;
+		}
+		return CLASS_NONE;
+	}
 
 	/**
 	 * get the mime type for a file format (by extension)
 	 */
 	public static String mimeForFile(File f) {
-		String fn = f.getName();
-		for (int i = 0; i < fileTypes.length; i += 2) {
-			if (fn.toLowerCase().endsWith(fileTypes[i])) {
-				return fileTypes[i + 1];
-			}
-		}
-		return null;
+		return (String) fileTypes.get(extname(f.getName().toLowerCase()));
 	}
 
 	/**
@@ -89,32 +123,20 @@ public class FileOps {
 	 * @return
 	 */
 	public static int classForFilename(String fn) {
-		int n = imageExtensions.length;
-		for (int i = 0; i < n; i++) {
-			if (fn.toLowerCase().endsWith(imageExtensions[i])) {
-				return CLASS_IMAGE;
-			}
-		}
-		n = textExtensions.length;
-		for (int i = 0; i < n; i++) {
-			if (fn.toLowerCase().endsWith(textExtensions[i])) {
-				return CLASS_TEXT;
-			}
-		}
-		return CLASS_NONE;
-
+		String mt = (String) fileTypes.get(extname(fn).toLowerCase());
+		return classForMimetype(mt);
 	}
 
 	public static Iterator getImageExtensionIterator() {
-		return Arrays.asList(imageExtensions).iterator();
+		return imageExtensions.iterator();
 	}
 
 	public static Iterator getTextExtensionIterator() {
-		return Arrays.asList(textExtensions).iterator();
+		return textExtensions.iterator();
 	}
 
 	public static Iterator getSVGExtensionIterator() {
-		return Arrays.asList(svgExtensions).iterator();
+		return svgExtensions.iterator();
 	}
 
 	/**
@@ -164,8 +186,8 @@ public class FileOps {
 	 * Extract the extension of a file name.
 	 * 
 	 * Returns the extension of a file name. The extension is the part behind
-	 * the last dot in the filename. If the filename has no dot the empty
-	 * string is returned.
+	 * the last dot in the filename. If the filename has no dot the empty string
+	 * is returned.
 	 * 
 	 * @param fn
 	 * @return
@@ -181,9 +203,9 @@ public class FileOps {
 	/**
 	 * Extract the parent directory of a (digilib) path name.
 	 * 
-	 * Returns the parent directory of a path name. The parent is the part before
-	 * the last slash in the path name. If the path name has no slash the empty
-	 * string is returned.
+	 * Returns the parent directory of a path name. The parent is the part
+	 * before the last slash in the path name. If the path name has no slash the
+	 * empty string is returned.
 	 * 
 	 * @param fn
 	 * @return
@@ -196,10 +218,11 @@ public class FileOps {
 		return "";
 	}
 
-	/** Normalize a path name.
+	/**
+	 * Normalize a path name.
 	 * 
 	 * Removes leading and trailing slashes. Returns null if there is other
-	 * unwanted stuff in the path name. 
+	 * unwanted stuff in the path name.
 	 * 
 	 * @param pathname
 	 * @return
@@ -219,25 +242,28 @@ public class FileOps {
 			a++;
 		}
 		while ((a < e) && (pathname.charAt(e) == '/')) {
-			e--; 
+			e--;
 		}
 		return pathname.substring(a, e + 1);
 	}
-	
-	
+
+	/**
+	 * FileFilter for general files
+	 */
+	static class ReadableFileFilter implements FileFilter {
+
+		public boolean accept(File f) {
+			return f.canRead();
+		}
+	}
+
 	/**
 	 * FileFilter for image types (helper class for getFile)
 	 */
 	static class ImageFileFilter implements FileFilter {
 
 		public boolean accept(File f) {
-			if (f.isFile()) {
-				return (
-					(mimeForFile(f) != null)
-						&& (mimeForFile(f).startsWith("image")));
-			} else {
-				return false;
-			}
+			return (classForFilename(f.getName()) == CLASS_IMAGE);
 		}
 	}
 
@@ -247,13 +273,7 @@ public class FileOps {
 	static class TextFileFilter implements FileFilter {
 
 		public boolean accept(File f) {
-			if (f.isFile()) {
-				return (
-					(mimeForFile(f) != null)
-						&& (mimeForFile(f).startsWith("text")));
-			} else {
-				return false;
-			}
+			return (classForFilename(f.getName()) == CLASS_TEXT);
 		}
 	}
 
@@ -264,13 +284,7 @@ public class FileOps {
 	static class SVGFileFilter implements FileFilter {
 
 		public boolean accept(File f) {
-			if (f.isFile()) {
-				return (
-					(mimeForFile(f) != null)
-						&& (mimeForFile(f).startsWith("image/svg")));
-			} else {
-				return false;
-			}
+			return (classForFilename(f.getName()) == CLASS_SVG);
 		}
 	}
 
@@ -293,33 +307,70 @@ public class FileOps {
 		return null;
 	}
 
-	/** Factory for DocuDirents based on file class.
+	/**
+	 * Factory for DocuDirents based on file class.
 	 * 
-	 * Returns an ImageFileset, TextFile or SVGFile. 
-	 * baseDirs and scalext are only for ImageFilesets.
+	 * Returns an ImageFileset, TextFile or SVGFile. baseDirs and scalext are
+	 * only for ImageFilesets.
 	 * 
 	 * @param fileClass
 	 * @param file
-	 * @param baseDirs array of base directories (for ImageFileset)
-	 * @param scalext first extension to try for scaled images (for ImageFileset)
+	 * @param hints
+	 *            optional additional parameters
 	 * @return
 	 */
-	public static DocuDirent fileForClass(
-		int fileClass,
-		File file,
-		Directory[] baseDirs,
-		String scalext) {
+	public static DocuDirent fileForClass(int fileClass, File file, Map hints) {
 		// what class of file do we have?
 		if (fileClass == CLASS_IMAGE) {
 			// image file
-			return new ImageFileset(baseDirs, file, scalext);
+			return new ImageFileset(file, hints);
 		} else if (fileClass == CLASS_TEXT) {
 			// text file
-			return  new TextFile(file);
+			return new TextFile(file);
 		} else if (fileClass == CLASS_SVG) {
 			// text file
-			return  new SVGFile(file);
+			return new SVGFile(file);
 		}
 		return null;
 	}
+
+	/**
+	 * Filters a list of Files through a FileFilter.
+	 * 
+	 * @param files
+	 * @param filter
+	 * @return
+	 */
+	public static File[] listFiles(File[] files, FileFilter filter) {
+		if (files == null) {
+			return null;
+		}
+		File[] ff = new File[files.length];
+		int ffi = 0;
+		for (int i = 0; i < files.length; i++) {
+			if (filter.accept(files[i])) {
+				ff[ffi] = files[i];
+				ffi++;
+			}
+		}
+		File[] fff = new File[ffi];
+		System.arraycopy(ff, 0, fff, 0, ffi);
+		return fff;
+	}
+
+	/**
+	 * Creates a new hints Map with the given first element.
+	 * 
+	 * @param type
+	 * @param value
+	 * @return
+	 */
+	public static Map newHints(Integer type, Object value) {
+		HashMap m = new HashMap();
+		if (type != null) {
+			m.put(type, value);
+		}
+		return m;
+	}
+
 }

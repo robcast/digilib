@@ -22,16 +22,24 @@
 package digilib.io;
 
 import java.io.File;
+import java.util.Arrays;
+
+import org.apache.log4j.Logger;
 
 /** Class for filesystem directories
  * @author casties
  *
  */
 public class Directory {
-	// File object pointing to the directory
+
+	protected Logger logger = Logger.getLogger(this.getClass());
+
+	/** File object pointing to the directory */
 	File dir = null;
-	// parent directory
+	/** parent directory */
 	Directory parent = null;
+	/** list of filenames in the directory */
+	protected String[] list = null;
 
 	/** Default constructor.
 	 * 
@@ -66,6 +74,22 @@ public class Directory {
 		dir = new File(dn);
 	}
 	
+	
+	/** Reads the names of the files in the directory.
+	 * Fills the filenames array. Returns if the operation was successful.
+	 * 
+	 * @return
+	 */
+	public boolean readDir() {
+		if (dir != null) {
+			System.out.println("start reading dir");
+			list = dir.list();
+			Arrays.sort(list);
+			System.out.println("done reading dir");
+		}
+		return (list != null);
+	}
+	
 	/**
 	 * @return
 	 */
@@ -95,4 +119,16 @@ public class Directory {
 	}
 
 
+	/**
+	 * @return Returns the filenames.
+	 */
+	public String[] getFilenames() {
+		return list;
+	}
+	/**
+	 * @param filenames The filenames to set.
+	 */
+	public void setFilenames(String[] filenames) {
+		this.list = filenames;
+	}
 }

@@ -26,6 +26,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import digilib.servlet.DigilibConfiguration;
+
 /**
  * @author casties
  *  
@@ -38,21 +40,17 @@ public class AliasingDocuDirCache extends DocuDirCache {
 	 * @param confFileName
 	 * @throws FileOpException
 	 */
-	public AliasingDocuDirCache(
-		String[] baseDirs,
-		int[] fileClasses,
-		String confFileName)
-		throws FileOpException {
+	public AliasingDocuDirCache(String[] baseDirs, int[] fileClasses,
+			File confFile, DigilibConfiguration dlConfig)
+			throws FileOpException {
 		// create standard DocuDirCache
-		super(baseDirs, fileClasses);
+		super(baseDirs, fileClasses, dlConfig);
 		HashMap pathMap = null;
 		// read alias config file
 		try {
-			// create data loader for mapping-file
-			File confFile = new File(confFileName);
 			// load into pathMap
-			XMLListLoader mapLoader =
-				new XMLListLoader("digilib-aliases", "mapping", "link", "dir");
+			XMLListLoader mapLoader = new XMLListLoader("digilib-aliases",
+					"mapping", "link", "dir");
 			pathMap = mapLoader.loadURL(confFile.toURL().toString());
 		} catch (Exception e) {
 			throw new FileOpException("ERROR loading mapping file: " + e);
@@ -64,13 +62,13 @@ public class AliasingDocuDirCache extends DocuDirCache {
 		/*
 		 * load map entries into cache
 		 */
-		
+
 		for (Iterator i = pathMap.keySet().iterator(); i.hasNext();) {
-			String link = FileOps.normalName((String)i.next());
+			String link = FileOps.normalName((String) i.next());
 			String dir = (String) pathMap.get(link);
 			DocuDirectory destDir = new DocuDirectory(dir, this);
 			if (destDir.isValid()) {
-				logger.debug("Aliasing dir: "+link);
+				logger.debug("Aliasing dir: " + link);
 				// add the alias name
 				putName(link, destDir);
 				// add the real dir
@@ -79,17 +77,19 @@ public class AliasingDocuDirCache extends DocuDirCache {
 		}
 	}
 
-	/** Adds a DocuDirectory under another name to the cache.
+	/**
+	 * Adds a DocuDirectory under another name to the cache.
 	 * 
-	 * @param name 
+	 * @param name
 	 * @param newdir
 	 */
 	public void putName(String name, DocuDirectory newdir) {
 		if (map.containsKey(name)) {
-			logger.warn("Duplicate key in AliasingDocuDirCache.put -- ignored!");
+			logger
+					.warn("Duplicate key in AliasingDocuDirCache.put -- ignored!");
 		} else {
 			map.put(name, newdir);
 		}
 	}
-	
+
 }

@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.xml.sax.SAXException;
 
@@ -179,17 +180,33 @@ public class DocuDirectory extends Directory {
 			File d = new File(baseDirNames[j], dirName);
 			if (d.isDirectory()) {
 				dirs[j] = new Directory(d);
+				dirs[j].readDir();
 			}
 		}
 
+		// read all filenames
+		logger.debug("reading directory "+dir.getPath());
+		/*
+		 * using ReadableFileFilter is safer (we won't get directories
+		 * with file extensions) but slower.
+		 */
+		File[] allFiles = null;
+		if (cache.safeDirIndex) {
+			allFiles = dir.listFiles(new FileOps.ReadableFileFilter());
+		} else {
+			allFiles = dir.listFiles();
+		}
+		logger.debug("  done");
+		if (allFiles == null) {
+			// not a directory
+			return false;
+		}
 		// go through all file classes
 		for (int nc = 0; nc < FileOps.NUM_CLASSES; nc++) {
 			int fc = cache.getFileClasses()[nc];
-			File[] fl = dir.listFiles(FileOps.filterForClass(fc));
-			if (fl == null) {
-				// not a directory
-				return false;
-			}
+			//logger.debug("filtering directory "+dir.getPath()+" for class "+fc);
+			File[] fl = FileOps.listFiles(allFiles, FileOps.filterForClass(fc));
+			//logger.debug("  done");
 			// number of files in the directory
 			int nf = fl.length;
 			if (nf > 0) {
@@ -197,8 +214,10 @@ public class DocuDirectory extends Directory {
 				list[fc] = new ArrayList(nf);
 				// sort the file names alphabetically and iterate the list
 				Arrays.sort(fl);
+				Map hints = FileOps.newHints(FileOps.HINT_BASEDIRS, dirs);
+				hints.put(FileOps.HINT_FILEEXT, scalext);
 				for (int i = 0; i < nf; i++) {
-					DocuDirent f = FileOps.fileForClass(fc, fl[i], dirs, scalext);
+					DocuDirent f = FileOps.fileForClass(fc, fl[i], hints);
 					// add the file to our list
 					list[fc].add(f);
 					f.setParent(this);
@@ -381,7 +400,7 @@ public class DocuDirectory extends Directory {
 		// try again without extension
 		for (int i = 0; i < n; i++) {
 			DocuDirent fs = (DocuDirent) list[fc].get(i);
-			if (fs.getBasename().equals(FileOps.basename(fn))) {
+			if (FileOps.basename(fs.getName()).equals(FileOps.basename(fn))) {
 				// basename matches
 				return i;
 			}

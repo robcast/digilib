@@ -20,8 +20,10 @@ package digilib.io;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.ListIterator;
+import java.util.Map;
 
 import digilib.image.DocuInfo;
 import digilib.image.ImageSize;
@@ -47,39 +49,32 @@ public class ImageFileset extends DocuDirent {
 	private double resY = 0;
 
 	/**
-	 * Creator for empty fileset with size for file list.
+	 * Creator for empty fileset.
 	 * 
 	 * 
 	 * @param initialCapacity
 	 */
-	public ImageFileset(int initialCapacity) {
-		list = new ArrayList(initialCapacity);
+	public ImageFileset() {
+		list = new ArrayList();
 	}
 
 	/**
-	 * Creator with a file and base directories.
+	 * Constructor with a file and hints.
 	 * 
-	 * Reads the file and fills the fileset with corresponding files from the
-	 * other base directories. First entry in dirs is the parent of this
-	 * fileset.
+	 * The hints are expected to contain 'basedirs' and 'scaledfilext' keys.
 	 * 
-	 * 
-	 * @see fill
-	 * 
-	 * @param dirs
-	 *            array of base directories
 	 * @param file
-	 *            first file to read
-	 * @param scalext
-	 *            extension for scaled images
+	 * @param hints
 	 */
-	public ImageFileset(Directory[] dirs, File file, String scalext) {
+	public ImageFileset(File file, Map hints) {
+		Directory[] dirs = (Directory[]) hints.get(FileOps.HINT_BASEDIRS);
 		int nb = dirs.length;
 		list = new ArrayList(nb);
 		parent = dirs[0];
-		fill(dirs, file, scalext);
+		fill(dirs, file, hints);		
 	}
-
+	
+	
 	/**
 	 * Adds an ImageFile to this Fileset.
 	 * 
@@ -234,13 +229,14 @@ public class ImageFileset extends DocuDirent {
 	 *            list of base directories
 	 * @param fl
 	 *            file (from first base dir)
-	 * @param scalext
-	 *            first extension to try in other base dirs
+	 * @param hints
+	 *            
 	 */
-	void fill(Directory[] dirs, File fl, String scalext) {
+	void fill(Directory[] dirs, File fl, Map hints) {
+		String scalext = (String) hints.get(FileOps.HINT_FILEEXT);
 		int nb = dirs.length;
 		String fn = fl.getName();
-		String fnx = fn.substring(0, fn.lastIndexOf('.') + 1);
+		String baseFn = FileOps.basename(fn);
 		// add the first ImageFile to the ImageFileset
 		add(new ImageFile(fn, this, parent));
 		// iterate the remaining base directories
@@ -248,30 +244,40 @@ public class ImageFileset extends DocuDirent {
 			if (dirs[j] == null) {
 				continue;
 			}
-			File f;
+			// read the directories
+			if (dirs[j].getFilenames() == null) {
+				dirs[j].readDir();
+			}
+			File f = null;
+			String[] dirFiles = dirs[j].getFilenames();
 			if (scalext != null) {
 				// use the last extension
-				f = new File(dirs[j].getDir(), fnx + scalext);
+				int i = Arrays.binarySearch(dirFiles, baseFn + scalext);
+				if (i >= 0) {
+					f = new File(dirs[j].getDir(), dirFiles[i]);
+				}
 			} else {
 				// try the same filename as the original
-				f = new File(dirs[j].getDir(), fn);
+				int i = Arrays.binarySearch(dirFiles, fn);
+				if (i >= 0) {
+					f = new File(dirs[j].getDir(), dirFiles[i]);
+				}
 			}
-			// if the file exists, add to the ImageFileset
-			if (f.canRead()) {
-				add(new ImageFile(f.getName(), this, dirs[j]));
-			} else {
+			// if the file doesn't exists, try other file extensions
+			if (f == null) {
 				// try other file extensions
-				Iterator exts = FileOps.getImageExtensionIterator();
-				while (exts.hasNext()) {
+				for (Iterator exts = FileOps.getImageExtensionIterator(); exts.hasNext();) {
 					String s = (String) exts.next();
-					f = new File(dirs[j].getDir(), fnx + s);
-					// if the file exists, add to the ImageFileset
-					if (f.canRead()) {
-						add(new ImageFile(f.getName(), this, dirs[j]));
-						scalext = s;
+					int i = Arrays.binarySearch(dirFiles, baseFn + s);
+					if (i >= 0) {
+						hints.put(FileOps.HINT_FILEEXT, s);
+						f = new File(dirs[j].getDir(), dirFiles[i]);
 						break;
 					}
 				}
+			}
+			if (f != null) {
+				add(new ImageFile(f.getName(), this, dirs[j]));
 			}
 		}
 	}

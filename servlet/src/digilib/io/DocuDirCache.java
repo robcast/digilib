@@ -30,6 +30,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import digilib.servlet.DigilibConfiguration;
+
 /**
  * @author casties
  */
@@ -49,6 +51,8 @@ public class DocuDirCache {
 	private long hits = 0;
 	/** number of cache misses */
 	private long misses = 0;
+	/** use safe (but slow) indexing */
+	boolean safeDirIndex = false;
 
 	/**
 	 * Constructor with array of base directory names and file classes.
@@ -56,10 +60,11 @@ public class DocuDirCache {
 	 * @param bd
 	 *            base directory names
 	 */
-	public DocuDirCache(String[] bd, int[] fileClasses) {
+	public DocuDirCache(String[] bd, int[] fileClasses, DigilibConfiguration dlConfig) {
 		baseDirNames = bd;
 		map = new HashMap();
 		this.fileClasses = fileClasses;
+		safeDirIndex = dlConfig.getAsBoolean("safe-dir-index");
 	}
 	/**
 	 * Constructor with array of base directory names.

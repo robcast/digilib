@@ -95,55 +95,56 @@ public abstract class DocuDirent {
 	public String getName() {
 		File f = getFile();
 		return (f != null) ? f.getName() : null;
-	} /**
-	   * The filename sans extension.
-	   * 
-	   * @return
-	   */
-	public String getBasename() {
-		File f = getFile();
-		if (f == null) {
-			return null;
-		}
-		return FileOps.basename(f.getName());
-	} /**
-	   * Returns the parent Directory.
-	   * 
-	   * @return DocuDirectory
-	   */
+	} 
+	
+	/**
+	 * Returns the parent Directory.
+	 * 
+	 * @return DocuDirectory
+	 */
 	public Directory getParent() {
 		return parent;
-	} /**
-	   * Sets the parent Directory.
-	   * 
-	   * @param parent
-	   *            The parent to set
-	   */
+	}
+	
+	/**
+	 * Sets the parent Directory.
+	 * 
+	 * @param parent
+	 *            The parent to set
+	 */
 	public void setParent(Directory parent) {
 		this.parent = parent;
-	} /**
-	   * Returns the meta-data for this file(set).
-	   * 
-	   * @return HashMap
-	   */
+	} 
+	
+	/**
+	 * Returns the meta-data for this file(set).
+	 * 
+	 * @return HashMap
+	 */
 	public HashMap getFileMeta() {
 		return fileMeta;
-	} /**
-	   * Sets the meta-data for this file(set) .
-	   * 
-	   * @param fileMeta
-	   *            The fileMeta to set
-	   */
+	} 
+	
+	/**
+	 * Sets the meta-data for this file(set) .
+	 * 
+	 * @param fileMeta
+	 *            The fileMeta to set
+	 */
 	public void setFileMeta(HashMap fileMeta) {
 		this.fileMeta = fileMeta;
-	} /**
-	   * @return
-	   */
+	} 
+	
+	/**
+	 * @return
+	 */
 	public boolean isMetaChecked() {
 		return metaChecked;
-	} /**
-	   * @return
-	   */
+	} 
+	
+	/**
+	 * @return
+	 */
 	public static int getFileClass() {
 		return fileClass;
 	}

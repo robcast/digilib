@@ -55,6 +55,8 @@ import digilib.io.XMLListLoader;
  */
 public class DigilibConfiguration extends ParameterMap {
 
+	private static final long serialVersionUID = -6630487070791637120L;
+
 	/** DocuImage class instance */
 	private Class docuImageClass = null;
 
@@ -102,13 +104,13 @@ public class DigilibConfiguration extends ParameterMap {
 		// image file to send in case of error
 		newParameter(
 			"error-image",
-			"/docuserver/images/icons/scalerror.gif",
+			new File("/docuserver/images/icons/scalerror.gif"),
 			null,
 			'f');
 		// image file to send if access is denied
 		newParameter(
 			"denied-image",
-			"/docuserver/images/icons/denied.gif",
+			new File("/docuserver/images/icons/denied.gif"),
 			null,
 			'f');
 		// base directories in order of preference (prescaled versions last)
@@ -117,7 +119,7 @@ public class DigilibConfiguration extends ParameterMap {
 		// use authentication information
 		newParameter("use-authorization", Boolean.FALSE, null, 'f');
 		// authentication configuration file
-		newParameter("auth-file", "digilib-auth.xml", null, 'f');
+		newParameter("auth-file", new File("digilib-auth.xml"), null, 'f');
 		// sending image files as-is allowed
 		newParameter("sendfile-allowed", Boolean.TRUE, null, 'f');
 		// Debug level
@@ -137,11 +139,13 @@ public class DigilibConfiguration extends ParameterMap {
 		// use mapping file to translate paths
 		newParameter("use-mapping", Boolean.FALSE, null, 'f');
 		// mapping file location
-		newParameter("mapping-file", "digilib-map.xml", null, 'f');
+		newParameter("mapping-file", new File("digilib-map.xml"), null, 'f');
 		// log4j config file location
-		newParameter("log-config-file", "log4j-config.xml", null, 'f');
+		newParameter("log-config-file", new File("log4j-config.xml"), null, 'f');
 		// maximum destination image size (0 means no limit)
 		newParameter("max-image-size", new Integer(0), null, 'f');
+		// use safe (but slower) directory indexing
+		newParameter("safe-dir-index", Boolean.FALSE, null, 'f');
 
 	}
 
@@ -226,9 +230,10 @@ public class DigilibConfiguration extends ParameterMap {
 		 */
 
 		// set up logger
-		String logConfPath =
-			ServletOps.getConfigFile(getAsString("log-config-file"), c);
-		DOMConfigurator.configure(logConfPath);
+		File logConf =
+			ServletOps.getConfigFile((File)getValue("log-config-file"), c);
+		DOMConfigurator.configure(logConf.getAbsolutePath());
+		setValue("log-config-file", logConf);
 		// directory cache
 		String[] bd = (String[]) getValue("basedir-list");
 		int[] fcs =
@@ -236,12 +241,13 @@ public class DigilibConfiguration extends ParameterMap {
 		DocuDirCache dirCache;
 		if (getAsBoolean("use-mapping")) {
 			// with mapping file
-			String mapConfPath =
-				ServletOps.getConfigFile(getAsString("mapping-file"), c);
-			dirCache = new AliasingDocuDirCache(bd, fcs, mapConfPath);
+			File mapConf =
+				ServletOps.getConfigFile((File)getValue("mapping-file"), c);
+			dirCache = new AliasingDocuDirCache(bd, fcs, mapConf, this);
+			setValue("mapping-file", mapConf);
 		} else {
 			// without mapping
-			dirCache = new DocuDirCache(bd, fcs);
+			dirCache = new DocuDirCache(bd, fcs, this);
 		}
 		setValue("servlet.dir.cache", dirCache);
 		// useAuthentication
@@ -249,10 +255,11 @@ public class DigilibConfiguration extends ParameterMap {
 			// DB version
 			//authOp = new DBAuthOpsImpl(util);
 			// XML version
-			String authConfPath =
-				ServletOps.getConfigFile(getAsString("auth-file"), c);
-			AuthOps authOp = new XMLAuthOps(authConfPath);
+			File authConf =
+				ServletOps.getConfigFile((File)getValue("auth-file"), c);
+			AuthOps authOp = new XMLAuthOps(authConf);
 			setValue("servlet.auth.op", authOp);
+			setValue("auth-file", authConf);
 		}
 		// DocuImage class
 		String s = getAsString("docuimage-class");

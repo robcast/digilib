@@ -36,28 +36,27 @@ import digilib.servlet.DigilibRequest;
  */
 public class XMLAuthOps extends AuthOpsImpl {
 
-	private String configFile =
-		"/docuserver/www/digitallibrary/WEB-INF/digilib-auth.xml";
+	private File configFile;
 	private HashTree authPaths;
 	private HashTree authIPs;
 
-	/** Constructor taking an XML config file name and utils object.
+	/** Constructor taking an XML config file.
 	 *
 	 * @param u utils object
-	 * @param confFile Configuration file name.
+	 * @param confFile Configuration file.
 	 * @throws AuthOpException Exception thrown on error.
 	 */
-	public XMLAuthOps(String confFile) throws AuthOpException {
+	public XMLAuthOps(File confFile) throws AuthOpException {
 		configFile = confFile;
 		init();
 	}
 
-	/** Set configuration file and utils object.
+	/** Set configuration file.
 	 *
-	 * @param confFile XML config file name.
+	 * @param confFile XML config file.
 	 * @throws AuthOpException Exception thrown on error.
 	 */
-	public void setConfig(String confFile) throws AuthOpException {
+	public void setConfig(File confFile) throws AuthOpException {
 		configFile = confFile;
 		init();
 	}
@@ -73,16 +72,14 @@ public class XMLAuthOps extends AuthOpsImpl {
 		HashMap pathList = null;
 		HashMap ipList = null;
 		try {
-			// create data loader for auth-path file
-			File confFile = new File(configFile);
 			// load authPaths
 			XMLListLoader pathLoader =
 				new XMLListLoader("digilib-paths", "path", "name", "role");
-			pathList = pathLoader.loadURL(confFile.toURL().toString());
+			pathList = pathLoader.loadURL(configFile.toURL().toString());
 			// load authIPs
 			XMLListLoader ipLoader =
 				new XMLListLoader("digilib-addresses", "address", "ip", "role");
-			ipList = ipLoader.loadURL(confFile.toURL().toString());
+			ipList = ipLoader.loadURL(configFile.toURL().toString());
 		} catch (Exception e) {
 			throw new AuthOpException(
 				"ERROR loading authorization config file: " + e);
