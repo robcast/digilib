@@ -1,0 +1,64 @@
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<TITLE>JBuilder Project ScaleServlet2.jpx</TITLE>
+</HEAD>
+<BODY>
+<H1>Scaler</H1>
+
+<p>A Servlet for scaling images.</p>
+
+<p>Scaler takes parameters in the http request format:
+<code>Scaler/request_path/?param1=value1&param2=value2&...</code></p>
+
+<p>Recognised parameters:
+<ul>
+  <li><b>request_path</b> path to file or directory.
+
+  <li><b>fn</b> path to file or directory below <code>/docuserver/images</code>.
+    This path will be added to the <code>request_path</code> behind the servlet name.
+    Either parameter can be empty.
+
+  <li><b>pn</b> page number. Index into the (alphabetically sorted) directory
+    given by the path. Starts with 1. Ignored if the path points to a file.
+    Default: 1.
+
+  <li><b>dw</b> destination image width (pixels).
+  <li><b>dh</b> destination image height.
+
+  <li><b>wx</b> relative x offset of the image area to be sent (0 &lt;= wx &lt;= 1).
+    Default: 0.
+  <li><b>wy</b> relative y offset of the image area to be sent.
+    Default: 0.
+  <li><b>ww</b> relative width of the image area to be sent.
+    Default: 1.
+  <li><b>wh</b> relative height of the image area to be sent.
+    Default: 1.
+
+  <li><b>ws</b> additional scaling factor. The resulting image will have the size
+    <code>[ws*dw,ws*dh]</code>. Default: 1.
+
+  <li><b>mo</b> flags for the mode of operation separated by "+".
+    <ul>
+      <li><b>fit</b>: always scale the image to fit <code>[dw,dh]</code>.<br>
+        <b>file</b>: send the file as-is (may be very large and all sorts of image types!).<br>
+        If none of these flags is set heuristics is used (send unzoomed GIF as-is).
+
+      <li><b>errtxt</b>: send error response as HTML.<br>
+        <b>errimg</b>: response as image (default).
+
+      <li><b>q0</b>-<b>q2</b>: quality of interpolation in scaling
+        (<code>q0</code>: worst, default).
+
+      <li><b>lores</b>: try to use scaled image (default)<br>
+        <b>hires</b>: always use unscaled image.<br>
+        If the image is zoomed (ww, wh &lt; 1) the unscaled image is used in any case.
+    </ul>
+
+</ul>
+The image will be scaled equally in horizontal and vertical direction such that
+the resulting image does not exceed the rectangle <code>[ww,wh]</code>.
+</p>
+
+</BODY>
+</HTML>
