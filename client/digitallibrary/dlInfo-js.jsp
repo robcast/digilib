@@ -1,8 +1,9 @@
 <%@ page language="java" %>
 
 <%!
-// authentication stuff - robert
-// -----------------------------
+/* authentication stuff - robert
+ * -----------------------------
+ */
 // create DocumentBean instance for all JSP requests
 digilib.servlet.DocumentBean docBean = new digilib.servlet.DocumentBean();
 
