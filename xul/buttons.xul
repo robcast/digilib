@@ -1,1 +1,122 @@
-<?xml version="1.0"?><?xml-stylesheet href="chrome://navigator/skin/" type="text/css"?><window xmlns:html="http://www.w3.org/1999/xhtml"        xmlns= "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" ><script language="JavaScript">// variable that store the texts for contexthelpvar helpText = new Array();helpText[0]  = "'back'-button|Click this button to load the previous image (usually the previous page of a document).";helpText[1]  = "'next'-button|Click this button to load the next image (usually the next page of a document).";helpText[2]  = "'page'-button|After clicking 'page' you will be prompted for a specific page you want to see.(br)Please note that the numbers entered into the input line refer to digital images, notwithstanding the fact that more than one text page may be on it.";helpText[3]  = "'digicat'-button|Click here to open a thumbnailview of the current document (image series).";helpText[4]  = "'mark'-button|You can insert marks onto the picture. After clicking 'mark' you can select the location in the image where a numbered mark will appear.(br)Check out 'reference' to communicate these marks (up to 8) to others.";helpText[5]  = "'reference'-button|Choose LaTeX or HTML mode to receive a link for the actual (zoomed) picture including marks. 'New HTML' creates references that will open the respective digital object within the Mozilla version of DIGILIB, providing advanced functionality in the sidebar.";helpText[6]  = "'zoom area'-button|With 'zoom area' you can zoom into any rectangular field of the current picture.(br)After clicking the button click on the image to determine any corner (for instance topleft), release the mousebutton and move the mouse until the rectangular has the desired size, then click again for fixing it.";helpText[7]  = "'zoom point'-button|Click on 'zoom point', then click on the picture. This renders a zoomed picture centered around the selected point.";helpText[8]  = "'zoom out'-button|To recover the original unzoomed picture (fitted to the window), click 'zoom out'.(br)Note that marks will be kept.";helpText[9]  = "'move to'-button|This button changes the centre of a zoomed picture without changing the zoom-factor.(br)Click on the picture where you want to place the new centre of the image.";helpText[10] = "'scale'-button|By clicking on one of the menu entries you can select the factor the currently displayed picture will be scaled to.(br)Note: scale factor of '1.0' fits the picture right into the working area, while '2.0' makes it twice as high and large.";helpText[11] = "'mirror'-button|Mirrors the image either horizontally or vertically. Click the button and make your choice at the selection menu.";helpText[12] = "'rotate'-button|This function allows you to rotate the image by the angle you specify. Click on the button and enter a rotation angle in absolute degrees into the text box (clockwise)";helpText[13] = "'brightness'-button|The brightness command helps you to adjust the brightness of an image. Click on the button and choose a brightness level at the selection menu.";helpText[14] = "'contrast'-button|The contrast command helps you to adjust the contrast of an image. Click on the button and choose a contrast level at the selection menu.";helpText[15] = "'color'-button|You can change the color values of each of the RGB channels. This can be done eighter by adding/substratcing a defined amount or by multiplying the pixel value by the desired factor.";helpText[16] = "'?'-button|The menu includes various options: activating this context sensitive help, 'Keep area' keeps the current image area when changing to another page, 'Fit GIFs' forces the program to adjust the size of GIF-images to the working area.";helpText[17] = "'metadata'-button|Shows the metadata to the document in the main window.";// boolean variable to eighter show or not show the additional help// change in the menuitem its original markvar showHelp = false;// variable to tell if while changing to another page it should keep the area// change in the menuitem its original markvar keepArea = true;</script><script language="JavaScript" src="http://hera.unibe.ch:8080/alcatraz/xul/menu.js"></script><popupset> <popup id="scale_popup">  <menuitem label="0.7" oncommand="window.content.scale(0.7);" />  <menuitem label="1" oncommand="window.content.scale(1);"  />  <menuitem label="1.5" oncommand="window.content.scale(1.5);" />  <menuitem label="2" oncommand="window.content.scale(2);" />  <menuitem label="2.5" oncommand="window.content.scale(2.5);" />  <menuitem label="3" oncommand="window.content.scale(3);" />  <menuitem label="pixel by pixel" oncommand="window.content.pixelByPixel();" /> </popup></popupset><popupset> <popup id="reference_popup">  <menuitem label="LaTex" oncommand="window.content.ref(0);" />  <menuitem label="HTML" oncommand="window.content.ref(1);" />  <menuitem label="new HTML" oncommand="window.content.ref(2);" /> </popup></popupset><popupset> <popup id="mirror_popup">  <menuitem label="Horizontal" oncommand="window.content.mirror('h');" />  <menuitem label="Vertical" oncommand="window.content.mirror('v');" /> </popup></popupset><popupset> <popup id="brightness_popup">  <menuitem label="very bright" oncommand="window.content.brightness(90);" />  <menuitem label="bright" oncommand="window.content.brightness(30);" />  <menuitem label="normal" oncommand="window.content.brightness(0);" />  <menuitem label="dark" oncommand="window.content.brightness(-30);" />  <menuitem label="very dark" oncommand="window.content.brightness(-90);" /> </popup></popupset><popupset> <popup id="contrast_popup">  <menuitem label="much" oncommand="window.content.contrast(0.5);" />  <menuitem label="more" oncommand="window.content.contrast(0.2);" />  <menuitem label="normal" oncommand="window.content.contrast(0.0);" />  <menuitem label="less" oncommand="window.content.contrast(-0.2);" />  <menuitem label="little" oncommand="window.content.contrast(-0.5);" /> </popup></popupset><popupset> <popup id="colors_popup">  <menuitem label="add" oncommand="color_add();" />  <menuitem label="multiply" oncommand="color_multiply();" /> </popup></popupset><popupset> <popup id="help_popup">  <menuitem label="Contexthelp" type="checkbox" oncommand="changeHelp();"/>  <menuitem label="Keep Area" type="checkbox" checked="true" oncommand="keepArea = !keepArea;" />  <menuitem label="Fit GIFs" type="checkbox" oncommand="(window.content.att[3].indexOf('f') > -1) ? window.content.att[3] = '' : window.content.att[3] = 'fit'; window.content.loadPicture(2, keepArea);" /> </popup></popupset><hbox> <vbox flex="1" /> <vbox>  <spacer style="height: 10px" />  <hbox>   <button label="back" onclick="window.content.backPage(keepArea);" onmouseover="overButton(0)" />   <button label="next" onclick="window.content.nextPage(keepArea);" onmouseover="overButton(1)" />  </hbox>   <button label="page" onclick="window.content.page(keepArea);" onmouseover="overButton(2)" />  <button label="digicat" onclick="window.content.digicat();" onmouseover="overButton(3)" />  <!-- <button label="metadata" onclick="showMetadata(window.content.location.href);" onmouseover="overButton(17)" /> -->  <spacer style="height: 15px" />  <button label="mark" onclick="window.content.mark();" onmouseover="overButton(4)" />  <button label="reference" popup="reference_popup"  onmouseover="overButton(5)" />  <spacer style="height: 15px" />  <button label="zoom area" onclick="window.content.zoomArea();" onmouseover="overButton(6)" />  <button label="zoom point"  onclick="window.content.zoomPoint();" onmouseover="overButton(7)" />  <button label="zoom out" onclick="window.content.zoomOut();" onmouseover="overButton(8)" />  <button label="move to" onclick="window.content.moveTo();" onmouseover="overButton(9)" />  <spacer style="height: 15px" />  <button label="scale" popup="scale_popup" onmouseover="overButton(10)" />  <button label="mirror" popup="mirror_popup" onmouseover="overButton(11)" />  <button label="rotate" onclick="rotate();" onmouseover="overButton(12)" />  <spacer style="height: 15px" />  <button label="brightness" popup="brightness_popup" onmouseover="overButton(13)" />  <button label="contrast" popup="contrast_popup" onmouseover="overButton(14)" />  <button label="colors" popup="colors_popup" onmouseover="overButton(15)" />  <spacer style="height: 15px" />  <button label="?" popup="help_popup" onmouseover="overButton(16)" />   </vbox> <vbox flex="1" /></hbox></window>
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://navigator/skin/"
+                 type="text/css"?>
+<window xmlns:html="http://www.w3.org/1999/xhtml"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" >
+<script language="JavaScript">
+var helpText = new Array();
+helpText[0]  = "'back'-button|Click this button to load the previous image (usually the previous page of a document).";
+helpText[1]  = "'next'-button|Click this button to load the next image (usually the next page of a document).";
+helpText[2]  = "'page'-button|After clicking 'page' you will be prompted for a specific page you want to see.(br)Please note that the numbers entered into the input line refer to digital images, notwithstanding the fact that more than one text page may be on it.";
+helpText[3]  = "'digicat'-button|Click here to open a thumbnailview of the current document (image series).";
+helpText[4]  = "'mark'-button|You can insert marks onto the picture. After clicking 'mark' you can select the location in the image where a numbered mark will appear.(br)Check out 'reference' to communicate these marks (up to 8) to others.";
+helpText[5]  = "'reference'-button|Choose LaTeX or HTML mode to receive a link for the actual (zoomed) picture including marks. 'New HTML' creates references that will open the respective digital object within the Mozilla version of DIGILIB, providing advanced functionality in the sidebar.";
+helpText[6]  = "'zoom area'-button|With 'zoom area' you can zoom into any rectangular field of the current picture.(br)After clicking the button click on the image to determine any corner (for instance topleft), release the mousebutton and move the mouse until the rectangular has the desired size, then click again for fixing it.";
+helpText[7]  = "'zoom point'-button|Click on 'zoom point', then click on the picture. This renders a zoomed picture centered around the selected point.";
+helpText[8]  = "'zoom out'-button|To recover the original unzoomed picture (fitted to the window), click 'zoom out'.(br)Note that marks will be kept.";
+helpText[9]  = "'move to'-button|This button changes the centre of a zoomed picture without changing the zoom-factor.(br)Click on the picture where you want to place the new centre of the image.";
+helpText[10] = "'scale'-button|By clicking on one of the menu entries you can select the factor the currently displayed picture will be scaled to.(br)Note: scale factor of '1.0' fits the picture right into the working area, while '2.0' makes it twice as high and large.";
+helpText[11] = "'mirror'-button|Mirrors the image either horizontally or vertically. Click the button and make your choice at the selection menu.";
+helpText[12] = "'rotate'-button|This function allows you to rotate the image by the angle you specify. Click on the button and enter a rotation angle in absolute degrees into the text box (clockwise)";
+helpText[13] = "'brightness'-button|The brightness command helps you to adjust the brightness of an image. Click on the button and choose a brightness level at the selection menu.";
+helpText[14] = "'contrast'-button|The contrast command helps you to adjust the contrast of an image. Click on the button and choose a contrast level at the selection menu.";
+helpText[15] = "'color'-button|You can change the color values of each of the RGB channels. This can be done eighter by adding/substratcing a defined amount or by multiplying the pixel value by the desired factor.";
+helpText[16] = "'?'-button|The menu includes various options: activating this context sensitive help, 'Keep area' keeps the current image area when changing to another page, 'Fit GIFs' forces the program to adjust the size of GIF-images to the working area.";
+helpText[17] = "'metadata'-button|Shows the metadata to the document in the main window.";
+// boolean variable to eighter show or not show the additional help
+// change in the menuitem its original mark
+var showHelp = false;
+// variable to tell if while changing to another page it should keep the area
+// change in the menuitem its original mark
+var keepArea = true;
+</script>
+<script language="JavaScript" src="menu.js"></script>
+<popupset>
+ <popup id="scale_popup">
+  <menuitem label="0.7" oncommand="window.content.scale(0.7);" />
+  <menuitem label="1" oncommand="window.content.scale(1);"  />
+  <menuitem label="1.5" oncommand="window.content.scale(1.5);" />
+  <menuitem label="2" oncommand="window.content.scale(2);" />
+  <menuitem label="2.5" oncommand="window.content.scale(2.5);" />
+  <menuitem label="3" oncommand="window.content.scale(3);" />
+  <menuitem label="pixel by pixel" oncommand="window.content.pixelByPixel();" />
+ </popup>
+</popupset>
+<popupset>
+ <popup id="reference_popup">
+  <menuitem label="LaTex" oncommand="window.content.ref(0);" />
+  <menuitem label="HTML" oncommand="window.content.ref(1);" />
+  <menuitem label="new HTML" oncommand="window.content.ref(2);" />
+ </popup>
+</popupset>
+<popupset>
+ <popup id="mirror_popup">
+  <menuitem label="Horizontal" oncommand="window.content.mirror('h');" />
+  <menuitem label="Vertical" oncommand="window.content.mirror('v');" />
+ </popup>
+</popupset>
+<popupset>
+ <popup id="brightness_popup">
+  <menuitem label="very bright" oncommand="window.content.brightness(90);" />
+  <menuitem label="bright" oncommand="window.content.brightness(30);" />
+  <menuitem label="normal" oncommand="window.content.brightness(0);" />
+  <menuitem label="dark" oncommand="window.content.brightness(-30);" />
+  <menuitem label="very dark" oncommand="window.content.brightness(-90);" />
+ </popup>
+</popupset>
+<popupset>
+ <popup id="contrast_popup">
+  <menuitem label="much" oncommand="window.content.contrast(0.5);" />
+  <menuitem label="more" oncommand="window.content.contrast(0.2);" />
+  <menuitem label="normal" oncommand="window.content.contrast(0.0);" />
+  <menuitem label="less" oncommand="window.content.contrast(-0.2);" />
+  <menuitem label="little" oncommand="window.content.contrast(-0.5);" />
+ </popup>
+</popupset>
+<popupset>
+ <popup id="colors_popup">
+  <menuitem label="add" oncommand="color_add();" />
+  <menuitem label="multiply" oncommand="color_multiply();" />
+ </popup>
+</popupset>
+<popupset>
+ <popup id="help_popup">
+  <menuitem label="Contexthelp" type="checkbox" oncommand="changeHelp();"/>
+  <menuitem label="Keep Area" type="checkbox" checked="true" oncommand="keepArea = !keepArea;" />
+  <menuitem label="Fit GIFs" type="checkbox" oncommand="window.content.fitGIFs();" />
+ </popup>
+</popupset>
+<hbox>
+ <vbox flex="1" />
+ <vbox>
+  <spacer style="height: 10px" />
+  <hbox>
+   <button label="back" onclick="window.content.backPage(keepArea);" onmouseover="overButton(0)" />
+   <button label="next" onclick="window.content.nextPage(keepArea);" onmouseover="overButton(1)" />
+  </hbox>
+   <button label="page" onclick="window.content.page(keepArea);" onmouseover="overButton(2)" />
+  <button label="digicat" onclick="window.content.digicat();" onmouseover="overButton(3)" />
+  <!-- <button label="metadata" onclick="showMetadata(window.content.location.href);" onmouseover="overButton(17)" /> -->
+  <spacer style="height: 15px" />
+  <button label="mark" onclick="window.content.mark();" onmouseover="overButton(4)" />
+  <button label="reference" popup="reference_popup"  onmouseover="overButton(5)" />
+  <spacer style="height: 15px" />
+  <button label="zoom area" onclick="window.content.zoomArea();" onmouseover="overButton(6)" />
+  <button label="zoom point"  onclick="window.content.zoomPoint();" onmouseover="overButton(7)" />
+  <button label="zoom out" onclick="window.content.zoomOut();" onmouseover="overButton(8)" />
+  <button label="move to" onclick="window.content.moveTo();" onmouseover="overButton(9)" />
+  <spacer style="height: 15px" />
+  <button label="scale" popup="scale_popup" onmouseover="overButton(10)" />
+  <button label="mirror" popup="mirror_popup" onmouseover="overButton(11)" />
+  <button label="rotate" onclick="rotate();" onmouseover="overButton(12)" />
+  <spacer style="height: 15px" />
+  <button label="brightness" popup="brightness_popup" onmouseover="overButton(13)" />
+  <button label="contrast" popup="contrast_popup" onmouseover="overButton(14)" />
+  <button label="colors" popup="colors_popup" onmouseover="overButton(15)" />
+  <spacer style="height: 15px" />
+  <button label="?" popup="help_popup" onmouseover="overButton(16)" />
+  
+ </vbox>
+ <vbox flex="1" />
+</hbox>
+</window>
