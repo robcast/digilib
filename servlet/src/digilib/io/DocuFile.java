@@ -47,6 +47,10 @@ public class DocuFile {
 		file = f;
 	}
 	
+	/** Returns the file name (without path).
+	 * 
+	 * @return
+	 */
 	public String getName() {
 		if (file != null) {
 			return file.getName();
@@ -55,6 +59,10 @@ public class DocuFile {
 	}
 
 
+	/** Checks the file using the provided DocuInfo instance.
+	 *  
+	 * @param info
+	 */
 	public void check(DocuInfo info) {
 		try {
 			info.checkFile(this);

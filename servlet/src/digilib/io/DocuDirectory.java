@@ -22,17 +22,20 @@
 package digilib.io;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+
+import org.xml.sax.SAXException;
 
 /**
  * @author casties
  */
 public class DocuDirectory {
 
-	// list of files
+	// list of files (DocuFileSet)
 	private ArrayList list = null;
 	// directory object is valid (has been read)
 	private boolean isValid = false;
@@ -85,7 +88,7 @@ public class DocuDirectory {
 
 	/** Read the directory and fill this object.
 	 * 
-	 * Clears the Vector and (re)reads all files.
+	 * Clears the List and (re)reads all files.
 	 * 
 	 * @return boolean the directory exists
 	 */
@@ -172,6 +175,8 @@ public class DocuDirectory {
 			}
 			dirMTime = dir.lastModified();
 			isValid = true;
+			// read metadata as well
+			readMeta();
 		}
 		return isValid;
 
@@ -197,6 +202,38 @@ public class DocuDirectory {
 	 */
 	public void readMeta() {
 		// check for directory metadata...
+		File mf = new File(dir, "index.meta");
+		if (mf.canRead()) {
+			XMLMetaLoader ml = new XMLMetaLoader();
+			try {
+				// read directory meta file
+				HashMap fileMeta = ml.loadURL(mf.getAbsolutePath());
+				if (fileMeta == null) {
+					return;
+				}
+				// meta for the directory itself is in the "" bin
+				dirMeta = (HashMap)fileMeta.remove("");
+				// is there meta for other files?
+				if (fileMeta.size() > 0) {
+					// iterate through the list of files
+					for (Iterator i = list.iterator(); i.hasNext();) {
+						DocuFileset df = (DocuFileset)i.next();
+						// look up meta for this file
+						HashMap meta = (HashMap)fileMeta.get(df.getName());
+						if (meta != null) {
+							df.setFileMeta(meta);
+						}
+					}
+				}
+			} catch (SAXException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
 	}
 
 	/** Update access time.

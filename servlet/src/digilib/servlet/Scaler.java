@@ -58,7 +58,7 @@ import digilib.io.FileOps;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.10b2";
+	public static final String dlVersion = "1.11a1";
 
 	// Utils instance with debuglevel
 	Utils util;
@@ -184,6 +184,9 @@ public class Scaler extends HttpServlet {
 		boolean doMirror = false;
 		// angle of mirror axis
 		double mirrorAngle = 0;
+		// original (hires) image resolution
+		double origResX = 0;
+		double origResY = 0;
 
 		/*
 		 *  request parameters
@@ -222,6 +225,14 @@ public class Scaler extends HttpServlet {
 		// color modification
 		float[] paramRGBM = dlRequest.getRgbm();
 		float[] paramRGBA = dlRequest.getRgba();
+		// destination resolution (DPI)
+		float paramDDPIX = dlRequest.getDdpix();
+		float paramDDPIY = dlRequest.getDdpiy();
+		if ((paramDDPIX == 0) || (paramDDPIY == 0)) {
+			// if X or Y resolution isn't set, use DDPI
+			paramDDPIX = dlRequest.getDdpi();
+			paramDDPIY = dlRequest.getDdpi();
+		}
 
 		/* operation mode: "fit": always fit to page, 
 		 * "clip": send original resolution cropped, "file": send whole file (if
@@ -237,7 +248,7 @@ public class Scaler extends HttpServlet {
 			absoluteScale = false;
 			cropToFit = false;
 			autoRes = true;
-		} else if (dlRequest.isOption("scale")) {
+		} else if (dlRequest.isOption("osize")) {
 			scaleToFit = false;
 			absoluteScale = true;
 			cropToFit = false;
@@ -361,11 +372,11 @@ public class Scaler extends HttpServlet {
 			 * select a resolution
 			 */
 			if (autoRes) {
-				// autores: use next bigger resolution
+				// autores: use next higher resolution
 				fileToLoad =
 					fileset.getNextBigger(expectedSourceSize, docuInfo);
 				if (fileToLoad == null) {
-					// this is the biggest we have
+					// this is the highest we have
 					fileToLoad = fileset.get(0);
 				}
 			} else {
@@ -385,16 +396,33 @@ public class Scaler extends HttpServlet {
 			}
 			util.dprintln(1, "Loading: " + fileToLoad.getFile());
 
+			if (absoluteScale) {
+				// get original resolution from metadata
+				fileset.checkMeta();
+				origResX = fileset.getResX();
+				origResY = fileset.getResY();
+			}
+
 			// check the source image
 			if (!fileToLoad.isChecked()) {
 				fileToLoad.check(docuInfo);
 			}
 			// get the source image type
 			mimeType = fileToLoad.getMimetype();
-			boolean imageSendable =
+			// decide if the image can be sent as is
+			boolean mimetypeSendable =
 				mimeType.equals("image/jpeg")
 					|| mimeType.equals("image/png")
 					|| mimeType.equals("image/gif");
+			boolean imagoOptions =
+				dlRequest.isOption("hmir")
+					|| dlRequest.isOption("vmir")
+					|| (paramROT != 0)
+					|| (paramRGBM != null)
+					|| (paramRGBA != null)
+					|| (paramCONT != 0)
+					|| (paramBRGT != 0);
+			boolean imageSendable = mimetypeSendable && ! imagoOptions;
 
 			/* if not autoRes and image smaller than requested 
 			 * size then send as is. 
@@ -405,7 +433,7 @@ public class Scaler extends HttpServlet {
 				&& imageSendable
 				&& (fileToLoad.getSize().width <= expectedSourceSize.width)
 				&& (fileToLoad.getSize().height <= expectedSourceSize.height))
-				|| (!autoRes && !scaleToFit && !cropToFit)) {
+				|| (!autoRes && !scaleToFit && !cropToFit && !absoluteScale)) {
 
 				util.dprintln(1, "Sending File as is.");
 
@@ -474,17 +502,18 @@ public class Scaler extends HttpServlet {
 				scaleXY = (scaleX > scaleY) ? scaleY : scaleX;
 			} else if (absoluteScale) {
 				// absolute scale
-				areaWidth = paramDW * paramWS;
-				areaHeight = paramDH * paramWS;
+				scaleX = paramDDPIX / origResX;
+				scaleY = paramDDPIY / origResY;
+				// currently only same scale :-(
+				scaleXY = scaleX;
+				areaWidth = paramDW / scaleXY * paramWS;
+				areaHeight = paramDH / scaleXY * paramWS;
 				// reset user area size
 				userImgArea.setRect(
 					userImgArea.getX(),
 					userImgArea.getY(),
 					areaWidth,
 					areaHeight);
-				scaleX = 1f;
-				scaleY = 1f;
-				scaleXY = 1f;
 			} else {
 				// crop to fit
 				areaWidth = paramDW * paramWS;

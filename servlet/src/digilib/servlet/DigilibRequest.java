@@ -26,15 +26,17 @@
 
 package digilib.servlet;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.StringReader;
+import java.util.Hashtable;
+import java.util.StringTokenizer;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
+import com.hp.hpl.mesa.rdf.jena.common.SelectorImpl;
 import com.hp.hpl.mesa.rdf.jena.mem.ModelMem;
 import com.hp.hpl.mesa.rdf.jena.model.*;
-import com.hp.hpl.mesa.rdf.jena.common.*;
 
 import digilib.image.DocuImage;
 
@@ -91,6 +93,18 @@ public class DigilibRequest {
 	                //                   2 = in frameset, 3 = XUL-'frameset'
 	                //                   4 = XUL-Sidebar )
 	private String lv_s;
+	private float odpi; // resolution of original image
+	private String odpi_s; 
+	private float ddpi; // resolution of original image
+	private String ddpi_s; 
+	private float odpix; // x resolution of original image
+	private String odpix_s; 
+	private float odpiy; // y resolution of original image
+	private String odpiy_s; 
+	private float ddpix; // x resolution of destination image
+	private String ddpix_s; 
+	private float ddpiy; // y resolution of destination image
+	private String ddpiy_s; 
 
 	private DocuImage image; // internal DocuImage instance for this request
 	private ServletRequest servletRequest; // internal ServletRequest
@@ -344,6 +358,15 @@ public class DigilibRequest {
 		if (lv_s != null) {
 			s += "&lv=" + lv_s;
 		}
+		if (ddpi_s != null) {
+			s += "&ddpi=" + ddpi;
+		}
+		if (ddpix_s != null) {
+			s += "&ddpix=" + ddpix;
+		}
+		if (ddpiy_s != null) {
+			s += "&ddpiy=" + ddpiy;
+		}
 
 		return s;
 	}
@@ -446,6 +469,18 @@ public class DigilibRequest {
 		if (s != null) {
 			setLv(s);
 		}
+		s = request.getParameter("ddpi");
+		if (s != null) {
+			setDdpi(s);
+		}
+		s = request.getParameter("ddpix");
+		if (s != null) {
+			setDdpix(s);
+		}
+		s = request.getParameter("ddpiy");
+		if (s != null) {
+			setDdpiy(s);
+		}
 		s = ((HttpServletRequest) request).getPathInfo();
 		if (s != null) {
 			setRequestPath(s);
@@ -532,10 +567,22 @@ public class DigilibRequest {
 	    if (s != null) {
 		setPt(s);
 	    }
-	    s = (String)hashRDF.get("lv");
-	    if (s != null) {
+		s = (String)hashRDF.get("lv");
+		if (s != null) {
 		setLv(s);
-	    }
+		}
+		s = (String)hashRDF.get("ddpi");
+		if (s != null) {
+		setDdpi(s);
+		}
+		s = (String)hashRDF.get("ddpix");
+		if (s != null) {
+		setDdpix(s);
+		}
+		s = (String)hashRDF.get("ddpiy");
+		if (s != null) {
+		setDdpiy(s);
+		}
 	    s = ((HttpServletRequest) request).getPathInfo();
 	    if (s != null) {
 		setRequestPath(s);
@@ -629,6 +676,18 @@ public class DigilibRequest {
 		rgbm_s = null;
 		rgba = null;
 		rgba_s = null;
+		ddpi = 0;
+		ddpi_s = null;
+		ddpix = 0;
+		ddpix_s = null;
+		ddpiy = 0;
+		ddpiy_s = null;
+		odpi = 0;
+		odpi_s = null;
+		odpix = 0;
+		odpix_s = null;
+		odpiy = 0;
+		odpiy_s = null;
 		baseURL = null;
 		image = null;
 		servletRequest = null;
@@ -707,8 +766,6 @@ public class DigilibRequest {
 
 	/* Property getter and setter */
 
-// lugi - begin
-
 	/** Getter for property lv.
 	 * @return Value of property lv.
 	 *
@@ -734,8 +791,6 @@ public class DigilibRequest {
 			//util.dprintln(4, "trytoGetParam(int) failed on param "+s);
 		}
 	}
-
-// lugi - end
 
 	/** Getter for property dh.
 	 * @return Value of property dh.
@@ -1257,6 +1312,163 @@ public class DigilibRequest {
 			//util.dprintln(4, "trytoGetParam(int) failed on param "+s);
 		}
 	}
+
+	/** Getter for property ddpi.
+	 * @return Value of property ddpi.
+	 *
+	 */
+	public float getDdpi() {
+		return ddpi;
+	}
+
+	/** Setter for property ddpi.
+	 * @param ddpi New value of property ddpi.
+	 *
+	 */
+	public void setDdpi(float ddpi) {
+		this.ddpi = ddpi;
+		ddpi_s = Float.toString(ddpi);
+	}
+	public void setDdpi(String ddpi) {
+		try {
+			float f = Float.parseFloat(ddpi);
+			this.ddpi = f;
+			this.ddpi_s = ddpi;
+		} catch (Exception e) {
+			//util.dprintln(4, "trytoGetParam(int) failed on param "+s);
+		}
+	}
+
+	/** Getter for property ddpi.
+	 * @return Value of property ddpi.
+	 *
+	 */
+	public float getDdpix() {
+		return ddpix;
+	}
+
+	/** Setter for property ddpi.
+	 * @param ddpi New value of property ddpi.
+	 *
+	 */
+	public void setDdpix(float ddpix) {
+		this.ddpix = ddpix;
+		ddpix_s = Float.toString(ddpix);
+	}
+	public void setDdpix(String s) {
+		try {
+			float f = Float.parseFloat(s);
+			this.ddpix = f;
+			this.ddpix_s = s;
+		} catch (Exception e) {
+			//util.dprintln(4, "trytoGetParam(int) failed on param "+s);
+		}
+	}
+
+	/** Getter for property ddpi.
+	 * @return Value of property ddpi.
+	 *
+	 */
+	public float getDdpiy() {
+		return ddpiy;
+	}
+
+	/** Setter for property ddpi.
+	 * @param ddpi New value of property ddpi.
+	 *
+	 */
+	public void setDdpiy(float f) {
+		this.ddpiy = f;
+		ddpiy_s = Float.toString(f);
+	}
+	public void setDdpiy(String s) {
+		try {
+			float f = Float.parseFloat(s);
+			this.ddpiy = f;
+			this.ddpiy_s = s;
+		} catch (Exception e) {
+			//util.dprintln(4, "trytoGetParam(int) failed on param "+s);
+		}
+	}
+
+	/** Getter for property ddpi.
+	 * @return Value of property ddpi.
+	 *
+	 */
+	public float getOdpi() {
+		return odpi;
+	}
+
+	/** Setter for property ddpi.
+	 * @param ddpi New value of property ddpi.
+	 *
+	 */
+	public void setOdpi(float f) {
+		this.odpi = f;
+		odpi_s = Float.toString(f);
+	}
+	public void setOdpi(String s) {
+		try {
+			float f = Float.parseFloat(s);
+			this.odpi = f;
+			this.odpi_s = s;
+		} catch (Exception e) {
+			//util.dprintln(4, "trytoGetParam(int) failed on param "+s);
+		}
+	}
+
+	/** Getter for property ddpi.
+	 * @return Value of property ddpi.
+	 *
+	 */
+	public float getOdpix() {
+		return odpix;
+	}
+
+	/** Setter for property ddpi.
+	 * @param ddpi New value of property ddpi.
+	 *
+	 */
+	public void setOdpix(float f) {
+		this.odpix = f;
+		odpix_s = Float.toString(f);
+	}
+	public void setOdpix(String s) {
+		try {
+			float f = Float.parseFloat(s);
+			this.odpix = f;
+			this.odpix_s = s;
+		} catch (Exception e) {
+			//util.dprintln(4, "trytoGetParam(int) failed on param "+s);
+		}
+	}
+
+	/** Getter for property ddpi.
+	 * @return Value of property ddpi.
+	 *
+	 */
+	public float getOdpiy() {
+		return odpiy;
+	}
+
+	/** Setter for property ddpi.
+	 * @param ddpi New value of property ddpi.
+	 *
+	 */
+	public void setOdpiy(float f) {
+		this.odpiy = f;
+		odpiy_s = Float.toString(f);
+	}
+	public void setOdpiy(String s) {
+		try {
+			float f = Float.parseFloat(s);
+			this.odpiy = f;
+			this.odpiy_s = s;
+		} catch (Exception e) {
+			//util.dprintln(4, "trytoGetParam(int) failed on param "+s);
+		}
+	}
+
 
 	public boolean isRDF(){
 	  return boolRDF;

@@ -20,6 +20,7 @@
 package digilib.io;
 
 import java.awt.Dimension;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -32,12 +33,18 @@ import digilib.image.DocuInfo;
  */
 public class DocuFileset {
 
-	// list of files
+	// list of files (DocuFile)
 	private ArrayList list = null;
 	// metadata
 	private HashMap fileMeta = null;
+	// metadata has been checked
+	private boolean metaChecked = false;
+	// resolution (DPI)
+	private double resX = 0;
+	private double resY = 0;
 	// parent directory
 	private DocuDirectory parent = null;
+
 
 	/*
 	 * constructors
@@ -153,13 +160,97 @@ public class DocuFileset {
 	}
 
 	/** Reads meta-data for this Fileset if there is any.
-	 * (not yet implemented)
+	 * 
 	 */
-	public void checkMeta() {
-		// check for file metadata...
+	public void readMeta() {
+		if ((fileMeta != null) || list.isEmpty()) {
+			// there is already metadata or there's no file 
+			return;
+		}
+		// metadata is in the file {filename}.meta
+		String fn = ((DocuFile) list.get(0)).getFile().getAbsolutePath();
+		File mf = new File(fn + ".meta");
+		if (mf.canRead()) {
+			XMLMetaLoader ml = new XMLMetaLoader();
+			try {
+				// read meta file
+				HashMap meta = ml.loadURL(mf.getAbsolutePath());
+				if (meta == null) {
+					return;
+				}
+				fileMeta = (HashMap) meta.get(getName());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
-	/** The name of the (original) image file.
+	/** Checks metadata and sets resolution in resX and resY.
+	 * 
+	 */
+	public void checkMeta() {
+		if (metaChecked) {
+			return;
+		}
+		if (fileMeta == null) {
+			// try to read meta-data file
+			readMeta();
+			if (fileMeta == null) {
+				// there is no meta data
+				metaChecked = true;
+				return;
+			}
+		}
+		metaChecked = true;
+		double dpi = 0;
+		double dpix = 0;
+		double dpiy = 0;
+		double sizex = 0;
+		double sizey = 0;
+		double pixx = 0;
+		double pixy = 0;
+		// DPI is valid for X and Y
+		try {
+			dpi = Double.parseDouble((String) fileMeta.get("dpi"));
+		} catch (NumberFormatException e) {
+		}
+		if (dpi != 0) {
+			resX = dpi;
+			resY = dpi;
+			return;
+		}
+		// DPI-X and DPI-Y
+		try {
+			dpix = Double.parseDouble((String) fileMeta.get("dpi-x"));
+			dpiy = Double.parseDouble((String) fileMeta.get("dpi-y"));
+		} catch (NumberFormatException e) {
+		}
+		if ((dpix != 0) && (dpiy != 0)) {
+			resX = dpix;
+			resY = dpiy;
+			return;
+		}
+		// SIZE-X and SIZE-Y and PIXEL-X and PIXEL-Y
+		try {
+			sizex =
+				Double.parseDouble((String) fileMeta.get("original-size-x"));
+			sizey =
+				Double.parseDouble((String) fileMeta.get("original-size-y"));
+			pixx =
+				Double.parseDouble((String) fileMeta.get("original-pixel-x"));
+			pixy =
+				Double.parseDouble((String) fileMeta.get("original-pixel-y"));
+		} catch (NumberFormatException e) {
+		}
+		if ((sizex != 0) && (sizey != 0) && (pixx != 0) && (pixy != 0)) {
+			resX = pixx / (sizex * 100 / 2.54);
+			resY = pixy / (sizey * 100 / 2.54);
+			return;
+		}
+	}
+
+	/** The name of the (hires) image file.
 	 * 
 	 * @return
 	 */
@@ -171,6 +262,7 @@ public class DocuFileset {
 	}
 
 	/** Returns the parent DocuDirectory.
+	 * 
 	 * @return DocuDirectory
 	 */
 	public DocuDirectory getParent() {
@@ -201,4 +293,25 @@ public class DocuFileset {
 		this.fileMeta = fileMeta;
 	}
 
+	/**
+	 * @return
+	 */
+	public boolean isMetaChecked() {
+		return metaChecked;
+	}
+	
+	/**
+	 * @return
+	 */
+	public double getResX() {
+		return resX;
+	}
+
+	/**
+	 * @return
+	 */
+	public double getResY() {
+		return resY;
+	}
+	
 }
