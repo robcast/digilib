@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <title>digilib toolbar interoperability</title>
+</head>
+<body>
+<h1>Interoperability of digilib HTML pages with the Alcatraz toolbar</h1>
+
+<p>A toolbar-friendly digilib page must define a Javascript variable
+<b><code>toolbarEnabledURL</code></b> whose value is a HTTP URL that
+produces a <em>toolbar-enabled</em> page. The toolbar should present a
+button to &quot;take over&quot; the page design by replacing
+the current page with the page from the given URL.</p>
+
+<h2>Toolbar-enabled page</h2>
+
+<p>A <em>toolbar-enabled</em> page must offer the following Javascript functions:</p>
+
+<h3>Identification</h3>
+
+<ul>
+  <li><b><code>dlScriptVersion</code></b>: a String variable that contains the version number of the Javascript code (e.g. &quot;1.12b3&quot;)<br>
+  The existence of this variable can be used to test for a <em>toolbar-enabled</em> page</li>
+</ul>
+
+<h3>Interactive operations</h3>
+
+<ul>
+  <li><b><code>setMark()</code></b>: lets the user click and sets a mark at the clicked location</li>
+  <li><b><code>zoomArea()</code></b>: lets the user click to select an area and zooms to the selected area</li>
+  <li><b><code>moveCenter()</code></b>: lets the user click and recenters the image around the clicked location</li>
+</ul>
+
+<h3>Page operations</h3>
+
+<ul>
+  <li><b><code>getRef()</code></b>: returns a String with a URL reference to the current document</li>
+  <li><b><code>removeMark()</code></b>: removes the last mark</li>
+  <li><b><code>zoomBy(float factor)</code></b>: magnifies the image by the given factor around the current center</li>
+  <li><b><code>zoomFullpage()</code></b>: zooms out so that the whole image is visible</li>
+  <li><b><code>display(int prio)</code></b>: reloads the page with the current parameters</li>
+</ul>
+
+<h3>Parameter operations</h3>
+
+<ul>
+  <li><b><code>newParameter(String name, String defaultValue, int prio)</code></b>: declares a new parameter with name, default value (can be of any type) and priority</li>
+  <li><b><code>getParameter(String name)</code></b>: returns the value of the parameter with the name <code>name</code></li>
+  <li><b><code>setParameter(String name, String value)</code></b>: sets the value of the named parameter (value can be of any type)</li>
+  <li><b><code>getAllParameters(int prio)</code></b>: returns a String of all parameters in HTTP request format (name=value) below the given priority</li>
+  <li><b><code>addMark(Position pos)</code></b>: adds a mark with the given Position</li>
+  <li><b><code>deleteMark()</code></b>: removes the last mark form the list</li>
+  <li><b><code>getAllMarks()</code></b>: returns a String with all current marks in digilib format (for parameter &quot;mk&quot;)</li>
+  <li><b><code>addFlag(String name)</code></b>: adds a digilib mode flag with the given name</li>
+  <li><b><code>hasFlag(String name)</code></b>: returns if the given flag is currently set</li>
+  <li><b><code>removeFlag(String name)</code></b>: removes the given flag</li>
+  <li><b><code>toggleFlag(String name)</code></b>: toggles the given flag</li>
+  <li><b><code>getAllFlags()</code></b>: returns a String with all current flags in digilib format (for parameter &quot;mo&quot;)</li>
+</ul>
+
+</body>
+</html>
