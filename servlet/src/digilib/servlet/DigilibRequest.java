@@ -442,7 +442,7 @@ public class DigilibRequest extends ParameterMap {
 			StringReader sr = new StringReader(strRDF);
 			model.read(sr, "");
 			// get Property type -> digilib
-			Property property = model.getProperty(this.ECHO, "type");
+			Property property = model.getProperty(DigilibRequest.ECHO, "type");
 			if(property != null) {
 				ResIterator resourceIterator = model.listSubjectsWithProperty(property);
 				while(resourceIterator.hasNext()) {
@@ -452,11 +452,11 @@ public class DigilibRequest extends ParameterMap {
 					if(type == null) {
 						continue;
 					}
-					if(type.equals(this.ECHO+this.DIGILIB)) {
+					if(type.equals(DigilibRequest.ECHO+DigilibRequest.DIGILIB)) {
 						while(statementIterator.hasNext()) {
 							Statement statement = statementIterator.next();
 							Property predicate = statement.getPredicate();
-							if(predicate.getNameSpace().equals(this.ECHO)) {
+							if(predicate.getNameSpace().equals(DigilibRequest.ECHO)) {
 								hashParams.put(predicate.getLocalName(),statement.getObject().toString());
 							}
 						}

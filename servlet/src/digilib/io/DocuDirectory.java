@@ -425,21 +425,16 @@ public class DocuDirectory extends Directory {
 		} else {
 			// try closest matches without extension
 			idx = -idx - 1;
-			String fb = FileOps.basename(fn);
-			DocuDirent fs;
 			if ((idx < fileList.size())
-					&& (FileOps.basename(((DocuDirent) fileList.get(idx))
-							.getName()).equals(fb))) {
+					&& isBaseInList(fileList, idx, fn)) {
 				// idx matches
 				return idx;
 			} else if ((idx > 0)
-					&& (FileOps.basename(((DocuDirent) fileList.get(idx - 1))
-							.getName()).equals(fb))) {
+					&& isBaseInList(fileList, idx-1, fn)) {
 				// idx-1 matches
 				return idx - 1;
 			} else if ((idx + 1 < fileList.size())
-					&& (FileOps.basename(((DocuDirent) fileList.get(idx - 1))
-							.getName()).equals(fb))) {
+					&& isBaseInList(fileList, idx+1, fn)) {
 				// idx+1 matches
 				return idx + 1;
 			}
@@ -448,6 +443,13 @@ public class DocuDirectory extends Directory {
 		return -1;
 	}
 
+	private boolean isBaseInList(List fl, int idx, String fn) {
+		String dfn = FileOps.basename(((DocuDirent) fl.get(idx))
+				.getName());
+		return (dfn.equals(fn)||dfn.equals(FileOps.basename(fn))); 
+	}
+	
+	
 	/**
 	 * Finds the DocuDirent with the name <code>fn</code>.
 	 * 
