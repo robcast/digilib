@@ -42,6 +42,22 @@
             5
         </load-on-startup>
   </servlet>
+  <!-- The Raster servlet -->
+  <servlet>
+        <servlet-name>
+            Raster
+        </servlet-name>
+        <description>
+            The servlet for rastered SVG.
+        </description>
+        <servlet-class>
+            digilib.servlet.Raster
+        </servlet-class>
+        <!-- Load this servlet at server startup time -->
+        <load-on-startup>
+            5
+        </load-on-startup>
+  </servlet>
   <!-- We want to mess around with the default JSP servlet... -->
   <servlet>
         <servlet-name>
@@ -95,6 +111,23 @@
         </servlet-name>
         <url-pattern>
             /authenticated/servlet/Texter/*
+        </url-pattern>
+  </servlet-mapping>
+  <!-- The mapping for the Raster servlet -->
+  <servlet-mapping>
+        <servlet-name>
+            Raster
+        </servlet-name>
+        <url-pattern>
+            /servlet/Raster/*
+        </url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+        <servlet-name>
+            Raster
+        </servlet-name>
+        <url-pattern>
+            /authenticated/servlet/Raster/*
         </url-pattern>
   </servlet-mapping>
    <!-- The mapping for the JSP servlet -->
