@@ -1,21 +1,21 @@
 /* ImageLoaderDocuImage -- Image class implementation using JDK 1.4 ImageLoader
 
-  Digital Image Library servlet components
+ Digital Image Library servlet components
 
-  Copyright (C) 2002, 2003 Robert Casties (robcast@mail.berlios.de)
+ Copyright (C) 2002, 2003 Robert Casties (robcast@mail.berlios.de)
 
-  This program is free software; you can redistribute  it and/or modify it
-  under  the terms of  the GNU General  Public License as published by the
-  Free Software Foundation;  either version 2 of the  License, or (at your
-  option) any later version.
-   
-  Please read license.txt for the full details. A copy of the GPL
-  may be found at http://www.gnu.org/copyleft/lgpl.html
+ This program is free software; you can redistribute  it and/or modify it
+ under  the terms of  the GNU General  Public License as published by the
+ Free Software Foundation;  either version 2 of the  License, or (at your
+ option) any later version.
+ 
+ Please read license.txt for the full details. A copy of the GPL
+ may be found at http://www.gnu.org/copyleft/lgpl.html
 
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 
 package digilib.image;
 
@@ -45,13 +45,16 @@ import digilib.io.ImageFile;
 
 /** Implementation of DocuImage using the ImageLoader API of Java 1.4 and Java2D. */
 public class ImageLoaderDocuImage extends DocuImageImpl {
-	
+
 	/** image object */
 	protected BufferedImage img;
+
 	/** interpolation type */
 	protected RenderingHints renderHint;
+
 	/** ImageIO image reader */
 	protected ImageReader reader;
+
 	/** File that was read */
 	protected File imgFile;
 
@@ -63,14 +66,17 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	public void setQuality(int qual) {
 		quality = qual;
 		renderHint = new RenderingHints(null);
-		//hint.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+		//hint.put(RenderingHints.KEY_ANTIALIASING,
+		// RenderingHints.VALUE_ANTIALIAS_OFF);
 		// setup interpolation quality
 		if (qual > 0) {
 			logger.debug("quality q1");
-			renderHint.put(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+			renderHint.put(RenderingHints.KEY_INTERPOLATION,
+					RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 		} else {
 			logger.debug("quality q0");
-			renderHint.put(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+			renderHint.put(RenderingHints.KEY_INTERPOLATION,
+					RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 		}
 	}
 
@@ -104,7 +110,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 
 	/* load image file */
 	public void loadImage(ImageFile f) throws FileOpException {
-		logger.debug("loadImage "+f.getFile());
+		logger.debug("loadImage " + f.getFile());
 		//System.gc();
 		try {
 			img = ImageIO.read(f.getFile());
@@ -116,21 +122,28 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		}
 	}
 
-	/** Get an ImageReader for the image file. */
-	public void preloadImage(ImageFile f) throws IOException {
-		logger.debug("preloadImage "+f.getFile());
+	/**
+	 * Get an ImageReader for the image file.
+	 * 
+	 * @return
+	 */
+	public ImageReader getReader(ImageFile f) throws IOException {
+		logger.debug("preloadImage " + f.getFile());
 		if (reader != null) {
 			logger.debug("Reader was not null!");
 			// clean up old reader
 			dispose();
 		}
-		//System.gc();
+		System.gc();
 		RandomAccessFile rf = new RandomAccessFile(f.getFile(), "r");
 		ImageInputStream istream = new FileImageInputStream(rf);
-		Iterator readers = ImageIO.getImageReaders(istream);
-		//String ext = f.getName().substring(f.getName().lastIndexOf('.')+1);
-		//Iterator readers = ImageIO.getImageReadersBySuffix(ext);
-		//Iterator readers = ImageIO.getImageReadersByMIMEType(f.getMimetype());
+		//Iterator readers = ImageIO.getImageReaders(istream);
+		String mt = f.getMimetype();
+		logger.debug("File type:" + mt);
+		Iterator readers = ImageIO.getImageReadersByMIMEType(mt);
+		if (!readers.hasNext()) {
+			throw new FileOpException("Unable to load File!");
+		}
 		reader = (ImageReader) readers.next();
 		/* are there more readers? */
 		logger.debug("ImageIO: this reader: " + reader.getClass());
@@ -139,20 +152,18 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		}
 		//*/
 		reader.setInput(istream);
-		if (reader == null) {
-			throw new FileOpException("Unable to load File!");
-		}
 		imgFile = f.getFile();
+		return reader;
 	}
 
 	/* Load an image file into the Object. */
 	public void loadSubimage(ImageFile f, Rectangle region, int prescale)
-		throws FileOpException {
+			throws FileOpException {
 		logger.debug("loadSubimage");
-		//System.gc();
+		System.gc();
 		try {
 			if ((reader == null) || (imgFile != f.getFile())) {
-				preloadImage(f);
+				getReader(f);
 			}
 			// set up reader parameters
 			ImageReadParam readParam = reader.getDefaultReadParam();
@@ -174,7 +185,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 
 	/* write image of type mt to Stream */
 	public void writeImage(String mt, OutputStream ostream)
-		throws FileOpException {
+			throws FileOpException {
 		logger.debug("writeImage");
 		try {
 			// setup output
@@ -189,8 +200,8 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			}
 
 			/*
-			 * JPEG doesn't do transparency so we have to convert any RGBA
-			 * image to RGB :-( *Java2D BUG*
+			 * JPEG doesn't do transparency so we have to convert any RGBA image
+			 * to RGB :-( *Java2D BUG*
 			 */
 			if ((type == "jpeg") && (img.getColorModel().hasAlpha())) {
 				logger.debug("BARF: JPEG with transparency!!");
@@ -210,7 +221,8 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 				// writing was OK
 				return;
 			} else {
-				throw new FileOpException("Error writing image: Unknown image format!");
+				throw new FileOpException(
+						"Error writing image: Unknown image format!");
 			}
 		} catch (IOException e) {
 			throw new FileOpException("Error writing image.");
@@ -225,35 +237,26 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			blur(bl);
 		}
 		/* then scaled */
-		AffineTransformOp scaleOp =
-			new AffineTransformOp(
-				AffineTransform.getScaleInstance(scale, scale),
-				renderHint);
+		AffineTransformOp scaleOp = new AffineTransformOp(AffineTransform
+				.getScaleInstance(scale, scale), renderHint);
 		BufferedImage scaledImg = null;
 		// enforce destination image type (*Java2D BUG*)
 		int type = img.getType();
 		// FIXME: which type would be best?
-		if ((quality > 0)&&(type != 0)) {
+		if ((quality > 0) && (type != 0)) {
 			logger.debug("creating destination image");
 			Rectangle2D dstBounds = scaleOp.getBounds2D(img);
-			scaledImg =
-				new BufferedImage(
-					(int) dstBounds.getWidth(),
-					(int) dstBounds.getHeight(),
-					type);
+			scaledImg = new BufferedImage((int) dstBounds.getWidth(),
+					(int) dstBounds.getHeight(), type);
 		}
 		logger.debug("scaling...");
 		scaledImg = scaleOp.filter(img, scaledImg);
-		logger.debug("destination image type "+scaledImg.getType());
+		logger.debug("destination image type " + scaledImg.getType());
 		if (scaledImg == null) {
 			throw new ImageOpException("Unable to scale");
 		}
 		//DEBUG
-		logger.debug("SCALE: "
-				+ scale
-				+ " ->"
-				+ scaledImg.getWidth()
-				+ "x"
+		logger.debug("SCALE: " + scale + " ->" + scaledImg.getWidth() + "x"
 				+ scaledImg.getHeight());
 		img = scaledImg;
 		scaledImg = null;
@@ -274,15 +277,13 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		}
 		Kernel blur = new Kernel(klen, klen, kern);
 		// blur with convolve operation
-		ConvolveOp blurOp = new ConvolveOp(blur, ConvolveOp.EDGE_NO_OP, renderHint);
+		ConvolveOp blurOp = new ConvolveOp(blur, ConvolveOp.EDGE_NO_OP,
+				renderHint);
 		// blur needs explicit destination image type for color *Java2D BUG*
 		BufferedImage blurredImg = null;
 		if (img.getType() == BufferedImage.TYPE_3BYTE_BGR) {
-			blurredImg =
-				new BufferedImage(
-					img.getWidth(),
-					img.getHeight(),
-					img.getType());
+			blurredImg = new BufferedImage(img.getWidth(), img.getHeight(), img
+					.getType());
 		}
 		blurredImg = blurOp.filter(img, blurredImg);
 		if (blurredImg == null) {
@@ -292,10 +293,11 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	}
 
 	public void crop(int x_off, int y_off, int width, int height)
-		throws ImageOpException {
+			throws ImageOpException {
 		// setup Crop
 		BufferedImage croppedImg = img.getSubimage(x_off, y_off, width, height);
-		logger.debug("CROP:" + croppedImg.getWidth() + "x" + croppedImg.getHeight());
+		logger.debug("CROP:" + croppedImg.getWidth() + "x"
+				+ croppedImg.getHeight());
 		//DEBUG
 		//    util.dprintln(2, " time
 		// "+(System.currentTimeMillis()-startTime)+"ms");
@@ -309,8 +311,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		/*
 		 * Only one constant should work regardless of the number of bands
 		 * according to the JDK spec. Doesn't work on JDK 1.4 for OSX and Linux
-		 * (at least). 
-		 * RescaleOp scaleOp = new RescaleOp( (float)mult,
+		 * (at least). RescaleOp scaleOp = new RescaleOp( (float)mult,
 		 * (float)add, null); scaleOp.filter(img, img);
 		 */
 
@@ -326,8 +327,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		scaleOp.filter(img, img);
 	}
 
-	public void enhanceRGB(float[] rgbm, float[] rgba)
-		throws ImageOpException {
+	public void enhanceRGB(float[] rgbm, float[] rgba) throws ImageOpException {
 
 		/*
 		 * The number of constants must match the number of bands in the image.
@@ -336,19 +336,19 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 
 		int ncol = img.getColorModel().getNumColorComponents();
 		if ((ncol != 3) || (rgbm.length != 3) || (rgba.length != 3)) {
-			logger.debug("ERROR(enhance): unknown number of color bands or coefficients ("
-					+ ncol
-					+ ")");
+			logger
+					.debug("ERROR(enhance): unknown number of color bands or coefficients ("
+							+ ncol + ")");
 			return;
 		}
-		RescaleOp scaleOp =
-			new RescaleOp(rgbOrdered(rgbm), rgbOrdered(rgba), null);
+		RescaleOp scaleOp = new RescaleOp(rgbOrdered(rgbm), rgbOrdered(rgba),
+				null);
 		scaleOp.filter(img, img);
 	}
 
 	/**
 	 * Ensures that the array f is in the right order to map the images RGB
-	 * components. (not shure what happens 
+	 * components. (not shure what happens
 	 */
 	public float[] rgbOrdered(float[] fa) {
 		/*
@@ -359,7 +359,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		if (img.getColorModel().hasAlpha()) {
 			fb = new float[4];
 			if ((t == BufferedImage.TYPE_INT_ARGB)
-				|| (t == BufferedImage.TYPE_INT_ARGB_PRE)) {
+					|| (t == BufferedImage.TYPE_INT_ARGB_PRE)) {
 				// RGB Type
 				fb[0] = fa[0];
 				fb[1] = fa[1];
@@ -406,8 +406,9 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		double xoff = rotbounds.getX();
 		double yoff = rotbounds.getY();
 		// move image back in line
-		trafo.preConcatenate(
-			AffineTransform.getTranslateInstance(-xoff, -yoff));
+		trafo
+				.preConcatenate(AffineTransform.getTranslateInstance(-xoff,
+						-yoff));
 		// transform image
 		rotOp = new AffineTransformOp(trafo, renderHint);
 		BufferedImage rotImg = rotOp.filter(img, null);
@@ -447,10 +448,8 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			mx = -1;
 			tx = getWidth();
 		}
-		AffineTransformOp mirOp =
-			new AffineTransformOp(
-				new AffineTransform(mx, 0, 0, my, tx, ty),
-				renderHint);
+		AffineTransformOp mirOp = new AffineTransformOp(new AffineTransform(mx,
+				0, 0, my, tx, ty), renderHint);
 		BufferedImage mirImg = mirOp.filter(img, null);
 		if (mirImg == null) {
 			throw new ImageOpException("Unable to mirror");
@@ -458,7 +457,11 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		img = mirImg;
 	}
 
-	/* (non-Javadoc) @see java.lang.Object#finalize() */
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#finalize()
+	 */
 	protected void finalize() throws Throwable {
 		dispose();
 		super.finalize();
