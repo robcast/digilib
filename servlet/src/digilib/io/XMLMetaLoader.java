@@ -23,6 +23,7 @@ package digilib.io;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -53,8 +54,8 @@ public class XMLMetaLoader {
 	private class XMLMetaParser extends DefaultHandler {
 
 		private LinkedList tags;
-		private HashMap files;
-		private HashMap meta;
+		private Map files;
+		private Map meta;
 		private StringBuffer content;
 		private boolean collecting;
 		private StringBuffer collectedContent;
@@ -260,7 +261,7 @@ public class XMLMetaLoader {
 	 *  load and parse a file (as URL)
 	 *    returns HashMap with list data
 	 */
-	public HashMap loadURL(String path) throws SAXException, IOException {
+	public Map loadURL(String path) throws SAXException, IOException {
 		logger.debug("loading meta: "+path);
 		// Create a JAXP SAXParserFactory and configure it
 		SAXParserFactory spf = SAXParserFactory.newInstance();
