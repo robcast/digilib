@@ -56,6 +56,8 @@ import digilib.io.SVGFile;
  */
 public class Raster extends HttpServlet {
 
+	private static final long serialVersionUID = -7756999389932675241L;
+
 	/** Servlet version */
 	public static String servletVersion = "0.1b1";
 	/** DigilibConfiguration instance */
