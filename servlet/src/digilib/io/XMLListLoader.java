@@ -24,6 +24,7 @@ package digilib.io;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -74,10 +75,10 @@ public class XMLListLoader {
 	 */
 	private class XMLListParser extends DefaultHandler {
 
-		private HashMap listData;
+		private Map listData;
 		private LinkedList tagSpace;
 
-		public HashMap getData() {
+		public Map getData() {
 			return listData;
 		}
 
@@ -150,7 +151,7 @@ public class XMLListLoader {
 	 *  load and parse a file (as URL)
 	 *    returns HashMap with list data
 	 */
-	public HashMap loadURL(String path) throws SAXException, IOException {
+	public Map loadURL(String path) throws SAXException, IOException {
 		//System.out.println("loadurl ("+path+")");
 		// Create a JAXP SAXParserFactory and configure it
 		SAXParserFactory spf = SAXParserFactory.newInstance();
