@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 
-import digilib.Utils;
 import digilib.servlet.DigilibRequest;
 
 /** Basic implementation of AuthOps interface.
@@ -48,15 +47,6 @@ public abstract class AuthOpsImpl implements AuthOps {
     }
   }
 
-  /** Constructor taking an utils object.
-   * @param u utils object.
-   */  
-  public AuthOpsImpl(Utils u) {
-    try {
-      init();
-    } catch (AuthOpException e) {
-    }
-  }
 
   /** Test if the request is allowed to access filepath.
    * @param filepath filepath to be acessed.
