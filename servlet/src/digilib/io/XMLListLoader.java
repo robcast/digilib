@@ -33,7 +33,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.helpers.XMLFilterImpl;
 
 public class XMLListLoader {
 
@@ -60,7 +60,7 @@ public class XMLListLoader {
 	/**
 	 *  inner class XMLListParser to be called by the parser
 	 */
-	private class XMLListParser extends DefaultHandler {
+	private class XMLListParser extends XMLFilterImpl {
 
 		private HashMap listData;
 		private LinkedList nameSpace;
