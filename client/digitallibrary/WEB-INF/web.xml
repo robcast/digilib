@@ -3,15 +3,15 @@
     "http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
-    <!-- General description of your web application -->
-    <display-name>
+  <!-- General description of your web application -->
+  <display-name>
         digilib
-    </display-name>
-    <description>
+  </display-name>
+  <description>
         This is the web frontend of the Digital Document Library.
-    </description>
-    <!-- The Scaler servlet -->
-    <servlet>
+  </description>
+  <!-- The Scaler servlet -->
+  <servlet>
         <servlet-name>
             Scaler
         </servlet-name>
@@ -34,10 +34,9 @@
         <load-on-startup>
             5
         </load-on-startup>
-    </servlet>
-  
-    <!-- We want to finger around with the default JSP servlet... -->
-    <servlet>
+  </servlet>
+  <!-- We want to finger around with the default JSP servlet... -->
+  <servlet>
         <servlet-name>
             doc-jsp
         </servlet-name>
@@ -64,30 +63,27 @@
         <load-on-startup>
             3
         </load-on-startup>
-    </servlet>
-
-    <!-- The mapping for the Scaler servlet -->
-    <servlet-mapping>
+  </servlet>
+  <!-- The mapping for the Scaler servlet -->
+  <servlet-mapping>
         <servlet-name>
             Scaler
         </servlet-name>
         <url-pattern>
             /servlet/Scaler/*
         </url-pattern>
-    </servlet-mapping>
-
-    <!-- The mapping for the JSP servlet -->
-    <servlet-mapping>
+  </servlet-mapping>
+  <!-- The mapping for the JSP servlet -->
+  <servlet-mapping>
         <servlet-name>
             doc-jsp
         </servlet-name>
         <url-pattern>
             *.jsp
         </url-pattern>
-    </servlet-mapping>
-
-    <!-- region for authenticated access -->
-    <security-constraint>
+  </servlet-mapping>
+  <!-- region for authenticated access -->
+  <security-constraint>
         <web-resource-collection>
             <web-resource-name>
                 Authenticated Digilib
@@ -102,9 +98,9 @@
                 user
             </role-name>
         </auth-constraint>
-    </security-constraint>
-    <login-config>
-        <!--
+  </security-constraint>
+  <login-config>
+  <!--
         <auth-method>BASIC</auth-method>
         <realm-name>digilib</realm-name> 
         -->
@@ -119,5 +115,5 @@
                 /digilib-fail.html
             </form-error-page>
         </form-login-config>
-    </login-config>
+  </login-config>
 </web-app>

@@ -18,7 +18,7 @@
        (see tomcat-users.xml).
        Authorization for resources (directories) is evaluated by the servlet 
        (see auth-file). -->
-  <parameter name="use-authorization" value="true" />
+  <parameter name="use-authorization" value="false" />
 
   <!-- 	  URL location of XML file with authorization requirements. -->
   <parameter name="auth-file" value="/docuserver/www/digitallibrary/WEB-INF/digilib-auth.xml" />

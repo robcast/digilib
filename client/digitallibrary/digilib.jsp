@@ -1,102 +1,42 @@
-<%@ page language="java" import="java.util.*" %>
+<%@ page language="java" %>
+
+<%!
+// authentication stuff - robert
+// -----------------------------
+// create DocumentBean instance for all JSP requests
+digilib.servlet.DocumentBean docBean = new digilib.servlet.DocumentBean();
+
+// initialize DocumentBean instance in JSP init
+public void jspInit() {
+    try {
+        // set servlet init-parameter
+        docBean.setConfig(getServletConfig());
+    } catch (javax.servlet.ServletException e) {
+        System.out.println(e);
+    }
+}
+%>
+
+<%
+// check if authentication is needed and redirect if necessary
+docBean.doAuthentication(request, response);
+
+// parsing the query
+// -----------------
+
+digilib.servlet.DigilibRequest dlRequest = new digilib.servlet.DigilibRequest();
+// fill the request with the old format query string
+dlRequest.setWithOldString(request.getQueryString());
+// add number of pages
+dlRequest.setPt(docBean.getNumPages(request));
+// retrieve request in new paramter format 
+String query = "dlImage.jsp?" + dlRequest.getAsString();
+%>
 
 <html>
 <head>
 <title>Digital Document Library</title>
 </head>
-
-<jsp:useBean id="DB" scope="page" class="digilib.servlet.DocumentBean" />
-
-<%
-// authentication stuff - robert
-// -----------------------------
-
-// set servlet init-parameter
-DB.setConfig(getServletConfig());
-// check if authentication is needed and redirect if necessary
-DB.doAuthentication(request, response);
-
-
-// parsing the query
-// -----------------
-
-String query = "dlImage.jsp?";
-String token;
-
-if (request.getQueryString() != null) {
-	// have to enable the passing of delimiter to get empty parameters
-	StringTokenizer tokenizer = new StringTokenizer(request.getQueryString(), "+", true);
-
-	// looks ugly but it works - hopefully...
-	
-	if (tokenizer.hasMoreTokens()) {
-		token = tokenizer.nextToken();
-		if (token != "+") {
-			query += "fn=" + token;
-			if (tokenizer.hasMoreTokens()) tokenizer.nextToken();
-		}
-	}
-	if (tokenizer.hasMoreTokens()) {
-		token = tokenizer.nextToken();
-		if (token != "+") {
-			query += "&pn=" + token;
-			if (tokenizer.hasMoreTokens()) tokenizer.nextToken();
-		}
-	}
-	if (tokenizer.hasMoreTokens()) {
-		token = tokenizer.nextToken();
-		if (token != "+") {
-			query += "&ws=" + token;
-			if (tokenizer.hasMoreTokens()) tokenizer.nextToken();
-		}
-	}
-	if (tokenizer.hasMoreTokens()) {
-		token = tokenizer.nextToken();
-		if (!token.equals("+")) {
-			query += "&mo=" + token;
-			if (tokenizer.hasMoreTokens()) tokenizer.nextToken();
-		}
-	}
-	if (tokenizer.hasMoreTokens()) {
-		token = tokenizer.nextToken();
-		if (!token.equals("+")) {
-			query += "&mk=" + token;
-			if (tokenizer.hasMoreTokens()) tokenizer.nextToken();
-		}
-	}
-	if (tokenizer.hasMoreTokens()) {
-		token = tokenizer.nextToken();
-		if (token != "+") {
-			query += "&wx=" + token;
-			if (tokenizer.hasMoreTokens()) tokenizer.nextToken();
-		}
-	}
-	if (tokenizer.hasMoreTokens()) {
-		token = tokenizer.nextToken();
-		if (token != "+") {
-			query += "&wy=" + token;
-			if (tokenizer.hasMoreTokens()) tokenizer.nextToken();
-		}
-	}
-	if (tokenizer.hasMoreTokens()) {
-		token = tokenizer.nextToken();
-		if (token != "+") {
-			query += "&ww=" + token;
-			if (tokenizer.hasMoreTokens()) tokenizer.nextToken();
-		}
-	}
-	if (tokenizer.hasMoreTokens()) {
-		token = tokenizer.nextToken();
-		if (token != "+") {
-			query += "&wh=" + token;
-			if (tokenizer.hasMoreTokens()) tokenizer.nextToken();
-		}
-	}
-
-	// a module update for total number of pages
-	query += "&pt=" + DB.getNumPages(request);
-}
-%>
 
 <frameset cols="*,90" border="0">
   <frame name="mainFrame" src="<%= query %>" scrolling="auto">

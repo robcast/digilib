@@ -27,54 +27,32 @@ function redirect() {
 <%
 } else {
 
+digilib.servlet.DigilibRequest dlRequest = new digilib.servlet.DigilibRequest();
 // default values for parameters
-String fn = "/";					// url of the page/document
-String pn = "1";					// page number
-String ws = "1";					// scale factor
-String mo = "";						// special options like 'fit' for gifs
-String mk = "0/0";					// marks
-String wx = "0";					// left edge of image (float from 0 to 1)
-String wy = "0";					// top edge in image (float from 0 to 1)
-String ww = "1";					// width of image (float from 0 to 1)
-String wh = "1";					// height of image (float from 0 to 1)
-String dw = "";						// width of client in pixels
-String dh = "";						// height of client in pixels
-
-String pt = "";						// (module pagesTotal.js) total number of pages
-
+dlRequest.setFn("/");					// url of the page/document
+dlRequest.setPn(1);					// page number
+dlRequest.setWs(1);					// scale factor
+dlRequest.setMo("");					// special options like 'fit' for gifs
+dlRequest.setMk("0/0");					// marks
+dlRequest.setWx(0);					// left edge of image (float from 0 to 1)
+dlRequest.setWy(0);					// top edge in image (float from 0 to 1)
+dlRequest.setWw(1);					// width of image (float from 0 to 1)
+dlRequest.setWh(1);					// height of image (float from 0 to 1)
 // overrriding default parameters with provided parameters from query-string
-if (request.getParameter("fn") != null) fn = request.getParameter("fn");
-if (request.getParameter("pn") != null) pn = request.getParameter("pn");
-if (request.getParameter("ws") != null) ws = request.getParameter("ws");
-if (request.getParameter("mo") != null) mo = request.getParameter("mo");
-if (request.getParameter("mk") != null) mk = request.getParameter("mk");
-if (request.getParameter("wx") != null) wx = request.getParameter("wx");
-if (request.getParameter("wy") != null) wy = request.getParameter("wy");
-if (request.getParameter("ww") != null) ww = request.getParameter("ww");
-if (request.getParameter("wh") != null) wh = request.getParameter("wh");
-if (request.getParameter("dw") != null) dw = request.getParameter("dw");
-if (request.getParameter("dh") != null) dh = request.getParameter("dh");
-if (request.getParameter("pt") != null) pt = request.getParameter("pt");
+dlRequest.setWithRequest(request);
 
 //String imageLocation = "http://" + request.getServerName() + "/docuserver/digitallibrary/servlet/Scaler/" + fn + "?pn=" + pn + "&ws=" + ws + "&mo=" + mo + "&wx=" + wx + "&wy=" + wy + "&ww=" + ww + "&wh=" + wh + "&dw=" + dw + "&dh=" + dh;
 
-String baseUrl = request.getRequestURL().toString();
-int eop = baseUrl.lastIndexOf("/");
-if (eop > 0) {
-    baseUrl = baseUrl.substring(0, eop);
-} else {
-    baseUrl = "http://" + request.getServerName() + "/docuserver/digitallibrary";
-}
+String baseUrl = dlRequest.getBaseURL();
 
-String imageLocation = baseUrl + "/servlet/Scaler/" + fn + "?pn=" + pn + "&ws=" + ws + "&mo=" + mo + "&wx=" + wx + "&wy=" + wy + "&ww=" + ww + "&wh=" + wh + "&dw=" + dw + "&dh=" + dh;
-
+String imageLocation = dlRequest.getBaseURL() + "/servlet/Scaler/?" + dlRequest.getAsString();
 %>
 
 <html>
 <head>
 <script language="JavaScript">
 
-var baseUrl = "<%= baseUrl %>";
+var baseUrl = "<%= dlRequest.getBaseURL() %>";
 
 // browser version test to include the corresponding navigation-file
 if (navigator.userAgent.toLowerCase().indexOf("opera") > -1) {
@@ -96,7 +74,7 @@ document.write('<script src="modules\/pagesTotal.js"><\/script>');
 
 </script>
 </head>
-<body bgcolor="#666666" onload='init_pagesTotal("<%= fn %>", "<%= pn %>", "<%= ws %>", "<%= mo %>", "<%= mk %>", "<%= wx %>", "<%= wy %>", "<%= ww %>", "<%= wh %>", "<%= pt %>")'>
+<body bgcolor="#666666" onload='init_pagesTotal("<%= dlRequest.getFn() %>", "<%= dlRequest.getPn() %>", "<%= dlRequest.getWs() %>", "<%= dlRequest.getMo() %>", "<%= dlRequest.getMk() %>", "<%= dlRequest.getWx() %>", "<%= dlRequest.getWy() %>", "<%= dlRequest.getWw() %>", "<%= dlRequest.getWh() %>", "<%= dlRequest.getPt() %>")'>
 
 <div id="lay1" style="position: absolute; left: 10px; top: 10px; visibility: visible"><img name="pic" src="<%= imageLocation %>" border="0"></div>
 

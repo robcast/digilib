@@ -1,5 +1,4 @@
-<!--
--->
+<!-- Authentication configuration file for Digital Document Library -->
 <auth-config>
 
   <digilib-paths>
