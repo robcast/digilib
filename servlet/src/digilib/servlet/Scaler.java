@@ -59,7 +59,7 @@ import digilib.io.ImageFileset;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.18b6";
+	public static final String dlVersion = "1.18b9";
 
 	// logger for accounting requests
 	Logger accountlog = Logger.getLogger("account.request");
@@ -760,6 +760,8 @@ public class Scaler extends HttpServlet {
 			docuImage.writeImage(mimeType, response.getOutputStream());
 
 			logger.info("Done in " + (System.currentTimeMillis() - startTime) + "ms");
+			
+			docuImage.dispose();
 
 			/* error handling */
 
@@ -813,7 +815,6 @@ public class Scaler extends HttpServlet {
 				}
 			} catch (FileOpException ex) {
 			} // so we don't get a loop
-
 		}
 	}
 

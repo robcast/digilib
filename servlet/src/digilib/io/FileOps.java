@@ -192,15 +192,18 @@ public class FileOps {
 			return null;
 		}
 		int a = 0;
-		int e = pathname.length();
+		int e = pathname.length() - 1;
+		if (e < 0) {
+			return pathname;
+		}
 		// leading and trailing "/" are removed
-		if (pathname.startsWith("/")) {
+		while ((a <= e) && (pathname.charAt(a) == '/')) {
 			a++;
 		}
-		if (pathname.endsWith("/")) {
+		while ((a < e) && (pathname.charAt(e) == '/')) {
 			e--; 
 		}
-		return pathname.substring(a, e);
+		return pathname.substring(a, e + 1);
 	}
 	
 	

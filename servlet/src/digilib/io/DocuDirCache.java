@@ -134,7 +134,8 @@ public class DocuDirCache {
 	public List getChildren(String dirname, boolean recurse) {
 		List l = new LinkedList();
 		for (Iterator i = map.keySet().iterator(); i.hasNext();) {
-			DocuDirectory dd = (DocuDirectory) i.next();
+			String n = (String) i.next();
+			DocuDirectory dd = (DocuDirectory) map.get(n);
 			if (recurse) {
 				if (dd.getDirName().startsWith(dirname)) {
 					l.add(dd);

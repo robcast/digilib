@@ -82,7 +82,8 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 
 	/* Load an image file into the Object. */
 	public void loadImage(ImageFile f) throws FileOpException {
-		System.gc();
+		logger.debug("loadImage: "+f.getFile());
+		//System.gc();
 		img = JAI.create("ImageRead", f.getFile().getAbsolutePath());
 		if (img == null) {
 			throw new FileOpException("Unable to load File!");
@@ -91,22 +92,25 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 
 	/* Get an ImageReader for the image file. */
 	public void preloadImage(ImageFile f) throws IOException {
-		System.gc();
+		logger.debug("preloadImage: "+f.getFile());
+		//System.gc();
 		RandomAccessFile rf = new RandomAccessFile(f.getFile(), "r");
 		ImageInputStream istream = ImageIO.createImageInputStream(rf);
 		//Iterator readers = ImageIO.getImageReaders(istream);
 		Iterator readers = ImageIO.getImageReadersByMIMEType(f.getMimetype());
 		reader = (ImageReader) readers.next();
-		reader.setInput(istream);
 		if (reader == null) {
 			throw new FileOpException("Unable to load File!");
 		}
+		logger.debug("JAIImageIO: this reader: " + reader.getClass());
+		reader.setInput(istream);
 	}
 
 	/* Load an image file into the Object. */
 	public void loadSubimage(ImageFile f, Rectangle region, int prescale)
 		throws FileOpException {
-		System.gc();
+		logger.debug("loadSubimage: "+f.getFile());
+		//System.gc();
 		try {
 			if ((reader == null) || (imgFile != f.getFile())) {
 				preloadImage(f);
@@ -136,6 +140,7 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 	/* Write the current image to an OutputStream. */
 	public void writeImage(String mt, OutputStream ostream)
 		throws FileOpException {
+		logger.debug("writeImage");
 		try {
 			// setup output
 			ParameterBlock pb3 = new ParameterBlock();
@@ -160,11 +165,15 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 	 * @see java.lang.Object#finalize()
 	 */
 	protected void finalize() throws Throwable {
+		dispose();
+		super.finalize();
+	}
+
+	public void dispose() {
 		// we must dispose the ImageReader because it keeps the filehandle open!
 		reader.dispose();
 		reader = null;
 		img = null;
-		super.finalize();
 	}
 
 }

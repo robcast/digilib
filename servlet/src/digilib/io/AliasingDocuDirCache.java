@@ -66,7 +66,7 @@ public class AliasingDocuDirCache extends DocuDirCache {
 		 */
 		
 		for (Iterator i = pathMap.keySet().iterator(); i.hasNext();) {
-			String link = (String)i.next();
+			String link = FileOps.normalName((String)i.next());
 			String dir = (String) pathMap.get(link);
 			DocuDirectory destDir = new DocuDirectory(dir, this);
 			if (destDir.isValid()) {
