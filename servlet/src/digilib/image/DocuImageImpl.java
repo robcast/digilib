@@ -38,7 +38,7 @@ import digilib.io.ImageFile;
 public abstract class DocuImageImpl implements DocuImage {
 
 	/** logger */
-	protected Logger logger = Logger.getLogger(this.getClass());
+	protected static Logger logger = Logger.getLogger(DocuImage.class);
 	
 	/** Interpolation quality. */
 	protected int quality = 0;
@@ -48,17 +48,6 @@ public abstract class DocuImageImpl implements DocuImage {
 	
 	/** image mime-type */
 	protected String mimeType = null;
-
-	/** Internal knownFileTypes. */
-	protected String[] knownFileTypes = { "jpg", "png", "gif", "tiff" };
-
-	/** Returns the list of image file types known to the DocuImage implementation.
-	 * 
-	 * @return List of image file types. Strings are standard file extensions.
-	 */
-	public String[] getKnownFileTypes() {
-		return knownFileTypes;
-	}
 
 	/**
 	 * Returns the quality.

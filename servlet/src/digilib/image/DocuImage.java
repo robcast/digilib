@@ -35,12 +35,6 @@ import digilib.io.FileOpException;
  */
 public interface DocuImage {
 
-	/** Returns the list of image file types known to the DocuImage implementation.
-	 * 
-	 * @return List of image file types. Strings are standard file extensions.
-	 */
-	public String[] getKnownFileTypes();
-
 	/** Loads an image file into the Object.
 	 * 
 	 * @param f Image File.
