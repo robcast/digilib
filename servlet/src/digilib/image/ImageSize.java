@@ -206,8 +206,8 @@ public class ImageSize {
 	 * 
 	 * @return
 	 */
-	public double getAspect() {
-		return (height > 0) ? ((double) width / (double) height) : 0;
+	public float getAspect() {
+		return (height > 0) ? ((float) width / (float) height) : 0;
 	}
 	
 	/* (non-Javadoc)
@@ -215,7 +215,6 @@ public class ImageSize {
 	 */
 	public String toString() {
 		String s = "[" + width + "x" + height + "]";
-		// TODO Auto-generated method stub
 		return s;
 	}
 }

@@ -134,7 +134,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			// clean up old reader
 			dispose();
 		}
-		System.gc();
+		//System.gc();
 		RandomAccessFile rf = new RandomAccessFile(f.getFile(), "r");
 		ImageInputStream istream = new FileImageInputStream(rf);
 		//Iterator readers = ImageIO.getImageReaders(istream);
@@ -160,7 +160,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	public void loadSubimage(ImageFile f, Rectangle region, int prescale)
 			throws FileOpException {
 		logger.debug("loadSubimage");
-		System.gc();
+		//System.gc();
 		try {
 			if ((reader == null) || (imgFile != f.getFile())) {
 				getReader(f);
