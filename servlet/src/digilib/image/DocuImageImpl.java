@@ -20,61 +20,105 @@
 
 package digilib.image;
 
-import java.io.*;
-import javax.servlet.ServletResponse;
-
-import digilib.*;
-import digilib.io.*;
+import digilib.Utils;
 
 /** Simple abstract implementation of the <code>DocuImage</code> interface.
  *
  * This implementation provides basic functionality for the utility methods like
  * <code>SetUtils</code>, and <code>getKnownFileTypes</code>. Image methods like
  * <code>loadImage</code>, <code>writeImage</code>, <code>getWidth</code>,
- * <code>getHeight</code> and <code>cropAndScale</code> must be implemented by
- * derived classes.
+ * <code>getHeight</code>, <code>crop</code> and <code>scale</code> must be
+ * implemented by derived classes.
  */
 public abstract class DocuImageImpl implements DocuImage {
 
-  /** Internal utils object. */    
-  protected Utils util = null;
+	/** Internal utils object. */
+	protected Utils util = null;
 
-  /** Default constructor. */  
-  public DocuImageImpl() {
-    util = new Utils();
-  }
+	/** Interpolation quality. */
+	protected int quality = 0;
 
-  /** Contructor taking an utils object.
-   * 
-   * @param u Utils object.
-   */  
-  public DocuImageImpl(Utils u) {
-    util = u;
-  }
+	/** Default constructor. */
+	public DocuImageImpl() {
+		util = new Utils();
+	}
 
-  /** Set local Utils object.
-   * 
-   * @param u Utils object.
-   */  
-  public void setUtils(Utils u) {
-    util = u;
-  }
+	/** Contructor taking an utils object.
+	 * 
+	 * @param u Utils object.
+	 */
+	public DocuImageImpl(Utils u) {
+		util = u;
+	}
 
-  /** Internal knownFileTypes. */  
-  protected String[] knownFileTypes = {"jpg", "png", "gif", "tiff"};
+	/** Set local Utils object.
+	 * 
+	 * @param u Utils object.
+	 */
+	public void setUtils(Utils u) {
+		util = u;
+	}
 
-  /** Returns the list of image file types known to the DocuImage implementation.
-   * 
-   * @return List of image file types. Strings are standard file extensions.
-   */    
-  public String[] getKnownFileTypes() {
-    return knownFileTypes;
-  }
+	/** Internal knownFileTypes. */
+	protected String[] knownFileTypes = { "jpg", "png", "gif", "tiff" };
 
+	/** Returns the list of image file types known to the DocuImage implementation.
+	 * 
+	 * @return List of image file types. Strings are standard file extensions.
+	 */
+	public String[] getKnownFileTypes() {
+		return knownFileTypes;
+	}
 
-  public abstract void loadImage(File f) throws FileOpException;
-  public abstract void writeImage(String mt, ServletResponse res) throws FileOpException;
-  public abstract int getWidth();
-  public abstract int getHeight();
-  public abstract void cropAndScale(int x_off, int y_off, int width, int height, float scale, int qual)  throws ImageOpException;
+	/**
+	 * Returns the quality.
+	 * @return int
+	 */
+	public int getQuality() {
+		return quality;
+	}
+
+	/**
+	 * Sets the quality.
+	 * @param quality The quality to set
+	 */
+	public void setQuality(int quality) {
+		this.quality = quality;
+	}
+
+	/** Crop and scale the current image.
+	 *
+	 * The current image is cropped to a rectangle of width, height at position
+	 * x_off, y_off. The resulting image is scaled by the factor scale using the
+	 * interpolation quality qual (0=worst).
+	 * 
+	 * @param x_off X offset of the crop rectangle in pixel.
+	 * @param y_off Y offset of the crop rectangle in pixel.
+	 * @param width Width of the crop rectangle in pixel.
+	 * @param height Height of the crop rectangle in pixel.
+	 * @param scale Scaling factor.
+	 * @param qual Interpolation quality (0=worst).
+	 * @throws ImageOpException Exception thrown on any error.
+	 */
+	public void cropAndScale(
+		int x_off, int y_off, int width, int height, double scale, int qual) 
+		throws ImageOpException {
+
+		setQuality(qual);
+		crop(x_off, y_off, width, height);
+		scale(scale);
+	}
+	
+	public void rotate(double angle) throws ImageOpException {
+		// just a do-nothing implementation
+	}
+
+	public void mirror(double angle) throws ImageOpException {
+		// just a do-nothing implementation
+	}
+
+	public void enhance(double mult, double add) throws ImageOpException {
+		// just a do-nothing implementation
+	}
+
 }

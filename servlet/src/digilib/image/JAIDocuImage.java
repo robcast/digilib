@@ -20,14 +20,16 @@
 
 package digilib.image;
 
+import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 
-import javax.media.jai.Interpolation;
-import javax.media.jai.JAI;
-import javax.servlet.ServletResponse;
+import javax.media.jai.*;
+import javax.media.jai.operator.TransposeDescriptor;
+import javax.media.jai.operator.TransposeType;
 
 import digilib.Utils;
 import digilib.io.FileOpException;
@@ -35,7 +37,11 @@ import digilib.io.FileOpException;
 /** A DocuImage implementation using Java Advanced Imaging Library. */
 public class JAIDocuImage extends DocuImageImpl {
 
-	private RenderedImage img;
+	protected RenderedImage img;
+	protected Interpolation interpol = null;
+
+	// epsilon for float comparisons
+	public final double epsilon = 1e-5;
 
 	/** Default constructor. */
 	public JAIDocuImage() {
@@ -48,11 +54,7 @@ public class JAIDocuImage extends DocuImageImpl {
 		util = u;
 	}
 
-	/** Load an image file into the Object.
-	 *
-	 * @param f Image File.
-	 * @throws FileOpException Exception thrown if any error occurs.
-	 */
+	/* Load an image file into the Object. */
 	public void loadImage(File f) throws FileOpException {
 		System.gc();
 		img = JAI.create("fileload", f.getAbsolutePath());
@@ -62,23 +64,14 @@ public class JAIDocuImage extends DocuImageImpl {
 		}
 	}
 
-	/** Write the current image to a ServletResponse.
-	 *
-	 * The image is encoded to the mime-type mt and sent to the output stream of the
-	 * ServletResponse res.
-	 *
-	 * Currently only mime-types "image/jpeg" and "image/png" are allowed.
-	 * @param mt mime-type of the image to be sent.
-	 * @param res ServletResponse where the image is sent.
-	 * @throws FileOpException Exception thrown on any error.
-	 */
-	public void writeImage(String mt, ServletResponse res)
+	/* Write the current image to an OutputStream. */
+	public void writeImage(String mt, OutputStream ostream)
 		throws FileOpException {
 		try {
 			// setup output
 			ParameterBlock pb3 = new ParameterBlock();
 			pb3.addSource(img);
-			pb3.add(res.getOutputStream());
+			pb3.add(ostream);
 			if (mt == "image/jpeg") {
 				pb3.add("JPEG");
 			} else if (mt == "image/png") {
@@ -88,12 +81,29 @@ public class JAIDocuImage extends DocuImageImpl {
 				util.dprintln(2, "ERROR(writeImage): Unknown mime type " + mt);
 				throw new FileOpException("Unknown mime type: " + mt);
 			}
-			res.setContentType(mt);
 			// render output
 			JAI.create("encode", pb3);
 
 		} catch (IOException e) {
 			throw new FileOpException("Error writing image.");
+		}
+	}
+
+	/* Real setQuality implementation. 
+	 * Creates the correct Interpolation.
+	 */
+	public void setQuality(int qual) {
+		quality = qual;
+		// setup interpolation quality
+		if (qual > 1) {
+			util.dprintln(4, "quality q2");
+			interpol = Interpolation.getInstance(Interpolation.INTERP_BICUBIC);
+		} else if (qual == 1) {
+			util.dprintln(4, "quality q1");
+			interpol = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
+		} else {
+			util.dprintln(4, "quality q0");
+			interpol = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
 		}
 	}
 
@@ -117,94 +127,230 @@ public class JAIDocuImage extends DocuImageImpl {
 		return 0;
 	}
 
-	/** Crop and scale the current image.
-	 *
-	 * The current image is cropped to a rectangle of width, height at position
-	 * x_off, y_off. The resulting image is scaled by the factor scale using the
-	 * interpolation quality qual (0=worst).
-	 * 
-	 * @param x_off X offset of the crop rectangle in pixel.
-	 * @param y_off Y offset of the crop rectangle in pixel.
-	 * @param width Width of the crop rectangle in pixel.
-	 * @param height Height of the crop rectangle in pixel.
-	 * @param scale Scaling factor.
-	 * @param qual Interpolation quality (0=worst).
-	 * @throws ImageOpException Exception thrown on any error.
-	 */
-	public void cropAndScale(
-		int x_off,
-		int y_off,
-		int width,
-		int height,
-		float scale,
-		int qual)
-		throws ImageOpException {
+	/* scales the current image */
+	public void scale(double scale) throws ImageOpException {
+		float sf = (float)scale;
+		// setup scale
+		ParameterBlock param = new ParameterBlock();
+		param.addSource(img);
+		param.add(sf);
+		param.add(sf);
+		param.add(0f);
+		param.add(0f);
+		param.add(interpol);
+		// hint with border extender
+		RenderingHints hint =
+			new RenderingHints(
+				JAI.KEY_BORDER_EXTENDER,
+				BorderExtender.createInstance(BorderExtender.BORDER_COPY));
 
-		Interpolation scaleInt = null;
-		// setup interpolation quality
-		if (qual > 1) {
-			util.dprintln(4, "quality q2");
-			scaleInt = Interpolation.getInstance(Interpolation.INTERP_BICUBIC);
-		} else if (qual == 1) {
-			util.dprintln(4, "quality q1");
-			scaleInt = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
-		} else {
-			util.dprintln(4, "quality q0");
-			scaleInt = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
+		RenderedImage scaledImg = JAI.create("scale", param, hint);
+
+		//DEBUG
+		util.dprintln(
+			3,
+			"SCALE: "
+				+ scale
+				+ " ->"
+				+ scaledImg.getWidth()
+				+ "x"
+				+ scaledImg.getHeight());
+
+		if (scaledImg == null) {
+			util.dprintln(2, "ERROR(scale): error in scale");
+			throw new ImageOpException("Unable to scale");
 		}
+		img = scaledImg;
+	}
 
+	/* crops the current image */
+	public void crop(int x_off, int y_off, int width, int height)
+		throws ImageOpException {
 		// setup Crop
-		ParameterBlock pb1 = new ParameterBlock();
-		pb1.addSource(img);
-		pb1.add((float) x_off);
-		pb1.add((float) y_off);
-		pb1.add((float) width);
-		pb1.add((float) height);
-		RenderedImage croppedImg = JAI.create("crop", pb1);
-		img = null; // free img
+		ParameterBlock param = new ParameterBlock();
+		param.addSource(img);
+		param.add((float) x_off);
+		param.add((float) y_off);
+		param.add((float) width);
+		param.add((float) height);
+		RenderedImage croppedImg = JAI.create("crop", param);
 
 		util.dprintln(
 			3,
-			"CROP:" + croppedImg.getWidth() + "x" + croppedImg.getHeight());
+			"CROP: "
+				+ x_off
+				+ ","
+				+ y_off
+				+ ", "
+				+ width
+				+ ","
+				+ height
+				+ " ->"
+				+ croppedImg.getWidth()
+				+ "x"
+				+ croppedImg.getHeight());
 		//DEBUG
 
 		if (croppedImg == null) {
-			util.dprintln(2, "ERROR(cropAndScale): error in crop");
+			util.dprintln(2, "ERROR(crop): error in crop");
 			throw new ImageOpException("Unable to crop");
 		}
-
-		// setup scale
-		RenderedImage scaledImg;
-
-		if (scale != 1f) {
-			ParameterBlock pb2 = new ParameterBlock();
-			pb2.addSource(croppedImg);
-			pb2.add(scale);
-			pb2.add(scale);
-			pb2.add(0f);
-			pb2.add(0f);
-			pb2.add(scaleInt);
-			// the following is nice but way too slow...
-			//if (opCrop.getColorModel().getPixelSize() < 8) {
-			// change color model if necessary
-			//  util.dprintln("converting color model...");
-			//  BufferedImage bi = new BufferedImage(1, 1, BufferedImage.TYPE_BYTE_GRAY);
-			//  ImageLayout lay = new ImageLayout(bi);
-			//  rh = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, lay);
-			//}
-			scaledImg = JAI.create("scale", pb2);
-			croppedImg = null; // free opCrop
-		} else {
-			// no scaling
-			scaledImg = croppedImg;
-		}
-
-		if (scaledImg == null) {
-			util.dprintln(2, "ERROR(cropAndScale): error in scale");
-			throw new ImageOpException("Unable to scale");
-		}
-
-		img = scaledImg;
+		img = croppedImg;
 	}
+
+	/* rotates the current image */
+	public void rotate(double angle) throws ImageOpException {
+		RenderedImage rotImg;
+		// convert degrees to radians
+		double rangle = Math.toRadians(angle);
+		// rotate about the image center
+		double xoff = img.getWidth() / 2;
+		double yoff = img.getHeight() / 2;
+
+		// optimize rotation by right angles
+		TransposeType rotOp = null;
+		if (Math.abs(angle - 0) < epsilon) {
+			// 0 degree
+			return;
+		} else if (Math.abs(angle - 90) < epsilon) {
+			// 90 degree
+			rotOp = TransposeDescriptor.ROTATE_90;
+		} else if (Math.abs(angle - 180) < epsilon) {
+			// 180 degree
+			rotOp = TransposeDescriptor.ROTATE_180;
+		} else if (Math.abs(angle - 270) < epsilon) {
+			// 270 degree
+			rotOp = TransposeDescriptor.ROTATE_270;
+		} else if (Math.abs(angle - 360) < epsilon) {
+			// 360 degree
+			return;
+		}
+		if (rotOp != null) {
+			// use Transpose operation
+			ParameterBlock pb = new ParameterBlock();
+			pb.addSource(img);
+			pb.add(rotOp);
+			rotImg = JAI.create("transpose", pb);
+		} else {
+			// setup "normal" rotation
+			ParameterBlock param = new ParameterBlock();
+			param.addSource(img);
+			param.add((float) xoff);
+			param.add((float) yoff);
+			param.add((float) rangle);
+			param.add(interpol);
+			// hint with border extender
+			RenderingHints hint =
+				new RenderingHints(
+					JAI.KEY_BORDER_EXTENDER,
+					BorderExtender.createInstance(BorderExtender.BORDER_COPY));
+
+			rotImg = JAI.create("rotate", param, hint);
+		}
+
+		util.dprintln(
+			3,
+			"ROTATE: "
+				+ xoff
+				+ ","
+				+ yoff
+				+ ", "
+				+ angle
+				+ " ("
+				+ rangle
+				+ ")"
+				+ " ->"
+				+ rotImg.getWidth()
+				+ "x"
+				+ rotImg.getHeight());
+		//DEBUG
+
+		if (rotImg == null) {
+			util.dprintln(2, "ERROR: error in rotate");
+			throw new ImageOpException("Unable to rotate");
+		}
+		img = rotImg;
+	}
+
+	/* mirrors the current image
+	 * works only horizontal and vertical
+	 */
+	public void mirror(double angle) throws ImageOpException {
+		RenderedImage mirImg;
+
+		// only mirroring by right angles
+		TransposeType rotOp = null;
+		if (Math.abs(angle - 0) < epsilon) {
+			// 0 degree
+			rotOp = TransposeDescriptor.FLIP_HORIZONTAL;
+		} else if (Math.abs(angle - 90) < epsilon) {
+			// 90 degree
+			rotOp = TransposeDescriptor.FLIP_VERTICAL;
+		} else if (Math.abs(angle - 180) < epsilon) {
+			// 180 degree
+			rotOp = TransposeDescriptor.FLIP_HORIZONTAL;
+		} else if (Math.abs(angle - 270) < epsilon) {
+			// 270 degree
+			rotOp = TransposeDescriptor.FLIP_VERTICAL;
+		} else if (Math.abs(angle - 360) < epsilon) {
+			// 360 degree
+			rotOp = TransposeDescriptor.FLIP_HORIZONTAL;
+		}
+		if (rotOp != null) {
+			// use Transpose operation
+			ParameterBlock param = new ParameterBlock();
+			param.addSource(img);
+			param.add(rotOp);
+			mirImg = JAI.create("transpose", param);
+
+			util.dprintln(
+				3,
+				"MIRROR: "
+					+ angle
+					+ " ->"
+					+ mirImg.getWidth()
+					+ "x"
+					+ mirImg.getHeight());
+			//DEBUG
+
+			if (mirImg == null) {
+				util.dprintln(2, "ERROR(mirror): error in mirror");
+				throw new ImageOpException("Unable to mirror");
+			}
+			img = mirImg;
+		}
+	}
+
+	/* contrast and brightness enhancement */
+	public void enhance(double mult, double add) throws ImageOpException {
+		RenderedImage enhImg;
+		double[] ma = { mult };
+		double[] aa = { add };
+		// use Rescale operation
+		ParameterBlock param = new ParameterBlock();
+		param.addSource(img);
+		param.add(ma);
+		param.add(aa);
+		enhImg = JAI.create("rescale", param);
+
+		util.dprintln(
+			3,
+			"ENHANCE: *"
+				+ mult
+				+ ", +"
+				+ add
+				+ " ->"
+				+ enhImg.getWidth()
+				+ "x"
+				+ enhImg.getHeight());
+		//DEBUG
+
+		if (enhImg == null) {
+			util.dprintln(2, "ERROR(enhance): error in enhance");
+			throw new ImageOpException("Unable to enhance");
+		}
+		img = enhImg;
+	}
+
 
 }

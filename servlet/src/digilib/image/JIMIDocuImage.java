@@ -20,125 +20,121 @@
 
 package digilib.image;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
-import java.io.*;
-import java.util.*;
+import java.awt.image.FilteredImageSource;
+import java.awt.image.ImageFilter;
+import java.awt.image.ImageProducer;
+import java.io.File;
+import java.io.OutputStream;
 
-import com.sun.jimi.core.*;
-import com.sun.jimi.core.raster.*;
-import com.sun.jimi.core.filters.*;
+import com.sun.jimi.core.Jimi;
+import com.sun.jimi.core.JimiException;
+import com.sun.jimi.core.filters.AreaAverageScaleFilter;
+import com.sun.jimi.core.filters.ReplicatingScaleFilter;
+import com.sun.jimi.core.raster.JimiRasterImage;
 
-import java.awt.*;
-import java.awt.image.*;
-
-import digilib.*;
-import digilib.io.*;
-
+import digilib.Utils;
+import digilib.io.FileOpException;
 
 /** Implementation of DocuImage using the JIMI image Library. */
 public class JIMIDocuImage extends DocuImageImpl {
 
-  private JimiRasterImage img;
-  private ImageProducer imgp;
+	private JimiRasterImage img;
+	private ImageProducer imgp;
+	private int imgWidth = 0;
+	private int imgHeight = 0;
 
-  public JIMIDocuImage() {
-  }
+	public JIMIDocuImage() {
+	}
 
-  public JIMIDocuImage(Utils u) {
-    util = u;
-  }
+	public JIMIDocuImage(Utils u) {
+		util = u;
+	}
 
-  /**
-   *  load image file
-   */
-  public void loadImage(File f) throws FileOpException {
-    System.gc();
-    try {
-    img = Jimi.getRasterImage(f.toURL());
-    } catch (java.net.MalformedURLException e) {
-      util.dprintln(3, "ERROR(loadImage): MalformedURLException");
-    } catch (JimiException e) {
-      util.dprintln(3, "ERROR(loadImage): JIMIException");
-      throw new FileOpException("Unable to load File!"+e);
-    }
-    if (img == null) {
-      util.dprintln(3, "ERROR(loadImage): unable to load file");
-      throw new FileOpException("Unable to load File!");
-    }
-  }
+	/**
+	 *  load image file
+	 */
+	public void loadImage(File f) throws FileOpException {
+		System.gc();
+		try {
+			img = Jimi.getRasterImage(f.toURL());
+		} catch (java.net.MalformedURLException e) {
+			util.dprintln(3, "ERROR(loadImage): MalformedURLException");
+		} catch (JimiException e) {
+			util.dprintln(3, "ERROR(loadImage): JIMIException");
+			throw new FileOpException("Unable to load File!" + e);
+		}
+		if (img == null) {
+			util.dprintln(3, "ERROR(loadImage): unable to load file");
+			throw new FileOpException("Unable to load File!");
+		}
+		imgp = img.getImageProducer();
+		imgWidth = img.getWidth();
+		imgHeight = img.getHeight();
+	}
 
-  /**
-   *  write image of type mt to Stream
-   */
-  public void writeImage(String mt, ServletResponse res)
-         throws FileOpException {
-    try {
-    // setup output
-    res.setContentType(mt);
-    // render output
-    Jimi.putImage(mt, imgp, res.getOutputStream());
+	/**
+	 *  write image of type mt to Stream
+	 */
+	public void writeImage(String mt, OutputStream ostream)
+		throws FileOpException {
+		try {
+			// render output
+			Jimi.putImage(mt, imgp, ostream);
 
-    } catch (JimiException e) {
-      throw new FileOpException("Error writing image!"+e);
-    } catch (IOException e) {
-      throw new FileOpException("Error writing image."+e);
-    }
-  }
+		} catch (JimiException e) {
+			throw new FileOpException("Error writing image!" + e);
+		}
+	}
 
-  public int getWidth() {
-    if (img != null) {
-      return img.getWidth();
-    }
-    return 0;
-  }
+	public int getWidth() {
+		return imgWidth;
+	}
 
-  public int getHeight() {
-    if (img != null) {
-      return img.getHeight();
-    }
-    return 0;
-  }
+	public int getHeight() {
+		return imgHeight;
+	}
 
+	public void scale(double scale) throws ImageOpException {
 
-  /**
-   *  crop and scale image
-   *    take rectangle width,height at position x_off,y_off
-   *    and scale by scale
-   */
-   public void cropAndScale(int x_off, int y_off, int width, int height,
-         float scale, int qual) throws ImageOpException {
+		ImageFilter scaleFilter;
+		int destWidth = (int) (scale * (float) imgWidth);
+		int destHeight = (int) (scale * (float) imgHeight);
 
-    ImageFilter scaleFilter;
-    int destWidth = (int)(scale * (float)width);
-    int destHeight = (int)(scale * (float)height);
+		// setup scale and interpolation quality
+		if (quality > 0) {
+			util.dprintln(4, "quality q1");
+			scaleFilter = new AreaAverageScaleFilter(destWidth, destHeight);
+		} else {
+			util.dprintln(4, "quality q0");
+			scaleFilter = new ReplicatingScaleFilter(destWidth, destHeight);
+		}
 
-    // setup Crop
-    ImageProducer croppedImg = img.getCroppedImageProducer(x_off, y_off, width, height);
-    //util.dprintln(3, "CROP:"+croppedImg.getWidth()+"x"+croppedImg.getHeight()); //DEBUG
+		ImageProducer scaledImg = new FilteredImageSource(imgp, scaleFilter);
 
-    if (croppedImg == null) {
-      util.dprintln(2, "ERROR(cropAndScale): error in crop");
-      throw new ImageOpException("Unable to crop");
-    }
+		if (scaledImg == null) {
+			util.dprintln(2, "ERROR(cropAndScale): error in scale");
+			throw new ImageOpException("Unable to scale");
+		}
 
-    // setup scale and interpolation quality
-    if (qual > 0) {
-      util.dprintln(4, "quality q1");
-      scaleFilter = new AreaAverageScaleFilter(destWidth, destHeight);
-    } else {
-      util.dprintln(4, "quality q0");
-      scaleFilter = new ReplicatingScaleFilter(destWidth, destHeight);
-    }
+		imgp = scaledImg;
+		imgWidth = destWidth;
+		imgHeight = destHeight;
+	}
 
-    ImageProducer scaledImg = new FilteredImageSource(croppedImg, scaleFilter);
+	public void crop(int x_off, int y_off, int width, int height)
+		throws ImageOpException {
+		// setup Crop
+		ImageProducer croppedImg =
+			img.getCroppedImageProducer(x_off, y_off, width, height);
+		//util.dprintln(3, "CROP:"+croppedImg.getWidth()+"x"+croppedImg.getHeight()); //DEBUG
 
-    if (scaledImg == null) {
-      util.dprintln(2, "ERROR(cropAndScale): error in scale");
-      throw new ImageOpException("Unable to scale");
-    }
-
-    imgp = scaledImg;
-  }
+		if (croppedImg == null) {
+			util.dprintln(2, "ERROR(cropAndScale): error in crop");
+			throw new ImageOpException("Unable to crop");
+		}
+		imgp = croppedImg;
+		imgWidth = width;
+		imgHeight = height;
+	}
 
 }

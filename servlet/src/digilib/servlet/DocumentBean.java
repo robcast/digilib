@@ -130,6 +130,10 @@ public class DocumentBean {
 		HttpServletResponse response)
 		throws Exception {
 		util.dprintln(10, "doAuthentication");
+		if (! useAuthentication) {
+			// shortcut if no authentication
+			return true;
+		}
 		// check if we are already authenticated
 		if (((HttpServletRequest) request.getServletRequest()).getRemoteUser()
 			== null) {

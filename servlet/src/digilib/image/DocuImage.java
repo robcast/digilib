@@ -21,11 +21,9 @@
 package digilib.image;
 
 import java.io.File;
-
-import javax.servlet.ServletResponse;
+import java.io.OutputStream;
 
 import digilib.io.FileOpException;
-
 
 /** The basic class for the representation of a digilib image.
  *
@@ -36,61 +34,139 @@ import digilib.io.FileOpException;
  */
 public interface DocuImage {
 
-  /** Returns the list of image file types known to the DocuImage implementation.
-   * 
-   * @return List of image file types. Strings are standard file extensions.
-   */    
-  public String[] getKnownFileTypes();
+	/** Returns the list of image file types known to the DocuImage implementation.
+	 * 
+	 * @return List of image file types. Strings are standard file extensions.
+	 */
+	public String[] getKnownFileTypes();
 
-  /** Loads an image file into the Object.
-   * 
-   * @param f Image File.
-   * @throws FileOpException Exception thrown if any error occurs.
-   */
-  public void loadImage(File f) throws FileOpException;
+	/** Loads an image file into the Object.
+	 * 
+	 * @param f Image File.
+	 * @throws FileOpException Exception thrown if any error occurs.
+	 */
+	public void loadImage(File f) throws FileOpException;
 
-  /** Writes the current image to a ServletResponse.
-   *
-   * The image is encoded to the mime-type <code>mt</code> and sent to the output
-   * stream of the <code>ServletResponse</code> <code>res</code>.
-   *
-   * Currently only mime-types "image/jpeg" and "image/png" are supported.
-   * 
-   * @param mt mime-type of the image to be sent.
-   * @param res ServletResponse where the image is sent.
-   * @throws FileOpException Exception thrown on any error.
-   */
-  public void writeImage(String mt, ServletResponse res) throws FileOpException;
+	/** Writes the current image to a ServletResponse.
+	 *
+	 * The image is encoded to the mime-type <code>mt</code> and sent to the output
+	 * stream of the <code>ServletResponse</code> <code>res</code>.
+	 *
+	 * Currently only mime-types "image/jpeg" and "image/png" are supported.
+	 * 
+	 * @param mt mime-type of the image to be sent.
+	 * @param res ServletResponse where the image is sent.
+	 * @throws FileOpException Exception thrown on any error.
+	 */
+	public void writeImage(String mt, OutputStream ostream)
+		throws FileOpException;
 
-  /** The width of the current image in pixel.
-   * 
-   * @return Image width in pixels.
-   */
-  public int getWidth();
-  
-  /** The height of the current image in pixel.
-   * 
-   * @return Image height in pixels.
-   */  
-  public int getHeight();
+	/** The width of the current image in pixel.
+	 * 
+	 * @return Image width in pixels.
+	 */
+	public int getWidth();
 
-  /** Crops and scales the current image.
-   *
-   * The current image is cropped to a rectangle of <code>width</code>,
-   * <code>height</code> at position <code>x_off</code>, <code>y_off</code>. The
-   * resulting image is scaled by the factor <code>scale</code> using the
-   * interpolation quality <code>qual</code> (0=worst).
-   * 
-   * @param x_off x offset of the crop rectangle in pixel.
-   * @param y_off y offset of the crop rectangle in pixel.
-   * @param width width of the crop rectangle in pixel.
-   * @param height height of the crop rectangle in pixel.
-   * @param scale scaling factor.
-   * @param qual interpolation quality (0=worst).
-   * @throws ImageOpException exception thrown on any error.
-   */
-  public void cropAndScale(
-                int x_off, int y_off,
-                int width, int height,
-                float scale, int qual) throws ImageOpException;
+	/** The height of the current image in pixel.
+	 * 
+	 * @return Image height in pixels.
+	 */
+	public int getHeight();
+
+	/** Crops the current image.
+	 * 
+	 * Cuts out a region of the size <code>width</code> x <code>height</code> at
+	 * the offset <code>xoff</code>, <code>yoff</code> from the current image
+	 * and replaces the current image with the result.
+	 * 
+	 * @param xoff X offset of crop region
+	 * @param yoff Y offset of crop region
+	 * @param width width of crop region
+	 * @param height height of crop region
+	 * @throws ImageOpException
+	 */
+	public void crop(int xoff, int yoff, int width, int height)
+		throws ImageOpException;
+
+	/** Scales the current image.
+	 * 
+	 * Replaces the current image with an image scaled by the factor
+	 * <code>scale</code>.
+	 * 
+	 * @param scale scaling factor
+	 * @throws ImageOpException
+	 */
+	public void scale(double scale) throws ImageOpException;
+
+	/** Crops and scales the current image.
+	 *
+	 * The current image is cropped to a rectangle of <code>width</code>,
+	 * <code>height</code> at position <code>x_off</code>, <code>y_off</code>. The
+	 * resulting image is scaled by the factor <code>scale</code> using the
+	 * interpolation quality <code>qual</code> (0=worst).
+	 * 
+	 * @param x_off x offset of the crop rectangle in pixel.
+	 * @param y_off y offset of the crop rectangle in pixel.
+	 * @param width width of the crop rectangle in pixel.
+	 * @param height height of the crop rectangle in pixel.
+	 * @param scale scaling factor.
+	 * @param qual interpolation quality (0=worst).
+	 * @throws ImageOpException exception thrown on any error.
+	 */
+	public void cropAndScale(
+		int x_off,
+		int y_off,
+		int width,
+		int height,
+		double scale,
+		int qual)
+		throws ImageOpException;
+		
+	/** Rotates the current image.
+	 * 
+	 * Replaces the current image with a rotated image. The image is rotated
+	 * around the center by <code>angle</code> given in degrees [0, 360]
+	 * clockwise. Image size and aspect ratio are likely to change.
+	 * 
+	 * @param angle rotation angle in degree
+	 */
+	public void rotate(double angle) throws ImageOpException;
+	
+	/** Mirrors the current image.
+	 * 
+	 * Replaces  the current image with a mirrored image. The mirror axis goes
+	 * through the center of the image and is rotated by <code>angle</code>
+	 * degrees. Currently only horizontal and vertical mirroring (0 and 90
+	 * degree) are supported.
+	 * 
+	 * @param angle angle of mirror axis
+	 * @throws ImageOpException
+	 */
+	public void mirror(double angle) throws ImageOpException;
+	
+	/** Enhaces brightness and contrast of the current image.
+	 * 
+	 * Replaces the current image with a brightness and contrast enhanced image.
+	 * Contrast is enhanced by multiplying the pixel value with the constant
+	 * <code>mult</code>. Brightness is enhanced by adding the constant
+	 * <code>add</code> to the pixel value. Operation: p1 = (p0*mult)+add.
+	 * 
+	 * @param mult multiplicative constant for contrast enhancement
+	 * @param add additive constant for brightness enhancement
+	 * @throws ImageOpException
+	 */
+	public void enhance(double mult, double add) throws ImageOpException;
+
+	/**
+	 * Returns the interpolation quality.
+	 * @return int
+	 */
+	public int getQuality();
+
+	/**
+	 * Sets the interpolation quality.
+	 * @param quality The quality to set
+	 */
+	public void setQuality(int quality);
+
 }

@@ -20,15 +20,27 @@
 
 package digilib.servlet;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
-import java.io.*;
-import java.util.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
-import digilib.*;
-import digilib.io.*;
-import digilib.image.*;
-import digilib.auth.*;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import digilib.Utils;
+import digilib.auth.AuthOpException;
+import digilib.auth.AuthOps;
+import digilib.image.DocuImage;
+import digilib.image.ImageOpException;
+import digilib.io.FileOpException;
+import digilib.io.FileOps;
 
 //import tilecachetool.*;
 
@@ -40,8 +52,8 @@ import digilib.auth.*;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.5b";
-	
+	public static final String dlVersion = "1.6b";
+
 	// Utils instance with debuglevel
 	Utils util;
 	// FileOps instance
@@ -103,9 +115,7 @@ public class Scaler extends HttpServlet {
 		// set with request parameters
 		dlReq.setWithRequest(request);
 		// add DigilibRequest to ServletRequest
-		request.setAttribute(
-			"digilib.servlet.request",
-			dlReq);
+		request.setAttribute("digilib.servlet.request", dlReq);
 		// do the processing
 		processRequest(request, response);
 	}
@@ -121,9 +131,7 @@ public class Scaler extends HttpServlet {
 		// set with request parameters
 		dlReq.setWithRequest(request);
 		// add DigilibRequest to ServletRequest
-		request.setAttribute(
-			"digilib.servlet.request",
-			dlReq);
+		request.setAttribute("digilib.servlet.request", dlReq);
 		// do the processing
 		processRequest(request, response);
 	}
@@ -155,6 +163,10 @@ public class Scaler extends HttpServlet {
 		int scaleQual = 0;
 		// send html error message (or image file)
 		boolean errorMsgHtml = false;
+		// mirror the image
+		boolean doMirror = false;
+		// angle of mirror axis
+		double mirrorAngle = 0;
 
 		/*
 		 *  request parameters
@@ -168,15 +180,21 @@ public class Scaler extends HttpServlet {
 		// destination image height
 		int paramDH = dlRequest.getDh();
 		// relative area x_offset (0..1)
-		float paramWX = dlRequest.getWx();
+		double paramWX = dlRequest.getWx();
 		// relative area y_offset
-		float paramWY = dlRequest.getWy();
+		double paramWY = dlRequest.getWy();
 		// relative area width (0..1)
-		float paramWW = dlRequest.getWw();
+		double paramWW = dlRequest.getWw();
 		// relative area height
-		float paramWH = dlRequest.getWh();
+		double paramWH = dlRequest.getWh();
 		// scale factor (additional to dw/width, dh/height)
-		float paramWS = dlRequest.getWs();
+		double paramWS = dlRequest.getWs();
+		// rotation angle
+		double paramROT = dlRequest.getRot();
+		// contrast enhancement
+		double paramCONT = dlRequest.getCont();
+		// brightness enhancement
+		double paramBRGT = dlRequest.getBrgt();
 
 		/* operation mode: "fit": always fit to page, 
 		 * "clip": send original resolution cropped, "file": send whole file (if
@@ -219,6 +237,14 @@ public class Scaler extends HttpServlet {
 		} else if (dlRequest.isOption("hires")) {
 			preScaledFirst = false;
 		}
+		// operation mode: "hmir": mirror horizontally, "vmir": mirror vertically
+		if (dlRequest.isOption("hmir")) {
+			doMirror = true;
+			mirrorAngle = 0;
+		} else if (dlRequest.isOption("vmir")) {
+			doMirror = true;
+			mirrorAngle = 90;
+		}
 
 		//"big" try for all file/image actions
 		try {
@@ -228,10 +254,9 @@ public class Scaler extends HttpServlet {
 			if (docuImage == null) {
 				throw new ImageOpException("Unable to load DocuImage class!");
 			}
-			//DocuImage docuImage = new JAIDocuImage(util);
-			//DocuImage docuImage = new JIMIDocuImage(util);
-			//DocuImage docuImage = new ImageLoaderDocuImage(util);
-			//DocuImage docuImage = new JAIImageLoaderDocuImage(util);
+
+			// set interpolation quality
+			docuImage.setQuality(scaleQual);
 
 			/*
 			 *  find the file to load/send
@@ -243,7 +268,7 @@ public class Scaler extends HttpServlet {
 			if ((paramWW < 1f) || (paramWH < 1f)) {
 				preScaledFirst = false;
 			}
-			
+
 			/*
 			 * check permissions
 			 */
@@ -312,7 +337,7 @@ public class Scaler extends HttpServlet {
 			 *  crop and scale the image
 			 */
 
-			// get size
+			// get image size
 			int imgWidth = docuImage.getWidth();
 			int imgHeight = docuImage.getHeight();
 
@@ -321,14 +346,30 @@ public class Scaler extends HttpServlet {
 				2,
 				"time " + (System.currentTimeMillis() - startTime) + "ms");
 
+			// coordinates using Java2D
+			// image size
+			Rectangle2D imgBounds = new Rectangle2D.Double(0, 0, imgWidth, imgHeight);
+			// user window area in 4-point form (ul, ur, ll, lr)
+			Point2D[] userAreaC = {
+				new Point2D.Double(paramWX, paramWY),
+				new Point2D.Double(paramWX + paramWW, paramWY),
+				new Point2D.Double(paramWX, paramWY + paramWH),
+				new Point2D.Double(paramWX + paramWW, paramWY + paramWH)
+			};
+			// transformation from relative [0,1] to image coordinates.
+			AffineTransform imgTrafo = new AffineTransform();
+			imgTrafo.scale(imgWidth, imgHeight);
+			// rotate coordinates
+			//imgTrafo.rotate(Math.toRadians(-paramROT));
+			
 			// coordinates and scaling
-			float areaXoff;
-			float areaYoff;
-			float areaWidth;
-			float areaHeight;
-			float scaleX;
-			float scaleY;
-			float scaleXY;
+			double areaXoff;
+			double areaYoff;
+			double areaWidth;
+			double areaHeight;
+			double scaleX;
+			double scaleY;
+			double scaleXY;
 
 			if (scaleToFit) {
 				// calculate absolute from relative coordinates
@@ -370,8 +411,44 @@ public class Scaler extends HttpServlet {
 					+ "x"
 					+ areaHeight);
 
+			// Java2D 
+			Point2D[] imgAreaC = { null, null, null, null };
+
+			imgTrafo.transform(userAreaC, 0, imgAreaC, 0, 4);
+			areaXoff = imgAreaC[0].getX();
+			areaYoff = imgAreaC[0].getY();
+			areaWidth = imgAreaC[0].distance(imgAreaC[1]);
+			areaHeight = imgAreaC[0].distance(imgAreaC[2]);
+			Rectangle2D imgArea =
+				new Rectangle2D.Double(
+					areaXoff,
+					areaYoff,
+					areaWidth,
+					areaHeight);
+			// calculate scaling factors
+			scaleX = paramDW / areaWidth * paramWS;
+			scaleY = paramDH / areaHeight * paramWS;
+			scaleXY = (scaleX > scaleY) ? scaleY : scaleX;
+
+			util.dprintln(
+				1,
+				"Scale "
+					+ scaleXY
+					+ "("
+					+ scaleX
+					+ ","
+					+ scaleY
+					+ ") on "
+					+ areaXoff
+					+ ","
+					+ areaYoff
+					+ " "
+					+ areaWidth
+					+ "x"
+					+ areaHeight);
+
 			// clip area at the image border
-			areaWidth =
+			/* areaWidth =
 				(areaXoff + areaWidth > imgWidth)
 					? imgWidth - areaXoff
 					: areaWidth;
@@ -379,6 +456,10 @@ public class Scaler extends HttpServlet {
 				(areaYoff + areaHeight > imgHeight)
 					? imgHeight - areaYoff
 					: areaHeight;
+			*/
+			imgArea = imgArea.createIntersection(imgBounds);
+			areaWidth = imgArea.getWidth();
+			areaHeight = imgArea.getHeight();
 
 			util.dprintln(
 				2,
@@ -401,13 +482,29 @@ public class Scaler extends HttpServlet {
 			}
 
 			// crop and scale image
-			docuImage.cropAndScale(
+			docuImage.crop(
 				(int) areaXoff,
 				(int) areaYoff,
 				(int) areaWidth,
-				(int) areaHeight,
-				scaleXY,
-				scaleQual);
+				(int) areaHeight);
+
+			docuImage.scale(scaleXY);
+
+			// mirror image
+			if (doMirror) {
+				docuImage.mirror(mirrorAngle);
+			}
+
+			// rotate image (first shot :-)
+			if (paramROT != 0) {
+				docuImage.rotate(paramROT);
+			}
+
+			// contrast and brightness enhancement
+			if ((paramCONT != 0) || (paramBRGT != 0)) {
+				double mult = Math.pow(2, paramCONT); 
+				docuImage.enhance(mult, paramBRGT);
+			}
 
 			util.dprintln(
 				2,
@@ -421,9 +518,10 @@ public class Scaler extends HttpServlet {
 			if (mimeType != "image/jpeg") {
 				mimeType = "image/png";
 			}
+			response.setContentType(mimeType);
 
 			// write the image
-			docuImage.writeImage(mimeType, response);
+			docuImage.writeImage(mimeType, response.getOutputStream());
 
 			util.dprintln(
 				1,
