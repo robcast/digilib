@@ -120,6 +120,12 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		ImageInputStream istream = ImageIO.createImageInputStream(rf);
 		Iterator readers = ImageIO.getImageReaders(istream);
 		reader = (ImageReader) readers.next();
+		/* are there more readers?
+		System.out.println("this reader: " + reader.getClass());
+		while (readers.hasNext()) {
+			System.out.println("next reader: " + readers.next().getClass());
+		}
+		*/
 		reader.setInput(istream);
 		if (reader == null) {
 			util.dprintln(3, "ERROR(loadImage): unable to load file");
@@ -168,6 +174,35 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 				util.dprintln(2, "ERROR(writeImage): Unknown mime type " + mt);
 				throw new FileOpException("Unknown mime type: " + mt);
 			}
+
+			/* JPEG doesn't do transparency so we have to convert any RGBA image
+			 * to RGB :-(
+			 */
+			if ((type == "jpeg") && (img.getColorModel().hasAlpha())) {
+				util.dprintln(2, "BARF: JPEG with transparency!!");
+				int w = img.getWidth();
+				int h = img.getHeight();
+				// BufferedImage.TYPE_INT_RGB seems to be fastest (JDK1.4.1, OSX)
+				BufferedImage img2;
+				img2 = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+				img2.createGraphics().drawImage(img, null, 0, 0);
+				img = img2;
+			}
+
+			/* try ImageWriter.write
+			Iterator writers = ImageIO.getImageWritersByFormatName(type);
+			ImageWriter writer = (ImageWriter) writers.next();
+			System.out.println("this writer: " + writer.getClass());
+			while (writers.hasNext()) {
+				System.out.println("next writer: " + writers.next().getClass());
+			}
+			//ImageWriteParam param = writer.getDefaultWriteParam();
+			IIOImage iimg = new IIOImage(img, null, null); 
+			ImageOutputStream iostream = new MemoryCacheImageOutputStream(ostream);
+			writer.setOutput(iostream);
+			writer.write(iimg);
+			*/
+
 			// render output
 			if (ImageIO.write(img, type, ostream)) {
 				// writing was OK
@@ -187,7 +222,8 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			new AffineTransformOp(
 				AffineTransform.getScaleInstance(scale, scale),
 				interpol);
-		BufferedImage scaledImg = scaleOp.filter(img, null);
+		BufferedImage scaledImg = scaleOp.createCompatibleDestImage(img, null);
+		scaleOp.filter(img, scaledImg);
 
 		if (scaledImg == null) {
 			util.dprintln(2, "ERROR(cropAndScale): error in scale");
@@ -276,8 +312,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		return fb;
 	}
 
-	public void rotate(double angle)
-		throws ImageOpException {
+	public void rotate(double angle) throws ImageOpException {
 		// setup rotation
 		double rangle = Math.toRadians(angle);
 		// create offset to make shure the rotated image has no negative coordinates
@@ -294,7 +329,8 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		double xoff = rotbounds.getX();
 		double yoff = rotbounds.getY();
 		// move image back in line
-		trafo.preConcatenate(AffineTransform.getTranslateInstance(-xoff, -yoff));
+		trafo.preConcatenate(
+			AffineTransform.getTranslateInstance(-xoff, -yoff));
 		// transform image
 		rotOp = new AffineTransformOp(trafo, interpol);
 		BufferedImage rotImg = rotOp.filter(img, null);

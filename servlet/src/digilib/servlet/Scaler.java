@@ -58,7 +58,7 @@ import digilib.io.FileOps;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.11b1";
+	public static final String dlVersion = "1.12b2";
 
 	// Utils instance with debuglevel
 	Utils util;
@@ -90,6 +90,7 @@ public class Scaler extends HttpServlet {
 
 		// Debuggin!
 		//TCTool tctool = new TCTool();
+		System.out.println("***** Digital Image Library Servlet (version "+dlVersion+") *****");
 
 		// get our ServletContext
 		ServletContext context = config.getServletContext();
@@ -617,7 +618,15 @@ public class Scaler extends HttpServlet {
 				double subsamp = 1d;
 				if (scaleXY < 1) {
 					subf = 1 / scaleXY;
-					subsamp = Math.floor(subf);
+					// for higher quality reduce subsample factor by minSubsample
+					if (scaleQual > 0) {
+						subsamp =
+							Math.max(
+								Math.floor(subf / dlConfig.getMinSubsample()),
+								1d);
+					} else {
+						subsamp = Math.floor(subf);
+					}
 					scaleXY = subsamp / subf;
 					System.out.println(
 						"Using subsampling: " + subsamp + " rest " + scaleXY);

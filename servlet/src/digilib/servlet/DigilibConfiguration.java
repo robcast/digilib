@@ -91,8 +91,8 @@ public class DigilibConfiguration {
 	private String authURLPath = "authenticated/";
 	private String AuthURLPathParam = "auth-url-path";
 	// degree of subsampling on image load
-	private float subsampleDistance = 0;
-	private String subsampleDistanceParam = "subsample-distance";
+	private float minSubsample = 2;
+	private String minSubsampleParam = "subsample-minimum";
 	// DocuDirCache instance
 	private DocuDirCache dirCache = null;
 
@@ -163,9 +163,9 @@ public class DigilibConfiguration {
 			authConfPath = tryToGetInitParam(authConfParam, authConfPath);
 			authOp = new XMLAuthOps(util, authConfPath);
 		}
-		// subsampleDistance
-		subsampleDistance =
-			tryToGetInitParam(subsampleDistanceParam, subsampleDistance);
+		// minSubsample
+		minSubsample =
+			tryToGetInitParam(minSubsampleParam, minSubsample);
 	}
 
 	/**
@@ -480,16 +480,16 @@ public class DigilibConfiguration {
 	/**
 	 * @return float
 	 */
-	public float getSubsampleDistance() {
-		return subsampleDistance;
+	public float getMinSubsample() {
+		return minSubsample;
 	}
 
 	/**
-	 * Sets the subsampleDistance.
-	 * @param subsampleDistance The subsampleDistance to set
+	 * Sets the minSubsample.
+	 * @param minSubsample The minSubsample to set
 	 */
-	public void setSubsampleDistance(float subsampleDistance) {
-		this.subsampleDistance = subsampleDistance;
+	public void setMinSubsample(float f) {
+		this.minSubsample = f;
 	}
 
 	/**
