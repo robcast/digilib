@@ -29,6 +29,7 @@ import java.awt.image.RescaleOp;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.util.Iterator;
 
 import javax.imageio.ImageIO;
@@ -115,17 +116,13 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	/** Get an ImageReader for the image file.
 	 * 
 	 */
-	public void preloadImage(File f) throws FileOpException {
+	public void preloadImage(File f) throws IOException {
 		System.gc();
-		try {
-			ImageInputStream istream = ImageIO.createImageInputStream(f);
-			Iterator readers = ImageIO.getImageReaders(istream);
-			reader = (ImageReader) readers.next();
-			reader.setInput(istream);
-		} catch (IOException e) {
-			util.dprintln(3, "ERROR(loadImage): unable to load file");
-			throw new FileOpException("Unable to load File!" + e);
-		}
+		RandomAccessFile rf = new RandomAccessFile(f, "r");
+		ImageInputStream istream = ImageIO.createImageInputStream(rf);
+		Iterator readers = ImageIO.getImageReaders(istream);
+		reader = (ImageReader) readers.next();
+		reader.setInput(istream);
 		if (reader == null) {
 			util.dprintln(3, "ERROR(loadImage): unable to load file");
 			throw new FileOpException("Unable to load File!");
@@ -258,7 +255,8 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 					+ ")");
 			return;
 		}
-		RescaleOp scaleOp = new RescaleOp(rgbOrdered(rgbm), rgbOrdered(rgba), null);
+		RescaleOp scaleOp =
+			new RescaleOp(rgbOrdered(rgbm), rgbOrdered(rgba), null);
 		scaleOp.filter(img, img);
 	}
 
@@ -280,78 +278,78 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		return fb;
 	}
 
-public void rotate(double angle) throws ImageOpException {
-	// setup rotation
-	double rangle = Math.toRadians(angle);
-	double x = getWidth() / 2;
-	double y = getHeight() / 2;
-	AffineTransformOp rotOp =
-		new AffineTransformOp(
-			AffineTransform.getRotateInstance(rangle, x, y),
-			interpol);
-	BufferedImage rotImg = rotOp.filter(img, null);
+	public void rotate(double angle) throws ImageOpException {
+		// setup rotation
+		double rangle = Math.toRadians(angle);
+		double x = getWidth() / 2;
+		double y = getHeight() / 2;
+		AffineTransformOp rotOp =
+			new AffineTransformOp(
+				AffineTransform.getRotateInstance(rangle, x, y),
+				interpol);
+		BufferedImage rotImg = rotOp.filter(img, null);
 
-	if (rotImg == null) {
-		util.dprintln(2, "ERROR: error in rotate");
-		throw new ImageOpException("Unable to rotate");
+		if (rotImg == null) {
+			util.dprintln(2, "ERROR: error in rotate");
+			throw new ImageOpException("Unable to rotate");
+		}
+		img = rotImg;
 	}
-	img = rotImg;
-}
 
-public void mirror(double angle) throws ImageOpException {
-	// setup mirror
-	double mx = 1;
-	double my = 1;
-	double tx = 0;
-	double ty = 0;
-	if (Math.abs(angle - 0) < epsilon) {
-		// 0 degree
-		mx = -1;
-		tx = getWidth();
-	} else if (Math.abs(angle - 90) < epsilon) {
-		// 90 degree
-		my = -1;
-		ty = getHeight();
-	} else if (Math.abs(angle - 180) < epsilon) {
-		// 180 degree
-		mx = -1;
-		tx = getWidth();
-	} else if (Math.abs(angle - 270) < epsilon) {
-		// 270 degree
-		my = -1;
-		ty = getHeight();
-	} else if (Math.abs(angle - 360) < epsilon) {
-		// 360 degree
-		mx = -1;
-		tx = getWidth();
-	}
-	AffineTransformOp mirOp =
-		new AffineTransformOp(
-			new AffineTransform(mx, 0, 0, my, tx, ty),
-			interpol);
-	BufferedImage mirImg = mirOp.filter(img, null);
+	public void mirror(double angle) throws ImageOpException {
+		// setup mirror
+		double mx = 1;
+		double my = 1;
+		double tx = 0;
+		double ty = 0;
+		if (Math.abs(angle - 0) < epsilon) {
+			// 0 degree
+			mx = -1;
+			tx = getWidth();
+		} else if (Math.abs(angle - 90) < epsilon) {
+			// 90 degree
+			my = -1;
+			ty = getHeight();
+		} else if (Math.abs(angle - 180) < epsilon) {
+			// 180 degree
+			mx = -1;
+			tx = getWidth();
+		} else if (Math.abs(angle - 270) < epsilon) {
+			// 270 degree
+			my = -1;
+			ty = getHeight();
+		} else if (Math.abs(angle - 360) < epsilon) {
+			// 360 degree
+			mx = -1;
+			tx = getWidth();
+		}
+		AffineTransformOp mirOp =
+			new AffineTransformOp(
+				new AffineTransform(mx, 0, 0, my, tx, ty),
+				interpol);
+		BufferedImage mirImg = mirOp.filter(img, null);
 
-	if (mirImg == null) {
-		util.dprintln(2, "ERROR: error in mirror");
-		throw new ImageOpException("Unable to mirror");
+		if (mirImg == null) {
+			util.dprintln(2, "ERROR: error in mirror");
+			throw new ImageOpException("Unable to mirror");
+		}
+		img = mirImg;
 	}
-	img = mirImg;
-}
 
-/* check image size and type and store in DocuFile f */
-public boolean checkFile(DocuFile f) throws IOException {
-	// see if f is already loaded
-	if ((reader == null) || (imgFile != f.getFile())) {
-		preloadImage(f.getFile());
+	/* check image size and type and store in DocuFile f */
+	public boolean checkFile(DocuFile f) throws IOException {
+		// see if f is already loaded
+		if ((reader == null) || (imgFile != f.getFile())) {
+			preloadImage(f.getFile());
+		}
+		Dimension d = new Dimension();
+		d.setSize(reader.getWidth(0), reader.getHeight(0));
+		f.setSize(d);
+		String t = reader.getFormatName();
+		t = FileOps.mimeForFile(f.getFile());
+		f.setMimetype(t);
+		f.setChecked(true);
+		return true;
 	}
-	Dimension d = new Dimension();
-	d.setSize(reader.getWidth(0), reader.getHeight(0));
-	f.setSize(d);
-//	String t = reader.getFormatName();
-	String t = FileOps.mimeForFile(f.getFile());
-	f.setMimetype(t);
-	f.setChecked(true);
-	return true;
-}
 
 }

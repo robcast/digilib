@@ -20,11 +20,13 @@
 
 package digilib.image;
 
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.util.Iterator;
 
 import javax.imageio.ImageIO;
@@ -32,23 +34,21 @@ import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.JAI;
+import javax.media.jai.ParameterBlockJAI;
 
-import com.sun.media.jai.operator.ImageReadDescriptor;
-
+import digilib.io.DocuFile;
 import digilib.io.FileOpException;
+import digilib.io.FileOps;
 
 /** DocuImage implementation using the Java Advanced Imaging API and the ImageLoader
  * API of Java 1.4.
  */
 public class JAIImageLoaderDocuImage extends JAIDocuImage {
 
-	// ImageIO image reader
-	ImageReader reader;
-
-	/* preload is supported. */
-	public boolean isPreloadSupported() {
-		return true;
-	}
+	/** ImageIO image reader */
+	protected ImageReader reader;
+	/** current image file */
+	protected File imgFile;
 
 	/* loadSubimage is supported. */
 	public boolean isSubimageSupported() {
@@ -98,29 +98,18 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 		throws FileOpException {
 		System.gc();
 		try {
-			if (reader == null) {
+			if ((reader == null) || (imgFile != f)) {
 				preloadImage(f);
 			}
 			ImageInputStream istream = (ImageInputStream) reader.getInput();
 			ImageReadParam readParam = reader.getDefaultReadParam();
 			readParam.setSourceRegion(region);
 			readParam.setSourceSubsampling(prescale, prescale, 0, 0);
-			/* Parameter for ImageRead operation:
-				Input, ImageChoice, ReadMetadata, ReadThumbnails, VerifyInput,
-				Listeners, Locale, ReadParam, Reader, RenderingHints
-			 */
-			img =
-				ImageReadDescriptor.create(
-					istream,
-					new Integer(0),
-					Boolean.TRUE,
-					Boolean.FALSE,
-					Boolean.FALSE,
-					null,
-					null,
-					readParam,
-					reader,
-					null);
+			ParameterBlockJAI pb = new ParameterBlockJAI("imageread");
+			pb.setParameter("Input", istream);
+			pb.setParameter("ReadParam", readParam);
+			pb.setParameter("Reader", reader);
+			img = JAI.create("imageread", pb);
 		} catch (IOException e) {
 			util.dprintln(3, "ERROR(loadImage): unable to load file");
 			throw new FileOpException("Unable to load File!");
@@ -129,20 +118,17 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 			util.dprintln(3, "ERROR(loadImage): unable to load file");
 			throw new FileOpException("Unable to load File!");
 		}
+		imgFile = f;
 	}
 
 	/* Get an ImageReader for the image file. */
-	public void preloadImage(File f) throws FileOpException {
+	public void preloadImage(File f) throws IOException {
 		System.gc();
-		try {
-			ImageInputStream istream = ImageIO.createImageInputStream(f);
-			Iterator readers = ImageIO.getImageReaders(istream);
-			reader = (ImageReader) readers.next();
-			reader.setInput(istream);
-		} catch (IOException e) {
-			util.dprintln(3, "ERROR(loadImage): unable to load file");
-			throw new FileOpException("Unable to load File!" + e);
-		}
+		RandomAccessFile rf = new RandomAccessFile(f, "r");
+		ImageInputStream istream = ImageIO.createImageInputStream(rf);
+		Iterator readers = ImageIO.getImageReaders(istream);
+		reader = (ImageReader) readers.next();
+		reader.setInput(istream);
 		if (reader == null) {
 			util.dprintln(3, "ERROR(loadImage): unable to load file");
 			throw new FileOpException("Unable to load File!");
@@ -172,6 +158,24 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 		} catch (IOException e) {
 			throw new FileOpException("Error writing image.");
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see digilib.image.DocuImage#checkFile(digilib.io.DocuFile)
+	 */
+	public boolean checkFile(DocuFile f) throws IOException {
+		// see if f is already loaded
+		if ((reader == null) || (imgFile != f.getFile())) {
+			preloadImage(f.getFile());
+		}
+		Dimension d = new Dimension();
+		d.setSize(reader.getWidth(0), reader.getHeight(0));
+		f.setSize(d);
+		//	String t = reader.getFormatName();
+		String t = FileOps.mimeForFile(f.getFile());
+		f.setMimetype(t);
+		f.setChecked(true);
+		return true;
 	}
 
 }
