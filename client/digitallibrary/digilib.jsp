@@ -28,7 +28,7 @@ if ((navigator.appName.toLowerCase() == "netscape") && (parseFloat(navigator.app
 } else if (navigator.appName.toLowerCase() == "netscape") {
 	top.document.write('<script src="navigation_n6.js"><\/script>');
 } else if ((navigator.appName.toLowerCase() == "microsoft internet explorer") && (parseFloat(navigator.appVersion) >= 4.0)) {
-	top.document.write('<script src="navigation11_ie.js"><\/script>');
+	top.document.write('<script src="navigation_ie.js"><\/script>');
 } else {
 	alert('Your browser is not directly supported by this client right now.\n\nLoading now the optimised version for Netscape 6, that sticks the most to the w3c specifications.');
 	top.document.write('<script src="navigation_n6.js"><\/script>');
