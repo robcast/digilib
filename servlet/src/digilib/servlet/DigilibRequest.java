@@ -322,7 +322,7 @@ public class DigilibRequest {
 			s += "&rgbm=" + rgbm_s;
 		}
 		if (rgba_s != null) {
-			s += "&reda=" + rgba_s;
+			s += "&rgba=" + rgba_s;
 		}
 		if (pt_s != null) {
 			s += "&pt=" + pt_s;
