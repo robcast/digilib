@@ -1,0 +1,52 @@
+<html>
+<head>
+
+<title>Install Alcatraz</title>
+
+<script type="application/x-javascript">
+
+function install() {
+	InstallTrigger.install ( {'alcatraz' : 'alcatraz.xpi'} );
+}
+
+</script>
+
+</head>
+<body>
+
+<h3>Alcatraz XUL Package</h3>
+<p>contains a sidebar and beta-verion of a toolbar</p>
+<h4>Installation:</h4>
+<p>(maybe it is a good idea to print this side or to set a bookmark because you will have to close the browser during the installation)</p>
+<ol>
+  press the &quot;install alcatraz&quot; button<br><br>
+  <form>
+   <input type="button" name="install alcatraz" value="install alcatraz" onClick="install();"><br>
+  </form>
+ </li>
+
+ <li>restart mozilla (and you will find the new toolbar installed)</li>
+
+ <li>enter chrome://alcatraz/content/sidebar/install.xul in the input field of the URL bar</li>
+
+ <li>a dialog is asking you to install the Alcatraz-Sidebar, open the Sidebar (F9) and press the button</li>
+
+</ol>
+
+<p><b>Beware :</b> Due to the very early stage of the toolbar and the missing tools to
+easily remove it, the installation with toolbar is primarily for developers. If you
+still installed the toolbar-version and now want to get rid of it, you have to delete the lines
+in <pre>[loacal_chrome]/overlayinfo/browser/content/overlays.rdf</pre> and 
+<pre>[local_chrome]/overlayinfo/navigator/content/overlays.rdf</pre> containing
+'alcatraz_toolbar'. Then restart mozilla and pray that the toolbar has disappeared ...</p>
+
+<hr>
+
+<address><a href="mailto:engler@philo.unibe.ch">Daniel Engler</a></address>
+<address><a href="mailto:luginbuehl@student.unibe.ch">Christian Luginbuehl</a></address>
+<!-- Created: Mon May 12 19:44:41 CEST 2003 -->
+<!-- hhmts start -->
+Last modified: Tue May 13 20:17:00 CEST 2003
+<!-- hhmts end -->
+  </body>
+</html>

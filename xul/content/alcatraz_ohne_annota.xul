@@ -1,0 +1,132 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet href="chrome://alcatraz/skin/" type="text/css" ?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css" ?>
+
+<window xmlns:html="http://www.w3.org/1999/xhtml"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        onload="setTreeDirectory()">
+
+<script type="application/x-javascript" src="chrome://jslib/content/jslib.js" />
+<script type="application/x-javascript" src="chrome://alcatraz/content/alcatraz.js" />
+<script type="application/x-javascript" src="chrome://alcatraz/content/annota.js" />
+<script type="application/x-javascript" src="chrome://alcatraz/content/rdfds.js" />
+
+<popupset>
+ <popup id="scale_popup" onpopupshowing="markCurrentScale()">
+  <menuitem id="scale_07" label="0.7" type="checkbox" oncommand="window.content.scale(0.7);" />
+  <menuitem id="scale_10" label="1" type="checkbox" oncommand="window.content.scale(1);"  />
+  <menuitem id="scale_15" label="1.5" type="checkbox" oncommand="window.content.scale(1.5);" />
+  <menuitem id="scale_20" label="2" type="checkbox" oncommand="window.content.scale(2);" />
+  <menuitem id="scale_25" label="2.5" type="checkbox" oncommand="window.content.scale(2.5);" />
+  <menuitem id="scale_30" label="3" type="checkbox" oncommand="window.content.scale(3);" />
+  <menuitem id="scale_pbp" label="pixel by pixel" type="checkbox" oncommand="window.content.pixelByPixel();" />
+  <menuitem id="scale_os" label="original size" type="checkbox" oncommand="dialog_originalsize();" />
+ </popup>
+</popupset>
+
+<popupset>
+ <popup id="mirror_popup" onpopupshowing="markCurrentMirror()">
+  <menuitem id="mirror_h" label="Horizontal" type="checkbox" oncommand="window.content.mirror('h');" />
+  <menuitem id="mirror_v" label="Vertical" type="checkbox" oncommand="window.content.mirror('v');" />
+ </popup>
+</popupset>
+
+<hbox>
+ <vbox flex="1" />
+ <vbox>
+  <spacer style="height: 10px" />
+  <hbox>
+   <button id="button_annotate" label="annotate" onclick="dialog_annotate();" flex="1" />
+  </hbox>
+  <spacer style="height: 15px" />
+ </vbox>
+ <vbox flex="1" />
+</hbox>
+<tabbox flex="1">
+ <tabs>
+  <tab label="Imago" />
+  <tab label="Annota" />
+  <tab label="Search" />
+ </tabs>
+ <tabpanels flex="1">
+  <tabpanel id="imago_tab" selected="true">
+   <vbox flex="1" />
+   <vbox>
+    <button id="button_scale" label="scale" popup="scale_popup" />
+    <button id="button_mirror" label="mirror" popup="mirror_popup" />
+    <button id="button_rotate" label="rotate" onclick="dialog_rotate();" />
+    <spacer flex="1" />
+    <button id="button_brightnesscontrast" label="brightness/contrast" onclick="dialog_brightnesscontrast();" />
+    <button id="button_colors" label="colors" onclick="dialog_colors();" />
+    <spacer flex="100" />
+   </vbox>
+   <vbox flex="1" />
+  </tabpanel>
+  <tabpanel id="annota_tab" orient="vertical">
+   <vbox flex="1">
+    <hbox>
+      <toolbarbutton id="annota_file" type="menu" label="File">
+       <menupopup id="file_popup">
+        <menuitem label="Save" onclick="file_save()" />
+       </menupopup>
+      </toolbarbutton>
+      <toolbarbutton id="annota_options" type="menu" label="Options">
+       <menupopup id="options_popup">
+        <menuitem id="local" label="Local" type="radio" name="location" checked="true" onclick="file_local()" />
+        <menuitem id="annotaDB" label="Annota DB" type="radio" name="location" onclick="file_annotaDB()" />        
+        <menuseparator/>
+        <menuitem id="tool_path" label="Tool URL" onclick="show_dialog('tool path')" />  
+        <menuitem id="annotations_path" label="Path to annotations" onclick="file_open()" />       
+        <menuseparator/>
+        <menuitem id="save_options" label="Save Options" onclick="setProfile()" />   
+       </menupopup>
+      </toolbarbutton>
+     </hbox>
+
+    <tree id="file_tree" flex="100" datasources="rdf:files" ref="file:///" ondblclick="tree_click()">
+
+     <treecols id="cols">
+      <treecol id="name" label="Name" primary="true" flex="1"/>
+      <treecol id="url" label="URL" hidden="true" flex="1"/>
+     </treecols>
+
+     <template>
+
+      <rule>
+       <treechildren flex="1" >
+        <treeitem uri="rdf:*" persist="open">
+         <treerow>
+          <treecell label="rdf:http://home.netscape.com/NC-rdf#Name"/>
+          <treecell label="rdf:http://home.netscape.com/NC-rdf#URL"/>
+         </treerow>
+        </treeitem>
+       </treechildren>
+      </rule>
+      
+     </template>
+    </tree>
+
+   </vbox>
+  </tabpanel>
+  <tabpanel id="search_tab">
+   <tabbox flex="1">
+
+    <tabs>
+     <tab id="search_tab" selected="true" label="search" />
+     <tab id="tree_tab" label="tree" />
+    </tabs>
+
+    <tabpanels flex="1">			
+     <tabpanel orient="vertical">
+      <iframe id="search_frame" src="search.xul" height="180" />
+      <iframe id="result_frame" flex="1" />
+     </tabpanel>
+     <tabpanel>
+      <iframe id="tree_frame" src="tree.xul" flex="1" />
+     </tabpanel>
+    </tabpanels>
+   </tabbox>
+  </tabpanel>
+ </tabpanels>
+</tabbox>
+</window>

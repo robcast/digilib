@@ -1,0 +1,42 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet href="chrome://alcatraz/skin/" type="text/css" ?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css" ?>
+
+<window xmlns:html="http://www.w3.org/1999/xhtml"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+<script type="application/x-javascript" src="chrome://jslib/content/jslib.js" />
+<script type="application/x-javascript" src="chrome://alcatraz/content/imago.js" />
+
+ <popupset>
+  <popup id="scale_popup" onpopupshowing="markCurrentScale()">
+   <menuitem id="scale_07" label="0.7" type="checkbox" oncommand="window.content.scale(0.7);" />
+   <menuitem id="scale_10" label="1" type="checkbox" oncommand="window.content.scale(1);"  />
+   <menuitem id="scale_15" label="1.5" type="checkbox" oncommand="window.content.scale(1.5);" />
+   <menuitem id="scale_20" label="2" type="checkbox" oncommand="window.content.scale(2);" />
+   <menuitem id="scale_25" label="2.5" type="checkbox" oncommand="window.content.scale(2.5);" />
+   <menuitem id="scale_30" label="3" type="checkbox" oncommand="window.content.scale(3);" />
+   <menuitem id="scale_pbp" label="pixel by pixel" type="checkbox" oncommand="window.content.pixelByPixel();" />
+   <menuitem id="scale_os" label="original size" type="checkbox" oncommand="dialog_originalsize();" />
+  </popup>
+ </popupset>
+
+ <popupset>
+  <popup id="mirror_popup" onpopupshowing="markCurrentMirror()">
+   <menuitem id="mirror_h" label="Horizontal" type="checkbox" oncommand="window.content.mirror('h');" />
+   <menuitem id="mirror_v" label="Vertical" type="checkbox" oncommand="window.content.mirror('v');" />
+  </popup>
+ </popupset>
+
+ <vbox>
+  <button id="button_scale" label="scale" popup="scale_popup" />
+  <button id="button_mirror" label="mirror" popup="mirror_popup" />
+  <button id="button_rotate" label="rotate" onclick="dialog_rotate();" />
+  <spacer flex="1" />
+  <button id="button_brightnesscontrast" label="brightness/contrast" onclick="dialog_brightnesscontrast();" />
+  <button id="button_colors" label="colors" onclick="dialog_colors();" />
+  <spacer flex="100" />
+ </vbox>
+ <vbox flex="1" />
+
+</window>

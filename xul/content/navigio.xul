@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet href="chrome://alcatraz/skin/" type="text/css" ?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css" ?>
+
+<window xmlns:html="http://www.w3.org/1999/xhtml"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<script type="application/x-javascript" src="chrome://alcatraz/content/navigio.js" />
+ <hbox>
+        <toolbarbutton id="navigio_project" type="menu" label="Project" datasources="http://hera.unibe.ch/navigo/navigio_project.rdf" ref="urn:echoproject:data" >
+          <template>
+            <rule>
+              <menupopup id="options_popup">
+                <menuitem uri="rdf:*" label="rdf:http://echo.unibe.ch/echo/rdf/projects#name" type="radio"
+                      onclick="set_project(' rdf:http://echo.unibe.ch/echo/rdf/projects#search ',' rdf:http://echo.unibe.ch/echo/rdf/projects#default ')"/>    
+              </menupopup>
+            </rule>
+          </template>
+        </toolbarbutton>
+      </hbox>
+      <iframe id="navigio_frame" src="wtwg_bern.xul" flex="1"/>
+</window>

@@ -1,0 +1,65 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet href="chrome://alcatraz/skin/" type="text/css" ?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css" ?>
+
+<overlay id="toverlay"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+<script type="application/x-javascript" src="chrome://jslib/content/jslib.js" />
+<script type="application/x-javascript" src="chrome://alcatraz/content/alcatraz.js" />
+<script type="application/x-javascript" src="chrome://alcatraz/content/annota.js" />
+<script type="application/x-javascript" src="chrome://alcatraz/content/rdfds.js" />
+
+<!-- ANNOTA -->
+ <tabpanel id="annota_tab" orient="vertical">
+   <vbox flex="1">
+    <hbox>
+      <toolbarbutton id="annota_file" type="menu" label="File">
+       <menupopup id="file_popup">
+        <menuitem label="Save" onclick="file_save()" />
+       </menupopup>
+      </toolbarbutton>
+      <toolbarbutton id="annota_options" type="menu" label="Options">
+       <menupopup id="options_popup">
+        <menuitem id="local" label="Local" type="radio" name="location" checked="true" onclick="file_local()" />
+        <menuitem id="annotaDB" label="Annota DB" type="radio" name="location" onclick="file_annotaDB()" />
+        <menuseparator/>
+        <menuitem id="tool_path" label="Tool URL" onclick="show_dialog('tool path')" />
+        <menuitem id="annotations_path" label="Path to annotations" onclick="file_open()" />
+        <menuseparator/>
+        <menuitem id="save_options" label="Save Options" onclick="setProfile()" />
+       </menupopup>
+      </toolbarbutton>
+      <toolbarbutton id="annota_annotation" type="menu" label="Annotation">
+       <menupopup id="text_popup">
+        <menuitem label="Text Annotation" onclick="dialog_annotate();" />
+       </menupopup>
+      </toolbarbutton>
+     </hbox>
+
+	<tree id="file_tree" flex="100" datasources="file:///home/halter/test.rdf" ref="urn:echo" ondblclick="tree_click()">
+
+     <treecols id="cols">
+      <treecol id="name" label="Name" primary="true" flex="1"/>
+      <treecol id="url" label="URL" hidden="true" flex="1"/>
+     </treecols>
+
+     <template>
+
+      <rule>
+       <treechildren flex="1" >
+        <treeitem uri="rdf:*" persist="open">
+         <treerow>
+          <treecell label="rdf:http://purl.org/dc/elements/1.0/title"/>
+          <treecell label="rdf:http://echo.unibe.ch/digilib/rdf#fn"/>
+         </treerow>
+        </treeitem>
+       </treechildren>
+      </rule>
+
+     </template>
+    </tree>
+
+   </vbox>
+  </tabpanel>
+</overlay>

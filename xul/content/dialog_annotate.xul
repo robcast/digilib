@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet href="chrome://alcatraz/skin/dialogs.css" type="text/css" ?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css" ?>
+
+<dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        title="DIGILIB annotate"
+        buttons="accept,cancel"
+        ondialogaccept="return accept();"
+        ondialogcancel="return cancel();"
+				onload="window.sizeToContent(); window.focus();">
+
+ <script src="chrome://alcatraz/content/dialog_annotate.js" />
+
+ <groupbox>
+  <caption label="DIGILIB annotate" />
+  <description id="dialog_desc">Annotate the picture with its current parameters :</description>
+  <spacer style="height: 10px" />
+  <hbox>
+   <textbox id="annotation_value" size="2000" multiline="true" rows="8" cols="72" onclick="this.select();" />
+   <spacer flex="1" />
+  </hbox>
+  
+ </groupbox>
+
+</dialog>
