@@ -78,6 +78,33 @@ public class ServletOps {
   }
 
   /**
+   * convert a string with a list of pathnames into an array of strings
+   * using the system's path seperator string
+   */
+  public String[] getPathArray(String paths) {
+    // split list into directories
+    StringTokenizer dirs = new StringTokenizer(paths, java.io.File.pathSeparator);
+    int n = dirs.countTokens();
+    if (n < 1) {
+        return null;
+    }
+    // add directories into array
+    String[] pathArray = new String[n];
+    for (int i = 0; i < n; i++) {
+      pathArray[i] = dirs.nextToken();
+    }
+    return pathArray;
+  }
+  
+  /**
+   * getPathArray with default fall back
+   */
+  public String[] tryToGetPathArray(String paths, String[] defaultPath) {
+    String[] pa = getPathArray(paths);
+    return (pa != null) ? pa : defaultPath;
+  }
+      
+  /**
    *  print a servlet response and exit
    */
   public static void htmlMessage(String s, HttpServletResponse response) throws IOException {

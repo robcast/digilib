@@ -81,13 +81,7 @@ public class Scaler extends HttpServlet {
     // base directories in order of preference (prescaled versions first)
     String baseDirList = servletOp.tryToGetInitParam("basedir-list", "/docuserver/scaled/small:/docuserver/images:/docuserver/scans/quellen");
     // split list into directories
-    StringTokenizer dirs = new StringTokenizer(baseDirList, ":");
-    int n = dirs.countTokens();
-    // add directories into array
-    baseDirs = new String[n];
-    for (int i = 0; i < n; i++) {
-      baseDirs[i] = dirs.nextToken();
-    }
+    baseDirs = servletOp.tryToGetPathArray(baseDirList, baseDirs);
     // use authentication information
     String useAuth = servletOp.tryToGetInitParam("use-authorization", "true");
     if ((useAuth.indexOf("false") > 0)||(useAuth.indexOf("FALSE") > 0)) {

@@ -55,19 +55,10 @@ public class DocumentBean implements AuthOps {
      *  basedir-list : List of document directories
      */
     String bl = servletOp.tryToGetInitParam("basedir-list", null);
-    if ((bl != null)&&(bl.length() > 0)) {
-      // split list into directories
-      StringTokenizer dirs = new StringTokenizer(bl, ":");
-      int n = dirs.countTokens();
-      if (n > 0) {
-        // add directories into array
-        baseDirs = new String[n];
-        for (int i = 0; i < n; i++) {
-          baseDirs[i] = dirs.nextToken();
-        }
-      }
-      util.dprintln(3, "basedir-list: "+bl);
-    }
+    // split list into directories
+    baseDirs = servletOp.tryToGetPathArray(bl, baseDirs);
+    util.dprintln(3, "basedir-list: "+bl);
+    
     /**
      *  auth-url-path : part of URL to indicate authenticated access
      */

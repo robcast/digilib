@@ -118,18 +118,11 @@ public class FileOps {
     util.dprintln(4, "getVariantFile ("+dirs+", "+fn+", "+n+")");
 
     File f = null;
-    int start = 0;
-    int inc = 1;
-    int end = dirs.length;
-    if (fwd == false) {
-      start = dirs.length - 1;
-      inc = -1;
-      end = 0;
-    }
+    int nvar = dirs.length;
 
-    for (int i = start; i != end; i += inc) {
+    for (int i = 0; i < nvar; i++) {
       try {
-        f = getFile(dirs[i]+fn, n);
+        f = getFile(dirs[(fwd) ? i : (nvar-i-1)]+fn, n);
       } catch (FileOpException e) {
         f = null;
       }
@@ -149,18 +142,11 @@ public class FileOps {
     util.dprintln(4, "getNumFilesVariant ("+dirs+", "+fn+")");
 
     int nf = 0;
-    int start = 0;
-    int inc = 1;
-    int end = dirs.length;
-    if (fwd == false) {
-      start = dirs.length - 1;
-      inc = -1;
-      end = 0;
-    }
+    int nvar = dirs.length;
 
-    for (int i = start; i != end; i += inc) {
+    for (int i = 0; i < nvar; i++) {
       try {
-        nf = getNumFiles(dirs[i]+fn);
+        nf = getNumFiles(dirs[(fwd) ? i : (nvar-i-1)]+fn);
       } catch (FileOpException e) {
         nf = 0;
       }
