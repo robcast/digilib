@@ -1,0 +1,365 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>Installation of digilib</title>
+</head>
+
+<body>
+<h1>What you need to install digilib</h1>
+
+<ul>
+  <li>
+  <a href="http://java.sun.com/downloads/index.html" >Java JDK</a> &gt;1.2 (preferred 1.4 and up)
+  </li>
+  
+  <li>
+  <a href="http://jakarta.apache.org/tomcat/index.html" >Jakarta
+  Tomcat</a> version 4 or later (preferred 4.1 and up) from
+  <a href="http://jakarta.apache.org">http://jakarta.apache.org</a>
+  </li>
+  
+  <li>The digilib distribution package <a href="http://download.berlios.de/digilib/digilib-core.zip"><b>digilib-core.zip</b></a> (from
+  <a href="http://developer.berlios.de">http://developer.berlios.de</a>)
+  
+  </li>
+
+  <li>Some auxiliary Java libraries to be put in <code>digitallibrary/WEB-INF/lib</code> (can also be found in the <a href="http://download.berlios.de/digilib/digilib-ext.zip">digilib-ext.zip</a> package)
+  <ul>
+    <li>
+    <b>concurrent.jar</b> from Doug Lea's <a href="http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html">util.concurrent library</a> (see <a href="http://gee.cs.oswego.edu/dl/">http://gee.cs.oswego.edu/dl/</a>).
+    </li>
+
+    <li>
+    <b>log4j.jar</b> from the <a href="http://logging.apache.org/log4j/docs/download.html">Log4J library</a> (see <a href="http://logging.apache.org">http://logging.apache.org</a>)
+    </li>
+
+    <li>
+    <b>jai_imageio.jar</b> (and its native libraries) with JDK >= 1.4, from the <a href="http://java.sun.com/products/java-media/jai/current.html">Java Advanced Imaging Image-IO Tools</a> (see <a href="http://java.sun.com/products/java-media/jai/index.jsp">http://java.sun.com/products/java-media/jai/</a>)
+    </li>
+
+    <li>
+    <b>jai_core.jar, jai_codec.jar</b> if you want to use the JAIDocuImage implementation, from the <a href="http://java.sun.com/products/java-media/jai/current.html">Java Advanced Imaging API</a> (see <a href="http://java.sun.com/products/java-media/jai/index.jsp">http://java.sun.com/products/java-media/jai/</a>)
+    </li>
+
+    <li>
+    <b>batik-*.jar</b> if you want to use the Raster servlet, from the <a href="http://www.apache.org/dyn/closer.cgi/xml/batik">Apache Batik library</a> (see <a href="http://xml.apache.org/batik/">http://xml.apache.org/batik/</a>)
+    </li>
+
+    <li>
+    <b>jena.jar</b> from the <a href="http://www.hpl.hp.com/semweb/jena1.htm">JENA RDF library version 1.6.1</a> (see <a href="http://jena.sourceforge.net/">http://jena.sourceforge.net/</a>)
+    </li>
+  </ul>
+</ul>
+
+<h1>Installation</h1>
+
+<h2>On Linux/Unix</h2>
+
+<ol>
+  <li>Make shure the Java JDK is installed (a JRE won't do).</li>
+
+  <li>Create a base directory for digilib (the default used here is
+  <code>/docuserver</code>) and for the web interface
+  (<code>/docuserver/www</code>).</li>
+
+  <li>Unpack the <b>digilib-core.zip</b> package in the web
+  interface directory (<code>/docuserver/www</code>). This will create
+  the digilib directory <code>digitallibrary</code>.</li>
+
+  <li>Install the auxiliary Java libraries in
+  <code>digitallibrary/WEB-INF/lib</code>. (Or just unpack the
+  <b>digilib-ext.zip</b> package there.)</li>
+
+  <li>Unpack Jakarta Tomcat 5.0.29 in <code>/docuserver</code> This should
+  produce a directory <code>/docuserver/jakarta-tomcat-5.0.29</code>. Create a
+  link <code>/docuserver/tomcat</code> to the new directory.</li>
+
+  <li>Create a link from the digilib directory into the Tomcat webapps
+  directory <code>/docuserver/tomcat/webapps</code> (type <code>ln -s
+  /docuserver/www/digitallibrary /docuserver/tomcat/webapps/</code>) This installs
+  digilib in the default Tomcat instance running on port 8080 as
+  <code>http://myserver:8080/digitallibrary/</code>.</li>
+
+  <li>Adjust the path to the JDK and its options in
+  <code>catalina.sh</code> (in the directory
+  <code>/docuserver/tomcat/bin</code>, see below for details)</li>
+</ol>
+
+
+<h2>On Windows (quick install)</h2>
+
+<ol>
+<li>Set the following Environment Variables:<br />
+  <code>CATALINA_HOME = C:\jakarta-tomcat-4.1.24</code> (or similar)<br />
+  <code>JAVA_HOME = C:\j2sdk</code> (or similar)
+</li>
+
+<li>
+Start Tomcat server: Open a console window (start <code>cmd.exe</code>).<br />
+Type: <code>%CATALINA_HOME%\bin\startup</code>
+</li>
+
+<li>
+Try the following URL in your browser: 
+<code>http://localhost:8080</code> or 
+<code>http://127.0.0.1:8080</code> 
+</li>
+
+<li>
+You should now be able to see the Tomcat opening screen: <em>If you're seeing this page via a web browser, it means you've setup Tomcat successfully. Congratulations!</em>
+</li>
+
+<li>
+Shut it down again: In the console window type <code>%CATALINA_HOME%\bin\shutdown</code>.
+</li>
+
+<li>
+Extract the <b>diglib-core.zip</b> package, possibly to <code>C:\docuserver</code>.
+</li>
+
+<li>
+Install the auxiliary Java libraries in <code>digitallibrary\WEB-INF\lib</code>.
+(Or just unpack the <b>digilib-ext.zip</b> package there.)
+</li>
+
+<li>
+ Modify the following configuration files according to your paths (as in the &quot;On Linux&quot; section):
+<br>
+For tomcat
+<ul>
+  <li><code>C:\jakarta-tomcat-4.1.24\conf\server.xml</code></li>
+  <li><code>C:\jakarta-tomcat-4.1.24\conf\tomcat-users.xml</code></li>
+</ul>
+For digilib
+<ul>
+  <li><code>C:\docuserver\digitallibrary\WEB-INF\digilib-config.xml</code></li>
+  <li><code>C:\docuserver\digitallibrary\WEB-INF\digilib-auth.xml</code></li>
+</ul>
+In the <code>alcatraz-win-conf.zip</code> package you can find
+prepared configuration files with the following default values:
+<ul>
+  <li>The image file directory is <code>C:\bilder</code>. </li>
+  <li>The username for viewing image files is <code>digilib</code>.</li>
+  <li>The password for viewing image files is <code>digilib</code>.</li>
+  <li>The digilib server runs on Port <code>9090</code>.</li>
+</ul>
+</li>
+
+<li>
+Now you can restart the Tomcat server: <code>http://localhost:9090</code> or 
+<code>http://127.0.0.1:9090</code>.
+</li>
+
+<li>
+Watch the images:
+<a href="http://localhost:9090/docuserver/digitallibrary/digilib.jsp">http://localhost:9090/docuserver/digitallibrary/digilib.jsp</a>
+</li>
+</ol>
+
+
+<h1>Configuration</h1>
+
+<h2>Tomcat</h2>
+
+<h3>catalina.sh / catalina.bat</h3>
+
+<p>The file <code>catalina.sh</code> (in <code>/docuserver/tomcat/bin</code>
+can be modified to provide the path to the JDK and runtime options
+for the Java VM. Somewhere at the beginning of the file you can put two lines
+like this:</p>
+
+<pre>
+export JAVA_HOME=/usr/local/lib/IBMJava2-14
+export CATALINA_OPTS="-mx512m"
+</pre>
+
+<p>or, on Windows<p>
+
+<pre>
+set CATALINA_HOME=C:\jakarta-tomcat-4.1.24
+set JAVA_HOME=C:\j2sdk
+</pre>
+
+<p>Adjust the <code>JAVA_HOME</code> path to point to your Java JDK
+installation directory. You can adjust the memory used by the Java VM
+with the <code>-mx</code> option.</p>
+
+
+<h3>tomcat-users.xml</h3>
+
+<p>All passwords and usernames have to be set up in the file
+<code>tomcat-users.xml</code> in <code>/docuserver/tomcat/conf</code> if you
+want to use authentication in digilib. The file looks like this:</p>
+
+<pre>
+&lt;tomcat-users&gt;
+  &lt;user name="tomcat" password="tomcat" roles="tomcat" /&gt;
+  &lt;user name="role1"  password="tomcat" roles="role1"  /&gt;
+  &lt;user name="both"   password="tomcat" roles="tomcat,role1" /&gt;
+&lt;/tomcat-users&gt;
+</pre>
+
+<p>A user is identified by a <code>name</code> and
+<code>password</code>. These two elements have to be entered in a
+authentication form presented by the browser when accessing a
+restricted resource. A user can have one or more
+<code>roles</code>. These roles will be used by digilib to decide if
+an authenticated user is allowed to access a document (see
+<code>digilib-auth.xml</code> below).</p>
+
+<p>If you want to use the webinterface to configure Tomcat, you have to
+add administrational account with the roles <code>admin</code> and
+<code>manager</code>.</p>
+
+<p>tomcat has to be restarted before changes to
+<code>tomcat-users.xml</code> have effect!</p>
+
+
+<h2>Digilib</h2>
+
+<h3>digilib-config.xml</h3>
+
+<p>The main configuration for digilib is
+<code>digilib-config.xml</code>. It's normally in the
+<code>WEB-INF</code> directory in the webapp. (If you really need
+another location you can define it in the <code>config-file</code>
+init-parameter to the servlet)</p>
+
+<p>In the configuration file you can set several paths and
+options. The file looks like this:</p>
+
+<pre>
+&lt;!-- Digilib servlet config file --&gt;
+
+&lt;digilib-config&gt;
+  &lt;!--  Image to be sent to indicate general failure. --&gt;
+  &lt;parameter name=&quot;error-image&quot; value=<b>&quot;/docuserver/images/icons/broken.gif&quot;</b> /&gt;
+
+  &lt;!--  Image to be sent to indicate authorization failure. --&gt;
+  &lt;parameter name=&quot;denied-image&quot; value=<b>&quot;/docuserver/images/icons/alert.red.gif&quot;</b> /&gt;
+
+  &lt;!-- List of directories where images are searched.
+       The authoritative directory with the high-resolution images
+       is first in list. --&gt;
+  &lt;parameter name=&quot;basedir-list&quot; value=<b>&quot;/docuserver/images:/docuserver/scaled/small&quot;</b> /&gt;
+
+  &lt;!-- Java class to use for image operations --&gt;
+  &lt;parameter name=&quot;docuimage-class&quot; value=&quot;digilib.image.JAIDocuImage&quot; /&gt;
+
+  &lt;!-- mimimum amount of scaling done with antialiasing --&gt;
+  &lt;parameter name=&quot;subsample-minimum&quot; value=&quot;2&quot;/&gt;
+  
+  &lt;!-- default interpolation quality (0=worst) --&gt;
+  &lt;parameter name=&quot;default-quality&quot; value=&quot;1&quot;/&gt;
+  
+  &lt;!-- is sending whole image files with mo=file allowed? --&gt;
+  &lt;parameter name=&quot;sendfile-allowed&quot; value=&quot;true&quot; /&gt;
+
+  &lt;!-- the a maximum size of any sent image. (0 means no limit) --&gt;
+  &lt;parameter name=&quot;max-image-size&quot; value=&quot;0&quot; /&gt;
+
+  &lt;!-- use safe but slow directory indexing --&gt;
+  &lt;parameter name=&quot;safe-dir-index&quot; value=&quot;false&quot; /&gt;
+
+  &lt;!-- number of working threads --&gt;
+  &lt;parameter name=&quot;worker-threads&quot; value=&quot;2&quot; /&gt;
+
+  &lt;!-- Restrict access to authorized users.
+       User authentication and roles are provided by the servlet container 
+       (see tomcat-users.xml).
+       Authorization for resources (directories) is evaluated by the servlet 
+       (see auth-file). --&gt;
+  &lt;parameter name=&quot;use-authorization&quot; value=&quot;true&quot;/&gt;
+
+  &lt;!-- Location of XML file with authorization requirements. --&gt;
+  &lt;parameter name=&quot;auth-file&quot; value=&quot;digilib-auth.xml&quot;/&gt;
+
+  &lt;!-- Part of URL to indicate authenticated access to Tomcat. --&gt;
+  &lt;parameter name=&quot;auth-url-path&quot; value=&quot;authenticated/&quot;/&gt;
+
+  &lt;!-- use mapping of &quot;virtual directories&quot; to real directories on the server --
+&gt;
+  &lt;parameter name=&quot;use-mapping&quot; value=&quot;false&quot;/&gt;
+  
+  &lt;!-- location of XML mapping file --&gt;
+  &lt;parameter name=&quot;mapping-file&quot; value=&quot;digilib-map.xml&quot;/&gt;
+  
+  &lt;!-- location of logger config file --&gt;
+  &lt;parameter name=&quot;log-config-file&quot; value=&quot;log4j-config.xml&quot;/&gt;
+&lt;/digilib-config&gt;
+</pre>
+
+<p>You have to adjust the <code>basedir-list</code> parameter to the
+directories where your images are installed. You need only one
+directory if you don't provide prescaled low resolution versions of your
+images. The directory with the high-resolution images must be the
+first entry in the list.</p>
+
+<p>You can supply your own icons for the &quot;error&quot; and
+&quot;access denied&quot; messages by the servlet. Standard images
+will be used if these parameters are undefined.</p>
+
+<p>You can specify the Java toolkit implementation with the
+<code>docuimage-class</code> parameter. The
+<code>ImageLoaderDocuImage</code> might give best performance but
+works only with JDK 1.4 and up. <code>JAIDocuImage</code> works with
+JDK 1.3 and up.</p>
+
+
+<h3>digilib-auth.xml</h3>
+
+<p>The digilib access authorization is defined in the file defined by
+the <code>auth-file</code> parameter (usually
+<code>digilib-auth.xml</code> in <code>WEB-INF</code>). </p>
+
+<p>The file has two parts <code>diglib-paths</code> and
+<code>diglib-addresses</code>. It looks like this:</p>
+
+<pre>
+&lt;auth-config&gt;
+
+  &lt;digilib-paths&gt;
+    &lt;!-- 
+      A user must supply one of the roles under &quot;role&quot;
+      to access the directory &quot;name&quot;.
+      Roles under &quot;role&quot; must be separated by comma only (no spaces).  
+    --&gt;
+    &lt;path name=&quot;histast/eastwood-collection&quot; role=&quot;eastwood-coll&quot; /&gt;
+    &lt;path name=&quot;ptolemaios_geo&quot; role=&quot;ptolemaios-geo&quot; /&gt;
+  &lt;/digilib-paths&gt;
+
+  &lt;digilib-addresses&gt;
+    &lt;!-- 
+      A computer with an ip address that matches &quot;ip&quot;
+      is automatically granted all roles under &quot;role&quot;.
+      The ip address is matched from the left (in full quads).
+      Roles under &quot;role&quot; must be separated by comma only (no spaces). 
+    --&gt;
+    &lt;address ip=&quot;127&quot; role=&quot;local&quot; /&gt;
+    &lt;address ip=&quot;130.92.68&quot; role=&quot;eastwood-coll,ptolemaios-geo&quot; /&gt;
+    &lt;address ip=&quot;130.92.151&quot; role=&quot;ALL&quot; /&gt;
+  &lt;/digilib-addresses&gt;
+
+&lt;/auth-config&gt;
+</pre>
+
+<p><code>diglib-paths</code> defines restricted directories and
+the roles needed for access. The roles are defined with the users in
+<code>tomcat-users.xml</code> (see above). All subdirectories of the
+given directories have the same restrictions. All directories not
+listed here (and not subdirectories of listed directories) are freely
+accessible.</p>
+
+<p><code>diglib-addresses</code> defines hosts or networks of
+computers that are automatically authenticated without username and
+password. Hosts can be assigned roles. The special keyword <code>ALL</code>
+authorizes for everything. If the role assigned to the computer is not
+sufficient to access a resource the user will be asked for username
+and password.</p>
+
+
+
+<hr>
+<address>robcast@mail.berlios.de</address>
+<!-- hhmts start -->Last modified: Tue Nov  2 13:14:57 CET 2004 <!-- hhmts end -->
+</body> </html>
