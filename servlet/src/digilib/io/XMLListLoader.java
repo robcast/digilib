@@ -63,7 +63,7 @@ public class XMLListLoader {
 	private class XMLListParser extends XMLFilterImpl {
 
 		private HashMap listData;
-		private LinkedList nameSpace;
+		private LinkedList tagSpace;
 
 		public HashMap getData() {
 			return listData;
@@ -72,7 +72,7 @@ public class XMLListLoader {
 		// Parser calls this once at the beginning of a document
 		public void startDocument() throws SAXException {
 			listData = new HashMap();
-			nameSpace = new LinkedList();
+			tagSpace = new LinkedList();
 		}
 
 		// Parser calls this for each element in a document
@@ -84,12 +84,12 @@ public class XMLListLoader {
 			throws SAXException {
 			//System.out.println("<"+qName);
 			// open a new namespace
-			nameSpace.addLast(qName);
+			tagSpace.addLast(qName);
 
 			// ist it an entry tag?
 			if (qName.equals(entryTag)) {
 				// is it inside a list tag?
-				if ((listTag.length() > 0) && (!nameSpace.contains(listTag))) {
+				if ((listTag.length() > 0) && (!tagSpace.contains(listTag))) {
 					System.out.println(
 						"BOO: Entry "
 							+ entryTag
@@ -131,7 +131,7 @@ public class XMLListLoader {
 			String qName)
 			throws SAXException {
 			// exit the namespace
-			nameSpace.removeLast();
+			tagSpace.removeLast();
 		}
 
 	}
@@ -144,15 +144,13 @@ public class XMLListLoader {
 		//System.out.println("loadurl ("+path+")");
 		// Create a JAXP SAXParserFactory and configure it
 		SAXParserFactory spf = SAXParserFactory.newInstance();
-		//spf.setNamespaceAware(true);
+		spf.setNamespaceAware(true);
 
-		XMLReader xmlReader = null;
+		SAXParser parser = null;
 		try {
 			// Create a JAXP SAXParser
-			SAXParser saxParser = spf.newSAXParser();
+			parser = spf.newSAXParser();
 
-			// Get the encapsulated SAX XMLReader
-			xmlReader = saxParser.getXMLReader();
 		} catch (ParserConfigurationException e) {
 			throw new SAXException(e);
 		}
@@ -160,11 +158,8 @@ public class XMLListLoader {
 		// create a list parser (keeps the data!)
 		XMLListParser listParser = new XMLListParser();
 
-		// Set the ContentHandler of the XMLReader
-		xmlReader.setContentHandler(listParser);
-
-		// Tell the XMLReader to parse the XML document
-		xmlReader.parse(path);
+		// Tell the SAXParser to parse the XML document
+		parser.parse(path, listParser);
 
 		return listParser.getData();
 	}
