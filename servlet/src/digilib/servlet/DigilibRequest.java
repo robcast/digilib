@@ -37,14 +37,11 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 
-import com.hp.hpl.mesa.rdf.jena.common.SelectorImpl;
 import com.hp.hpl.mesa.rdf.jena.mem.ModelMem;
 import com.hp.hpl.mesa.rdf.jena.model.Model;
-import com.hp.hpl.mesa.rdf.jena.model.NodeIterator;
 import com.hp.hpl.mesa.rdf.jena.model.Property;
-import com.hp.hpl.mesa.rdf.jena.model.RDFNode;
 import com.hp.hpl.mesa.rdf.jena.model.Resource;
-import com.hp.hpl.mesa.rdf.jena.model.Selector;
+import com.hp.hpl.mesa.rdf.jena.model.ResIterator;
 import com.hp.hpl.mesa.rdf.jena.model.Statement;
 import com.hp.hpl.mesa.rdf.jena.model.StmtIterator;
 
@@ -76,6 +73,9 @@ import digilib.io.FileOps;
 public class DigilibRequest extends ParameterMap {
 
 	private static final long serialVersionUID = -4707707539569977901L;
+
+	private final static String ECHO = "http://echo.unibe.ch/digilib/rdf#";
+	private final static String DIGILIB = "Digilib";
 
 	private Logger logger = Logger.getLogger(this.getClass());
 
@@ -182,7 +182,7 @@ public class DigilibRequest extends ParameterMap {
 	/**
 	 * Populate the request object with data from a ServletRequest.
 	 * 
-	 * 
+	 *
 	 * @param request
 	 */
 	public void setWithRequest(ServletRequest request) {
@@ -441,46 +441,33 @@ public class DigilibRequest extends ParameterMap {
 			Model model = new ModelMem();
 			StringReader sr = new StringReader(strRDF);
 			model.read(sr, "");
-			// get Property fn -> digilib
-			Property p = model.getProperty("http://echo.unibe.ch/digilib/rdf#",
-					"fn");
-			if (p != null) {
-				// get URI
-				String strURI = null;
-				NodeIterator i = model.listObjectsOfProperty(p);
-				if (i.hasNext()) {
-					strURI = "urn:echo:" + i.next().toString();
-					Resource r = model.getResource(strURI);
-					Selector selector = new SelectorImpl(r, null,
-							(RDFNode) null);
-					// list the statements in the graph
-					StmtIterator iter = model.listStatements(selector);
-					// add predicate and object to Hashtable
-					while (iter.hasNext()) {
-						Statement stmt = iter.next(); // get next statement
-						Resource subject = stmt.getSubject();
-						// get the subject
-						Property predicate = stmt.getPredicate();
-						// get the predicate
-						RDFNode object = stmt.getObject(); // get the object
-
-						String strKey = predicate.toString();
-						String strValue = "";
-
-						if (object instanceof Resource) {
-							strValue = object.toString();
-						} else {
-							// object is a literal
-							strValue = object.toString();
+			// get Property type -> digilib
+			Property property = model.getProperty(this.ECHO, "type");
+			if(property != null) {
+				ResIterator resourceIterator = model.listSubjectsWithProperty(property);
+				while(resourceIterator.hasNext()) {
+					Resource resource = resourceIterator.next();
+					StmtIterator statementIterator = resource.listProperties();
+					String type = resource.getProperty(property).getResource().getURI();
+					if(type == null) {
+						continue;
+					}
+					if(type.equals(this.ECHO+this.DIGILIB)) {
+						while(statementIterator.hasNext()) {
+							Statement statement = statementIterator.next();
+							Property predicate = statement.getPredicate();
+							if(predicate.getNameSpace().equals(this.ECHO)) {
+								hashParams.put(predicate.getLocalName(),statement.getObject().toString());
+							}
 						}
-						String strDigilibKey = strKey.substring(strKey
-								.indexOf("#") + 1, strKey.length());
-						hashParams.put(strDigilibKey, strValue);
 					}
 				}
+			} else {
+				logger.warn("The type property was null! So the rdf-model"
+						+" sent to Digilib was probably incorrect!");
 			}
 		} catch (Exception e) {
-			logger.warn("rdf3hash failed", e);
+			logger.warn("rdf2hash function caused an error: ", e);
 		}
 		return hashParams;
 	}
