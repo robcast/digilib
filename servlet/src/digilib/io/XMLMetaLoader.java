@@ -88,7 +88,7 @@ public class XMLMetaLoader {
 			StringBuffer s = new StringBuffer();
 			for (int i = 0; i < attrs.getLength(); i++) {
 				String key = getName(attrs.getLocalName(i), attrs.getQName(i));
-				s.append(" "+key+"=\""+attrs.getValue(i));
+				s.append(" "+key+"=\""+attrs.getValue(i)+"\"");
 			}
 			return s.toString();
 		}

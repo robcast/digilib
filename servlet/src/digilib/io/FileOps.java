@@ -178,6 +178,24 @@ public class FileOps {
 		return "";
 	}
 
+	/**
+	 * Extract the parent directory of a (digilib) path name.
+	 * 
+	 * Returns the parent directory of a path name. The parent is the part before
+	 * the last slash in the path name. If the path name has no slash the empty
+	 * string is returned.
+	 * 
+	 * @param fn
+	 * @return
+	 */
+	public static String parent(String fn) {
+		int i = fn.lastIndexOf('/');
+		if (i > 0) {
+			return fn.substring(0, i);
+		}
+		return "";
+	}
+
 	/** Normalize a path name.
 	 * 
 	 * Removes leading and trailing slashes. Returns null if there is other

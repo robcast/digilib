@@ -365,6 +365,10 @@ public class DocuDirectory extends Directory {
 				return -1;
 			}
 		}
+		// empty directory?
+		if (list[fc] == null) {
+			return -1;
+		}
 		// linear search -> worst performance
 		int n = list[fc].size();
 		for (int i = 0; i < n; i++) {

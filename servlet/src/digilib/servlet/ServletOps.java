@@ -5,10 +5,10 @@
  * 
  * Copyright (C) 2001, 2002 Robert Casties (robcast@mail.berlios.de)
  * 
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option)
- * any later version.
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.
  * 
  * Please read license.txt for the full details. A copy of the GPL may be found
  * at http://www.gnu.org/copyleft/lgpl.html
@@ -47,8 +47,8 @@ public class ServletOps {
 	 */
 	public static String[] getPathArray(String paths) {
 		// split list into directories
-		StringTokenizer dirs =
-			new StringTokenizer(paths, java.io.File.pathSeparator);
+		StringTokenizer dirs = new StringTokenizer(paths,
+				java.io.File.pathSeparator);
 		int n = dirs.countTokens();
 		if (n < 1) {
 			return null;
@@ -61,11 +61,11 @@ public class ServletOps {
 		return pathArray;
 	}
 
-	
-	/** get a real file name for a config file pathname.
+	/**
+	 * get a real file name for a config file pathname.
 	 * 
-	 * If filename starts with "/" its treated as absolute else the path is appended 
-	 * to the WEB-INF directory of the web-app.
+	 * If filename starts with "/" its treated as absolute else the path is
+	 * appended to the WEB-INF directory of the web-app.
 	 * 
 	 * @param filename
 	 * @param sc
@@ -76,24 +76,31 @@ public class ServletOps {
 		// is the filename absolute?
 		if (!f.isAbsolute()) {
 			// relative path -> use getRealPath to resolve in WEB-INF
-			filename =
-			sc.getServletContext().getRealPath("WEB-INF/" + filename);
+			filename = sc.getServletContext()
+					.getRealPath("WEB-INF/" + filename);
 		}
 		return filename;
 	}
-	
-	
+
 	/**
 	 * print a servlet response and exit
 	 */
-	public static void htmlMessage(String s, HttpServletResponse response)
-		throws IOException {
+	public static void htmlMessage(String msg, HttpServletResponse response)
+			throws IOException {
+		htmlMessage("Scaler", msg, response);
+	}
+
+	/**
+	 * print a servlet response and exit
+	 */
+	public static void htmlMessage(String title, String msg,
+			HttpServletResponse response) throws IOException {
 		response.setContentType("text/html; charset=iso-8859-1");
 		PrintWriter out = response.getWriter();
 		out.println("<html>");
-		out.println("<head><title>Scaler</title></head>");
+		out.println("<head><title>" + title + "</title></head>");
 		out.println("<body>");
-		out.println("<p>" + s + "</p>");
+		out.println("<p>" + msg + "</p>");
 		out.println("</body></html>");
 	}
 
@@ -114,7 +121,7 @@ public class ServletOps {
 	 *             Exception is thrown for a IOException.
 	 */
 	public static void sendFile(File f, String mt, ServletResponse response)
-		throws FileOpException {
+			throws FileOpException {
 		logger.debug("sendRawFile(" + mt + ", " + f + ")");
 		if (mt == null) {
 			// auto-detect mime-type

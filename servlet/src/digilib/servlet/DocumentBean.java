@@ -1,22 +1,23 @@
-/* DocumentBean -- Access control bean for JSP
-
-  Digital Image Library servlet components
-
-  Copyright (C) 2001, 2002, 2003 Robert Casties (robcast@mail.berlios.de)
-
-  This program is free software; you can redistribute  it and/or modify it
-  under  the terms of  the GNU General  Public License as published by the
-  Free Software Foundation;  either version 2 of the  License, or (at your
-  option) any later version.
-   
-  Please read license.txt for the full details. A copy of the GPL
-  may be found at http://www.gnu.org/copyleft/lgpl.html
-
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-*/
+/*
+ * DocumentBean -- Access control bean for JSP
+ * 
+ * Digital Image Library servlet components
+ * 
+ * Copyright (C) 2001, 2002, 2003 Robert Casties (robcast@mail.berlios.de)
+ * 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.
+ * 
+ * Please read license.txt for the full details. A copy of the GPL may be found
+ * at http://www.gnu.org/copyleft/lgpl.html
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+ * Place, Suite 330, Boston, MA 02111-1307 USA
+ *  
+ */
 
 package digilib.servlet;
 
@@ -39,17 +40,24 @@ public class DocumentBean {
 
 	// general logger
 	Logger logger = Logger.getLogger("digilib.docubean");
+
 	// AuthOps object to check authorization
 	private AuthOps authOp;
+
 	// use authorization database
 	private boolean useAuthentication = true;
+
 	// path to add for authenticated access
 	private String authURLPath = "";
+
 	// DocuDirCache
 	private DocuDirCache dirCache = null;
 
 	// DigilibConfiguration object
 	private DigilibConfiguration dlConfig;
+
+	// DigilibRequest object
+	private DigilibRequest dlRequest = null;
 
 	/**
 	 * Constructor for DocumentBean.
@@ -71,9 +79,8 @@ public class DocumentBean {
 		// get our ServletContext
 		ServletContext context = conf.getServletContext();
 		// see if there is a Configuration instance
-		dlConfig =
-			(DigilibConfiguration) context.getAttribute(
-				"digilib.servlet.configuration");
+		dlConfig = (DigilibConfiguration) context
+				.getAttribute("digilib.servlet.configuration");
 		if (dlConfig == null) {
 			// create new Configuration
 			try {
@@ -88,37 +95,37 @@ public class DocumentBean {
 		dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 
 		/*
-		 *  authentication
+		 * authentication
 		 */
 		useAuthentication = dlConfig.getAsBoolean("use-authorization");
 		authOp = (AuthOps) dlConfig.getValue("servlet.auth.op");
 		authURLPath = dlConfig.getAsString("auth-url-path");
 		if (useAuthentication && (authOp == null)) {
-			throw new ServletException("ERROR: use-authorization configured but no AuthOp!");
+			throw new ServletException(
+					"ERROR: use-authorization configured but no AuthOp!");
 		}
 	}
 
 	/**
-	 *  check if the request must be authorized to access filepath
+	 * check if the request must be authorized to access filepath
 	 */
 	public boolean isAuthRequired(DigilibRequest request)
-		throws AuthOpException {
+			throws AuthOpException {
 		logger.debug("isAuthRequired");
 		return useAuthentication ? authOp.isAuthRequired(request) : false;
 	}
 
 	/**
-	 *  check if the request is allowed to access filepath
+	 * check if the request is allowed to access filepath
 	 */
-	public boolean isAuthorized(DigilibRequest request)
-		throws AuthOpException {
+	public boolean isAuthorized(DigilibRequest request) throws AuthOpException {
 		logger.debug("isAuthorized");
 		return useAuthentication ? authOp.isAuthorized(request) : true;
 	}
 
 	/**
-	 *  return a list of authorization roles needed for request
-	 *  to access the specified path
+	 * return a list of authorization roles needed for request to access the
+	 * specified path
 	 */
 	public List rolesForPath(DigilibRequest request) throws AuthOpException {
 		logger.debug("rolesForPath");
@@ -130,46 +137,48 @@ public class DocumentBean {
 	 */
 	public boolean isRoleAuthorized(List roles, DigilibRequest request) {
 		logger.debug("isRoleAuthorized");
-		return useAuthentication
-			? authOp.isRoleAuthorized(roles, request)
-			: true;
+		return useAuthentication ? authOp.isRoleAuthorized(roles, request)
+				: true;
 	}
 
 	/**
 	 * check for authenticated access and redirect if necessary
 	 */
-	public boolean doAuthentication(
-		DigilibRequest request,
-		HttpServletResponse response)
-		throws Exception {
+	public boolean doAuthentication(HttpServletResponse response)
+			throws Exception {
+		return doAuthentication(dlRequest, response);
+	}
+
+	/**
+	 * check for authenticated access and redirect if necessary
+	 */
+	public boolean doAuthentication(DigilibRequest request,
+			HttpServletResponse response) throws Exception {
 		logger.debug("doAuthentication");
 		if (!useAuthentication) {
 			// shortcut if no authentication
 			return true;
 		}
 		// check if we are already authenticated
-		if (((HttpServletRequest) request.getServletRequest()).getRemoteUser()
-			== null) {
+		if (((HttpServletRequest) request.getServletRequest()).getRemoteUser() == null) {
 			logger.debug("unauthenticated so far");
 			// if not maybe we must?
 			if (isAuthRequired(request)) {
 				logger.debug("auth required, redirect");
 				// we are not yet authenticated -> redirect
-				response.sendRedirect(
-					authURLPath
+				response.sendRedirect(authURLPath
 						+ ((HttpServletRequest) request.getServletRequest())
-							.getServletPath()
+								.getServletPath()
 						+ "?"
 						+ ((HttpServletRequest) request.getServletRequest())
-							.getQueryString());
+								.getQueryString());
 			}
 		}
 		return true;
 	}
 
 	/**
-	 *  get the first page number in the directory
-	 *  (not yet functional)
+	 * get the first page number in the directory (not yet functional)
 	 */
 	public int getFirstPage(DigilibRequest request) {
 		logger.debug("getFirstPage");
@@ -177,14 +186,19 @@ public class DocumentBean {
 	}
 
 	/**
-	 *  get the number of pages/files in the directory
+	 * get the number of pages/files in the directory
+	 */
+	public int getNumPages() throws Exception {
+		return getNumPages(dlRequest);
+	}
+
+	/**
+	 * get the number of pages/files in the directory
 	 */
 	public int getNumPages(DigilibRequest request) throws Exception {
 		logger.debug("getNumPages");
-		DocuDirectory dd =
-			(dirCache != null)
-				? dirCache.getDirectory(request.getFilePath())
-				: null;
+		DocuDirectory dd = (dirCache != null) ? dirCache.getDirectory(request
+				.getFilePath()) : null;
 		if (dd != null) {
 			return dd.size();
 		}
@@ -193,10 +207,69 @@ public class DocumentBean {
 
 	/**
 	 * Returns the dlConfig.
+	 * 
 	 * @return DigilibConfiguration
 	 */
 	public DigilibConfiguration getDlConfig() {
 		return dlConfig;
 	}
 
+	/**
+	 * returns if the zoom area in the request can be moved
+	 * 
+	 * @return
+	 */
+	public boolean canMoveRight() {
+		float ww = dlRequest.getAsFloat("ww");
+		float wx = dlRequest.getAsFloat("wx");
+		return (ww + wx < 1.0);
+	}
+
+	/**
+	 * returns if the zoom area in the request can be moved
+	 * 
+	 * @return
+	 */
+	public boolean canMoveLeft() {
+		float ww = dlRequest.getAsFloat("ww");
+		float wx = dlRequest.getAsFloat("wx");
+		return ((ww < 1.0) && (wx > 0));
+	}
+
+	/**
+	 * returns if the zoom area in the request can be moved
+	 * 
+	 * @return
+	 */
+	public boolean canMoveUp() {
+		float wh = dlRequest.getAsFloat("wh");
+		float wy = dlRequest.getAsFloat("wy");
+		return ((wh < 1.0) && (wy > 0));
+	}
+
+	/**
+	 * returns if the zoom area in the request can be moved
+	 * 
+	 * @return
+	 */
+	public boolean canMoveDown() {
+		float wh = dlRequest.getAsFloat("wh");
+		float wy = dlRequest.getAsFloat("wy");
+		return (wh + wy < 1.0);
+	}
+
+	/**
+	 * @return Returns the dlRequest.
+	 */
+	public DigilibRequest getRequest() {
+		return dlRequest;
+	}
+
+	/**
+	 * @param dlRequest
+	 *            The dlRequest to set.
+	 */
+	public void setRequest(DigilibRequest dlRequest) {
+		this.dlRequest = dlRequest;
+	}
 }

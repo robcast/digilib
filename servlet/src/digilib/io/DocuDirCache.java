@@ -160,6 +160,8 @@ public class DocuDirCache {
 	 *            digilib pathname
 	 * @param in
 	 *            file index
+	 * @param fc
+	 * 			  file class
 	 * @return
 	 */
 	public DocuDirent getFile(String fn, int in, int fc) {
@@ -187,7 +189,7 @@ public class DocuDirCache {
 				 */
 				// get the parent directory string (like we store it in the
 				// cache)
-				String d = fn.substring(0, fn.lastIndexOf("/"));
+				String d = FileOps.parent(fn);
 				// try it in the cache
 				dd = (DocuDirectory) map.get(d);
 				if (dd == null) {
