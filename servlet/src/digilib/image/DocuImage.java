@@ -2,7 +2,7 @@
 
   Digital Image Library servlet components
 
-  Copyright (C) 2001, 2002 Robert Casties (robcast@mail.berlios.de)
+  Copyright (C) 2001, 2002, 2003 Robert Casties (robcast@mail.berlios.de)
 
   This program is free software; you can redistribute  it and/or modify it
   under  the terms of  the GNU General  Public License as published by the
@@ -20,6 +20,7 @@
 
 package digilib.image;
 
+import java.awt.Rectangle;
 import java.io.File;
 import java.io.OutputStream;
 
@@ -46,6 +47,35 @@ public interface DocuImage {
 	 * @throws FileOpException Exception thrown if any error occurs.
 	 */
 	public void loadImage(File f) throws FileOpException;
+
+	/** This DocuImage support the loadSubImage operation.
+	 * 
+	 * @return boolean
+	 */
+	public boolean isSubimageSupported();
+
+	/** Load only a subsampled region of the image file.
+	 * 
+	 * @param f
+	 * @param region
+	 * @param subsample
+	 * @throws FileOpException
+	 */
+	public void loadSubimage(File f, Rectangle region, int subsample)
+		throws FileOpException;
+
+	/** This DocuImage support the preloadImage operation for getWidth/getHeight.
+	 * 
+	 * @return boolean
+	 */
+	public boolean isPreloadSupported();
+
+	/** Preload image file into a state to use getWidth/getHeight.
+	 * 
+	 * @param f
+	 * @throws FileOpException
+	 */
+	public void preloadImage(File f) throws FileOpException;
 
 	/** Writes the current image to a ServletResponse.
 	 *
@@ -121,17 +151,18 @@ public interface DocuImage {
 		double scale,
 		int qual)
 		throws ImageOpException;
-		
+
 	/** Rotates the current image.
 	 * 
 	 * Replaces the current image with a rotated image. The image is rotated
-	 * around the center by <code>angle</code> given in degrees [0, 360]
-	 * clockwise. Image size and aspect ratio are likely to change.
+	 * around the point <code>x</code>,<code>y</code> by <code>angle</code> 
+	 * given in degrees [0, 360] clockwise.
+	 * Image size and aspect ratio are likely to change.
 	 * 
 	 * @param angle rotation angle in degree
 	 */
 	public void rotate(double angle) throws ImageOpException;
-	
+
 	/** Mirrors the current image.
 	 * 
 	 * Replaces  the current image with a mirrored image. The mirror axis goes
@@ -143,7 +174,7 @@ public interface DocuImage {
 	 * @throws ImageOpException
 	 */
 	public void mirror(double angle) throws ImageOpException;
-	
+
 	/** Enhaces brightness and contrast of the current image.
 	 * 
 	 * Replaces the current image with a brightness and contrast enhanced image.

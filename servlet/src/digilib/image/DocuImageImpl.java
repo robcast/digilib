@@ -2,7 +2,7 @@
 
   Digital Image Library servlet components
 
-  Copyright (C) 2001, 2002 Robert Casties (robcast@mail.berlios.de)
+  Copyright (C) 2001, 2002, 2003 Robert Casties (robcast@mail.berlios.de)
 
   This program is free software; you can redistribute  it and/or modify it
   under  the terms of  the GNU General  Public License as published by the
@@ -20,7 +20,11 @@
 
 package digilib.image;
 
+import java.awt.Rectangle;
+import java.io.File;
+
 import digilib.Utils;
+import digilib.io.FileOpException;
 
 /** Simple abstract implementation of the <code>DocuImage</code> interface.
  *
@@ -37,6 +41,9 @@ public abstract class DocuImageImpl implements DocuImage {
 
 	/** Interpolation quality. */
 	protected int quality = 0;
+	
+	// epsilon for float comparisons
+	public final double epsilon = 1e-5;
 
 	/** Default constructor. */
 	public DocuImageImpl() {
@@ -119,6 +126,25 @@ public abstract class DocuImageImpl implements DocuImage {
 
 	public void enhance(double mult, double add) throws ImageOpException {
 		// just a do-nothing implementation
+	}
+
+	public void preloadImage(File f) throws FileOpException {
+		// just a do-nothing implementation
+	}
+
+	public boolean isPreloadSupported() {
+		// preload per default not supported
+		return false;
+	}
+
+	public boolean isSubimageSupported() {
+		// partial loading per default not supported
+		return false;
+	}
+
+	public void loadSubimage(File f, Rectangle region, int subsample)
+		throws FileOpException {
+		// empty implementation
 	}
 
 }

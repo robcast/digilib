@@ -1,4 +1,4 @@
-/*  FileOps -- Utility class for file operations
+/* FileOps -- Utility class for file operations
 
   Digital Image Library servlet components
 

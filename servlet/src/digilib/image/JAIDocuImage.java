@@ -2,7 +2,7 @@
 
   Digital Image Library servlet components
 
-  Copyright (C) 2001, 2002 Robert Casties (robcast@mail.berlios.de)
+  Copyright (C) 2001, 2002, 2003 Robert Casties (robcast@mail.berlios.de)
 
   This program is free software; you can redistribute  it and/or modify it
   under  the terms of  the GNU General  Public License as published by the
@@ -39,9 +39,6 @@ public class JAIDocuImage extends DocuImageImpl {
 
 	protected RenderedImage img;
 	protected Interpolation interpol = null;
-
-	// epsilon for float comparisons
-	public final double epsilon = 1e-5;
 
 	/** Default constructor. */
 	public JAIDocuImage() {
@@ -203,9 +200,8 @@ public class JAIDocuImage extends DocuImageImpl {
 		RenderedImage rotImg;
 		// convert degrees to radians
 		double rangle = Math.toRadians(angle);
-		// rotate about the image center
-		double xoff = img.getWidth() / 2;
-		double yoff = img.getHeight() / 2;
+		float x = getWidth()/2;
+		float y = getHeight()/2;
 
 		// optimize rotation by right angles
 		TransposeType rotOp = null;
@@ -235,8 +231,8 @@ public class JAIDocuImage extends DocuImageImpl {
 			// setup "normal" rotation
 			ParameterBlock param = new ParameterBlock();
 			param.addSource(img);
-			param.add((float) xoff);
-			param.add((float) yoff);
+			param.add(x);
+			param.add(y);
 			param.add((float) rangle);
 			param.add(interpol);
 			// hint with border extender
@@ -251,9 +247,9 @@ public class JAIDocuImage extends DocuImageImpl {
 		util.dprintln(
 			3,
 			"ROTATE: "
-				+ xoff
+				+ x
 				+ ","
-				+ yoff
+				+ y
 				+ ", "
 				+ angle
 				+ " ("

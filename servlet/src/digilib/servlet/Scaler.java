@@ -52,7 +52,7 @@ import digilib.io.FileOps;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.6b";
+	public static final String dlVersion = "1.6b3";
 
 	// Utils instance with debuglevel
 	Utils util;
@@ -331,7 +331,12 @@ public class Scaler extends HttpServlet {
 			}
 
 			// finally load the file
-			docuImage.loadImage(fileToLoad);
+			if (docuImage.isPreloadSupported()) {
+				// only preload if supported
+				docuImage.preloadImage(fileToLoad);
+			} else {
+				docuImage.loadImage(fileToLoad);
+			}
 
 			/*
 			 *  crop and scale the image
@@ -348,20 +353,21 @@ public class Scaler extends HttpServlet {
 
 			// coordinates using Java2D
 			// image size
-			Rectangle2D imgBounds = new Rectangle2D.Double(0, 0, imgWidth, imgHeight);
+			Rectangle2D imgBounds =
+				new Rectangle2D.Double(0, 0, imgWidth, imgHeight);
 			// user window area in 4-point form (ul, ur, ll, lr)
-			Point2D[] userAreaC = {
-				new Point2D.Double(paramWX, paramWY),
-				new Point2D.Double(paramWX + paramWW, paramWY),
-				new Point2D.Double(paramWX, paramWY + paramWH),
-				new Point2D.Double(paramWX + paramWW, paramWY + paramWH)
-			};
+			Point2D[] userAreaC =
+				{
+					new Point2D.Double(paramWX, paramWY),
+					new Point2D.Double(paramWX + paramWW, paramWY),
+					new Point2D.Double(paramWX, paramWY + paramWH),
+					new Point2D.Double(paramWX + paramWW, paramWY + paramWH)};
 			// transformation from relative [0,1] to image coordinates.
 			AffineTransform imgTrafo = new AffineTransform();
 			imgTrafo.scale(imgWidth, imgHeight);
 			// rotate coordinates
 			//imgTrafo.rotate(Math.toRadians(-paramROT));
-			
+
 			// coordinates and scaling
 			double areaXoff;
 			double areaYoff;
@@ -371,64 +377,69 @@ public class Scaler extends HttpServlet {
 			double scaleY;
 			double scaleXY;
 
+			/*			if (scaleToFit) {
+							// calculate absolute from relative coordinates
+							areaXoff = paramWX * imgWidth;
+							areaYoff = paramWY * imgHeight;
+							areaWidth = paramWW * imgWidth;
+							areaHeight = paramWH * imgHeight;
+							// calculate scaling factors
+							scaleX = paramDW / areaWidth * paramWS;
+							scaleY = paramDH / areaHeight * paramWS;
+							scaleXY = (scaleX > scaleY) ? scaleY : scaleX;
+						} else {
+							// crop to fit
+							// calculate absolute from relative coordinates
+							areaXoff = paramWX * imgWidth;
+							areaYoff = paramWY * imgHeight;
+							areaWidth = paramDW;
+							areaHeight = paramDH;
+							// calculate scaling factors
+							scaleX = 1f;
+							scaleY = 1f;
+							scaleXY = 1f;
+						}
+			
+						util.dprintln(
+							1,
+							"Scale "
+								+ scaleXY
+								+ "("
+								+ scaleX
+								+ ","
+								+ scaleY
+								+ ") on "
+								+ areaXoff
+								+ ","
+								+ areaYoff
+								+ " "
+								+ areaWidth
+								+ "x"
+								+ areaHeight);
+			*/
+			// Java2D 
+			// area in image pixel coordinates
+			Point2D[] imgAreaC = { null, null, null, null };
+			// transform user coordinate area to image coordinate area
+			imgTrafo.transform(userAreaC, 0, imgAreaC, 0, 4);
+			areaXoff = imgAreaC[0].getX();
+			areaYoff = imgAreaC[0].getY();
+			// calculate scaling factors
 			if (scaleToFit) {
-				// calculate absolute from relative coordinates
-				areaXoff = paramWX * imgWidth;
-				areaYoff = paramWY * imgHeight;
-				areaWidth = paramWW * imgWidth;
-				areaHeight = paramWH * imgHeight;
-				// calculate scaling factors
+				areaWidth = imgAreaC[0].distance(imgAreaC[1]);
+				areaHeight = imgAreaC[0].distance(imgAreaC[2]);
 				scaleX = paramDW / areaWidth * paramWS;
 				scaleY = paramDH / areaHeight * paramWS;
 				scaleXY = (scaleX > scaleY) ? scaleY : scaleX;
 			} else {
 				// crop to fit
-				// calculate absolute from relative coordinates
-				areaXoff = paramWX * imgWidth;
-				areaYoff = paramWY * imgHeight;
-				areaWidth = paramDW;
-				areaHeight = paramDH;
-				// calculate scaling factors
+				areaWidth = paramDW * paramWS;
+				areaHeight = paramDH * paramWS;
 				scaleX = 1f;
 				scaleY = 1f;
 				scaleXY = 1f;
+
 			}
-
-			util.dprintln(
-				1,
-				"Scale "
-					+ scaleXY
-					+ "("
-					+ scaleX
-					+ ","
-					+ scaleY
-					+ ") on "
-					+ areaXoff
-					+ ","
-					+ areaYoff
-					+ " "
-					+ areaWidth
-					+ "x"
-					+ areaHeight);
-
-			// Java2D 
-			Point2D[] imgAreaC = { null, null, null, null };
-
-			imgTrafo.transform(userAreaC, 0, imgAreaC, 0, 4);
-			areaXoff = imgAreaC[0].getX();
-			areaYoff = imgAreaC[0].getY();
-			areaWidth = imgAreaC[0].distance(imgAreaC[1]);
-			areaHeight = imgAreaC[0].distance(imgAreaC[2]);
-			Rectangle2D imgArea =
-				new Rectangle2D.Double(
-					areaXoff,
-					areaYoff,
-					areaWidth,
-					areaHeight);
-			// calculate scaling factors
-			scaleX = paramDW / areaWidth * paramWS;
-			scaleY = paramDH / areaHeight * paramWS;
-			scaleXY = (scaleX > scaleY) ? scaleY : scaleX;
 
 			util.dprintln(
 				1,
@@ -457,13 +468,22 @@ public class Scaler extends HttpServlet {
 					? imgHeight - areaYoff
 					: areaHeight;
 			*/
+
+			// create new rectangle from coordinates
+			Rectangle2D imgArea =
+				new Rectangle2D.Double(
+					areaXoff,
+					areaYoff,
+					areaWidth,
+					areaHeight);
+			// clip area at the image border
 			imgArea = imgArea.createIntersection(imgBounds);
 			areaWidth = imgArea.getWidth();
 			areaHeight = imgArea.getHeight();
 
 			util.dprintln(
 				2,
-				"cropped: "
+				"crop: "
 					+ areaXoff
 					+ ","
 					+ areaYoff
@@ -481,14 +501,48 @@ public class Scaler extends HttpServlet {
 				throw new ImageOpException("Invalid scale parameter set!");
 			}
 
-			// crop and scale image
-			docuImage.crop(
-				(int) areaXoff,
-				(int) areaYoff,
-				(int) areaWidth,
-				(int) areaHeight);
+			/* 
+			 * crop and scale image
+			 */
 
-			docuImage.scale(scaleXY);
+			// use subimage loading if possible
+			if (docuImage.isSubimageSupported()) {
+				System.out.println(
+					"Subimage: scale " + scaleXY + " = " + (1 / scaleXY));
+				double subf = 1d;
+				double subsamp = 1d;
+				if (scaleXY < 1) {
+					subf = 1 / scaleXY;
+					subsamp = Math.floor(subf);
+					scaleXY = subsamp / subf;
+					System.out.println(
+						"Using subsampling: " + subsamp + " rest " + scaleXY);
+				}
+
+				docuImage.loadSubimage(
+					fileToLoad,
+					imgArea.getBounds(),
+					(int) subsamp);
+
+				System.out.println(
+					"SUBSAMP: "
+						+ subsamp
+						+ " -> "
+						+ docuImage.getWidth()
+						+ "x"
+						+ docuImage.getHeight());
+
+				docuImage.scale(scaleXY);
+
+			} else {
+				docuImage.crop(
+					(int) areaXoff,
+					(int) areaYoff,
+					(int) areaWidth,
+					(int) areaHeight);
+
+				docuImage.scale(scaleXY);
+			}
 
 			// mirror image
 			if (doMirror) {
@@ -497,12 +551,13 @@ public class Scaler extends HttpServlet {
 
 			// rotate image (first shot :-)
 			if (paramROT != 0) {
-				docuImage.rotate(paramROT);
+				docuImage.rotate(
+					paramROT);
 			}
 
 			// contrast and brightness enhancement
 			if ((paramCONT != 0) || (paramBRGT != 0)) {
-				double mult = Math.pow(2, paramCONT); 
+				double mult = Math.pow(2, paramCONT);
 				docuImage.enhance(mult, paramBRGT);
 			}
 

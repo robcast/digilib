@@ -77,7 +77,7 @@ public class DigilibConfiguration {
 	private int debugLevel = 5;
 	private String debugLevelParam = "debug-level";
 	// Utils instance
-	private Utils util = new Utils();
+	private Utils util = new Utils(debugLevel);
 	// HashTable for parameters
 	private Hashtable confTable = null;
 	// Type of DocuImage instance
@@ -86,6 +86,9 @@ public class DigilibConfiguration {
 	// part of URL used to indicate authorized access
 	private String authURLPath = "authenticated/";
 	private String AuthURLPathParam = "auth-url-path";
+	// degree of subsampling on image load
+	private float subsampleDistance = 0;
+	private String subsampleDistanceParam = "subsample-distance";
 
 	/** Constructor taking a ServletConfig.
 	 * Reads the config file location from an init parameter and loads the
@@ -117,7 +120,7 @@ public class DigilibConfiguration {
 		XMLListLoader lilo =
 			new XMLListLoader("digilib-config", "parameter", "name", "value");
 		confTable = lilo.loadURL(f.toURL().toString());
-		dlConfPath = fn;
+		dlConfPath = f.getCanonicalPath();
 
 		/* 
 		 * read parameters
@@ -125,6 +128,7 @@ public class DigilibConfiguration {
 		 
 		// debugLevel
 		debugLevel = tryToGetInitParam(debugLevelParam, debugLevel);
+		util.setDebugLevel(debugLevel);
 		// errorImgFileName
 		errorImgFileName = tryToGetInitParam(errorImgParam, errorImgFileName);
 		// denyImgFileName
@@ -151,6 +155,8 @@ public class DigilibConfiguration {
 			authConfPath = tryToGetInitParam(authConfParam, authConfPath);
 			authOp = new XMLAuthOps(util, authConfPath);
 		}
+		// subsampleDistance
+		subsampleDistance = tryToGetInitParam(subsampleDistanceParam, subsampleDistance);
 	}
 
 	/**
@@ -453,6 +459,21 @@ public class DigilibConfiguration {
 	 */
 	public String getDlConfPath() {
 		return dlConfPath;
+	}
+
+	/**
+	 * @return float
+	 */
+	public float getSubsampleDistance() {
+		return subsampleDistance;
+	}
+
+	/**
+	 * Sets the subsampleDistance.
+	 * @param subsampleDistance The subsampleDistance to set
+	 */
+	public void setSubsampleDistance(float subsampleDistance) {
+		this.subsampleDistance = subsampleDistance;
 	}
 
 }
