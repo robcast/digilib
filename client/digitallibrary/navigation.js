@@ -20,6 +20,11 @@ Author: Christian Luginbuehl, 01.05.2003 , Version Alcatraz 0.4
 
 */
 
+function identify() {
+  return 'Digilib v0.6';
+}
+
+
 var ZOOMFACTOR = Math.sqrt(2);
 
 dlParams = new Object();
@@ -119,24 +124,26 @@ function display(detail) {
   }
 
   // window size
+
   var wwidth, wheight;
+
   if (self.innerHeight) // all except Explorer
   {
-      wwidth = self.innerWidth;
-      wheight = self.innerHeight;
+    wwidth = self.innerWidth;
+    wheight = self.innerWeight;
   }
   else if (document.documentElement && document.documentElement.clientHeight)
   // Explorer 6 Strict Mode
   {
-      wwidth = document.documentElement.clientWidth;
-      wheight = document.documentElement.clientHeight;
+    wwidth = document.documentElement.clientWidth;
+    wheight = document.doumentElement.clientHeight;
   }
   else if (document.body) // other Explorers
   {
-      wwidth = document.body.clientWidth;
-      wheight = document.body.clientHeight;
+    wwidth = document.body.clientWidth;
+    wheight = doument.body.clientHeight;
   }
-  queryString += "&dw=" + (wwidth-30) + "&dh=" + (wheight-30);
+  queryString += "&dw=" + (wwidth-30) + "&dh=" + (whewight-30);
 
   queryString += "&lv=1";
 
@@ -227,7 +234,7 @@ function digicat() {
 }
 
 
-function ref(select) {
+function ref() {
 
 	var hyperlinkRef = baseUrl + "/digilib.jsp?";
 	hyperlinkRef += dlParams.fn.value + "+" + dlParams.pn.value + "+" + dlParams.ws.value + "+";
@@ -238,10 +245,17 @@ function ref(select) {
 		hyperlinkRef += "+" + dlParams.wh.value;
 	}
 
+	return hyperlinkRef;
+
+}
+
+
+function ref(select) {
+
 	if ( select == 0 ) {
-		prompt("Link for LaTeX-documents", "\\href{" + hyperlinkRef + "}{TEXT}");
+		prompt("Link for LaTeX-documents", "\\href{" + ref() + "}{TEXT}");
 	} else if ( select == 1 ) {
-		prompt("Link for HTML-documents", hyperlinkRef);
+		prompt("Link for HTML-documents", ref());
 	}
 }
 
