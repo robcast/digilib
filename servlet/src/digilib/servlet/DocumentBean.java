@@ -41,7 +41,7 @@ import digilib.io.ImageFileset;
 public class DocumentBean {
 
 	// general logger
-	Logger logger = Logger.getLogger("digilib.docubean");
+	private static Logger logger = Logger.getLogger("digilib.docubean");
 
 	// AuthOps object to check authorization
 	private AuthOps authOp;
@@ -85,12 +85,7 @@ public class DocumentBean {
 				.getAttribute("digilib.servlet.configuration");
 		if (dlConfig == null) {
 			// create new Configuration
-			try {
-				dlConfig = new DigilibConfiguration(conf);
-				context.setAttribute("digilib.servlet.configuration", dlConfig);
-			} catch (Exception e) {
-				throw new ServletException(e);
-			}
+			throw new ServletException("ERROR: No configuration!");
 		}
 
 		// get cache

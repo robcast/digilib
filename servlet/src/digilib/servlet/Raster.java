@@ -94,13 +94,8 @@ public class Raster extends HttpServlet {
 			(DigilibConfiguration) context.getAttribute(
 				"digilib.servlet.configuration");
 		if (dlConfig == null) {
-			// create new Configuration
-			try {
-				dlConfig = new DigilibConfiguration(config);
-				context.setAttribute("digilib.servlet.configuration", dlConfig);
-			} catch (Exception e) {
-				throw new ServletException(e);
-			}
+			// no config
+			throw new ServletException("ERROR: No Configuration!");
 		}
 		// say hello in the log file
 		logger.info(
