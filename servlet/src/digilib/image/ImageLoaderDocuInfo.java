@@ -48,6 +48,9 @@ public class ImageLoaderDocuInfo implements DocuInfo {
 		t = FileOps.mimeForFile(f.getFile());
 		f.setMimetype(t);
 		f.setChecked(true);
+		// clean up
+		img.reader.reset();
+		//img.reader = null;
 		return true;
 	}
 

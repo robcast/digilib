@@ -117,6 +117,11 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	 * 
 	 */
 	public void preloadImage(File f) throws IOException {
+		if (reader != null) {
+			// clean up old reader
+			reader.dispose();
+			reader = null;
+		}
 		System.gc();
 		RandomAccessFile rf = new RandomAccessFile(f, "r");
 		ImageInputStream istream = ImageIO.createImageInputStream(rf);
@@ -422,6 +427,18 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			throw new ImageOpException("Unable to mirror");
 		}
 		img = mirImg;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#finalize()
+	 */
+	protected void finalize() throws Throwable {
+		//System.out.println("FIN de ImageLoaderDocuImage!");
+		// we must dispose the ImageReader because it keeps the filehandle open!
+		reader.dispose();
+		reader = null;
+		img = null;
+		super.finalize();
 	}
 
 }

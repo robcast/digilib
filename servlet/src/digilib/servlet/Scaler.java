@@ -58,7 +58,7 @@ import digilib.io.FileOps;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.12b7";
+	public static final String dlVersion = "1.13a2";
 
 	// Utils instance with debuglevel
 	Utils util;
@@ -447,10 +447,10 @@ public class Scaler extends HttpServlet {
 				&& (fileToLoad.getSize().height <= expectedSourceSize.height))
 				|| (autoRes
 					&& ((fileToLoad.getSize().width == expectedSourceSize.width)
-					|| (fileToLoad.getSize().height <= expectedSourceSize.height)))
+					&& (fileToLoad.getSize().height <= expectedSourceSize.height)))
 				|| (autoRes
 					&& ((fileToLoad.getSize().width <= expectedSourceSize.width)
-					|| (fileToLoad.getSize().height == expectedSourceSize.height)))
+					&& (fileToLoad.getSize().height == expectedSourceSize.height)))
 				|| (!autoRes && !scaleToFit && !cropToFit && !absoluteScale)) {
 
 				util.dprintln(1, "Sending File as is.");

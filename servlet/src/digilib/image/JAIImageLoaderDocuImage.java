@@ -179,4 +179,16 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#finalize()
+	 */
+	protected void finalize() throws Throwable {
+		//System.out.println("FIN de JAIImageLoaderDocuImage!");
+		// we must dispose the ImageReader because it keeps the filehandle open!
+		reader.dispose();
+		reader = null;
+		img = null;
+		super.finalize();
+	}
+
 }
