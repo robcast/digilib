@@ -70,8 +70,8 @@ public class XMLAuthOps extends AuthOpsImpl {
 	 */
 	public void init() throws AuthOpException {
 		util.dprintln(10, "xmlauthops.init (" + configFile + ")");
-		Hashtable pathList = null;
-		Hashtable ipList = null;
+		HashMap pathList = null;
+		HashMap ipList = null;
 		try {
 			// create data loader for auth-path file
 			File confFile = new File(configFile);

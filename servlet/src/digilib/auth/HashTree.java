@@ -24,15 +24,15 @@ import java.util.*;
 
 public class HashTree {
 
-  private Hashtable table;
+  private HashMap table;
   private String twigSep = "/";
   private String leafSep = ",";
 
   public HashTree() {
-    table = new Hashtable();
+    table = new HashMap();
   }
 
-  public HashTree(Hashtable t, String twig_separator, String leaf_separator) {
+  public HashTree(HashMap t, String twig_separator, String leaf_separator) {
     table = t;
     twigSep = twig_separator;
     leafSep = leaf_separator;
