@@ -18,10 +18,7 @@ public void jspInit() {
 digilib.servlet.DigilibConfiguration dlConfig = docBean.getDlConfig();
 // parsing the query
 digilib.servlet.DigilibRequest dlRequest = new digilib.servlet.DigilibRequest(request);
-// add number of pages
-dlRequest.setValue("pt", docBean.getNumPages(dlRequest));
-// dir cache
-digilib.io.DocuDirCache dirCache = (digilib.io.DocuDirCache) dlConfig.getValue("servlet.dir.cache");
+docBean.setRequest(dlRequest);
 
 %><!-- Automatically generated XML snippet with document parameters -->
 <document-parameters>
