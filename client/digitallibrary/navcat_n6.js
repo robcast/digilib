@@ -38,7 +38,7 @@ function loadThumbTable() {
 		for (j = 0; j < att[3]; j++) {
 			indexNr = parseInt(att[1])+i*parseInt(att[3])+j;
 			thumb  = parent.baseUrl + "/servlet/Scaler/";
-			thumb += att[0] + "?" + "pn=" + indexNr + "&ws=1.0&mo=fit&dw=" + cellWidth + "&dh=" + (cellHeight-25);
+			thumb += att[0] + "?" + "pn=" + indexNr + "&ws=1.0&mo=" + att[4] + "&dw=" + cellWidth + "&dh=" + (cellHeight-25);
 			whichFrame.document.write('<td align="center" valign="middle" width="' + cellWidth + '" height="' + cellHeight + '" class="myFont">');
 			whichFrame.document.write('<a href="javascript:loadDigilib(' + indexNr + ')">');
 			whichFrame.document.write('<img src="' + thumb + '" border="0">');
@@ -118,4 +118,5 @@ function initPicture(picURL) {
 	if (att.length < 4) {
 		att[3] = 4;
 	}
+
 }
