@@ -67,11 +67,9 @@ public class Scaler extends HttpServlet {
     servletOp = new ServletOps(util, config);
     // then we can start reading parameters UGLY!!
 
-    // Utils instance with debuglevel
+    // Utils with new debuglevel
     int debugLevel = servletOp.tryToGetInitParam("debug-level", 10);
-    util = new Utils(debugLevel);
-    // reset Util for ServletOps instance
-    servletOp.setUtils(util);
+    util.setDebugLevel(debugLevel);
     // image file to send in case of error
     String errorImgFileName = servletOp.tryToGetInitParam("error-image", "/docuserver/images/icons/scalerror.gif");
     errorImgFile = new File(errorImgFileName);

@@ -28,13 +28,20 @@ public class Utils {
   public Utils(int dbg) {
     debugLevel = dbg;
   }
-
+  
+  public static int debugLevel = 10;
+  public void setDebugLevel(int lvl) {
+    debugLevel = lvl;
+  }
+  public int getDebugLevel() {
+      return debugLevel;
+  }
+  
   /**
    *  Debugging help
    *    dprintln(1, "blabla");
    *    will be printed on stdout if debug >= 1
    */
-  public static int debugLevel = 10;
   public static void dprintln(int dbg, String s) {
     if (debugLevel >= dbg) {
       String ind = "";

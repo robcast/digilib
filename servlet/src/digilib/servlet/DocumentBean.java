@@ -51,9 +51,10 @@ public class DocumentBean implements AuthOps {
     util.dprintln(10, "setConfig");
     // servletOps takes a ServletConfig to get the config file name
     ServletOps servletOp = new ServletOps(util, conf);
-    /**
-     *  basedir-list : List of document directories
-     */
+    // get debug-level first
+    int dbg = servletOp.tryToGetInitParam("debug-level", 10);
+    util.setDebugLevel(dbg);
+    // basedir-list : List of document directories
     String bl = servletOp.tryToGetInitParam("basedir-list", null);
     // split list into directories
     baseDirs = servletOp.tryToGetPathArray(bl, baseDirs);
