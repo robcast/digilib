@@ -11,21 +11,22 @@ link=${base#*[SK][0-9][0-9]}
 #test $link = $base && START_XNTPD=yes
 #test "$START_XNTPD" = yes || exit 0
 
-TOMCAT_PID="";
-
-function tomcat_runs() {
-# we're looking at java vms executing org.apache.catalina.startup.Bootstrap
-ALL_TOMS=$( ps xa|grep org.apache.catalina.startup.Bootstrap|grep -v grep )
-ALL_TOM_IDS=$( echo $ALL_TOMS | cut -d " " -f 1 )
-TOMCAT_PID=$( echo $ALL_TOM_IDS | head -1 )
-test -n "$TOMCAT_PID"
-}
-
 #
 # docuservers tomcat (ROC 2.11.01)
 #
 TOMCATLOG=/usr/local/httpd/logs/tomcat-err.log
 TOMCATDIR=/opt/tomcat
+
+TOMCAT_PID="";
+
+function tomcat_runs() {
+# we're looking at java vms executing org.apache.catalina.startup.Bootstrap
+#ALL_TOMS=$( ps xa | grep org.apache.catalina.startup | grep -v grep )
+#ALL_TOM_IDS=$( echo $ALL_TOMS | cut -d " " -f 1 )
+ALL_TOMS=$( pgrep -u wwwrun java )
+TOMCAT_PID=$( echo $ALL_TOMS | head -1 )
+test -n "$TOMCAT_PID"
+}
 
 return="$rc_done"
 
