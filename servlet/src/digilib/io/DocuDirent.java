@@ -78,7 +78,10 @@ public abstract class DocuDirent {
 		}
 	}
 
-	/** The name of the (hires) image file.
+	/** The name of the file.
+	 * 
+	 * If this is a Fileset, the method returns the name of the default file 
+	 * (for image filesets the highest resolution file).
 	 * 
 	 * @return
 	 */
@@ -87,7 +90,19 @@ public abstract class DocuDirent {
 		return (f != null) ? f.getName() : null;
 	}
 
-	/** Returns the parent DocuDirectory.
+	/** The filename sans extension.
+	 * 
+	 * @return
+	 */
+	public String getBasename() {
+		File f = getFile();
+		if (f == null) {
+			return null;
+		}
+		return FileOps.basename(f.getName());
+	}
+
+	/** Returns the parent Directory.
 	 * 
 	 * @return DocuDirectory
 	 */
@@ -95,15 +110,15 @@ public abstract class DocuDirent {
 		return parent;
 	}
 
-	/**
-	 * Sets the parent.
+	/** Sets the parent Directory.
+	 * 
 	 * @param parent The parent to set
 	 */
 	public void setParent(Directory parent) {
 		this.parent = parent;
 	}
 
-	/** Returns the meta-data for this fileset.
+	/** Returns the meta-data for this file(set).
 	 * 
 	 * @return HashMap
 	 */
@@ -111,8 +126,8 @@ public abstract class DocuDirent {
 		return fileMeta;
 	}
 
-	/**
-	 * Sets the fileMeta.
+	/** Sets the meta-data for this file(set)
+	 * .
 	 * @param fileMeta The fileMeta to set
 	 */
 	public void setFileMeta(HashMap fileMeta) {

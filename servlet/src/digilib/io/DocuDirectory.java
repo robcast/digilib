@@ -57,13 +57,11 @@ public class DocuDirectory extends Directory {
 	 * 
 	 * Directory names at the given path are appended to the base directories 
 	 * from the cache. The directory is checked on disk and isValid is set. 
-	 * If read is true the directory is read and filled.
 	 * 
 	 * @see readDir
 	 *  
 	 * @param path digilib directory path name
-	 * @param bd array of base directory names
-	 * @param read the directory is read and filled
+	 * @param cache parent DocuDirCache
 	 */
 	public DocuDirectory(String path, DocuDirCache cache) {
 		this.dirName = path;
@@ -364,11 +362,26 @@ public class DocuDirectory extends Directory {
 	 * @return int index of file <code>fn</code>
 	 */
 	public int indexOf(String fn, int fc) {
+		if (!isRead()) {
+			// read directory now
+			if (!readDir()) {
+				return -1;
+			}
+		}
 		// linear search -> worst performance
 		int n = list[fc].size();
 		for (int i = 0; i < n; i++) {
 			ImageFileset fs = (ImageFileset) list[fc].get(i);
 			if (fs.getName().equals(fn)) {
+				// filename matches
+				return i;
+			}
+		}
+		// try again without extension
+		for (int i = 0; i < n; i++) {
+			ImageFileset fs = (ImageFileset) list[fc].get(i);
+			if (fs.getBasename().equals(FileOps.basename(fn))) {
+				// basename matches
 				return i;
 			}
 		}

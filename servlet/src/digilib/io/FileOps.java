@@ -148,6 +148,40 @@ public class FileOps {
 		}
 		return pathArray;
 	}
+	
+	/** Extract the base of a file name (sans extension).
+	 * 
+	 * Returns the filename without the extension. The extension is the part behind
+	 * the last dot in the filename. If the filename has no dot the full file name 
+	 * is returned.
+	 *  
+	 * @param fn
+	 * @return
+	 */
+	public static String basename(String fn) {
+		int i = fn.lastIndexOf('.');
+		if (i > 0) {
+			return fn.substring(0, i);
+		}
+		return fn;
+	}
+
+	/** Extract the extension of a file name.
+	 * 
+	 * Returns the extension of a file name. The extension is the part behind
+	 * the last dot in the filename. If the filename has no dot the empty string 
+	 * is returned.
+	 *  
+	 * @param fn
+	 * @return
+	 */
+	public static String extname(String fn) {
+		int i = fn.lastIndexOf('.');
+		if (i > 0) {
+			return fn.substring(i+1);
+		}
+		return "";
+	}
 
 	/**
 	 *  FileFilter for image types (helper class for getFile)

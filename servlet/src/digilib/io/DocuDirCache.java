@@ -1,21 +1,22 @@
-/* DocuDirCache.java
-
-  Digital Image Library servlet components
-
-  Copyright (C) 2003 Robert Casties (robcast@mail.berlios.de)
-
-  This program is free software; you can redistribute  it and/or modify it
-  under  the terms of  the GNU General  Public License as published by the
-  Free Software Foundation;  either version 2 of the  License, or (at your
-  option) any later version.
-   
-  Please read license.txt for the full details. A copy of the GPL
-  may be found at http://www.gnu.org/copyleft/lgpl.html
-
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-
+/*
+ * DocuDirCache.java
+ * 
+ * Digital Image Library servlet components
+ * 
+ * Copyright (C) 2003 Robert Casties (robcast@mail.berlios.de)
+ * 
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
+ * 
+ * Please read license.txt for the full details. A copy of the GPL may be found
+ * at http://www.gnu.org/copyleft/lgpl.html
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+ * Place, Suite 330, Boston, MA 02111-1307 USA
+ * 
  * Created on 03.03.2003
  */
 
@@ -33,7 +34,7 @@ import java.util.List;
 public class DocuDirCache {
 
 	/** HashMap of directories */
-	private HashMap map = null;
+	protected HashMap map = null;
 	/** names of base directories */
 	private String[] baseDirNames = null;
 	/** array of allowed file classes (image/text) */
@@ -45,18 +46,22 @@ public class DocuDirCache {
 	/** number of cache misses */
 	private long misses = 0;
 
-	/** Constructor with array of base directory names and file classes.
-	 *  
-	 * @param bd base directory names
+	/**
+	 * Constructor with array of base directory names and file classes.
+	 * 
+	 * @param bd
+	 *            base directory names
 	 */
 	public DocuDirCache(String[] bd, int[] fileClasses) {
 		baseDirNames = bd;
 		map = new HashMap();
 		this.fileClasses = fileClasses;
 	}
-	/** Constructor with array of base directory names.
-	 *  
-	 * @param bd base directory names
+	/**
+	 * Constructor with array of base directory names.
+	 * 
+	 * @param bd
+	 *            base directory names
 	 */
 	public DocuDirCache(String[] bd) {
 		baseDirNames = bd;
@@ -66,14 +71,17 @@ public class DocuDirCache {
 		fileClasses[0] = FileOps.CLASS_IMAGE;
 	}
 
-	/** The number of directories in the cache.
+	/**
+	 * The number of directories in the cache.
+	 * 
 	 * @return
 	 */
 	public int size() {
 		return (map != null) ? map.size() : 0;
 	}
 
-	/** Add a DocuDirectory to the cache.
+	/**
+	 * Add a DocuDirectory to the cache.
 	 * 
 	 * @param newdir
 	 */
@@ -87,7 +95,8 @@ public class DocuDirCache {
 		}
 	}
 
-	/** Add a directory to the cache and check its parents.
+	/**
+	 * Add a directory to the cache and check its parents.
 	 * 
 	 * @param newDir
 	 */
@@ -96,7 +105,7 @@ public class DocuDirCache {
 		String parent = newDir.getParentDirName();
 		if (parent != null) {
 			// check the parent in the cache
-			DocuDirectory pd = (DocuDirectory)map.get(parent);
+			DocuDirectory pd = (DocuDirectory) map.get(parent);
 			if (pd == null) {
 				// the parent is unknown
 				pd = new DocuDirectory(parent, this);
@@ -106,20 +115,22 @@ public class DocuDirCache {
 		}
 	}
 
-	/** Get a list with all children of a directory.
+	/**
+	 * Get a list with all children of a directory.
 	 * 
-	 * Returns a List of DocuDirectory's.
-	 * Returns an empty List if the directory has no children.
-	 * If recurse is false then only direct children are returned.
+	 * Returns a List of DocuDirectory's. Returns an empty List if the
+	 * directory has no children. If recurse is false then only direct children
+	 * are returned.
 	 * 
 	 * @param dirname
-	 * @param recurse find all children and their children.
+	 * @param recurse
+	 *            find all children and their children.
 	 * @return
 	 */
 	public List getChildren(String dirname, boolean recurse) {
 		List l = new LinkedList();
-		for (Iterator i = map.keySet().iterator(); i.hasNext(); ) {
-			DocuDirectory dd = (DocuDirectory)i.next();
+		for (Iterator i = map.keySet().iterator(); i.hasNext();) {
+			DocuDirectory dd = (DocuDirectory) i.next();
 			if (recurse) {
 				if (dd.getDirName().startsWith(dirname)) {
 					l.add(dd);
@@ -133,15 +144,18 @@ public class DocuDirCache {
 		return l;
 	}
 
-	/** Returns the ImageFileset with the pathname <code>fn</code> and the 
+	/**
+	 * Returns the ImageFileset with the pathname <code>fn</code> and the
 	 * index <code>in</code> and the class <code>fc</code>.
 	 * 
-	 * If <code>fn</code> is a file then the corresponding Fileset is 
+	 * If <code>fn</code> is a file then the corresponding Fileset is
 	 * returned and the index is ignored.
 	 * 
-	 * @param fn digilib pathname
-	 * @param in file index
-	 * @return 
+	 * @param fn
+	 *            digilib pathname
+	 * @param in
+	 *            file index
+	 * @return
 	 */
 	public DocuDirent getFile(String fn, int in, int fc) {
 		DocuDirectory dd;
@@ -152,7 +166,9 @@ public class DocuDirCache {
 		if (dd == null) {
 			// cache miss
 			misses++;
-			// see if it's a directory
+			/*
+			 * see if it's a directory
+			 */
 			File f = new File(baseDirNames[0], fn);
 			if (f.isDirectory()) {
 				dd = new DocuDirectory(fn, this);
@@ -161,32 +177,30 @@ public class DocuDirCache {
 					putDir(dd);
 				}
 			} else {
-				// maybe it's a file
-				if (f.canRead()) {
-					// get the parent directory string (like we store it in the cache)
-					String d = fn.substring(0, fn.lastIndexOf("/"));
-					// try it in the cache
-					dd = (DocuDirectory) map.get(d);
-					if (dd == null) {
-						// try to read from disk
-						dd = new DocuDirectory(d, this);
-						if (dd.isValid()) {
-							// add to the cache
-							putDir(dd);
-						} else {
-							// invalid path
-							return null;
-						}
+				/*
+				 * maybe it's a file
+				 */
+				// get the parent directory string (like we store it in the
+				// cache)
+				String d = fn.substring(0, fn.lastIndexOf("/"));
+				// try it in the cache
+				dd = (DocuDirectory) map.get(d);
+				if (dd == null) {
+					// try to read from disk
+					dd = new DocuDirectory(d, this);
+					if (dd.isValid()) {
+						// add to the cache
+						putDir(dd);
 					} else {
-						// then it was not a real cache miss
-						misses--;
+						// invalid path
+						return null;
 					}
-					// get the file's index
-					n = dd.indexOf(f.getName(), fc);
 				} else {
-					// it's not even a file :-(
-					return null;
+					// it was not a real cache miss
+					misses--;
 				}
+				// get the file's index
+				n = dd.indexOf(f.getName(), fc);
 			}
 		} else {
 			// cache hit
@@ -202,11 +216,13 @@ public class DocuDirCache {
 		return null;
 	}
 
-	/** Returns the DocuDirectory indicated by the pathname <code>fn</code>.
+	/**
+	 * Returns the DocuDirectory indicated by the pathname <code>fn</code>.
 	 * 
 	 * If <code>fn</code> is a file then its parent directory is returned.
 	 * 
-	 * @param fn digilib pathname
+	 * @param fn
+	 *            digilib pathname
 	 * @return
 	 */
 	public DocuDirectory getDirectory(String fn) {
@@ -275,7 +291,9 @@ public class DocuDirCache {
 
 	/**
 	 * Sets the baseDirNames.
-	 * @param baseDirNames The baseDirNames to set
+	 * 
+	 * @param baseDirNames
+	 *            The baseDirNames to set
 	 */
 	public void setBaseDirNames(String[] baseDirNames) {
 		this.baseDirNames = baseDirNames;
@@ -308,5 +326,5 @@ public class DocuDirCache {
 	public void setFileClasses(int[] fileClasses) {
 		this.fileClasses = fileClasses;
 	}
-	
+
 }

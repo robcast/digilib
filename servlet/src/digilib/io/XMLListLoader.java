@@ -34,6 +34,17 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
+/** Loads a simple XML list into a HashMap.
+ * 
+ * The XML file has an outer <code>list_tag</code>. Every entry is an 
+ * <code>entry_tag</code> with two attributes: the <code>key_att</code>
+ * key and the <code>value_att</code> value.
+ * 
+ * The file is read by the <code>loadURL</code> method, that returns a
+ * HashMap with the key-value pairs.
+ * 
+ * @author casties
+ */
 public class XMLListLoader {
 
 	private String listTag = "list";
