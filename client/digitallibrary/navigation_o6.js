@@ -81,8 +81,8 @@ function loadPicture(detailGrade, keepArea) {
 	}
 
 	newQuery += "&mk=" + att[4] + "&wx=" + att[5] + "&wy=" + att[6] + "&ww=" + att[7] + "&wh=" + att[8];
-	newQuery += "&dw=" + (document.body.clientWidth-30) + "&dh=" + (document.body.clientHeight-30);
-
+	newQuery += "&dw=" + (innerWidth-30) + "&dh=" + (innerHeight-30);
+	
 	// debug window - checking the parameters passed to the next image
 	//alert ("DEBUG MESSAGE (query-string in loadPicture):\n\n" + newQuery);
 
@@ -93,14 +93,16 @@ function loadPicture(detailGrade, keepArea) {
 // constructor holding different values of a point
 function Point(event) {
 
-	this.pageX = parseInt(document.body.scrollLeft+event.x);
-	this.pageY = parseInt(document.body.scrollTop+event.y);
+	this.pageX = parseInt(event.clientX);
+	this.pageY = parseInt(event.clientY);
 	
-	this.x = this.pageX-parseInt(document.all.lay1.style.left);
-	this.y = this.pageY-parseInt(document.all.lay1.style.top);
+	this.x = this.pageX-parseInt(document.getElementById("lay1").style.left);
+	this.y = this.pageY-parseInt(document.getElementById("lay1").style.top);
 	
-	this.relX = cropFloat(att[5]+(att[7]*this.x/document.all.lay1.offsetWidth));
-	this.relY = cropFloat(att[6]+(att[8]*this.y/document.all.lay1.offsetHeight));
+	this.relX = cropFloat(att[5]+(att[7]*this.x/document.pic.offsetWidth));
+	this.relY = cropFloat(att[6]+(att[8]*this.y/document.pic.offsetHeight));
+
+//	alert ("page:\t" + this.pageX + "\t" + this.pageY + "\npic:\t" + this.x + "\t" + this.y + "\nrel:\t" + this.relX + "\t" + this.relY);
 
 	return this;
 }
@@ -149,119 +151,122 @@ function digicat() {
 
 function ref(refselect) {
 
-	var hyperlinkRef = baseUrl + "/digilib.jsp?";
+	var hyperlinkRef = baseUrl + "digilib.jsp?";
 	hyperlinkRef += att[0] + "+" + att[1] + "+" + att[2] + "+" + att[3] + "+" + att[4];
 	
 	if ((att[5] != 0) || (att[6] != 0) || (att[7] != 1) || (att[8] != 1)) {
 		hyperlinkRef += "+" + att[5] + "+" + att[6] + "+" + att[7] + "+" + att[8];
 	}
 
-    if (refselect == 1) {
-        prompt("Link for HTML--documents", hyperlinkRef);
-    } else {
-        prompt("Link for LaTeX--documents", "\\href{" + hyperlinkRef + "}{TEXT}");
-    }
+	if (refselect == 1) {
+		prompt("Link for HTML--documents", hyperlinkRef);
+	} else {
+		prompt("Link for LaTeX--documents", "\\href{" + hyperlinkRef + "}{TEXT}");
+	}
 }
 
 
-function mark(refselect) {
+function mark() {
 
-    document.all.lay1.onmousedown = function() {
-		var point = new Point(event);
+	if (att[4].split(";").length > 7) {
+		alert("Only 8 marks are possible at the moment!");
+		return;
+	}
 
-		if (att[4].split(";").length > 7) {
-			alert("Only 8 marks are possible at the moment!");
-			return;
+	function markEvent(event) {
+	    var point = new Point(event);
+
+		if ((att[4] != "") && (att[4] != "0/0")) {
+			att[4] += ";";
+		} else {
+			att[4] = "";
 		}
+		att[4] += point.relX + "/" + point.relY;
 
-        if ((att[4] != "") && (att[4] != "0/0")) {
-            att[4] += ";";
-        } else {
-            att[4] = "";
-        }
+		document.getElementById("lay1").onmousedown = false;
+		setMarks();
+	}
 
-        att[4] += point.relX + "/" + point.relY;
-
-        document.all.lay1.onmousedown = function() {}
-        
-        setMarks();
-    }
+	document.getElementById("lay1").onmousedown = markEvent;		
 }
 
 
 function zoomArea() {
-    var state = 0;
-    var pt1, pt2;
-        
-    function click() {
-        if (state == 0) {
-            state = 1;
-            
+	var state = 0;
+	var pt1, pt2;
+
+	function click(event) {
+
+		if (state == 0) {
+			state = 1;
+			
 			pt1 = new Point(event);
 			pt2 = pt1;
+			
+			document.getElementById("eck1").style.left = pt1.pageX;
+			document.getElementById("eck1").style.top = pt1.pageY;
+			document.getElementById("eck2").style.left = pt2.pageX-12;
+			document.getElementById("eck2").style.top = pt1.pageY;
+			document.getElementById("eck3").style.left = pt1.pageX;
+			document.getElementById("eck3").style.top = pt2.pageY-12;
+			document.getElementById("eck4").style.left = pt2.pageX-12;
+			document.getElementById("eck4").style.top = pt2.pageY-12;
 
-			document.all.eck1.style.left = pt1.pageX;
-			document.all.eck1.style.top = pt1.pageY;
-			document.all.eck2.style.left = pt2.pageX-12;
-			document.all.eck2.style.top = pt1.pageY;
-			document.all.eck3.style.left = pt1.pageX;
-			document.all.eck3.style.top = pt2.pageY-12;
-			document.all.eck4.style.left = pt2.pageX-12;
-			document.all.eck4.style.top = pt2.pageY-12;
+			document.getElementById("eck1").style.visibility="visible";
+			document.getElementById("eck2").style.visibility="visible";
+			document.getElementById("eck3").style.visibility="visible";
+			document.getElementById("eck4").style.visibility="visible";
+			
+			document.getElementById("lay1").onmousemove = move;		
+			document.getElementById("eck4").onmousemove = move;		
 
-			document.all.eck1.style.visibility="visible";
-			document.all.eck2.style.visibility="visible";
-			document.all.eck3.style.visibility="visible";
-			document.all.eck4.style.visibility="visible";
-            
-            document.all.lay1.onmousemove = move;
-            document.all.eck4.onmousemove = move;
-            
-        } else {
+		} else {
+
 			pt2 = new Point(event);
+			
+			document.getElementById("lay1").onmousedown = false;
+			document.getElementById("eck4").onmousedown = false;
 
-            document.all.eck1.visibility="hidden";
-            document.all.eck2.visibility="hidden";
-            document.all.eck3.visibility="hidden";
-            document.all.eck4.visibility="hidden";
+			document.getElementById("eck1").style.visibility="hidden";
+			document.getElementById("eck2").style.visibility="hidden";
+			document.getElementById("eck3").style.visibility="hidden";
+			document.getElementById("eck4").style.visibility="hidden";
 
-			document.all.lay1.cancleBubble = true;
-			document.all.eck4.cancleBubble = true;
+			att[5] = Math.min(pt1.relX, pt2.relX);
+			att[6] = Math.min(pt1.relY, pt2.relY);
 
-            att[5] = Math.min(pt1.relX, pt2.relX);
-            att[6] = Math.min(pt1.relY, pt2.relY);
+			att[7] = Math.abs(pt1.relX-pt2.relX);
+			att[8] = Math.abs(pt1.relY-pt2.relY);
 
-            att[7] = Math.abs(pt1.relX-pt2.relX);
-            att[8] = Math.abs(pt1.relY-pt2.relY);
-                        
-            if (att[7] != 0 && att[8] != 0) {
-              loadPicture(2);
-            }
-        }
-    }
+			if (att[7] != 0 && att[8] != 0) {
+				loadPicture(2);
+			}
+		}
+	}
 
-    function move() {
+	function move(event) {
+
 		pt2 = new Point(event);
 
-		document.all.eck1.style.left = ((pt1.pageX < pt2.pageX) ? pt1.pageX : pt2.pageX);
-		document.all.eck1.style.top = ((pt1.pageY < pt2.pageY) ? pt1.pageY : pt2.pageY);
-		document.all.eck2.style.left = ((pt1.pageX < pt2.pageX) ? pt2.pageX : pt1.pageX)-12;
-		document.all.eck2.style.top = ((pt1.pageY < pt2.pageY) ? pt1.pageY : pt2.pageY);
-		document.all.eck3.style.left = ((pt1.pageX < pt2.pageX) ? pt1.pageX : pt2.pageX);
-		document.all.eck3.style.top = ((pt1.pageY < pt2.pageY) ? pt2.pageY : pt1.pageY)-12;
-		document.all.eck4.style.left = ((pt1.pageX < pt2.pageX) ? pt2.pageX : pt1.pageX)-12;
-		document.all.eck4.style.top = ((pt1.pageY < pt2.pageY) ? pt2.pageY : pt1.pageY)-12;
-    }
+		document.getElementById("eck1").style.left = ((pt1.pageX < pt2.pageX) ? pt1.pageX : pt2.pageX);
+		document.getElementById("eck1").style.top = ((pt1.pageY < pt2.pageY) ? pt1.pageY : pt2.pageY);
+		document.getElementById("eck2").style.left = ((pt1.pageX < pt2.pageX) ? pt2.pageX : pt1.pageX)-12;
+		document.getElementById("eck2").style.top = ((pt1.pageY < pt2.pageY) ? pt1.pageY : pt2.pageY);
+		document.getElementById("eck3").style.left = ((pt1.pageX < pt2.pageX) ? pt1.pageX : pt2.pageX);
+		document.getElementById("eck3").style.top = ((pt1.pageY < pt2.pageY) ? pt2.pageY : pt1.pageY)-12;
+		document.getElementById("eck4").style.left = ((pt1.pageX < pt2.pageX) ? pt2.pageX : pt1.pageX)-12;
+		document.getElementById("eck4").style.top = ((pt1.pageY < pt2.pageY) ? pt2.pageY : pt1.pageY)-12;
+	}
 
-    document.all.lay1.onmousedown = click;
-    document.all.eck4.onmousedown = click;
+	document.getElementById("lay1").onmousedown = click;		
+	document.getElementById("eck4").onmousedown = click;
 }
 
 
 function zoomPoint() {
 
-    document.all.lay1.onmousedown = function() {
-		var point = new Point(event);
+	function zoomPointEvent(event) {
+	    var point = new Point(event);
 
 		att[5] = cropFloat(point.relX-0.5*att[7]*0.7);
 		att[6] = cropFloat(point.relY-0.5*att[8]*0.7);
@@ -282,22 +287,26 @@ function zoomPoint() {
 			att[6] = 1-att[8];
 		}
 
-	    document.all.lay1.cancleBubble = true;
-
+		document.getElementById("lay1").onmousedown = false;
+		
 		loadPicture(2);
 	}
+
+	document.getElementById("lay1").onmousedown = zoomPointEvent;
 }
 
 
 function zoomOut() {
-    loadPicture(1);
+
+	loadPicture(1);
 }
 
 
 function moveTo() {
 
-    document.all.lay1.onmousedown = function() {
-		var point = new Point(event);
+	function moveToEvent(event) {
+
+	    var point = new Point(event);
 
 		att[5] = cropFloat(point.relX-0.5*att[7]);
 		att[6] = cropFloat(point.relY-0.5*att[8]);
@@ -315,22 +324,25 @@ function moveTo() {
 			att[6] = 1-att[8];
 		}
 
-	    document.all.lay1.cancleBubble = true;
-
-        loadPicture(2);
+		document.getElementById("lay1").onmousedown = false;
+		
+		loadPicture(2);
 	}
+
+	document.getElementById("lay1").onmousedown = moveToEvent;
 }
 
 
 function scale(scaledef) {
 
-    att[2] = scaledef;
-    loadPicture(2);
+	att[2] = scaledef;
+	loadPicture(2);
 }
 
 
 function setMarks() {
-	if ((att[4] != "") && (att[4] != "0/0")) {
+
+	if (att[4] != "" && att[4] != "0/0") {
 		var mark = att[4].split(";");
 
 		var countMarks = mark.length;
@@ -339,15 +351,14 @@ function setMarks() {
 		// we do not report this error because this is already done in func. "Mark"
 		if (countMarks > 8) countMarks = 8;
 
-		var picWidth  = document.all.lay1.offsetWidth;
-		var picHeight = document.all.lay1.offsetHeight;
+		var picWidth = document.pic.offsetWidth;
+		var picHeight = document.pic.offsetHeight;
 
 		// catch the cases where the picture had not been loaded already and
 		// make a timeout so that the coordinates are calculated with the real dimensions
-		if (picWidth > 30) {
-
-			var xoffset = parseInt(document.all.lay1.style.left);
-			var yoffset = parseInt(document.all.lay1.style.top);
+		if (document.pic.complete) {
+			var xoffset = parseInt(document.getElementById("lay1").style.left);
+			var yoffset = parseInt(document.getElementById("lay1").style.top);
 
 			for (var i = 0; i < countMarks; i++) {
 				mark[i] = mark[i].split("/");
@@ -356,6 +367,7 @@ function setMarks() {
 
 					mark[i][0] = parseInt(xoffset+picWidth*(mark[i][0]-att[5])/att[7]);
 					mark[i][1] = parseInt(yoffset+picHeight*(mark[i][1]-att[6])/att[8]);
+
 
 					document.getElementById("dot" + i).style.left = mark[i][0]-5;
 					document.getElementById("dot" + i).style.top = mark[i][1]-5;
@@ -368,18 +380,19 @@ function setMarks() {
 	}
 }
 
-
 // capturing keypresses for next and previous page
-function parseKeypress() {
-	e = event;
+// ascii-values of n = 110, b = 98
+function parseKeypress (event) {
 
-	if (e.keyCode == 110) {
-		Nextpage();
+	if (String.fromCharCode(event.which) == "n") {
+		nextPage();
 	}
-	if (e.keyCode == 98) {
-		Backpage();
+	
+	// does not work currently, because Opera catches this key on it's own
+	// have to change the key or find another way - luginbuehl
+	if (String.fromCharCode(event.which) == "b") {
+		backPage();
 	}
-	document.cancleBubble = true;
 }
 
 

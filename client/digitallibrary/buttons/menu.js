@@ -1,11 +1,17 @@
-function checkBrowser(){
-	this.ver = navigator.appVersion;
-	this.dom = document.getElementById ? 1 : 0;
-	this.ie5 = (this.ver.indexOf("MSIE 5")>-1 && this.dom) ? 1 : 0;
-	this.ie4 = (document.all && !this.dom) ? 1 : 0;
-	this.ns5 = (this.dom && parseInt(this.ver) >= 5) ? 1 : 0;
-	this.ns4 = (document.layers && !this.dom) ? 1 : 0;
-	this.ie = (this.ie4 || this.ie5);
+function checkBrowser() {
+
+	this.ua    = navigator.userAgent;
+	this.ver   = navigator.appVersion;
+	this.dom   = ( document.getElementById );
+	this.opera = ( this.dom ) && ( this.ua.toLowerCase().indexOf("opera") > -1 );
+	this.ie4   = ( document.all ) && ( !this.dom );
+	this.ie5   = ( this.ver.indexOf("MSIE 5") > -1 ) && ( this.dom );
+	this.ie6   = ( this.ver.indexOf("MSIE 6") > -1 ) && ( this.dom );
+	this.ns4   = ( document.layers ) && ( !this.dom );
+	this.ns6   = ( this.dom ) && ( parseInt(this.ver) >= 5 ) && ( !this.opera );
+	this.ns    = this.ns4 || this.ns6;
+	this.ie    = this.ie4 || this.ie5 || this.ie6;
+
 	return this;
 }
 
@@ -63,7 +69,7 @@ function overItem(obj) {
 }
 
 function awayItem(obj) {
-	changeBc("menu" + obj, '');
+	changeBc("menu" + obj, '#666666');
 	timeID = setTimeout("hideMenu()", 700);
 }
 
@@ -138,10 +144,17 @@ function contextHelp(n) {
 		helpWindow.document.close();	
 
 		// stupid workaround because of netscape 6, that doesen't know the opener property
-		// this workaround is still ok cause netscape 6 has eventbuffer checks so no overflow
-    	if (browser.ns5) {
+		// this workaround is still ok because netscape 6 has eventbuffer checks so no overflow
+    	if (browser.ns6) {
         	semaphor = true;
 		}
+
+		// next stupid workaround because of opera 6, that somehow don't start the 'onLoad'-
+		// attribute in the body tag (the helpwindow does not finish loading)
+    	if (browser.opera) {
+        	setTimeout("semaphor = true;", 50);
+		}
+
 	}
 	
 }

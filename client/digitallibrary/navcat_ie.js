@@ -1,23 +1,3 @@
-/* navcat_ie -- JS library for digilib (IE version)
-
-  Digital Image Library servlet components
-
-  Copyright (C) 2001, 2002 Christian Luginbuehl (luginbuehl@student.unibe.ch)
-
-  This program is free software; you can redistribute  it and/or modify it
-  under  the terms of  the GNU General  Public License as published by the
-  Free Software Foundation;  either version 2 of the  License, or (at your
-  option) any later version.
-   
-  Please read license.txt for the full details. A copy of the GPL
-  may be found at http://www.gnu.org/copyleft/lgpl.html
-
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-*/
-
 // these two global variables have to be initialised before the frist use of the functions below
 // to fill in the attributes you can use the function initPicture provided below
 // - array with all attributes
@@ -44,7 +24,7 @@ function loadThumbTable() {
 	whichFrame.document.write('<style type="text/css">.myFont {font-family: sans-serif, Arial; font-size: 11px; color: #FFFFFF}</style>');
 	whichFrame.document.write('<script language="Javascript">');
 	whichFrame.document.write('function loadDigilib(idx) {');
-	whichFrame.document.write('linkRef = "http://' + location.host + '/docuserver/digitallibrary/digilib.html?' + parent.att[0] + '+" + idx;');
+	whichFrame.document.write('linkRef = "' + parent.baseUrl + '/digilib.jsp?' + parent.att[0] + '+" + idx;');
 	whichFrame.document.write('win = window.open(linkRef, "digilib");');
 	whichFrame.document.write('win.focus();');	
 	whichFrame.document.write('}');	
@@ -57,7 +37,7 @@ function loadThumbTable() {
 		whichFrame.document.write('<tr>');
 		for (j = 0; j < att[3]; j++) {
 			indexNr = parseInt(att[1])+i*parseInt(att[3])+j;
-			thumb  = "http://" + location.host + "/docuserver/digitallibrary/servlet/Scaler/"
+			thumb  = parent.baseUrl + "/servlet/Scaler/";
 			thumb += att[0] + "?" + "pn=" + indexNr + "&ws=1.0&mo=fit&dw=" + cellWidth + "&dh=" + (cellHeight-25);
 			whichFrame.document.write('<td align="center" valign="middle" width="' + cellWidth + '" height="' + cellHeight + '" class="myFont">');
 			whichFrame.document.write('<a href="javascript:loadDigilib(' + indexNr + ')">');

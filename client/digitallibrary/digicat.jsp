@@ -1,28 +1,47 @@
+<%@ page language="java" %>
+
+<%!
+// authentication stuff - robert
+// -----------------------------
+// create DocumentBean instance for all JSP requests
+digilib.servlet.DocumentBean docBean = new digilib.servlet.DocumentBean();
+
+// initialize DocumentBean instance in JSP init
+public void jspInit() {
+    try {
+        // set servlet init-parameter
+        docBean.setConfig(getServletConfig());
+    } catch (javax.servlet.ServletException e) {
+        System.out.println(e);
+    }
+}
+%>
+
+<%
+// set up request object for base URL
+digilib.servlet.DigilibRequest dlRequest = new digilib.servlet.DigilibRequest(request);
+// check if authentication is needed and redirect if necessary
+docBean.doAuthentication(dlRequest, response);
+
+// add number of pages
+dlRequest.setPt(docBean.getNumPages(dlRequest));
+%>
+
 <html>
 <head>
 
-<jsp:useBean id="DB" scope="page" class="digilib.servlet.DocumentBean" />
-
-<%
-// set servlet init-parameter
-DB.setConfig(getServletConfig());
-// check if authentication is needed and redirect if necessary
-DB.doAuthentication(request, response);
-%>
-
 <script language="JavaScript">
 
-// DEBUG
-//alert('DIR: <%= DB.getDocuPath(request) %> PAGES: <%= DB.getNumPages(request) %>');
+var baseUrl = "<%= dlRequest.getBaseURL() %>";
 
 // the document's query string (minus "?")
 var query = location.search.substring(1);
 
 // first page number
-var firstPage = <%= DB.getFirstPage(request) %>;
+var firstPage = <%= docBean.getFirstPage(dlRequest) %>;
 
 // number of pages of the document
-var numPages = <%= DB.getNumPages(request) %>;
+var numPages = <%= docBean.getNumPages(dlRequest) %>;
 
     // browser version test to include the corresponding navigation-file
     if ((navigator.appName.toLowerCase() == "netscape") && (parseFloat(navigator.appVersion) < 5.0)) {
