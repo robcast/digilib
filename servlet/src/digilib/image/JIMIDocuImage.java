@@ -126,4 +126,12 @@ public class JIMIDocuImage extends DocuImageImpl {
 		imgHeight = height;
 	}
 
+	/* (non-Javadoc)
+	 * @see digilib.image.DocuImage#dispose()
+	 */
+	public void dispose() {
+		img = null;
+		imgp = null;
+	}
+
 }
