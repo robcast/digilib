@@ -102,7 +102,7 @@ digilib.io.DocuDirCache dirCache = (digilib.io.DocuDirCache) dlConfig.getValue("
     <td></td>
   </tr>
   <tr>
-    <td>basedir-list</td><td><b><%
+    <td align="top">basedir-list</td><td><b><%
 	String[] bd = (String[]) dlConfig.getValue("basedir-list");
 	if (bd != null) {
 		for (int i = 0; i < bd.length; i++) {
@@ -117,7 +117,8 @@ digilib.io.DocuDirCache dirCache = (digilib.io.DocuDirCache) dlConfig.getValue("
     <td></td>
   </tr>
   <tr>
-    <td>docuimage-class</td><td><b><%= dlConfig.getAsString("docuimage-class") %></b></td>
+    <td>docuimage-class</td><td><b><%= dlConfig.getAsString("docuimage-class") %></b><br />
+    (<%= dlConfig.getValue("servlet.docuimage.class") %>)</td>
     <td></td>
   </tr>
   <tr>
@@ -126,6 +127,10 @@ digilib.io.DocuDirCache dirCache = (digilib.io.DocuDirCache) dlConfig.getValue("
   </tr>
   <tr>
     <td>denied-image</td><td><b><%= dlConfig.getAsString("denied-image") %></b></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>subsample-minimum</td><td><b><%= dlConfig.getAsFloat("subsample-minimum") %></b></td>
     <td></td>
   </tr>
   <tr>
