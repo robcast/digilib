@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- Digilib servlet config file -->
 
 <digilib-config>
@@ -37,4 +38,11 @@
 
   <!-- Part of URL to indicate authenticated access to Tomcat. -->
   <parameter name="auth-url-path" value="authenticated/" />
+  
+  <!-- use mapping of "virtual directories" to real directories on the server -->
+  <parameter name="use-mapping" value="false"/>
+  
+  <!-- location of XML mapping file -->
+  <parameter name="mapping-file" value="digilib-map.xml"/>
+  
 </digilib-config>
