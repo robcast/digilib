@@ -59,7 +59,7 @@ import digilib.io.ImageFileset;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.18b2";
+	public static final String dlVersion = "1.18b3";
 
 	// logger for accounting requests
 	Logger accountlog = Logger.getLogger("account.request");
@@ -107,7 +107,7 @@ public class Scaler extends HttpServlet {
 		//TCTool tctool = new TCTool();
 
 		System.out.println(
-			"***** Digital Image Library Servlet (version "
+			"***** Digital Image Library Image Scaler Servlet (version "
 				+ dlVersion
 				+ ") *****");
 
@@ -127,7 +127,7 @@ public class Scaler extends HttpServlet {
 			}
 		}
 		// say hello in the log file
-		logger.info("***** Digital Image Library Servlet (version "
+		logger.info("***** Digital Image Library Image Scaler Servlet (version "
 				+ dlVersion
 				+ ") *****");
 		// set our AuthOps
@@ -181,6 +181,7 @@ public class Scaler extends HttpServlet {
 		throws ServletException, IOException {
 
 		accountlog.debug("request: "+request.getQueryString());
+		logger.debug("request: "+request.getQueryString());
 		
 		// time for benchmarking
 		long startTime = System.currentTimeMillis();

@@ -48,8 +48,7 @@ import digilib.io.XMLListLoader;
  * denyImgFileName: image file to send if access is denied. <br>baseDirs:
  * array of base directories in order of preference (prescaled versions first).
  * <br>useAuth: use authentication information. <br>authConfPath:
- * authentication configuration file. <br>authOp: AuthOps instance for
- * authentication. <br>... <br>
+ * authentication configuration file.<br>... <br>
  * 
  * @author casties
  *  
@@ -237,7 +236,7 @@ public class DigilibConfiguration extends ParameterMap {
 		DOMConfigurator.configure(logConfPath);
 		// directory cache
 		String[] bd = (String[]) getValue("basedir-list");
-		int[] fcs = { FileOps.CLASS_IMAGE, FileOps.CLASS_TEXT };
+		int[] fcs = { FileOps.CLASS_IMAGE, FileOps.CLASS_TEXT, FileOps.CLASS_SVG };
 		DocuDirCache dirCache;
 		if (getAsBoolean("use-mapping")) {
 			// with mapping file
