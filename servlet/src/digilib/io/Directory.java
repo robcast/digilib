@@ -1,4 +1,4 @@
-/* Directory -- 
+/* Directory -- Filesystem directory object
 
   Digital Image Library servlet components
 
@@ -30,6 +30,8 @@ import java.io.File;
 public class Directory {
 	// File object pointing to the directory
 	File dir = null;
+	// parent directory
+	Directory parent = null;
 
 	/** Default constructor.
 	 * 
@@ -44,6 +46,15 @@ public class Directory {
 	 */
 	public Directory(File d) {
 		dir = d;
+	}
+
+	/** Constructor taking a File object and a parent.
+	 * 
+	 * @param d
+	 */
+	public Directory(File dir, Directory parent) {
+		this.dir = dir;
+		this.parent = parent;
 	}
 
 	/** Constructor taking a directory name.
@@ -67,5 +78,20 @@ public class Directory {
 	public void setDir(File dir) {
 		this.dir = dir;
 	}
+	
+	/**
+	 * @return
+	 */
+	Directory getParent() {
+		return parent;
+	}
+
+	/**
+	 * @param parent
+	 */
+	void setParent(Directory parent) {
+		this.parent = parent;
+	}
+
 
 }

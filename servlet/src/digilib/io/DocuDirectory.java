@@ -39,16 +39,19 @@ public class DocuDirectory extends Directory {
 	private ArrayList list = null;
 	// directory object is valid (has been read)
 	private boolean isValid = false;
-	// names of base directories
-	private String[] baseDirNames = null;
+	// reference of the parent DocuDirCache
+	private DocuDirCache cache = null;
 	// directory name (digilib canonical form)
 	private String dirName = null;
 	// directory metadata
 	private HashMap dirMeta = null;
+	// unresolved file metadata
+	private HashMap unresolvedFileMeta = null;
 	// time of last access of this object (not the filesystem)
 	private long objectATime = 0;
 	// time the file system directory was last modified
 	private long dirMTime = 0;
+	
 
 	/*
 	 * constructors
@@ -63,34 +66,56 @@ public class DocuDirectory extends Directory {
 	 * @param path digilib directory path name
 	 * @param bd array of base directory names
 	 */
-	public DocuDirectory(String path, String[] bd) {
-		dirName = path;
-		baseDirNames = bd;
+	public DocuDirectory(String path, DocuDirCache cache) {
+		this.dirName = path;
+		this.cache = cache;
 		readDir();
 	}
 
 	/*
 	 * other stuff
 	 */
+	 
+	/** The digilib name of the parent directory.
+	 * 
+	 * Returns null if there is no parent.
+	 */
+	public String getParentDirName() {
+		String s = null;
+		int lastidx = dirName.lastIndexOf("/");
+		if (lastidx > 0) {
+			s = dirName.substring(0, lastidx);
+		}
+		return s;
+	}
 
+	/** number of DocuFiles in this directory.
+	 * 
+	 */
 	public int size() {
 		return (list != null) ? list.size() : 0;
 	}
 
+	/** Returns the DocuFile at the index.
+	 * 
+	 * @param index
+	 * @return
+	 */
 	public DocuFileset get(int index) {
-		if ((list == null)||(index >= list.size())) {
+		if ((list == null) || (index >= list.size())) {
 			return null;
-		} 
-		return (DocuFileset)list.get(index);
+		}
+		return (DocuFileset) list.get(index);
 	}
 
-	/** Read the directory and fill this object.
+	/** Read the filesystem directory and fill this object.
 	 * 
 	 * Clears the List and (re)reads all files.
 	 * 
 	 * @return boolean the directory exists
 	 */
 	public boolean readDir() {
+		String[] baseDirNames = cache.getBaseDirNames();
 		// first file extension to try for scaled directories
 		String fext = null;
 		// clear directory first
@@ -127,8 +152,7 @@ public class DocuDirectory extends Directory {
 				Arrays.sort(fl);
 				for (int i = 0; i < nf; i++) {
 					String fn = fl[i].getName();
-					String fnx =
-						fn.substring(0, fn.lastIndexOf('.') + 1);
+					String fnx = fn.substring(0, fn.lastIndexOf('.') + 1);
 					// add the first DocuFile to a new DocuFileset 
 					DocuFileset fs = new DocuFileset(nb);
 					fs.add(new DocuFile(fn, fs, this));
@@ -153,13 +177,11 @@ public class DocuDirectory extends Directory {
 							Iterator exts = FileOps.getImageExtensionIterator();
 							while (exts.hasNext()) {
 								String s = (String) exts.next();
-								f =
-									new File(
-										dirs[j].getDir(),
-										fnx + s);
+								f = new File(dirs[j].getDir(), fnx + s);
 								// if the file exists, add to the DocuFileset
 								if (f.canRead()) {
-									fs.add(new DocuFile(f.getName(), fs, dirs[j]));
+									fs.add(
+										new DocuFile(f.getName(), fs, dirs[j]));
 									fext = s;
 									break;
 								}
@@ -210,18 +232,12 @@ public class DocuDirectory extends Directory {
 					return;
 				}
 				// meta for the directory itself is in the "" bin
-				dirMeta = (HashMap)fileMeta.remove("");
-				// is there meta for other files?
+				dirMeta = (HashMap) fileMeta.remove("");
+				// read meta for files in this directory
+				readFileMeta(fileMeta, null);
+				// is there meta for other files left?
 				if (fileMeta.size() > 0) {
-					// iterate through the list of files
-					for (Iterator i = list.iterator(); i.hasNext();) {
-						DocuFileset df = (DocuFileset)i.next();
-						// look up meta for this file
-						HashMap meta = (HashMap)fileMeta.get(df.getName());
-						if (meta != null) {
-							df.setFileMeta(meta);
-						}
-					}
+					unresolvedFileMeta = fileMeta;
 				}
 			} catch (SAXException e) {
 				// TODO Auto-generated catch block
@@ -230,7 +246,53 @@ public class DocuDirectory extends Directory {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
+		readParentMeta();
+	}
 
+	/** Read metadata from all known parent directories.
+	 * 
+	 */
+	public void readParentMeta() {
+		// check the parent directories for additional file meta
+		Directory dd = parent;
+		String path = dir.getName() ;
+		while (dd != null) {
+			if (((DocuDirectory)dd).hasUnresolvedFileMeta()) {
+				readFileMeta(((DocuDirectory)dd).unresolvedFileMeta, path);
+			}
+			// prepend parent dir path
+			path = dd.dir.getName() + "/" + path;
+			// become next parent
+			dd = dd.parent;
+		}
+	}
+
+	/** Read metadata for the files in this directory.
+	 * 
+	 * Takes a HashMap with meta-information, adding the relative path
+	 * before the lookup.
+	 * 
+	 * @param fileMeta
+	 * @param relPath
+	 */
+	public void readFileMeta(HashMap fileMeta, String relPath) {
+		if (list == null) {
+			// there are no files
+			return;
+		}
+		String path = (relPath != null) ? (relPath + "/") : "";
+		// iterate through the list of files in this directory
+		for (Iterator i = list.iterator(); i.hasNext();) {
+			DocuFileset df = (DocuFileset) i.next();
+			// prepend path to the filename
+			String fn = path + df.getName();
+			// look up meta for this file and remove from dir
+			HashMap meta = (HashMap) fileMeta.remove(fn);
+			if (meta != null) {
+				// store meta in file
+				df.setFileMeta(meta);
+			}
 		}
 	}
 
@@ -321,6 +383,10 @@ public class DocuDirectory extends Directory {
 	 */
 	public void setDirMeta(HashMap dirMeta) {
 		this.dirMeta = dirMeta;
+	}
+
+	public boolean hasUnresolvedFileMeta() {
+		return (this.unresolvedFileMeta != null);
 	}
 
 }

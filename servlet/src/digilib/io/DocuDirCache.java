@@ -70,6 +70,27 @@ public class DocuDirCache {
 		}
 	}
 
+	/** Add a directory to the cache and check its parents.
+	 * 
+	 * @param newDir
+	 */
+	public void putDir(DocuDirectory newDir) {
+		put(newDir);
+		String parent = newDir.getParentDirName();
+		if (parent != null) {
+			// check the parent in the cache
+			DocuDirectory pd = (DocuDirectory)map.get(parent);
+			if (pd == null) {
+				// the parent is unknown
+				pd = new DocuDirectory(parent, this);
+				putDir(pd);
+			}
+			newDir.setParent(pd);
+		}
+		// update dir in the end
+		newDir.readParentMeta();
+	}
+
 	/** Returns the DocuFileset with the pathname <code>fn</code> and the 
 	 * index <code>in</code>.
 	 * 
@@ -92,10 +113,10 @@ public class DocuDirCache {
 			// see if it's a directory
 			File f = new File(baseDirNames[0] + fn);
 			if (f.isDirectory()) {
-				dd = new DocuDirectory(fn, baseDirNames);
+				dd = new DocuDirectory(fn, this);
 				if (dd.isValid()) {
 					// add to the cache
-					put(dd);
+					putDir(dd);
 				}
 			} else {
 				// maybe it's a file
@@ -106,10 +127,10 @@ public class DocuDirCache {
 					dd = (DocuDirectory) map.get(d);
 					if (dd == null) {
 						// try to read from disk
-						dd = new DocuDirectory(d, baseDirNames);
+						dd = new DocuDirectory(d, this);
 						if (dd.isValid()) {
 							// add to the cache
-							put(dd);
+							putDir(dd);
 						} else {
 							// invalid path
 							return null;
@@ -156,10 +177,10 @@ public class DocuDirCache {
 			// see if it's a directory
 			File f = new File(baseDirNames[0] + fn);
 			if (f.isDirectory()) {
-				dd = new DocuDirectory(fn, baseDirNames);
+				dd = new DocuDirectory(fn, this);
 				if (dd.isValid()) {
 					// add to the cache
-					put(dd);
+					putDir(dd);
 				}
 			} else {
 				// maybe it's a file
@@ -168,10 +189,10 @@ public class DocuDirCache {
 					dd = (DocuDirectory) map.get(f.getParent());
 					if (dd == null) {
 						// try to read from disk
-						dd = new DocuDirectory(f.getParent(), baseDirNames);
+						dd = new DocuDirectory(f.getParent(), this);
 						if (dd.isValid()) {
 							// add to the cache
-							put(dd);
+							putDir(dd);
 						} else {
 							// invalid path
 							return null;

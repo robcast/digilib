@@ -117,25 +117,25 @@ public class XMLMetaLoader {
 			String localName,
 			String qName)
 			throws SAXException {
-				
+
 			String name = getName(localName, qName);
 			// exit the tag
 			tags.removeLast();
-			
-			// was it a file.name tag?
+
+			// was it a file/name tag?
 			if (name.equals(fileNameTag) && tags.contains(fileTag)) {
 				// save name as filename
-				if ((content != null)&&(content.length() > 0)) {
-					fileName = content.toString();
+				if ((content != null) && (content.length() > 0)) {
+					fileName = content.toString().trim();
 				}
 				return;
 			}
 
-			// was it a file.path tag?
+			// was it a file/path tag?
 			if (name.equals(filePathTag) && tags.contains(fileTag)) {
 				// save path as filepath 
-				if ((content != null)&&(content.length() > 0)) {
-					filePath = content.toString();
+				if ((content != null) && (content.length() > 0)) {
+					filePath = content.toString().trim();
 				}
 				return;
 			}
@@ -143,13 +143,16 @@ public class XMLMetaLoader {
 			// was it a file tag?
 			if (name.equals(fileTag)) {
 				// is there meta to save?
-				if ((meta != null)&&(meta.size() > 0)) {
-					// file name is either file.path or file.name
+				if ((meta != null) && (meta.size() > 0)) {
+					// file name is (optional file/path) / file/name
 					String fn = null;
-					if (filePath != null) {
-						fn = filePath;
-					} else if (fileName != null) {
-						fn = fileName;
+
+					if (fileName != null) {
+						if (filePath != null) {
+							fn = filePath + "/" + fileName;
+						} else {
+							fn = fileName;
+						}
 					} else {
 						// no file name, no file
 						return;
@@ -163,20 +166,20 @@ public class XMLMetaLoader {
 			// was it a meta tag outside a file tag?
 			if (name.equals(metaTag) && !tags.contains(fileTag)) {
 				// save meta as dir meta
-				if ((meta != null)&&(meta.size() > 0)) {
+				if ((meta != null) && (meta.size() > 0)) {
 					files.put("", meta);
 				}
 				return;
 			}
 
-			// is this inside an info tag?
+			// is this inside an info (=img) tag?
 			if (tags.contains(infoTag)) {
 				// then add whatever this is
-				if ((content != null)&&(content.length() > 0)) {
-					meta.put(name, content.toString());
+				if ((content != null) && (content.length() > 0)) {
+					meta.put(name, content.toString().trim());
 				}
 			}
-			
+
 		}
 
 	}
