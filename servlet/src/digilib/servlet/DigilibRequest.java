@@ -75,6 +75,8 @@ import digilib.io.FileOps;
  */
 public class DigilibRequest extends ParameterMap {
 
+	private static final long serialVersionUID = -4707707539569977901L;
+
 	private Logger logger = Logger.getLogger(this.getClass());
 
 	private boolean boolRDF = false; // use RDF Parameters
