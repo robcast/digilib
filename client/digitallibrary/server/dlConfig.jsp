@@ -24,6 +24,8 @@ digilib.servlet.DigilibConfiguration dlConfig = docBean.getDlConfig();
 digilib.servlet.DigilibRequest dlRequest = new digilib.servlet.DigilibRequest(request);
 // add number of pages
 dlRequest.setPt(docBean.getNumPages(dlRequest));
+// dir cache
+digilib.io.DocuDirCache dirCache = (digilib.io.DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 %>
 
 <html>
@@ -92,47 +94,54 @@ dlRequest.setPt(docBean.getNumPages(dlRequest));
 
 <table>
   <tr>
-    <td>ServletVersion</td><td><b><%= dlConfig.getServletVersion() %></b></td>
+    <td>servlet.version</td><td><b><%= dlConfig.getAsString("servlet.version") %></b></td>
     <td></td>
   </tr>
   <tr>
-    <td>AuthConfPath</td><td><b><%= dlConfig.getAuthConfPath() %></b></td>
+    <td>servlet.config.file</td><td><b><%= dlConfig.getAsString("servlet.config.file") %></b></td>
     <td></td>
   </tr>
   <tr>
-    <td>AuthURLPath</td><td><b><%= dlConfig.getAuthURLPath() %></b></td>
+    <td>basedir-list</td><td><b><%
+	String[] bd = (String[]) dlConfig.getValue("basedir-list");
+	if (bd != null) {
+		for (int i = 0; i < bd.length; i++) {
+			%><%= bd[i] %><br><%
+		}
+	}
+	%></b></td>
     <td></td>
   </tr>
   <tr>
-    <td>BaseDirs</td><td><b><%= dlConfig.getBaseDirList() %></b></td>
+    <td>debug-level</td><td><b><%= dlConfig.getAsInt("debug-level") %></b> (<%= dlConfig.getUtil().getDebugLevel() %>)</td>
     <td></td>
   </tr>
   <tr>
-    <td>DebugLevel</td><td><b><%= dlConfig.getDebugLevel() %></b> (<%= dlConfig.getUtil().getDebugLevel() %>)</td>
+    <td>docuimage-class</td><td><b><%= dlConfig.getAsString("docuimage-class") %></b></td>
     <td></td>
   </tr>
   <tr>
-    <td>DenyImgFileName</td><td><b><%= dlConfig.getDenyImgFileName() %></b></td>
+    <td>error-image</td><td><b><%= dlConfig.getAsString("error-image") %></b></td>
     <td></td>
   </tr>
   <tr>
-    <td>DLConfPath</td><td><b><%= dlConfig.getDlConfPath() %></b></td>
+    <td>denied-image</td><td><b><%= dlConfig.getAsString("denied-image") %></b></td>
     <td></td>
   </tr>
   <tr>
-    <td>DocuImageType</td><td><b><%= dlConfig.getDocuImageType() %></b></td>
+    <td>sendfile-allowed</td><td><b><%= dlConfig.getAsBoolean("sendfile-allowed") %></b></td>
     <td></td>
   </tr>
   <tr>
-    <td>ErrorImgFileName</td><td><b><%= dlConfig.getErrorImgFileName() %></b></td>
+    <td>use-authorization</td><td><b><%= dlConfig.getAsBoolean("use-authorization") %></b></td>
     <td></td>
   </tr>
   <tr>
-    <td>SendFileAllowed</td><td><b><%= dlConfig.isSendFileAllowed() %></b></td>
+    <td>auth-config</td><td><b><%= dlConfig.getAsString("auth-file") %></b></td>
     <td></td>
   </tr>
   <tr>
-    <td>UseAuthentication</td><td><b><%= dlConfig.isUseAuthentication() %></b></td>
+    <td>auth-url-path</td><td><b><%= dlConfig.getAsString("auth-url-path") %></b></td>
     <td></td>
   </tr>
 </table>
@@ -141,19 +150,19 @@ dlRequest.setPt(docBean.getNumPages(dlRequest));
 
 <table>
   <tr>
-	<td>size (directories)</td><td><b><%= dlConfig.getDirCache().size() %></b></td>
+	<td>size (directories)</td><td><b><%= dirCache.size() %></b></td>
     <td></td>
   </tr>
   <tr>
-	<td>numFiles</td><td><b><%= dlConfig.getDirCache().getNumFiles() %></b></td>
+	<td>numFiles</td><td><b><%= dirCache.getNumFiles() %></b></td>
     <td></td>
   </tr>
   <tr>
-	<td>hits</td><td><b><%= dlConfig.getDirCache().getHits() %></b></td>
+	<td>hits</td><td><b><%= dirCache.getHits() %></b></td>
     <td></td>
   </tr>
   <tr>
-	<td>misses</td><td><b><%= dlConfig.getDirCache().getMisses() %></b></td>
+	<td>misses</td><td><b><%= dirCache.getMisses() %></b></td>
     <td></td>
   </tr>
 </table>
@@ -163,6 +172,10 @@ dlRequest.setPt(docBean.getNumPages(dlRequest));
 <table>
   <tr>
 	<td>java.awt.headless</td><td><b><%= System.getProperty("java.awt.headless") %></b></td>
+    <td></td>
+  </tr>
+  <tr>
+	<td>java.version</td><td><b><%= System.getProperty("java.version") %></b></td>
     <td></td>
   </tr>
 </table>
