@@ -59,7 +59,7 @@ import digilib.io.ImageFileset;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.19b4";
+	public static final String dlVersion = "1.19b5";
 
 	// logger for accounting requests
 	Logger accountlog = Logger.getLogger("account.request");
