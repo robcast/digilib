@@ -24,3 +24,5 @@
 #DEFAULT (echo ""; id; echo %s; date; cat) >> $CVSROOT/CVSROOT/commitlog
 # or
 #DEFAULT (echo ""; id; echo %{sVv}; date; cat) >> $CVSROOT/CVSROOT/commitlog
+#
+ALL /usr/local/bin/log.pl %s -f /cvsroot/digilib/CVSROOT/commitlog -m digilib-cvs@lists.berlios.de
