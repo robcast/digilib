@@ -8,9 +8,21 @@
 DB.setConfig(getServletConfig());
 // check if authentication is needed and redirect if necessary
 DB.doAuthentication(request, response);
+
+// calculate base URL string from request (minus last part)
+String baseUrl = request.getRequestURL().toString();
+int eop = baseUrl.lastIndexOf("/");
+if (eop > 0) {
+    baseUrl = baseUrl.substring(0, eop);
+} else {
+    baseUrl = "http://" + request.getServerName() + "/docuserver/digitallibrary";
+}
+
 %>
 
 <script language="JavaScript">
+
+var baseUrl = "<%= baseUrl %>";
 
 // DEBUG
 //alert('DIR: <%= DB.getDocuPath(request) %> PAGES: <%= DB.getNumPages(request) %>');
