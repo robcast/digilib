@@ -38,7 +38,7 @@ import digilib.io.ImageFile;
  *  
  */
 public class DigilibImageWorker extends DigilibWorker {
-	
+
 	private DigilibConfiguration dlConfig;
 
 	HttpServletResponse response;
@@ -81,6 +81,8 @@ public class DigilibImageWorker extends DigilibWorker {
 
 	boolean wholeRotArea;
 
+	private boolean forceJPEG;
+
 	/**
 	 * @param dlConfig
 	 * @param response
@@ -98,6 +100,7 @@ public class DigilibImageWorker extends DigilibWorker {
 	 * @param innerUserImgArea
 	 * @param minSubsample
 	 * @param wholeRotArea
+	 * @param forceJPEG
 	 */
 	public DigilibImageWorker(DigilibConfiguration dlConfig,
 			HttpServletResponse response, String mimeType, int scaleQual,
@@ -105,7 +108,7 @@ public class DigilibImageWorker extends DigilibWorker {
 			float paramBRGT, float[] paramRGBM, float[] paramRGBA,
 			ImageFile fileToLoad, float scaleXY, Rectangle2D outerUserImgArea,
 			Rectangle2D innerUserImgArea, float minSubsample,
-			boolean wholeRotArea) {
+			boolean wholeRotArea, boolean forceJPEG) {
 		super();
 		this.dlConfig = dlConfig;
 		this.response = response;
@@ -123,6 +126,7 @@ public class DigilibImageWorker extends DigilibWorker {
 		this.innerUserImgArea = innerUserImgArea;
 		this.minSubsample = minSubsample;
 		this.wholeRotArea = wholeRotArea;
+		this.forceJPEG = forceJPEG;
 	}
 
 	/*
@@ -244,7 +248,9 @@ public class DigilibImageWorker extends DigilibWorker {
 
 		// setup output -- if source is JPG then dest will be JPG else it's
 		// PNG
-		if (mimeType.equals("image/jpeg") || mimeType.equals("image/jp2")) {
+		if (forceJPEG
+				|| (mimeType.equals("image/jpeg") || mimeType
+						.equals("image/jp2"))) {
 			mimeType = "image/jpeg";
 		} else {
 			mimeType = "image/png";
@@ -254,7 +260,7 @@ public class DigilibImageWorker extends DigilibWorker {
 		// write the image
 		docuImage.writeImage(mimeType, response.getOutputStream());
 		response.flushBuffer();
-		
+
 		logger.info("image worker " + this.getName() + " done in "
 				+ (System.currentTimeMillis() - startTime));
 
