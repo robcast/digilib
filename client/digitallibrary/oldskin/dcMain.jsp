@@ -35,6 +35,7 @@ if (p > 0) {
 <script type="text/javascript" src="../baselib.js"></script>
 <script type="text/javascript" src="dclib.js"></script>
 <script type="text/javascript">
+base_init();
 var baseUrl = "<%= baseUrl %>";
 newParameter('fn', '', 1);
 newParameter('pn', 1, 1);
