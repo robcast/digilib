@@ -45,16 +45,13 @@ function color_add() {
 
 function color_multiply() {
   
-  value = prompt("Enter the values you like to multiply with the different color channels.\n\nFormat is R/G/B, where R,G,B are floating numbers bigger than 0.");
+  value = prompt("Enter the values you like to multiply with the different color channels.\n\nFormat is R/G/B, where R,G,B are floating numbers.");
   
   if (value) {
     
     values = value.split("/");
     
     if (values.length != 3) alert("Illegal format");
-    else if (values[0] < 0) alert("Illegal value for red");
-    else if (values[1] < 0) alert("Illegal value for green");
-    else if (values[2] < 0) alert("Illegal value for blue");
     
     else window.content.rgbm(value);
   
