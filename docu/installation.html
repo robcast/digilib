@@ -8,7 +8,7 @@
 <h1>What you need to install digilib</h1>
 
 <ul>
-  <li>Java JDK &gt;1.2 (preferred 1.4 and up)</li>
+  <li><a href="http://java.sun.com/downloads/index.html" >Java JDK</a> &gt;1.2 (preferred 1.4 and up)</li>
   
   <li><a href="http://jakarta.apache.org/tomcat/index.html" >Jakarta
   Tomcat</a> version 4 or later (preferred 4.1 and up) from
@@ -19,15 +19,17 @@
   <ul>
     <li>alcatraz/digilib scripts and servlets package
     <a href="http://download.berlios.de/digilib/alcatraz-core-0.3.zip"><code>alcatraz-core.zip</code></a></li>
-    <li>digilib configuration files for tomcat 4 package
-    <a href="http://download.berlios.de/digilib/alcatraz-tomconf-0.1.zip"><code>alcatraz-tomconf.zip</code></a> (Not essential)</li>
+    <li>digilib configuration files for tomcat 4 package on Linux/Unix
+    <a href="http://download.berlios.de/digilib/digilib-tomconf-1.0.zip"><code>digilib-tomconf.zip</code></a> (Not essential)</li>
+    <li>digilib configuration files for tomcat 4 package on Windows
+    <a href="http://download.berlios.de/digilib/digilib-win-conf-1.0.zip"><code>digilib-win-conf.zip</code></a> (Not essential)</li>
   </ul>
   </li>
 </ul>
 
 <h1>Installation</h1>
 
-<h2>On Linux</h2>
+<h2>On Linux/Unix</h2>
 
 <ol>
   <li>Make shure the Java JDK is installed (a JRE won't do).</li>
@@ -89,11 +91,74 @@ webserver. There are two possible connectors for Apache and Tomcat4:
 </ol>
 -->
 
+<h2>On Windows (quick install)</h2>
+
+<p>Set the following Environment Variables:<br />
+  <code>CATALINA_HOME = C:\jakarta-tomcat-4.1.24</code> (or similar)<br />
+  <code>JAVA_HOME = C:\j2sdk</code> (or similar)
+</p>
+
+<p>
+Start Tomcat server: Open a console window (start <code>cmd.exe</code>).<br />
+Type: <code>%CATALINA_HOME%\bin\startup</code>
+</p>
+
+<p>
+Try the following URL in your browser: 
+<code>http://localhost:8080</code> or 
+<code>http://127.0.0.1:8080</code> 
+</p>
+
+<p>
+You should now be able to see the Tomcat opening screen: <em>If you're seeing this page via a web browser, it means you've setup Tomcat successfully. Congratulations!</em>
+</p>
+
+<p>
+Shut it down again: In the console window type <code>%CATALINA_HOME%\bin\shutdown</code>.
+
+<p>
+Extract the &quot;Alcatraz&quot; distribution, possibly to <code>C:\docuserver</code>. Modify the following configuration files according to your paths (as in the &quot;On Linux&quot; section):
+</p>
+
+<p>For tomcat</p>
+<ul>
+  <li><code>C:\jakarta-tomcat-4.1.24\conf\server.xml</code></li>
+  <li><code>C:\jakarta-tomcat-4.1.24\conf\tomcat-users.xml</code></li>
+</ul>
+
+
+<p>For digilib</p>
+<ul>
+  <li><code>C:\docuserver\digitallibrary\WEB-INF\web.xml</code></li>
+  <li><code>C:\docuserver\digitallibrary\WEB-INF\digilib-config.xml</code></li>
+  <li><code>C:\docuserver\digitallibrary\WEB-INF\digilib-auth.xml</code></li>
+</ul>
+
+<p>In the <code>alcatraz-win-conf.zip</code> package you can find
+prepared configuration files with the following default values:
+
+<ul>
+  <li>The image file directory is <code>C:\bilder</code>. </li>
+  <li>The username for viewing image files is <code>digilib</code>.</li>
+  <li>The password for viewing image files is <code>digilib</code>.</li>
+  <li>The digilib server runs on Port <code>9090</code>.</li>
+</ul>
+
+<p>
+Now you can restart the Tomcat server: <code>http://localhost:9090</code> or 
+<code>http://127.0.0.1:9090</code>.</p>
+
+<p>
+Watch the images:
+<code>http://localhost:9090/docuserver/digitallibrary/digilib.jsp?&lv=2</code>
+</p>
+
+
 <h1>Configuration</h1>
 
 <h2>Tomcat</h2>
 
-<h3>catalina.sh</h3>
+<h3>catalina.sh / catalina.bat</h3>
 
 <p>The file <code>catalina.sh</code> (in <code>/docuserver/tomcat/bin</code>
 can be modified to provide the path to the JDK and runtime options
@@ -103,6 +168,13 @@ like this:</p>
 <pre>
 export JAVA_HOME=/usr/local/lib/IBMJava2-14
 export CATALINA_OPTS="-mx512m"
+</pre>
+
+<p>or, on Windows<p>
+
+<pre>
+set CATALINA_HOME=C:\jakarta-tomcat-4.1.24
+set JAVA_HOME=C:\j2sdk
 </pre>
 
 <p>Adjust the <code>JAVA_HOME</code> path to point to your Java JDK
@@ -295,6 +367,6 @@ and password.</p>
 
 
 <hr>
-<address>casties@mpiwg-berlin.mpg.de</address>
-<!-- hhmts start -->Last modified: Wed May 14 12:49:14 CEST 2003 <!-- hhmts end -->
+<address>robert.casties@philo.unibe.ch</address>
+<!-- hhmts start -->Last modified: Tue Sep 16 20:37:12 CEST 2003 <!-- hhmts end -->
 </body> </html>
