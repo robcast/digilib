@@ -22,7 +22,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import digilib.Utils;
+import org.apache.log4j.Logger;
+
 import digilib.auth.AuthOps;
 import digilib.io.DocuDirCache;
 import digilib.io.FileOpException;
@@ -39,11 +40,11 @@ import digilib.io.TextFile;
 public class Texter extends HttpServlet {
 
 	/** Servlet version */
-	public static String tlVersion = "0.1a2";
+	public static String tlVersion = "0.1a3";
 	/** DigilibConfiguration instance */
 	DigilibConfiguration dlConfig = null;
-	/** Utils instance with debuglevel */
-	Utils util;
+	/** general logger */
+	Logger logger = Logger.getLogger("digilib.texter");
 	/** FileOps instance */
 	FileOps fileOp;
 	/** AuthOps instance */
@@ -63,10 +64,10 @@ public class Texter extends HttpServlet {
 		super.init(config);
 
 		System.out.println(
-			"***** Digital Image Library Text Servlet (version "
+				"***** Digital Image Library Text Servlet (version "
 				+ tlVersion
 				+ ") *****");
-
+		
 		// get our ServletContext
 		ServletContext context = config.getServletContext();
 		// see if there is a Configuration instance
@@ -82,15 +83,15 @@ public class Texter extends HttpServlet {
 				throw new ServletException(e);
 			}
 		}
-		// first we need an Utils
-		util = dlConfig.getUtil();
+		// say hello in the log file
+		logger.info(
+				"***** Digital Image Library Text Servlet (version "
+				+ tlVersion
+				+ ") *****");
+		
 		// set our AuthOps
 		useAuthentication = dlConfig.getAsBoolean("use-authorization");
 		authOp = (AuthOps) dlConfig.getValue("servlet.auth.op");
-		// FileOps instance
-		fileOp = new FileOps(util);
-		// AuthOps instance
-		servletOp = new ServletOps(util);
 		// DocuDirCache instance
 		dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 	}
@@ -147,19 +148,19 @@ public class Texter extends HttpServlet {
 			 * find the file to load/send
 			 */
 			if (this.getTextFile(dlRequest, "/txt") != null) {
-				servletOp.sendFile(
+				ServletOps.sendFile(
 					this.getTextFile(dlRequest, "txt").getFile(),
-					response);
+					null, response);
 			} else if (this.getTextFile(dlRequest, "") != null) {
-				servletOp.sendFile(
+				ServletOps.sendFile(
 					this.getTextFile(dlRequest, "").getFile(),
-					response);
+					null, response);
 			} else {
 				ServletOps.htmlMessage("No Text-File!", response);
 			}
 
 		} catch (FileOpException e) {
-			util.dprintln(1, "ERROR: File IO Error: " + e);
+			logger.error("ERROR: File IO Error: ", e);
 			try {
 				ServletOps.htmlMessage("ERROR: File IO Error: " + e, response);
 			} catch (FileOpException ex) {

@@ -183,7 +183,6 @@ public class Parameter {
 				fa[i] = f;
 			}
 		} catch (Exception e) {
-			//System.out.println("ERROR: trytoGetParam(int) failed on param "+name);
 		}
 		
 		return fa;

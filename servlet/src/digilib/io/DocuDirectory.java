@@ -255,11 +255,13 @@ public class DocuDirectory extends Directory {
 					unresolvedFileMeta = fileMeta;
 				}
 			} catch (SAXException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				if (cache != null) {
+					cache.logger.warn("error parsing index.meta", e);
+				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				if (cache != null) {
+					cache.logger.warn("error reading index.meta", e);
+				}
 			}
 		}
 		readParentMeta();

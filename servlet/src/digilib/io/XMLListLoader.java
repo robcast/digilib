@@ -29,6 +29,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -47,6 +48,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class XMLListLoader {
 
+	private Logger logger = Logger.getLogger(this.getClass());
 	private String listTag = "list";
 	private String entryTag = "entry";
 	private String keyAtt = "key";
@@ -60,7 +62,7 @@ public class XMLListLoader {
 		String entry_tag,
 		String key_att,
 		String value_att) {
-		//System.out.println("xmlListLoader("+list_tag+","+entry_tag+","+key_att+","+value_att+")");
+		logger.debug("xmlListLoader("+list_tag+","+entry_tag+","+key_att+","+value_att+")");
 		listTag = list_tag;
 		entryTag = entry_tag;
 		keyAtt = key_att;
@@ -100,8 +102,7 @@ public class XMLListLoader {
 			if (qName.equals(entryTag)) {
 				// is it inside a list tag?
 				if ((listTag.length() > 0) && (!tagSpace.contains(listTag))) {
-					System.out.println(
-						"BOO: Entry "
+					logger.error("BOO: Entry "
 							+ entryTag
 							+ " not inside list "
 							+ listTag);
@@ -113,8 +114,7 @@ public class XMLListLoader {
 				String key = atts.getValue(keyAtt);
 				String val = atts.getValue(valueAtt);
 				if ((key == null) || (val == null)) {
-					System.out.println(
-						"BOO: Entry "
+					logger.error("BOO: Entry "
 							+ entryTag
 							+ " does not have Attributes "
 							+ keyAtt

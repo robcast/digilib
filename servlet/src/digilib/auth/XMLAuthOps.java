@@ -20,12 +20,13 @@
 
 package digilib.auth;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.*;
-import java.io.*;
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
 
-import digilib.*;
-import digilib.io.*;
+import javax.servlet.http.HttpServletRequest;
+
+import digilib.io.XMLListLoader;
 import digilib.servlet.DigilibRequest;
 
 /** Implementation of AuthOps using XML files.
@@ -46,8 +47,7 @@ public class XMLAuthOps extends AuthOpsImpl {
 	 * @param confFile Configuration file name.
 	 * @throws AuthOpException Exception thrown on error.
 	 */
-	public XMLAuthOps(Utils u, String confFile) throws AuthOpException {
-		util = u;
+	public XMLAuthOps(String confFile) throws AuthOpException {
 		configFile = confFile;
 		init();
 	}
@@ -69,7 +69,7 @@ public class XMLAuthOps extends AuthOpsImpl {
 	 * @throws AuthOpException Exception thrown on error.
 	 */
 	public void init() throws AuthOpException {
-		util.dprintln(10, "xmlauthops.init (" + configFile + ")");
+		logger.debug("xmlauthops.init (" + configFile + ")");
 		HashMap pathList = null;
 		HashMap ipList = null;
 		try {
@@ -110,9 +110,7 @@ public class XMLAuthOps extends AuthOpsImpl {
 	 */
 	public List rolesForPath(String filepath, HttpServletRequest request)
 		throws digilib.auth.AuthOpException {
-		util.dprintln(
-			4,
-			"rolesForPath ("
+		logger.debug("rolesForPath ("
 				+ filepath
 				+ ") by ["
 				+ request.getRemoteAddr()
@@ -142,9 +140,7 @@ public class XMLAuthOps extends AuthOpsImpl {
 	 * @see digilib.auth.AuthOps#rolesForPath(digilib.servlet.DigilibRequest)
 	 */
 	public List rolesForPath(DigilibRequest request) throws AuthOpException {
-		util.dprintln(
-			4,
-			"rolesForPath ("
+		logger.debug("rolesForPath ("
 				+ request.getFilePath()
 				+ ") by ["
 				+ request.getServletRequest().getRemoteAddr()

@@ -57,7 +57,6 @@ public class HashTree {
         b += twigSep + twig.nextToken();
       }
       m = (String)table.get(b);
-      //System.out.println("CHECK: "+b+" = "+m);
       if (m != null) {
         if (m.indexOf(leafSep) < 0) {
           // single leaf

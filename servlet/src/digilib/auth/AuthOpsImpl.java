@@ -20,10 +20,14 @@
 
 package digilib.auth;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.List;
+import java.util.ListIterator;
 
-import digilib.*;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+
+import digilib.Utils;
 import digilib.servlet.DigilibRequest;
 
 /** Basic implementation of AuthOps interface.
@@ -33,12 +37,11 @@ import digilib.servlet.DigilibRequest;
  */
 public abstract class AuthOpsImpl implements AuthOps {
 
-  /** Local utils object. */    
-  protected Utils util;
-
+	/** general logger for this class */
+	protected Logger logger = Logger.getLogger(this.getClass());
+	
   /** Default constructor. */  
   public AuthOpsImpl() {
-    util = new Utils();
     try {
       init();
     } catch (AuthOpException e) {
@@ -49,7 +52,6 @@ public abstract class AuthOpsImpl implements AuthOps {
    * @param u utils object.
    */  
   public AuthOpsImpl(Utils u) {
-    util = u;
     try {
       init();
     } catch (AuthOpException e) {
@@ -111,9 +113,9 @@ public abstract class AuthOpsImpl implements AuthOps {
     String s = "";
     while (r.hasNext()) {
       s = (String)r.next();
-      util.dprintln(5, "Testing role: "+s);
+      logger.debug("Testing role: "+s);
       if (request.isUserInRole(s)) {
-        util.dprintln(5, "Role Authorized");
+      	logger.debug("Role Authorized");
         return true;
       }
     }
@@ -128,9 +130,9 @@ public abstract class AuthOpsImpl implements AuthOps {
 	String s = "";
 	while (r.hasNext()) {
 	  s = (String)r.next();
-	  util.dprintln(5, "Testing role: "+s);
+	  logger.debug("Testing role: "+s);
 	  if (((HttpServletRequest)request.getServletRequest()).isUserInRole(s)) {
-		util.dprintln(5, "Role Authorized");
+	  	logger.debug("Role Authorized");
 		return true;
 	  }
 	}

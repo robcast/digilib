@@ -43,7 +43,7 @@ import digilib.io.FileOpException;
 
 /** Implementation of DocuImage using the ImageLoader API of Java 1.4 and Java2D. */
 public class ImageLoaderDocuImage extends DocuImageImpl {
-
+	
 	/** image object */
 	protected BufferedImage img;
 	/** interpolation type */
@@ -62,10 +62,10 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		quality = qual;
 		// setup interpolation quality
 		if (qual > 0) {
-			util.dprintln(4, "quality q1");
+			logger.debug("quality q1");
 			interpol = AffineTransformOp.TYPE_BILINEAR;
 		} else {
-			util.dprintln(4, "quality q0");
+			logger.debug("quality q0");
 			interpol = AffineTransformOp.TYPE_NEAREST_NEIGHBOR;
 		}
 	}
@@ -79,7 +79,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 				h = img.getHeight();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.debug("error in getHeight", e);
 		}
 		return h;
 	}
@@ -93,19 +93,18 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 				w = img.getWidth();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.debug("error in getHeight", e);
 		}
 		return w;
 	}
 
 	/* load image file */
 	public void loadImage(ImageFile f) throws FileOpException {
-		util.dprintln(10, "loadImage!");
+		logger.debug("loadImage!");
 		//System.gc();
 		try {
 			img = ImageIO.read(f.getFile());
 			if (img == null) {
-				util.dprintln(3, "ERROR(loadImage): unable to load file");
 				throw new FileOpException("Unable to load File!");
 			}
 		} catch (IOException e) {
@@ -129,14 +128,13 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		Iterator readers = ImageIO.getImageReadersByMIMEType(f.getMimetype());
 		reader = (ImageReader) readers.next();
 		/* are there more readers? */
-		System.out.println("this reader: " + reader.getClass());
+		logger.debug("this reader: " + reader.getClass());
 		while (readers.hasNext()) {
-			System.out.println("next reader: " + readers.next().getClass());
+			logger.debug("next reader: " + readers.next().getClass());
 		}
 		//*/
 		reader.setInput(istream);
 		if (reader == null) {
-			util.dprintln(3, "ERROR(loadImage): unable to load file");
 			throw new FileOpException("Unable to load File!");
 		}
 		imgFile = f.getFile();
@@ -157,11 +155,9 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			// read image
 			img = reader.read(0, readParam);
 		} catch (IOException e) {
-			util.dprintln(3, "ERROR(loadImage): unable to load file");
 			throw new FileOpException("Unable to load File!");
 		}
 		if (img == null) {
-			util.dprintln(3, "ERROR(loadImage): unable to load file");
 			throw new FileOpException("Unable to load File!");
 		}
 	}
@@ -169,7 +165,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	/* write image of type mt to Stream */
 	public void writeImage(String mt, OutputStream ostream)
 		throws FileOpException {
-		util.dprintln(10, "writeImage!");
+		logger.debug("writeImage!");
 		try {
 			// setup output
 			String type = "png";
@@ -179,7 +175,6 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 				type = "png";
 			} else {
 				// unknown mime type
-				util.dprintln(2, "ERROR(writeImage): Unknown mime type " + mt);
 				throw new FileOpException("Unknown mime type: " + mt);
 			}
 
@@ -188,7 +183,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			 * image to RGB :-( *Java2D BUG*
 			 */
 			if ((type == "jpeg") && (img.getColorModel().hasAlpha())) {
-				util.dprintln(2, "BARF: JPEG with transparency!!");
+				logger.debug("BARF: JPEG with transparency!!");
 				int w = img.getWidth();
 				int h = img.getHeight();
 				// BufferedImage.TYPE_INT_RGB seems to be fastest (JDK1.4.1,
@@ -207,7 +202,6 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 				throw new FileOpException("Error writing image: Unknown image format!");
 			}
 		} catch (IOException e) {
-			// e.printStackTrace();
 			throw new FileOpException("Error writing image.");
 		}
 	}
@@ -236,16 +230,13 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		}
 		scaledImg = scaleOp.filter(img, scaledImg);
 		//DEBUG
-		util.dprintln(
-			3,
-			"SCALE: "
+		logger.debug("SCALE: "
 				+ scale
 				+ " ->"
 				+ scaledImg.getWidth()
 				+ "x"
 				+ scaledImg.getHeight());
 		if (scaledImg == null) {
-			util.dprintln(2, "ERROR(cropAndScale): error in scale");
 			throw new ImageOpException("Unable to scale");
 		}
 		img = scaledImg;
@@ -253,7 +244,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 
 	public void blur(int radius) throws ImageOpException {
 		//DEBUG
-		util.dprintln(4, "blur: " + radius);
+		logger.debug("blur: " + radius);
 		// minimum radius is 2
 		int klen = Math.max(radius, 2);
 		int ksize = klen * klen;
@@ -277,7 +268,6 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		}
 		blurredImg = blurOp.filter(img, blurredImg);
 		if (blurredImg == null) {
-			util.dprintln(2, "ERROR(cropAndScale): error in scale");
 			throw new ImageOpException("Unable to scale");
 		}
 		img = blurredImg;
@@ -287,14 +277,11 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		throws ImageOpException {
 		// setup Crop
 		BufferedImage croppedImg = img.getSubimage(x_off, y_off, width, height);
-		util.dprintln(
-			3,
-			"CROP:" + croppedImg.getWidth() + "x" + croppedImg.getHeight());
+		logger.debug("CROP:" + croppedImg.getWidth() + "x" + croppedImg.getHeight());
 		//DEBUG
 		//    util.dprintln(2, " time
 		// "+(System.currentTimeMillis()-startTime)+"ms");
 		if (croppedImg == null) {
-			util.dprintln(2, "ERROR(cropAndScale): error in crop");
 			throw new ImageOpException("Unable to crop");
 		}
 		img = croppedImg;
@@ -330,9 +317,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 
 		int ncol = img.getColorModel().getNumColorComponents();
 		if ((ncol != 3) || (rgbm.length != 3) || (rgba.length != 3)) {
-			util.dprintln(
-				2,
-				"ERROR(enhance): unknown number of color bands or coefficients ("
+			logger.debug("ERROR(enhance): unknown number of color bands or coefficients ("
 					+ ncol
 					+ ")");
 			return;
@@ -410,7 +395,6 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		// calculate new bounding box
 		//Rectangle2D bounds = rotOp.getBounds2D(img);
 		if (rotImg == null) {
-			util.dprintln(2, "ERROR: error in rotate");
 			throw new ImageOpException("Unable to rotate");
 		}
 		img = rotImg;
@@ -450,7 +434,6 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 				interpol);
 		BufferedImage mirImg = mirOp.filter(img, null);
 		if (mirImg == null) {
-			util.dprintln(2, "ERROR: error in mirror");
 			throw new ImageOpException("Unable to mirror");
 		}
 		img = mirImg;
@@ -458,7 +441,6 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 
 	/* (non-Javadoc) @see java.lang.Object#finalize() */
 	protected void finalize() throws Throwable {
-		//System.out.println("FIN de ImageLoaderDocuImage!");
 		// we must dispose the ImageReader because it keeps the filehandle
 		// open!
 		reader.dispose();

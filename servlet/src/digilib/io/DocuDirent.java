@@ -1,38 +1,42 @@
-/* DocuDirent.java --  Abstract directory entry in a DocuDirectory
-
-  Digital Image Library servlet components
-
-  Copyright (C) 2003 Robert Casties (robcast@mail.berlios.de)
-
-  This program is free software; you can redistribute  it and/or modify it
-  under  the terms of  the GNU General  Public License as published by the
-  Free Software Foundation;  either version 2 of the  License, or (at your
-  option) any later version.
-   
-  Please read license.txt for the full details. A copy of the GPL
-  may be found at http://www.gnu.org/copyleft/lgpl.html
-
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-
+/*
+ * DocuDirent.java -- Abstract directory entry in a DocuDirectory
+ * 
+ * Digital Image Library servlet components
+ * 
+ * Copyright (C) 2003 Robert Casties (robcast@mail.berlios.de)
+ * 
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
+ * 
+ * Please read license.txt for the full details. A copy of the GPL may be found
+ * at http://www.gnu.org/copyleft/lgpl.html
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+ * Place, Suite 330, Boston, MA 02111-1307 USA
+ * 
  * Created on 15.09.2003 by casties
- *
+ *  
  */
 package digilib.io;
 
 import java.io.File;
 import java.util.HashMap;
 
-/** Abstract directory entry in a DocuDirectory.
+import org.apache.log4j.Logger;
+
+/**
+ * Abstract directory entry in a DocuDirectory.
  * 
  * @author casties
- *
+ *  
  */
 public abstract class DocuDirent {
 
 	/** the file class of this file */
-	protected static int fileClass = FileOps.CLASS_NONE; 
+	protected static int fileClass = FileOps.CLASS_NONE;
 	/** HashMap with metadata */
 	protected HashMap fileMeta = null;
 	/** Is the Metadata valid */
@@ -40,19 +44,22 @@ public abstract class DocuDirent {
 	/** the parent directory */
 	protected Directory parent = null;
 
-	/** Checks metadata and does something with it.
-	 * 
+	/**
+	 * Checks metadata and does something with it.
+	 *  
 	 */
 	public abstract void checkMeta();
 
 	/**
 	 * gets the (default) File
+	 * 
 	 * @return
 	 */
 	public abstract File getFile();
 
-	/** Reads meta-data for this Fileset if there is any.
-	 * 
+	/**
+	 * Reads meta-data for this Fileset if there is any.
+	 *  
 	 */
 	public void readMeta() {
 		if ((fileMeta != null) || (getFile() != null)) {
@@ -72,15 +79,15 @@ public abstract class DocuDirent {
 				}
 				fileMeta = (HashMap) meta.get(getName());
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Logger.getLogger(this.getClass()).warn("error reading index.meta", e);
 			}
 		}
 	}
 
-	/** The name of the file.
+	/**
+	 * The name of the file.
 	 * 
-	 * If this is a Fileset, the method returns the name of the default file 
+	 * If this is a Fileset, the method returns the name of the default file
 	 * (for image filesets the highest resolution file).
 	 * 
 	 * @return
@@ -88,62 +95,55 @@ public abstract class DocuDirent {
 	public String getName() {
 		File f = getFile();
 		return (f != null) ? f.getName() : null;
-	}
-
-	/** The filename sans extension.
-	 * 
-	 * @return
-	 */
+	} /**
+	   * The filename sans extension.
+	   * 
+	   * @return
+	   */
 	public String getBasename() {
 		File f = getFile();
 		if (f == null) {
 			return null;
 		}
 		return FileOps.basename(f.getName());
-	}
-
-	/** Returns the parent Directory.
-	 * 
-	 * @return DocuDirectory
-	 */
+	} /**
+	   * Returns the parent Directory.
+	   * 
+	   * @return DocuDirectory
+	   */
 	public Directory getParent() {
 		return parent;
-	}
-
-	/** Sets the parent Directory.
-	 * 
-	 * @param parent The parent to set
-	 */
+	} /**
+	   * Sets the parent Directory.
+	   * 
+	   * @param parent
+	   *            The parent to set
+	   */
 	public void setParent(Directory parent) {
 		this.parent = parent;
-	}
-
-	/** Returns the meta-data for this file(set).
-	 * 
-	 * @return HashMap
-	 */
+	} /**
+	   * Returns the meta-data for this file(set).
+	   * 
+	   * @return HashMap
+	   */
 	public HashMap getFileMeta() {
 		return fileMeta;
-	}
-
-	/** Sets the meta-data for this file(set)
-	 * .
-	 * @param fileMeta The fileMeta to set
-	 */
+	} /**
+	   * Sets the meta-data for this file(set) .
+	   * 
+	   * @param fileMeta
+	   *            The fileMeta to set
+	   */
 	public void setFileMeta(HashMap fileMeta) {
 		this.fileMeta = fileMeta;
-	}
-
-	/**
-	 * @return
-	 */
+	} /**
+	   * @return
+	   */
 	public boolean isMetaChecked() {
 		return metaChecked;
-	}
-
-	/**
-	 * @return
-	 */
+	} /**
+	   * @return
+	   */
 	public static int getFileClass() {
 		return fileClass;
 	}

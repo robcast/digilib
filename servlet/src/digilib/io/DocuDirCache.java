@@ -28,11 +28,15 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author casties
  */
 public class DocuDirCache {
 
+	/** general logger for this class */
+	protected Logger logger = Logger.getLogger(this.getClass());
 	/** HashMap of directories */
 	protected HashMap map = null;
 	/** names of base directories */
@@ -88,7 +92,7 @@ public class DocuDirCache {
 	public void put(DocuDirectory newdir) {
 		String s = newdir.getDirName();
 		if (map.containsKey(s)) {
-			System.out.println("Baah, duplicate key in DocuDirCache.put!");
+			logger.warn("Baah, duplicate key in DocuDirCache.put!");
 		} else {
 			map.put(s, newdir);
 			numFiles += newdir.size();

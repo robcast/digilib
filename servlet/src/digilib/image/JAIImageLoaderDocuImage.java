@@ -61,7 +61,7 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 				h = img.getHeight();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.debug("error in getHeight", e);
 		}
 		return h;
 	}
@@ -75,7 +75,7 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 				w = img.getWidth();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.debug("error in getHeight", e);
 		}
 		return w;
 	}
@@ -85,7 +85,6 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 		System.gc();
 		img = JAI.create("ImageRead", f.getFile().getAbsolutePath());
 		if (img == null) {
-			util.dprintln(3, "ERROR(loadImage): unable to load file");
 			throw new FileOpException("Unable to load File!");
 		}
 	}
@@ -100,7 +99,6 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 		reader = (ImageReader) readers.next();
 		reader.setInput(istream);
 		if (reader == null) {
-			util.dprintln(3, "ERROR(loadImage): unable to load file");
 			throw new FileOpException("Unable to load File!");
 		}
 	}
@@ -126,11 +124,9 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 			img = JAI.create("imageread", pb);
 			*/
 		} catch (IOException e) {
-			util.dprintln(3, "ERROR(loadImage): unable to load file");
 			throw new FileOpException("Unable to load File!");
 		}
 		if (img == null) {
-			util.dprintln(3, "ERROR(loadImage): unable to load file");
 			throw new FileOpException("Unable to load File!");
 		}
 		imgFile = f.getFile();
@@ -151,7 +147,6 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 				pb3.add("PNG");
 			} else {
 				// unknown mime type
-				util.dprintln(2, "ERROR(writeImage): Unknown mime type " + mt);
 				throw new FileOpException("Unknown mime type: " + mt);
 			}
 			// render output
@@ -165,7 +160,6 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 	 * @see java.lang.Object#finalize()
 	 */
 	protected void finalize() throws Throwable {
-		//System.out.println("FIN de JAIImageLoaderDocuImage!");
 		// we must dispose the ImageReader because it keeps the filehandle open!
 		reader.dispose();
 		reader = null;

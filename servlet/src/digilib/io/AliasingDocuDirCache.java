@@ -85,7 +85,7 @@ public class AliasingDocuDirCache extends DocuDirCache {
 	 */
 	public void putName(String name, DocuDirectory newdir) {
 		if (map.containsKey(name)) {
-			System.out.println("Baah, duplicate key in AliasingDocuDirCache.put!");
+			logger.warn("Baah, duplicate key in AliasingDocuDirCache.put!");
 		} else {
 			map.put(name, newdir);
 		}

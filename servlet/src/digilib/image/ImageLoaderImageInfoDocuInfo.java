@@ -29,6 +29,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
+import org.apache.log4j.Logger;
 import org.marcoschmidt.image.ImageInfo;
 
 import digilib.io.FileOpException;
@@ -41,6 +42,8 @@ import digilib.io.ImageFileset;
  *
  */
 public class ImageLoaderImageInfoDocuInfo implements DocuInfo {
+	
+	private Logger logger = Logger.getLogger(this.getClass());
 
 	/* check image size and type and store in ImageFile f */
 	public boolean checkFile(ImageFile imgf) throws IOException {
@@ -76,9 +79,9 @@ public class ImageLoaderImageInfoDocuInfo implements DocuInfo {
 			}
 			ImageReader reader = (ImageReader) readers.next();
 			/* are there more readers? */
-			System.out.println("this reader: " + reader.getClass());
+			logger.debug("this reader: " + reader.getClass());
 			while (readers.hasNext()) {
-				System.out.println("next reader: " + readers.next().getClass());
+				logger.debug("next reader: " + readers.next().getClass());
 			}
 			reader.setInput(istream);
 			ImageSize d =

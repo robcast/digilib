@@ -60,7 +60,6 @@ public class JAIDocuImage extends DocuImageImpl {
 		System.gc();
 		img = JAI.create("fileload", f.getFile().getAbsolutePath());
 		if (img == null) {
-			util.dprintln(3, "ERROR(loadImage): unable to load file");
 			throw new FileOpException("Unable to load File!");
 		}
 	}
@@ -79,7 +78,6 @@ public class JAIDocuImage extends DocuImageImpl {
 				pb3.add("PNG");
 			} else {
 				// unknown mime type
-				util.dprintln(2, "ERROR(writeImage): Unknown mime type " + mt);
 				throw new FileOpException("Unknown mime type: " + mt);
 			}
 			// render output
@@ -97,13 +95,13 @@ public class JAIDocuImage extends DocuImageImpl {
 		quality = qual;
 		// setup interpolation quality
 		if (qual > 1) {
-			util.dprintln(4, "quality q2");
+			logger.debug("quality q2");
 			interpol = Interpolation.getInstance(Interpolation.INTERP_BICUBIC);
 		} else if (qual == 1) {
-			util.dprintln(4, "quality q1");
+			logger.debug("quality q1");
 			interpol = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
 		} else {
-			util.dprintln(4, "quality q0");
+			logger.debug("quality q0");
 			interpol = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
 		}
 	}
@@ -152,16 +150,14 @@ public class JAIDocuImage extends DocuImageImpl {
 		}
 
 		//DEBUG
-		util.dprintln(
-			3,
-			"SCALE: " + scale + " ->" + img.getWidth() + "x" + img.getHeight());
+		logger.debug("SCALE: " + scale + " ->" + img.getWidth() + "x" + img.getHeight());
 
 	}
 
 	public void scaleAll(float scale) throws ImageOpException {
 		RenderedImage scaledImg;
 		//DEBUG
-		util.dprintln(4, "scaleAll: " + scale);
+		logger.debug("scaleAll: " + scale);
 		ParameterBlockJAI param = new ParameterBlockJAI("Scale");
 		param.addSource(img);
 		param.setParameter("xScale", scale);
@@ -176,7 +172,6 @@ public class JAIDocuImage extends DocuImageImpl {
 		scaledImg = JAI.create("Scale", param, hint);
 
 		if (scaledImg == null) {
-			util.dprintln(2, "ERROR(scale): error in scale");
 			throw new ImageOpException("Unable to scale");
 		}
 		img = scaledImg;
@@ -185,7 +180,7 @@ public class JAIDocuImage extends DocuImageImpl {
 	public void blur(int radius) throws ImageOpException {
 		RenderedImage blurredImg;
 		//DEBUG
-		util.dprintln(4, "blur: " + radius);
+		logger.debug("blur: " + radius);
 		int klen = Math.max(radius, 2);
 		int ksize = klen * klen;
 		float f = 1f / ksize;
@@ -204,7 +199,6 @@ public class JAIDocuImage extends DocuImageImpl {
 				BorderExtender.createInstance(BorderExtender.BORDER_COPY));
 		blurredImg = JAI.create("Convolve", param, hint);
 		if (blurredImg == null) {
-			util.dprintln(2, "ERROR(scale): error in scale");
 			throw new ImageOpException("Unable to scale");
 		}
 		img = blurredImg;
@@ -213,7 +207,7 @@ public class JAIDocuImage extends DocuImageImpl {
 	public void scaleBinary(float scale) throws ImageOpException {
 		RenderedImage scaledImg;
 		//DEBUG
-		util.dprintln(4, "scaleBinary: " + scale);
+		logger.debug("scaleBinary: " + scale);
 		ParameterBlockJAI param =
 			new ParameterBlockJAI("SubsampleBinaryToGray");
 		param.addSource(img);
@@ -227,7 +221,6 @@ public class JAIDocuImage extends DocuImageImpl {
 		// scale
 		scaledImg = JAI.create("SubsampleBinaryToGray", param, hint);
 		if (scaledImg == null) {
-			util.dprintln(2, "ERROR(scale): error in scale");
 			throw new ImageOpException("Unable to scale");
 		}
 		img = scaledImg;
@@ -245,9 +238,7 @@ public class JAIDocuImage extends DocuImageImpl {
 		param.add((float) height);
 		RenderedImage croppedImg = JAI.create("crop", param);
 
-		util.dprintln(
-			3,
-			"CROP: "
+		logger.debug("CROP: "
 				+ x_off
 				+ ","
 				+ y_off
@@ -262,7 +253,6 @@ public class JAIDocuImage extends DocuImageImpl {
 		//DEBUG
 
 		if (croppedImg == null) {
-			util.dprintln(2, "ERROR(crop): error in crop");
 			throw new ImageOpException("Unable to crop");
 		}
 		img = croppedImg;
@@ -312,9 +302,7 @@ public class JAIDocuImage extends DocuImageImpl {
 			rotImg = JAI.create("rotate", param);
 		}
 
-		util.dprintln(
-			3,
-			"ROTATE: "
+		logger.debug("ROTATE: "
 				+ x
 				+ ","
 				+ y
@@ -330,7 +318,6 @@ public class JAIDocuImage extends DocuImageImpl {
 		//DEBUG
 
 		if (rotImg == null) {
-			util.dprintln(2, "ERROR: error in rotate");
 			throw new ImageOpException("Unable to rotate");
 		}
 		img = rotImg;
@@ -366,7 +353,6 @@ public class JAIDocuImage extends DocuImageImpl {
 		mirImg = JAI.create("transpose", param);
 
 		if (mirImg == null) {
-			util.dprintln(2, "ERROR(mirror): error in flip");
 			throw new ImageOpException("Unable to flip");
 		}
 		img = mirImg;
@@ -384,9 +370,7 @@ public class JAIDocuImage extends DocuImageImpl {
 		param.add(aa);
 		enhImg = JAI.create("rescale", param);
 
-		util.dprintln(
-			3,
-			"ENHANCE: *"
+		logger.debug("ENHANCE: *"
 				+ mult
 				+ ", +"
 				+ add
@@ -397,7 +381,6 @@ public class JAIDocuImage extends DocuImageImpl {
 		//DEBUG
 
 		if (enhImg == null) {
-			util.dprintln(2, "ERROR(enhance): error in enhance");
 			throw new ImageOpException("Unable to enhance");
 		}
 		img = enhImg;
@@ -423,9 +406,7 @@ public class JAIDocuImage extends DocuImageImpl {
 		param.add(aa);
 		enhImg = JAI.create("rescale", param);
 
-		util.dprintln(
-			3,
-			"ENHANCE_RGB: *"
+		logger.debug("ENHANCE_RGB: *"
 				+ rgbm
 				+ ", +"
 				+ rgba
@@ -436,7 +417,6 @@ public class JAIDocuImage extends DocuImageImpl {
 		//DEBUG
 
 		if (enhImg == null) {
-			util.dprintln(2, "ERROR(enhance): error in enhanceRGB");
 			throw new ImageOpException("Unable to enhanceRGB");
 		}
 		img = enhImg;

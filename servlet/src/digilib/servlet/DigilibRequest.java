@@ -36,6 +36,8 @@ import java.util.StringTokenizer;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.log4j.Logger;
+
 import com.hp.hpl.mesa.rdf.jena.common.SelectorImpl;
 import com.hp.hpl.mesa.rdf.jena.mem.ModelMem;
 import com.hp.hpl.mesa.rdf.jena.model.Model;
@@ -65,6 +67,7 @@ import digilib.image.DocuImage;
  */
 public class DigilibRequest extends ParameterMap {
 
+	private Logger logger = Logger.getLogger(this.getClass());
 	private boolean boolRDF = false; // use RDF Parameters
 	private DocuImage image; // internal DocuImage instance for this request
 	private ServletRequest servletRequest; // internal ServletRequest
@@ -373,9 +376,7 @@ public class DigilibRequest extends ParameterMap {
 		String strRDF;
 		strRDF = request.getParameter("rdf");
 		if (strRDF != null) {
-			//System.out.println(strRDF);
 			Hashtable hashRDF = rdf2hash(strRDF);
-			//System.out.println(hashRDF.toString());
 			// go through all parameters
 			for (Iterator i = hashRDF.keySet().iterator(); i.hasNext();) {
 				String name = (String) i.next();
@@ -404,7 +405,6 @@ public class DigilibRequest extends ParameterMap {
 			// get Property fn -> digilib
 			Property p =
 				model.getProperty("http://echo.unibe.ch/digilib/rdf#", "fn");
-			//System.out.println(p.toString());
 			if (p != null) {
 				// get URI
 				String strURI = null;
@@ -412,7 +412,6 @@ public class DigilibRequest extends ParameterMap {
 				if (i.hasNext()) {
 					strURI = "urn:echo:" + i.next().toString();
 					Resource r = model.getResource(strURI);
-					//System.out.println(r.toString());
 					Selector selector =
 						new SelectorImpl(r, null, (RDFNode) null);
 					// list the statements in the graph
@@ -444,7 +443,7 @@ public class DigilibRequest extends ParameterMap {
 				}
 			}
 		} catch (Exception e) {
-			System.out.println("Failed: " + e);
+			logger.warn("rdf3hash failed", e);
 		}
 		return hashParams;
 	}

@@ -145,8 +145,6 @@ public class ImageFileset extends DocuDirent {
 					return f;
 				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 		}
 		return null;
@@ -175,8 +173,6 @@ public class ImageFileset extends DocuDirent {
 					return f;
 				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 		}
 		return null;

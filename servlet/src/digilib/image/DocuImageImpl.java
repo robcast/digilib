@@ -22,9 +22,11 @@ package digilib.image;
 
 import java.awt.Rectangle;
 
+import org.apache.log4j.Logger;
+
 import digilib.Utils;
-import digilib.io.ImageFile;
 import digilib.io.FileOpException;
+import digilib.io.ImageFile;
 
 /** Simple abstract implementation of the <code>DocuImage</code> interface.
  *
@@ -36,6 +38,9 @@ import digilib.io.FileOpException;
  */
 public abstract class DocuImageImpl implements DocuImage {
 
+	/** logger */
+	protected Logger logger = Logger.getLogger(this.getClass());
+	
 	/** Internal utils object. */
 	protected Utils util = null;
 

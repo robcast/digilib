@@ -58,13 +58,13 @@ public class JIMIDocuImage extends DocuImageImpl {
 		try {
 			img = Jimi.getRasterImage(f.getFile().toURL());
 		} catch (java.net.MalformedURLException e) {
-			util.dprintln(3, "ERROR(loadImage): MalformedURLException");
+			logger.debug("ERROR(loadImage): MalformedURLException");
 		} catch (JimiException e) {
-			util.dprintln(3, "ERROR(loadImage): JIMIException");
+			logger.debug("ERROR(loadImage): JIMIException");
 			throw new FileOpException("Unable to load File!" + e);
 		}
 		if (img == null) {
-			util.dprintln(3, "ERROR(loadImage): unable to load file");
+			logger.debug("ERROR(loadImage): unable to load file");
 			throw new FileOpException("Unable to load File!");
 		}
 		imgp = img.getImageProducer();
@@ -102,17 +102,16 @@ public class JIMIDocuImage extends DocuImageImpl {
 
 		// setup scale and interpolation quality
 		if (quality > 0) {
-			util.dprintln(4, "quality q1");
+			logger.debug("quality q1");
 			scaleFilter = new AreaAverageScaleFilter(destWidth, destHeight);
 		} else {
-			util.dprintln(4, "quality q0");
+			logger.debug("quality q0");
 			scaleFilter = new ReplicatingScaleFilter(destWidth, destHeight);
 		}
 
 		ImageProducer scaledImg = new FilteredImageSource(imgp, scaleFilter);
 
 		if (scaledImg == null) {
-			util.dprintln(2, "ERROR(cropAndScale): error in scale");
 			throw new ImageOpException("Unable to scale");
 		}
 
@@ -126,10 +125,8 @@ public class JIMIDocuImage extends DocuImageImpl {
 		// setup Crop
 		ImageProducer croppedImg =
 			img.getCroppedImageProducer(x_off, y_off, width, height);
-		//util.dprintln(3, "CROP:"+croppedImg.getWidth()+"x"+croppedImg.getHeight()); //DEBUG
 
 		if (croppedImg == null) {
-			util.dprintln(2, "ERROR(cropAndScale): error in crop");
 			throw new ImageOpException("Unable to crop");
 		}
 		imgp = croppedImg;

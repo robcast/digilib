@@ -28,21 +28,19 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import digilib.Utils;
+import org.apache.log4j.Logger;
+
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthOps;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
-import digilib.io.FileOps;
 
 public class DocumentBean {
 
-	// Utils object for logging
-	private Utils util = new Utils(0);
+	// general logger
+	Logger logger = Logger.getLogger("digilib.docubean");
 	// AuthOps object to check authorization
 	private AuthOps authOp;
-	// FileOps object
-	private FileOps fileOp = new FileOps(util);
 	// use authorization database
 	private boolean useAuthentication = true;
 	// path to add for authenticated access
@@ -64,12 +62,12 @@ public class DocumentBean {
 		try {
 			setConfig(conf);
 		} catch (Exception e) {
-			util.dprintln(2, "ERROR: Unable to read config: " + e.toString());
+			logger.fatal("ERROR: Unable to read config: ", e);
 		}
 	}
 
 	public void setConfig(ServletConfig conf) throws ServletException {
-		util.dprintln(10, "setConfig");
+		logger.debug("setConfig");
 		// get our ServletContext
 		ServletContext context = conf.getServletContext();
 		// see if there is a Configuration instance
@@ -86,8 +84,6 @@ public class DocumentBean {
 			}
 		}
 
-		// get util
-		util = dlConfig.getUtil();
 		// get cache
 		dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 
@@ -104,7 +100,7 @@ public class DocumentBean {
 	 */
 	public boolean isAuthRequired(DigilibRequest request)
 		throws AuthOpException {
-		util.dprintln(10, "isAuthRequired");
+		logger.debug("isAuthRequired");
 		return useAuthentication ? authOp.isAuthRequired(request) : false;
 	}
 
@@ -113,7 +109,7 @@ public class DocumentBean {
 	 */
 	public boolean isAuthorized(DigilibRequest request)
 		throws AuthOpException {
-		util.dprintln(10, "isAuthorized");
+		logger.debug("isAuthorized");
 		return useAuthentication ? authOp.isAuthorized(request) : true;
 	}
 
@@ -122,7 +118,7 @@ public class DocumentBean {
 	 *  to access the specified path
 	 */
 	public List rolesForPath(DigilibRequest request) throws AuthOpException {
-		util.dprintln(10, "rolesForPath");
+		logger.debug("rolesForPath");
 		return useAuthentication ? authOp.rolesForPath(request) : null;
 	}
 
@@ -130,7 +126,7 @@ public class DocumentBean {
 	 * check request authorization against a list of roles
 	 */
 	public boolean isRoleAuthorized(List roles, DigilibRequest request) {
-		util.dprintln(10, "isRoleAuthorized");
+		logger.debug("isRoleAuthorized");
 		return useAuthentication
 			? authOp.isRoleAuthorized(roles, request)
 			: true;
@@ -143,7 +139,7 @@ public class DocumentBean {
 		DigilibRequest request,
 		HttpServletResponse response)
 		throws Exception {
-		util.dprintln(10, "doAuthentication");
+		logger.debug("doAuthentication");
 		if (!useAuthentication) {
 			// shortcut if no authentication
 			return true;
@@ -151,10 +147,10 @@ public class DocumentBean {
 		// check if we are already authenticated
 		if (((HttpServletRequest) request.getServletRequest()).getRemoteUser()
 			== null) {
-			util.dprintln(3, "unauthenticated so far");
+			logger.debug("unauthenticated so far");
 			// if not maybe we must?
 			if (isAuthRequired(request)) {
-				util.dprintln(3, "auth required, redirect");
+				logger.debug("auth required, redirect");
 				// we are not yet authenticated -> redirect
 				response.sendRedirect(
 					authURLPath
@@ -173,7 +169,7 @@ public class DocumentBean {
 	 *  (not yet functional)
 	 */
 	public int getFirstPage(DigilibRequest request) {
-		util.dprintln(10, "getFirstPage");
+		logger.debug("getFirstPage");
 		return 1;
 	}
 
@@ -181,7 +177,7 @@ public class DocumentBean {
 	 *  get the number of pages/files in the directory
 	 */
 	public int getNumPages(DigilibRequest request) throws Exception {
-		util.dprintln(10, "getNumPages");
+		logger.debug("getNumPages");
 		DocuDirectory dd =
 			(dirCache != null)
 				? dirCache.getDirectory(request.getFilePath())

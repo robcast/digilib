@@ -1,22 +1,23 @@
-/* Scaler -- Scaler servlet main class
-
-  Digital Image Library servlet components
-
-  Copyright (C) 2001, 2002, 2003 Robert Casties (robcast@mail.berlios.de)
-
-  This program is free software; you can redistribute  it and/or modify it
-  under  the terms of  the GNU General  Public License as published by the
-  Free Software Foundation;  either version 2 of the  License, or (at your
-  option) any later version.
-   
-  Please read license.txt for the full details. A copy of the GPL
-  may be found at http://www.gnu.org/copyleft/lgpl.html
-
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-
-*/
+/*
+ * Scaler -- Scaler servlet main class
+ * 
+ * Digital Image Library servlet components
+ * 
+ * Copyright (C) 2001, 2002, 2003 Robert Casties (robcast@mail.berlios.de)
+ * 
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
+ * 
+ * Please read license.txt for the full details. A copy of the GPL may be found
+ * at http://www.gnu.org/copyleft/lgpl.html
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+ * Place, Suite 330, Boston, MA 02111-1307 USA
+ *  
+ */
 
 package digilib.servlet;
 
@@ -34,7 +35,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import digilib.Utils;
+import org.apache.log4j.Logger;
+
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthOps;
 import digilib.image.DocuImage;
@@ -43,23 +45,30 @@ import digilib.image.ImageLoaderImageInfoDocuInfo;
 import digilib.image.ImageOpException;
 import digilib.image.ImageSize;
 import digilib.io.DocuDirCache;
-import digilib.io.ImageFile;
-import digilib.io.ImageFileset;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
+import digilib.io.ImageFile;
+import digilib.io.ImageFileset;
 
 //import tilecachetool.*;
 
 /**
- * @author casties */
+ * @author casties
+ */
 //public class Scaler extends HttpServlet implements SingleThreadModel {
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.17b2";
+	public static final String dlVersion = "1.18b1";
 
-	// Utils instance with debuglevel
-	Utils util;
+	// logger for accounting requests
+	Logger accountlog = Logger.getLogger("account.request");
+	// gengeral logger for this class
+	Logger logger = Logger.getLogger("digilib.servlet");
+	// logger for authentication related
+	Logger authlog = Logger.getLogger("digilib.auth");
+	
+	
 	// FileOps instance
 	FileOps fileOp;
 	// AuthOps instance
@@ -121,15 +130,15 @@ public class Scaler extends HttpServlet {
 				throw new ServletException(e);
 			}
 		}
-		// first we need an Utils
-		util = dlConfig.getUtil();
+		// say hello in the log file
+		logger.info("***** Digital Image Library Servlet (version "
+				+ dlVersion
+				+ ") *****");
 		// set our AuthOps
 		useAuthentication = dlConfig.getAsBoolean("use-authorization");
-		authOp = (AuthOps) dlConfig.getValue("servlet.auth.op");
-		// FileOps instance
-		fileOp = new FileOps(util);
 		// AuthOps instance
-		servletOp = new ServletOps(util);
+		authOp = (AuthOps) dlConfig.getValue("servlet.auth.op");
+
 		// DocuDirCache instance
 		dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 		denyImgFile = new File(dlConfig.getAsString("denied-image"));
@@ -139,10 +148,10 @@ public class Scaler extends HttpServlet {
 		defaultQuality = dlConfig.getAsInt("default-quality");
 	}
 
-	/** Process the HTTP Get request*/
+	/** Process the HTTP Get request */
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 		throws ServletException, IOException {
-		util.dprintln(1, "The servlet has received a GET!");
+		accountlog.info("GET from "+request.getRemoteAddr());
 		// create new request with defaults
 		DigilibRequest dlReq = new DigilibRequest();
 		// set with request parameters
@@ -153,12 +162,12 @@ public class Scaler extends HttpServlet {
 		processRequest(request, response);
 	}
 
-	/**Process the HTTP Post request*/
+	/** Process the HTTP Post request */
 	public void doPost(
 		HttpServletRequest request,
 		HttpServletResponse response)
 		throws ServletException, IOException {
-		util.dprintln(1, "The servlet has received a POST!");
+		accountlog.info("POST from "+request.getRemoteAddr());
 		// create new request with defaults
 		DigilibRequest dlReq = new DigilibRequest();
 		// set with request parameters
@@ -175,6 +184,8 @@ public class Scaler extends HttpServlet {
 		HttpServletResponse response)
 		throws ServletException, IOException {
 
+		accountlog.debug("request: "+request.getQueryString());
+		
 		// time for benchmarking
 		long startTime = System.currentTimeMillis();
 		// output mime/type
@@ -273,18 +284,6 @@ public class Scaler extends HttpServlet {
 			cropToFit = false;
 			sendFile = false;
 			hiresOnly = true;
-		} else if (dlRequest.hasOption("mo", "file")) {
-			scaleToFit = false;
-			absoluteScale = false;
-			if (sendFileAllowed) {
-				cropToFit = false;
-				sendFile = true;
-			} else {
-				// crop to fit if send file not allowed
-				cropToFit = true;
-				sendFile = false;
-			}
-			hiresOnly = true;
 		}
 		// operation mode: "lores": try to use scaled image, "hires": use
 		// unscaled image
@@ -334,18 +333,18 @@ public class Scaler extends HttpServlet {
 				// get a list of required roles (empty if no restrictions)
 				List rolesRequired = authOp.rolesForPath(loadPathName, request);
 				if (rolesRequired != null) {
-					util.dprintln(1, "Role required: " + rolesRequired);
-					util.dprintln(2, "User: " + request.getRemoteUser());
+					authlog.info("Role required: " + rolesRequired);
+					authlog.info("User: " + request.getRemoteUser());
 					// is the current request/user authorized?
 					if (!authOp.isRoleAuthorized(rolesRequired, request)) {
 						// send deny answer and abort
-						util.dprintln(1, "ERROR: access denied!");
+						authlog.error("ERROR: access denied!");
 						if (errorMsgHtml) {
 							ServletOps.htmlMessage(
 								"ERROR: Unauthorized access!",
 								response);
 						} else {
-							servletOp.sendFile(denyImgFile, response);
+							ServletOps.sendFile(denyImgFile, null, response);
 						}
 						return;
 					}
@@ -367,7 +366,7 @@ public class Scaler extends HttpServlet {
 						+ dlRequest.getAsInt("pn")
 						+ ") not found.");
 			}
-			
+
 			/* calculate expected source image size */
 			ImageSize expectedSourceSize = new ImageSize();
 			if (scaleToFit) {
@@ -402,8 +401,25 @@ public class Scaler extends HttpServlet {
 					fileToLoad = fileset.getBiggest();
 				}
 			}
-			util.dprintln(1, "Loading: " + fileToLoad.getFile());
+			logger.info("Loading: " + fileToLoad.getFile());
 
+			/*
+			 * send the image if its mo=(raw)file
+			 */
+			if (dlRequest.hasOption("mo", "file")
+				|| dlRequest.hasOption("mo", "rawfile")) {
+				if (sendFileAllowed) {
+					String mt = null;
+					if (dlRequest.hasOption("mo", "rawfile")) {
+						mt = "application/octet-stream";
+					}
+					ServletOps.sendFile(fileToLoad.getFile(), mt, response);
+				}
+			}
+
+			/*
+			 * prepare resolution for original size
+			 */
 			if (absoluteScale) {
 				// get original resolution from metadata
 				fileset.checkMeta();
@@ -448,20 +464,17 @@ public class Scaler extends HttpServlet {
 			 * if not autoScale and not scaleToFit nor cropToFit then send as
 			 * is (mo=file)
 			 */
-			if ((loresOnly
-				&& imageSendable
-				&& fileToLoad.getSize().isSmallerThan(expectedSourceSize))
-				|| (!(loresOnly || hiresOnly)
-					&& fileToLoad.getSize().fitsIn(expectedSourceSize))
-				|| sendFile) {
+			if (imageSendable
+				&& ((loresOnly
+					&& fileToLoad.getSize().isSmallerThan(expectedSourceSize))
+					|| (!(loresOnly || hiresOnly)
+						&& fileToLoad.getSize().fitsIn(expectedSourceSize)))) {
 
-				util.dprintln(1, "Sending File as is.");
+				logger.debug("Sending File as is.");
 
-				servletOp.sendFile(fileToLoad.getFile(), response);
+				ServletOps.sendFile(fileToLoad.getFile(), null, response);
 
-				util.dprintln(
-					1,
-					"Done in "
+				logger.info("Done in "
 						+ (System.currentTimeMillis() - startTime)
 						+ "ms");
 				return;
@@ -475,7 +488,7 @@ public class Scaler extends HttpServlet {
 
 			// set interpolation quality
 			docuImage.setQuality(scaleQual);
-			
+
 			// set missing dw or dh from aspect ratio
 			double imgAspect = fileToLoad.getAspect();
 			if (paramDW == 0) {
@@ -486,12 +499,8 @@ public class Scaler extends HttpServlet {
 
 			/* crop and scale the image */
 
-			util.dprintln(
-				2,
-				"IMG: " + imgSize.getWidth() + "x" + imgSize.getHeight());
-			util.dprintln(
-				2,
-				"time " + (System.currentTimeMillis() - startTime) + "ms");
+			logger.debug("IMG: " + imgSize.getWidth() + "x" + imgSize.getHeight());
+			logger.debug("time " + (System.currentTimeMillis() - startTime) + "ms");
 
 			// coordinates and scaling
 			double areaXoff;
@@ -589,9 +598,7 @@ public class Scaler extends HttpServlet {
 				}
 			}
 
-			util.dprintln(
-				1,
-				"Scale "
+			logger.debug("Scale "
 					+ scaleXY
 					+ "("
 					+ scaleX
@@ -608,9 +615,7 @@ public class Scaler extends HttpServlet {
 			areaXoff = outerUserImgArea.getX();
 			areaYoff = outerUserImgArea.getY();
 
-			util.dprintln(
-				2,
-				"crop: "
+			logger.debug("crop: "
 					+ areaXoff
 					+ ","
 					+ areaYoff
@@ -624,7 +629,7 @@ public class Scaler extends HttpServlet {
 				|| (areaHeight < 1)
 				|| (scaleXY * areaWidth < 2)
 				|| (scaleXY * areaHeight < 2)) {
-				util.dprintln(1, "ERROR: invalid scale parameter set!");
+				logger.error("ERROR: invalid scale parameter set!");
 				throw new ImageOpException("Invalid scale parameter set!");
 			}
 
@@ -632,8 +637,7 @@ public class Scaler extends HttpServlet {
 
 			// use subimage loading if possible
 			if (docuImage.isSubimageSupported()) {
-				System.out.println(
-					"Subimage: scale " + scaleXY + " = " + (1 / scaleXY));
+				logger.debug("Subimage: scale " + scaleXY + " = " + (1 / scaleXY));
 				double subf = 1d;
 				double subsamp = 1d;
 				if (scaleXY < 1) {
@@ -646,8 +650,7 @@ public class Scaler extends HttpServlet {
 						subsamp = Math.floor(subf);
 					}
 					scaleXY = subsamp / subf;
-					System.out.println(
-						"Using subsampling: " + subsamp + " rest " + scaleXY);
+					logger.debug("Using subsampling: " + subsamp + " rest " + scaleXY);
 				}
 
 				docuImage.loadSubimage(
@@ -655,8 +658,7 @@ public class Scaler extends HttpServlet {
 					outerUserImgArea.getBounds(),
 					(int) subsamp);
 
-				System.out.println(
-					"SUBSAMP: "
+				logger.debug("SUBSAMP: "
 						+ subsamp
 						+ " -> "
 						+ docuImage.getWidth()
@@ -736,9 +738,7 @@ public class Scaler extends HttpServlet {
 				docuImage.enhance((float) mult, (float) paramBRGT);
 			}
 
-			util.dprintln(
-				2,
-				"time " + (System.currentTimeMillis() - startTime) + "ms");
+			logger.debug("time " + (System.currentTimeMillis() - startTime) + "ms");
 
 			/* write the resulting image */
 
@@ -755,59 +755,57 @@ public class Scaler extends HttpServlet {
 			// write the image
 			docuImage.writeImage(mimeType, response.getOutputStream());
 
-			util.dprintln(
-				1,
-				"Done in " + (System.currentTimeMillis() - startTime) + "ms");
+			logger.info("Done in " + (System.currentTimeMillis() - startTime) + "ms");
 
 			/* error handling */
 
 		} // end of "big" try
 		catch (IOException e) {
-			util.dprintln(1, "ERROR: File IO Error: " + e);
+			logger.fatal("ERROR: File IO Error: ", e);
 			try {
 				if (errorMsgHtml) {
 					ServletOps.htmlMessage(
 						"ERROR: File IO Error: " + e,
 						response);
 				} else {
-					servletOp.sendFile(errorImgFile, response);
+					ServletOps.sendFile(errorImgFile, null, response);
 				}
 			} catch (FileOpException ex) {
 			} // so we don't get a loop
 		} catch (AuthOpException e) {
-			util.dprintln(1, "ERROR: Authorization error: " + e);
+			logger.fatal("ERROR: Authorization error: ", e);
 			try {
 				if (errorMsgHtml) {
 					ServletOps.htmlMessage(
 						"ERROR: Authorization error: " + e,
 						response);
 				} else {
-					servletOp.sendFile(errorImgFile, response);
+					ServletOps.sendFile(errorImgFile, null, response);
 				}
 			} catch (FileOpException ex) {
 			} // so we don't get a loop
 		} catch (ImageOpException e) {
-			util.dprintln(1, "ERROR: Image Error: " + e);
+			logger.fatal("ERROR: Image Error: ", e);
 			try {
 				if (errorMsgHtml) {
 					ServletOps.htmlMessage(
 						"ERROR: Image Operation Error: " + e,
 						response);
 				} else {
-					servletOp.sendFile(errorImgFile, response);
+					ServletOps.sendFile(errorImgFile, null, response);
 				}
 			} catch (FileOpException ex) {
 			} // so we don't get a loop
 		} catch (RuntimeException e) {
 			// JAI likes to throw RuntimeExceptions ;-(
-			util.dprintln(1, "ERROR: Other Image Error: " + e);
+			logger.fatal("ERROR: Other Image Error: ", e);
 			try {
 				if (errorMsgHtml) {
 					ServletOps.htmlMessage(
 						"ERROR: Other Image Operation Error: " + e,
 						response);
 				} else {
-					servletOp.sendFile(errorImgFile, response);
+					ServletOps.sendFile(errorImgFile, null, response);
 				}
 			} catch (FileOpException ex) {
 			} // so we don't get a loop

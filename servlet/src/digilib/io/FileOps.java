@@ -69,18 +69,6 @@ public class FileOps {
 	public static final int NUM_CLASSES = 2;
 	
 
-	public FileOps() {
-		util = new Utils();
-	}
-
-	public FileOps(Utils u) {
-		util = u;
-	}
-
-	public void setUtils(Utils u) {
-		util = u;
-	}
-
 	/**
 	 *  get the mime type for a file format (by extension)
 	 */
