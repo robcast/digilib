@@ -1,0 +1,288 @@
+DIGITAL DOCUMENT LIBRARY
+------------------------
+
+Stand   : 21. Januar 2001
+
+
+Leitung : Gerd Grasshoff (gerd.grasshoff@philo.unibe.ch)
+
+Autor   : Christian Luginbühl (luginbuehl@student.unibe.ch)
+
+
+
+Inhalt
+------
+
+1. Einführung
+
+2. digilib3.jsp
+
+3. navigation3XXX.js
+
+4. ScaleServlet.java
+
+
+
+1. Einführung
+-------------
+
+Das Projekt Digital Document Library  hat zum Ziel, "Dokumente" mit  Hilfe eines
+Browsers anschauen zu können.  Diese Dokumente sind hochaufgelöste  Bilddateien,
+die  auf einem  Server gespeichert  sind. Um  der Benutzerin,  dem Benutzer  die
+Möglichkeit einer raschen Konsultation der Daten liefern zu können, müssen diese
+Bilddaten auf eine vernünftige Grösse verkleinert und in dieser Form dann an die
+Anfragenden  geschickt werden.  Weiten sollen  den Benutzenden  Hilfsmittel zur
+Verfügung stehen um in diesen  Seiten zu navigieren. Diese Hilfsmittel  bestehen
+aus  Funktionen  um  zwischen  verschieden  Seiten  hin  und  her  zu  wechseln,
+Ausschnitte aus einem Bild zu zoomen und der Möglichkeit Markierungen zu setzen.
+Ein  weiteres  wichtiges  Feature  dieses  Programms  ist  es,  Referenzen  ganz
+bestimmter Seiten (inkl. Ausschnitte  und Markierungen) auszugeben, die  dann in
+beliebigen  anderen  Dokumenten  eingebaut werden  können.  Sofern  die Lesenden
+dieser Dokumente dann über einen  Anschluss ins Internet verfügen, können  diese
+Referenzen direkt  angeschaut werden  und so  die Digital  Document Library  als
+grosse Quelltextsammlung gebraucht werden.
+
+Das Programm  nun ist  ein Client/Server-Modell.  Einerseits haben  wir das User
+-Interface (also den  Client), wo die  Darstellung und die  Navigation aufgebaut
+und berechnet werden. Dieser Teil des Programms umfasst im Prinzip zwei Dateien.
+Mit der Frage des Layouts beschäftigt  sich digilib3.jsp. Es ist die Datei,  die
+im Browser aufgerufen wird (mit  den verschiedenen Parametern, die in  Kapitel 2
+erläutert werden) und die nötigen Aufrufe macht für die Skalierung der Bilddaten
+und der  entsprechenden Navigationselemente.  Die zweite  Datei des  Clients ist
+eine dynamisch ausgerufene JavaScript-Datei namens navigation3XXX.js, wobei  die
+XXX  für  die  verschidenen   Borwservarianten  stehen.  Da  die   Scriptsprache
+JavaScript in den  verschiedenen Browsern nicht  ganz gleich implementiert  ist,
+ist es nötig  diese Datei an  die verschidenen Umgebungen  anzupassen. Das Laden
+dieser Dateien übernimmt  digilib3.jsp, indem es  erst abfragt, welchen  Browser
+von Client gebraucht wird und dann die entsprechende navigation-Datei vom Server
+verlangt. Auf der Serverseite ist ein Programm namens ScaleServlet sehr wichtig.
+Dieses Servlet  handelt die  Anfragen der  Clients und  macht die  verschiedenen
+Skalierungen an dem Bildern und  schickt, dann den entsprechenden Ausschnitt  an
+den Client.
+
+In  den  nächsten  Kapitel  sind  die  einzelnen  Files  mit  ihren verschidenen
+Parametern der Aufrufe erläutert.
+
+
+2. digilib3.jsp
+---------------
+
+Bei einem Request von digilib3.jsp werden auf der Serverseite die  verschiedenen
+Parameter des Aufrufs in die zurückgesendete Datei eingefüllt und dann vor allem
+für  den  von  'digilib' ausgehenden  Aufruf  des  ScaleServlets verwendet.  Die
+verschiedenen  Parameter  beim   Request  sind  durch   Pluszeichen  voneinander
+getrennt. Beispiel:
+
+http://pene ... /digilib3.jsp?histast/eastwood-collection/AF+3+s1.2+r:3852+12/30
+                              ------------------------------ - ---- ------ -----
+                              Parameter 1                    2 3    4      5
+
+Die verschiedenen Parameter werden in digilib3.jsp in ein Array mit 11 Elementen
+(1 - 11) aufgenommen. Folgend ist nun eine Auflistung aller Parameter und  ihrer
+Bedeutung. Es  ist absolut  zwingend, dass  diese in  der richtigen  Reihenfolge
+aufgerufen werden.
+
+- att[1] = '<%= docuurl %>'
+
+Dieser  Parameter  gibt  den  Pfad  ohne  Hostnamen  zum  Verzeichnis  mit   dem
+gewünschten Werk an.  Wichtig zu verstehen  ist, dass hier  nicht ein bestimmtes
+Bild angesprochen wird, sondern nur ein Verzeichnis.
+
+- att[2] = '<%= startPage %>'
+
+Dies ist die Nummer des Bildes  im von Parameter 1 gewählten Verzeichnis.  Falls
+dieser Parameter leer ist, wird er automatisch auf '1' gesetzt.
+
+- att[3] = '<%= scalefact %>'
+
+Scalefact  gibt den  Vergrösserungsfaktor der  Bildes an,  im Vergleich  zur in
+ScaleServlet angegebenen Standardgrösse. Die Syntax diese Parameters ist 'sx.x',
+wobei x.x für die Werte 0.6, 0.8,  1.0, 1.2, 1.4, 1.6, 2.0, 2.5 oder  3.0 stehen
+kann. Standardwert ist 's1.0'.
+
+(Anm: Serverseitig wird an diesem Teil noch gearbeitet, damit die Standardgrösse
+auf verschidenen Bildschirmen auch verschieden gross ist)
+
+- att[4] = '<%= commandostring %>'
+
+Gebraucht  wird  dieser  Parameter  dafür,   dass  die  Bilder  nicht  aus   dem
+Browsercache genommen werden, sondern auf dem Server dann neu berechnet  werden.
+Bei  einem "Zoom  Out" wird  hier eine  Zufallszahl generiert.  Die Syntax  ist
+'r:xxxx', wobei x irgend eine höchstens vierstellige Zahl. Standardwert ist r:1.
+
+- att[5] = '<%= remarkcoord %>'
+
+In diesem Parameter werden  die Koordinaten der Markierungspunkte  festgehalten.
+Syntax ist 'xxx/yyy;zzz/ttt; ... aaa/bbb'. Die Koordinatenpaare um "/" geben an,
+wo eine  Markierung gesetzt  werden soll,  wobei Werte  von 0  bis zur aktuellen
+Bildgrösse erlaubt sind.  Durch ";" werden  die einzelnen Markierungen  getrennt
+(maximal 5 sind  möglich). Standardwerte sind  hier '' (leer)  oder '0/0' (keine
+Markierung wird gesetzt).
+
+- att[6] = '<%= windowwidth %>' / att[7]   = '<%= windowheight %>'
+
+Windowwidth gibt an,  wie breit/hoch das  Bild auf dem  Bildschirm ist. Standard
+ist '' (leer).
+
+- att[8] = '<%= xoffset %>' / att[9] = '<%= yoffset %>'
+
+Diese Attribute  haben zwei  Bedeutungen. Falls  att[10] und  att[11] leer sind,
+gibt xoffset  bzw. yoffset  an, um  welchen Punkt  im Bild  gezoomt werden soll.
+Falls att[10],  att[11] nicht  leer sind,  geben sie  die Koordinaten  der linke
+oberen  Ecke des  zu vergrössernden  Bildausschnitts an.  Standard ist  hier ''
+(leer).
+
+- att[10] = '<%= width %>' / att[11] = '<%= height %>'
+
+Falls diese Attribute verschieden von '' (leer) sind, geben sie die  Breite/Höhe
+des Bildaussschnittes an, der gezoom werden soll.
+
+
+Die weiteren Funktionen von digilib3.jsp sind:
+
+- Laden des navigation3XXX.js-Files für den entsprechenden Browser.
+- Erstellen eines Framesets (kleiner Frame mit den Navigationsbuttons und
+  Frame mit dem Bild).
+- Erstellen der Navigationsbuttons.
+- Zusammenstellen der korrekten Parameterliste für den Aufruf von ScaleServlet.
+- Erstellen der verschiedenen Layers mit dem Bild (Aufruf), den Markierungen und
+  den Zeichen für die Eckpunkte beim Vergrössern.
+- Aufruf an navigation3XXX.js für Intialbefehle wie Setzen der Markierungspunkte.
+
+
+3. navigation3XXX.js
+--------------------
+
+Navigation3XXX.js ist eine Sammlung von Funktionen zur Navigation in der Digital
+Document Library. Die verschidenen Funktionen werden zum Beispiel durch  klicken
+auf   einen   in  digilib3.jsp   erstellten   Navigationsknopf  aufgerufen.   Um
+verschiedene Browser zu unterstützen (die Implementierung von Javascript und das
+Document  Object Model  sind unterschiedlich),  gibt es  angepasste navigation3
+-files,  die  von  digilib3.jsp entsprechend  des  verwendeten  Browsers geladen
+werden. Momentan sind Versionen für Netscape Communicator 4.xx  (navigation3.js)
+und Netscape 6 (navigation3_n6.js) verfügbar. Bei der Programmierung des Clients
+wurde darauf geschaut,  dass digilib3.jsp für  möglichst alle Browser  das selbe
+ist und somit nur navigation3XXX.js angepasst werden muss. Voraussetzung  hierzu
+ist, dass ein Brwoser mit Layern (<div>-Tags) umgehen kann. Nachstehend ist ganz
+kurz erläutert, welche Funktionen in navigation3XXX.js welche Aufgaben erfüllen:
+
+- genString(detail)
+
+Anhand von 'detail' generiert diese Funktion die Parameterliste für einen Aufruf
+eines   neuen   Bildes,   eines  Ausschnittes   oder   des   Strings  für   eine
+Referenzabfrage. 'detail' wird  gebraucht, um die  Anzahl der nötigen  Parameter
+für das  Ausführen der  aufrufenden Funktion  zu bestimmen.  Diese Funktion wird
+immer indirekt, d.h. in  anderen Funktionen von navigation3XXX.js  aufgrufen und
+liefert eine Stringrückgabe.
+
+- Backpage(), Nextpage(), Page()
+
+Diese Funktionen handeln die  Navigation durch die Seiten  eines Verzeichnisses.
+Diese Funktionen werden  mit einem Klick  auf die Navigationsbuttons  aufgerufen
+und Laden eine neue Seite.
+
+- Ref(refselect)
+
+Hier wird ein PopUp-Fenster erzeugt, das die komplette URL der momentanen  Seite
+zurückgibt. Mit 'refselect'  wird bestimmt, ob  die Formatierung der  Ausgabe in
+HTML-  oder  LaTeX-Form sein  soll.  Diese Funktion  wird  mit dem  "Ref"-Button
+aufgerufen.
+
+- Mark()
+
+Diese Funktion plaziert eine Markierung auf  dem Bild, wobei sie zuerst nur  die
+Maus-koordinaten bei  einem Klick  auf das  Bild abfängt  und dann  die Funktion
+'setmark()' aufruft.  Es können  bis zu  fünf Markierungen  auf ein Bild gesetzt
+werden. Auch diese Funktion wird direkt über die Navbuttons aufgerufen.
+
+- Zoomrect(), Zoomin(), Zoomout()
+
+Direkt aufgerufene  Funktionen die  sich mit  dem Zoomen  innerhalb eines Bildes
+beschäftigen. Die Rückgabe ist bei allen drei Funktionen ein Aufruf eines  neuen
+Bildes.
+
+- Moveto()
+
+Diese  Funktion  verändert  das  Zentrum bei  einem  schon  gezoomten  Bild. Die
+geklickten Koordinaten entsprechen dann dem Zenrum des neuen Bildes bei gleicher
+Vergrösserung.  Dieses  Feature  wird  in  Zeichnungsprogrammen  oft  mit  'Pan'
+betitelt. Direkter Aufruf und  Aufruf des neuen Bildes  sind gleich wie bei  den
+Zoom-Funktionen.
+
+- Scaledef(scaledef)
+
+Mit  Scaledef  wird  die   Bildgrösse  im  Vegleich  zur   in  ScaleServlet.java
+angegebenen  Standardgrösse  verändert.  Der  Parameter  'scaledef'  gibt diesen
+Faktor an. Eine Liste der möglichen  Werte ist weiter oben angegeben. Auch  hier
+wird di Funktion direkt über die Auswahlliste im Navigationsframe aufgerufen und
+auch hier wird ein neues Bild geladen.
+
+- setmark()
+
+Setmark wird indirekt von Mark() oder initScripts() aufgerufen und zeichnet sich
+für die Positionierung der Markierungen verantwortlich. Die Funktion  extrahiert
+aus att[5] die einzelnen Koordinaten  und setzt die Punkte. Wenn  eine bestimmte
+Reihenfolge bei den Punkten eingehalten werden soll, dann müssen sie auch  immer
+gleich in der Parameterliste aufgerufen werden. Die Funktion setmark gibt nichts
+zurück.
+
+- parseKeypress()
+
+Diese Funktion dient dem Abfangen von Tastatureingaben, wobei die Tasten "n" für
+nächste Seite und "b" für vordere Seite abgefragt werden. parseKeypress wird von
+initScripts aufgerufen und hat keinen Rückgabewert.
+
+- initScripts()
+
+In dieser Funktion werden Vorkehrungen getroffen, die beim Anzeigen einer  neuen
+Seite  getroffen werden  müssen. Deshalb  wird diese  Funktion automatisch  beim
+Laden   von   digilib3.jsp   aufgerufen.   Insbesondere   ruft   diese  Funktion
+parseKeypress und setmark  auf, wobei bei  verschiedenen Browsertypen auch  noch
+andere  Sachen  hinzukommen  (bei  Netscape   6  wird  zum  Beispiel  auch   die
+Clientgrösse berechnet und geschaut ob Scrollbalken gemacht werden müssen).
+
+
+4. ScaleServlet.java
+--------------------
+
+Der Aufruf von ScaleServlet.java erfolgt grundsätzlich von digilib3.jsp und  die
+Parameterliste hat  auch die  selben Attribute  (ausgenommen ist  att[5] mit den
+Koordinaten der Markierungspunkte. Bei Fragen über die einzelnen Bedeutungen der
+Attribute sie hier also auf Kapitel 2 verwiesen. An dieser Stelle sei aber  noch
+etwas  gesagt, über  die Zusammensetzung  der Parameterliste.  ScaleServlet.java
+kennt drei verschiden lange Parameterlisten,  mit denen es arbeiten kann,  wobei
+die korrekte Zusammenstellung der Parameterliste in digilib3.jsp erfolgt.
+
+- Kurz (att[1] - att[4])
+
+Diese vier Parameter geben dem ScaleServlet die Aufgabe, ein Bild (bestimmt  mit
+att[1] und  att[2]) auf  die Standardgrösse  zu skalieren  und an  den Client zu
+senden. Att[3] gibt  zusätzlich den Skalierungsfaktor  an und att[4]  verhindert
+mit einer Zufallszahl, dass das Bild aus dem Browsercache geholt wird.
+
+- Mittel (att[1] - att[4] + att[6] - att[9])
+
+Diese Möglichkeit  des Aufrufs  wird gebraucht,  um bezüglich  des in att[8] und
+att[9] bestimmten Mittelpunktes einen Ausschnitt zu vergrossen. Um den genannten
+Punkt  einzuordnen, wird  die grösse  des momentan  angezeigten Bildes  mit den
+Parametern 6 und 7 mitgegeben.
+
+- Lang (att[1] - att[4] + att[6]- att[11])
+
+Ein Aufruf in dieser Form gibt  dem Servlet an, einen Ausschnitt aus  einem Bild
+zu vergrössern und zurückzusenden. Folgt ein Aufruf in dieser Form, bekommen die
+Parameter att[8] und  att[9] die Werte  der linken oberen  Ecke und att[10]/[11]
+die Breite/Höhe des Ausschnitts.
+
+
+Aufgrund eines  eingebauten Session-Managements  im Servlet  ist es  möglich mit
+digilib auch mehrfach in ein Bild hinein zu zoomen.
+
+(Anm: Auch wenn dieses Session-Management seinen Zweck beim Anschauen der Bilder
+sehr  gut  erfüllt, ist  es  dem ScaleServlet  nicht  möglich den  Referenz-URLs
+anzusehen,  ob zuerst  mehrfach hineingezoomt  wurde und  gibt unter  Umständen 
+- eben wenn mehrfach hieingezoomt wurde vor der Generierung der Referenz - einen
+falschen Ausschnitt zurück.)
+
+
+----------------------------------------------

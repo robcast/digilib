@@ -1,0 +1,27 @@
+<!--
+-->
+<auth-config>
+
+  <digilib-paths>
+    <!-- 
+      A user must supply one of the roles under "role"
+      to access the directory "name".
+      Roles under "role" must be separated by comma only (no spaces).  
+    -->
+    <path name="histast/eastwood-collection" role="eastwood-coll" />
+    <path name="ptolemaios_geo" role="ptolemaios-geo" />
+  </digilib-paths>
+
+  <digilib-addresses>
+    <!-- 
+      A computer with an ip address that matches "ip"
+      is automatically granted all roles under "role".
+      The ip address is matched from the left (in full quads).
+      Roles under "role" must be separated by comma only (no spaces). 
+    -->
+    <address ip="127" role="local" />
+    <address ip="130.92.68" role="eastwood-coll,ptolemaios-geo" />
+    <address ip="130.92.151" role="ALL" />
+  </digilib-addresses>
+
+</auth-config>
