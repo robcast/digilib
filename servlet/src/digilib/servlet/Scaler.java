@@ -43,8 +43,8 @@ import digilib.image.ImageLoaderImageInfoDocuInfo;
 import digilib.image.ImageOpException;
 import digilib.image.ImageSize;
 import digilib.io.DocuDirCache;
-import digilib.io.DocuFile;
-import digilib.io.DocuFileset;
+import digilib.io.ImageFile;
+import digilib.io.ImageFileset;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
 
@@ -58,7 +58,7 @@ import digilib.io.FileOps;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.16a2";
+	public static final String dlVersion = "1.16a4";
 
 	// Utils instance with debuglevel
 	Utils util;
@@ -70,7 +70,7 @@ public class Scaler extends HttpServlet {
 	ServletOps servletOp;
 	// DocuDirCache instance
 	DocuDirCache dirCache;
-	
+
 	// deny image file
 	File denyImgFile;
 	// error image file
@@ -320,8 +320,8 @@ public class Scaler extends HttpServlet {
 		//"big" try for all file/image actions
 		try {
 
-			// DocuFileset of the image to load
-			DocuFileset fileset = null;
+			// ImageFileset of the image to load
+			ImageFileset fileset = null;
 
 			// new DocuInfo instance
 			DocuInfo docuInfo = new ImageLoaderImageInfoDocuInfo();
@@ -359,8 +359,12 @@ public class Scaler extends HttpServlet {
 			}
 
 			// find the file(set)
-			DocuFile fileToLoad;
-			fileset = dirCache.getFileset(loadPathName, dlRequest.getPn());
+			ImageFile fileToLoad;
+			fileset =
+				(ImageFileset) dirCache.getFile(
+					loadPathName,
+					dlRequest.getPn(),
+					FileOps.CLASS_IMAGE);
 			if (fileset == null) {
 				throw new FileOpException(
 					"File "
@@ -642,10 +646,7 @@ public class Scaler extends HttpServlet {
 					subf = 1 / scaleXY;
 					// for higher quality reduce subsample factor by minSubsample
 					if (scaleQual > 0) {
-						subsamp =
-							Math.max(
-								Math.floor(subf / minSubsample),
-								1d);
+						subsamp = Math.max(Math.floor(subf / minSubsample), 1d);
 					} else {
 						subsamp = Math.floor(subf);
 					}

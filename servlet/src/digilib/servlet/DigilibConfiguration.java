@@ -99,7 +99,7 @@ public class DigilibConfiguration extends ParameterMap {
 		// use authentication information
 		putParameter("use-authorization", Boolean.TRUE, null, 'f');
 		// authentication configuration file
-		putParameter("auth-file", "/docuserver/www/digitallibrary/WEB-INF/digilib-auth.xml", null, 'f');
+		putParameter("auth-file", "digilib-auth.xml", null, 'f');
 		// sending image files as-is allowed
 		putParameter("sendfile-allowed", Boolean.TRUE, null, 'f');
 		// Debug level
@@ -199,7 +199,8 @@ public class DigilibConfiguration extends ParameterMap {
 		util.setDebugLevel(getAsInt("debug-level"));
 		// directory cache
 		String[] bd = (String[]) getValue("basedir-list");
-		DocuDirCache dirCache = new DocuDirCache(bd);
+		int[] fcs = { FileOps.CLASS_IMAGE, FileOps.CLASS_TEXT};
+		DocuDirCache dirCache = new DocuDirCache(bd, fcs);
 		setValue("servlet.dir.cache", dirCache);
 		// useAuthentication
 		if (getAsBoolean("use-authorization")) {
@@ -207,11 +208,18 @@ public class DigilibConfiguration extends ParameterMap {
 			//authOp = new DBAuthOpsImpl(util);
 			// XML version
 			String authConfPath = getAsString("auth-file");
+			if (! authConfPath.startsWith("/")) {
+				// relative path -> use getRealPath to resolve in WEB-INF
+				authConfPath = c.getServletContext().getRealPath("WEB-INF/"+authConfPath);
+			}
 			AuthOps authOp = new XMLAuthOps(util, authConfPath);
 			setValue("servlet.auth.op", authOp);
 		}
 		// DocuImage class
-		docuImageClass = (Class) getValue("servlet.docuimage.class");
+		String s = getAsString("docuimage-class");
+		Class cl = Class.forName(getAsString("docuimage-class"));
+		docuImageClass = Class.forName(getAsString("docuimage-class"));
+		setValue("servlet.docuimage.class", docuImageClass);
 	}
 
 	/** Creates a new DocuImage instance.
