@@ -45,7 +45,6 @@ public class DocuFileset {
 	// parent directory
 	private DocuDirectory parent = null;
 
-
 	/*
 	 * constructors
 	 */
@@ -194,15 +193,21 @@ public class DocuFileset {
 			return;
 		}
 		if (fileMeta == null) {
-			// try to read meta-data file
+			// try to read metadata file
 			readMeta();
 			if (fileMeta == null) {
-				// there is no meta data
-				metaChecked = true;
-				return;
+				// try directory metadata
+				if (parent.getDirMeta() != null) {
+					fileMeta = parent.getDirMeta();
+				} else {
+					// no metadata available
+					metaChecked = true;
+					return;
+				}
 			}
 		}
 		metaChecked = true;
+		String s;
 		double dpi = 0;
 		double dpix = 0;
 		double dpiy = 0;
@@ -211,42 +216,58 @@ public class DocuFileset {
 		double pixx = 0;
 		double pixy = 0;
 		// DPI is valid for X and Y
-		try {
-			dpi = Double.parseDouble((String) fileMeta.get("dpi"));
-		} catch (NumberFormatException e) {
-		}
-		if (dpi != 0) {
-			resX = dpi;
-			resY = dpi;
-			return;
+		if (fileMeta.containsKey("original-dpi")) {
+			try {
+				dpi = Double.parseDouble((String) fileMeta.get("original-dpi"));
+			} catch (NumberFormatException e) {
+			}
+			if (dpi != 0) {
+				resX = dpi;
+				resY = dpi;
+				return;
+			}
 		}
 		// DPI-X and DPI-Y
-		try {
-			dpix = Double.parseDouble((String) fileMeta.get("dpi-x"));
-			dpiy = Double.parseDouble((String) fileMeta.get("dpi-y"));
-		} catch (NumberFormatException e) {
-		}
-		if ((dpix != 0) && (dpiy != 0)) {
-			resX = dpix;
-			resY = dpiy;
-			return;
+		if (fileMeta.containsKey("original-dpi-x")
+			&& fileMeta.containsKey("original-dpi-y")) {
+			try {
+				dpix =
+					Double.parseDouble((String) fileMeta.get("original-dpi-x"));
+				dpiy =
+					Double.parseDouble((String) fileMeta.get("original-dpi-y"));
+			} catch (NumberFormatException e) {
+			}
+			if ((dpix != 0) && (dpiy != 0)) {
+				resX = dpix;
+				resY = dpiy;
+				return;
+			}
 		}
 		// SIZE-X and SIZE-Y and PIXEL-X and PIXEL-Y
-		try {
-			sizex =
-				Double.parseDouble((String) fileMeta.get("original-size-x"));
-			sizey =
-				Double.parseDouble((String) fileMeta.get("original-size-y"));
-			pixx =
-				Double.parseDouble((String) fileMeta.get("original-pixel-x"));
-			pixy =
-				Double.parseDouble((String) fileMeta.get("original-pixel-y"));
-		} catch (NumberFormatException e) {
-		}
-		if ((sizex != 0) && (sizey != 0) && (pixx != 0) && (pixy != 0)) {
-			resX = pixx / (sizex * 100 / 2.54);
-			resY = pixy / (sizey * 100 / 2.54);
-			return;
+		if (fileMeta.containsKey("original-size-x")
+			&& fileMeta.containsKey("original-size-y")
+			&& fileMeta.containsKey("original-pixel-x")
+			&& fileMeta.containsKey("original-pixel-y")) {
+			try {
+				sizex =
+					Double.parseDouble(
+						(String) fileMeta.get("original-size-x"));
+				sizey =
+					Double.parseDouble(
+						(String) fileMeta.get("original-size-y"));
+				pixx =
+					Double.parseDouble(
+						(String) fileMeta.get("original-pixel-x"));
+				pixy =
+					Double.parseDouble(
+						(String) fileMeta.get("original-pixel-y"));
+			} catch (NumberFormatException e) {
+			}
+			if ((sizex != 0) && (sizey != 0) && (pixx != 0) && (pixy != 0)) {
+				resX = pixx / (sizex * 100 / 2.54);
+				resY = pixy / (sizey * 100 / 2.54);
+				return;
+			}
 		}
 	}
 
@@ -299,7 +320,7 @@ public class DocuFileset {
 	public boolean isMetaChecked() {
 		return metaChecked;
 	}
-	
+
 	/**
 	 * @return
 	 */
@@ -313,5 +334,5 @@ public class DocuFileset {
 	public double getResY() {
 		return resY;
 	}
-	
+
 }

@@ -58,7 +58,7 @@ import digilib.io.FileOps;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.11a1";
+	public static final String dlVersion = "1.11b1";
 
 	// Utils instance with debuglevel
 	Utils util;
@@ -401,6 +401,13 @@ public class Scaler extends HttpServlet {
 				fileset.checkMeta();
 				origResX = fileset.getResX();
 				origResY = fileset.getResY();
+				if ((origResX == 0) || (origResY == 0)) {
+					throw new ImageOpException("Missing image DPI information!");
+				}
+
+				if ((paramDDPIX == 0) || (paramDDPIY == 0)) {
+					throw new ImageOpException("Missing display DPI information!");
+				}
 			}
 
 			// check the source image
@@ -422,7 +429,7 @@ public class Scaler extends HttpServlet {
 					|| (paramRGBA != null)
 					|| (paramCONT != 0)
 					|| (paramBRGT != 0);
-			boolean imageSendable = mimetypeSendable && ! imagoOptions;
+			boolean imageSendable = mimetypeSendable && !imagoOptions;
 
 			/* if not autoRes and image smaller than requested 
 			 * size then send as is. 

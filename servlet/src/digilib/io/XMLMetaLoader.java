@@ -56,9 +56,22 @@ public class XMLMetaLoader {
 		private String fileName;
 		private String filePath;
 
-		//		public HashMap getData() {
-		//			return meta;
-		//		}
+		/**
+		 * extracts the elements name from either localName ln or qName qn.
+		 * 
+		 * @param ln localName
+		 * @param qn qName
+		 * @return element name
+		 */
+		private String getName(String ln, String qn) {
+			if (ln != null) {
+				if (ln.length() > 0) {
+					return ln;
+				}
+			}
+			// else it's qName (or nothing)
+			return qn;
+		}
 
 		// Parser calls this once at the beginning of a document
 		public void startDocument() throws SAXException {
@@ -74,7 +87,7 @@ public class XMLMetaLoader {
 			Attributes atts)
 			throws SAXException {
 
-			String name = (localName != null) ? localName : qName;
+			String name = getName(localName, qName);
 			// open a new tag
 			tags.addLast(name);
 			// start new content (no nesting of tags and content)
@@ -87,6 +100,7 @@ public class XMLMetaLoader {
 				// new file tag
 				fileName = null;
 				filePath = null;
+				meta = new HashMap();
 			}
 		}
 
@@ -104,7 +118,7 @@ public class XMLMetaLoader {
 			String qName)
 			throws SAXException {
 				
-			String name = (localName != null) ? localName : qName;
+			String name = getName(localName, qName);
 			// exit the tag
 			tags.removeLast();
 			
