@@ -191,7 +191,7 @@ public class XMLMetaLoader {
 	 *    returns HashMap with list data
 	 */
 	public HashMap loadURL(String path) throws SAXException, IOException {
-		//System.out.println("loadurl ("+path+")");
+		logger.debug("loading meta: "+path);
 		// Create a JAXP SAXParserFactory and configure it
 		SAXParserFactory spf = SAXParserFactory.newInstance();
 		spf.setNamespaceAware(true);

@@ -62,7 +62,7 @@ public abstract class DocuDirent {
 	 *  
 	 */
 	public void readMeta() {
-		if ((fileMeta != null) || (getFile() != null)) {
+		if ((fileMeta != null) || (getFile() == null)) {
 			// there is already metadata or there is no file
 			return;
 		}
@@ -79,7 +79,7 @@ public abstract class DocuDirent {
 				}
 				fileMeta = (HashMap) meta.get(getName());
 			} catch (Exception e) {
-				Logger.getLogger(this.getClass()).warn("error reading index.meta", e);
+				Logger.getLogger(this.getClass()).warn("error reading file .meta", e);
 			}
 		}
 	}
