@@ -43,11 +43,12 @@ import digilib.image.ImageOpException;
 import digilib.image.ImageOps;
 import digilib.image.ImageSize;
 import digilib.io.DocuDirCache;
+import digilib.io.DocuDirectory;
+import digilib.io.DocuDirent;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.ImageFile;
 import digilib.io.ImageFileset;
-
 
 /**
  * @author casties
@@ -58,14 +59,14 @@ public class Scaler extends HttpServlet {
 	private static final long serialVersionUID = -325080527268912852L;
 
 	/** digilib servlet version (for all components) */
-	public static final String dlVersion = "1.5.1b";
+	public static final String dlVersion = "1.5.3b";
 
 	/** logger for accounting requests */
 	private static Logger accountlog = Logger.getLogger("account.request");
-	
+
 	/** gengeral logger for this class */
 	private static Logger logger = Logger.getLogger("digilib.servlet");
-	
+
 	/** logger for authentication related */
 	private static Logger authlog = Logger.getLogger("digilib.auth");
 
@@ -136,7 +137,7 @@ public class Scaler extends HttpServlet {
 		if (dlConfig == null) {
 			// no Configuration
 			throw new ServletException("No Configuration!");
-			}
+		}
 		// set our AuthOps
 		useAuthorization = dlConfig.getAsBoolean("use-authorization");
 		authOp = (AuthOps) dlConfig.getValue("servlet.auth.op");
@@ -152,8 +153,8 @@ public class Scaler extends HttpServlet {
 
 	/** Process the HTTP Get request */
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
-		throws ServletException, IOException {
-		accountlog.info("GET from "+request.getRemoteAddr());
+			throws ServletException, IOException {
+		accountlog.info("GET from " + request.getRemoteAddr());
 		// create new request with defaults
 		DigilibRequest dlReq = new DigilibRequest();
 		// set with request parameters
@@ -166,8 +167,8 @@ public class Scaler extends HttpServlet {
 
 	/** Process the HTTP Post request */
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
-		throws ServletException, IOException {
-		accountlog.info("POST from "+request.getRemoteAddr());
+			throws ServletException, IOException {
+		accountlog.info("POST from " + request.getRemoteAddr());
 		// create new request with defaults
 		DigilibRequest dlReq = new DigilibRequest();
 		// set with request parameters
@@ -178,6 +179,28 @@ public class Scaler extends HttpServlet {
 		processRequest(request, response);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see javax.servlet.http.HttpServlet#getLastModified(javax.servlet.http.HttpServletRequest)
+	 */
+	protected long getLastModified(HttpServletRequest request) {
+		accountlog.debug("GetLastModified from " + request.getRemoteAddr());
+		long mtime = -1;
+		// create new request with defaults
+		DigilibRequest dlReq = new DigilibRequest();
+		// set with request parameters
+		dlReq.setWithRequest(request);
+		// find the requested file
+		DocuDirent f = findFile(dlReq);
+		if (f != null) {
+			DocuDirectory dd = (DocuDirectory) f.getParent();
+			mtime = dd.getDirMTime() / 1000 * 1000;
+		}
+		logger.debug("last modified: "+mtime);
+		return mtime;
+	}
+
 	/** main request handler. */
 	void processRequest(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException {
@@ -186,12 +209,12 @@ public class Scaler extends HttpServlet {
 			throw new ServletException("ERROR: No Configuration!");
 		}
 
-		accountlog.debug("request: "+request.getQueryString());
-		logger.debug("request: "+request.getQueryString());
-		
+		accountlog.debug("request: " + request.getQueryString());
+		logger.debug("request: " + request.getQueryString());
+
 		// time for benchmarking
 		long startTime = System.currentTimeMillis();
-		// output mime/type
+		// output mime-type
 		String mimeType = "image/png";
 
 		/* parameters for a session */
@@ -321,7 +344,7 @@ public class Scaler extends HttpServlet {
 		// operation mode: "jpg": always use JPEG
 		if (dlRequest.hasOption("mo", "jpg")) {
 			forceJPEG = true;
-		}		
+		}
 
 		// check with the maximum allowed size (if set)
 		int maxImgSize = dlConfig.getAsInt("max-image-size");
@@ -331,7 +354,7 @@ public class Scaler extends HttpServlet {
 			paramDH = (paramDH * paramWS > maxImgSize) ? (int) (maxImgSize / paramWS)
 					: paramDH;
 		}
-		
+
 		//"big" try for all file/image actions
 		try {
 
@@ -354,14 +377,12 @@ public class Scaler extends HttpServlet {
 					if (!authOp.isRoleAuthorized(rolesRequired, request)) {
 						// send deny answer and abort
 						throw new AuthOpException();
-						}
 					}
 				}
+			}
 
-			// find the file(set)
-			ImageFile fileToLoad;
-			fileset = (ImageFileset) dirCache.getFile(loadPathName, dlRequest
-					.getAsInt("pn"), FileOps.CLASS_IMAGE);
+			// find the file
+			fileset = (ImageFileset) findFile(dlRequest);
 			if (fileset == null) {
 				throw new FileOpException("File " + loadPathName + "("
 						+ dlRequest.getAsInt("pn") + ") not found.");
@@ -372,12 +393,13 @@ public class Scaler extends HttpServlet {
 			if (scaleToFit) {
 				float scale = (1 / Math.min(paramWW, paramWH)) * paramWS;
 				expectedSourceSize.setSize((int) (paramDW * scale),
-					(int) (paramDH * scale));
+						(int) (paramDH * scale));
 			} else {
 				expectedSourceSize.setSize((int) (paramDW * paramWS),
-					(int) (paramDH * paramWS));
+						(int) (paramDH * paramWS));
 			}
 
+			ImageFile fileToLoad;
 			/* select a resolution */
 			if (hiresOnly) {
 				// get first element (= highest resolution)
@@ -403,7 +425,7 @@ public class Scaler extends HttpServlet {
 			 * send the image if its mo=(raw)file
 			 */
 			if (dlRequest.hasOption("mo", "file")
-				|| dlRequest.hasOption("mo", "rawfile")) {
+					|| dlRequest.hasOption("mo", "rawfile")) {
 				if (sendFileAllowed) {
 					String mt = null;
 					if (dlRequest.hasOption("mo", "rawfile")) {
@@ -414,24 +436,6 @@ public class Scaler extends HttpServlet {
 					logger.info("Done in "
 							+ (System.currentTimeMillis() - startTime) + "ms");
 					return;
-				}
-			}
-
-			/*
-			 * prepare resolution for original size
-			 */
-			if (absoluteScale) {
-				// get original resolution from metadata
-				fileset.checkMeta();
-				origResX = fileset.getResX();
-				origResY = fileset.getResY();
-				if ((origResX == 0) || (origResY == 0)) {
-					throw new ImageOpException("Missing image DPI information!");
-				}
-
-				if ((paramDDPIX == 0) || (paramDDPIY == 0)) {
-					throw new ImageOpException(
-							"Missing display DPI information!");
 				}
 			}
 
@@ -480,6 +484,24 @@ public class Scaler extends HttpServlet {
 				paramDW = (int) Math.round(paramDH * imgAspect);
 			} else if (paramDH == 0) {
 				paramDH = (int) Math.round(paramDW / imgAspect);
+			}
+
+			/*
+			 * prepare resolution for original size
+			 */
+			if (absoluteScale) {
+				// get original resolution from metadata
+				fileset.checkMeta();
+				origResX = fileset.getResX();
+				origResY = fileset.getResY();
+				if ((origResX == 0) || (origResY == 0)) {
+					throw new ImageOpException("Missing image DPI information!");
+				}
+
+				if ((paramDDPIX == 0) || (paramDDPIY == 0)) {
+					throw new ImageOpException(
+							"Missing display DPI information!");
+				}
 			}
 
 			/* crop and scale the image */
@@ -625,6 +647,19 @@ public class Scaler extends HttpServlet {
 	}
 
 	/**
+	 * Returns the DocuDirent corresponding to the DigilibRequest.
+	 * 
+	 * @param dlRequest
+	 * @return
+	 */
+	public DocuDirent findFile(DigilibRequest dlRequest) {
+		// find the file(set)
+		DocuDirent f = dirCache.getFile(dlRequest.getFilePath(), dlRequest
+				.getAsInt("pn"), FileOps.CLASS_IMAGE);
+		return f;
+	}
+
+	/**
 	 * Sends an error to the client as text or image.
 	 * 
 	 * @param asHTML
@@ -634,24 +669,24 @@ public class Scaler extends HttpServlet {
 	 */
 	public void digilibError(boolean asHTML, int type, String msg,
 			HttpServletResponse response) {
-			try {
+		try {
 			File img = null;
 			if (type == ERROR_AUTH) {
 				if (msg == null) {
 					msg = "ERROR: Unauthorized access!";
 				}
 				img = denyImgFile;
-				} else {
+			} else {
 				if (msg == null) {
 					msg = "ERROR: Other image error!";
 				}
 				img = this.errorImgFile;
-		}
+			}
 			if (asHTML && (img != null)) {
 				ServletOps.htmlMessage(msg, response);
 			} else {
 				ServletOps.sendFile(img, null, response);
-	}
+			}
 		} catch (IOException e) {
 			logger.error("Error sending error!", e);
 		}
