@@ -24,6 +24,9 @@
   <!-- is sending whole image files with mo=file allowed? -->
   <parameter name="sendfile-allowed" value="true" />
 
+  <!-- the a maximum size of any sent image. (0 means no limit) -->
+  <parameter name="max-image-size" value="0" />
+
   <!-- Restrict access to authorized users.
        User authentication and roles are provided by the servlet container 
        (see tomcat-users.xml).
