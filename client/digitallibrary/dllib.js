@@ -14,7 +14,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  
-Authors: ROC 3.5.2004
+Authors: ROC 20.7.2004
   first version by Christian Luginbuehl, 01.05.2003
   Changed for digiLib in Zope by DW 24.03.2004
 
@@ -22,7 +22,7 @@ Requires baselib.js !
 
 */
 
-var dlScriptVersion = "0.9a1";
+var dlScriptVersion = "1.0b1";
 
 /*
  * more parameter handling
@@ -125,6 +125,7 @@ function hasFlag(mode) {
 function addFlag(mode) {
     // add a mode flag
     dlFlags[mode] = mode;
+    setParameter("mo", getAllFlags());
     return true;
 }
 
@@ -133,6 +134,7 @@ function removeFlag(mode) {
     if (dlFlags[mode]) {
 	delete dlFlags[mode];
     }
+    setParameter("mo", getAllFlags());
     return true;
 }
 
@@ -143,6 +145,7 @@ function toggleFlag(mode) {
     } else {
 	dlFlags[mode] = mode;
     }
+    setParameter("mo", getAllFlags());
     return true;
 }
 
@@ -281,7 +284,7 @@ function renderMarks() {
 }
 
 
-function setMark() {
+function setMark(reload) {
     // add a mark where clicked
     if ( dlMarks.length > 7 ) {
 	alert("Only 8 marks are possible at the moment!");
@@ -293,11 +296,28 @@ function setMark() {
 	unregisterMouseDown(elemScaler, markEvent);
 	var p = dlTrafo.invtransform(evtPosition(evt));
 	addMark(p);
+	if (defined(reload)&&(!reload)) {
+	    // don't redisplay
+	    renderMarks();
+	    return;
+	}
 	display();
     }
 
     // starting event capture
     registerMouseDown(elemScaler, markEvent);
+}
+
+
+function removeMark(reload) {
+    // remove the last mark
+    deleteMark();
+    if (defined(reload)&&(!reload)) {
+	// don't redisplay
+	renderMarks();
+	return;
+    }
+    display();
 }
 
 
@@ -383,7 +403,7 @@ var ZOOMFACTOR = Math.sqrt(2);
 
 function zoomBy(factor) {
     // zooms by the given factor
-    var newarea = dlArea;
+    var newarea = dlArea.copy();
     newarea.width /= factor;
     newarea.height /= factor;
     newarea.x -= 0.5 * (newarea.width - dlArea.width);
@@ -428,12 +448,6 @@ function moveCenter() {
     registerMouseDown(elemScaler, moveCenterEvent);
 }
 
-
-function removeMark() {
-    // remove the last mark
-    deleteMark();
-    renderMarks();
-}
 
 
 function getRef() {
