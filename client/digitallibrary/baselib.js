@@ -21,6 +21,12 @@ Authors:
 
 */
 
+function identify() {
+	// used for identifying a digilib instance
+	// Relato uses that function - lugi
+	return "Digilib 0.6";
+}
+
 function getInt(n) {
     // returns always an integer
     n = parseInt(n);
