@@ -51,15 +51,15 @@ public class DocuDirectory extends Directory {
 	private long objectATime = 0;
 	// time the file system directory was last modified
 	private long dirMTime = 0;
-	
 
 	/*
 	 * constructors
 	 */
 
-	/** Constructor with directory path and set of base directories.
+	/** Constructor with directory path and a parent DocuDirCache.
 	 * 
-	 * Reads the directory at the given path appended to the base directories.
+	 * Reads the directory at the given path appended to the base directories 
+	 * from the cache.
 	 * 
 	 * @see readDir
 	 *  
@@ -75,7 +75,7 @@ public class DocuDirectory extends Directory {
 	/*
 	 * other stuff
 	 */
-	 
+
 	/** The digilib name of the parent directory.
 	 * 
 	 * Returns null if there is no parent.
@@ -126,12 +126,12 @@ public class DocuDirectory extends Directory {
 		// array of base dirs
 		Directory[] dirs = new Directory[nb];
 		// the first directory has to exist
-		dir = new File(baseDirNames[0],  dirName);
+		dir = new File(baseDirNames[0], dirName);
 
 		if (dir.isDirectory()) {
 			// fill array with the remaining directories
 			for (int j = 1; j < nb; j++) {
-				File d = new File(baseDirNames[j],  dirName);
+				File d = new File(baseDirNames[j], dirName);
 				if (d.isDirectory()) {
 					dirs[j] = new Directory(d);
 				}
@@ -256,10 +256,10 @@ public class DocuDirectory extends Directory {
 	public void readParentMeta() {
 		// check the parent directories for additional file meta
 		Directory dd = parent;
-		String path = dir.getName() ;
+		String path = dir.getName();
 		while (dd != null) {
-			if (((DocuDirectory)dd).hasUnresolvedFileMeta()) {
-				readFileMeta(((DocuDirectory)dd).unresolvedFileMeta, path);
+			if (((DocuDirectory) dd).hasUnresolvedFileMeta()) {
+				readFileMeta(((DocuDirectory) dd).unresolvedFileMeta, path);
 			}
 			// prepend parent dir path
 			path = dd.dir.getName() + "/" + path;

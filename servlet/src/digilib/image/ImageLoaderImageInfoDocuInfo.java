@@ -31,6 +31,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
 import digilib.io.DocuFile;
+import digilib.io.FileOpException;
 import digilib.io.FileOps;
 
 /**
@@ -60,6 +61,9 @@ public class ImageLoaderImageInfoDocuInfo implements DocuInfo {
 			Iterator readers = ImageIO.getImageReaders(istream);
 			//String ext = f.getName().substring(f.getName().lastIndexOf('.')+1);
 			//Iterator readers = ImageIO.getImageReadersBySuffix(ext);
+			if (! readers.hasNext()) {
+				throw new FileOpException("ERROR: unknown image file format!");
+			}
 			ImageReader reader = (ImageReader) readers.next();
 			/* are there more readers? */
 			System.out.println("this reader: " + reader.getClass());

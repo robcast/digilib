@@ -58,7 +58,7 @@ import digilib.io.FileOps;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.16a1";
+	public static final String dlVersion = "1.16a2";
 
 	// Utils instance with debuglevel
 	Utils util;
@@ -768,7 +768,7 @@ public class Scaler extends HttpServlet {
 			 */
 
 		} // end of "big" try
-		catch (FileOpException e) {
+		catch (IOException e) {
 			util.dprintln(1, "ERROR: File IO Error: " + e);
 			try {
 				if (errorMsgHtml) {

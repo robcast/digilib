@@ -176,7 +176,7 @@ public class DigilibConfiguration extends ParameterMap {
 					 */
 					
 					// basedir-list
-					if (key == "basedir-list") {
+					if (key.equals("basedir-list")) {
 						// split list into directories
 						String[] sa = FileOps.pathToArray(val);
 						if (sa != null) {
