@@ -38,7 +38,7 @@ import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
-import digilib.io.DocuFile;
+import digilib.io.ImageFile;
 import digilib.io.FileOpException;
 
 /** Implementation of DocuImage using the ImageLoader API of Java 1.4 and Java2D. */
@@ -99,9 +99,9 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	}
 
 	/* load image file */
-	public void loadImage(DocuFile f) throws FileOpException {
+	public void loadImage(ImageFile f) throws FileOpException {
 		util.dprintln(10, "loadImage!");
-		System.gc();
+		//System.gc();
 		try {
 			img = ImageIO.read(f.getFile());
 			if (img == null) {
@@ -116,13 +116,13 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	/** Get an ImageReader for the image file.
 	 * 
 	 */
-	public void preloadImage(DocuFile f) throws IOException {
+	public void preloadImage(ImageFile f) throws IOException {
 		if (reader != null) {
 			// clean up old reader
 			reader.dispose();
 			reader = null;
 		}
-		System.gc();
+		//System.gc();
 		RandomAccessFile rf = new RandomAccessFile(f.getFile(), "r");
 		ImageInputStream istream = ImageIO.createImageInputStream(rf);
 		//Iterator readers = ImageIO.getImageReaders(istream);
@@ -145,9 +145,9 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	}
 
 	/* Load an image file into the Object. */
-	public void loadSubimage(DocuFile f, Rectangle region, int prescale)
+	public void loadSubimage(ImageFile f, Rectangle region, int prescale)
 		throws FileOpException {
-		System.gc();
+		//System.gc();
 		try {
 			if ((reader == null) || (imgFile != f.getFile())) {
 				preloadImage(f);

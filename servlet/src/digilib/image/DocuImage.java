@@ -23,7 +23,7 @@ package digilib.image;
 import java.awt.Rectangle;
 import java.io.OutputStream;
 
-import digilib.io.DocuFile;
+import digilib.io.ImageFile;
 import digilib.io.FileOpException;
 
 /** The basic class for the representation of a digilib image.
@@ -46,7 +46,7 @@ public interface DocuImage {
 	 * @param f Image File.
 	 * @throws FileOpException Exception thrown if any error occurs.
 	 */
-	public void loadImage(DocuFile f) throws FileOpException;
+	public void loadImage(ImageFile f) throws FileOpException;
 
 	/** This DocuImage support the loadSubImage operation.
 	 * 
@@ -61,7 +61,7 @@ public interface DocuImage {
 	 * @param subsample
 	 * @throws FileOpException
 	 */
-	public void loadSubimage(DocuFile f, Rectangle region, int subsample)
+	public void loadSubimage(ImageFile f, Rectangle region, int subsample)
 		throws FileOpException;
 
 	/** Writes the current image to a ServletResponse.

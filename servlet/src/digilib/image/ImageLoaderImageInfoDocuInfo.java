@@ -22,6 +22,7 @@ package digilib.image;
 
 import ImageInfo;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Iterator;
@@ -30,9 +31,9 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
-import digilib.io.DocuFile;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
+import digilib.io.ImageFile;
 
 /**
  * @author casties
@@ -40,9 +41,13 @@ import digilib.io.FileOps;
  */
 public class ImageLoaderImageInfoDocuInfo implements DocuInfo {
 
-	/* check image size and type and store in DocuFile f */
-	public boolean checkFile(DocuFile f) throws IOException {
-		RandomAccessFile raf = new RandomAccessFile(f.getFile(), "r");
+	/* check image size and type and store in ImageFile f */
+	public boolean checkFile(ImageFile imgf) throws IOException {
+		File f = imgf.getFile();
+		if (f == null) {
+			throw new IOException("File not found!");
+		}
+		RandomAccessFile raf = new RandomAccessFile(f, "r");
 		// set up ImageInfo object
 		ImageInfo iif = new ImageInfo();
 		iif.setInput(raf);
@@ -52,8 +57,8 @@ public class ImageLoaderImageInfoDocuInfo implements DocuInfo {
 		if (iif.check()) {
 			ImageSize d =
 				new ImageSize(iif.getWidth(), iif.getHeight());
-			f.setSize(d);
-			f.setMimetype(iif.getMimeType());
+			imgf.setSize(d);
+			imgf.setMimetype(iif.getMimeType());
 			raf.close();
 		} else {
 			// else use ImageReader
@@ -73,10 +78,10 @@ public class ImageLoaderImageInfoDocuInfo implements DocuInfo {
 			reader.setInput(istream);
 			ImageSize d =
 				new ImageSize(reader.getWidth(0), reader.getHeight(0));
-			f.setSize(d);
+			imgf.setSize(d);
 			String t = reader.getFormatName();
-			t = FileOps.mimeForFile(f.getFile());
-			f.setMimetype(t);
+			t = FileOps.mimeForFile(f);
+			imgf.setMimetype(t);
 			// dispose the reader to free resources
 			reader.dispose();
 		}

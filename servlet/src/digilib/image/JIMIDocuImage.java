@@ -32,7 +32,7 @@ import com.sun.jimi.core.filters.ReplicatingScaleFilter;
 import com.sun.jimi.core.raster.JimiRasterImage;
 
 import digilib.Utils;
-import digilib.io.DocuFile;
+import digilib.io.ImageFile;
 import digilib.io.FileOpException;
 
 /** Implementation of DocuImage using the JIMI image Library. */
@@ -53,7 +53,7 @@ public class JIMIDocuImage extends DocuImageImpl {
 	/**
 	 *  load image file
 	 */
-	public void loadImage(DocuFile f) throws FileOpException {
+	public void loadImage(ImageFile f) throws FileOpException {
 		System.gc();
 		try {
 			img = Jimi.getRasterImage(f.getFile().toURL());

@@ -23,7 +23,7 @@ package digilib.image;
 
 import java.io.IOException;
 
-import digilib.io.DocuFile;
+import digilib.io.ImageFile;
 import digilib.io.FileOps;
 
 /**
@@ -34,8 +34,8 @@ public class ImageLoaderDocuInfo implements DocuInfo {
 
 	private ImageLoaderDocuImage img = new ImageLoaderDocuImage();
 
-	/* check image size and type and store in DocuFile f */
-	public boolean checkFile(DocuFile f) throws IOException {
+	/* check image size and type and store in ImageFile f */
+	public boolean checkFile(ImageFile f) throws IOException {
 		ImageLoaderDocuImage img = new ImageLoaderDocuImage();
 		img.preloadImage(f);
 		img.reader = img.reader;

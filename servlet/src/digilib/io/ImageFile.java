@@ -1,4 +1,4 @@
-/* DocuFile.java -- digilib image file class.
+/* ImageFile.java -- digilib image file class.
 
   Digital Image Library servlet components
 
@@ -28,12 +28,12 @@ import digilib.image.ImageSize;
 /**
  * @author casties
  */
-public class DocuFile {
+public class ImageFile {
 	
-	// file object
+	// file name
 	private String filename = null;
-	// parent DocuFileset
-	private DocuFileset parent = null;
+	// parent ImageFileset
+	private ImageFileset parent = null;
 	// parent directory
 	private Directory dir = null;
 	// mime file type
@@ -41,13 +41,13 @@ public class DocuFile {
 	// image size in pixels
 	private ImageSize pixelSize = null;
 
-	public DocuFile(String fn, DocuFileset parent, Directory dir) {
+	public ImageFile(String fn, ImageFileset parent, Directory dir) {
 		this.filename = fn;
 		this.parent = parent;
 		this.dir = dir;
 	}
 	
-	public DocuFile(String fn) {
+	public ImageFile(String fn) {
 		File f = new File(fn);
 		this.dir = new Directory(f.getParentFile());
 		this.filename = f.getName();
@@ -66,6 +66,9 @@ public class DocuFile {
 	 * @return File
 	 */
 	public File getFile() {
+		if (dir == null) {
+			return null;
+		}
 		File f = new File(dir.getDir(), filename);
 		return f;
 	}
@@ -101,9 +104,9 @@ public class DocuFile {
 	}
 
 	/**
-	 * @return DocuFileset
+	 * @return ImageFileset
 	 */
-	public DocuFileset getParent() {
+	public ImageFileset getParent() {
 		return parent;
 	}
 
@@ -111,7 +114,7 @@ public class DocuFile {
 	 * Sets the parent.
 	 * @param parent The parent to set
 	 */
-	public void setParent(DocuFileset parent) {
+	public void setParent(ImageFileset parent) {
 		this.parent = parent;
 	}
 

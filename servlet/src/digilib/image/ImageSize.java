@@ -1,4 +1,4 @@
-/* DocuFile.java -- digilib image file class.
+/* ImageFile.java -- digilib image file class.
 
   Digital Image Library servlet components
 

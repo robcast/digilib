@@ -35,7 +35,7 @@ import javax.media.jai.operator.TransposeDescriptor;
 import javax.media.jai.operator.TransposeType;
 
 import digilib.Utils;
-import digilib.io.DocuFile;
+import digilib.io.ImageFile;
 import digilib.io.FileOpException;
 
 /** A DocuImage implementation using Java Advanced Imaging Library. */
@@ -56,7 +56,7 @@ public class JAIDocuImage extends DocuImageImpl {
 	}
 
 	/* Load an image file into the Object. */
-	public void loadImage(DocuFile f) throws FileOpException {
+	public void loadImage(ImageFile f) throws FileOpException {
 		System.gc();
 		img = JAI.create("fileload", f.getFile().getAbsolutePath());
 		if (img == null) {

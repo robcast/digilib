@@ -50,7 +50,8 @@ public class Directory {
 
 	/** Constructor taking a File object and a parent.
 	 * 
-	 * @param d
+	 * @param dir
+	 * @param parent
 	 */
 	public Directory(File dir, Directory parent) {
 		this.dir = dir;

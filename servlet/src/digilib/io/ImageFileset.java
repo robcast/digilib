@@ -1,4 +1,4 @@
-/* DocuFileset -- digilib image file info class.
+/* ImageFileset -- digilib image file info class.
 
   Digital Image Library servlet components
 
@@ -22,7 +22,6 @@ package digilib.io;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ListIterator;
 
@@ -32,33 +31,45 @@ import digilib.image.ImageSize;
 /**
  * @author casties
  */
-public class DocuFileset {
+public class ImageFileset extends DocuDirent {
 
-	// list of files (DocuFile)
+	// this is an image file
+	protected static int fileClass = FileOps.CLASS_IMAGE;
+
+	// list of files (ImageFile)
 	private ArrayList list = null;
-	// metadata
-	private HashMap fileMeta = null;
-	// metadata has been checked
-	private boolean metaChecked = false;
 	// resolution (DPI)
 	private double resX = 0;
 	private double resY = 0;
-	// parent directory
-	private DocuDirectory parent = null;
 
-	/*
-	 * constructors
+	/** Creator for empty fileset with size for file list.
+	 * 
+	 * @param initialCapacity
 	 */
-
-	public DocuFileset(int initialCapacity) {
+	public ImageFileset(int initialCapacity) {
 		list = new ArrayList(initialCapacity);
 	}
 
-	/*
-	 * other stuff
+	/** Creator with a file and base directories.
+	 * 
+	 * Reads the file and fills the 
+	 * fileset with corresponding files from the other base directories.
+	 * First entry in dirs is the parent of this fileset. 
+	 * 
+	 * @see fill
+	 * 
+	 * @param dirs array of base directories
+	 * @param file first file to read
+	 * @param scalext extension for scaled images
 	 */
+	public ImageFileset(Directory[] dirs, File file, String scalext) {
+		int nb = dirs.length;
+		list = new ArrayList(nb);
+		parent = dirs[0];
+		fill(dirs, file, scalext);
+	}
 
-	/** Adds a DocuFile to this Fileset.
+	/** Adds a ImageFile to this Fileset.
 	 * 
 	 * The files should be added in the order of higher to lower resolutions. 
 	 * The first file is considered the hires "original". 
@@ -66,7 +77,7 @@ public class DocuFileset {
 	 * @param f file to add
 	 * @return true (always)
 	 */
-	public boolean add(DocuFile f) {
+	public boolean add(ImageFile f) {
 		f.setParent(this);
 		return list.add(f);
 	}
@@ -79,18 +90,25 @@ public class DocuFileset {
 		return (list != null) ? list.size() : 0;
 	}
 
-	/** Get the DocuFile at the index.
+	/** Gets the default File.
+	 * 
+	 */
+	public File getFile() {
+		return (list != null) ? ((ImageFile) list.get(0)).getFile() : null;
+	}
+
+	/** Get the ImageFile at the index.
 	 * 
 	 * @param index
 	 * @return
 	 */
-	public DocuFile get(int index) {
-		return (DocuFile) list.get(index);
+	public ImageFile get(int index) {
+		return (ImageFile) list.get(index);
 	}
 
-	/** Get the next smaller DocuFile than the given size.
+	/** Get the next smaller ImageFile than the given size.
 	 * 
-	 * Returns the DocuFile from the set that has a width and height 
+	 * Returns the ImageFile from the set that has a width and height 
 	 * smaller or equal the given size. 
 	 * Returns null if there isn't any smaller image.
 	 * Needs DocuInfo instance to checkFile().
@@ -99,9 +117,9 @@ public class DocuFileset {
 	 * @param info
 	 * @return
 	 */
-	public DocuFile getNextSmaller(ImageSize size, DocuInfo info) {
+	public ImageFile getNextSmaller(ImageSize size, DocuInfo info) {
 		for (Iterator i = getHiresIterator(); i.hasNext();) {
-			DocuFile f = (DocuFile) i.next();
+			ImageFile f = (ImageFile) i.next();
 			try {
 				if (!f.isChecked()) {
 					info.checkFile(f);
@@ -117,9 +135,9 @@ public class DocuFileset {
 		return null;
 	}
 
-	/** Get the next bigger DocuFile than the given size.
+	/** Get the next bigger ImageFile than the given size.
 	 * 
-	 * Returns the DocuFile from the set that has a width or height 
+	 * Returns the ImageFile from the set that has a width or height 
 	 * bigger or equal the given size. 
 	 * Returns null if there isn't any bigger image.
 	 * Needs DocuInfo instance to checkFile().
@@ -128,9 +146,9 @@ public class DocuFileset {
 	 * @param info
 	 * @return
 	 */
-	public DocuFile getNextBigger(ImageSize size, DocuInfo info) {
+	public ImageFile getNextBigger(ImageSize size, DocuInfo info) {
 		for (ListIterator i = getLoresIterator(); i.hasPrevious();) {
-			DocuFile f = (DocuFile) i.previous();
+			ImageFile f = (ImageFile) i.previous();
 			try {
 				if (!f.isChecked()) {
 					info.checkFile(f);
@@ -167,29 +185,47 @@ public class DocuFileset {
 		return list.listIterator(list.size());
 	}
 
-	/** Reads meta-data for this Fileset if there is any.
+	/** Fill the ImageFileset with files from different base directories.
 	 * 
+	 * @param dirs list of base directories
+	 * @param fl file (from first base dir)
+	 * @param scalext first extension to try in other base dirs
 	 */
-	public void readMeta() {
-		if ((fileMeta != null) || list.isEmpty()) {
-			// there is already metadata or there's no file 
-			return;
-		}
-		// metadata is in the file {filename}.meta
-		String fn = ((DocuFile) list.get(0)).getFile().getAbsolutePath();
-		File mf = new File(fn + ".meta");
-		if (mf.canRead()) {
-			XMLMetaLoader ml = new XMLMetaLoader();
-			try {
-				// read meta file
-				HashMap meta = ml.loadURL(mf.getAbsolutePath());
-				if (meta == null) {
-					return;
+	void fill(Directory[] dirs, File fl, String scalext) {
+		int nb = dirs.length;
+		String fn = fl.getName();
+		String fnx = fn.substring(0, fn.lastIndexOf('.') + 1);
+		// add the first ImageFile to the ImageFileset 
+		add(new ImageFile(fn, this, parent));
+		// iterate the remaining base directories
+		for (int j = 1; j < nb; j++) {
+			if (dirs[j] == null) {
+				continue;
+			}
+			File f;
+			if (scalext != null) {
+				// use the last extension
+				f = new File(dirs[j].getDir(), fnx + scalext);
+			} else {
+				// try the same filename as the original
+				f = new File(dirs[j].getDir(), fn);
+			}
+			// if the file exists, add to the ImageFileset
+			if (f.canRead()) {
+				add(new ImageFile(f.getName(), this, dirs[j]));
+			} else {
+				// try other file extensions
+				Iterator exts = FileOps.getImageExtensionIterator();
+				while (exts.hasNext()) {
+					String s = (String) exts.next();
+					f = new File(dirs[j].getDir(), fnx + s);
+					// if the file exists, add to the ImageFileset
+					if (f.canRead()) {
+						add(new ImageFile(f.getName(), this, dirs[j]));
+						scalext = s;
+						break;
+					}
 				}
-				fileMeta = (HashMap) meta.get(getName());
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 		}
 	}
@@ -206,8 +242,8 @@ public class DocuFileset {
 			readMeta();
 			if (fileMeta == null) {
 				// try directory metadata
-				if (parent.getDirMeta() != null) {
-					fileMeta = parent.getDirMeta();
+				if (((DocuDirectory) parent).getDirMeta() != null) {
+					fileMeta = ((DocuDirectory) parent).getDirMeta();
 				} else {
 					// no metadata available
 					metaChecked = true;
@@ -278,56 +314,6 @@ public class DocuFileset {
 				return;
 			}
 		}
-	}
-
-	/** The name of the (hires) image file.
-	 * 
-	 * @return
-	 */
-	public String getName() {
-		if (!list.isEmpty()) {
-			return ((DocuFile) list.get(0)).getName();
-		}
-		return null;
-	}
-
-	/** Returns the parent DocuDirectory.
-	 * 
-	 * @return DocuDirectory
-	 */
-	public DocuDirectory getParent() {
-		return parent;
-	}
-
-	/**
-	 * Sets the parent.
-	 * @param parent The parent to set
-	 */
-	public void setParent(DocuDirectory parent) {
-		this.parent = parent;
-	}
-
-	/** Returns the meta-data for this fileset.
-	 * 
-	 * @return HashMap
-	 */
-	public HashMap getFileMeta() {
-		return fileMeta;
-	}
-
-	/**
-	 * Sets the fileMeta.
-	 * @param fileMeta The fileMeta to set
-	 */
-	public void setFileMeta(HashMap fileMeta) {
-		this.fileMeta = fileMeta;
-	}
-
-	/**
-	 * @return
-	 */
-	public boolean isMetaChecked() {
-		return metaChecked;
 	}
 
 	/**

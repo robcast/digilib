@@ -23,7 +23,7 @@ package digilib.image;
 import java.awt.Rectangle;
 
 import digilib.Utils;
-import digilib.io.DocuFile;
+import digilib.io.ImageFile;
 import digilib.io.FileOpException;
 
 /** Simple abstract implementation of the <code>DocuImage</code> interface.
@@ -140,7 +140,7 @@ public abstract class DocuImageImpl implements DocuImage {
 		return false;
 	}
 
-	public void loadSubimage(DocuFile f, Rectangle region, int subsample)
+	public void loadSubimage(ImageFile f, Rectangle region, int subsample)
 		throws FileOpException {
 		// empty implementation
 	}

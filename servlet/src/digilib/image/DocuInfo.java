@@ -22,7 +22,7 @@ package digilib.image;
 
 import java.io.IOException;
 
-import digilib.io.DocuFile;
+import digilib.io.ImageFile;
 
 /**
  * @author casties
@@ -30,15 +30,15 @@ import digilib.io.DocuFile;
  */
 public interface DocuInfo {
 
-	/** Checks the size and type of the DocuFile f.
+	/** Checks the size and type of the ImageFile f.
 	 * 
-	 * The image size and type of the DocuFile f is determined and stored in
-	 * the DocuFile object. Returns true if successfull.
+	 * The image size and type of the ImageFile f is determined and stored in
+	 * the ImageFile object. Returns true if successfull.
 	 * 
-	 * @param f DocuFile to be checked.
+	 * @param f ImageFile to be checked.
 	 * @return boolean true if check was successfull.
 	 * @throws FileOpException Exception thrown on error.
 	 */
-	public boolean checkFile(DocuFile f) throws IOException;
+	public boolean checkFile(ImageFile f) throws IOException;
 
 }

@@ -34,7 +34,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.JAI;
 
-import digilib.io.DocuFile;
+import digilib.io.ImageFile;
 import digilib.io.FileOpException;
 
 /** DocuImage implementation using the Java Advanced Imaging API and the ImageLoader
@@ -81,7 +81,7 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 	}
 
 	/* Load an image file into the Object. */
-	public void loadImage(DocuFile f) throws FileOpException {
+	public void loadImage(ImageFile f) throws FileOpException {
 		System.gc();
 		img = JAI.create("ImageRead", f.getFile().getAbsolutePath());
 		if (img == null) {
@@ -91,7 +91,7 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 	}
 
 	/* Get an ImageReader for the image file. */
-	public void preloadImage(DocuFile f) throws IOException {
+	public void preloadImage(ImageFile f) throws IOException {
 		System.gc();
 		RandomAccessFile rf = new RandomAccessFile(f.getFile(), "r");
 		ImageInputStream istream = ImageIO.createImageInputStream(rf);
@@ -106,7 +106,7 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 	}
 
 	/* Load an image file into the Object. */
-	public void loadSubimage(DocuFile f, Rectangle region, int prescale)
+	public void loadSubimage(ImageFile f, Rectangle region, int prescale)
 		throws FileOpException {
 		System.gc();
 		try {

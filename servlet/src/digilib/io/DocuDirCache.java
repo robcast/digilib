@@ -23,23 +23,37 @@ package digilib.io;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author casties
  */
 public class DocuDirCache {
 
-	// HashMap of directories
+	/** HashMap of directories */
 	private HashMap map = null;
-	// names of base directories
+	/** names of base directories */
 	private String[] baseDirNames = null;
-	// number of files in the whole cache (approximate)
+	/** array of allowed file classes (image/text) */
+	private int[] fileClasses = null;
+	/** number of files in the whole cache (approximate) */
 	private long numFiles = 0;
-	// number of cache hits
+	/** number of cache hits */
 	private long hits = 0;
-	// number of cache misses
+	/** number of cache misses */
 	private long misses = 0;
 
+	/** Constructor with array of base directory names and file classes.
+	 *  
+	 * @param bd base directory names
+	 */
+	public DocuDirCache(String[] bd, int[] fileClasses) {
+		baseDirNames = bd;
+		map = new HashMap();
+		this.fileClasses = fileClasses;
+	}
 	/** Constructor with array of base directory names.
 	 *  
 	 * @param bd base directory names
@@ -47,6 +61,9 @@ public class DocuDirCache {
 	public DocuDirCache(String[] bd) {
 		baseDirNames = bd;
 		map = new HashMap();
+		// default file class is CLASS_IMAGE
+		fileClasses = new int[1];
+		fileClasses[0] = FileOps.CLASS_IMAGE;
 	}
 
 	/** The number of directories in the cache.
@@ -63,7 +80,7 @@ public class DocuDirCache {
 	public void put(DocuDirectory newdir) {
 		String s = newdir.getDirName();
 		if (map.containsKey(s)) {
-			System.out.println("Baah, duplicate key in DocuDirectory.put!");
+			System.out.println("Baah, duplicate key in DocuDirCache.put!");
 		} else {
 			map.put(s, newdir);
 			numFiles += newdir.size();
@@ -87,12 +104,37 @@ public class DocuDirCache {
 			}
 			newDir.setParent(pd);
 		}
-		// update dir in the end
-		newDir.readParentMeta();
 	}
 
-	/** Returns the DocuFileset with the pathname <code>fn</code> and the 
-	 * index <code>in</code>.
+	/** Get a list with all children of a directory.
+	 * 
+	 * Returns a List of DocuDirectory's.
+	 * Returns an empty List if the directory has no children.
+	 * If recurse is false then only direct children are returned.
+	 * 
+	 * @param dirname
+	 * @param recurse find all children and their children.
+	 * @return
+	 */
+	public List getChildren(String dirname, boolean recurse) {
+		List l = new LinkedList();
+		for (Iterator i = map.keySet().iterator(); i.hasNext(); ) {
+			DocuDirectory dd = (DocuDirectory)i.next();
+			if (recurse) {
+				if (dd.getDirName().startsWith(dirname)) {
+					l.add(dd);
+				}
+			} else {
+				if (dd.getParentDirName().equals(dirname)) {
+					l.add(dd);
+				}
+			}
+		}
+		return l;
+	}
+
+	/** Returns the ImageFileset with the pathname <code>fn</code> and the 
+	 * index <code>in</code> and the class <code>fc</code>.
 	 * 
 	 * If <code>fn</code> is a file then the corresponding Fileset is 
 	 * returned and the index is ignored.
@@ -101,7 +143,7 @@ public class DocuDirCache {
 	 * @param in file index
 	 * @return 
 	 */
-	public DocuFileset getFileset(String fn, int in) {
+	public DocuDirent getFile(String fn, int in, int fc) {
 		DocuDirectory dd;
 		// file number is 1-based, vector index is 0-based
 		int n = in - 1;
@@ -140,7 +182,7 @@ public class DocuDirCache {
 						misses--;
 					}
 					// get the file's index
-					n = dd.indexOf(f.getName());
+					n = dd.indexOf(f.getName(), fc);
 				} else {
 					// it's not even a file :-(
 					return null;
@@ -153,7 +195,7 @@ public class DocuDirCache {
 		dd.refresh();
 		if (dd.isValid()) {
 			try {
-				return dd.get(n);
+				return dd.get(n, fc);
 			} catch (ArrayIndexOutOfBoundsException e) {
 			}
 		}
@@ -253,4 +295,18 @@ public class DocuDirCache {
 		return misses;
 	}
 
+	/**
+	 * @return
+	 */
+	public int[] getFileClasses() {
+		return fileClasses;
+	}
+
+	/**
+	 * @param fileClasses
+	 */
+	public void setFileClasses(int[] fileClasses) {
+		this.fileClasses = fileClasses;
+	}
+	
 }
