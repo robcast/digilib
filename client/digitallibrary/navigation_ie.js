@@ -91,6 +91,22 @@ function loadPicture(detailGrade, keepArea) {
 }
 
 
+// constructor holding different values of a point
+function Point(event) {
+
+	this.pageX = parseInt(document.body.scrollLeft+event.x);
+	this.pageY = parseInt(document.body.scrollTop+event.y);
+	
+	this.x = this.pageX-parseInt(document.all.lay1.style.left);
+	this.y = this.pageY-parseInt(document.all.lay1.style.top);
+	
+	this.relX = cropFloat(att[5]+(att[7]*this.x/document.all.lay1.offsetWidth));
+	this.relY = cropFloat(att[6]+(att[8]*this.y/document.all.lay1.offsetHeight));
+
+	return this;
+}
+
+
 function backPage(keepArea) {
 
     att[1] = parseInt(att[1]) - 1;
@@ -157,7 +173,7 @@ function mark(refselect) {
 	}
 
     document.all.lay1.onmousedown = function() {
-		e = event;
+		var point = new Point(event);
 
         if ((att[4] != "") && (att[4] != "0/0")) {
             att[4] += ";";
@@ -165,10 +181,7 @@ function mark(refselect) {
             att[4] = "";
         }
 
-		markX = cropFloat(att[5]+att[7]*(document.body.scrollLeft+e.x-parseInt(document.all.lay1.style.left))/document.all.lay1.offsetWidth);
-		markY = cropFloat(att[6]+att[8]*(document.body.scrollTop+e.y-parseInt(document.all.lay1.style.top))/document.all.lay1.offsetHeight);
-
-        att[4] += markX + "/" + markY;
+        att[4] += point.relX + "/" + point.relY;
 
         document.all.lay1.cancleBubble = true;
         
@@ -179,27 +192,23 @@ function mark(refselect) {
 
 function zoomArea() {
     var state = 0;
-    var x1, y1, x2, y2;
+    var pt1, pt2;
         
     function click() {
-		e = event;
-
         if (state == 0) {
             state = 1;
             
-            x1 = document.body.scrollLeft+e.x;
-            y1 = document.body.scrollTop+e.y;           
-            x2 = x1;
-            y2 = y1;
+			pt1 = new Point(event);
+			pt2 = pt1;
 
-			document.all.eck1.style.left = x1;
-			document.all.eck1.style.top = y1;
-			document.all.eck2.style.left = x2-12;
-			document.all.eck2.style.top = y1;
-			document.all.eck3.style.left = x1;
-			document.all.eck3.style.top = y2-12;
-			document.all.eck4.style.left = x2-12;
-			document.all.eck4.style.top = y2-12;
+			document.all.eck1.style.left = pt1.pageX;
+			document.all.eck1.style.top = pt1.pageY;
+			document.all.eck2.style.left = pt2.pageX-12;
+			document.all.eck2.style.top = pt1.pageY;
+			document.all.eck3.style.left = pt1.pageX;
+			document.all.eck3.style.top = pt2.pageY-12;
+			document.all.eck4.style.left = pt2.pageX-12;
+			document.all.eck4.style.top = pt2.pageY-12;
 
 			document.all.eck1.style.visibility="visible";
 			document.all.eck2.style.visibility="visible";
@@ -210,12 +219,7 @@ function zoomArea() {
             document.all.eck4.onmousemove = move;
             
         } else {
-
-			x1 -= parseInt(document.all.lay1.style.left);
-			y1 -= parseInt(document.all.lay1.style.top);			
-
-            x2 = document.body.scrollLeft+e.x-parseInt(document.all.lay1.style.left);
-            y2 = document.body.scrollTop+e.y-parseInt(document.all.lay1.style.left);         
+			pt2 = new Point(event);
 
             document.all.eck1.visibility="hidden";
             document.all.eck2.visibility="hidden";
@@ -225,11 +229,11 @@ function zoomArea() {
 			document.all.lay1.cancleBubble = true;
 			document.all.eck4.cancleBubble = true;
 
-            att[5] = cropFloat(att[5]+att[7]*((x1 < x2) ? x1 : x2)/document.all.lay1.offsetWidth);
-            att[6] = cropFloat(att[6]+att[8]*((y1 < y2) ? y1 : y2)/document.all.lay1.offsetHeight);
+            att[5] = Math.min(pt1.relX, pt2.relX);
+            att[6] = Math.min(pt1.relY, pt2.relY);
 
-            att[7] = cropFloat(att[7]*Math.abs(x1-x2)/document.all.lay1.offsetWidth);
-            att[8] = cropFloat(att[8]*Math.abs(y1-y2)/document.all.lay1.offsetHeight);
+            att[7] = Math.abs(pt1.relX-pt2.relX);
+            att[8] = Math.abs(pt1.relY-pt2.relY);
                         
             if (att[7] != 0 && att[8] != 0) {
               loadPicture(2);
@@ -238,19 +242,16 @@ function zoomArea() {
     }
 
     function move() {
-		e = event;
+		pt2 = new Point(event);
 
-        x2 = document.body.scrollLeft+e.x;
-        y2 = document.body.scrollTop+e.y;           
-
-		document.all.eck1.style.left = ((x1 < x2) ? x1 : x2);
-		document.all.eck1.style.top = ((y1 < y2) ? y1 : y2);
-		document.all.eck2.style.left = ((x1 < x2) ? x2 : x1)-12;
-		document.all.eck2.style.top = ((y1 < y2) ? y1 : y2);
-		document.all.eck3.style.left = ((x1 < x2) ? x1 : x2);
-		document.all.eck3.style.top = ((y1 < y2) ? y2 : y1)-12;
-		document.all.eck4.style.left = ((x1 < x2) ? x2 : x1)-12;
-		document.all.eck4.style.top = ((y1 < y2) ? y2 : y1)-12;
+		document.all.eck1.style.left = ((pt1.pageX < pt2.pageX) ? pt1.pageX : pt2.pageX);
+		document.all.eck1.style.top = ((pt1.pageY < pt2.pageY) ? pt1.pageY : pt2.pageY);
+		document.all.eck2.style.left = ((pt1.pageX < pt2.pageX) ? pt2.pageX : pt1.pageX)-12;
+		document.all.eck2.style.top = ((pt1.pageY < pt2.pageY) ? pt1.pageY : pt2.pageY);
+		document.all.eck3.style.left = ((pt1.pageX < pt2.pageX) ? pt1.pageX : pt2.pageX);
+		document.all.eck3.style.top = ((pt1.pageY < pt2.pageY) ? pt2.pageY : pt1.pageY)-12;
+		document.all.eck4.style.left = ((pt1.pageX < pt2.pageX) ? pt2.pageX : pt1.pageX)-12;
+		document.all.eck4.style.top = ((pt1.pageY < pt2.pageY) ? pt2.pageY : pt1.pageY)-12;
     }
 
     document.all.lay1.onmousedown = click;
@@ -261,10 +262,10 @@ function zoomArea() {
 function zoomPoint() {
 
     document.all.lay1.onmousedown = function() {
-		e = event;
+		var point = new Point(event);
 
-		att[5] = cropFloat(att[5]+att[7]*(document.body.scrollLeft+e.x-parseInt(document.all.lay1.style.left))/document.all.lay1.offsetWidth-0.5*att[7]*0.7);
-		att[6] = cropFloat(att[6]+att[8]*(document.body.scrollTop+e.y-parseInt(document.all.lay1.style.top))/document.all.lay1.offsetHeight-0.5*att[8]*0.7);
+		att[5] = cropFloat(point.relX-0.5*att[7]*0.7);
+		att[6] = cropFloat(point.relY-0.5*att[8]*0.7);
 
 		att[7] = cropFloat(att[7]*0.7);
 		att[8] = cropFloat(att[8]*0.7);
@@ -297,10 +298,10 @@ function zoomOut() {
 function moveTo() {
 
     document.all.lay1.onmousedown = function() {
-		e = event;
+		var point = new Point(event);
 
-		att[5] = cropFloat(att[5]+att[7]*(document.body.scrollLeft+e.x-parseInt(document.all.lay1.style.left))/document.all.lay1.offsetWidth-0.5*att[7]);
-		att[6] = cropFloat(att[6]+att[8]*(document.body.scrollTop+e.y-parseInt(document.all.lay1.style.top))/document.all.lay1.offsetHeight-0.5*att[8]);
+		att[5] = cropFloat(point.relX-0.5*att[7]);
+		att[6] = cropFloat(point.relY-0.5*att[8]);
 
 		if (att[5] < 0) {
 			att[5] = 0;

@@ -1,6 +1,6 @@
 // this global variable has to be initialised before the frist use of the functions below
 // to fill in the attributes you can use the function init provided below
-// - array with all attributes
+// array with all attributes
 var att = new Array();
 
 // fill in the values of the "att"-array
@@ -53,8 +53,6 @@ function init(fn, pn, ws, mo, mk, wx, wy, ww, wh) {
 	window.captureEvents(Event.KEYDOWN);
 	window.onkeydown = parseKeypress;
 
-	focus();
-	
 	// give a name to the window containing digilib - this way one can test if there is already a
 	// digilib-window open and replace the contents of it (ex. digicat)
 	top.window.name = "digilib";
@@ -90,6 +88,22 @@ function loadPicture(detailGrade, keepArea) {
 	//alert ("DEBUG MESSAGE (complete URL in loadPicture):\n\n" + newURL);
 
 	location.href = newURL;
+}
+
+
+// constructor holding different values of a point
+function Point(event) {
+
+	this.pageX = parseInt(event.pageX);
+	this.pageY = parseInt(event.pageY);
+	
+	this.x = this.pageX-document.lay1.left;
+	this.y = this.pageY-document.lay1.top;
+	
+	this.relX = cropFloat(att[5]+(att[7]*this.x/document.lay1.clip.width));
+	this.relY = cropFloat(att[6]+(att[8]*this.y/document.lay1.clip.height));
+
+	return this;
 }
 
 
@@ -153,13 +167,9 @@ function ref(refselect) {
 
 function mark(refselect) {
 
-	if (att[4].split(";").length > 7) {
-		alert("Only 8 marks are possible at the moment!");
-		return;
-	}
-
     document.lay1.captureEvents(Event.MOUSEDOWN);
     document.lay1.onmousedown = function(event) {
+	    var point = new Point(event);
 
         if ((att[4] != "") && (att[4] != "0/0")) {
             att[4] += ";";
@@ -167,35 +177,30 @@ function mark(refselect) {
             att[4] = "";
         }
 
-		var markX = cropFloat(att[5]+(att[7]*event.x/document.lay1.clip.width));
-		var markY = cropFloat(att[6]+(att[8]*event.y/document.lay1.clip.height));
-		
-        att[4] += markX + "/" + markY;
+        att[4] += point.relX + "/" + point.relY;
 
         document.lay1.releaseEvents(Event.MOUSEDOWN);
         setMarks();
-    }
+	}
 }
 
 
 function zoomArea() {
     var state = 0;
-    var x1, y1, x2, y2;
+    var pt1, pt2;
         
     function click(event) {
 
         if (state == 0) {
             state = 1;
             
-            x1 = event.pageX;
-            y1 = event.pageY;           
-            x2 = x1;
-            y2 = y1;
+			pt1 = new Point(event);
+			pt2 = pt1;
 
-            document.eck1.moveTo(((x1 < x2) ? x1 : x2), ((y1 < y2) ? y1 : y2));
-            document.eck2.moveTo(((x1 < x2) ? x2 : x1)-12, ((y1 < y2) ? y1 : y2));
-            document.eck3.moveTo(((x1 < x2) ? x1 : x2), ((y1 < y2) ? y2 : y1)-12);
-            document.eck4.moveTo(((x1 < x2) ? x2 : x1)-12, ((y1 < y2) ? y2 : y1)-12);
+            document.eck1.moveTo(pt1.pageX, pt1.pageY);
+            document.eck2.moveTo(pt2.pageX-12, pt1.pageY);
+            document.eck3.moveTo(pt1.pageX, pt2.pageY-12);
+            document.eck4.moveTo(pt2.pageX-12, pt2.pageY-12);
 
             document.eck1.visibility="show";
             document.eck2.visibility="show";
@@ -210,11 +215,7 @@ function zoomArea() {
             
         } else {
 
-            x1 -= document.lay1.x;
-            y1 -= document.lay1.y;            
-
-            x2 = event.pageX-document.lay1.x;
-            y2 = event.pageY-document.lay1.y;         
+			pt2 = new Point(event);
 
             document.lay1.releaseEvents(Event.MOUSEDOWN | Event.MOUSEMOVE);
             document.eck4.releaseEvents(Event.MOUSEDOWN | Event.MOUSEMOVE);
@@ -224,11 +225,11 @@ function zoomArea() {
             document.eck3.visibility="hide";
             document.eck4.visibility="hide";
 
-            att[5] = cropFloat(att[5]+att[7]*((x1 < x2) ? x1 : x2)/document.lay1.clip.width);
-            att[6] = cropFloat(att[6]+att[8]*((y1 < y2) ? y1 : y2)/document.lay1.clip.height);
+			att[5] = Math.min(pt1.relX, pt2.relX);
+			att[6] = Math.min(pt1.relY, pt2.relY);
 
-            att[7] = cropFloat(att[7]*Math.abs(x1-x2)/document.lay1.clip.width);
-            att[8] = cropFloat(att[8]*Math.abs(y1-y2)/document.lay1.clip.height);
+            att[7] = Math.abs(pt1.relX-pt2.relX);
+            att[8] = Math.abs(pt1.relY-pt2.relY);
                         
             if (att[7] != 0 && att[8] != 0) {
               loadPicture(2);
@@ -238,13 +239,12 @@ function zoomArea() {
 
     function move(event) {
 
-        x2 = event.pageX;
-        y2 = event.pageY;           
+		pt2 = new Point(event);           
 
-        document.eck1.moveTo(((x1 < x2) ? x1 : x2), ((y1 < y2) ? y1 : y2));
-        document.eck2.moveTo(((x1 < x2) ? x2 : x1)-12, ((y1 < y2) ? y1 : y2));
-        document.eck3.moveTo(((x1 < x2) ? x1 : x2), ((y1 < y2) ? y2 : y1)-12);
-        document.eck4.moveTo(((x1 < x2) ? x2 : x1)-12, ((y1 < y2) ? y2 : y1)-12);
+            document.eck1.moveTo(((pt1.pageX < pt2.pageX) ? pt1.pageX : pt2.pageX), ((pt1.pageY < pt2.pageY) ? pt1.pageY : pt2.pageY));
+            document.eck2.moveTo(((pt1.pageX < pt2.pageX) ? pt2.pageX : pt1.pageX)-12, ((pt1.pageY < pt2.pageY) ? pt1.pageY : pt2.pageY));
+            document.eck3.moveTo(((pt1.pageX < pt2.pageX) ? pt1.pageX : pt2.pageX), ((pt1.pageY < pt2.pageY) ? pt2.pageY : pt1.pageY)-12);
+            document.eck4.moveTo(((pt1.pageX < pt2.pageX) ? pt2.pageX : pt1.pageX)-12, ((pt1.pageY < pt2.pageY) ? pt2.pageY : pt1.pageY)-12);
     }
 
     document.lay1.captureEvents(Event.MOUSEDOWN);
@@ -259,9 +259,10 @@ function zoomPoint() {
 
     document.lay1.captureEvents(Event.MOUSEDOWN);
     document.lay1.onmousedown = function(event) {
-
-		att[5] = cropFloat(att[5]+(att[7]*event.x/document.lay1.clip.width-0.5*att[7]*0.7));
-		att[6] = cropFloat(att[6]+(att[8]*event.y/document.lay1.clip.height-0.5*att[8]*0.7));
+		var point = new Point(event);
+		
+		att[5] = cropFloat(point.relX-0.5*att[7]*0.7);
+		att[6] = cropFloat(point.relY-0.5*att[8]*0.7);
 
         att[7] = cropFloat(att[7]*0.7);
         att[8] = cropFloat(att[8]*0.7);
@@ -295,9 +296,10 @@ function moveTo() {
 
     document.lay1.captureEvents(Event.MOUSEDOWN);
     document.lay1.onmousedown = function(event) {
+		var point = new Point(event);
 
-		att[5] = cropFloat(att[5]+(att[7]*event.x/document.lay1.clip.width-0.5*att[7]));
-		att[6] = cropFloat(att[6]+(att[8]*event.y/document.lay1.clip.height-0.5*att[8]));
+		att[5] = cropFloat(point.relX-0.5*att[7]);
+		att[6] = cropFloat(point.relY-0.5*att[8]);
 
 		if (att[5] < 0) {
 			att[5] = 0;
@@ -359,10 +361,10 @@ function setMarks() {
 function parseKeypress(event) {
 	var whichCode = (window.Event) ? event.which : event.keyCode;
 	if (String.fromCharCode(whichCode) == "n") {
-		Nextpage();
+		nextPage();
 	}
 	if (String.fromCharCode(whichCode) == "b") {
-		Backpage();
+		backPage();
 	}
 }
 

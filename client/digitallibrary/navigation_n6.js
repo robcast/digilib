@@ -91,6 +91,22 @@ function loadPicture(detailGrade, keepArea) {
 }
 
 
+// constructor holding different values of a point
+function Point(event) {
+
+	this.pageX = parseInt(event.pageX);
+	this.pageY = parseInt(event.pageY);
+	
+	this.x = this.pageX-parseInt(document.getElementById("lay1").style.left);
+	this.y = this.pageY-parseInt(document.getElementById("lay1").style.top);
+	
+	this.relX = cropFloat(att[5]+(att[7]*this.x/document.pic.offsetWidth));
+	this.relY = cropFloat(att[6]+(att[8]*this.y/document.pic.offsetHeight));
+
+	return this;
+}
+
+
 function backPage(keepArea) {
 
     att[1] = parseInt(att[1]) - 1;
@@ -157,17 +173,14 @@ function mark() {
 	}
 
 	function markEvent(event) {
+	    var point = new Point(event);
 
 		if ((att[4] != "") && (att[4] != "0/0")) {
 			att[4] += ";";
 		} else {
 			att[4] = "";
 		}
-
-		var markX = cropFloat(att[5]+att[7]*(event.pageX-parseInt(document.getElementById("lay1").style.left))/document.pic.offsetWidth);
-		var markY = cropFloat(att[6]+att[8]*(event.pageY-parseInt(document.getElementById("lay1").style.top))/document.pic.offsetHeight);
-
-		att[4] += markX + "/" + markY;
+		att[4] += point.relX + "/" + point.relY;
 
 		document.getElementById("lay1").removeEventListener("mousedown", markEvent, true);		
 		setMarks();
@@ -179,26 +192,24 @@ function mark() {
 
 function zoomArea() {
 	var state = 0;
-	var x1, y1, x2, y2;
+	var pt1, pt2;
 
 	function click(event) {
 
 		if (state == 0) {
 			state = 1;
 			
-			x1 = event.pageX;
-			y1 = event.pageY;			
-			x2 = x1;
-			y2 = y1;
+			pt1 = new Point(event);
+			pt2 = pt1;
 			
-			document.getElementById("eck1").style.left = x1;
-			document.getElementById("eck1").style.top = y1;
-			document.getElementById("eck2").style.left = x2-12;
-			document.getElementById("eck2").style.top = y1;
-			document.getElementById("eck3").style.left = x1;
-			document.getElementById("eck3").style.top = y2-12;
-			document.getElementById("eck4").style.left = x2-12;
-			document.getElementById("eck4").style.top = y2-12;
+			document.getElementById("eck1").style.left = pt1.pageX;
+			document.getElementById("eck1").style.top = pt1.pageY;
+			document.getElementById("eck2").style.left = pt2.pageX-12;
+			document.getElementById("eck2").style.top = pt1.pageY;
+			document.getElementById("eck3").style.left = pt1.pageX;
+			document.getElementById("eck3").style.top = pt2.pageY-12;
+			document.getElementById("eck4").style.left = pt2.pageX-12;
+			document.getElementById("eck4").style.top = pt2.pageY-12;
 
 			document.getElementById("eck1").style.visibility="visible";
 			document.getElementById("eck2").style.visibility="visible";
@@ -210,12 +221,8 @@ function zoomArea() {
 
 		} else {
 
-			x1 -= parseInt(document.getElementById("lay1").style.left);
-			y1 -= parseInt(document.getElementById("lay1").style.top);			
-
-			x2 = event.pageX-parseInt(document.getElementById("lay1").style.left);
-			y2 = event.pageY-parseInt(document.getElementById("lay1").style.top);			
-
+			pt2 = new Point(event);
+			
 			document.getElementById("lay1").removeEventListener("mousedown", click, true);		
 			document.getElementById("eck4").removeEventListener("mousedown", click, true);		
 			
@@ -227,11 +234,11 @@ function zoomArea() {
 			document.getElementById("eck3").style.visibility="hidden";
 			document.getElementById("eck4").style.visibility="hidden";
 
-			att[5] = cropFloat(att[5]+att[7]*((x1 < x2) ? x1 : x2)/document.pic.offsetWidth);
-			att[6] = cropFloat(att[6]+att[8]*((y1 < y2) ? y1 : y2)/document.pic.offsetHeight);
+			att[5] = Math.min(pt1.relX, pt2.relX);
+			att[6] = Math.min(pt1.relY, pt2.relY);
 
-			att[7] = cropFloat(att[7]*Math.abs(x1-x2)/document.pic.offsetWidth);
-			att[8] = cropFloat(att[8]*Math.abs(y1-y2)/document.pic.offsetHeight);
+			att[7] = Math.abs(pt1.relX-pt2.relX);
+			att[8] = Math.abs(pt1.relY-pt2.relY);
 
 			if (att[7] != 0 && att[8] != 0) {
 				loadPicture(2);
@@ -241,17 +248,16 @@ function zoomArea() {
 
 	function move(event) {
 
-		x2 = event.pageX;
-		y2 = event.pageY;
+		pt2 = new Point(event);
 
-		document.getElementById("eck1").style.left = ((x1 < x2) ? x1 : x2);
-		document.getElementById("eck1").style.top = ((y1 < y2) ? y1 : y2);
-		document.getElementById("eck2").style.left = ((x1 < x2) ? x2 : x1)-12;
-		document.getElementById("eck2").style.top = ((y1 < y2) ? y1 : y2);
-		document.getElementById("eck3").style.left = ((x1 < x2) ? x1 : x2);
-		document.getElementById("eck3").style.top = ((y1 < y2) ? y2 : y1)-12;
-		document.getElementById("eck4").style.left = ((x1 < x2) ? x2 : x1)-12;
-		document.getElementById("eck4").style.top = ((y1 < y2) ? y2 : y1)-12;
+		document.getElementById("eck1").style.left = ((pt1.pageX < pt2.pageX) ? pt1.pageX : pt2.pageX);
+		document.getElementById("eck1").style.top = ((pt1.pageY < pt2.pageY) ? pt1.pageY : pt2.pageY);
+		document.getElementById("eck2").style.left = ((pt1.pageX < pt2.pageX) ? pt2.pageX : pt1.pageX)-12;
+		document.getElementById("eck2").style.top = ((pt1.pageY < pt2.pageY) ? pt1.pageY : pt2.pageY);
+		document.getElementById("eck3").style.left = ((pt1.pageX < pt2.pageX) ? pt1.pageX : pt2.pageX);
+		document.getElementById("eck3").style.top = ((pt1.pageY < pt2.pageY) ? pt2.pageY : pt1.pageY)-12;
+		document.getElementById("eck4").style.left = ((pt1.pageX < pt2.pageX) ? pt2.pageX : pt1.pageX)-12;
+		document.getElementById("eck4").style.top = ((pt1.pageY < pt2.pageY) ? pt2.pageY : pt1.pageY)-12;
 	}
 
 	document.getElementById("lay1").addEventListener("mousedown", click, true);		
@@ -262,9 +268,10 @@ function zoomArea() {
 function zoomPoint() {
 
 	function zoomPointEvent(event) {
+	    var point = new Point(event);
 
-		att[5] = cropFloat(att[5]+att[7]*(event.pageX-parseInt(document.getElementById("lay1").style.left))/document.pic.offsetWidth-0.5*att[7]*0.7);
-		att[6] = cropFloat(att[6]+att[8]*(event.pageY-parseInt(document.getElementById("lay1").style.top))/document.pic.offsetHeight-0.5*att[8]*0.7);
+		att[5] = cropFloat(point.relX-0.5*att[7]*0.7);
+		att[6] = cropFloat(point.relY-0.5*att[8]*0.7);
 
 		att[7] = cropFloat(att[7]*0.7);
 		att[8] = cropFloat(att[8]*0.7);
@@ -301,8 +308,10 @@ function moveTo() {
 
 	function moveToEvent(event) {
 
-		att[5] = cropFloat(att[5]+att[7]*(event.pageX-parseInt(document.getElementById("lay1").style.left))/document.pic.offsetWidth-0.5*att[7]);
-		att[6] = cropFloat(att[6]+att[8]*(event.pageY-parseInt(document.getElementById("lay1").style.top))/document.pic.offsetHeight-0.5*att[8]);
+	    var point = new Point(event);
+
+		att[5] = cropFloat(point.relX-0.5*att[7]);
+		att[6] = cropFloat(point.relY-0.5*att[8]);
 
 		if (att[5] < 0) {
 			att[5] = 0;
