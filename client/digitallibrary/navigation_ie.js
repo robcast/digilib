@@ -166,13 +166,13 @@ function ref(refselect) {
 
 function mark(refselect) {
 
-	if (att[4].split(";").length > 7) {
-		alert("Only 8 marks are possible at the moment!");
-		return;
-	}
-
     document.all.lay1.onmousedown = function() {
 		var point = new Point(event);
+
+		if (att[4].split(";").length > 7) {
+			alert("Only 8 marks are possible at the moment!");
+			return;
+		}
 
         if ((att[4] != "") && (att[4] != "0/0")) {
             att[4] += ";";
@@ -182,7 +182,7 @@ function mark(refselect) {
 
         att[4] += point.relX + "/" + point.relY;
 
-        document.all.lay1.cancleBubble = true;
+        document.all.lay1.onmousedown = function() {}
         
         setMarks();
     }
