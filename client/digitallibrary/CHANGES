@@ -10,6 +10,9 @@ digilib.jsp       ->  digilib19.jsp
 
 CHANGES
 
+8.1.2003 - DigilibServlet.jar : roc
+- New servlet and classes for JAI ImageIO (currently not used).
+
 27.8.2002 - digilib.jsp, digicat.jsp, dlImage.jsp : roc
 
 - Initialization of docBean only once in jspInit.
