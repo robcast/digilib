@@ -20,46 +20,74 @@
 
 package digilib.image;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
-import java.io.*;
-import java.util.*;
+import java.io.File;
 
-import java.awt.image.*;
-import java.awt.image.renderable.*;
+import javax.servlet.ServletResponse;
 
-import digilib.*;
-import digilib.io.*;
+import digilib.io.FileOpException;
 
+
+/** The basic class for the representation of a digilib image.
+ *
+ * The actual image object is hidden in the class, only methods for loading,
+ * manipulation, and saving are exported. This strategy enables implementations
+ * using different toolkits that rely on different image base classes (like
+ * JIMI, Java2D and JAI).
+ */
 public interface DocuImage {
 
+  /** Returns the list of image file types known to the DocuImage implementation.
+   * 
+   * @return List of image file types. Strings are standard file extensions.
+   */    
   public String[] getKnownFileTypes();
 
-  /**
-   *  send an image file as-is
-   */
-  public void sendFile(File f, ServletResponse res) throws FileOpException;
-
-  /**
-   *  load image file
+  /** Loads an image file into the Object.
+   * 
+   * @param f Image File.
+   * @throws FileOpException Exception thrown if any error occurs.
    */
   public void loadImage(File f) throws FileOpException;
 
-  /**
-   *  write image with mime type mt to Stream
+  /** Writes the current image to a ServletResponse.
+   *
+   * The image is encoded to the mime-type <code>mt</code> and sent to the output
+   * stream of the <code>ServletResponse</code> <code>res</code>.
+   *
+   * Currently only mime-types "image/jpeg" and "image/png" are supported.
+   * 
+   * @param mt mime-type of the image to be sent.
+   * @param res ServletResponse where the image is sent.
+   * @throws FileOpException Exception thrown on any error.
    */
   public void writeImage(String mt, ServletResponse res) throws FileOpException;
 
-  /**
-   *  get the image height and width
+  /** The width of the current image in pixel.
+   * 
+   * @return Image width in pixels.
    */
   public int getWidth();
+  
+  /** The height of the current image in pixel.
+   * 
+   * @return Image height in pixels.
+   */  
   public int getHeight();
 
-  /**
-   *  crop and scale image
-   *    take rectangle width,height at position x_off,y_off
-   *    and scale by scale with interpolation quality qual (0=worst)
+  /** Crops and scales the current image.
+   *
+   * The current image is cropped to a rectangle of <code>width</code>,
+   * <code>height</code> at position <code>x_off</code>, <code>y_off</code>. The
+   * resulting image is scaled by the factor <code>scale</code> using the
+   * interpolation quality <code>qual</code> (0=worst).
+   * 
+   * @param x_off x offset of the crop rectangle in pixel.
+   * @param y_off y offset of the crop rectangle in pixel.
+   * @param width width of the crop rectangle in pixel.
+   * @param height height of the crop rectangle in pixel.
+   * @param scale scaling factor.
+   * @param qual interpolation quality (0=worst).
+   * @throws ImageOpException exception thrown on any error.
    */
   public void cropAndScale(
                 int x_off, int y_off,

@@ -20,21 +20,19 @@
 
 package digilib.image;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
-import java.io.*;
-import java.util.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
-import java.awt.*;
-import java.awt.image.*;
-import java.awt.geom.*;
-import java.awt.image.renderable.*;
+import javax.imageio.ImageIO;
+import javax.servlet.ServletResponse;
 
-import javax.imageio.*;
+import digilib.Utils;
+import digilib.io.FileOpException;
 
-import digilib.*;
-import digilib.io.*;
-
+/** Implementation of DocuImage using the ImageLoader API of Java 1.4 and Java2D. */
 public class ImageLoaderDocuImage extends DocuImageImpl {
 
   private BufferedImage img;

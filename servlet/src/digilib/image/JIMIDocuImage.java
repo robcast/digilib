@@ -36,6 +36,7 @@ import digilib.*;
 import digilib.io.*;
 
 
+/** Implementation of DocuImage using the JIMI image Library. */
 public class JIMIDocuImage extends DocuImageImpl {
 
   private JimiRasterImage img;

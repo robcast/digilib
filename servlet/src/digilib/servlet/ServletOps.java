@@ -117,6 +117,42 @@ public class ServletOps {
     out.println("</body></html>");
   }
 
+  /** Transfers an image file as-is.
+   *
+   * The local file is copied to the <code>OutputStream</code> of the
+   * <code>ServletResponse</code>. The mime-type for the response is detected
+   * from the file.
+   *
+   * @param f Image file to be sent.
+   * @param res ServletResponse where the image file will be sent.
+   * @throws FileOpException Exception is thrown for a IOException.
+   */
+  public void sendFile(File f, ServletResponse response) throws FileOpException {
+	util.dprintln(4, "sendFile("+f+")");
+	String mimeType = FileOps.mimeForFile(f);
+	if (mimeType == null) {
+	  util.dprintln(2, "ERROR(sendFile): unknown file Type");
+	  throw new FileOpException("Unknown file type.");
+	}
+	response.setContentType(mimeType);
+	// open file
+	try {
+	  FileInputStream inFile = new FileInputStream(f);
+	  OutputStream outStream = response.getOutputStream();
+	  byte dataBuffer[] = new byte[4096];
+	  int len;
+	  while ((len = inFile.read(dataBuffer)) != -1) {
+		// copy out file
+		outStream.write(dataBuffer, 0, len);
+	  }
+	  inFile.close();
+	} catch (IOException e) {
+	  util.dprintln(2, "ERROR(sendFile): unable to send file");
+	  throw new FileOpException("Unable to send file.");
+	}
+  }
+
+
   /**
    *  get a parameter from request and return it if set, otherwise return default
    */

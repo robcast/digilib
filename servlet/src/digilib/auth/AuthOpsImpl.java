@@ -24,11 +24,19 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 import digilib.*;
+import digilib.servlet.DigilibRequest;
 
+/** Basic implementation of AuthOps interface.
+ *
+ * Provides basic implementations. Only rolesForPath needs to be implemented
+ * by specific implementations.
+ */
 public abstract class AuthOpsImpl implements AuthOps {
 
+  /** Local utils object. */    
   protected Utils util;
 
+  /** Default constructor. */  
   public AuthOpsImpl() {
     util = new Utils();
     try {
@@ -37,6 +45,9 @@ public abstract class AuthOpsImpl implements AuthOps {
     }
   }
 
+  /** Constructor taking an utils object.
+   * @param u utils object.
+   */  
   public AuthOpsImpl(Utils u) {
     util = u;
     try {
@@ -45,17 +56,56 @@ public abstract class AuthOpsImpl implements AuthOps {
     }
   }
 
+  /** Test if the request is allowed to access filepath.
+   * @param filepath filepath to be acessed.
+   * @param request Request with user information.
+   * @throws AuthOpException Exception thrown on error.
+   * @return true if the request is allowed.
+   */
   public boolean isAuthRequired(String filepath, HttpServletRequest request) throws AuthOpException {
     // check permissions
     List rolesRequired = rolesForPath(filepath, request);
     return (rolesRequired != null);
   }
 
+  /**
+   * @see digilib.auth.AuthOps#isAuthRequired(digilib.servlet.DigilibRequest)
+   */
+  public boolean isAuthRequired(DigilibRequest request)
+	  throws AuthOpException {
+		// check permissions
+		List rolesRequired = rolesForPath(request);
+		return (rolesRequired != null);
+  }
+
+  /** Return authorization roles needed for request.
+   *
+   * Returns a list of authorization roles that would be allowed to access the
+   * specified path. The location information of the request is considered also.
+   * @param filepath filepath to be accessed.
+   * @param request ServletRequest with address information.
+   * @throws AuthOpException Exception thrown on error.
+   * @return List of Strings with role names.
+   */
   public boolean isAuthorized(String filepath, HttpServletRequest request) throws AuthOpException {
     List rolesAllowed = rolesForPath(filepath, request);
     return isRoleAuthorized(rolesAllowed, request);
   }
 
+  /**
+   * @see digilib.auth.AuthOps#isAuthorized(digilib.servlet.DigilibRequest)
+   */
+  public boolean isAuthorized(DigilibRequest request)
+	  throws AuthOpException {
+		List rolesAllowed = rolesForPath(request);
+		return isRoleAuthorized(rolesAllowed, request);
+  }
+
+  /** Test request authorization against a list of roles.
+   * @param roles List of Strings with role names.
+   * @param request ServletRequest with address information.
+   * @return true if the user information in the request authorizes one of the roles.
+   */
   public boolean isRoleAuthorized(List roles, HttpServletRequest request) {
     ListIterator r = roles.listIterator();
     String s = "";
@@ -70,8 +120,27 @@ public abstract class AuthOpsImpl implements AuthOps {
     return false;
   }
 
+  /**
+   * @see digilib.auth.AuthOps#isRoleAuthorized(java.util.List, digilib.servlet.DigilibRequest)
+   */
+  public boolean isRoleAuthorized(List roles, DigilibRequest request) {
+	ListIterator r = roles.listIterator();
+	String s = "";
+	while (r.hasNext()) {
+	  s = (String)r.next();
+	  util.dprintln(5, "Testing role: "+s);
+	  if (((HttpServletRequest)request.getServletRequest()).isUserInRole(s)) {
+		util.dprintln(5, "Role Authorized");
+		return true;
+	  }
+	}
+	return false;
+  }
+
   public abstract void init() throws AuthOpException;
 
   public abstract List rolesForPath(String filepath, HttpServletRequest request) throws AuthOpException;
+
+  public abstract List rolesForPath(DigilibRequest request) throws AuthOpException;
 
 }

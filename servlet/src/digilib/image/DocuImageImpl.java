@@ -14,7 +14,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 */
 
@@ -26,55 +26,51 @@ import javax.servlet.ServletResponse;
 import digilib.*;
 import digilib.io.*;
 
+/** Simple abstract implementation of the <code>DocuImage</code> interface.
+ *
+ * This implementation provides basic functionality for the utility methods like
+ * <code>SetUtils</code>, and <code>getKnownFileTypes</code>. Image methods like
+ * <code>loadImage</code>, <code>writeImage</code>, <code>getWidth</code>,
+ * <code>getHeight</code> and <code>cropAndScale</code> must be implemented by
+ * derived classes.
+ */
 public abstract class DocuImageImpl implements DocuImage {
 
+  /** Internal utils object. */    
   protected Utils util = null;
 
+  /** Default constructor. */  
   public DocuImageImpl() {
     util = new Utils();
   }
 
+  /** Contructor taking an utils object.
+   * 
+   * @param u Utils object.
+   */  
   public DocuImageImpl(Utils u) {
     util = u;
   }
 
+  /** Set local Utils object.
+   * 
+   * @param u Utils object.
+   */  
   public void setUtils(Utils u) {
     util = u;
   }
 
+  /** Internal knownFileTypes. */  
   protected String[] knownFileTypes = {"jpg", "png", "gif", "tiff"};
 
+  /** Returns the list of image file types known to the DocuImage implementation.
+   * 
+   * @return List of image file types. Strings are standard file extensions.
+   */    
   public String[] getKnownFileTypes() {
     return knownFileTypes;
   }
 
-  /**
-   *  send an image file as-is
-   */
-  public void sendFile(File f, ServletResponse response) throws FileOpException {
-    util.dprintln(4, "sendFile("+f+")");
-    String mimeType = FileOps.mimeForFile(f);
-    if (mimeType == null) {
-      util.dprintln(2, "ERROR(sendFile): unknown file Type");
-      throw new FileOpException("Unknown file type.");
-    }
-    response.setContentType(mimeType);
-    // open file
-    try {
-      FileInputStream inFile = new FileInputStream(f);
-      OutputStream outStream = response.getOutputStream();
-      byte dataBuffer[] = new byte[1024];
-      int len;
-      while ((len = inFile.read(dataBuffer)) != -1) {
-        // copy out file
-        outStream.write(dataBuffer, 0, len);
-      }
-      inFile.close();
-    } catch (IOException e) {
-      util.dprintln(2, "ERROR(sendFile): unable to send file");
-      throw new FileOpException("Unable to send file.");
-    }
-  }
 
   public abstract void loadImage(File f) throws FileOpException;
   public abstract void writeImage(String mt, ServletResponse res) throws FileOpException;
