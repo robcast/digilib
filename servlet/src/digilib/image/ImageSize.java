@@ -209,4 +209,13 @@ public class ImageSize {
 	public double getAspect() {
 		return (height > 0) ? ((double) width / (double) height) : 0;
 	}
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		String s = "[" + width + "x" + height + "]";
+		// TODO Auto-generated method stub
+		return s;
+	}
 }
