@@ -35,7 +35,7 @@ function makeArray(n){
 	for (var i = 0; i < n; i++) {
 		this[i] = new Image();
 	}
-	
+
 	return this;
 }
 
@@ -77,7 +77,7 @@ var timeID = null;
 
 function changeMark(obj) {
 	var object;
-	
+
 	if (browser.ns4) object = document.layers["menu" + obj].document.images[0];
 	else if (browser.dom) object = document.getElementById("mark" + obj);
 	else if (browser.ie) object = document.all["mark" + obj];
@@ -156,7 +156,6 @@ function contextHelp(n) {
 		}
 
 	}
-	
 }
 
 function openContextHelp() {
@@ -220,7 +219,7 @@ function openContextHelpMac() {
 		helpWindow.document.write('<p>' + help[1] + '<br>&nbsp;</p></tr></td>');
 	}
 	helpWindow.document.write('</table></body></html>');
-	helpWindow.document.close();	
+	helpWindow.document.close();
 }
 
 
