@@ -17,15 +17,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
 Authors: 
   Christian Luginbuehl, 01.05.2003 (first version)
   DW 24.03.2004 (Changed for digiLib in Zope)
-  Robert Casties, 03.08.2004
+  Robert Casties, 27.10.2004
 
 */
-
-function identify() {
-	// used for identifying a digilib instance
-	// Relato uses that function - lugi
-	return "Digilib 0.6";
-}
 
 function getInt(n) {
     // returns always an integer
@@ -579,8 +573,8 @@ function getWinSize() {
     return wsize;
 }
 
-function openWin(url, title, params) {
+function openWin(url, name, params) {
     // open browser window
-    var ow = window.open(url, title, params);
+    var ow = window.open(url, name, params);
     ow.focus();
 }
