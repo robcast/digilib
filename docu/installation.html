@@ -67,10 +67,11 @@
   the user <code>wwwrun</code> (or whatever your webserver runs) and
   use this account to start the tomcat server.</li>
 
-  <li>to use Mozilla-XUL functionality a user have to open the page
-  http://myserver:8080/digitallibrary/xul/install_sidebar.jsp
-  in a mozilla compatible browser and press the button 'install button
-  list into sidebar'</li>
+  <li>(optional) To use Mozilla-XUL functionality Alcatraz users have
+  to open the page
+  <code>http://myserver:8080/docuserver/digitallibrary/xul/install.html</code>
+  in a Mozilla compatible browser. There the users can find
+  instructions to install XUL-Components into their browser. </li>
 
 </ol>
 
@@ -100,13 +101,13 @@ for the Java VM. Somewhere at the beginning of the file you can put two lines
 like this:</p>
 
 <pre>
-export JAVA_HOME=/usr/local/lib/IBMJava2-13
+export JAVA_HOME=/usr/local/lib/IBMJava2-14
 export CATALINA_OPTS="-mx512m"
 </pre>
 
 <p>Adjust the <code>JAVA_HOME</code> path to point to your Java JDK
 installation directory. You can adjust the memory used by the Java VM
-with the <code>-mx512m</code> option.</p>
+with the <code>-mx</code> option.</p>
 
 <p>You can delete those two lines if you set these variables in your
 shell before starting tomcat in that same shell. These lines are
@@ -200,6 +201,12 @@ options. The file looks like this:</p>
        is first in list. --&gt;
   &lt;parameter name="basedir-list" value=<b>"/docuserver/images:/docuserver/scaled/small"</b> /&gt;
 
+  &lt;!-- Java class to use for image operations --&gt;
+  &lt;parameter name="docuimage-class" value="digilib.image.JAIDocuImage" /&gt;
+
+  &lt;!-- is sending whole image files with mo=file allowed? --&gt;
+  &lt;parameter name="sendfile-allowed" value="true" /&gt;
+
   &lt;!-- Restrict access to authorized users.
        User authentication and roles are provided by the servlet container 
        (see tomcat-users.xml).
@@ -228,6 +235,11 @@ will be used if these parameters are undefined.</p>
 <p>The <code>auth-file</code> parameter has to point to the
 authorization configuration file (see below).</p>
 
+<p>You can specify the Java toolkit implementation with the
+<code>docuimage-class</code> parameter. The
+<code>ImageLoaderDocuImage</code> might give best performance but
+works only with JDK 1.4 and up. <code>JAIDocuImage</code> works with
+JDK 1.3 and up.</p>
 
 <h3>digilib-auth.xml</h3>
 
@@ -283,6 +295,6 @@ and password.</p>
 
 
 <hr>
-<address>robert.casties@philo.unibe.ch</address>
-<!-- hhmts start -->Last modified: Tue May 13 23:35:13 CEST 2003 <!-- hhmts end -->
+<address>casties@mpiwg-berlin.mpg.de</address>
+<!-- hhmts start -->Last modified: Wed May 14 12:49:14 CEST 2003 <!-- hhmts end -->
 </body> </html>
