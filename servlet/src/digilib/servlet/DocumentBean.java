@@ -1,198 +1,295 @@
-/* DocumentBean -- Access control bean for JSP
-
-  Digital Image Library servlet components
-
-  Copyright (C) 2001, 2002 Robert Casties (robcast@mail.berlios.de)
-
-  This program is free software; you can redistribute  it and/or modify it
-  under  the terms of  the GNU General  Public License as published by the
-  Free Software Foundation;  either version 2 of the  License, or (at your
-  option) any later version.
-   
-  Please read license.txt for the full details. A copy of the GPL
-  may be found at http://www.gnu.org/copyleft/lgpl.html
-
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-*/
+/*
+ * DocumentBean -- Access control bean for JSP
+ * 
+ * Digital Image Library servlet components
+ * 
+ * Copyright (C) 2001, 2002, 2003 Robert Casties (robcast@mail.berlios.de)
+ * 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.
+ * 
+ * Please read license.txt for the full details. A copy of the GPL may be found
+ * at http://www.gnu.org/copyleft/lgpl.html
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+ * Place, Suite 330, Boston, MA 02111-1307 USA
+ *  
+ */
 
 package digilib.servlet;
 
+import java.util.List;
 
-import java.util.*;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-import digilib.*;
-import digilib.io.*;
-import digilib.auth.*;
+import org.apache.log4j.Logger;
 
-public class DocumentBean implements AuthOps {
+import digilib.auth.AuthOpException;
+import digilib.auth.AuthOps;
+import digilib.io.DocuDirCache;
+import digilib.io.DocuDirectory;
+import digilib.io.FileOps;
+import digilib.io.ImageFileset;
 
-  // Utils object for logging
-  private Utils util = new Utils(5);
-  // AuthOps object to check authorization
-  private AuthOps authOp;
-  // FileOps object
-  private FileOps fileOp = new FileOps(util);
+public class DocumentBean {
 
-  // base directories in order of preference (prescaled versions first)
-  private String[] baseDirs = {"/docuserver/scaled/small", "/docuserver/images", "/docuserver/scans/quellen"};
-  // part of URL path to prepend for authenticated access
-  private String authURLpath = "authenticated/";
+	// general logger
+	private static Logger logger = Logger.getLogger("digilib.docubean");
 
+	// AuthOps object to check authorization
+	private AuthOps authOp;
 
-  public DocumentBean() {
-  }
+	// use authorization database
+	private boolean useAuthentication = true;
 
-  public void setConfig(ServletConfig conf) throws ServletException {
-    util.dprintln(10, "setConfig");
-    // servletOps takes a ServletConfig to get the config file name
-    ServletOps servletOp = new ServletOps(util, conf);
-    /**
-     *  basedir-list : List of document directories
-     */
-    String bl = servletOp.tryToGetInitParam("basedir-list", null);
-    if ((bl != null)&&(bl.length() > 0)) {
-      // split list into directories
-      StringTokenizer dirs = new StringTokenizer(bl, ":");
-      int n = dirs.countTokens();
-      if (n > 0) {
-        // add directories into array
-        baseDirs = new String[n];
-        for (int i = 0; i < n; i++) {
-          baseDirs[i] = dirs.nextToken();
-        }
-      }
-      util.dprintln(3, "basedir-list: "+bl);
-    }
-    /**
-     *  auth-url-path : part of URL to indicate authenticated access
-     */
-    String au = servletOp.tryToGetInitParam("auth-url-path", null);
-    if ((au != null)&&(au.length() > 0)) {
-      authURLpath = au;
-      util.dprintln(3, "auth-url-path: "+au);
-    }
-    /**
-     *  authentication
-     */
-    try {
-      // DB version
-      //private AuthOps authOp = new DBAuthOpsImpl(util);
-      // XML version
-      String cp = servletOp.tryToGetInitParam("auth-file", "/docuserver/www/digitallibrary/WEB-INF/digilib-auth.xml");
-      util.dprintln(3, "auth-file: "+cp);
-      authOp = new XMLAuthOps(util, cp);
-    } catch (AuthOpException e) {
-      throw new ServletException(e);
-    }
-  }
+	// path to add for authenticated access
+	private String authURLPath = "";
 
-  public String getDocuPath(HttpServletRequest request) {
-    util.dprintln(10, "getDocuPath");
-    // fetch query string
-    String qs = request.getQueryString();
-    String fn = "";
-    if (qs != null && qs.length() > 0) {
-       // the file name is in the request before the first "+"
-       int endfn = qs.indexOf("+");
-       if (endfn > 0) {
-         fn = qs.substring(0, endfn);
-       } else {
-	 fn = qs;
-       }
-    }
-    util.dprintln(4, "docuPath: "+fn);
-    return fn;
-  }
+	// DocuDirCache
+	private DocuDirCache dirCache = null;
 
-  /**
-   *  check if the request must be authorized to access filepath
-   */
-  public boolean isAuthRequired(HttpServletRequest request) throws AuthOpException {
-    util.dprintln(10, "isAuthRequired");
-    return authOp.isAuthRequired(getDocuPath(request), request);
-  }
+	// DigilibConfiguration object
+	private DigilibConfiguration dlConfig;
 
-  public boolean isAuthRequired(String filepath, HttpServletRequest request) throws AuthOpException {
-    util.dprintln(10, "isAuthRequired");
-    return authOp.isAuthRequired(filepath, request);
-  }
+	// DigilibRequest object
+	private DigilibRequest dlRequest = null;
 
-  /**
-   *  check if the request is allowed to access filepath
-   */
-  public boolean isAuthorized(HttpServletRequest request) throws AuthOpException {
-    util.dprintln(10, "isAuthorized");
-    return authOp.isAuthorized(getDocuPath(request), request);
-  }
+	/**
+	 * Constructor for DocumentBean.
+	 */
+	public DocumentBean() {
+		super();
+	}
 
-  public boolean isAuthorized(String filepath, HttpServletRequest request) throws AuthOpException {
-    util.dprintln(10, "isAuthorized");
-    return authOp.isAuthorized(filepath, request);
-  }
+	public DocumentBean(ServletConfig conf) {
+		try {
+			setConfig(conf);
+		} catch (Exception e) {
+			logger.fatal("ERROR: Unable to read config: ", e);
+		}
+	}
 
-  /**
-   *  return a list of authorization roles needed for request
-   *  to access the specified path
-   */
-  public List rolesForPath(String filepath, HttpServletRequest request) throws AuthOpException {
-    util.dprintln(10, "rolesForPath");
-    return authOp.rolesForPath(filepath, request);
-  }
+	public void setConfig(ServletConfig conf) throws ServletException {
+		logger.debug("setConfig");
+		// get our ServletContext
+		ServletContext context = conf.getServletContext();
+		// see if there is a Configuration instance
+		dlConfig = (DigilibConfiguration) context
+				.getAttribute("digilib.servlet.configuration");
+		if (dlConfig == null) {
+			// create new Configuration
+			throw new ServletException("ERROR: No configuration!");
+		}
 
-  /**
-   * check request authorization against a list of roles
-   */
-  public boolean isRoleAuthorized(List roles, HttpServletRequest request) {
-    util.dprintln(10, "isRoleAuthorized");
-    return authOp.isRoleAuthorized(roles, request);
-  }
+		// get cache
+		dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 
-  /**
-   * check for authenticated access and redirect if necessary
-   */
-  public boolean doAuthentication(HttpServletRequest request, HttpServletResponse response) throws Exception {
-    util.dprintln(10, "doAuthentication");
-    // check if we are already authenticated
-    if (request.getRemoteUser() == null) {
-      util.dprintln(3, "unauthenticated so far");
-      // if not maybe we must?
-      if (isAuthRequired(request)) {
-        util.dprintln(3, "auth required, redirect");
-	// we are not yet authenticated -> redirect
-	response.sendRedirect(authURLpath+request.getServletPath()+"?"+request.getQueryString());
-      }
-    }
-    return true;
-  }
+		/*
+		 * authentication
+		 */
+		useAuthentication = dlConfig.getAsBoolean("use-authorization");
+		authOp = (AuthOps) dlConfig.getValue("servlet.auth.op");
+		authURLPath = dlConfig.getAsString("auth-url-path");
+		if (useAuthentication && (authOp == null)) {
+			throw new ServletException(
+					"ERROR: use-authorization configured but no AuthOp!");
+		}
+	}
 
-  /**
-   *  get the first page number in the directory
-   *  (not yet functional)
-   */
-  public int getFirstPage(HttpServletRequest request) {
-    return getFirstPage(getDocuPath(request), request);
-  }
+	/**
+	 * check if the request must be authorized to access filepath
+	 */
+	public boolean isAuthRequired(DigilibRequest request)
+			throws AuthOpException {
+		logger.debug("isAuthRequired");
+		return useAuthentication ? authOp.isAuthRequired(request) : false;
+	}
 
-  public int getFirstPage(String filepath, HttpServletRequest request) {
-    util.dprintln(10, "getFirstPage");
-    return 1;
-  }
+	/**
+	 * check if the request is allowed to access filepath
+	 */
+	public boolean isAuthorized(DigilibRequest request) throws AuthOpException {
+		logger.debug("isAuthorized");
+		return useAuthentication ? authOp.isAuthorized(request) : true;
+	}
 
-  /**
-   *  get the number of pages/files in the directory
-   */
-  public int getNumPages(HttpServletRequest request) throws Exception {
-    return getNumPages(getDocuPath(request), request);
-  }
+	/**
+	 * return a list of authorization roles needed for request to access the
+	 * specified path
+	 */
+	public List rolesForPath(DigilibRequest request) throws AuthOpException {
+		logger.debug("rolesForPath");
+		return useAuthentication ? authOp.rolesForPath(request) : null;
+	}
 
-  public int getNumPages(String filepath, HttpServletRequest request) throws Exception {
-    util.dprintln(10, "getNumPages");
-    return fileOp.getNumFilesVariant(baseDirs, "/"+filepath, true);
-  }
+	/**
+	 * check request authorization against a list of roles
+	 */
+	public boolean isRoleAuthorized(List roles, DigilibRequest request) {
+		logger.debug("isRoleAuthorized");
+		return useAuthentication ? authOp.isRoleAuthorized(roles, request)
+				: true;
+	}
+
+	/**
+	 * check for authenticated access and redirect if necessary
+	 */
+	public boolean doAuthentication(HttpServletResponse response)
+			throws Exception {
+		return doAuthentication(dlRequest, response);
+	}
+
+	/**
+	 * check for authenticated access and redirect if necessary
+	 */
+	public boolean doAuthentication(DigilibRequest request,
+			HttpServletResponse response) throws Exception {
+		logger.debug("doAuthentication");
+		if (!useAuthentication) {
+			// shortcut if no authentication
+			return true;
+		}
+		// check if we are already authenticated
+		if (((HttpServletRequest) request.getServletRequest()).getRemoteUser() == null) {
+			logger.debug("unauthenticated so far");
+			// if not maybe we must?
+			if (isAuthRequired(request)) {
+				logger.debug("auth required, redirect");
+				// we are not yet authenticated -> redirect
+				response.sendRedirect(authURLPath
+						+ ((HttpServletRequest) request.getServletRequest())
+								.getServletPath()
+						+ "?"
+						+ ((HttpServletRequest) request.getServletRequest())
+								.getQueryString());
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Sets the current DigilibRequest. Also completes information in the request.
+	 * 
+	 * @param dlRequest
+	 *            The dlRequest to set.
+	 */
+	public void setRequest(DigilibRequest dlRequest) throws Exception {
+		this.dlRequest = dlRequest;
+		if (dirCache == null) {
+			return;
+		}
+		String fn = dlRequest.getFilePath();
+		// get information about the file
+		ImageFileset fileset = (ImageFileset) dirCache.getFile(fn, dlRequest
+				.getAsInt("pn"), FileOps.CLASS_IMAGE);
+		if (fileset == null) {
+			return;
+		}
+		// add file name
+		dlRequest.setValue("img.fn", fileset.getName());
+		// add dpi
+		dlRequest.setValue("img.dpix", new Double(fileset.getResX()));
+		dlRequest.setValue("img.dpiy", new Double(fileset.getResY()));
+		// get number of pages in directory
+		DocuDirectory dd = dirCache.getDirectory(fn);
+		if (dd != null) {
+			dlRequest.setValue("pt", dd.size());
+		}
+	}
+
+	/**
+	 * get the first page number in the directory (not yet functional)
+	 */
+	public int getFirstPage(DigilibRequest request) {
+		logger.debug("getFirstPage");
+		return 1;
+	}
+
+	/**
+	 * get the number of pages/files in the directory
+	 */
+	public int getNumPages() throws Exception {
+		return getNumPages(dlRequest);
+	}
+
+	/**
+	 * get the number of pages/files in the directory
+	 */
+	public int getNumPages(DigilibRequest request) throws Exception {
+		logger.debug("getNumPages");
+		DocuDirectory dd = (dirCache != null) ? dirCache.getDirectory(request
+				.getFilePath()) : null;
+		if (dd != null) {
+			return dd.size();
+		}
+		return 0;
+	}
+
+	/**
+	 * Returns the dlConfig.
+	 * 
+	 * @return DigilibConfiguration
+	 */
+	public DigilibConfiguration getDlConfig() {
+		return dlConfig;
+	}
+
+	/**
+	 * returns if the zoom area in the request can be moved
+	 * 
+	 * @return
+	 */
+	public boolean canMoveRight() {
+		float ww = dlRequest.getAsFloat("ww");
+		float wx = dlRequest.getAsFloat("wx");
+		return (ww + wx < 1.0);
+	}
+
+	/**
+	 * returns if the zoom area in the request can be moved
+	 * 
+	 * @return
+	 */
+	public boolean canMoveLeft() {
+		float ww = dlRequest.getAsFloat("ww");
+		float wx = dlRequest.getAsFloat("wx");
+		return ((ww < 1.0) && (wx > 0));
+	}
+
+	/**
+	 * returns if the zoom area in the request can be moved
+	 * 
+	 * @return
+	 */
+	public boolean canMoveUp() {
+		float wh = dlRequest.getAsFloat("wh");
+		float wy = dlRequest.getAsFloat("wy");
+		return ((wh < 1.0) && (wy > 0));
+	}
+
+	/**
+	 * returns if the zoom area in the request can be moved
+	 * 
+	 * @return
+	 */
+	public boolean canMoveDown() {
+		float wh = dlRequest.getAsFloat("wh");
+		float wy = dlRequest.getAsFloat("wy");
+		return (wh + wy < 1.0);
+	}
+
+	/**
+	 * @return Returns the dlRequest.
+	 */
+	public DigilibRequest getRequest() {
+		return dlRequest;
+	}
 
 }

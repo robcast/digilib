@@ -1,377 +1,684 @@
-/* Scaler -- Scaler servlet main class
-
-  Digital Image Library servlet components
-
-  Copyright (C) 2001, 2002 Robert Casties (robcast@mail.berlios.de)
-
-  This program is free software; you can redistribute  it and/or modify it
-  under  the terms of  the GNU General  Public License as published by the
-  Free Software Foundation;  either version 2 of the  License, or (at your
-  option) any later version.
-   
-  Please read license.txt for the full details. A copy of the GPL
-  may be found at http://www.gnu.org/copyleft/lgpl.html
-
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-*/
+/*
+ * Scaler -- Scaler servlet main class
+ * 
+ * Digital Image Library servlet components
+ * 
+ * Copyright (C) 2001, 2002, 2003 Robert Casties (robcast@mail.berlios.de)
+ * 
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.
+ * 
+ * Please read license.txt for the full details. A copy of the GPL may be found
+ * at http://www.gnu.org/copyleft/lgpl.html
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+ * Place, Suite 330, Boston, MA 02111-1307 USA
+ *  
+ */
 
 package digilib.servlet;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
-import java.io.*;
-import java.util.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Rectangle2D;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
-import digilib.*;
-import digilib.io.*;
-import digilib.image.*;
-import digilib.auth.*;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 
+import digilib.auth.AuthOpException;
+import digilib.auth.AuthOps;
+import digilib.image.ImageOpException;
+import digilib.image.ImageOps;
+import digilib.image.ImageSize;
+import digilib.io.DocuDirCache;
+import digilib.io.FileOpException;
+import digilib.io.FileOps;
+import digilib.io.ImageFile;
+import digilib.io.ImageFileset;
+
+//import tilecachetool.*;
+
+/**
+ * @author casties
+ */
 //public class Scaler extends HttpServlet implements SingleThreadModel {
 public class Scaler extends HttpServlet {
 
-  // Utils instance with debuglevel
-  Utils util;
-  // ServletOpss instance
-  ServletOps servletOp;
-  // FileOps instance
-  FileOps fileOp;
-  // AuthOps instance
-  AuthOps authOp;
-  // global DocuImage instance (don't reuse inside a request!)
-  DocuImage globalImage;
+	private static final long serialVersionUID = -325080527268912852L;
 
-  // use authorization database
-  boolean useAuthentication = true;
-  // image file to send in case of error
-  File errorImgFile = new File("/docuserver/images/icons/scalerror.gif");
-  // image file to send if access is denied
-  File denyImgFile = new File("/docuserver/images/icons/denied.gif");
-  // base directories in order of preference (prescaled versions first)
-  String[] baseDirs = {"/docuserver/scaled/small", "/docuserver/images", "/docuserver/scans/quellen"};
+	/** digilib servlet version (for all components) */
+	public static final String dlVersion = "2.0a6";
+
+	/** logger for accounting requests */
+	private static Logger accountlog = Logger.getLogger("account.request");
+
+	/** gengeral logger for this class */
+	private static Logger logger = Logger.getLogger("digilib.servlet");
+
+	/** logger for authentication related */
+	private static Logger authlog = Logger.getLogger("digilib.auth");
+
+	/** general error code */
+	public static final int ERROR_UNKNOWN = 0;
+
+	/** error code for authentication error */
+	public static final int ERROR_AUTH = 1;
+
+	/** error code for file operation error */
+	public static final int ERROR_FILE = 2;
+
+	/** error code for image operation error */
+	public static final int ERROR_IMAGE = 3;
+
+	/** DocuDirCache instance */
+	DocuDirCache dirCache;
+
+	/** authentication error image file */
+	File denyImgFile;
+
+	/** image error image file */
+	File errorImgFile;
+
+	/** subsampling before scaling */
+	float minSubsample = 2f;
+
+	/** send files as is? */
+	boolean sendFileAllowed = true;
+
+	/** default scaling quality */
+	int defaultQuality = 1;
+
+	/** DigilibConfiguration instance */
+	DigilibConfiguration dlConfig;
+
+	/** fast worker queue */
+	DigilibManager fastQueue;
+
+	/** slow image worker queue */
+	DigilibManager slowQueue;
+
+	/** use authorization database */
+	boolean useAuthorization = true;
+
+	/** AuthOps instance */
+	AuthOps authOp;
+
+	// EXPRIMENTAL
+	/** try to enlarge cropping area for "oblique" angles */
+	boolean wholeRotArea = false;
+
+	/**
+	 * Initialisation on first run.
+	 * 
+	 * @see javax.servlet.Servlet#init(javax.servlet.ServletConfig)
+	 */
+	public void init(ServletConfig config) throws ServletException {
+		super.init(config);
+
+		System.out
+				.println("***** Digital Image Library Image Scaler Servlet (version "
+						+ dlVersion + ") *****");
+		// say hello in the log file
+		logger
+				.info("***** Digital Image Library Image Scaler Servlet (version "
+						+ dlVersion + ") *****");
+
+		// get our ServletContext
+		ServletContext context = config.getServletContext();
+		// see if there is a Configuration instance
+		dlConfig = (DigilibConfiguration) context
+				.getAttribute("digilib.servlet.configuration");
+		if (dlConfig == null) {
+			// no Configuration
+			throw new ServletException("No Configuration!");
+		}
+		// set our AuthOps
+		useAuthorization = dlConfig.getAsBoolean("use-authorization");
+		authOp = (AuthOps) dlConfig.getValue("servlet.auth.op");
+		// work queues
+		fastQueue = (DigilibManager) dlConfig.getValue("servlet.fast.queue");
+		slowQueue = (DigilibManager) dlConfig.getValue("servlet.slow.queue");
+
+		// DocuDirCache instance
+		dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
+		denyImgFile = (File) dlConfig.getValue("denied-image");
+		errorImgFile = (File) dlConfig.getValue("error-image");
+		sendFileAllowed = dlConfig.getAsBoolean("sendfile-allowed");
+		minSubsample = dlConfig.getAsFloat("subsample-minimum");
+		defaultQuality = dlConfig.getAsInt("default-quality");
+	}
+
+	/** Process the HTTP Get request */
+	public void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		accountlog.info("GET from " + request.getRemoteAddr());
+		// create new request with defaults
+		DigilibRequest dlReq = new DigilibRequest();
+		// set with request parameters
+		dlReq.setWithRequest(request);
+		// add DigilibRequest to ServletRequest
+		request.setAttribute("digilib.servlet.request", dlReq);
+		// do the processing
+		processRequest(request, response);
+	}
+
+	/** Process the HTTP Post request */
+	public void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		accountlog.info("POST from " + request.getRemoteAddr());
+		// create new request with defaults
+		DigilibRequest dlReq = new DigilibRequest();
+		// set with request parameters
+		dlReq.setWithRequest(request);
+		// add DigilibRequest to ServletRequest
+		request.setAttribute("digilib.servlet.request", dlReq);
+		// do the processing
+		processRequest(request, response);
+	}
+
+	/** main request handler. */
+void processRequest(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException {
+
+		if (dlConfig == null) {
+			throw new ServletException("ERROR: No Configuration!");
+		}
+
+		accountlog.debug("request: " + request.getQueryString());
+		logger.debug("request: " + request.getQueryString());
+
+		// time for benchmarking
+		long startTime = System.currentTimeMillis();
+		// output mime/type
+		String mimeType = "image/png";
+
+		/* parameters for a session */
+
+		// scale the image file to fit window size i.e. respect dw,dh
+		boolean scaleToFit = true;
+		// scale the image by a fixed factor only
+		boolean absoluteScale = false;
+		// only crop the image to fit
+		boolean cropToFit = false;
+		// send the file as is
+		boolean sendFile = false;
+		// use low resolution images only
+		boolean loresOnly = false;
+		// use hires images only
+		boolean hiresOnly = false;
+		// interpolation to use for scaling
+		int scaleQual = defaultQuality;
+		// send html error message (or image file)
+		boolean errorMsgHtml = false;
+		// mirror the image
+		boolean doMirror = false;
+		// angle of mirror axis
+		float mirrorAngle = 0;
+		// original (hires) image resolution
+		float origResX = 0;
+		float origResY = 0;
+
+		/* request parameters */
+
+		DigilibRequest dlRequest = (DigilibRequest) request
+				.getAttribute("digilib.servlet.request");
+
+		// destination image width
+		int paramDW = dlRequest.getAsInt("dw");
+		// destination image height
+		int paramDH = dlRequest.getAsInt("dh");
+		// relative area x_offset (0..1)
+		float paramWX = dlRequest.getAsFloat("wx");
+		// relative area y_offset
+		float paramWY = dlRequest.getAsFloat("wy");
+		// relative area width (0..1)
+		float paramWW = dlRequest.getAsFloat("ww");
+		// relative area height
+		float paramWH = dlRequest.getAsFloat("wh");
+		// scale factor (additional to dw/width, dh/height)
+		float paramWS = dlRequest.getAsFloat("ws");
+		// rotation angle
+		float paramROT = dlRequest.getAsFloat("rot");
+		// contrast enhancement
+		float paramCONT = dlRequest.getAsFloat("cont");
+		// brightness enhancement
+		float paramBRGT = dlRequest.getAsFloat("brgt");
+		// color modification
+		float[] paramRGBM = null;
+		Parameter p = dlRequest.get("rgbm");
+		if (p.hasValue() && (!p.getAsString().equals("0/0/0"))) {
+			paramRGBM = p.parseAsFloatArray("/");
+		}
+		float[] paramRGBA = null;
+		p = dlRequest.get("rgba");
+		if (p.hasValue() && (!p.getAsString().equals("0/0/0"))) {
+			paramRGBA = p.parseAsFloatArray("/");
+		}
+		// destination resolution (DPI)
+		float paramDDPIX = dlRequest.getAsFloat("ddpix");
+		float paramDDPIY = dlRequest.getAsFloat("ddpiy");
+		if ((paramDDPIX == 0) || (paramDDPIY == 0)) {
+			// if X or Y resolution isn't set, use DDPI
+			paramDDPIX = dlRequest.getAsFloat("ddpi");
+			paramDDPIY = paramDDPIX;
+		}
+
+		/*
+		 * operation mode: "fit": always fit to page, "clip": send original
+		 * resolution cropped, "file": send whole file (if allowed)
+		 */
+		if (dlRequest.hasOption("mo", "clip")) {
+			scaleToFit = false;
+			absoluteScale = false;
+			cropToFit = true;
+			sendFile = false;
+			hiresOnly = true;
+		} else if (dlRequest.hasOption("mo", "fit")) {
+			scaleToFit = true;
+			absoluteScale = false;
+			cropToFit = false;
+			sendFile = false;
+			hiresOnly = false;
+		} else if (dlRequest.hasOption("mo", "osize")) {
+			scaleToFit = false;
+			absoluteScale = true;
+			cropToFit = false;
+			sendFile = false;
+			hiresOnly = true;
+		}
+		// operation mode: "lores": try to use scaled image, "hires": use
+		// unscaled image
+		//   "autores": try best fitting resolution
+		if (dlRequest.hasOption("mo", "lores")) {
+			loresOnly = true;
+			hiresOnly = false;
+		} else if (dlRequest.hasOption("mo", "hires")) {
+			loresOnly = false;
+			hiresOnly = true;
+		} else if (dlRequest.hasOption("mo", "autores")) {
+			loresOnly = false;
+			hiresOnly = false;
+		}
+		// operation mode: "errtxt": error message in html, "errimg": error
+		// image
+		if (dlRequest.hasOption("mo", "errtxt")) {
+			errorMsgHtml = true;
+		} else if (dlRequest.hasOption("mo", "errimg")) {
+			errorMsgHtml = false;
+		}
+		// operation mode: "q0" - "q2": interpolation quality
+		if (dlRequest.hasOption("mo", "q0")) {
+			scaleQual = 0;
+		} else if (dlRequest.hasOption("mo", "q1")) {
+			scaleQual = 1;
+		} else if (dlRequest.hasOption("mo", "q2")) {
+			scaleQual = 2;
+		}
+
+		// check with the maximum allowed size (if set)
+		int maxImgSize = dlConfig.getAsInt("max-image-size");
+		if (maxImgSize > 0) {
+			paramDW = (paramDW * paramWS > maxImgSize) ? (int) (maxImgSize / paramWS)
+					: paramDW;
+			paramDH = (paramDH * paramWS > maxImgSize) ? (int) (maxImgSize / paramWS)
+					: paramDH;
+		}
+
+		//"big" try for all file/image actions
+		try {
+
+			// ImageFileset of the image to load
+			ImageFileset fileset = null;
+
+			/* find the file to load/send */
+
+			// get PathInfo
+			String loadPathName = dlRequest.getFilePath();
+
+			/* check permissions */
+			if (useAuthorization) {
+				// get a list of required roles (empty if no restrictions)
+				List rolesRequired = authOp.rolesForPath(loadPathName, request);
+				if (rolesRequired != null) {
+					authlog.debug("Role required: " + rolesRequired);
+					authlog.debug("User: " + request.getRemoteUser());
+					// is the current request/user authorized?
+					if (!authOp.isRoleAuthorized(rolesRequired, request)) {
+						// send deny answer and abort
+						throw new AuthOpException();
+					}
+				}
+			}
+
+			// find the file(set)
+			ImageFile fileToLoad;
+			fileset = (ImageFileset) dirCache.getFile(loadPathName, dlRequest
+					.getAsInt("pn"), FileOps.CLASS_IMAGE);
+			if (fileset == null) {
+				throw new FileOpException("File " + loadPathName + "("
+						+ dlRequest.getAsInt("pn") + ") not found.");
+			}
+
+			/* calculate expected source image size */
+			ImageSize expectedSourceSize = new ImageSize();
+			if (scaleToFit) {
+				float scale = (1 / Math.min(paramWW, paramWH)) * paramWS;
+				expectedSourceSize.setSize((int) (paramDW * scale),
+						(int) (paramDH * scale));
+			} else {
+				expectedSourceSize.setSize((int) (paramDW * paramWS),
+						(int) (paramDH * paramWS));
+			}
+
+			/* select a resolution */
+			if (hiresOnly) {
+				// get first element (= highest resolution)
+				fileToLoad = fileset.getBiggest();
+			} else if (loresOnly) {
+				// enforced lores uses next smaller resolution
+				fileToLoad = fileset.getNextSmaller(expectedSourceSize);
+				if (fileToLoad == null) {
+					// this is the smallest we have
+					fileToLoad = fileset.getSmallest();
+				}
+			} else {
+				// autores: use next higher resolution
+				fileToLoad = fileset.getNextBigger(expectedSourceSize);
+				if (fileToLoad == null) {
+					// this is the highest we have
+					fileToLoad = fileset.getBiggest();
+				}
+			}
+			logger.info("Loading: " + fileToLoad.getFile());
+
+			/*
+			 * send the image if its mo=(raw)file
+			 */
+			if (dlRequest.hasOption("mo", "file")
+					|| dlRequest.hasOption("mo", "rawfile")) {
+				if (sendFileAllowed) {
+					String mt = null;
+					if (dlRequest.hasOption("mo", "rawfile")) {
+						mt = "application/octet-stream";
+					}
+					logger.debug("Sending RAW File as is.");
+					ServletOps.sendFile(fileToLoad.getFile(), mt, response,
+							fastQueue);
+					logger.info("Done in "
+							+ (System.currentTimeMillis() - startTime) + "ms");
+					return;
+				}
+			}
+
+			/*
+			 * prepare resolution for original size
+			 */
+			if (absoluteScale) {
+				// get original resolution from metadata
+				fileset.checkMeta();
+				origResX = fileset.getResX();
+				origResY = fileset.getResY();
+				if ((origResX == 0) || (origResY == 0)) {
+					throw new ImageOpException("Missing image DPI information!");
+				}
+
+				if ((paramDDPIX == 0) || (paramDDPIY == 0)) {
+					throw new ImageOpException(
+							"Missing display DPI information!");
+				}
+			}
+
+			// check the source image
+			if (!fileToLoad.isChecked()) {
+				ImageOps.checkFile(fileToLoad);
+			}
+			// get the source image type
+			mimeType = fileToLoad.getMimetype();
+			// get the source image size
+			ImageSize imgSize = fileToLoad.getSize();
+
+			// decide if the image can be sent as is
+			boolean mimetypeSendable = mimeType.equals("image/jpeg")
+					|| mimeType.equals("image/png")
+					|| mimeType.equals("image/gif");
+			boolean imagoOptions = dlRequest.hasOption("mo", "hmir")
+					|| dlRequest.hasOption("mo", "vmir") || (paramROT != 0)
+					|| (paramRGBM != null) || (paramRGBA != null)
+					|| (paramCONT != 0) || (paramBRGT != 0);
+			boolean imageSendable = mimetypeSendable && !imagoOptions;
+
+			/*
+			 * if not autoRes and image smaller than requested size then send as
+			 * is. if autoRes and image has requested size then send as is. if
+			 * not autoScale and not scaleToFit nor cropToFit then send as is
+			 * (mo=file)
+			 */
+			if (imageSendable
+					&& ((loresOnly && fileToLoad.getSize().isSmallerThan(
+							expectedSourceSize)) || (!(loresOnly || hiresOnly) && fileToLoad
+							.getSize().fitsIn(expectedSourceSize)))) {
+
+				logger.debug("Sending File as is.");
+
+				ServletOps.sendFile(fileToLoad.getFile(), null, response,
+						fastQueue);
+
+				logger.info("Done in "
+						+ (System.currentTimeMillis() - startTime) + "ms");
+				return;
+			}
+
+			// set missing dw or dh from aspect ratio
+			float imgAspect = fileToLoad.getAspect();
+			if (paramDW == 0) {
+				paramDW = (int) Math.round(paramDH * imgAspect);
+			} else if (paramDH == 0) {
+				paramDH = (int) Math.round(paramDW / imgAspect);
+			}
+
+			/* crop and scale the image */
+
+			logger.debug("IMG: " + imgSize.getWidth() + "x"
+					+ imgSize.getHeight());
+			logger.debug("time " + (System.currentTimeMillis() - startTime)
+					+ "ms");
+
+			// coordinates and scaling
+			float areaXoff;
+			float areaYoff;
+			float areaWidth;
+			float areaHeight;
+			float scaleX;
+			float scaleY;
+			float scaleXY;
+
+			// coordinates using Java2D
+			// image size in pixels
+			Rectangle2D imgBounds = new Rectangle2D.Float(0, 0, imgSize
+					.getWidth(), imgSize.getHeight());
+			// user window area in [0,1] coordinates
+			Rectangle2D relUserArea = new Rectangle2D.Float(paramWX, paramWY,
+					paramWW, paramWH);
+			// transform from relative [0,1] to image coordinates.
+			AffineTransform imgTrafo = AffineTransform.getScaleInstance(imgSize
+					.getWidth(), imgSize.getHeight());
+			// transform user coordinate area to image coordinate area
+			Rectangle2D userImgArea = imgTrafo.createTransformedShape(
+					relUserArea).getBounds2D();
+
+			// calculate scaling factors based on inner user area
+			if (scaleToFit) {
+				areaWidth = (float) userImgArea.getWidth();
+				areaHeight = (float) userImgArea.getHeight();
+				scaleX = paramDW / areaWidth * paramWS;
+				scaleY = paramDH / areaHeight * paramWS;
+				scaleXY = (scaleX > scaleY) ? scaleY : scaleX;
+			} else if (absoluteScale) {
+				// absolute scale
+				scaleX = paramDDPIX / origResX;
+				scaleY = paramDDPIY / origResY;
+				// currently only same scale :-(
+				scaleXY = scaleX;
+				areaWidth = paramDW / scaleXY * paramWS;
+				areaHeight = paramDH / scaleXY * paramWS;
+				// reset user area size
+				userImgArea.setRect(userImgArea.getX(), userImgArea.getY(),
+						areaWidth, areaHeight);
+			} else {
+				// crop to fit
+				areaWidth = paramDW * paramWS;
+				areaHeight = paramDH * paramWS;
+				// reset user area size
+				userImgArea.setRect(userImgArea.getX(), userImgArea.getY(),
+						areaWidth, areaHeight);
+				scaleX = 1f;
+				scaleY = 1f;
+				scaleXY = 1f;
+			}
+
+			// enlarge image area for rotations to cover additional pixels
+			Rectangle2D outerUserImgArea = userImgArea;
+			Rectangle2D innerUserImgArea = userImgArea;
+			if (wholeRotArea) {
+				if (paramROT != 0) {
+					try {
+						// rotate user area coordinates around center of user
+						// area
+						AffineTransform rotTrafo = AffineTransform
+								.getRotateInstance(Math.toRadians(paramROT),
+										userImgArea.getCenterX(), userImgArea
+												.getCenterY());
+						// get bounds from rotated end position
+						innerUserImgArea = rotTrafo.createTransformedShape(
+								userImgArea).getBounds2D();
+						// get bounds from back-rotated bounds
+						outerUserImgArea = rotTrafo.createInverse()
+								.createTransformedShape(innerUserImgArea)
+								.getBounds2D();
+					} catch (NoninvertibleTransformException e1) {
+						// this shouldn't happen anyway
+						logger.error(e1);
+					}
+				}
+			}
+
+			logger.debug("Scale " + scaleXY + "(" + scaleX + "," + scaleY
+					+ ") on " + outerUserImgArea);
+
+			// clip area at the image border
+			outerUserImgArea = outerUserImgArea.createIntersection(imgBounds);
+
+			// check image parameters sanity
+			if ((outerUserImgArea.getWidth() < 1) || (outerUserImgArea.getHeight() < 1)
+					|| (scaleXY * outerUserImgArea.getWidth() < 2) || (scaleXY * outerUserImgArea.getHeight() < 2)) {
+				logger.error("ERROR: invalid scale parameter set!");
+				throw new ImageOpException("Invalid scale parameter set!");
+			}
+
+			/*
+			 * submit the image worker job
+			 */
+
+			DigilibWorker job = new DigilibImageWorker(dlConfig, response,
+					mimeType, scaleQual, dlRequest, paramROT, paramCONT,
+					paramBRGT, paramRGBM, paramRGBA, fileToLoad, scaleXY, outerUserImgArea,
+					innerUserImgArea, minSubsample, wholeRotArea);
+			
+			try {
+				// we're cheating
+				job.run();
+			} catch (Exception e1) {
+				throw new ImageOpException(e1.toString());
+			}
+			
+			/*
+			try {
+				slowQueue.execute(job);
+				logger.debug("servlet job submitted by "
+						+ Thread.currentThread().getName() + " ("
+						+ slowQueue.getQueueSize() + " in queue)");
+				
+				synchronized (job) {
+					while (job.isBusy()) {
+						Thread.yield();
+						job.wait();
+					}
+				}
+			} catch (InterruptedException e1) {
+				throw new ImageOpException("INTERRUPTED: " + e1.getMessage());
+			}
+			*/
 
 
-  /*********************************************************
-   *             Initialize global variables
-   *********************************************************/
-  public void init(ServletConfig config) throws ServletException {
-    super.init(config);
+			logger.debug("servlet done in "
+					+ (System.currentTimeMillis() - startTime));
 
-    // first we need an Utils to setup ServletOps UGLY!!
-    util = new Utils(5);
-    // servletOps takes a ServletConfig to get the config file name
-    servletOp = new ServletOps(util, config);
-    // then we can start reading parameters UGLY!!
+			/* error handling */
 
-    // Utils instance with debuglevel
-    int debugLevel = servletOp.tryToGetInitParam("debug-level", 10);
-    util = new Utils(debugLevel);
-    // reset Util for ServletOps instance
-    servletOp.setUtils(util);
-    // image file to send in case of error
-    String errorImgFileName = servletOp.tryToGetInitParam("error-image", "/docuserver/images/icons/scalerror.gif");
-    errorImgFile = new File(errorImgFileName);
-    // image file to send if access is denied
-    String denyImgFileName = servletOp.tryToGetInitParam("denied-image", "/docuserver/images/icons/denied.gif");
-    denyImgFile = new File(denyImgFileName);
-    // base directories in order of preference (prescaled versions first)
-    String baseDirList = servletOp.tryToGetInitParam("basedir-list", "/docuserver/scaled/small:/docuserver/images:/docuserver/scans/quellen");
-    // split list into directories
-    StringTokenizer dirs = new StringTokenizer(baseDirList, ":");
-    int n = dirs.countTokens();
-    // add directories into array
-    baseDirs = new String[n];
-    for (int i = 0; i < n; i++) {
-      baseDirs[i] = dirs.nextToken();
-    }
-    // use authentication information
-    String useAuth = servletOp.tryToGetInitParam("use-authorization", "true");
-    if ((useAuth.indexOf("false") > 0)||(useAuth.indexOf("FALSE") > 0)) {
-      useAuthentication = false;
-    } else {
-      useAuthentication = true;
-      try {
-        // DB version
-        //authOp = new DBAuthOpsImpl(util);
-        // XML version
-        String cnfPath = servletOp.tryToGetInitParam("auth-file", "/docuserver/www/digitallibrary/WEB-INF/digilib-auth.xml");
-        authOp = new XMLAuthOps(util, cnfPath);
-      } catch (AuthOpException e) {
-        throw new ServletException(e);
-      }
-    }
-    // FileOps instance
-    fileOp = new FileOps(util);
-    // global DocuImage instance (don't reuse inside a request!)
-    globalImage = new JAIDocuImage(util);
-//    globalImage = new JIMIDocuImage(util);
-    //globalImage = new ImageLoaderDocuImage(util);
+		} // end of "big" try
+		catch (IOException e) {
+			logger.error("ERROR: File IO Error: " + e);
+			digilibError(errorMsgHtml, ERROR_FILE,
+					"ERROR: File IO Error: " + e, response);
+		} catch (AuthOpException e) {
+			logger.error("ERROR: Authorization error: " + e);
+			digilibError(errorMsgHtml, ERROR_AUTH,
+					"ERROR: Authorization error: " + e, response);
+		} catch (ImageOpException e) {
+			logger.error("ERROR: Image Error: " + e);
+			digilibError(errorMsgHtml, ERROR_IMAGE,
+					"ERROR: Image Operation Error: " + e, response);
+		} catch (RuntimeException e) {
+			// JAI likes to throw RuntimeExceptions ;-(
+			logger.error("ERROR: Other Image Error: " + e);
+			digilibError(errorMsgHtml, ERROR_IMAGE,
+					"ERROR: Other Image Operation Error: " + e, response);
+		}
+	}
+	/**
+	 * Sends an error to the client as text or image.
+	 * 
+	 * @param asHTML
+	 * @param type
+	 * @param msg
+	 * @param response
+	 */
+	public void digilibError(boolean asHTML, int type, String msg,
+			HttpServletResponse response) {
+		try {
+			File img = null;
+			if (type == ERROR_AUTH) {
+				if (msg == null) {
+					msg = "ERROR: Unauthorized access!";
+				}
+				img = denyImgFile;
+			} else {
+				if (msg == null) {
+					msg = "ERROR: Other image error!";
+				}
+				img = this.errorImgFile;
+			}
+			if (asHTML && (img != null)) {
+				ServletOps.htmlMessage(msg, response);
+			} else {
+				ServletOps.sendFile(img, null, response, fastQueue);
+			}
+		} catch (IOException e) {
+			logger.error("Error sending error!", e);
+		}
 
-  }
+	}
 
-  /**Process the HTTP Get request*/
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    util.dprintln(1, "The servlet has received a GET!");
-    processRequest(request, response);
-  }
-
-  /**Process the HTTP Post request*/
-  public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    util.dprintln(1, "The servlet has received a POST!");
-    processRequest(request, response);
-  }
-
-  /**Clean up resources*/
-  public void destroy() {
-  }
-
-/**********************************************************************
- *                       main request handler
- **********************************************************************/
-
-  void processRequest(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-
-    // time for benchmarking
-    long startTime = System.currentTimeMillis();
-    // output mime/type
-    String mimeType = "image/png";
-
-    /**
-     * parameters for a session
-     */
-
-    // scale the image file to fit window size
-    boolean scaleToFit = true;
-    // use heuristics (GIF?) to scale or not
-    boolean forcedScale = false;
-    // try prescaled images first
-    boolean preScaledFirst = true;
-    // interpolation to use for scaling
-    int scaleQual = 0;
-    // send html error message (or image file)
-    boolean errorMsgHtml = false;
-
-    /**
-     *  request parameter
-     */
-
-    // file/dir to load
-    String param_fn = servletOp.tryToGetParam("fn", "", request);
-    // page number
-    int param_pn = servletOp.tryToGetParam("pn", 1, request);
-    // destination image width
-    int param_dw = servletOp.tryToGetParam("dw", 300, request);
-    // destination image height
-    int param_dh = servletOp.tryToGetParam("dh", 400, request);
-    // relative area x_offset (0..1)
-    float param_wx = servletOp.tryToGetParam("wx", 0f, request);
-    // relative area y_offset
-    float param_wy = servletOp.tryToGetParam("wy", 0f, request);
-    // relative area width (0..1)
-    float param_ww = servletOp.tryToGetParam("ww", 1f, request);
-    // relative area height
-    float param_wh = servletOp.tryToGetParam("wh", 1f, request);
-    // scale factor (additional to dw/width, dh/height)
-    float param_ws = servletOp.tryToGetParam("ws", 1f, request);
-    // operation mode: flags separated by "+"
-    String param_mo = servletOp.tryToGetParam("mo", "", request);
-    // operation mode: "fit": always fit to page, "file": send as-is
-    if (param_mo.indexOf("fit") >= 0) {
-      scaleToFit = true;
-      forcedScale = true;
-    } else if (param_mo.indexOf("file") >= 0) {
-      scaleToFit = false;
-      forcedScale = true;
-    }
-    // operation mode: "errtxt": error message in html, "errimg": error image
-    if (param_mo.indexOf("errtxt") >= 0) {
-      errorMsgHtml = true;
-    } else if (param_mo.indexOf("errimg") >= 0) {
-      errorMsgHtml = false;
-    }
-    // operation mode: "q0" - "q2": interpolation quality
-    if (param_mo.indexOf("q0") >= 0) {
-      scaleQual = 0;
-    } else if (param_mo.indexOf("q1") >= 0) {
-      scaleQual = 1;
-    } else if (param_mo.indexOf("q2") >= 0) {
-      scaleQual = 2;
-    }
-    // operation mode: "lores": try to use scaled image, "hires": unscaled image
-    if (param_mo.indexOf("lores") >= 0) {
-      preScaledFirst = true;
-    } else if (param_mo.indexOf("hires") >= 0) {
-      preScaledFirst = false;
-    }
-
-    Utils.dprintln(1, "Parameter values: fn:"+param_fn+" pn:"+param_pn+" dw:"+param_dw+" dh:"+param_dh+" wx:"+param_wx+" wy:"+param_wy+" ww:"+param_ww+" wh:"+param_wh+" ws:"+param_ws+" mo:"+param_mo);
-
-    //"big" try for all file/image actions
-    try {
-
-    // DocuImage instance
-    DocuImage docuImage = new JAIDocuImage(util);
-//    DocuImage docuImage = new JIMIDocuImage(util);
-    //DocuImage docuImage = new ImageLoaderDocuImage(util);
-
-
-    /**
-     *  find the file to load/send
-     */
-
-    String loadPathName = "";
-    // if there's PathInfo, append
-    if (request.getPathInfo() != null) {
-      loadPathName += request.getPathInfo();
-    }
-    // append fn parameter
-    loadPathName += param_fn;
-    // if it's zoomed, try hires version (to be optimized...)
-    if ((param_ww < 1f) || (param_wh < 1f)) {
-      preScaledFirst = false;
-    }
-
-    if (useAuthentication) {
-      // check permissions
-      List rolesRequired = authOp.rolesForPath(loadPathName, request);
-      if (rolesRequired != null) {
-        Utils.dprintln(1, "Role required: "+rolesRequired);
-        Utils.dprintln(2, "User: "+request.getRemoteUser());
-        if (! authOp.isRoleAuthorized(rolesRequired, request)) {
-          Utils.dprintln(1, "ERROR: access denied!");
-          if (errorMsgHtml) {
-            servletOp.htmlMessage("ERROR: Unauthorized access!", response);
-          } else {
-            docuImage.sendFile(denyImgFile, response);
-          }
-          return;
-        }
-      }
-    }
-
-    // find the file
-    File fileToLoad = fileOp.getFileVariant(baseDirs, loadPathName, param_pn, preScaledFirst);
-
-    Utils.dprintln(1, "Loading: "+fileToLoad);
-
-    // get the source image type (if it's known)
-    mimeType = fileOp.mimeForFile(fileToLoad);
-
-    // if not forced and source is GIF/PNG then send-as-is if not zoomed
-    if((!forcedScale && (mimeType == "image/gif" || mimeType == "image/png")
-        && (param_ww == 1f) && (param_wh == 1f)) || (forcedScale && !scaleToFit)) {
-
-      Utils.dprintln(1, "Sending File as is.");
-
-      docuImage.sendFile(fileToLoad, response);
-
-      Utils.dprintln(1, "Done in "+(System.currentTimeMillis()-startTime)+"ms");
-      return;
-    }
-
-    // load file
-    docuImage.loadImage(fileToLoad);
-
-    /**
-     *  crop and scale the image
-     */
-
-    // get size
-    int imgWidth = docuImage.getWidth();
-    int imgHeight = docuImage.getHeight();
-
-    util.dprintln(2, "IMG: "+imgWidth+"x"+imgHeight);
-    util.dprintln(2, "time "+(System.currentTimeMillis()-startTime)+"ms");
-
-    // calculate absolute from relative coordinates
-    float areaXoff = param_wx * imgWidth;
-    float areaYoff = param_wy * imgHeight;
-    float areaWidth = param_ww * imgWidth;
-    float areaHeight = param_wh * imgHeight;
-    // calculate scaling factors
-    float scaleX = param_dw / areaWidth * param_ws;
-    float scaleY = param_dh / areaHeight * param_ws;
-    float scaleXY = (scaleX > scaleY) ? scaleY : scaleX;
-
-    util.dprintln(1, "Scale "+scaleXY+"("+scaleX+","+scaleY+") on "+areaXoff+","+areaYoff+" "+areaWidth+"x"+areaHeight);
-
-    // fit area to image
-    areaWidth = (areaXoff + areaWidth > imgWidth) ? imgWidth - areaXoff : areaWidth;
-    areaHeight = (areaYoff + areaHeight > imgHeight) ? imgHeight - areaYoff : areaHeight;
-
-    util.dprintln(2, "cropped: "+areaXoff+","+areaYoff+" "+areaWidth+"x"+areaHeight);
-
-    // check image parameters
-    if ((areaWidth < 1)||(areaHeight < 1)
-       ||(scaleXY * areaWidth < 2)||(scaleXY * areaHeight < 2)) {
-      Utils.dprintln(1, "ERROR: invalid scale parameter set!");
-      throw new ImageOpException("Invalid scale parameter set!");
-    }
-
-    // crop and scale image
-    docuImage.cropAndScale((int)areaXoff, (int)areaYoff, (int)areaWidth, (int)areaHeight,
-                            scaleXY, scaleQual);
-
-    util.dprintln(2, "time "+(System.currentTimeMillis()-startTime)+"ms");
-
-    /**
-     *  write the resulting image
-     */
-
-    // setup output -- if source is JPG then dest will be JPG else it's PNG
-    if (mimeType != "image/jpeg") {
-      mimeType="image/png";
-    }
-
-    // write the image
-    docuImage.writeImage(mimeType, response);
-
-    util.dprintln(1, "Done in "+(System.currentTimeMillis()-startTime)+"ms");
-
-    /**
-     *  error handling
-     */
-
-    }//"big" try
-    catch (FileOpException e) {
-      util.dprintln(1, "ERROR: File IO Error: "+e);
-      try {
-        if (errorMsgHtml) {
-          servletOp.htmlMessage("ERROR: File IO Error: "+e, response);
-        } else {
-          globalImage.sendFile(errorImgFile, response);
-        }
-      } catch (FileOpException ex) {} // so we don't get a loop
-      return;
-    }
-    catch (AuthOpException e) {
-      Utils.dprintln(1, "ERROR: Authorization error: "+e);
-      try {
-        if (errorMsgHtml) {
-          servletOp.htmlMessage("ERROR: Authorization error: "+e, response);
-        } else {
-          globalImage.sendFile(errorImgFile, response);
-        }
-      } catch (FileOpException ex) {} // so we don't get a loop
-      return;
-    }
-    catch (ImageOpException e) {
-      Utils.dprintln(1, "ERROR: Image Error: "+e);
-      try {
-        if (errorMsgHtml) {
-          servletOp.htmlMessage("ERROR: Image Operation Error: "+e, response);
-        } else {
-          globalImage.sendFile(errorImgFile, response);
-        }
-      } catch (FileOpException ex) {} // so we don't get a loop
-      return;
-    }
-
-  }
-
-}//Scaler class
+} //Scaler class
