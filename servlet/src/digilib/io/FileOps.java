@@ -26,12 +26,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
-import digilib.Utils;
-
 public class FileOps {
 
-	private Utils util = null;
-	
 	public static String[] fileTypes =
 		{
 			"jpg",

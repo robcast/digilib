@@ -24,7 +24,6 @@ import java.awt.Rectangle;
 
 import org.apache.log4j.Logger;
 
-import digilib.Utils;
 import digilib.io.FileOpException;
 import digilib.io.ImageFile;
 
@@ -41,9 +40,6 @@ public abstract class DocuImageImpl implements DocuImage {
 	/** logger */
 	protected Logger logger = Logger.getLogger(this.getClass());
 	
-	/** Internal utils object. */
-	protected Utils util = null;
-
 	/** Interpolation quality. */
 	protected int quality = 0;
 	
@@ -52,27 +48,6 @@ public abstract class DocuImageImpl implements DocuImage {
 	
 	/** image mime-type */
 	protected String mimeType = null;
-
-	/** Default constructor. */
-	public DocuImageImpl() {
-		util = new Utils();
-	}
-
-	/** Contructor taking an utils object.
-	 * 
-	 * @param u Utils object.
-	 */
-	public DocuImageImpl(Utils u) {
-		util = u;
-	}
-
-	/** Set local Utils object.
-	 * 
-	 * @param u Utils object.
-	 */
-	public void setUtils(Utils u) {
-		util = u;
-	}
 
 	/** Internal knownFileTypes. */
 	protected String[] knownFileTypes = { "jpg", "png", "gif", "tiff" };

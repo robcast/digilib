@@ -59,7 +59,7 @@ import digilib.io.ImageFileset;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.18b1";
+	public static final String dlVersion = "1.18b2";
 
 	// logger for accounting requests
 	Logger accountlog = Logger.getLogger("account.request");
@@ -69,12 +69,8 @@ public class Scaler extends HttpServlet {
 	Logger authlog = Logger.getLogger("digilib.auth");
 	
 	
-	// FileOps instance
-	FileOps fileOp;
 	// AuthOps instance
 	AuthOps authOp;
-	// ServletOps instance
-	ServletOps servletOp;
 	// DocuDirCache instance
 	DocuDirCache dirCache;
 
@@ -314,6 +310,13 @@ public class Scaler extends HttpServlet {
 			scaleQual = 2;
 		}
 
+		// check with the maximum allowed size (if set)
+		int maxImgSize = dlConfig.getAsInt("max-image-size");
+		if (maxImgSize > 0) {
+			paramDW = (paramDW * paramWS > maxImgSize) ? (int)(maxImgSize / paramWS) : paramDW;
+			paramDH = (paramDH * paramWS > maxImgSize) ? (int)(maxImgSize / paramWS) : paramDH;
+		}
+		
 		//"big" try for all file/image actions
 		try {
 

@@ -31,7 +31,6 @@ import com.sun.jimi.core.filters.AreaAverageScaleFilter;
 import com.sun.jimi.core.filters.ReplicatingScaleFilter;
 import com.sun.jimi.core.raster.JimiRasterImage;
 
-import digilib.Utils;
 import digilib.io.ImageFile;
 import digilib.io.FileOpException;
 
@@ -42,13 +41,6 @@ public class JIMIDocuImage extends DocuImageImpl {
 	private ImageProducer imgp;
 	private int imgWidth = 0;
 	private int imgHeight = 0;
-
-	public JIMIDocuImage() {
-	}
-
-	public JIMIDocuImage(Utils u) {
-		util = u;
-	}
 
 	/**
 	 *  load image file

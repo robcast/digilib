@@ -83,55 +83,55 @@ public class DigilibRequest extends ParameterMap {
 		 */
 
 		// url of the page/document (second part)
-		putParameter("fn", "", null, 's');
+		newParameter("fn", "", null, 's');
 		// page number
-		putParameter("pn", new Integer(1), null, 's');
+		newParameter("pn", new Integer(1), null, 's');
 		// width of client in pixels
-		putParameter("dw", new Integer(0), null, 's');
+		newParameter("dw", new Integer(0), null, 's');
 		// height of client in pixels
-		putParameter("dh", new Integer(0), null, 's');
+		newParameter("dh", new Integer(0), null, 's');
 		// left edge of image (float from 0 to 1)
-		putParameter("wx", new Float(0), null, 's');
+		newParameter("wx", new Float(0), null, 's');
 		// top edge in image (float from 0 to 1)
-		putParameter("wy", new Float(0), null, 's');
+		newParameter("wy", new Float(0), null, 's');
 		// width of image (float from 0 to 1)
-		putParameter("ww", new Float(1), null, 's');
+		newParameter("ww", new Float(1), null, 's');
 		// height of image (float from 0 to 1)
-		putParameter("wh", new Float(1), null, 's');
+		newParameter("wh", new Float(1), null, 's');
 		// scale factor
-		putParameter("ws", new Float(1), null, 's');
+		newParameter("ws", new Float(1), null, 's');
 		// special options like 'fit' for gifs
-		putParameter("mo", "", null, 's');
+		newParameter("mo", "", null, 's');
 		// rotation angle (degree)
-		putParameter("rot", new Float(0), null, 's');
+		newParameter("rot", new Float(0), null, 's');
 		// contrast enhancement factor
-		putParameter("cont", new Float(0), null, 's');
+		newParameter("cont", new Float(0), null, 's');
 		// brightness enhancement factor
-		putParameter("brgt", new Float(0), null, 's');
+		newParameter("brgt", new Float(0), null, 's');
 		// color multiplicative factors
-		putParameter("rgbm", "0/0/0", null, 's');
+		newParameter("rgbm", "0/0/0", null, 's');
 		// color additive factors
-		putParameter("rgba", "0/0/0", null, 's');
+		newParameter("rgba", "0/0/0", null, 's');
 		// display dpi resolution (total)
-		putParameter("ddpi", new Float(0), null, 's');
+		newParameter("ddpi", new Float(0), null, 's');
 		// display dpi X resolution
-		putParameter("ddpix", new Float(0), null, 's');
+		newParameter("ddpix", new Float(0), null, 's');
 		// display dpi Y resolution
-		putParameter("ddpiy", new Float(0), null, 's');
+		newParameter("ddpiy", new Float(0), null, 's');
 
 		/*
 		 * Parameter of type 'i' are not exchanged between client and server
 		 */
 
 		// url of the page/document (first part, may be empty)
-		putParameter("request.path", "", null, 'i');
+		newParameter("request.path", "", null, 'i');
 		// base URL (from http:// to below /servlet)
-		putParameter("base.url", null, null, 'i');
+		newParameter("base.url", null, null, 'i');
 		// DocuImage instance for this request
-		putParameter("docu.image", image, null, 'i');
+		newParameter("docu.image", image, null, 'i');
 		image = null;
 		// HttpServletRequest for this request
-		putParameter("servlet.request", servletRequest, null, 'i');
+		newParameter("servlet.request", servletRequest, null, 'i');
 		servletRequest = null;
 
 		/*
@@ -141,11 +141,11 @@ public class DigilibRequest extends ParameterMap {
 		//	display	level of digilib (0 = just image, 1 = one HTML page
 		//        2 = in frameset, 3 = XUL-'frameset'
 		//        4 = XUL-Sidebar )
-		putParameter("lv", new Integer(2), null, 'c');
+		newParameter("lv", new Integer(2), null, 'c');
 		// total number of pages
-		putParameter("pt", new Integer(0), null, 'c');
+		newParameter("pt", new Integer(0), null, 'c');
 		// marks
-		putParameter("mk", "", null, 'c');
+		newParameter("mk", "", null, 'c');
 
 	}
 
@@ -362,7 +362,7 @@ public class DigilibRequest extends ParameterMap {
 				continue;
 			}
 			// unknown parameters are just added with type 'r'
-			putParameter(name, null, request.getParameter(name), 'r');
+			newParameter(name, null, request.getParameter(name), 'r');
 		}
 		// add path from request
 		setValue("request.path", ((HttpServletRequest) request).getPathInfo());

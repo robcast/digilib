@@ -78,70 +78,72 @@ public class DigilibConfiguration extends ParameterMap {
 		 */
 
 		// digilib servlet version
-		putParameter(
+		newParameter(
 			"servlet.version",
 			digilib.servlet.Scaler.dlVersion,
 			null,
 			's');
 		// configuration file location
-		putParameter("servlet.config.file", null, null, 's');
+		newParameter("servlet.config.file", null, null, 's');
 		// DocuDirCache instance
-		putParameter("servlet.dir.cache", null, null, 's');
+		newParameter("servlet.dir.cache", null, null, 's');
 		// DocuImage class instance
-		putParameter(
+		newParameter(
 			"servlet.docuimage.class",
 			digilib.image.JAIDocuImage.class,
 			null,
 			's');
 		// AuthOps instance for authentication
-		putParameter("servlet.auth.op", null, null, 's');
+		newParameter("servlet.auth.op", null, null, 's');
 
 		/*
 		 * parameters that can be read from config file have a type 'f'
 		 */
 
 		// image file to send in case of error
-		putParameter(
+		newParameter(
 			"error-image",
 			"/docuserver/images/icons/scalerror.gif",
 			null,
 			'f');
 		// image file to send if access is denied
-		putParameter(
+		newParameter(
 			"denied-image",
 			"/docuserver/images/icons/denied.gif",
 			null,
 			'f');
 		// base directories in order of preference (prescaled versions last)
 		String[] bd = { "/docuserver/images", "/docuserver/scaled/small" };
-		putParameter("basedir-list", bd, null, 'f');
+		newParameter("basedir-list", bd, null, 'f');
 		// use authentication information
-		putParameter("use-authorization", Boolean.FALSE, null, 'f');
+		newParameter("use-authorization", Boolean.FALSE, null, 'f');
 		// authentication configuration file
-		putParameter("auth-file", "digilib-auth.xml", null, 'f');
+		newParameter("auth-file", "digilib-auth.xml", null, 'f');
 		// sending image files as-is allowed
-		putParameter("sendfile-allowed", Boolean.TRUE, null, 'f');
+		newParameter("sendfile-allowed", Boolean.TRUE, null, 'f');
 		// Debug level
-		putParameter("debug-level", new Integer(5), null, 'f');
+		newParameter("debug-level", new Integer(5), null, 'f');
 		// Type of DocuImage instance
-		putParameter(
+		newParameter(
 			"docuimage-class",
 			"digilib.image.JAIDocuImage",
 			null,
 			'f');
 		// part of URL used to indicate authorized access
-		putParameter("auth-url-path", "authenticated/", null, 'f');
+		newParameter("auth-url-path", "authenticated/", null, 'f');
 		// degree of subsampling on image load
-		putParameter("subsample-minimum", new Float(2f), null, 'f');
+		newParameter("subsample-minimum", new Float(2f), null, 'f');
 		// default scaling quality
-		putParameter("default-quality", new Integer(1), null, 'f');
+		newParameter("default-quality", new Integer(1), null, 'f');
 		// use mapping file to translate paths
-		putParameter("use-mapping", Boolean.FALSE, null, 'f');
+		newParameter("use-mapping", Boolean.FALSE, null, 'f');
 		// mapping file location
-		putParameter("mapping-file", "digilib-map.xml", null, 'f');
+		newParameter("mapping-file", "digilib-map.xml", null, 'f');
 		// log4j config file location
-		putParameter("log-config-file", "log4j-config.xml", null, 'f');
-
+		newParameter("log-config-file", "log4j-config.xml", null, 'f');
+		// maximum destination image size (0 means no limit)
+		newParameter("max-image-size", new Integer(0), null, 'f');
+		
 	}
 
 	/**
@@ -217,7 +219,7 @@ public class DigilibConfiguration extends ParameterMap {
 				}
 			} else {
 				// parameter unknown -- just add
-				putParameter(key, null, val, 'f');
+				newParameter(key, null, val, 'f');
 			}
 		}
 

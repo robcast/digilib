@@ -34,7 +34,6 @@ import javax.media.jai.ParameterBlockJAI;
 import javax.media.jai.operator.TransposeDescriptor;
 import javax.media.jai.operator.TransposeType;
 
-import digilib.Utils;
 import digilib.io.ImageFile;
 import digilib.io.FileOpException;
 
@@ -43,17 +42,6 @@ public class JAIDocuImage extends DocuImageImpl {
 
 	protected RenderedImage img;
 	protected Interpolation interpol = null;
-
-	/** Default constructor. */
-	public JAIDocuImage() {
-	}
-
-	/** Contructor taking an utils object.
-	 * @param u utils object.
-	 */
-	public JAIDocuImage(Utils u) {
-		util = u;
-	}
 
 	/* Load an image file into the Object. */
 	public void loadImage(ImageFile f) throws FileOpException {

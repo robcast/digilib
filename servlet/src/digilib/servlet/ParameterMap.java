@@ -160,7 +160,7 @@ public class ParameterMap extends HashMap {
 	 * @param val
 	 * @return
 	 */
-	public Parameter putParameter(String name, Object def, Object val) {
+	public Parameter newParameter(String name, Object def, Object val) {
 		Parameter p = new Parameter(name, def, val);
 		return (Parameter) super.put(name, p);
 	}
@@ -175,7 +175,7 @@ public class ParameterMap extends HashMap {
 	 * @param type
 	 * @return
 	 */
-	public Parameter putParameter(String name, Object def, Object val, int type) {
+	public Parameter newParameter(String name, Object def, Object val, int type) {
 		Parameter p = new Parameter(name, def, val, type);
 		return (Parameter) super.put(name, p);
 	}
