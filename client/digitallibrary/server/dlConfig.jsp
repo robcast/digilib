@@ -108,7 +108,7 @@ dlRequest.setPt(docBean.getNumPages(dlRequest));
     <td></td>
   </tr>
   <tr>
-    <td>DebugLevel</td><td><b><%= dlConfig.getDebugLevel() %></b></td>
+    <td>DebugLevel</td><td><b><%= dlConfig.getDebugLevel() %></b> (<%= dlConfig.getUtil().getDebugLevel() %>)</td>
     <td></td>
   </tr>
   <tr>
@@ -133,6 +133,36 @@ dlRequest.setPt(docBean.getNumPages(dlRequest));
   </tr>
   <tr>
     <td>UseAuthentication</td><td><b><%= dlConfig.isUseAuthentication() %></b></td>
+    <td></td>
+  </tr>
+</table>
+
+<h2>Directory cache</h2>
+
+<table>
+  <tr>
+	<td>size (directories)</td><td><b><%= dlConfig.getDirCache().size() %></b></td>
+    <td></td>
+  </tr>
+  <tr>
+	<td>numFiles</td><td><b><%= dlConfig.getDirCache().getNumFiles() %></b></td>
+    <td></td>
+  </tr>
+  <tr>
+	<td>hits</td><td><b><%= dlConfig.getDirCache().getHits() %></b></td>
+    <td></td>
+  </tr>
+  <tr>
+	<td>misses</td><td><b><%= dlConfig.getDirCache().getMisses() %></b></td>
+    <td></td>
+  </tr>
+</table>
+
+<h2>JVM configuration</h2>
+
+<table>
+  <tr>
+	<td>java.awt.headless</td><td><b><%= System.getProperty("java.awt.headless") %></b></td>
     <td></td>
   </tr>
 </table>
