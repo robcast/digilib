@@ -3,7 +3,7 @@
  * 
  * Digital Image Library servlet components
  * 
- * Copyright (C) 2001, 2002, 2003 Robert Casties (robcast@mail.berlios.de)
+ * Copyright (C) 200-2004 Robert Casties (robcast@mail.berlios.de)
  * 
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -48,7 +48,6 @@ import digilib.io.FileOps;
 import digilib.io.ImageFile;
 import digilib.io.ImageFileset;
 
-//import tilecachetool.*;
 
 /**
  * @author casties
@@ -59,7 +58,7 @@ public class Scaler extends HttpServlet {
 	private static final long serialVersionUID = -325080527268912852L;
 
 	/** digilib servlet version (for all components) */
-	public static final String dlVersion = "1.5.0b";
+	public static final String dlVersion = "1.5.1b";
 
 	/** logger for accounting requests */
 	private static Logger accountlog = Logger.getLogger("account.request");
@@ -209,6 +208,8 @@ public class Scaler extends HttpServlet {
 		boolean loresOnly = false;
 		// use hires images only
 		boolean hiresOnly = false;
+		// send the image always as JPEG
+		boolean forceJPEG = false;
 		// interpolation to use for scaling
 		int scaleQual = defaultQuality;
 		// send html error message (or image file)
@@ -317,6 +318,10 @@ public class Scaler extends HttpServlet {
 		} else if (dlRequest.hasOption("mo", "q2")) {
 			scaleQual = 2;
 		}
+		// operation mode: "jpg": always use JPEG
+		if (dlRequest.hasOption("mo", "jpg")) {
+			forceJPEG = true;
+		}		
 
 		// check with the maximum allowed size (if set)
 		int maxImgSize = dlConfig.getAsInt("max-image-size");
@@ -586,7 +591,7 @@ public class Scaler extends HttpServlet {
 					mimeType, scaleQual, dlRequest, paramROT, paramCONT,
 					paramBRGT, paramRGBM, paramRGBA, fileToLoad, scaleXY,
 					outerUserImgArea, innerUserImgArea, minSubsample,
-					wholeRotArea);
+					wholeRotArea, forceJPEG);
 
 			job.run();
 			if (job.hasError()) {
