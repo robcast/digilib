@@ -2,8 +2,6 @@
 <!-- Digilib servlet config file -->
 
 <digilib-config>
-  <parameter name="debug-level" value="10" />
-
   <!--  Image to be sent to indicate general failure. -->
   <parameter name="error-image" value="/docuserver/images/icons/broken.gif" />
 
@@ -44,5 +42,8 @@
   
   <!-- location of XML mapping file -->
   <parameter name="mapping-file" value="digilib-map.xml"/>
+  
+  <!-- location of logger config file -->
+  <parameter name="log-config-file" value="log4j-config.xml"/>
   
 </digilib-config>
