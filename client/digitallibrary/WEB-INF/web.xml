@@ -10,6 +10,18 @@
   <description>
         This is the web frontend of the Digital Document Library.
   </description>
+  <!-- The Relato servlet -->
+  <servlet>
+        <servlet-name>
+            Relato
+        </servlet-name>
+        <description>
+            The relato servlet
+        </description>
+        <servlet-class>
+            Relato
+        </servlet-class>
+  </servlet>
   <!-- The Scaler servlet -->
   <servlet>
         <servlet-name>
@@ -79,6 +91,15 @@
             3
         </load-on-startup>
   </servlet>
+  <!-- The mapping for the Relato servlet -->
+  <servlet-mapping>
+        <servlet-name>
+            Relato
+        </servlet-name>
+        <url-pattern>
+            /Relato
+        </url-pattern>
+  </servlet-mapping>
   <!-- The mapping for the Scaler servlet -->
   <servlet-mapping>
         <servlet-name>
