@@ -48,7 +48,7 @@ import digilib.io.XMLListLoader;
  * denyImgFileName: image file to send if access is denied. <br>baseDirs:
  * array of base directories in order of preference (prescaled versions first).
  * <br>useAuth: use authentication information. <br>authConfPath:
- * authentication configuration file.<br>... <br>
+ * authentication configuration file. <br>... <br>
  * 
  * @author casties
  *  
@@ -70,7 +70,7 @@ public class DigilibConfiguration extends ParameterMap {
 		super(20);
 		// we start with a default logger config
 		BasicConfigurator.configure();
-		
+
 		/*
 		 * Definition of parameters and default values. System parameters that
 		 * are not read from config file have a type 's'.
@@ -142,7 +142,7 @@ public class DigilibConfiguration extends ParameterMap {
 		newParameter("log-config-file", "log4j-config.xml", null, 'f');
 		// maximum destination image size (0 means no limit)
 		newParameter("max-image-size", new Integer(0), null, 'f');
-		
+
 	}
 
 	/**
@@ -171,8 +171,7 @@ public class DigilibConfiguration extends ParameterMap {
 		}
 		String fn = c.getInitParameter("config-file");
 		if (fn == null) {
-			fn =
-				c.getServletContext().getRealPath("WEB-INF/digilib-config.xml");
+			fn = ServletOps.getConfigFile("digilib-config.xml", c);
 			if (fn == null) {
 				logger.fatal("readConfig: no param config-file");
 				throw new ServletException("ERROR: no digilib config file!");
@@ -227,25 +226,18 @@ public class DigilibConfiguration extends ParameterMap {
 		 */
 
 		// set up logger
-		String logConfPath = getAsString("log-config-file");
-		if (!logConfPath.startsWith("/")) {
-			// relative path -> use getRealPath to resolve in WEB-INF
-			logConfPath =
-				c.getServletContext().getRealPath("WEB-INF/" + logConfPath);
-		}
+		String logConfPath =
+			ServletOps.getConfigFile(getAsString("log-config-file"), c);
 		DOMConfigurator.configure(logConfPath);
 		// directory cache
 		String[] bd = (String[]) getValue("basedir-list");
-		int[] fcs = { FileOps.CLASS_IMAGE, FileOps.CLASS_TEXT, FileOps.CLASS_SVG };
+		int[] fcs =
+			{ FileOps.CLASS_IMAGE, FileOps.CLASS_TEXT, FileOps.CLASS_SVG };
 		DocuDirCache dirCache;
 		if (getAsBoolean("use-mapping")) {
 			// with mapping file
-			String mapConfPath = getAsString("mapping-file");
-			if (!mapConfPath.startsWith("/")) {
-				// relative path -> use getRealPath to resolve in WEB-INF
-				mapConfPath =
-					c.getServletContext().getRealPath("WEB-INF/" + mapConfPath);
-			}
+			String mapConfPath =
+				ServletOps.getConfigFile(getAsString("mapping-file"), c);
 			dirCache = new AliasingDocuDirCache(bd, fcs, mapConfPath);
 		} else {
 			// without mapping
@@ -257,13 +249,8 @@ public class DigilibConfiguration extends ParameterMap {
 			// DB version
 			//authOp = new DBAuthOpsImpl(util);
 			// XML version
-			String authConfPath = getAsString("auth-file");
-			if (!authConfPath.startsWith("/")) {
-				// relative path -> use getRealPath to resolve in WEB-INF
-				authConfPath =
-					c.getServletContext().getRealPath(
-						"WEB-INF/" + authConfPath);
-			}
+			String authConfPath =
+				ServletOps.getConfigFile(getAsString("auth-file"), c);
 			AuthOps authOp = new XMLAuthOps(authConfPath);
 			setValue("servlet.auth.op", authOp);
 		}
@@ -271,7 +258,7 @@ public class DigilibConfiguration extends ParameterMap {
 		String s = getAsString("docuimage-class");
 		Class cl = Class.forName(getAsString("docuimage-class"));
 		docuImageClass = Class.forName(getAsString("docuimage-class"));
-		setValue("servlet.docuimage.class", docuImageClass);
+		setValue("servlet.docuimage.class", docuImageClass.getName());
 	}
 
 	/**

@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.StringTokenizer;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
@@ -60,6 +61,28 @@ public class ServletOps {
 		return pathArray;
 	}
 
+	
+	/** get a real file name for a config file pathname.
+	 * 
+	 * If filename starts with "/" its treated as absolute else the path is appended 
+	 * to the WEB-INF directory of the web-app.
+	 * 
+	 * @param filename
+	 * @param sc
+	 * @return
+	 */
+	public static String getConfigFile(String filename, ServletConfig sc) {
+		File f = new File(filename);
+		// is the filename absolute?
+		if (!f.isAbsolute()) {
+			// relative path -> use getRealPath to resolve in WEB-INF
+			filename =
+			sc.getServletContext().getRealPath("WEB-INF/" + filename);
+		}
+		return filename;
+	}
+	
+	
 	/**
 	 * print a servlet response and exit
 	 */

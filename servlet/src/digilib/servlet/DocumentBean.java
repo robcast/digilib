@@ -93,6 +93,9 @@ public class DocumentBean {
 		useAuthentication = dlConfig.getAsBoolean("use-authorization");
 		authOp = (AuthOps) dlConfig.getValue("servlet.auth.op");
 		authURLPath = dlConfig.getAsString("auth-url-path");
+		if (useAuthentication && (authOp == null)) {
+			throw new ServletException("ERROR: use-authorization configured but no AuthOp!");
+		}
 	}
 
 	/**
