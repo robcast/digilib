@@ -21,7 +21,7 @@
 package digilib.servlet;
 
 import java.io.File;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletConfig;
@@ -83,7 +83,7 @@ public class DigilibConfiguration {
 	// Utils instance
 	private Utils util = new Utils(debugLevel);
 	// HashTable for parameters
-	private Hashtable confTable = null;
+	private HashMap confTable = null;
 	// Type of DocuImage instance
 	private String docuImageType = "digilib.image.JAIDocuImage";
 	private String docuImageTypeParam = "docuimage-class";
