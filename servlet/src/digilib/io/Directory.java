@@ -35,9 +35,9 @@ public class Directory {
 	protected Logger logger = Logger.getLogger(this.getClass());
 
 	/** File object pointing to the directory */
-	File dir = null;
+	protected File dir = null;
 	/** parent directory */
-	Directory parent = null;
+	protected Directory parent = null;
 	/** list of filenames in the directory */
 	protected String[] list = null;
 
@@ -82,10 +82,10 @@ public class Directory {
 	 */
 	public boolean readDir() {
 		if (dir != null) {
-			logger.debug("start reading dir");
+			logger.debug("reading dir: "+dir.getPath());
 			list = dir.list();
 			Arrays.sort(list);
-			logger.debug("done reading dir");
+			logger.debug("  done");
 		}
 		return (list != null);
 	}

@@ -166,7 +166,7 @@ public class DocuDirectory extends Directory {
 	 * 
 	 * @return boolean the directory exists
 	 */
-	public boolean readDir() {
+	public synchronized boolean readDir() {
 		// check directory first
 		checkDir();
 		if (!isValid) {
@@ -204,7 +204,9 @@ public class DocuDirectory extends Directory {
 			File d = new File(baseDirNames[j], dirName);
 			if (d.isDirectory()) {
 				dirs[j] = new Directory(d);
+				logger.debug("  reading scaled directory " + d.getPath());
 				dirs[j].readDir();
+				logger.debug("    done");
 			}
 		}
 
@@ -290,13 +292,9 @@ public class DocuDirectory extends Directory {
 					unresolvedFileMeta = fileMeta;
 				}
 			} catch (SAXException e) {
-				if (cache != null) {
-					cache.logger.warn("error parsing index.meta", e);
-				}
+				logger.warn("error parsing index.meta", e);
 			} catch (IOException e) {
-				if (cache != null) {
-					cache.logger.warn("error reading index.meta", e);
-				}
+				logger.warn("error reading index.meta", e);
 			}
 		}
 		readParentMeta();
@@ -425,16 +423,23 @@ public class DocuDirectory extends Directory {
 			return idx;
 		} else {
 			// try closest matches without extension
-			idx = -idx;
+			idx = -idx - 1;
 			String fb = FileOps.basename(fn);
-			DocuDirent fs = (DocuDirent) list[fc].get(idx - 1);
-			if (FileOps.basename(fs.getName()).equals(fb)) {
-				// basename matches
+			DocuDirent fs;
+			if ((idx < list.length)
+					&& (FileOps.basename(((DocuDirent) list[fc].get(idx))
+							.getName()).equals(fb))) {
+				// idx matches
+				return idx;
+			} else if ((idx > 0)
+					&& (FileOps.basename(((DocuDirent) list[fc].get(idx - 1))
+							.getName()).equals(fb))) {
+				// idx-1 matches
 				return idx - 1;
-			}
-			fs = (DocuDirent) list[fc].get(idx + 1);
-			if (FileOps.basename(fs.getName()).equals(fb)) {
-				// basename matches
+			} else if ((idx + 1 < list.length)
+					&& (FileOps.basename(((DocuDirent) list[fc].get(idx - 1))
+							.getName()).equals(fb))) {
+				// idx+1 matches
 				return idx + 1;
 			}
 

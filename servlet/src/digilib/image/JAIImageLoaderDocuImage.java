@@ -92,36 +92,40 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 	}
 
 	/* Get an ImageReader for the image file. */
-	public void preloadImage(ImageFile f) throws IOException {
+	public ImageReader getReader(ImageFile f) throws IOException {
 		logger.debug("preloadImage: "+f.getFile());
 		//System.gc();
 		RandomAccessFile rf = new RandomAccessFile(f.getFile(), "r");
 		ImageInputStream istream = new FileImageInputStream(rf);
-		Iterator readers = ImageIO.getImageReaders(istream);
-		//Iterator readers = ImageIO.getImageReadersByMIMEType(f.getMimetype());
-		reader = (ImageReader) readers.next();
-		if (reader == null) {
+		//Iterator readers = ImageIO.getImageReaders(istream);
+		Iterator readers = ImageIO.getImageReadersByMIMEType(f.getMimetype());
+		if (! readers.hasNext()) {
 			throw new FileOpException("Unable to load File!");
 		}
+		reader = (ImageReader) readers.next();
 		logger.debug("JAIImageIO: this reader: " + reader.getClass());
+		while (readers.hasNext()) {
+			logger.debug("  next reader: " + readers.next().getClass());
+		}
 		reader.setInput(istream);
+		return reader;
 	}
 
 	/* Load an image file into the Object. */
 	public void loadSubimage(ImageFile f, Rectangle region, int prescale)
 		throws FileOpException {
 		logger.debug("loadSubimage: "+f.getFile());
-		//System.gc();
+		System.gc();
 		try {
 			if ((reader == null) || (imgFile != f.getFile())) {
-				preloadImage(f);
+				getReader(f);
 			}
-			ImageInputStream istream = (ImageInputStream) reader.getInput();
 			ImageReadParam readParam = reader.getDefaultReadParam();
 			readParam.setSourceRegion(region);
 			readParam.setSourceSubsampling(prescale, prescale, 0, 0);
 			img = reader.read(0, readParam);
 			/* JAI imageread seems to ignore the readParam :-(
+			ImageInputStream istream = (ImageInputStream) reader.getInput();
 			ParameterBlockJAI pb = new ParameterBlockJAI("imageread");
 			pb.setParameter("Input", istream);
 			pb.setParameter("ReadParam", readParam);

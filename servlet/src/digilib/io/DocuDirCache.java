@@ -40,20 +40,28 @@ public class DocuDirCache {
 
 	/** general logger for this class */
 	Logger logger = Logger.getLogger(this.getClass());
+
 	/** HashMap of directories */
 	Map map = null;
+
 	/** names of base directories */
 	String[] baseDirNames = null;
+
 	/** array of allowed file classes (image/text) */
 	private int[] fileClasses = null;
+
 	/** number of files in the whole cache (approximate) */
 	long numFiles = 0;
+
 	/** number of cache hits */
 	long hits = 0;
+
 	/** number of cache misses */
 	long misses = 0;
+
 	/** use safe (but slow) indexing */
 	boolean safeDirIndex = false;
+
 	/** the root directory element */
 	public static Directory ROOT = null;
 
@@ -63,12 +71,14 @@ public class DocuDirCache {
 	 * @param bd
 	 *            base directory names
 	 */
-	public DocuDirCache(String[] bd, int[] fileClasses, DigilibConfiguration dlConfig) {
+	public DocuDirCache(String[] bd, int[] fileClasses,
+			DigilibConfiguration dlConfig) {
 		baseDirNames = bd;
 		map = new HashMap();
 		this.fileClasses = fileClasses;
 		safeDirIndex = dlConfig.getAsBoolean("safe-dir-index");
 	}
+
 	/**
 	 * Constructor with array of base directory names.
 	 * 
@@ -112,7 +122,7 @@ public class DocuDirCache {
 	 * 
 	 * @param newDir
 	 */
-	public void putDir(DocuDirectory newDir) {
+	public synchronized void putDir(DocuDirectory newDir) {
 		put(newDir);
 		String parent = FileOps.parent(newDir.getDirName());
 		if (parent != "") {
@@ -130,9 +140,9 @@ public class DocuDirCache {
 	/**
 	 * Get a list with all children of a directory.
 	 * 
-	 * Returns a List of DocuDirectory's. Returns an empty List if the
-	 * directory has no children. If recurse is false then only direct children
-	 * are returned.
+	 * Returns a List of DocuDirectory's. Returns an empty List if the directory
+	 * has no children. If recurse is false then only direct children are
+	 * returned.
 	 * 
 	 * @param dirname
 	 * @param recurse
@@ -158,8 +168,8 @@ public class DocuDirCache {
 	}
 
 	/**
-	 * Returns the DocuDirent with the pathname <code>fn</code> and the
-	 * index <code>in</code> and the class <code>fc</code>.
+	 * Returns the DocuDirent with the pathname <code>fn</code> and the index
+	 * <code>in</code> and the class <code>fc</code>.
 	 * 
 	 * If <code>fn</code> is a file then the corresponding DocuDirent is
 	 * returned and the index is ignored.
@@ -169,7 +179,7 @@ public class DocuDirCache {
 	 * @param in
 	 *            file index
 	 * @param fc
-	 * 			  file class
+	 *            file class
 	 * @return
 	 */
 	public DocuDirent getFile(String fn, int in, int fc) {
