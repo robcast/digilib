@@ -94,8 +94,7 @@ public class ImageLoaderImageInfoDocuInfo implements DocuInfo {
 			reader.dispose();
 			raf.close();
 		}
-		logger.debug("image size: " + imgf.getSize().getWidth() + "x"
-				+ imgf.getSize().getHeight());
+		logger.debug("image size: " + imgf.getSize());
 		return true;
 	}
 }
