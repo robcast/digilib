@@ -413,12 +413,13 @@ public class DocuDirectory extends Directory {
 				return -1;
 			}
 		}
+		List fileList = list[fc];
 		// empty directory?
-		if (list[fc] == null) {
+		if (fileList == null) {
 			return -1;
 		}
 		// search for exact match
-		int idx = Collections.binarySearch(list[fc], fn);
+		int idx = Collections.binarySearch(fileList, fn);
 		if (idx >= 0) {
 			return idx;
 		} else {
@@ -426,18 +427,18 @@ public class DocuDirectory extends Directory {
 			idx = -idx - 1;
 			String fb = FileOps.basename(fn);
 			DocuDirent fs;
-			if ((idx < list.length)
-					&& (FileOps.basename(((DocuDirent) list[fc].get(idx))
+			if ((idx < fileList.size())
+					&& (FileOps.basename(((DocuDirent) fileList.get(idx))
 							.getName()).equals(fb))) {
 				// idx matches
 				return idx;
 			} else if ((idx > 0)
-					&& (FileOps.basename(((DocuDirent) list[fc].get(idx - 1))
+					&& (FileOps.basename(((DocuDirent) fileList.get(idx - 1))
 							.getName()).equals(fb))) {
 				// idx-1 matches
 				return idx - 1;
-			} else if ((idx + 1 < list.length)
-					&& (FileOps.basename(((DocuDirent) list[fc].get(idx - 1))
+			} else if ((idx + 1 < fileList.size())
+					&& (FileOps.basename(((DocuDirent) fileList.get(idx - 1))
 							.getName()).equals(fb))) {
 				// idx+1 matches
 				return idx + 1;
