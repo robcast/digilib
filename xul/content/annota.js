@@ -87,6 +87,7 @@ function setCreatorName() {
 
 function refreshTree(){
 	this.rdfTree = new RDFTree(this.TREE_ID);
+	this.rdfTree.doSort('name');
 	this.rdfTree.rebuild();
 }
 
@@ -394,6 +395,7 @@ function quickSave() {
 		this.createComplexRDFEntry(urn);
 		dataSource.save();
 		refreshTree();
+
 	} else{
 		alert("Error: no alcatraz component. can't create an annotation.");
 	}

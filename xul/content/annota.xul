@@ -15,8 +15,8 @@
 
 <!-- ANNOTA -->
  <tabpanel id="annota_tab" orient="vertical">
-   <vbox flex="1">
-    <hbox flex="1">
+   <vbox flex="1" >
+    <hbox>
       <toolbarbutton id="annota_file" type="menu" label="File">
        <menupopup id="file_popup">
         <menuitem label="Save" onclick="quickSave()"/>
@@ -43,20 +43,30 @@
       </toolbarbutton>
      </hbox>
 
-	<tree id="annotation_tree" flex="100" datasources="rdf:null" ref="urn:echo" ondblclick="tree_click()"
-	 height="100%">
+	<tree id="annotation_tree" flex="1" datasources="rdf:null" ref="urn:echo" ondblclick="tree_click()"
+	  height="300" width="100" flags="dont-build-content">
 
       <treecols id="cols">
-		<treecol id="name" label="Name" primary="true" flex="10"/>
-		<treecol id="pagenumber" label="Page" flex="1"/>
-		<treecol id="url" label="URL" hidden="true" flex="5"/>
-		<treecol id="created" label="Created" hidden="true" flex="5"/>
+		<treecol id="name" label="Name" primary="true" flex="10"
+		    class="sortDirectionIndicator" sortActive="true"
+            sortDirection="ascending"
+            sort="rdf:http://purl.org/dc/elements/1.0/title"/>
+	    <splitter/>
+		<treecol id="pagenumber" label="Page" flex="1"
+		    class="sortDirectionIndicator"
+            sort="rdf:http://echo.unibe.ch/digilib/rdf#pn"/>
+		<treecol id="url" label="URL" hidden="true" flex="5"
+		    class="sortDirectionIndicator"
+            sort="rdf:http://echo.unibe.ch/digilib/rdf#fn"/>
+		<treecol id="created" label="Created" hidden="true" flex="5"
+		    class="sortDirectionIndicator"
+            sort="rdf:http://www.w3.org/2000/10/annotation-ns#created"/>
       </treecols>
 
       <template>
 		<rule>
-    	  <treechildren flex="1" >
-			<treeitem uri="rdf:*" persist="open">
+    	  <treechildren>
+			<treeitem uri="rdf:*">
 			  <treerow>
 				<treecell id="nameHeader" label="rdf:http://purl.org/dc/elements/1.0/title"/>
 				<treecell id="pagenumberHeader" label="rdf:http://echo.unibe.ch/digilib/rdf#pn"/>
@@ -68,7 +78,6 @@
 		</rule>
       </template>
     </tree>
-
    </vbox>
   </tabpanel>
 </window>
