@@ -35,7 +35,7 @@
             5
         </load-on-startup>
   </servlet>
-  <!-- We want to finger around with the default JSP servlet... -->
+  <!-- We want to mess around with the default JSP servlet... -->
   <servlet>
         <servlet-name>
             doc-jsp
@@ -73,6 +73,14 @@
             /servlet/Scaler/*
         </url-pattern>
   </servlet-mapping>
+  <servlet-mapping>
+        <servlet-name>
+            Scaler
+        </servlet-name>
+        <url-pattern>
+            /authenticated/servlet/Scaler/*
+        </url-pattern>
+  </servlet-mapping>
   <!-- The mapping for the JSP servlet -->
   <servlet-mapping>
         <servlet-name>
@@ -103,7 +111,7 @@
   <!--
         <auth-method>BASIC</auth-method>
         <realm-name>digilib</realm-name> 
-        -->
+   -->
         <auth-method>
             FORM
         </auth-method>
