@@ -7,6 +7,12 @@ include ('chrome://jslib/content/io/rdf.js');/*
 include ('chrome://jslib/content/io/rdfFile.js');*/
 include ('chrome://jslib/content/io/fileUtils.js');
 
+/* Konstanten */
+var  BEGIN_OF_URI = 'urn:echo';
+var  TREE_ID = 'annotation_tree';
+var  ECHO = 'http://echo.unibe.ch/digilib/rdf#';
+var  HEADER_URI = 'urn:header:';
+
 var slash='/';
 if (navigator.platform=="Win32"){
    slash='\\';
@@ -14,8 +20,24 @@ if (navigator.platform=="Win32"){
 
 var directory=slash;
 var digilib_path=slash;
+var creator = 'unknown';
+var rdfTree;
 
 getProfile();
+getAnnotations();
+
+
+/**
+ * Opens a Dialog to make a text annotation.
+ */
+function dialog_annotate() {
+    if(this.getAttributeOfSelectedNode('url') != '') {
+	    window.openDialog("chrome://alcatraz/content/dialog_annotate.xul", "dialog_annotate",       "chrome,dialog,resizable=no", "");
+	} else {
+        alert('No Annotation is selected!');
+	}
+}
+
 
 function makePathCompatible(path){
   if (navigator.platform=="Win32"){
@@ -40,7 +62,7 @@ function file_open(){
         .createInstance(nsIFilePicker);
   fp.init(window, "Select a Directory", nsIFilePicker.modeGetFolder);
 
-  // set default direcotry
+  // set default directory
   var aLocalFile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
   directory=makePathCompatible(directory);
   aLocalFile.initWithPath(directory);
@@ -50,24 +72,27 @@ function file_open(){
   if (res==nsIFilePicker.returnOK){
     directory=fp.fileURL.path;
     directory=makePathCompatible(directory);
-    setTreeDirectory();
+    this.setTreeDirectory();
   }
 }
 
 function setTreeDirectory(){
-    var t=document.getElementById("file_tree");
-    t.setAttribute("datasources","file://"+directory+'test.rdf');
-	//alert('datasource: '+ t.getAttribute("datasources"));
-	//alert('Directory: file://'+directory+'/test.rdf');
+	this.rdfTree = new RDFTree(this.TREE_ID);
+	this.rdfTree.addDataSource('file://'+this.getProfileDirectory()+slash+'annotations.rdf');
+}
+
+function setCreatorName() {
+
 }
 
 function refreshTree(){
-   var t=document.getElementById("file_tree");
-   t.builder.rebuild();
+	this.rdfTree = new RDFTree(this.TREE_ID);
+	this.rdfTree.rebuild();
 }
 
 function getAttributeOfSelectedNode(attribute) {
-	var tree=document.getElementById("file_tree");
+	this.rdfTree = new RDFTree(this.TREE_ID);
+	var tree = this.rdfTree.tree;
     try {
 		return tree.view.getCellText(tree.currentIndex,attribute);
     } catch(e) {
@@ -75,79 +100,307 @@ function getAttributeOfSelectedNode(attribute) {
 	}
 }
 
-/*
-function createSequence(completeURN) {
-    if(completeURN.indexOf(slash) != -1) {
-		    alert('Recursion: '+completeURN);
-	    //lowest sequence
-        var seqNodeContainer = dataSource.getNode(completeURN.substring(0,completeURN.lastIndexOf(":")));
-		seqNodeContainer.makeSeq();
-		//lowest description
-		var rootNodeContainer = dataSource.getNode(completeURN.substring(0,completeURN.lastIndexOf(":")));
-		var fnTemp = completeURN.substring(0,completeURN.lastIndexOf(":"));
-        rootNodeContainer.addTarget("http://echo.unibe.ch/digilib/rdf#fn",completeURN.substring(
-		    fnTemp.lastIndexOf(":")+1,completeURN.lastIndexOf(":")));
-
-        completeURN = completeURN.replace(slash,':');
-
-		//next higher sequence
-        var seqNode = dataSource.getNode(completeURN.substring(0,completeURN.lastIndexOf(":")));
-		seqNode.makeSeq();
-		//next higher description
-        var rootNode = dataSource.getNode(completeURN.substring(0,completeURN.lastIndexOf(":")));
-		fnTemp = completeURN.substring(0,completeURN.lastIndexOf(":"));
-        rootNode.addTarget("http://echo.unibe.ch/digilib/rdf#fn",completeURN.substring(
-		    fnTemp.lastIndexOf(":")+1,completeURN.lastIndexOf(":")));
-        seqNodeContainer.addChild(rootNode);
-		alert('Recursion end: '+completeURN);
-
-		if(completeURN.lastIndexOf(slash) == -1) {
-		    alert('Recursion finished : '+completeURN);
-			var node = dataSource.getNode(completeURN);
-			var arrayParams=window.content.listParameters();
-			for (i=0; i< arrayParams.length; i++){
-				var value=window.content.getParameter(arrayParams[i]);
-				//alert(arrayParams[i]+":"+value);
-				node.addTarget("http://echo.unibe.ch/digilib/rdf#"+arrayParams[i],value);
-			}
-			node.addTarget("http://echo.unibe.ch/digilib/rdf#lv","1");
-			seqNode.addChild(node);
-		}
-		this.createSequence(completeURN);
+function getURIOfSelectedNode() {
+    var url = this.getAttributeOfSelectedNode('url');
+	if(url != '') {
+        return id = this.BEGIN_OF_URI + ':' + url
+	        + '|' + this.getAttributeOfSelectedNode('pagenumber')
+		    + '|' + this.getAttributeOfSelectedNode('name');
 	}
+    return '';
 }
-*/
 
 /**
- * @todo isn't complex yet...
+ * Deletes the selected Annotation
  */
-function createComplexRDFEntry(completeURN) {
-    var title = window.prompt("Please enter a title for this Annotation",this.getAttributeOfSelectedNode('name'));
-    alert('Title: '+title);
-    var echoContainer = dataSource.getNode("urn:echo");
-    echoContainer.makeSeq();
-
-	echoContainer.addChild(completeURN);
-	var node = dataSource.getNode(completeURN);
-	var arrayParams=window.content.listParameters();
-	for (i=0; i< arrayParams.length; i++){
-		var value=window.content.getParameter(arrayParams[i]);
-		//alert(arrayParams[i]+":"+value);
-		node.addTarget("http://echo.unibe.ch/digilib/rdf#"+arrayParams[i],value);
+function deleteAnnotation() {
+    var name = this.getAttributeOfSelectedNode('name');
+    if(name != '') {
+	    var isSure = window.confirm('Do you really want to delete the Annotations "'
+		    + name + '?');
+		if(isSure) {
+			var dataSource = new RDFDataSource('file://'+this.getProfileDirectory()+slash+'annotations.rdf');
+			containerNode = dataSource.getNode(this.BEGIN_OF_URI);
+			var uri = this.getURIOfSelectedNode();
+			containerNode.removeChild(dataSource.getNode(uri));
+//            alert(this.HEADER_URI+this.getURIOfSelectedNode());
+			//alert(uri);
+			dataSource.deleteRecursive(this.HEADER_URI+uri); // Delete the Header
+			dataSource.deleteRecursive(uri);
+			this.refreshTree();
+			dataSource.save();
+		}
 	}
-	node.addTarget("http://echo.unibe.ch/digilib/rdf#lv","1");
-	node.addTarget("http://purl.org/dc/elements/1.0/title",title);
-	node.addTarget("http://purl.org/dc/elements/1.0/creator","");
-	node.addTarget("http://purl.org/dc/elements/1.0/date","");
-	node.addTarget("http://www.w3.org/2000/10/annotation-ns#created","");
-	node.addTarget("http://www.w3.org/2000/10/annotation-ns#Annotation","targetof");
-	var node2 = dataSource.getNode("targetof");
-	node2.addTarget("http://echo.unibe.ch/digilib/rdf#lv","1");
-	/*ar subNode = dataSource.getNode('specialised');
-	node.addChild(subNode,true);*/
+
 }
 
-function file_save(){
+/**
+ * Adds a Textannotation to an existing annotation.
+ */
+function addTextAnnotation(text) {
+    var id = this.getURIOfSelectedNode();
+	dataSource = new RDFDataSource('file://'+this.getProfileDirectory()+slash+'annotations.rdf');
+    var node = dataSource.getNode(id);
+	if(node.propertyExists('http://purl.org/dc/elements/1.0/title')) {
+        /** Do something */
+	} else { // Should never be reached
+        alert('AddTextAnnotation: No Annotation is selected!');
+    }
+    //alert(text);
+}
+
+function getCurrentDate() {
+	var now = new Date();
+	return date = ((now.getYear() < 999) ? (now.getYear()+1900) : now.getYear()) + '-'
+		+now.getDate() + '-' + now.getDay() + ', '
+		+now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds() + ' '
+		+(now.getTimezoneOffset()/60) + ':00 GMT';
+}
+
+/**
+ * Creates A Complex RDF entry and adds it to the base Container.
+ * @params String The urn of the new node without(!) title (so far).
+ * @todo isn't complex yet...
+ */
+function createComplexRDFEntry(inCompleteURN) {
+    var title = window.prompt("Please enter a title for this Annotation"
+	    ,this.getAttributeOfSelectedNode('name'));
+	if(title != null) {
+		var completeURN = inCompleteURN+title;
+		var echoContainer = dataSource.getNode(BEGIN_OF_URI);
+		echoContainer.makeSeq();
+
+		echoContainer.addChild(completeURN);
+/*		var node = dataSource.getNode(completeURN);
+		node.addTarget(ECHO + 'template','text_digilib');
+		node.addTarget(ECHO + 'echo','basic');
+		node.addTarget(ECHO + 'lv","1");
+		node.addTarget("http://purl.org/dc/elements/1.0/title",title);
+		node.addTarget("http://purl.org/dc/elements/1.0/creator","");
+		node.addTarget("http://purl.org/dc/elements/1.0/date","");
+		node.addTarget("http://www.w3.org/2000/10/annotation-ns#created","");
+		node.addTarget("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",'Annotation');
+
+		var arrayParams=window.content.listParameters();
+
+        var s = '';
+		for (i=0; i< arrayParams.length; i++){
+		    s += arrayParams[i] + ' ' + window.content.getParameter(arrayParams[i]) + '\n';
+			//var value=window.content.getParameter(arrayParams[i]);
+			//alert(arrayParams[i]+":"+value);
+			//node.addTarget(ECHO + '+arrayParams[i],value);
+		}
+		alert(s);
+
+		node.addTarget(ECHO + 'lv',"1");
+		node.addTarget("http://purl.org/dc/elements/1.0/title",title);
+		node.addTarget("http://purl.org/dc/elements/1.0/creator","");
+		node.addTarget("http://purl.org/dc/elements/1.0/date","");
+		node.addTarget("http://www.w3.org/2000/10/annotation-ns#created","");
+		//node.addTarget("http://www.w3.org/2000/10/annotation-ns#Annotation","targetof");
+		//var node2 = dataSource.getNode("targetof");
+		//node2.addTarget(ECHO + 'lv',"1");
+*/
+		var date = this.getCurrentDate();
+		var node = dataSource.getNode(this.HEADER_URI + completeURN);
+		var created = '';
+		/** @Todo Doesn't work correctly, if the selected one isn't the overwritten one! */
+		if(!node.propertyExists('http://purl.org/dc/elements/1.0/title')) {
+            created = date;
+		} else {
+            created = this.getAttributeOfSelectedNode('created');
+		}
+		var fn = window.content.getParameter('fn');
+		var pn = window.content.getParameter('pn');
+		var ws = window.content.getParameter('ws');
+		var mk = window.content.getParameter('mk');
+		var wx = window.content.getParameter('wx');
+		var wy = window.content.getParameter('wy');
+		var ww = window.content.getParameter('ww');
+		var wh = window.content.getParameter('wh');
+		var pt = window.content.getParameter('pt');
+
+		var brgt = window.content.getParameter('brgt');
+		var cont = window.content.getParameter('cont');
+		var rot = window.content.getParameter('rot');
+		var rgba = window.content.getParameter('rgba');
+		var rgbm = window.content.getParameter('rgbm');
+		var ddpix = window.content.getParameter('ddpix');
+		var ddpiy = window.content.getParameter('ddpiy');
+
+		var lv = 1; /** @todo get the parameter right */
+
+
+		var rdfHeader = '<?xml version="1.0" ?>\n'
+				+'<RDF:RDF xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#"\n'
+				+'      xmlns:echo="' + ECHO + '"\n'
+				+'      xmlns:a="http://www.w3.org/2000/10/annotation-ns#"\n'
+				+'      xmlns:d="http://purl.org/dc/elements/1.0/">\n\n'
+		var rdfFooter = '</RDF:RDF>\n';
+
+		var rdf = rdfHeader;
+		if(true) { // annotation is basic
+			rdf += '  <RDF:Description RDF:about="' + completeURN + '">\n'
+				+  '    <!-- Annotations Type -->\n'
+				+  '    <RDF:type rdf:resource="http://www.w3.org/2000/10/annotation-ns#Annotation"/>\n'
+				+  '    <echo:type rdf:resource="' + ECHO + 'Digilib"/>\n' //echo -> RDF
+				+  '    <!-- Echo Digilib Parameters -->\n'
+				+  '    <echo:fn>' + fn + '</echo:fn>\n'
+				+  '    <echo:pn>' + pn + '</echo:pn>\n'
+				+  '    <echo:ws>' + ws + '</echo:ws>\n'
+				+  '    <echo:mk>' + mk + '</echo:mk>\n' // As there isn't a textmark yet, I only set mk
+				+  '    <echo:wx>' + wx + '</echo:wx>\n'
+				+  '    <echo:wy>' + wy + '</echo:wy>\n'
+				+  '    <echo:ww>' + ww + '</echo:ww>\n'
+				+  '    <echo:wh>' + wh + '</echo:wh>\n'
+				+  '    <echo:pt>' + pt + '</echo:pt>\n'
+				+  '    <echo:brgt>' + brgt + '</echo:brgt>\n'
+				+  '    <echo:cont>' + cont + '</echo:cont>\n'
+				+  '    <echo:rot>' + rot + '</echo:rot>\n'
+				+  '    <echo:rgba>' + rgba + '</echo:rgba>\n'
+				+  '    <echo:rgbm>' + rgbm + '</echo:rgbm>\n'
+				+  '    <echo:ddpix>' + ddpix + '</echo:ddpix>\n'
+				+  '    <echo:ddpiy>' + ddpiy + '</echo:ddpiy>\n'
+				+  '    <echo:lv>' + lv + '</echo:lv>\n'
+				+  '    <!-- Dublin Core -->\n'
+				+  '    <d:title>' + title + '</d:title>\n'
+				+  '    <d:creator>' + creator + '</d:creator>\n'
+				+  '    <d:date>' + date + '</d:date>\n'
+				+  '    <!-- WWW.W3.org Annotations -->\n'
+				+  '    <a:created>' + created + '</a:created>\n'
+				+  '  </RDF:Description>\n';
+		} else { // annotation is complex /** @Todo The other components aren't correct yet*/
+
+			rdf +='  <RDF:Description RDF:about="' + this.HEADER_URI + completeURN + '">\n'
+				+ '    <RDF:type rdf:resource="http://www.w3.org/2000/10/annotation-ns#Annotation"/>\n'
+				+ '    <echo:template>text_digilib</echo:template>\n' // are there other templates?
+				+ '    <!-- Dublin Core -->\n'
+				+ '    <d:title>' + title + '</d:title>\n'
+				+ '    <d:creator>' + creator + '</d:creator>\n'
+				+ '    <d:date>' + date + '</d:date>\n'
+				+ '    <!-- WWW.W3.org Annotations -->\n'
+				+ '    <a:created>' + created + '</a:created>\n';
+
+			rdf +='    <echo:type rdf:resource="' + ECHO + 'complex"/>\n'; //echo -> RDF
+				+ '    <echo:annotation RDF:resource="' + completeURN +'"/>\n'
+				+ '  </RDF:Description>\n\n';
+		}
+
+		rdf += rdfFooter;
+        //alert(rdf);
+        var ds = new RDFDataSource();
+
+		//Remove the original to add the new one
+		dataSource.deleteRecursive(this.HEADER_URI+completeURN);
+		ds.parseFromString(rdf,'file://'+this.getProfileDirectory()+slash+'annotations.rdf');
+		ds.copyAllToDataSource(dataSource);
+
+/*******************************************************
+
+		var rdf ='<?xml version="1.0" ?>'
+				+'<RDF:RDF xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#"'
+				+'      xmlns:echo="' + ECHO + '"'
+				+'      xmlns:a="http://www.w3.org/2000/10/annotation-ns#"'
+				+'      xmlns:d="http://purl.org/dc/elements/1.0/">'
+
+				+'  <RDF:Description rdf:about="'+completeURN+'">'
+				+'    <echo:template>text_digilib</echo:template>'
+				+'    <echo:type rdf:resource="' + ECHO + 'complex"/>' //echo -> RDF
+				+'    <RDF:type rdf:resource="http://www.w3.org/2000/10/annotation-ns#Annotation"/>'
+				+'    <echo:annotation>'
+				+'      <RDF:Description>'
+				+'      <!-- Annotations Type -->'
+				+'      <RDF:type rdf:resource="http://www.w3.org/2000/10/annotation-ns#Annotation"/>'
+				+'      <echo:type rdf:resource="' + ECHO + 'Digilib"/>' //echo -> RDF
+				+'      <!-- Echo Digilib Parameters -->'
+				+'      <echo:fn>histbot/botany</echo:fn>'
+				+'      <echo:pn>1</echo:pn>'
+				+'      <echo:ws>1.0</echo:ws>'
+				+'      <echo:text_mark echo:mk="0.6021/0.8411">'
+				+'        <RDF:Description>'
+				+'            <!-- Annotations Type -->'
+				+'            <RDF:type rdf:resource="http://www.w3.org/2000/10/annotation-ns#Annotation" />'
+				+'            <echo:type rdf:resource="' + ECHO + 'Text" />'//echo -> RDF
+				+'            <!-- Alcatraz Text -->'
+				+'            <echo:txt>Mark 1 shows the root of the Anthoxanthum odoratum &lt;br /&gt; there is a lot of textand textt and text and text and text</echo:txt>'
+				+'            <!-- Dublin Core -->'
+				+'            <d:title>Text Annotation of Mark1</d:title>'
+				+'            <d:creator>erwin.mueller@philo.unibe.ch</d:creator>'
+				+'            <d:date>2003-07-11T19:13:52+01:00</d:date>'
+				+'            <!-- WWW.W3.org Annotations -->'
+				+'            <a:created>2003-07-11T19:13:16+01:00</a:created>'
+				+'        </RDF:Description>'
+				+'      </echo:text_mark>'
+				+'      <echo:wx>0.2626</echo:wx>'
+				+'      <echo:wy>0.8123</echo:wy>'
+				+'      <echo:ww>0.4747</echo:ww>'
+				+'      <echo:wh>0.1484</echo:wh>'
+				+'      <echo:pt>249</echo:pt>'
+				+'      <echo:lv>1</echo:lv>'
+				+'      <!-- Dublin Core -->'
+				+'      <d:title>Ruchgras</d:title>'
+				+'      <d:creator>daniel.engler@philo.unibe.ch</d:creator>'
+				+'      <d:date>2003-05-11T16:42:52+01:00</d:date>'
+				+'      <!-- WWW.W3.org Annotations -->'
+				+'      <a:created>2003-05-11T16:34:16+01:00</a:created>'
+				+'      </RDF:Description>'
+				+'    </echo:annotation>' // rdf:resource="echo00765"/>'
+				+'    <d:title>Complex Annotation Digilib and Text</d:title>'
+				+'    <d:creator>karl.gerber@germ.unibe.ch</d:creator>'
+				+'    <d:date>2003-01-13T19:13:52+01:00</d:date>'
+				+'    <!-- WWW.W3.org Annotations -->'
+				+'    <a:created>2003-01-13T19:13:16+01:00</a:created>'
+				+'  </RDF:Description>'
+				+'</RDF:RDF>';
+		ds = new RDFDataSource();
+		ds.parseFromString(rdf,"http://echo.unibe.ch/digilib/rdf/digilib.rdf");
+		//alert('Beispiel einer komplexen Annotation:\n\n'+ds.serializeToString());
+***************************************************************/
+    }
+}
+
+/**
+ * Saves the open echo-site in the annotation.rdf-file without asking.
+ * @todo The <code>about</code> has to be modified if the URN's are changing!
+ */
+function quickSave() {
+	var about='';
+	try {
+	    var identify;
+	    try {
+			identify = (typeof(window.content.identify()) != 'undefined')
+				? window.content.identify() : false;
+		} catch(e) {
+            identify = false;
+		}
+			about = window.content.getParameter('fn');
+			about += '|' + window.content.getParameter('pn') + '|';
+	} catch (e){
+		about = '';
+	}
+	if (about != ''){
+	    //alert('Creator: '+this.creator);
+		while(this.creator == 'unknown' || this.creator == '') {
+			this.creator = window.prompt("Please enter a username:",this.creator);
+		}
+		this.setProfile();
+
+		//URN isn't complete yet!
+		var urn = BEGIN_OF_URI + ':' + about;
+		//alert('Documentpath: '+documentpath);
+
+		dataSource = new RDFDataSource('file://'+this.getProfileDirectory()+slash+'annotations.rdf');
+
+		this.createComplexRDFEntry(urn);
+		dataSource.save();
+		refreshTree();
+	} else{
+		alert("Error: no alcatraz component. can't create an annotation.");
+	}
+}
+
+/** @todo Allow the users to save their RDF-Files anywhere.
+function saveAs(){
 
   // get Digilib-Parameter form Browser
   //alert(window.content.location.href);
@@ -162,44 +415,14 @@ function file_save(){
     if (documentpath != ''){
         //documentpath=documentpath.replace(slash,':');
 	    //alert(documentpath);
-        var docPath='urn:echo:'+documentpath;
+        var docPath = BEGIN_OF_URI + ':' + documentpath;
 
 		var t=document.getElementById("file_tree");
-		dataSource = new RDFDataSource(t.getAttribute("datasources"));
+		dataSource = new RDFDataSource();
 		this.createComplexRDFEntry(docPath);
 
-/*		//Create new Node
-		var node = dataSource.getNode(docPath);
-		var arrayParams=window.content.listParameters();
-		for (i=0; i< arrayParams.length; i++){
-			var value=window.content.getParameter(arrayParams[i]);
-			//alert(arrayParams[i]+":"+value);
-			node.addTarget("http://echo.unibe.ch/digilib/rdf#"+arrayParams[i],value);
-		}
-		node.addTarget("http://echo.unibe.ch/digilib/rdf#lv","1");
-		//Add the node to the Seq
-		var seqNode = dataSource.getNode(docPath.substring(0,docPath.lastIndexOf(":")));
-		if(seqNode.isContainer()) {
-			seqNode.addChild(node);
-		} else {
-            seqNode.makeSeq();
-			seqNode.addChild(node);
-		}
-*/
-		dataSource.save();
-		refreshTree();
-/*
-     var ds=new RDFDataSource();
-     ds.parseFromString(rdfString,"http://echo.unibe.ch/digilib/rdf/digilib.rdf");
-     var node=ds.getNode(docPath);
-     var arrayParams=window.content.listParameters();
-     for (i=0; i< arrayParams.length; i++){
-        var value=window.content.getParameter(arrayParams[i]);
-        //alert(arrayParams[i]+":"+value);
-        node.addTarget("http://echo.unibe.ch/digilib/rdf#"+arrayParams[i],value);
-     }
-     node.addTarget("http://echo.unibe.ch/digilib/rdf#lv","1");
-     //alert(ds.serializeToString());
+		//dataSource.save();
+		//refreshTree();
      var nsIFilePicker = Components.interfaces.nsIFilePicker;
      var fp = Components.classes["@mozilla.org/filepicker;1"]
            .createInstance(nsIFilePicker);
@@ -232,16 +455,16 @@ function file_save(){
        //alert(boolFileExists);
        f.create();
        f.open('w');
-       f.write(ds.serializeToString());
+       f.write(dataSource.serializeToString());
        f.close();
        refreshTree();
      }
-//*/
+
   } else{
         alert("Error: no alcatraz component. can't create an annotation.");
   }
 }
-
+//*/
 
 function file_local(){
   // noch nicht programmiert
@@ -254,25 +477,11 @@ function file_annotaDB(){
 }
 
 function tree_click(){
-   var t=document.getElementById("file_tree");    //tree element
-   var l=t.view.getItemAtIndex(t.currentIndex);   //aus baum treeitem herausholen mit dem selected index (currentIndex)
-                                                  //l.firstChild ist treeitem
-   var d=l.firstChild.firstChild;                 //treecell
-   var firstLabel=d.getAttribute("label");
-   var cols=document.getElementById("cols");
-   var col=cols.childNodes;
-   var nodes=l.firstChild.childNodes;
-   var rdf_file="";
-   for (var i=0;i<nodes.length;i++){
-      if (col[i].getAttribute("label")=="URL"){
-         rdf_file=nodes[i].getAttribute("label");
-      }
+    var rdfFile = this.getURIOfSelectedNode();
+   if (rdfFile!=''){
+     //alert('New identifier: '+ rdfFile);
+     this.send_annotation(rdfFile);
    }
-   if (rdf_file!=""){
-     send_annotation(rdf_file);
-   }
-   alert(rdf_file);
-   return rdf_file;  
 }
 
 
@@ -289,10 +498,17 @@ function setDigilibPath(digilibPathValue){
 *
 ***/
 function show_dialog(dialog){
-  if (dialog=="tool path"){
-    window.openDialog("tools_dialog.xul","funny dialog",
-                  "chrome",digilib_path,setDigilibPath);
-  }
+	if (dialog=="tool path"){
+		window.openDialog("tools_dialog.xul","funny dialog",
+		    "chrome",digilib_path,setDigilibPath);
+	}
+	if (dialog == 'creator') {
+		var creatorName = window.prompt('Enter the name of the creator of the annotations:'
+			,this.creator);
+		if(creatorName != '') {
+            this.creator = creatorName;
+		}
+	}
 }
 
 
@@ -300,40 +516,53 @@ function show_dialog(dialog){
 * Gibt den Inhalt eines Files als String zurueck
 *
 ***/
-function readFile(str_Filename){
-  var f=new File(str_Filename);
-  var str="";
-  if (f.isFile()){
-    f.open();
-    str=f.read();
-    f.close();
-  } else {
-    alert(str_Filename + " is not a file");
+function readFile(fileName){
+  var file = new File(fileName);
+  var string = '';
+  if (file.isFile()){
+    file.open();
+    string=file.read();
+    file.close();
   }
-  return str;
-} 
+  return string;
+}
 
+/**
+ * @todo digilib.jsp sollte hier nicht auf die urn schauen, sondern auf den fn parameter!
+ */
+function getContentOfRdfDescription(id) {
+	dataSource = new RDFDataSource('file://'+this.getProfileDirectory()+slash+'annotations.rdf');
+	var inMemoryDataSource = new RDFDataSource();
+    var node = dataSource.getNode(id);
+	var properties = node.getProperties();
+	var urn = this.getAttributeOfSelectedNode('url');
+    urn = urn.replace(/^file:\/\//,"");
+    urn = this.makePathCompatible(urn);
+	var inMemoryNode = inMemoryDataSource.getNode(this.BEGIN_OF_URI+':'+urn);
+	while(properties.hasMoreElements()) {
+	    var property = properties.getNext();
+        var target = node.getTarget(property);
+		inMemoryNode.addTarget(property,target);
+	}
+    return inMemoryDataSource.serializeToString();
+}
 
-
-function send_annotation(rdf_file){
-   rdf_file=rdf_file.replace(/^file:\/\//,"");
-   rdf_file=makePathCompatible(rdf_file);
-   digilib_path="http://pythia2.unibe.ch:8080/docuserver/digitallibrary";
-   alert("Send Annotation: "+rdf_file);
-   strRdfFile=readFile(rdf_file);
-   if (strRdfFile!=""){
-     var formid='mainform';
-	 alert(digilib_path+"/digilib.jsp");
-     var form = createForm(formid, digilib_path+"/digilib.jsp", "post", "_content");
-     //var form = createForm(formid, "http://sophia.unibe.ch:8080/examples/servlet/RequestRDF", "post", "_content");
-     //var form = createForm(formid, "http://hera.unibe.ch:8080/examples/servlet/RequestRDF", "post", "_content");
-     setFormData(form, formid, strRdfFile);
+/**
+ * @todo check if it is platform independant
+ */
+function send_annotation(rdfFilePath){
+   //digilib_path = 'http://pythia2.unibe.ch:8080/docuserver/digitallibrary';
+   strRdfFile = this.getContentOfRdfDescription(rdfFilePath);
+   //alert(strRdfFile);
+   if (strRdfFile!=''){
+     var formid = 'mainform';
+     var form = this.createForm(formid, digilib_path+"/digilib.jsp", "post", "_content");
+     this.setFormData(form, formid, strRdfFile);
      form.submit();
    }
 }
 
-function createForm(formid, action, method, target)
-{
+function createForm(formid, action, method, target) {
      var form = document.getElementById(formid);
      if(form != null)
      document.documentElement.removeChild(form);
@@ -347,63 +576,92 @@ function createForm(formid, action, method, target)
      return form;
 }
 
-function setFormData(form, formid, rdf)
-{
+function setFormData(form, formid, rdf) {
      var val1 = document.createElementNS("http://www.w3.org/1999/xhtml", "input");
      val1.setAttribute('type', 'hidden');
      val1.setAttribute('name', 'rdf');
      val1.setAttribute('value', rdf);
-     form.appendChild(val1); 
+     form.appendChild(val1);
 }
 
 
 function getProfileDirectory(){
- // First get the directory service and query interface it to
-   // nsIProperties
-   var dirService = Components.
-       classes['@mozilla.org/file/directory_service;1'].
-       getService(Components.interfaces.nsIProperties);
- 
-   // Next get the "ProfD" property of type nsIFile from the directory
-   // service, FYI this constant is defined in
-   // mozilla/xpcom/io/nsAppDirectoryServiceDefs.h
- 
-   const NS_APP_USER_PROFILE_50_DIR = "ProfD";
-   profileDir = dirService.get(NS_APP_USER_PROFILE_50_DIR,
-        Components.interfaces.nsIFile);
- 
-   // Now that we have it we can show it's path. See nsIFile for the
-   // other things you that can be done with profileDir
-   //alert(profileDir.path);
-   return profileDir.path;
+	// First get the directory service and query interface it to
+	// nsIProperties
+	var dirService = Components.
+		classes['@mozilla.org/file/directory_service;1'].
+		getService(Components.interfaces.nsIProperties);
+
+	// Next get the "ProfD" property of type nsIFile from the directory
+	// service, FYI this constant is defined in
+	// mozilla/xpcom/io/nsAppDirectoryServiceDefs.h
+
+	const NS_APP_USER_PROFILE_50_DIR = "ProfD";
+	profileDir = dirService.get(NS_APP_USER_PROFILE_50_DIR,
+			Components.interfaces.nsIFile);
+
+	// Now that we have it we can show it's path. See nsIFile for the
+	// other things you that can be done with profileDir
+	//alert(profileDir.path);
+	return profileDir.path;
 }
 
 function getProfile(){
-   var strProfile=readFile(getProfileDirectory()+slash+"annota.dat");
-   if (strProfile==""){
-      directory=slash;
-      digilib_path="http://hera.unibe.ch:8080/alcatraz";
-      setProfile();
-   }else{
-      var params=strProfile.split("\n");
-      for (var i=0;i<params.length;i++){
-         var key_value=params[i].split("|");
-	 if (key_value[0]=='directory'){
-	    directory=key_value[1];
-         }
-	 if (key_value[0]=='tool path'){
-	    digilib_path=key_value[1];
-         }
-      }
-   }
+	var strProfile=readFile(getProfileDirectory()+slash+"annota.dat");
+	if (strProfile==""){
+		directory=slash;
+		digilib_path="http://hera.unibe.ch:8080/alcatraz";
+		creator = 'unknown'
+		setProfile();
+	} else {
+		var params=strProfile.split("\n");
+		for (var i=0;i<params.length;i++){
+			var key_value=params[i].split("|");
+		    if (key_value[0]=='directory'){
+    			directory=key_value[1];
+			}
+		    if (key_value[0]=='tool path'){
+    			digilib_path=key_value[1];
+			}
+			if(key_value[0] == 'creator') {
+                creator = key_value[1];
+			}
+		}
+	}
 }
 
+/**
+ * @todo Menuentry where the user can set the creator name.
+ */
 function setProfile(){
-   var f=new File(getProfileDirectory()+slash+'annota.dat');
-   f.create();
-   f.open('w');
-   f.write('directory|'+directory+'\n'+'tool path|'+digilib_path+'\n');
-   f.close();
+	var file = new File(getProfileDirectory()+slash+'annota.dat');
+	file.create();
+	file.open('w');
+	file.write('directory|'+directory+'\n'
+	    +'tool path|'+digilib_path+'\n'
+		+'creator|'+this.creator+'\n');
+	file.close();
+}
+
+function getAnnotations() {
+    var annotations = this.readFile(this.getProfileDirectory()+slash+'annotations.rdf');
+	if(annotations=='') {
+        this.setAnnotations();
+	}
+}
+
+function setAnnotations() {
+    var file = new File(this.getProfileDirectory()+slash+'annotations.rdf');
+	//alert(this.getProfileDirectory()+slash+'annotations.rdf');
+	file.create();
+	file.open('w');
+	file.write('<?xml version="1.0"?>\n'
+        +'<RDF:RDF xmlns:ECHO="' + ECHO + '"\n'
+        +'    xmlns:ANNOTATION=\"http://www.w3.org/2000/10/annotation-ns#"'
+        +'    xmlns:DC=\"http://purl.org/dc/elements/1.0/"'
+        +'    xmlns:RDF=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#">'
+        +'</RDF:RDF>\n');
+    file.close();
 }
 
 function traverse(node){
@@ -424,16 +682,4 @@ function traverse(node){
 function traverseTree(){
     var t=document.getElementById("file_tree");
     traverse(t);
-}
-
-
-/* @beat: ich habe mich erfrecht, diese billige methode in dein
-          javascript zu verschieben, weil ich eigentlich jetzt zu
-	  dir gehoert und nicht mehr in ein alcatraz.js (das gar
-	  nicht mehr existiert). alcatraz.xul ist nur noch ein 
-	  container fuer andere xul-files und hat deshalb auch
-	  keine eigenen funktionialitaeten mehr - christian
-*/
-function dialog_annotate() {
-	window.openDialog("chrome://alcatraz/content/dialog_annotate.xul", "dialog_annotate", "chrome,dialog,resizable=no", "");
 }

@@ -2,21 +2,26 @@
 <?xml-stylesheet href="chrome://alcatraz/skin/" type="text/css" ?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css" ?>
 
-<overlay id="toverlay"
-         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<window xmlns:html="http://www.w3.org/1999/xhtml"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        onload="setTreeDirectory()">
 
 <script type="application/x-javascript" src="chrome://jslib/content/jslib.js" />
 <script type="application/x-javascript" src="chrome://alcatraz/content/alcatraz.js" />
 <script type="application/x-javascript" src="chrome://alcatraz/content/annota.js" />
 <script type="application/x-javascript" src="chrome://alcatraz/content/rdfds.js" />
+<script type="application/x-javascript" src="chrome://alcatraz/content/RDFTree.js" />
+
 
 <!-- ANNOTA -->
  <tabpanel id="annota_tab" orient="vertical">
    <vbox flex="1">
-    <hbox>
+    <hbox flex="1">
       <toolbarbutton id="annota_file" type="menu" label="File">
        <menupopup id="file_popup">
-        <menuitem label="Save" onclick="file_save()" />
+        <menuitem label="Save" onclick="quickSave()"/>
+        <menuitem label="Delete" oncommand="deleteAnnotation()"/>
+   <!-- <menuitem label="Save as..." onclick="saveAs()" /> -->
        </menupopup>
       </toolbarbutton>
       <toolbarbutton id="annota_options" type="menu" label="Options">
@@ -26,6 +31,7 @@
         <menuseparator/>
         <menuitem id="tool_path" label="Tool URL" onclick="show_dialog('tool path')" />
         <menuitem id="annotations_path" label="Path to annotations" onclick="file_open()" />
+        <menuitem id="creator_name" label="Name of creator" onclick="show_dialog('creator')" />
         <menuseparator/>
         <menuitem id="save_options" label="Save Options" onclick="setProfile()" />
        </menupopup>
@@ -37,29 +43,32 @@
       </toolbarbutton>
      </hbox>
 
-	<tree id="file_tree" flex="100" datasources="file:///home/halter/test.rdf" ref="urn:echo" ondblclick="tree_click()">
+	<tree id="annotation_tree" flex="100" datasources="rdf:null" ref="urn:echo" ondblclick="tree_click()"
+	 height="100%">
 
-     <treecols id="cols">
-      <treecol id="name" label="Name" primary="true" flex="1"/>
-      <treecol id="url" label="URL" hidden="true" flex="1"/>
-     </treecols>
+      <treecols id="cols">
+		<treecol id="name" label="Name" primary="true" flex="10"/>
+		<treecol id="pagenumber" label="Page" flex="1"/>
+		<treecol id="url" label="URL" hidden="true" flex="5"/>
+		<treecol id="created" label="Created" hidden="true" flex="5"/>
+      </treecols>
 
-     <template>
-
-      <rule>
-       <treechildren flex="1" >
-        <treeitem uri="rdf:*" persist="open">
-         <treerow>
-          <treecell label="rdf:http://purl.org/dc/elements/1.0/title"/>
-          <treecell label="rdf:http://echo.unibe.ch/digilib/rdf#fn"/>
-         </treerow>
-        </treeitem>
-       </treechildren>
-      </rule>
-
-     </template>
+      <template>
+		<rule>
+    	  <treechildren flex="1" >
+			<treeitem uri="rdf:*" persist="open">
+			  <treerow>
+				<treecell id="nameHeader" label="rdf:http://purl.org/dc/elements/1.0/title"/>
+				<treecell id="pagenumberHeader" label="rdf:http://echo.unibe.ch/digilib/rdf#pn"/>
+				<treecell id="urlHeader" label="rdf:http://echo.unibe.ch/digilib/rdf#fn"/>
+				<treecell id="createdHeader" label="rdf:http://www.w3.org/2000/10/annotation-ns#created"/>
+			  </treerow>
+			</treeitem>
+		  </treechildren>
+		</rule>
+      </template>
     </tree>
 
    </vbox>
   </tabpanel>
-</overlay>
+</window>

@@ -16,14 +16,13 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  
 Author: Christian Luginbuehl, 01.05.2003 , Version Alcatraz 0.4
+Author: Beat Halter, 18.03.2004, Version Alcatraz ...
 */
 
 function accept() {
-
   var text = document.getElementById('annotation_value').value;
-
-  opener.content.annotation(text);
-
+  addTextAnnotation(text);
+  //opener.content.annotation(text);
   return true;
 
 }
