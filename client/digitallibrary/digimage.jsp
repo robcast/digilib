@@ -52,8 +52,8 @@ pageContext.setAttribute("docBean", docBean, pageContext.REQUEST_SCOPE);
   newParameter('rot', '0.0', 1);
   newParameter('rgba', '', 1);
   newParameter('rgbm', '', 1);
-  newParameter('ddpix', '', 9);
-  newParameter('ddpiy', '', 9);
+  newParameter('ddpix', '', 1);
+  newParameter('ddpiy', '', 1);
   document.id='digilib';
   dl_param_init();
 </script>
