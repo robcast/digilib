@@ -82,8 +82,7 @@ function loadPicture(detailGrade, keepArea) {
 	//		1 -> zoomout
 	//		2 -> zoomarea, zoompoint, moveto, scaledef
 
-	var newURL  = "dlImage.jsp?"
-	newURL += "fn=" + att[0] + "&pn=" + att[1] + "&ws=" + att[2] + "&mo=" + att[3];
+	var newQuery = "fn=" + att[0] + "&pn=" + att[1] + "&ws=" + att[2] + "&mo=" + att[3];
 
 	if (detailGrade == 0) {
 		att[4] = "0/0";
@@ -96,18 +95,18 @@ function loadPicture(detailGrade, keepArea) {
 		att[8] = 1;
 	}
 
-	newURL += "&mk=" + att[4] + "&wx=" + att[5] + "&wy=" + att[6] + "&ww=" + att[7] + "&wh=" + att[8];
+	newQuery += "&mk=" + att[4] + "&wx=" + att[5] + "&wy=" + att[6] + "&ww=" + att[7] + "&wh=" + att[8];
 
 	if (navigator.appName.toLowerCase() == "netscape") {	// mozilla-browsers (netscape 4.xx, netscape 6.xx, etc.)
-		newURL += "&dw=" + (innerWidth-30) + "&dh=" + (innerHeight-30);
-	} else {												// ie
-		newURL += "&dw=" + (document.body.clientWidth-30) + "&dh=" + (document.body.clientHeight-30);
+		newQuery += "&dw=" + (innerWidth-30) + "&dh=" + (innerHeight-30);
+	} else {												// ie, opera
+		newQuery += "&dw=" + (document.body.clientWidth-30) + "&dh=" + (document.body.clientHeight-30);
 	}
-
-	newURL += "&pt=" + att[9];
+	
+	newQuery += "&pt=" + att[9];
 
 	// debug window - checking the parameters passed to the next image
-	//alert ("DEBUG MESSAGE (complete URL in loadPicture):\n\n" + newURL);
+	//alert ("DEBUG MESSAGE (query-string in loadPicture):\n\n" + newQuery);
 
-	location.href = newURL;
+	location.href = location.pathname + "?" + newQuery;
 }
