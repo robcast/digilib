@@ -6,7 +6,7 @@
 <BODY>
 <H1>Scaler</H1>
 
-<p>A Servlet for scaling images. (Version 1.6b)</p>
+<p>A Servlet for scaling images. (Version 1.9b)</p>
 
 <h2>Web API</h2>
 
@@ -46,14 +46,16 @@ Unknown parameters will be silently ignored.</p>
   <li><b>ws</b> additional scaling factor. The resulting image will have the size
     <code>[ws*dw,ws*dh]</code>. Default: 1.</li>
 
-    <li><b>mo</b> flags for the mode of operation separated by "+".
+    <li><b>mo</b> flags for the mode of operation separated by ",".
     <ul>
       <li><b>fit</b>: always scale the image to fit
-      <code>[dw,dh]</code>.<br> <b>file</b>: send the file as-is (may
+      <code>[dw,dh]</code>.<br>
+      <b>file</b>: send the file as-is (may
       be very large and all sorts of image types!). If configuration
       doesn't allow sending files
       (<code>sendfile-allowed=false</code>) revert to
-      <code>clip</code>.<br> <b>clip</b>: send the file in its
+      <code>clip</code>.<br>
+      <b>clip</b>: send the file in its
       original resolution, cropped to fit <code>[dw,dh]</code>.<br> If
       none of these flags is set heuristics is used (send unzoomed GIF
       as-is).</li>
@@ -79,10 +81,23 @@ Unknown parameters will be silently ignored.</p>
   multiplied by 2^cont. Default: 0</li>
 
   <li><b>brgt</b>: change brightness of image. Negative value reduces
-  brightness, positive value enhances brightness. Pixel value is added
-  brgt. Default: 0</li>
+  brightness, positive value enhances brightness. The value brgt is
+  added to the pixel value. Default: 0</li>
 
-  <li><b>rot</b>: rotate image. Rotation angle is given in degrees. Default: 0</li>
+  <li><b>rot</b>: rotate image. Rotation angle is given in
+  degrees. Default: 0</li>
+  
+  <li><b>rgbm</b>: modify color by multiplication. The contrast of the
+  red green and blue components of the image can be reduced or
+  enhanced similar to the <code>cont</code> parameter. The factors for
+  red, green and blue are separated by slashes (for example
+  0.86/0/-0.5). Default: 0/0/0</li>
+  
+  <li><b>rgba</b>: modify color by addition. The brightness of the red
+  green and blue components of the image can be reduced or enhanced
+  similar to the <code>brgt</code> parameter. The factors for red,
+  green and blue are separated by slashes (for example
+  100/0/25). Default: 0/0/0</li>
   
 </ul>
 The image will be scaled equally in horizontal and vertical direction such that
