@@ -31,7 +31,6 @@ var cells = null;
 
 
 function dc_init() {
-
   // put the query parameters (sans "?") in the parameters array
   parseParameters(location.search.slice(1));
 }
@@ -46,49 +45,52 @@ function display(detail) {
 }
 
 function dc_render(doc) {
-	
-  var fWidth  = document.body ? document.body.clientWidth : innerWidth;
-  var fHeight = document.body ? document.body.clientHeight : innerHeight;
+    // creates the HTML for the image table
+    var wsize = getWinSize();
+    var fWidth  = wsize.width;
+    var fHeight = wsize.height;
 
-  var mx = getParameter("mx");
-  cells = mx.split('x');
+    var mx = getParameter("mx");
+    cells = mx.split('x');
   
-  var dw = getParameter("dw");
-  var dh = getParameter("dh");
-  var pt = getParameter("pt");
-  var pn = getParameter("pn");
+    var dw = getParameter("dw");
+    var dh = getParameter("dh");
+    var pt = getParameter("pt");
+    var pn = parseInt(getParameter("pn"));
+    var fn = getParameter("fn");
+    var par_mo = (hasParameter("mo")) ? "mo="+getParameter("mo") : "";
 
-  var picWidth = (dw != 0) ? dw : Math.floor((fWidth-30)/cells[0])-2*cells[0]-1;
-  var picHeight = (dh != 0) ? dh : picWidth;
+    var picWidth = (dw != 0) ? dw : Math.floor((fWidth-30)/cells[0])-2*cells[0]-1;
+    var picHeight = (dh != 0) ? dh : picWidth;
 
-  if (cells.length > 1) {
-    picHeight = (dh != 0) ? dh : Math.floor(((fHeight-30)-12*cells[1])/cells[1])-2*cells[1]-1;
-  } else {
-    cells[1] = Math.ceil(pt/cells[0]);
-  }
+    if (cells.length > 1) {
+	picHeight = (dh != 0) ? dh : Math.floor(((fHeight-30)-12*cells[1])/cells[1])-2*cells[1]-1;
+    } else {
+	cells[1] = Math.ceil(pt/cells[0]);
+    }
 
-  var cellWidth  = parseInt(picWidth)+8;
-  var cellHeight = parseInt(picHeight)+18;
+    var cellWidth  = parseInt(picWidth)+8;
+    var cellHeight = parseInt(picHeight)+18;
 
-  doc.writeln('<table width="100%" height="100%" border="0" cellspacing="1" cellpadding="0">');
+    doc.writeln('<table width="100%" height="100%" border="0" cellspacing="1" cellpadding="0">');
 
-  for (var j = 0; j < cells[1]; j++) {
-      doc.writeln('<tr>');
-      for (var i = 0; i < cells[0]; i++) {
-	  var idx  = parseInt(pn)+i+j*cells[0];
-	  var img  = baseUrl + "/servlet/Scaler?fn=" + getParameter("fn") + "&pn=" + idx;
-	  img += "&dw=" + picWidth + "&dh=" + picHeight + "&mo=" + getParameter("mo");
-	  doc.write('<td width="'+cellWidth+'" height="'+cellHeight+'">');
-	  if (idx <= pt) {
-	      doc.write('<a href="'+dl_link(idx)+'" target="_blank"><img src="'+img+'" border="0"></a><div class="number">'+idx+'</div>');
-	  } else {
-	      doc.write('<div class="nonumber">'+idx+'</div>');
-	  }
-	  doc.writeln('</td>');
-      }
-      doc.writeln(' </tr>');
-  }
-  doc.writeln('</table>');
+    for (var j = 0; j < cells[1]; j++) {
+	doc.writeln('<tr>');
+	for (var i = 0; i < cells[0]; i++) {
+	    var idx  = pn+i+j*cells[0];
+	    var img  = baseUrl + "/servlet/Scaler?fn=" + fn + "&pn=" + idx;
+	    img += "&dw=" + picWidth + "&dh=" + picHeight + par_mo;
+	    doc.write('<td width="'+cellWidth+'" height="'+cellHeight+'">');
+	    if (idx <= pt) {
+		doc.write('<a href="'+dl_link(idx)+'" target="_blank"><img src="'+img+'" border="0"></a><div class="number">'+idx+'</div>');
+	    } else {
+		doc.write('<div class="nonumber">'+idx+'</div>');
+	    }
+	    doc.writeln('</td>');
+	}
+	doc.writeln(' </tr>');
+    }
+    doc.writeln('</table>');
 }
 
 
