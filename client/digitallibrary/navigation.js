@@ -124,26 +124,24 @@ function display(detail) {
   }
 
   // window size
-
   var wwidth, wheight;
-
   if (self.innerHeight) // all except Explorer
   {
-    wwidth = self.innerWidth;
-    wheight = self.innerWeight;
+      wwidth = self.innerWidth;
+      wheight = self.innerHeight;
   }
   else if (document.documentElement && document.documentElement.clientHeight)
   // Explorer 6 Strict Mode
   {
-    wwidth = document.documentElement.clientWidth;
-    wheight = document.doumentElement.clientHeight;
+      wwidth = document.documentElement.clientWidth;
+      wheight = document.documentElement.clientHeight;
   }
   else if (document.body) // other Explorers
   {
-    wwidth = document.body.clientWidth;
-    wheight = doument.body.clientHeight;
+      wwidth = document.body.clientWidth;
+      wheight = document.body.clientHeight;
   }
-  queryString += "&dw=" + (wwidth-30) + "&dh=" + (whewight-30);
+  queryString += "&dw=" + (wwidth-30) + "&dh=" + (wheight-30);
 
   queryString += "&lv=1";
 
