@@ -185,7 +185,8 @@ public class Scaler extends HttpServlet {
 	 * @see javax.servlet.http.HttpServlet#getLastModified(javax.servlet.http.HttpServletRequest)
 	 */
 	protected long getLastModified(HttpServletRequest request) {
-		accountlog.debug("GetLastModified from " + request.getRemoteAddr());
+		accountlog.debug("GetLastModified from " + request.getRemoteAddr()
+				+ " for " + request.getQueryString());
 		long mtime = -1;
 		// create new request with defaults
 		DigilibRequest dlReq = new DigilibRequest();
@@ -197,7 +198,6 @@ public class Scaler extends HttpServlet {
 			DocuDirectory dd = (DocuDirectory) f.getParent();
 			mtime = dd.getDirMTime() / 1000 * 1000;
 		}
-		logger.debug("last modified: "+mtime);
 		return mtime;
 	}
 
