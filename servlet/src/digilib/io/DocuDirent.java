@@ -23,7 +23,7 @@
 package digilib.io;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -33,12 +33,12 @@ import org.apache.log4j.Logger;
  * @author casties
  *  
  */
-public abstract class DocuDirent {
+public abstract class DocuDirent implements Comparable {
 
 	/** the file class of this file */
 	protected static int fileClass = FileOps.CLASS_NONE;
 	/** HashMap with metadata */
-	protected HashMap fileMeta = null;
+	protected Map fileMeta = null;
 	/** Is the Metadata valid */
 	protected boolean metaChecked = false;
 	/** the parent directory */
@@ -73,11 +73,11 @@ public abstract class DocuDirent {
 			XMLMetaLoader ml = new XMLMetaLoader();
 			try {
 				// read meta file
-				HashMap meta = ml.loadURL(mf.getAbsolutePath());
+				Map meta = ml.loadURL(mf.getAbsolutePath());
 				if (meta == null) {
 					return;
 				}
-				fileMeta = (HashMap) meta.get(getName());
+				fileMeta = (Map) meta.get(getName());
 			} catch (Exception e) {
 				Logger.getLogger(this.getClass()).warn("error reading file .meta", e);
 			}
@@ -121,7 +121,7 @@ public abstract class DocuDirent {
 	 * 
 	 * @return HashMap
 	 */
-	public HashMap getFileMeta() {
+	public Map getFileMeta() {
 		return fileMeta;
 	} 
 	
@@ -131,7 +131,7 @@ public abstract class DocuDirent {
 	 * @param fileMeta
 	 *            The fileMeta to set
 	 */
-	public void setFileMeta(HashMap fileMeta) {
+	public void setFileMeta(Map fileMeta) {
 		this.fileMeta = fileMeta;
 	} 
 	
@@ -149,4 +149,12 @@ public abstract class DocuDirent {
 		return fileClass;
 	}
 
+	/** Comparator using the file name.
+	 * 
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
+	public int compareTo(Object arg0) {
+		return (getName().compareTo(arg0));
+	}
+	
 }

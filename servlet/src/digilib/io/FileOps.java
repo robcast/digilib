@@ -75,6 +75,7 @@ public class FileOps {
 		imageExtensions = new ArrayList();
 		textExtensions = new ArrayList();
 		svgExtensions = new ArrayList();
+		// iterate through file types in ft and fill the Map and Lists
 		for (int i = 0; i < ft.length; i++) {
 			String ext = ft[i][0];
 			String mt = ft[i][1];
@@ -175,6 +176,9 @@ public class FileOps {
 	 * @return
 	 */
 	public static String basename(String fn) {
+		if (fn == null) {
+			return null;
+		}
 		int i = fn.lastIndexOf('.');
 		if (i > 0) {
 			return fn.substring(0, i);
@@ -193,6 +197,9 @@ public class FileOps {
 	 * @return
 	 */
 	public static String extname(String fn) {
+		if (fn == null) {
+			return null;
+		}
 		int i = fn.lastIndexOf('.');
 		if (i > 0) {
 			return fn.substring(i + 1);
@@ -211,6 +218,9 @@ public class FileOps {
 	 * @return
 	 */
 	public static String parent(String fn) {
+		if (fn == null) {
+			return null;
+		}
 		int i = fn.lastIndexOf('/');
 		if (i > 0) {
 			return fn.substring(0, i);
@@ -228,6 +238,9 @@ public class FileOps {
 	 * @return
 	 */
 	public static String normalName(String pathname) {
+		if (pathname == null) {
+			return null;
+		}
 		// upper-dir references are unwanted
 		if (pathname.indexOf("../") >= 0) {
 			return null;
@@ -366,7 +379,7 @@ public class FileOps {
 	 * @return
 	 */
 	public static Map newHints(Integer type, Object value) {
-		HashMap m = new HashMap();
+		Map m = new HashMap();
 		if (type != null) {
 			m.put(type, value);
 		}
