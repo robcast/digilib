@@ -172,7 +172,7 @@ public class DocumentBean {
 	 */
 	public int getNumPages(DigilibRequest request) throws Exception {
 		util.dprintln(10, "getNumPages");
-		DocuDirectory dd = dirCache.getDirectory(request.getFilePath());
+		DocuDirectory dd = (dirCache != null) ? dirCache.getDirectory(request.getFilePath()) : null;
 		if (dd != null) {
 			return dd.size();
 		}

@@ -83,18 +83,14 @@ public class DigilibRequest {
 	private String rgbm_s;
 	private float[] rgba; // color additive factors
 	private String rgba_s;
-
-	private DocuImage image; // internal DocuImage instance for this request
-	private ServletRequest servletRequest; // internal ServletRequest
-
-// lugi - begin
-
 	private int lv; // level of digilib (0 = just image, 1 = one HTML page
 	                //                   2 = in frameset, 3 = XUL-'frameset'
 	                //                   4 = XUL-Sidebar )
 	private String lv_s;
 
-// lugi - end
+	private DocuImage image; // internal DocuImage instance for this request
+	private ServletRequest servletRequest; // internal ServletRequest
+
 
 
 	/** Creates a new instance of DigilibRequest and sets default values. */
@@ -138,15 +134,6 @@ public class DigilibRequest {
 	 * @param queryString String with paramters in the old "+++" form.
 	 */
 	public void setWithOldString(String queryString) {
-
-// lugi - begin
-
-		// default level ( might be initialized
-		// in the reset method - robert? )
-		lv = 2;
-		lv_s = "2";
-
-// lugi - end
 
 		if (queryString == null) {
 			return;
@@ -322,10 +309,10 @@ public class DigilibRequest {
 		if (ws_s != null) {
 			s += "&ws=" + ws_s;
 		}
-		if (mo != null) {
+		if ((mo != null)&&(mo.length() > 0)) {
 			s += "&mo=" + mo;
 		}
-		if (mk != null) {
+		if ((mk != null)&&(mk.length() > 0)) {
 			s += "&mk=" + mk;
 		}
 		if (rot_s != null) {
@@ -341,19 +328,14 @@ public class DigilibRequest {
 			s += "&rgbm=" + rgbm_s;
 		}
 		if (rgba_s != null) {
-			s += "&reda=" + rgba_s;
+			s += "&rgba=" + rgba_s;
 		}
 		if (pt_s != null) {
 			s += "&pt=" + pt_s;
 		}
-
-// lugi - begin
-
 		if (lv_s != null) {
 			s += "&lv=" + lv_s;
 		}
-
-// lugi - end
 
 		return s;
 	}
@@ -452,19 +434,10 @@ public class DigilibRequest {
 		if (s != null) {
 			setPt(s);
 		}
-
-// lugi - begin
-
 		s = request.getParameter("lv");
 		if (s != null) {
 			setLv(s);
-		} else {
-			setLv(2); // default level ( might be initialized
-			          // in the reset method - robert? )
 		}
-
-// lugi - end
-
 		s = ((HttpServletRequest) request).getPathInfo();
 		if (s != null) {
 			setRequestPath(s);
@@ -475,13 +448,8 @@ public class DigilibRequest {
 	public void reset() {
 		request_path = null; // url of the page/document
 
-// lugi -begin
-
-		lv = 0; // level of digilib cf. variable declatation
+		lv = 0; // level of digilib cf. variable declaration
 		lv_s = null;
-
-// lugi - end
-
 		fn = null; // url of the page/document
 		pn = 0; // page number
 		pn_s = null;
@@ -520,6 +488,8 @@ public class DigilibRequest {
 
 	/** Reset all request parameters to default values. */
 	public void setToDefault() {
+		lv = 2; // default level
+		lv_s = "2";
 		request_path = ""; // url of the page/document
 		fn = ""; // url of the page/document
 		pn = 1; // page number
@@ -981,7 +951,7 @@ public class DigilibRequest {
 	 * @return float
 	 */
 	public float getRot() {
-		return rot;                    
+		return rot;
 	}
 
 	/**

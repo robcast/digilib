@@ -22,7 +22,7 @@ package digilib.servlet;
 
 import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
+import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
@@ -56,7 +56,7 @@ import digilib.io.FileOps;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.8b4";
+	public static final String dlVersion = "1.9b1";
 
 	// Utils instance with debuglevel
 	Utils util;
@@ -74,6 +74,10 @@ public class Scaler extends HttpServlet {
 
 	// use authorization database
 	boolean useAuthentication = true;
+
+	// EXPRIMENTAL
+	// try to enlarge cropping area for "oblique" angles
+	boolean wholeRotArea = false;
 
 	/** Initialisation on first run.
 	 * 
@@ -162,6 +166,8 @@ public class Scaler extends HttpServlet {
 
 		// scale the image file to fit window size i.e. respect dw,dh
 		boolean scaleToFit = true;
+		// scale the image by a fixed factor only
+		boolean absoluteScale = false;
 		// crop the image if needed
 		boolean cropToFit = true;
 		// use heuristics (GIF?) to scale or send as is
@@ -214,20 +220,31 @@ public class Scaler extends HttpServlet {
 		 */
 		if (dlRequest.isOption("clip")) {
 			scaleToFit = false;
+			absoluteScale = false;
 			cropToFit = true;
 			autoScale = false;
+			preScaledFirst = false;
 		} else if (dlRequest.isOption("fit")) {
 			scaleToFit = true;
+			absoluteScale = false;
 			cropToFit = true;
 			autoScale = false;
+		} else if (dlRequest.isOption("scale")) {
+			scaleToFit = false;
+			absoluteScale = true;
+			cropToFit = true;
+			autoScale = false;
+			preScaledFirst = false;
 		} else if (dlRequest.isOption("file")) {
 			scaleToFit = false;
+			absoluteScale = false;
 			if (dlConfig.isSendFileAllowed()) {
 				cropToFit = false;
 			} else {
 				cropToFit = true;
 			}
 			autoScale = false;
+			preScaledFirst = false;
 		}
 		// operation mode: "errtxt": error message in html, "errimg": error image
 		if (dlRequest.isOption("errtxt")) {
@@ -248,14 +265,6 @@ public class Scaler extends HttpServlet {
 			preScaledFirst = true;
 		} else if (dlRequest.isOption("hires")) {
 			preScaledFirst = false;
-		}
-		// operation mode: "hmir": mirror horizontally, "vmir": mirror vertically
-		if (dlRequest.isOption("hmir")) {
-			doMirror = true;
-			mirrorAngle = 0;
-		} else if (dlRequest.isOption("vmir")) {
-			doMirror = true;
-			mirrorAngle = 90;
 		}
 
 		//"big" try for all file/image actions
@@ -304,11 +313,6 @@ public class Scaler extends HttpServlet {
 				}
 			}
 
-			// if it's zoomed, try hires version (to be optimized...)
-			if ((paramWW < 1f) || (paramWH < 1f)) {
-				preScaledFirst = false;
-			}
-
 			// find the file
 			DocuFile fileToLoad;
 			DocuFileset fileset =
@@ -320,6 +324,11 @@ public class Scaler extends HttpServlet {
 						+ "("
 						+ dlRequest.getPn()
 						+ ") not found.");
+			}
+
+			// if it's zoomed, try hires version (to be optimized...)
+			if ((paramWW < 1f) || (paramWH < 1f)) {
+				preScaledFirst = false;
 			}
 
 			// simplistic selection of resolution
@@ -339,12 +348,14 @@ public class Scaler extends HttpServlet {
 
 			/* if autoScale and not zoomed and source is GIF/PNG 
 			 * then send as is.
+			 * if not autoScale and not scaleToFit nor cropToFit 
+			 * then send as is
 			 */
 			if ((autoScale
 				&& (mimeType == "image/gif" || mimeType == "image/png")
 				&& (paramWW == 1f)
 				&& (paramWH == 1f))
-				|| (autoScale && !(scaleToFit || cropToFit))) {
+				|| (!autoScale && !scaleToFit && !cropToFit)) {
 
 				util.dprintln(1, "Sending File as is.");
 
@@ -381,23 +392,6 @@ public class Scaler extends HttpServlet {
 				2,
 				"time " + (System.currentTimeMillis() - startTime) + "ms");
 
-			// coordinates using Java2D
-			// image size
-			Rectangle2D imgBounds =
-				new Rectangle2D.Double(0, 0, imgWidth, imgHeight);
-			// user window area in 4-point form (ul, ur, ll, lr)
-			Point2D[] userAreaC =
-				{
-					new Point2D.Double(paramWX, paramWY),
-					new Point2D.Double(paramWX + paramWW, paramWY),
-					new Point2D.Double(paramWX, paramWY + paramWH),
-					new Point2D.Double(paramWX + paramWW, paramWY + paramWH)};
-			// transformation from relative [0,1] to image coordinates.
-			AffineTransform imgTrafo = new AffineTransform();
-			imgTrafo.scale(imgWidth, imgHeight);
-			// rotate coordinates
-			//imgTrafo.rotate(Math.toRadians(-paramROT));
-
 			// coordinates and scaling
 			double areaXoff;
 			double areaYoff;
@@ -407,68 +401,83 @@ public class Scaler extends HttpServlet {
 			double scaleY;
 			double scaleXY;
 
-			/*			if (scaleToFit) {
-							// calculate absolute from relative coordinates
-							areaXoff = paramWX * imgWidth;
-							areaYoff = paramWY * imgHeight;
-							areaWidth = paramWW * imgWidth;
-							areaHeight = paramWH * imgHeight;
-							// calculate scaling factors
-							scaleX = paramDW / areaWidth * paramWS;
-							scaleY = paramDH / areaHeight * paramWS;
-							scaleXY = (scaleX > scaleY) ? scaleY : scaleX;
-						} else {
-							// crop to fit
-							// calculate absolute from relative coordinates
-							areaXoff = paramWX * imgWidth;
-							areaYoff = paramWY * imgHeight;
-							areaWidth = paramDW;
-							areaHeight = paramDH;
-							// calculate scaling factors
-							scaleX = 1f;
-							scaleY = 1f;
-							scaleXY = 1f;
-						}
-			
-						util.dprintln(
-							1,
-							"Scale "
-								+ scaleXY
-								+ "("
-								+ scaleX
-								+ ","
-								+ scaleY
-								+ ") on "
-								+ areaXoff
-								+ ","
-								+ areaYoff
-								+ " "
-								+ areaWidth
-								+ "x"
-								+ areaHeight);
-			*/
-			// Java2D 
-			// area in image pixel coordinates
-			Point2D[] imgAreaC = { null, null, null, null };
+			// coordinates using Java2D
+			// image size in pixels
+			Rectangle2D imgBounds =
+				new Rectangle2D.Double(0, 0, imgWidth, imgHeight);
+			// user window area in [0,1] coordinates
+			Rectangle2D relUserArea =
+				new Rectangle2D.Double(paramWX, paramWY, paramWW, paramWH);
+			// transform from relative [0,1] to image coordinates.
+			AffineTransform imgTrafo =
+				AffineTransform.getScaleInstance(imgWidth, imgHeight);
 			// transform user coordinate area to image coordinate area
-			imgTrafo.transform(userAreaC, 0, imgAreaC, 0, 4);
-			areaXoff = imgAreaC[0].getX();
-			areaYoff = imgAreaC[0].getY();
-			// calculate scaling factors
+			Rectangle2D userImgArea =
+				imgTrafo.createTransformedShape(relUserArea).getBounds2D();
+
+			// calculate scaling factors based on inner user area
 			if (scaleToFit) {
-				areaWidth = imgAreaC[0].distance(imgAreaC[1]);
-				areaHeight = imgAreaC[0].distance(imgAreaC[2]);
+				areaWidth = userImgArea.getWidth();
+				areaHeight = userImgArea.getHeight();
 				scaleX = paramDW / areaWidth * paramWS;
 				scaleY = paramDH / areaHeight * paramWS;
 				scaleXY = (scaleX > scaleY) ? scaleY : scaleX;
+			} else if (absoluteScale) {
+				// absolute scale
+				areaWidth = paramDW * paramWS;
+				areaHeight = paramDH * paramWS;
+				// reset user area size
+				userImgArea.setRect(
+					userImgArea.getX(),
+					userImgArea.getY(),
+					areaWidth,
+					areaHeight);
+				scaleX = 1f;
+				scaleY = 1f;
+				scaleXY = 1f;
 			} else {
 				// crop to fit
 				areaWidth = paramDW * paramWS;
 				areaHeight = paramDH * paramWS;
+				// reset user area size
+				userImgArea.setRect(
+					userImgArea.getX(),
+					userImgArea.getY(),
+					areaWidth,
+					areaHeight);
 				scaleX = 1f;
 				scaleY = 1f;
 				scaleXY = 1f;
+			}
 
+			// enlarge image area for rotations to cover additional pixels
+			Rectangle2D outerUserImgArea = userImgArea;
+			Rectangle2D innerUserImgArea = userImgArea;
+			if (wholeRotArea) {
+				if (paramROT != 0) {
+					try {
+						// rotate user area coordinates around center of user area
+						AffineTransform rotTrafo =
+							AffineTransform.getRotateInstance(
+								Math.toRadians(paramROT),
+								userImgArea.getCenterX(),
+								userImgArea.getCenterY());
+						// get bounds from rotated end position 
+						innerUserImgArea =
+							rotTrafo
+								.createTransformedShape(userImgArea)
+								.getBounds2D();
+						// get bounds from back-rotated bounds
+						outerUserImgArea =
+							rotTrafo
+								.createInverse()
+								.createTransformedShape(innerUserImgArea)
+								.getBounds2D();
+					} catch (NoninvertibleTransformException e1) {
+						// this shouldn't happen anyway
+						e1.printStackTrace();
+					}
+				}
 			}
 
 			util.dprintln(
@@ -480,36 +489,15 @@ public class Scaler extends HttpServlet {
 					+ ","
 					+ scaleY
 					+ ") on "
-					+ areaXoff
-					+ ","
-					+ areaYoff
-					+ " "
-					+ areaWidth
-					+ "x"
-					+ areaHeight);
+					+ outerUserImgArea);
 
 			// clip area at the image border
-			/* areaWidth =
-				(areaXoff + areaWidth > imgWidth)
-					? imgWidth - areaXoff
-					: areaWidth;
-			areaHeight =
-				(areaYoff + areaHeight > imgHeight)
-					? imgHeight - areaYoff
-					: areaHeight;
-			*/
+			outerUserImgArea = outerUserImgArea.createIntersection(imgBounds);
 
-			// create new rectangle from coordinates
-			Rectangle2D imgArea =
-				new Rectangle2D.Double(
-					areaXoff,
-					areaYoff,
-					areaWidth,
-					areaHeight);
-			// clip area at the image border
-			imgArea = imgArea.createIntersection(imgBounds);
-			areaWidth = imgArea.getWidth();
-			areaHeight = imgArea.getHeight();
+			areaWidth = outerUserImgArea.getWidth();
+			areaHeight = outerUserImgArea.getHeight();
+			areaXoff = outerUserImgArea.getX();
+			areaYoff = outerUserImgArea.getY();
 
 			util.dprintln(
 				2,
@@ -551,7 +539,7 @@ public class Scaler extends HttpServlet {
 
 				docuImage.loadSubimage(
 					fileToLoad.getFile(),
-					imgArea.getBounds(),
+					outerUserImgArea.getBounds(),
 					(int) subsamp);
 
 				System.out.println(
@@ -565,7 +553,7 @@ public class Scaler extends HttpServlet {
 				docuImage.scale(scaleXY);
 
 			} else {
-				// else load the whole file
+				// else load and crop the whole file
 				docuImage.loadImage(fileToLoad.getFile());
 				docuImage.crop(
 					(int) areaXoff,
@@ -577,19 +565,38 @@ public class Scaler extends HttpServlet {
 			}
 
 			// mirror image
-			if (doMirror) {
-				docuImage.mirror(mirrorAngle);
+			// operation mode: "hmir": mirror horizontally, "vmir": mirror vertically
+			if (dlRequest.isOption("hmir")) {
+				docuImage.mirror(0);
+			}
+			if (dlRequest.isOption("vmir")) {
+				docuImage.mirror(90);
 			}
 
-			// rotate image (first shot :-)
+			// rotate image
 			if (paramROT != 0) {
 				docuImage.rotate(paramROT);
-			}
+				if (wholeRotArea) {
+					// crop to the inner bounding box
+					double xcrop =
+						docuImage.getWidth()
+							- innerUserImgArea.getWidth() * scaleXY;
+					double ycrop =
+						docuImage.getHeight()
+							- innerUserImgArea.getHeight() * scaleXY;
+					if ((xcrop > 0) || (ycrop > 0)) {
+						// only crop smaller
+						xcrop = (xcrop > 0) ? xcrop : 0;
+						ycrop = (ycrop > 0) ? ycrop : 0;
+						// crop image
+						docuImage.crop(
+							(int) (xcrop / 2),
+							(int) (ycrop / 2),
+							(int) (docuImage.getWidth() - xcrop),
+							(int) (docuImage.getHeight() - ycrop));
+					}
+				}
 
-			// contrast and brightness enhancement
-			if ((paramCONT != 0) || (paramBRGT != 0)) {
-				double mult = Math.pow(2, paramCONT);
-				docuImage.enhance((float) mult, (float) paramBRGT);
 			}
 
 			// color modification
@@ -601,12 +608,18 @@ public class Scaler extends HttpServlet {
 				if (paramRGBA == null) {
 					paramRGBA = new float[3];
 				}
-				// calculate "contrast" values
+				// calculate "contrast" values (c=2^x)
 				float[] mult = new float[3];
 				for (int i = 0; i < 3; i++) {
 					mult[i] = (float) Math.pow(2, (double) paramRGBM[i]);
 				}
 				docuImage.enhanceRGB(mult, paramRGBA);
+			}
+
+			// contrast and brightness enhancement
+			if ((paramCONT != 0) || (paramBRGT != 0)) {
+				double mult = Math.pow(2, paramCONT);
+				docuImage.enhance((float) mult, (float) paramBRGT);
 			}
 
 			util.dprintln(
@@ -618,7 +631,10 @@ public class Scaler extends HttpServlet {
 			 */
 
 			// setup output -- if source is JPG then dest will be JPG else it's PNG
-			if (mimeType != "image/jpeg") {
+			if (mimeType.equals("image/jpeg")
+				|| mimeType.equals("image/jp2")) {
+				mimeType = "image/jpeg";
+			} else {
 				mimeType = "image/png";
 			}
 			response.setContentType(mimeType);
