@@ -32,6 +32,7 @@ import digilib.auth.AuthOps;
 import digilib.auth.XMLAuthOps;
 import digilib.image.DocuImage;
 import digilib.image.DocuImageImpl;
+import digilib.io.AliasingDocuDirCache;
 import digilib.io.DocuDirCache;
 import digilib.io.FileOps;
 import digilib.io.XMLListLoader;
@@ -97,7 +98,7 @@ public class DigilibConfiguration extends ParameterMap {
 		String[] bd = { "/docuserver/images", "/docuserver/scaled/small" };
 		putParameter("basedir-list", bd, null, 'f');
 		// use authentication information
-		putParameter("use-authorization", Boolean.TRUE, null, 'f');
+		putParameter("use-authorization", Boolean.FALSE, null, 'f');
 		// authentication configuration file
 		putParameter("auth-file", "digilib-auth.xml", null, 'f');
 		// sending image files as-is allowed
@@ -112,6 +113,10 @@ public class DigilibConfiguration extends ParameterMap {
 		putParameter("subsample-minimum", new Float(2f), null, 'f');
 		// default scaling quality
 		putParameter("default-quality", new Integer(1), null, 'f');
+		// use mapping file to translate paths
+		putParameter("use-mapping", Boolean.FALSE, null, 'f');
+		// mapping file location
+		putParameter("mapping-file", "digilib-map.xml", null, 'f');
 	}
 
 	/** Constructor taking a ServletConfig.
@@ -200,7 +205,19 @@ public class DigilibConfiguration extends ParameterMap {
 		// directory cache
 		String[] bd = (String[]) getValue("basedir-list");
 		int[] fcs = { FileOps.CLASS_IMAGE, FileOps.CLASS_TEXT};
-		DocuDirCache dirCache = new DocuDirCache(bd, fcs);
+		DocuDirCache dirCache;
+		if (getAsBoolean("use-mapping")) {
+			// with mapping file
+			String mapConfPath = getAsString("mapping-file");
+			if (! mapConfPath.startsWith("/")) {
+				// relative path -> use getRealPath to resolve in WEB-INF
+				mapConfPath = c.getServletContext().getRealPath("WEB-INF/"+mapConfPath);
+			}
+			dirCache = new AliasingDocuDirCache(bd, fcs, mapConfPath);
+		} else {
+			// without mapping
+			dirCache = new DocuDirCache(bd, fcs);
+		}
 		setValue("servlet.dir.cache", dirCache);
 		// useAuthentication
 		if (getAsBoolean("use-authorization")) {
