@@ -1,4 +1,4 @@
-/* Copyright (C) 2003,2004 WTWG Uni Bern and others
+/* Copyright (C) 2003,2004 IT-Group MPIWG, WTWG Uni Bern and others
  
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -14,15 +14,16 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  
-Authors: ROC 20.7.2004
-  first version by Christian Luginbuehl, 01.05.2003
-  Changed for digiLib in Zope by DW 24.03.2004
+Authors:
+  Christian Luginbuehl, 01.05.2003 (first version)
+  DW 24.03.2004 (Changed for digiLib in Zope)
+  Robert Casties, 04.08.2004
 
-Requires baselib.js !
+  ! Requires baselib.js !
 
 */
 
-var dlScriptVersion = "1.0b1";
+var dlScriptVersion = "1.0b2";
 
 /*
  * more parameter handling
@@ -293,7 +294,7 @@ function setMark(reload) {
 
     function markEvent(evt) {
 	// event handler adding a new mark
-	unregisterMouseDown(elemScaler, markEvent);
+	unregisterEvent("mousedown", elemScaler, markEvent);
 	var p = dlTrafo.invtransform(evtPosition(evt));
 	addMark(p);
 	if (defined(reload)&&(!reload)) {
@@ -305,7 +306,7 @@ function setMark(reload) {
     }
 
     // starting event capture
-    registerMouseDown(elemScaler, markEvent);
+    registerEvent("mousedown", elemScaler, markEvent);
 }
 
 
@@ -350,8 +351,12 @@ function zoomArea() {
 	    showElement(eck2, true);
 	    showElement(eck3, true);
 	    showElement(eck4, true);
-	    registerMouseMove(elemScaler, zoomMove);
-	    registerMouseMove(eck4, zoomMove);
+	    // show moving
+	    registerEvent("mousemove", elemScaler, zoomMove);
+	    registerEvent("mousemove", eck4, zoomMove);
+	    // enable drag-to-zoom
+	    registerEvent("mouseup", elemScaler, zoomClick);
+	    registerEvent("mouseup", eck4, zoomClick);
 	} else {
 	    // second click -- end moving
 	    pt2 = evtPosition(evt);
@@ -359,10 +364,10 @@ function zoomArea() {
 	    showElement(eck2, false);
 	    showElement(eck3, false);
 	    showElement(eck4, false);
-	    unregisterMouseMove(elemScaler, zoomMove);
-	    unregisterMouseMove(eck4, zoomMove);
-	    unregisterMouseDown(elemScaler, zoomClick);
-	    unregisterMouseDown(eck4, zoomClick);
+	    unregisterEvent("mousemove", elemScaler, zoomMove);
+	    unregisterEvent("mousemove", eck4, zoomMove);
+	    unregisterEvent("mousedown", elemScaler, zoomClick);
+	    unregisterEvent("mousedown", eck4, zoomClick);
 	    var p1 = dlTrafo.invtransform(pt1);
 	    var p2 = dlTrafo.invtransform(pt2);
 	    var ww = p2.x-p1.x;
@@ -395,8 +400,8 @@ function zoomArea() {
     }
 
     // starting event capture
-    registerMouseDown(elemScaler, zoomClick);
-    registerMouseDown(eck4, zoomClick);
+    registerEvent("mousedown", elemScaler, zoomClick);
+    registerEvent("mousedown", eck4, zoomClick);
 }
 
 var ZOOMFACTOR = Math.sqrt(2);
@@ -434,7 +439,7 @@ function moveCenter() {
 
     function moveCenterEvent(evt) {
 	// move to handler
-	unregisterMouseDown(elemScaler, moveCenterEvent);
+	unregisterEvent("mousedown", elemScaler, moveCenterEvent);
 	var pt = dlTrafo.invtransform(evtPosition(evt));
 	var newarea = new Rectangle(pt.x-0.5*dlArea.width, pt.y-0.5*dlArea.height, dlArea.width, dlArea.height);
 	newarea = dlMaxArea.fit(newarea);
@@ -445,9 +450,26 @@ function moveCenter() {
     }
 
     // starting event capture
-    registerMouseDown(elemScaler, moveCenterEvent);
+    registerEvent("mousedown", elemScaler, moveCenterEvent);
 }
 
+function moveBy(movx, movy) {
+    // move visible area by movx and movy (in units of dw, dh)
+    if ((dlArea.width == 1.0)&&(dlArea.height == 1.0)) {
+	// nothing to do
+	return;
+    }
+    var newarea = dlArea.copy();
+    newarea.x += parseFloat(movx)*dlArea.width;
+    newarea.y += parseFloat(movy)*dlArea.height;
+    newarea = dlMaxArea.fit(newarea);
+    // set parameters
+    setParamFromArea(newarea);
+    parseArea();
+    display();
+}
+
+    
 
 
 function getRef() {

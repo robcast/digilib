@@ -20,11 +20,13 @@ public void jspInit() {
 // parsing the query
 // -----------------
 digilib.servlet.DigilibRequest dlRequest = new digilib.servlet.DigilibRequest(request);
+docBean.setRequest(dlRequest);
 // check if authentication is needed and redirect if necessary
-docBean.doAuthentication(dlRequest, response);
+docBean.doAuthentication(response);
 // add number of pages
-dlRequest.setValue("pt", docBean.getNumPages(dlRequest));
-String imageLocation = dlRequest.getAsString("base.url") + "/servlet/Scaler?" + dlRequest.getAsString();
+dlRequest.setValue("pt", docBean.getNumPages());
+// store objects for jsp:include
+pageContext.setAttribute("docBean", docBean, pageContext.REQUEST_SCOPE);
 %><html>
 <head>
     <title>Digital Document Library (L1)</title>
@@ -56,13 +58,12 @@ String imageLocation = dlRequest.getAsString("base.url") + "/servlet/Scaler?" + 
 </script>
 </head>
 <body bgcolor="#666666" onload="dl_init();">
-
-<div id="scaler" style="position:absolute; left:10px; top:10px; visibility:visible">
-<script type="text/javascript">
-var ps = bestPicSize(getElement('scaler'), 10);
-document.write('<img id="pic" src="<%= imageLocation %>&dw='+ps.width+'&dh='+ps.height+'" />');
-</script>
-</div>
+<% if (dlRequest.hasOption("clop", "noarrows")) {
+%><jsp:include page="digimage_img_inc.jsp" /><%
+} else {
+%><jsp:include page="digimage_tbl_inc.jsp" /><%
+}
+%>
 
  <div id="dot0" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="mark1.gif" border="0"></div>
  <div id="dot1" style="position:absolute; left:-20; top:100; visibility:hidden"><img src="mark2.gif" border="0"></div>
