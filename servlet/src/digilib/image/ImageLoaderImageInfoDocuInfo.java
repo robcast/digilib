@@ -47,6 +47,7 @@ public class ImageLoaderImageInfoDocuInfo implements DocuInfo {
 
 	/* check image size and type and store in ImageFile f */
 	public boolean checkFile(ImageFile imgf) throws IOException {
+		// fileset to store the information
 		ImageFileset imgfs = imgf.getParent();
 		File f = imgf.getFile();
 		if (f == null) {
@@ -58,6 +59,7 @@ public class ImageLoaderImageInfoDocuInfo implements DocuInfo {
 		iif.setInput(raf);
 		iif.setCollectComments(false);
 		iif.setDetermineImageNumber(false);
+		logger.debug("identifying (ImageInfo) "+f);
 		// try with ImageInfo first
 		if (iif.check()) {
 			ImageSize d =
@@ -69,6 +71,7 @@ public class ImageLoaderImageInfoDocuInfo implements DocuInfo {
 			}
 			raf.close();
 		} else {
+			logger.debug("identifying (ImageIO) "+f);
 			// else use ImageReader
 			ImageInputStream istream = ImageIO.createImageInputStream(raf);
 			Iterator readers = ImageIO.getImageReaders(istream);
@@ -79,9 +82,9 @@ public class ImageLoaderImageInfoDocuInfo implements DocuInfo {
 			}
 			ImageReader reader = (ImageReader) readers.next();
 			/* are there more readers? */
-			logger.debug("this reader: " + reader.getClass());
+			logger.debug("ImageIO: this reader: " + reader.getClass());
 			while (readers.hasNext()) {
-				logger.debug("next reader: " + readers.next().getClass());
+				logger.debug("ImageIO: next reader: " + readers.next().getClass());
 			}
 			reader.setInput(istream);
 			ImageSize d =
@@ -95,6 +98,7 @@ public class ImageLoaderImageInfoDocuInfo implements DocuInfo {
 			}
 			// dispose the reader to free resources
 			reader.dispose();
+			raf.close();
 		}
 		return true;
 	}
