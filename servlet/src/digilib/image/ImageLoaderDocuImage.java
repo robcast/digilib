@@ -113,9 +113,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		}
 	}
 
-	/** Get an ImageReader for the image file.
-	 * 
-	 */
+	/** Get an ImageReader for the image file. */
 	public void preloadImage(ImageFile f) throws IOException {
 		if (reader != null) {
 			// clean up old reader
@@ -167,7 +165,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			throw new FileOpException("Unable to load File!");
 		}
 	}
-	
+
 	/* write image of type mt to Stream */
 	public void writeImage(String mt, OutputStream ostream)
 		throws FileOpException {
@@ -185,14 +183,16 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 				throw new FileOpException("Unknown mime type: " + mt);
 			}
 
-			/* JPEG doesn't do transparency so we have to convert any RGBA image
-			 * to RGB :-( *Java2D BUG*
+			/*
+			 * JPEG doesn't do transparency so we have to convert any RGBA
+			 * image to RGB :-( *Java2D BUG*
 			 */
 			if ((type == "jpeg") && (img.getColorModel().hasAlpha())) {
 				util.dprintln(2, "BARF: JPEG with transparency!!");
 				int w = img.getWidth();
 				int h = img.getHeight();
-				// BufferedImage.TYPE_INT_RGB seems to be fastest (JDK1.4.1, OSX)
+				// BufferedImage.TYPE_INT_RGB seems to be fastest (JDK1.4.1,
+				// OSX)
 				int destType = BufferedImage.TYPE_INT_RGB;
 				BufferedImage img2 = new BufferedImage(w, h, destType);
 				img2.createGraphics().drawImage(img, null, 0, 0);
@@ -213,16 +213,12 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	}
 
 	public void scale(double scale, double scaleY) throws ImageOpException {
-		/*
-		 * for downscaling in high quality the image is blurred first
-		 */
+		/* for downscaling in high quality the image is blurred first */
 		if ((scale <= 0.5) && (quality > 1)) {
 			int bl = (int) Math.floor(1 / scale);
 			blur(bl);
 		}
-		/*
-		 * and scaled
-		 */
+		/* and scaled */
 		AffineTransformOp scaleOp =
 			new AffineTransformOp(
 				AffineTransform.getScaleInstance(scale, scale),
@@ -295,7 +291,8 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			3,
 			"CROP:" + croppedImg.getWidth() + "x" + croppedImg.getHeight());
 		//DEBUG
-		//    util.dprintln(2, "  time "+(System.currentTimeMillis()-startTime)+"ms");
+		//    util.dprintln(2, " time
+		// "+(System.currentTimeMillis()-startTime)+"ms");
 		if (croppedImg == null) {
 			util.dprintln(2, "ERROR(cropAndScale): error in crop");
 			throw new ImageOpException("Unable to crop");
@@ -303,18 +300,16 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		img = croppedImg;
 	}
 
-	public void enhance(float mult, float add)
-		throws ImageOpException { /* Only one constant should work regardless of the number of bands 
-				 * according to the JDK spec.
-				 * Doesn't work on JDK 1.4 for OSX and Linux (at least).
-				 */ /*		RescaleOp scaleOp =
-							new RescaleOp(
-								(float)mult, (float)add,
-								null);
-						scaleOp.filter(img, img);
-				*/ /* The number of constants must match the number of bands in the image.
-				 */
-		int ncol = img.getColorModel().getNumColorComponents();
+	public void enhance(float mult, float add) throws ImageOpException {
+		/*
+		 * Only one constant should work regardless of the number of bands
+		 * according to the JDK spec. Doesn't work on JDK 1.4 for OSX and Linux
+		 * (at least). RescaleOp scaleOp = new RescaleOp( (float)mult,
+		 * (float)add, null); scaleOp.filter(img, img);
+		 */
+
+		/* The number of constants must match the number of bands in the image. */
+		int ncol = img.getColorModel().getNumComponents();
 		float[] dm = new float[ncol];
 		float[] da = new float[ncol];
 		for (int i = 0; i < ncol; i++) {
@@ -326,9 +321,13 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	}
 
 	public void enhanceRGB(float[] rgbm, float[] rgba)
-		throws ImageOpException { /* The number of constants must match the number of bands in the image.
-				 * We do only 3 (RGB) bands.
-				 */
+		throws ImageOpException {
+
+		/*
+		 * The number of constants must match the number of bands in the image.
+		 * We do only 3 (RGB) bands.
+		 */
+
 		int ncol = img.getColorModel().getNumColorComponents();
 		if ((ncol != 3) || (rgbm.length != 3) || (rgba.length != 3)) {
 			util.dprintln(
@@ -341,20 +340,46 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		RescaleOp scaleOp =
 			new RescaleOp(rgbOrdered(rgbm), rgbOrdered(rgba), null);
 		scaleOp.filter(img, img);
-	} /** Ensures that the array f is in the right order to map the images RGB components. 
-					 */
+	}
+
+	/**
+	 * Ensures that the array f is in the right order to map the images RGB
+	 * components. (not shure what happens 
+	 */
 	public float[] rgbOrdered(float[] fa) {
-		float[] fb = new float[3];
+		/*
+		 * TODO: this is UGLY, UGLY!!
+		 */
+		float[] fb;
 		int t = img.getType();
-		if ((t == BufferedImage.TYPE_3BYTE_BGR)
-			|| (t == BufferedImage.TYPE_4BYTE_ABGR)
-			|| (t == BufferedImage.TYPE_4BYTE_ABGR_PRE)) {
-			// BGR Type (actually it looks like RBG...)
-			fb[0] = fa[0];
-			fb[1] = fa[2];
-			fb[2] = fa[1];
+		if (img.getColorModel().hasAlpha()) {
+			fb = new float[4];
+			if ((t == BufferedImage.TYPE_INT_ARGB)
+				|| (t == BufferedImage.TYPE_INT_ARGB_PRE)) {
+				// RGB Type
+				fb[0] = fa[0];
+				fb[1] = fa[1];
+				fb[2] = fa[2];
+				fb[3] = 1f;
+			} else {
+				// this isn't tested :-(
+				fb[0] = 1f;
+				fb[1] = fa[0];
+				fb[2] = fa[1];
+				fb[3] = fa[2];
+			}
 		} else {
-			fb = fa;
+			fb = new float[3];
+			if (t == BufferedImage.TYPE_3BYTE_BGR) {
+				// BGR Type (actually it looks like RBG...)
+				fb[0] = fa[0];
+				fb[1] = fa[2];
+				fb[2] = fa[1];
+			} else {
+				fb[0] = fa[0];
+				fb[1] = fa[1];
+				fb[2] = fa[2];
+			}
 		}
 		return fb;
 	}
@@ -362,11 +387,12 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	public void rotate(double angle) throws ImageOpException {
 		// setup rotation
 		double rangle = Math.toRadians(angle);
-		// create offset to make shure the rotated image has no negative coordinates
+		// create offset to make shure the rotated image has no negative
+		// coordinates
 		double w = img.getWidth();
 		double h = img.getHeight();
 		AffineTransform trafo = new AffineTransform();
-		// center of rotation 
+		// center of rotation
 		double x = (w / 2);
 		double y = (h / 2);
 		trafo.rotate(rangle, x, y);
@@ -389,13 +415,11 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		}
 		img = rotImg;
 		// crop new image (with self-made rounding)
-		/* img =
-			rotImg.getSubimage(
-				(int) (bounds.getX()+0.5),
-				(int) (bounds.getY()+0.5),
-				(int) (bounds.getWidth()+0.5),
-				(int) (bounds.getHeight()+0.5));
-		*/
+		/*
+		 * img = rotImg.getSubimage( (int) (bounds.getX()+0.5), (int)
+		 * (bounds.getY()+0.5), (int) (bounds.getWidth()+0.5), (int)
+		 * (bounds.getHeight()+0.5));
+		 */
 	}
 
 	public void mirror(double angle) throws ImageOpException {
@@ -432,12 +456,11 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		img = mirImg;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#finalize()
-	 */
+	/* (non-Javadoc) @see java.lang.Object#finalize() */
 	protected void finalize() throws Throwable {
 		//System.out.println("FIN de ImageLoaderDocuImage!");
-		// we must dispose the ImageReader because it keeps the filehandle open!
+		// we must dispose the ImageReader because it keeps the filehandle
+		// open!
 		reader.dispose();
 		reader = null;
 		img = null;

@@ -58,31 +58,76 @@ public class ParameterMap extends HashMap {
 		return (Parameter) super.get(key);
 	}
 
+	/** Get the Parameter with the corresponding key.
+	 * 
+	 * Returns null if no element is associated with key.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	public Object getValue(String key) {
 		Parameter p = (Parameter) super.get(key);
 		return (p != null) ? p.getValue() : null;
 	}
 	
+	/** Get the Parameter with the corresponding key.
+	 * 
+	 * Returns null if no element is associated with key.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	public String getAsString(String key) {
 		Parameter p = (Parameter) super.get(key);
 		return (p != null) ? p.getAsString() : null;
 	}
 
+	/** Get the Parameter with the corresponding key.
+	 * 
+	 * Returns null if no element is associated with key.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	public int getAsInt(String key) {
 		Parameter p = (Parameter) super.get(key);
 		return (p != null) ? p.getAsInt() : 0;
 	}
 
+	/** Get the Parameter with the corresponding key.
+	 * 
+	 * Returns null if no element is associated with key.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	public float getAsFloat(String key) {
 		Parameter p = (Parameter) super.get(key);
 		return (p != null) ? p.getAsFloat() : 0f;
 	}
 
+	/** Get the Parameter with the corresponding key.
+	 * 
+	 * Returns null if no element is associated with key.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	public boolean getAsBoolean(String key) {
 		Parameter p = (Parameter) super.get(key);
 		return (p != null) ? p.getAsBoolean() : false;
 	}
 
+	/** Returns if the Parameter's value has been set.
+	 * 
+	 * @param key
+	 * @return
+	 */
+	public boolean hasValue(String key) {
+		Parameter p = (Parameter) super.get(key);
+		return (p != null) ? p.hasValue() : false;
+	}
+	
 	/** Add the Parameter to the map with a certain key.
 	 * 
 	 * Returns the value that was previously associated with key. 
@@ -147,6 +192,57 @@ public class ParameterMap extends HashMap {
 		Parameter p = get(key);
 		if (p != null) {
 			p.setValue(val);
+			return true;
+		}
+		return false;
+	}
+
+	/** Set the value of an existing parameter.
+	 * 
+	 * Sets the value and returns true if the parameter exists.
+	 * 
+	 * @param key
+	 * @param val
+	 * @return
+	 */
+	public boolean setValue(String key, int val) {
+		Parameter p = get(key);
+		if (p != null) {
+			p.setValue(val);
+			return true;
+		}
+		return false;
+	}
+
+	/** Set the value of an existing parameter.
+	 * 
+	 * Sets the value and returns true if the parameter exists.
+	 * 
+	 * @param key
+	 * @param val
+	 * @return
+	 */
+	public boolean setValue(String key, float val) {
+		Parameter p = get(key);
+		if (p != null) {
+			p.setValue(val);
+			return true;
+		}
+		return false;
+	}
+
+	/** Set the value of an existing parameter.
+	 * 
+	 * Sets the value and returns true if the parameter exists.
+	 * 
+	 * @param key
+	 * @param val
+	 * @return
+	 */
+	public boolean setValueFromString(String key, String val) {
+		Parameter p = get(key);
+		if (p != null) {
+			p.setValueFromString(val);
 			return true;
 		}
 		return false;

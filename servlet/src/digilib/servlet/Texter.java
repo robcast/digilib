@@ -1,23 +1,15 @@
-/* Texter.java -- Servlet for displaying text
-
-  Digital Image Library servlet components
-
-  Copyright (C) 2003 Robert Casties (robcast@mail.berlios.de)
-
-  This program is free software; you can redistribute  it and/or modify it
-  under  the terms of  the GNU General  Public License as published by the
-  Free Software Foundation;  either version 2 of the  License, or (at your
-  option) any later version.
-
-  Please read license.txt for the full details. A copy of the GPL
-  may be found at http://www.gnu.org/copyleft/lgpl.html
-
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-
- * Created on 15.09.2003 by casties
- *
+/*
+ * Texter.java -- Servlet for displaying text  Digital Image Library servlet
+ * components  Copyright (C) 2003 Robert Casties (robcast@mail.berlios.de) 
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option)
+ * any later version.  Please read license.txt for the full details. A copy of
+ * the GPL may be found at http://www.gnu.org/copyleft/lgpl.html  You should
+ * have received a copy of the GNU General Public License along with this
+ * program; if not, write to the Free Software Foundation, Inc., 59 Temple
+ * Place, Suite 330, Boston, MA 02111-1307 USA  Created on 15.09.2003 by
+ * casties  
  */
 package digilib.servlet;
 
@@ -37,15 +29,17 @@ import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.TextFile;
 
-/** Servlet for displaying text
- *
+/**
+ * Servlet for displaying text
+ * 
+ * 
  * @author casties
- *
+ *          
  */
 public class Texter extends HttpServlet {
 
 	/** Servlet version */
-	public static String tlVersion = "0.1a1";
+	public static String tlVersion = "0.1a2";
 	/** DigilibConfiguration instance */
 	DigilibConfiguration dlConfig = null;
 	/** Utils instance with debuglevel */
@@ -62,8 +56,8 @@ public class Texter extends HttpServlet {
 	/** use authentication */
 	boolean useAuthentication = false;
 
-	/* (non-Javadoc)
-	 * @see javax.servlet.Servlet#init(javax.servlet.ServletConfig)
+	/*
+	 * (non-Javadoc) @see javax.servlet.Servlet#init(javax.servlet.ServletConfig)
 	 */
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
@@ -101,8 +95,9 @@ public class Texter extends HttpServlet {
 		dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 	}
 
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	/*
+	 * (non-Javadoc) @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest,
+	 * javax.servlet.http.HttpServletResponse)
 	 */
 	protected void doGet(
 		HttpServletRequest request,
@@ -118,8 +113,9 @@ public class Texter extends HttpServlet {
 		processRequest(request, response);
 	}
 
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	/*
+	 * (non-Javadoc) @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest,
+	 * javax.servlet.http.HttpServletResponse)
 	 */
 	protected void doPost(
 		HttpServletRequest request,
@@ -135,47 +131,60 @@ public class Texter extends HttpServlet {
 		processRequest(request, response);
 	}
 
+	protected void processRequest(
+		HttpServletRequest request,
+		HttpServletResponse response)
+		throws ServletException, IOException {
 
-    protected void processRequest(
-        HttpServletRequest request,
-        HttpServletResponse response)
-        throws ServletException, IOException {
+		/*
+		 * request parameters
+		 */
+		DigilibRequest dlRequest =
+			(DigilibRequest) request.getAttribute("digilib.servlet.request");
+		try {
 
-        /*
-         *  request parameters
-         */
-        DigilibRequest dlRequest =
-                (DigilibRequest) request.getAttribute("digilib.servlet.request");
-        try {
+			/*
+			 * find the file to load/send
+			 */
+			if (this.getTextFile(dlRequest, "/txt") != null) {
+				servletOp.sendFile(
+					this.getTextFile(dlRequest, "txt").getFile(),
+					response);
+			} else if (this.getTextFile(dlRequest, "") != null) {
+				servletOp.sendFile(
+					this.getTextFile(dlRequest, "").getFile(),
+					response);
+			} else {
+				ServletOps.htmlMessage("No Text-File!", response);
+			}
 
-            /*
-             *  find the file to load/send
-             */
-            if(this.getTextFile(dlRequest,"/txt") != null) {
-                     servletOp.sendFile(this.getTextFile(dlRequest,"txt").getFile(), response);
-            } else if(this.getTextFile(dlRequest,"") != null) {
-                     servletOp.sendFile(this.getTextFile(dlRequest,"").getFile(), response);
-            } else {
-                    ServletOps.htmlMessage("No Text-File!", response);
-            }
+		} catch (FileOpException e) {
+			util.dprintln(1, "ERROR: File IO Error: " + e);
+			try {
+				ServletOps.htmlMessage("ERROR: File IO Error: " + e, response);
+			} catch (FileOpException ex) {
+			} // so we don't get a loop
+		}
+	}
 
-        } catch (FileOpException e) {
-            util.dprintln(1, "ERROR: File IO Error: " + e);
-            try {
-                ServletOps.htmlMessage("ERROR: File IO Error: "+ e, response);
-            } catch (FileOpException ex) { } // so we don't get a loop
-        }
-    }
-
-    /**
-     * Looks for a file in the given subDirectory.
-     * @param dlRequest The received request which has the file path.
-     * @param subDirectory The subDirectory of the file path where the file should be found.
-     * @return The wanted Textfile or null if there wasn't a file.
-     */
-    private TextFile getTextFile(DigilibRequest dlRequest,String subDirectory) {
-        String loadPathName = dlRequest.getFilePath() + subDirectory;
-        // find the file(set)
-        return (TextFile) dirCache.getFile(loadPathName,dlRequest.getPn(),FileOps.CLASS_TEXT);
-    }
+	/**
+	 * Looks for a file in the given subDirectory.
+	 * 
+	 * @param dlRequest
+	 *           The received request which has the file path.
+	 * @param subDirectory
+	 *           The subDirectory of the file path where the file should be
+	 *           found.
+	 * @return The wanted Textfile or null if there wasn't a file.
+	 */
+	private TextFile getTextFile(
+		DigilibRequest dlRequest,
+		String subDirectory) {
+		String loadPathName = dlRequest.getFilePath() + subDirectory;
+		// find the file(set)
+		return (TextFile) dirCache.getFile(
+			loadPathName,
+			dlRequest.getAsInt("pn"),
+			FileOps.CLASS_TEXT);
+	}
 }

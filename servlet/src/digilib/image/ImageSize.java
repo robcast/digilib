@@ -1,30 +1,25 @@
-/* ImageFile.java -- digilib image file class.
-
-  Digital Image Library servlet components
-
-  Copyright (C) 2003 Robert Casties (robcast@mail.berlios.de)
-
-  This program is free software; you can redistribute  it and/or modify it
-  under  the terms of  the GNU General  Public License as published by the
-  Free Software Foundation;  either version 2 of the  License, or (at your
-  option) any later version.
-   
-  Please read license.txt for the full details. A copy of the GPL
-  may be found at http://www.gnu.org/copyleft/lgpl.html
-
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-
- * Created on 26.08.2003
+/*
+ * ImageFile.java -- digilib image file class. 
+ * Digital Image Library servlet components 
+ * Copyright (C) 2003 Robert Casties (robcast@mail.berlios.de) 
+ * This program is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version. Please read license.txt for the full details. A copy of the GPL may
+ * be found at http://www.gnu.org/copyleft/lgpl.html You should have received a
+ * copy of the GNU General Public License along with this program; if not,
+ * write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307 USA Created on 26.08.2003
  */
 
 package digilib.image;
 
 /** Class for image size (width, height).
  * 
+ * A width or height of 0 is treated as a 'wildcard' that matches any size.
+ * 
  * @author casties
- *
+ *          
  */
 public class ImageSize {
 	public int width;
@@ -49,59 +44,130 @@ public class ImageSize {
 		this.height = height;
 	}
 
-	/** Returns if the size of this image is smaller in every dimension than the other image.
+	/**
+	 * Returns if the size of this image is smaller in every dimension than the
+	 * other image.
+	 * 
+	 * 
 	 * 
 	 * @param is
 	 * @return
 	 */
 	public boolean isTotallySmallerThan(ImageSize is) {
-		return ((this.width <= is.width) && (this.height <= is.height));
+		if ((this.width == 0)||(is.width == 0)) {
+			// width wildcard
+			return (this.height <= is.height);
+		}
+		if ((this.height == 0)||(is.height == 0)) {
+			// height wildcard
+			return (this.width <= is.width);
+		}
+		return ((this.width <= is.width)&&(this.height <= is.height));
 	}
 
-	/** Returns if the size of this image is smaller in at least one dimension than the other image.
+	/**
+	 * Returns if the size of this image is smaller in at least one dimension
+	 * than the other image.
 	 * 
 	 * @param is
 	 * @return
 	 */
 	public boolean isSmallerThan(ImageSize is) {
+		if ((this.width == 0)||(is.width == 0)) {
+			// width wildcard
+			return (this.height <= is.height);
+		}
+		if ((this.height == 0)||(is.height == 0)) {
+			// height wildcard
+			return (this.width <= is.width);
+		}
 		return ((this.width <= is.width) || (this.height <= is.height));
 	}
 
-	/** Returns if the size of this image is bigger in every dimension than the other image.
+	/**
+	 * Returns if the size of this image is bigger in every dimension than the
+	 * other image.
+	 * 
+	 * 
 	 * 
 	 * @param is
 	 * @return
 	 */
 	public boolean isTotallyBiggerThan(ImageSize is) {
+		if ((this.width == 0)||(is.width == 0)) {
+			// width wildcard
+			return (this.height >= is.height);
+		}
+		if ((this.height == 0)||(is.height == 0)) {
+			// height wildcard
+			return (this.width >= is.width);
+		}
 		return ((this.width >= is.width) && (this.height >= is.height));
 	}
 
-	/** Returns if the size of this image is bigger in at least one dimension than the other image.
+	/**
+	 * Returns if the size of this image is bigger in at least one dimension
+	 * than the other image.
+	 * 
+	 * 
 	 * 
 	 * @param is
 	 * @return
 	 */
 	public boolean isBiggerThan(ImageSize is) {
+		if ((this.width == 0)||(is.width == 0)) {
+			// width wildcard
+			return (this.height >= is.height);
+		}
+		if ((this.height == 0)||(is.height == 0)) {
+			// height wildcard
+			return (this.width >= is.width);
+		}
 		return ((this.width >= is.width) || (this.height >= is.height));
 	}
 
-	/** Returns if this image has the same size or height as the other image.
+	/**
+	 * Returns if this image has the same size or height as the other image.
+	 * 
+	 * 
 	 * 
 	 * @param is
 	 * @return
 	 */
 	public boolean fitsIn(ImageSize is) {
-		return ((this.width == is.width)&&(this.height <= is.height)
-		||(this.width <= is.width)&&(this.height == is.height));
+		if ((this.width == 0)||(is.width == 0)) {
+			// width wildcard
+			return (this.height == is.height);
+		}
+		if ((this.height == 0)||(is.height == 0)) {
+			// height wildcard
+			return (this.width == is.width);
+		}
+		return (
+			(this.width == is.width)
+				&& (this.height <= is.height)
+				|| (this.width <= is.width)
+				&& (this.height == is.height));
 	}
 
-	/** Returns if the size of this image is the same as the other image.
+	/**
+	 * Returns if the size of this image is the same as the other image.
+	 * 
+	 * 
 	 * 
 	 * @param is
 	 * @return
 	 */
 	public boolean equals(ImageSize is) {
-		return ((this.width == is.width)&&(this.height == is.height));
+		if ((this.width == 0)||(is.width == 0)) {
+			// width wildcard
+			return (this.height == is.height);
+		}
+		if ((this.height == 0)||(is.height == 0)) {
+			// height wildcard
+			return (this.width == is.width);
+		}
+		return ((this.width == is.width) && (this.height == is.height));
 	}
 
 	/**
@@ -132,4 +198,15 @@ public class ImageSize {
 		this.width = width;
 	}
 
+	/**
+	 * Returns the aspect ratio.
+	 * 
+	 * Aspect ratio is (width/height). So it's <1 for portrait and  >1 for
+	 * landscape.
+	 * 
+	 * @return
+	 */
+	public double getAspect() {
+		return (height > 0) ? ((double) width / (double) height) : 0;
+	}
 }

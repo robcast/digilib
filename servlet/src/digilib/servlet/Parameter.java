@@ -87,6 +87,7 @@ public class Parameter {
 	 * @return
 	 */
 	public boolean setValueFromString(String val) {
+		// no default matches all
 		if (defval == null) {
 			this.value = val;
 			return true;
@@ -102,15 +103,18 @@ public class Parameter {
 			this.value = new Boolean(val.compareToIgnoreCase("true") == 0);
 			return true;
 		}
-		// set Integer
-		if (c == Integer.class) {
-			this.value = new Integer(Integer.parseInt(val));
-			return true;
-		}
-		// set Float
-		if (c == Float.class) {
-			this.value = new Float(Float.parseFloat(val));
-			return true;
+		try {
+			// set Integer
+			if (c == Integer.class) {
+				this.value = new Integer(Integer.parseInt(val));
+				return true;
+			}
+			// set Float
+			if (c == Float.class) {
+				this.value = new Float(Float.parseFloat(val));
+				return true;
+			}
+		} catch (NumberFormatException e) {
 		}
 		// then it's unknown		
 		return false;
@@ -152,12 +156,37 @@ public class Parameter {
 	}
 
 	public String getAsString() {
-		return (String) getValue();
+		Object s = getValue();
+		return (s != null) ? s.toString() : "";
 	}
 
 	public boolean getAsBoolean() {
 		Boolean b = (Boolean) getValue();
 		return (b != null) ? b.booleanValue() : false;
+	}
+
+	public String[] parseAsArray(String separator) {
+		String s = getAsString();
+		String[] sa = s.split(separator);
+		return sa;
+	}
+
+	public float[] parseAsFloatArray(String separator) {
+		String s = getAsString();
+		String[] sa = s.split(separator);
+		float[] fa = null;
+		try {
+			int n = sa.length;
+			fa = new float[n];
+			for (int i = 0; i < n; i++) {
+				float f = Float.parseFloat(sa[i]);
+				fa[i] = f;
+			}
+		} catch (Exception e) {
+			//System.out.println("ERROR: trytoGetParam(int) failed on param "+name);
+		}
+		
+		return fa;
 	}
 
 	/** Set the value.
@@ -168,6 +197,22 @@ public class Parameter {
 		this.value = value;
 	}
 
+	/** Set the value.
+	 * 
+	 * @param value
+	 */
+	public void setValue(int value) {
+		this.value = new Integer(value);
+	}
+	
+	/** Set the value.
+	 * 
+	 * @param value
+	 */
+	public void setValue(float value) {
+		this.value = new Float(value);
+	}
+	
 	/**
 	 * @return
 	 */

@@ -51,14 +51,12 @@ import digilib.io.FileOps;
 //import tilecachetool.*;
 
 /**
- * @author casties
- *
- */
+ * @author casties */
 //public class Scaler extends HttpServlet implements SingleThreadModel {
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.16a4";
+	public static final String dlVersion = "1.16b2";
 
 	// Utils instance with debuglevel
 	Utils util;
@@ -92,7 +90,8 @@ public class Scaler extends HttpServlet {
 	// try to enlarge cropping area for "oblique" angles
 	boolean wholeRotArea = false;
 
-	/** Initialisation on first run.
+	/**
+	 * Initialisation on first run.
 	 * 
 	 * @see javax.servlet.Servlet#init(javax.servlet.ServletConfig)
 	 */
@@ -181,9 +180,7 @@ public class Scaler extends HttpServlet {
 		// output mime/type
 		String mimeType = "image/png";
 
-		/*
-		 * parameters for a session
-		 */
+		/* parameters for a session */
 
 		// scale the image file to fit window size i.e. respect dw,dh
 		boolean scaleToFit = true;
@@ -209,75 +206,74 @@ public class Scaler extends HttpServlet {
 		double origResX = 0;
 		double origResY = 0;
 
-		/*
-		 *  request parameters
-		 */
+		/* request parameters */
 
 		DigilibRequest dlRequest =
 			(DigilibRequest) request.getAttribute("digilib.servlet.request");
 
 		// destination image width
-		int paramDW = dlRequest.getDw();
+		int paramDW = dlRequest.getAsInt("dw");
 		// destination image height
-		int paramDH = dlRequest.getDh();
-		// dw and dh shouldn't be empty, if they are, set dw=dh
-		if (paramDW <= 0) {
-			paramDW = paramDH;
-		}
-		if (paramDH <= 0) {
-			paramDH = paramDW;
-		}
+		int paramDH = dlRequest.getAsInt("dh");
 		// relative area x_offset (0..1)
-		double paramWX = dlRequest.getWx();
+		double paramWX = dlRequest.getAsFloat("wx");
 		// relative area y_offset
-		double paramWY = dlRequest.getWy();
+		double paramWY = dlRequest.getAsFloat("wy");
 		// relative area width (0..1)
-		double paramWW = dlRequest.getWw();
+		double paramWW = dlRequest.getAsFloat("ww");
 		// relative area height
-		double paramWH = dlRequest.getWh();
+		double paramWH = dlRequest.getAsFloat("wh");
 		// scale factor (additional to dw/width, dh/height)
-		double paramWS = dlRequest.getWs();
+		double paramWS = dlRequest.getAsFloat("ws");
 		// rotation angle
-		double paramROT = dlRequest.getRot();
+		double paramROT = dlRequest.getAsFloat("rot");
 		// contrast enhancement
-		float paramCONT = dlRequest.getCont();
+		float paramCONT = dlRequest.getAsFloat("cont");
 		// brightness enhancement
-		float paramBRGT = dlRequest.getBrgt();
+		float paramBRGT = dlRequest.getAsFloat("brgt");
 		// color modification
-		float[] paramRGBM = dlRequest.getRgbm();
-		float[] paramRGBA = dlRequest.getRgba();
+		float[] paramRGBM = null;
+		Parameter p = dlRequest.get("rgbm");
+		if (p.hasValue() && (!p.getAsString().equals("0/0/0"))) {
+			paramRGBM = p.parseAsFloatArray("/");
+		}
+		float[] paramRGBA = null;
+		p = dlRequest.get("rgba");
+		if (p.hasValue() && (!p.getAsString().equals("0/0/0"))) {
+			paramRGBA = p.parseAsFloatArray("/");
+		}
 		// destination resolution (DPI)
-		float paramDDPIX = dlRequest.getDdpix();
-		float paramDDPIY = dlRequest.getDdpiy();
+		float paramDDPIX = dlRequest.getAsFloat("ddpix");
+		float paramDDPIY = dlRequest.getAsFloat("ddpiy");
 		if ((paramDDPIX == 0) || (paramDDPIY == 0)) {
 			// if X or Y resolution isn't set, use DDPI
-			paramDDPIX = dlRequest.getDdpi();
-			paramDDPIY = dlRequest.getDdpi();
+			paramDDPIX = dlRequest.getAsFloat("ddpi");
+			paramDDPIY = paramDDPIX;
 		}
 
-		/* operation mode: "fit": always fit to page, 
-		 * "clip": send original resolution cropped, "file": send whole file (if
-		 * allowed)
+		/*
+		 * operation mode: "fit": always fit to page, "clip": send original
+		 * resolution cropped, "file": send whole file (if allowed)
 		 */
-		if (dlRequest.isOption("clip")) {
+		if (dlRequest.hasOption("mo", "clip")) {
 			scaleToFit = false;
 			absoluteScale = false;
 			cropToFit = true;
 			sendFile = false;
 			hiresOnly = true;
-		} else if (dlRequest.isOption("fit")) {
+		} else if (dlRequest.hasOption("mo", "fit")) {
 			scaleToFit = true;
 			absoluteScale = false;
 			cropToFit = false;
 			sendFile = false;
 			hiresOnly = false;
-		} else if (dlRequest.isOption("osize")) {
+		} else if (dlRequest.hasOption("mo", "osize")) {
 			scaleToFit = false;
 			absoluteScale = true;
 			cropToFit = false;
 			sendFile = false;
 			hiresOnly = true;
-		} else if (dlRequest.isOption("file")) {
+		} else if (dlRequest.hasOption("mo", "file")) {
 			scaleToFit = false;
 			absoluteScale = false;
 			if (sendFileAllowed) {
@@ -290,30 +286,32 @@ public class Scaler extends HttpServlet {
 			}
 			hiresOnly = true;
 		}
-		// operation mode: "lores": try to use scaled image, "hires": use unscaled image
+		// operation mode: "lores": try to use scaled image, "hires": use
+		// unscaled image
 		//   "autores": try best fitting resolution
-		if (dlRequest.isOption("lores")) {
+		if (dlRequest.hasOption("mo", "lores")) {
 			loresOnly = true;
 			hiresOnly = false;
-		} else if (dlRequest.isOption("hires")) {
+		} else if (dlRequest.hasOption("mo", "hires")) {
 			loresOnly = false;
 			hiresOnly = true;
-		} else if (dlRequest.isOption("autores")) {
+		} else if (dlRequest.hasOption("mo", "autores")) {
 			loresOnly = false;
 			hiresOnly = false;
 		}
-		// operation mode: "errtxt": error message in html, "errimg": error image
-		if (dlRequest.isOption("errtxt")) {
+		// operation mode: "errtxt": error message in html, "errimg": error
+		// image
+		if (dlRequest.hasOption("mo", "errtxt")) {
 			errorMsgHtml = true;
-		} else if (dlRequest.isOption("errimg")) {
+		} else if (dlRequest.hasOption("mo", "errimg")) {
 			errorMsgHtml = false;
 		}
 		// operation mode: "q0" - "q2": interpolation quality
-		if (dlRequest.isOption("q0")) {
+		if (dlRequest.hasOption("mo", "q0")) {
 			scaleQual = 0;
-		} else if (dlRequest.isOption("q1")) {
+		} else if (dlRequest.hasOption("mo", "q1")) {
 			scaleQual = 1;
-		} else if (dlRequest.isOption("q2")) {
+		} else if (dlRequest.hasOption("mo", "q2")) {
 			scaleQual = 2;
 		}
 
@@ -326,16 +324,12 @@ public class Scaler extends HttpServlet {
 			// new DocuInfo instance
 			DocuInfo docuInfo = new ImageLoaderImageInfoDocuInfo();
 
-			/*
-			 *  find the file to load/send
-			 */
+			/* find the file to load/send */
 
 			// get PathInfo
 			String loadPathName = dlRequest.getFilePath();
 
-			/*
-			 * check permissions
-			 */
+			/* check permissions */
 			if (useAuthentication) {
 				// get a list of required roles (empty if no restrictions)
 				List rolesRequired = authOp.rolesForPath(loadPathName, request);
@@ -363,21 +357,18 @@ public class Scaler extends HttpServlet {
 			fileset =
 				(ImageFileset) dirCache.getFile(
 					loadPathName,
-					dlRequest.getPn(),
+					dlRequest.getAsInt("pn"),
 					FileOps.CLASS_IMAGE);
 			if (fileset == null) {
 				throw new FileOpException(
 					"File "
 						+ loadPathName
 						+ "("
-						+ dlRequest.getPn()
+						+ dlRequest.getAsInt("pn")
 						+ ") not found.");
 			}
-
-			/*
-			 * calculate expected source image size
-			 * 
-			 */
+			
+			/* calculate expected source image size */
 			ImageSize expectedSourceSize = new ImageSize();
 			if (scaleToFit) {
 				double scale = (1 / Math.min(paramWW, paramWH)) * paramWS;
@@ -390,19 +381,17 @@ public class Scaler extends HttpServlet {
 					(int) (paramDH * paramWS));
 			}
 
-			/* 
-			 * select a resolution
-			 */
+			/* select a resolution */
 			if (hiresOnly) {
 				// get first element (= highest resolution)
-				fileToLoad = fileset.get(0);
+				fileToLoad = fileset.getBiggest();
 			} else if (loresOnly) {
 				// enforced lores uses next smaller resolution
 				fileToLoad =
 					fileset.getNextSmaller(expectedSourceSize, docuInfo);
 				if (fileToLoad == null) {
 					// this is the smallest we have
-					fileToLoad = fileset.get(fileset.size() - 1);
+					fileToLoad = fileset.getSmallest();
 				}
 			} else {
 				// autores: use next higher resolution
@@ -410,7 +399,7 @@ public class Scaler extends HttpServlet {
 					fileset.getNextBigger(expectedSourceSize, docuInfo);
 				if (fileToLoad == null) {
 					// this is the highest we have
-					fileToLoad = fileset.get(0);
+					fileToLoad = fileset.getBiggest();
 				}
 			}
 			util.dprintln(1, "Loading: " + fileToLoad.getFile());
@@ -444,8 +433,8 @@ public class Scaler extends HttpServlet {
 					|| mimeType.equals("image/png")
 					|| mimeType.equals("image/gif");
 			boolean imagoOptions =
-				dlRequest.isOption("hmir")
-					|| dlRequest.isOption("vmir")
+				dlRequest.hasOption("mo", "hmir")
+					|| dlRequest.hasOption("mo", "vmir")
 					|| (paramROT != 0)
 					|| (paramRGBM != null)
 					|| (paramRGBA != null)
@@ -453,11 +442,11 @@ public class Scaler extends HttpServlet {
 					|| (paramBRGT != 0);
 			boolean imageSendable = mimetypeSendable && !imagoOptions;
 
-			/* if not autoRes and image smaller than requested 
-			 * size then send as is.
-			 * if autoRes and image has requested size then send as is. 
-			 * if not autoScale and not scaleToFit nor cropToFit 
-			 * then send as is (mo=file)
+			/*
+			 * if not autoRes and image smaller than requested size then send
+			 * as is. if autoRes and image has requested size then send as is.
+			 * if not autoScale and not scaleToFit nor cropToFit then send as
+			 * is (mo=file)
 			 */
 			if ((loresOnly
 				&& imageSendable
@@ -486,10 +475,16 @@ public class Scaler extends HttpServlet {
 
 			// set interpolation quality
 			docuImage.setQuality(scaleQual);
+			
+			// set missing dw or dh from aspect ratio
+			double imgAspect = fileToLoad.getAspect();
+			if (paramDW == 0) {
+				paramDW = (int) Math.round(paramDH * imgAspect);
+			} else if (paramDH == 0) {
+				paramDH = (int) Math.round(paramDW / imgAspect);
+			}
 
-			/*
-			 *  crop and scale the image
-			 */
+			/* crop and scale the image */
 
 			util.dprintln(
 				2,
@@ -569,13 +564,14 @@ public class Scaler extends HttpServlet {
 			if (wholeRotArea) {
 				if (paramROT != 0) {
 					try {
-						// rotate user area coordinates around center of user area
+						// rotate user area coordinates around center of user
+						// area
 						AffineTransform rotTrafo =
 							AffineTransform.getRotateInstance(
 								Math.toRadians(paramROT),
 								userImgArea.getCenterX(),
 								userImgArea.getCenterY());
-						// get bounds from rotated end position 
+						// get bounds from rotated end position
 						innerUserImgArea =
 							rotTrafo
 								.createTransformedShape(userImgArea)
@@ -632,9 +628,7 @@ public class Scaler extends HttpServlet {
 				throw new ImageOpException("Invalid scale parameter set!");
 			}
 
-			/* 
-			 * crop and scale image
-			 */
+			/* crop and scale image */
 
 			// use subimage loading if possible
 			if (docuImage.isSubimageSupported()) {
@@ -644,7 +638,8 @@ public class Scaler extends HttpServlet {
 				double subsamp = 1d;
 				if (scaleXY < 1) {
 					subf = 1 / scaleXY;
-					// for higher quality reduce subsample factor by minSubsample
+					// for higher quality reduce subsample factor by
+					// minSubsample
 					if (scaleQual > 0) {
 						subsamp = Math.max(Math.floor(subf / minSubsample), 1d);
 					} else {
@@ -683,16 +678,17 @@ public class Scaler extends HttpServlet {
 			}
 
 			// mirror image
-			// operation mode: "hmir": mirror horizontally, "vmir": mirror vertically
-			if (dlRequest.isOption("hmir")) {
+			// operation mode: "hmir": mirror horizontally, "vmir": mirror
+			// vertically
+			if (dlRequest.hasOption("mo", "hmir")) {
 				docuImage.mirror(0);
 			}
-			if (dlRequest.isOption("vmir")) {
+			if (dlRequest.hasOption("mo", "vmir")) {
 				docuImage.mirror(90);
 			}
 
 			// rotate image
-			if (paramROT != 0) {
+			if (paramROT != 0d) {
 				docuImage.rotate(paramROT);
 				if (wholeRotArea) {
 					// crop to the inner bounding box
@@ -719,7 +715,7 @@ public class Scaler extends HttpServlet {
 
 			// color modification
 			if ((paramRGBM != null) || (paramRGBA != null)) {
-				// make shure we actually have two arrays 
+				// make shure we actually have two arrays
 				if (paramRGBM == null) {
 					paramRGBM = new float[3];
 				}
@@ -735,7 +731,7 @@ public class Scaler extends HttpServlet {
 			}
 
 			// contrast and brightness enhancement
-			if ((paramCONT != 0) || (paramBRGT != 0)) {
+			if ((paramCONT != 0f) || (paramBRGT != 0f)) {
 				double mult = Math.pow(2, paramCONT);
 				docuImage.enhance((float) mult, (float) paramBRGT);
 			}
@@ -744,11 +740,10 @@ public class Scaler extends HttpServlet {
 				2,
 				"time " + (System.currentTimeMillis() - startTime) + "ms");
 
-			/*
-			 *  write the resulting image
-			 */
+			/* write the resulting image */
 
-			// setup output -- if source is JPG then dest will be JPG else it's PNG
+			// setup output -- if source is JPG then dest will be JPG else it's
+			// PNG
 			if (mimeType.equals("image/jpeg")
 				|| mimeType.equals("image/jp2")) {
 				mimeType = "image/jpeg";
@@ -764,9 +759,7 @@ public class Scaler extends HttpServlet {
 				1,
 				"Done in " + (System.currentTimeMillis() - startTime) + "ms");
 
-			/*
-			 *  error handling
-			 */
+			/* error handling */
 
 		} // end of "big" try
 		catch (IOException e) {

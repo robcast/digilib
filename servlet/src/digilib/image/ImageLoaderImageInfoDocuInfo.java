@@ -20,8 +20,6 @@
  */
 package digilib.image;
 
-import ImageInfo;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -31,9 +29,12 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
+import org.marcoschmidt.image.ImageInfo;
+
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.ImageFile;
+import digilib.io.ImageFileset;
 
 /**
  * @author casties
@@ -43,6 +44,7 @@ public class ImageLoaderImageInfoDocuInfo implements DocuInfo {
 
 	/* check image size and type and store in ImageFile f */
 	public boolean checkFile(ImageFile imgf) throws IOException {
+		ImageFileset imgfs = imgf.getParent();
 		File f = imgf.getFile();
 		if (f == null) {
 			throw new IOException("File not found!");
@@ -59,6 +61,9 @@ public class ImageLoaderImageInfoDocuInfo implements DocuInfo {
 				new ImageSize(iif.getWidth(), iif.getHeight());
 			imgf.setSize(d);
 			imgf.setMimetype(iif.getMimeType());
+			if (imgfs != null) {
+				imgfs.setAspect(d);
+			}
 			raf.close();
 		} else {
 			// else use ImageReader
@@ -82,6 +87,9 @@ public class ImageLoaderImageInfoDocuInfo implements DocuInfo {
 			String t = reader.getFormatName();
 			t = FileOps.mimeForFile(f);
 			imgf.setMimetype(t);
+			if (imgfs != null) {
+				imgfs.setAspect(d);
+			}
 			// dispose the reader to free resources
 			reader.dispose();
 		}

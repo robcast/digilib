@@ -27,9 +27,11 @@ Unknown parameters will be silently ignored.</p>
     given by the path. Starts with 1. Ignored if the path points to a file.
     Default: 1.</li>
 
-  <li><b>dw</b> destination image width (pixels).</li>
+  <li><b>dw</b> destination image width (pixels). If omitted the image is scaled to fit 
+    dh.</li>
   
-  <li><b>dh</b> destination image height (pixels).</li>
+  <li><b>dh</b> destination image height (pixels). If omitted the image is scaled to fit 
+    dw.</li>
 
   <li><b>wx</b> relative x offset of the image area to be sent (0 &lt;= wx &lt;= 1).
     Default: 0.</li>
@@ -50,18 +52,21 @@ Unknown parameters will be silently ignored.</p>
     <ul>
       <li><b>fit</b>: always scale the image to fit
       <code>[dw,dh]</code>.<br>
+      
       <b>file</b>: send the file as-is (may
       be very large and all sorts of image types!). If configuration
       doesn't allow sending files
       (<code>sendfile-allowed=false</code>) revert to
       <code>clip</code>.<br>
+      
       <b>clip</b>: send the file in its
       original resolution, cropped to fit <code>[dw,dh]</code>.<br> If
       none of these flags is set heuristics is used (send unzoomed GIF
       as-is).<br>
+      
       <b>osize</b>: scale to original size based on the image resolution
       (from the image metadata) and display resolution (from parameter 
-      <code>ddpi</code>)
+      <code>ddpi</code>). Fails if either resolution is unknown.
       </li>
       
       <li><b>errtxt</b>: send error response as HTML.<br>
@@ -71,11 +76,14 @@ Unknown parameters will be silently ignored.</p>
       (<code>q0</code>: worst, default).</li>
 
       <li><b>lores</b>: try to use scaled image (default)<br>
+      
       <b>hires</b>: always use unscaled image.<br>
+      
       If the image is zoomed (ww, wh &lt; 1) the unscaled image is
       used in any case.</li>
       
       <li><b>vmir</b>: mirror image vertically.<br>
+      
       <b>hmir</b>: mirror image horizontally.</li>
     </ul>
   </li>
@@ -109,7 +117,6 @@ Unknown parameters will be silently ignored.</p>
   
   <li><b>ddpix</b>: resolution of client display in x direction for 
   <code>osize</code> mode.</li>
-
   
   <li><b>ddpiy</b>: resolution of client display in y direction for 
   <code>osize</code> mode.</li>

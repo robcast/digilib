@@ -124,5 +124,13 @@ public class ImageFile {
 	public boolean isChecked() {
 		return (pixelSize != null);
 	}
+	
+	/** Returns the aspect ratio of the image (width/height).
+	 * 
+	 * @return
+	 */
+	public double getAspect() {
+		return (pixelSize != null) ? pixelSize.getAspect() : 0;
+	}
 
 }

@@ -1,21 +1,15 @@
-/* ImageFileset -- digilib image file info class.
-
-  Digital Image Library servlet components
-
-  Copyright (C) 2003 Robert Casties (robcast@mail.berlios.de)
-
-  This program is free software; you can redistribute  it and/or modify it
-  under  the terms of  the GNU General  Public License as published by the
-  Free Software Foundation;  either version 2 of the  License, or (at your
-  option) any later version.
-   
-  Please read license.txt for the full details. A copy of the GPL
-  may be found at http://www.gnu.org/copyleft/lgpl.html
-
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-
+/*
+ * ImageFileset -- digilib image file info class.  Digital Image Library
+ * servlet components  Copyright (C) 2003 Robert Casties
+ * (robcast@mail.berlios.de)  This program is free software; you can
+ * redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.  Please read license.txt
+ * for the full details. A copy of the GPL may be found at
+ * http://www.gnu.org/copyleft/lgpl.html  You should have received a copy of
+ * the GNU General Public License along with this program; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+ * 02111-1307 USA  
  */
 package digilib.io;
 
@@ -33,16 +27,21 @@ import digilib.image.ImageSize;
  */
 public class ImageFileset extends DocuDirent {
 
-	// this is an image file
+	/** this is an image file */
 	protected static int fileClass = FileOps.CLASS_IMAGE;
 
-	// list of files (ImageFile)
+	/** list of files (ImageFile) */
 	private ArrayList list = null;
-	// resolution (DPI)
+	/** aspect ratio (width/height) */
+	private double aspect = 0;
+	/** resolution of the biggest image (DPI) */
 	private double resX = 0;
+	/** resolution of the biggest image (DPI) */
 	private double resY = 0;
 
-	/** Creator for empty fileset with size for file list.
+	/**
+	 * Creator for empty fileset with size for file list.
+	 * 
 	 * 
 	 * @param initialCapacity
 	 */
@@ -50,17 +49,22 @@ public class ImageFileset extends DocuDirent {
 		list = new ArrayList(initialCapacity);
 	}
 
-	/** Creator with a file and base directories.
+	/**
+	 * Creator with a file and base directories.
 	 * 
-	 * Reads the file and fills the 
-	 * fileset with corresponding files from the other base directories.
-	 * First entry in dirs is the parent of this fileset. 
+	 * Reads the file and fills the fileset with corresponding files from the
+	 * other base directories. First entry in dirs is the parent of this
+	 * fileset.
+	 * 
 	 * 
 	 * @see fill
-	 * 
-	 * @param dirs array of base directories
-	 * @param file first file to read
-	 * @param scalext extension for scaled images
+	 *      
+	 * @param dirs
+	 *           array of base directories
+	 * @param file
+	 *           first file to read
+	 * @param scalext
+	 *           extension for scaled images
 	 */
 	public ImageFileset(Directory[] dirs, File file, String scalext) {
 		int nb = dirs.length;
@@ -69,12 +73,15 @@ public class ImageFileset extends DocuDirent {
 		fill(dirs, file, scalext);
 	}
 
-	/** Adds a ImageFile to this Fileset.
+	/**
+	 * Adds a ImageFile to this Fileset.
 	 * 
-	 * The files should be added in the order of higher to lower resolutions. 
-	 * The first file is considered the hires "original". 
+	 * The files should be added in the order of higher to lower resolutions.
+	 * The first file is considered the hires "original".
 	 * 
-	 * @param f file to add
+	 * 
+	 * @param f
+	 *           file to add
 	 * @return true (always)
 	 */
 	public boolean add(ImageFile f) {
@@ -82,7 +89,9 @@ public class ImageFileset extends DocuDirent {
 		return list.add(f);
 	}
 
-	/** The number of image files in this Fileset.
+	/**
+	 * The number of image files in this Fileset.
+	 * 
 	 * 
 	 * @return number of image files
 	 */
@@ -90,14 +99,17 @@ public class ImageFileset extends DocuDirent {
 		return (list != null) ? list.size() : 0;
 	}
 
-	/** Gets the default File.
-	 * 
+	/**
+	 * Gets the default File.
+	 *  
 	 */
 	public File getFile() {
 		return (list != null) ? ((ImageFile) list.get(0)).getFile() : null;
 	}
 
-	/** Get the ImageFile at the index.
+	/**
+	 * Get the ImageFile at the index.
+	 * 
 	 * 
 	 * @param index
 	 * @return
@@ -106,12 +118,13 @@ public class ImageFileset extends DocuDirent {
 		return (ImageFile) list.get(index);
 	}
 
-	/** Get the next smaller ImageFile than the given size.
+	/**
+	 * Get the next smaller ImageFile than the given size.
 	 * 
-	 * Returns the ImageFile from the set that has a width and height 
-	 * smaller or equal the given size. 
-	 * Returns null if there isn't any smaller image.
+	 * Returns the ImageFile from the set that has a width and height smaller
+	 * or equal the given size. Returns null if there isn't any smaller image.
 	 * Needs DocuInfo instance to checkFile().
+	 * 
 	 * 
 	 * @param size
 	 * @param info
@@ -135,12 +148,13 @@ public class ImageFileset extends DocuDirent {
 		return null;
 	}
 
-	/** Get the next bigger ImageFile than the given size.
+	/**
+	 * Get the next bigger ImageFile than the given size.
 	 * 
-	 * Returns the ImageFile from the set that has a width or height 
-	 * bigger or equal the given size. 
-	 * Returns null if there isn't any bigger image.
+	 * Returns the ImageFile from the set that has a width or height bigger or
+	 * equal the given size. Returns null if there isn't any bigger image.
 	 * Needs DocuInfo instance to checkFile().
+	 * 
 	 * 
 	 * @param size
 	 * @param info
@@ -164,8 +178,30 @@ public class ImageFileset extends DocuDirent {
 		return null;
 	}
 
-	/** Get an Iterator for this Fileset starting at the highest resolution 
+	/**
+	 * Returns the biggest ImageFile in the set.
+	 * 
+	 * 
+	 * @return
+	 */
+	public ImageFile getBiggest() {
+		return this.get(0);
+	}
+
+	/**
+	 * Returns the biggest ImageFile in the set.
+	 * 
+	 * 
+	 * @return
+	 */
+	public ImageFile getSmallest() {
+		return this.get(this.size() - 1);
+	}
+
+	/**
+	 * Get an Iterator for this Fileset starting at the highest resolution
 	 * images.
+	 * 
 	 * 
 	 * @return
 	 */
@@ -173,11 +209,13 @@ public class ImageFileset extends DocuDirent {
 		return list.listIterator();
 	}
 
-	/** Get an Iterator for this Fileset starting at the lowest resolution 
+	/**
+	 * Get an Iterator for this Fileset starting at the lowest resolution
 	 * images.
 	 * 
-	 * The Iterator starts at the last element, so you have to use it backwards 
+	 * The Iterator starts at the last element, so you have to use it backwards
 	 * with hasPrevious() and previous().
+	 * 
 	 * 
 	 * @return
 	 */
@@ -185,17 +223,22 @@ public class ImageFileset extends DocuDirent {
 		return list.listIterator(list.size());
 	}
 
-	/** Fill the ImageFileset with files from different base directories.
+	/**
+	 * Fill the ImageFileset with files from different base directories.
 	 * 
-	 * @param dirs list of base directories
-	 * @param fl file (from first base dir)
-	 * @param scalext first extension to try in other base dirs
+	 * 
+	 * @param dirs
+	 *           list of base directories
+	 * @param fl
+	 *           file (from first base dir)
+	 * @param scalext
+	 *           first extension to try in other base dirs
 	 */
 	void fill(Directory[] dirs, File fl, String scalext) {
 		int nb = dirs.length;
 		String fn = fl.getName();
 		String fnx = fn.substring(0, fn.lastIndexOf('.') + 1);
-		// add the first ImageFile to the ImageFileset 
+		// add the first ImageFile to the ImageFileset
 		add(new ImageFile(fn, this, parent));
 		// iterate the remaining base directories
 		for (int j = 1; j < nb; j++) {
@@ -230,8 +273,9 @@ public class ImageFileset extends DocuDirent {
 		}
 	}
 
-	/** Checks metadata and sets resolution in resX and resY.
-	 * 
+	/**
+	 * Checks metadata and sets resolution in resX and resY.
+	 *  
 	 */
 	public void checkMeta() {
 		if (metaChecked) {
@@ -328,6 +372,29 @@ public class ImageFileset extends DocuDirent {
 	 */
 	public double getResY() {
 		return resY;
+	}
+
+	/**
+	 * Sets the aspect ratio from an ImageSize.
+	 * 
+	 * 
+	 * @param f
+	 */
+	public void setAspect(ImageSize s) {
+		aspect = s.getAspect();
+	}
+
+	/**
+	 * Returns the aspect ratio.
+	 * 
+	 * Aspect ratio is (width/height). So it's <1 for portrait and  >1 for
+	 * landscape.
+	 * 
+	 * 
+	 * @return
+	 */
+	public double getAspect() {
+		return aspect;
 	}
 
 }
