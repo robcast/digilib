@@ -6,55 +6,84 @@
 <BODY>
 <H1>Scaler</H1>
 
-<p>A Servlet for scaling images.</p>
+<p>A Servlet for scaling images. (Version 1.6b)</p>
 
-<p>Scaler takes parameters in the http request format:
-<code>Scaler/request_path/?param1=value1&param2=value2&...</code></p>
+<h2>Web API</h2>
+
+<p>The Scaler servlet takes parameters in the http request format:
+<code>Scaler/request_path/?param1=value1&param2=value2&...</code>
+Unknown parameters will be silently ignored.</p>
 
 <p>Recognised parameters:
 <ul>
-  <li><b>request_path</b> path to file or directory.
+  <li><b>request_path</b> path to file or directory.</li>
 
-  <li><b>fn</b> path to file or directory below <code>/docuserver/images</code>.
+  <li><b>fn</b> path to file or directory below <code>/docuserver/images</code> 
+    (or other configured image directory).
     This path will be added to the <code>request_path</code> behind the servlet name.
-    Either parameter can be empty.
+    Either parameter can be empty.</li>
 
   <li><b>pn</b> page number. Index into the (alphabetically sorted) directory
     given by the path. Starts with 1. Ignored if the path points to a file.
-    Default: 1.
+    Default: 1.</li>
 
-  <li><b>dw</b> destination image width (pixels).
-  <li><b>dh</b> destination image height.
+  <li><b>dw</b> destination image width (pixels).</li>
+  
+  <li><b>dh</b> destination image height (pixels).</li>
 
   <li><b>wx</b> relative x offset of the image area to be sent (0 &lt;= wx &lt;= 1).
-    Default: 0.
-  <li><b>wy</b> relative y offset of the image area to be sent.
-    Default: 0.
-  <li><b>ww</b> relative width of the image area to be sent.
-    Default: 1.
-  <li><b>wh</b> relative height of the image area to be sent.
-    Default: 1.
+    Default: 0.</li>
+    
+  <li><b>wy</b> relative y offset of the image area to be sent (0 &lt;= wy &lt;= 1).
+    Default: 0.</li>
+    
+  <li><b>ww</b> relative width of the image area to be sent (0 &lt;= ww &lt;= 1).
+    Default: 1.</li>
+    
+  <li><b>wh</b> relative height of the image area to be sent (0 &lt;= wh &lt;= 1).
+    Default: 1.</li>
 
   <li><b>ws</b> additional scaling factor. The resulting image will have the size
-    <code>[ws*dw,ws*dh]</code>. Default: 1.
+    <code>[ws*dw,ws*dh]</code>. Default: 1.</li>
 
-  <li><b>mo</b> flags for the mode of operation separated by "+".
+    <li><b>mo</b> flags for the mode of operation separated by "+".
     <ul>
-      <li><b>fit</b>: always scale the image to fit <code>[dw,dh]</code>.<br>
-        <b>file</b>: send the file as-is (may be very large and all sorts of image types!).<br>
-        If none of these flags is set heuristics is used (send unzoomed GIF as-is).
-
+      <li><b>fit</b>: always scale the image to fit
+      <code>[dw,dh]</code>.<br> <b>file</b>: send the file as-is (may
+      be very large and all sorts of image types!). If configuration
+      doesn't allow sending files
+      (<code>sendfile-allowed=false</code>) revert to
+      <code>clip</code>.<br> <b>clip</b>: send the file in its
+      original resolution, cropped to fit <code>[dw,dh]</code>.<br> If
+      none of these flags is set heuristics is used (send unzoomed GIF
+      as-is).</li>
+      
       <li><b>errtxt</b>: send error response as HTML.<br>
-        <b>errimg</b>: response as image (default).
+      <b>errimg</b>: response as image (default).</li>
 
       <li><b>q0</b>-<b>q2</b>: quality of interpolation in scaling
-        (<code>q0</code>: worst, default).
+      (<code>q0</code>: worst, default).</li>
 
       <li><b>lores</b>: try to use scaled image (default)<br>
-        <b>hires</b>: always use unscaled image.<br>
-        If the image is zoomed (ww, wh &lt; 1) the unscaled image is used in any case.
+      <b>hires</b>: always use unscaled image.<br>
+      If the image is zoomed (ww, wh &lt; 1) the unscaled image is
+      used in any case.</li>
+      
+      <li><b>vmir</b>: mirror image vertically.<br>
+      <b>hmir</b>: mirror image horizontally.</li>
     </ul>
+  </li>
 
+  <li><b>cont</b>: change contrast of the image. Negative value
+  reduces contrast, positive value enhances contrast. Pixel value is
+  multiplied by 2^cont.</li>
+
+  <li><b>brgt</b>: change brightness of image. Negative value reduces
+  brightness, positive value enhances brightness. Pixel value is added
+  brgt.</li>
+
+  <li><b>rot</b>: rotate image. Rotation angle is given in degrees.</li>
+  
 </ul>
 The image will be scaled equally in horizontal and vertical direction such that
 the resulting image does not exceed the rectangle <code>[ww,wh]</code>.
