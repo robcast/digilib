@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<relato>
+
+  <frames>
+    <frameset cols="0,100%" border="0" frameborder="0" framespacing="0">
+      <frame name="navigation" src="http://pythia2.unibe.ch:8080/docuserver/digitallibrary/contexto/contexto.jsp?htmlURL=http://www.philoscience.unibe.ch/docuserver/echo/projekte/compago/navigation.html" />
+      <frame name="mainFrame" />
+      <noframes>
+        In order to use <i>relato</i> you need to have a frame capable browser.
+      </noframes>
+    </frameset>
+  </frames>
+  
+  <functions>
+    <function name="getParameter" quiet="true">
+      <validInFrame name="mainFrame" />
+    </function>
+    <function name="listParameters" quiet="true">
+      <validInFrame name="mainFrame" />
+    </function>
+    <function name="listParametersAsString" quiet="true">
+      <validInFrame name="mainFrame" />
+    </function>
+    <function name="page">
+      <validInFrame name="mainFrame" />
+    </function>
+    <function name="zoomPoint">
+      <validInFrame name="mainFrame" />
+    </function>
+    <function name="zoomArea">
+      <validInFrame name="mainFrame" />
+    </function>
+    <function name="mark">
+      <validInFrame name="mainFrame" />
+    </function>
+    <function name="ref">
+      <validInFrame name="mainFrame" />
+    </function>
+    <function name="zoomOut">
+      <validInFrame name="mainFrame" />
+    </function>
+    <function name="zoomExtends">
+      <validInFrame name="mainFrame" />
+    </function>
+    <function name="moveTo">
+      <validInFrame name="mainFrame" />
+    </function>
+    <function name="scale">
+      <validInFrame name="mainFrame" />
+    </function>
+    <function name="brightnessContrast">
+      <validInFrame name="mainFrame" />
+    </function>
+    <function name="mirror">
+      <validInFrame name="mainFrame" />
+    </function>
+    <function name="rotation">
+      <validInFrame name="mainFrame" />
+    </function>
+    <function name="colors">
+      <validInFrame name="mainFrame" />
+    </function>
+    <function name="pixelByPixel">
+      <validInFrame name="mainFrame" />
+    </function>
+    <function name="originalSize">
+      <validInFrame name="mainFrame" />
+    </function>
+  </functions>
+
+  <buttons>
+    <button name="home" command="navigation.home()" />
+    <button name="e-publications" command="navigation.publications()" />
+  </buttons>
+
+</relato>
