@@ -278,7 +278,7 @@ function newParameter(name, defaultValue, detail) {
 
 function getParameter(name) {
     // returns the named parameter value or its default value
-    if (defined(dlParams[name])) {
+    if (defined(dlParams) && defined(dlParams[name])) {
 	if (dlParams[name].hasValue) {
 	    return dlParams[name].value;
 	} else {
