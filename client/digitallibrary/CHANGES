@@ -10,6 +10,12 @@ digilib.jsp       ->  digilib19.jsp
 
 CHANGES
 
+24.1.2003 - [different files] : roc
+- New Servlet version 1.5b with internal cleanup and new Request and
+  Configuration classes.
+- New JSPs dlInfo-js.jsp and server/dlConfig.jsp to show the request parameter
+  as JavaScript and the configuration settings as HTML.
+
 8.1.2003 - DigilibServlet.jar : roc
 - New servlet and classes for JAI ImageIO (currently not used).
 

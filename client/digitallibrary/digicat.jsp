@@ -18,13 +18,13 @@ public void jspInit() {
 %>
 
 <%
-// check if authentication is needed and redirect if necessary
-docBean.doAuthentication(request, response);
-
 // set up request object for base URL
-digilib.servlet.DigilibRequest dlRequest = new digilib.servlet.DigilibRequest();
-dlRequest.setBaseURL(request);
+digilib.servlet.DigilibRequest dlRequest = new digilib.servlet.DigilibRequest(request);
+// check if authentication is needed and redirect if necessary
+docBean.doAuthentication(dlRequest, response);
 
+// add number of pages
+dlRequest.setPt(docBean.getNumPages(dlRequest));
 %>
 
 <html>
@@ -34,17 +34,14 @@ dlRequest.setBaseURL(request);
 
 var baseUrl = "<%= dlRequest.getBaseURL() %>";
 
-// DEBUG
-//alert('DIR: <%= docBean.getDocuPath(request) %> PAGES: <%= docBean.getNumPages(request) %>');
-
 // the document's query string (minus "?")
 var query = location.search.substring(1);
 
 // first page number
-var firstPage = <%= docBean.getFirstPage(request) %>;
+var firstPage = <%= docBean.getFirstPage(dlRequest) %>;
 
 // number of pages of the document
-var numPages = <%= docBean.getNumPages(request) %>;
+var numPages = <%= docBean.getNumPages(dlRequest) %>;
 
     // browser version test to include the corresponding navigation-file
     if ((navigator.appName.toLowerCase() == "netscape") && (parseFloat(navigator.appVersion) < 5.0)) {

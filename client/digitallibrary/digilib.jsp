@@ -18,17 +18,15 @@ public void jspInit() {
 %>
 
 <%
-// check if authentication is needed and redirect if necessary
-docBean.doAuthentication(request, response);
-
 // parsing the query
 // -----------------
 
-digilib.servlet.DigilibRequest dlRequest = new digilib.servlet.DigilibRequest();
-// fill the request with the old format query string
-dlRequest.setWithOldString(request.getQueryString());
+digilib.servlet.DigilibRequest dlRequest = new digilib.servlet.DigilibRequest(request);
+// check if authentication is needed and redirect if necessary
+docBean.doAuthentication(dlRequest, response);
+
 // add number of pages
-dlRequest.setPt(docBean.getNumPages(request));
+dlRequest.setPt(docBean.getNumPages(dlRequest));
 // retrieve request in new paramter format 
 String query = "dlImage.jsp?" + dlRequest.getAsString();
 %>

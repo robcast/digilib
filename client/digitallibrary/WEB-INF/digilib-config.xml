@@ -13,12 +13,18 @@
        Directories with low-resolution images are first in list. -->
   <parameter name="basedir-list" value="/docuserver/scaled/small:/docuserver/images:/docuserver/scans/quellen" />
 
+  <!-- Java class to use for image operations -->
+  <parameter name="docuimage-class" value="digilib.image.JAIDocuImage" />
+
+  <!-- is sending whole image files with mo=file allowed? -->
+  <parameter name="sendfile-allowed" value="true" />
+
   <!-- Restrict access to authorized users.
        User authentication and roles are provided by the servlet container 
        (see tomcat-users.xml).
        Authorization for resources (directories) is evaluated by the servlet 
        (see auth-file). -->
-  <parameter name="use-authorization" value="false" />
+  <parameter name="use-authorization" value="true" />
 
   <!-- 	  URL location of XML file with authorization requirements. -->
   <parameter name="auth-file" value="/docuserver/www/digitallibrary/WEB-INF/digilib-auth.xml" />

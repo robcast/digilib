@@ -28,7 +28,7 @@ function redirect() {
 } else {
 
 digilib.servlet.DigilibRequest dlRequest = new digilib.servlet.DigilibRequest();
-// default values for parameters
+/* default values for parameters
 dlRequest.setFn("/");					// url of the page/document
 dlRequest.setPn(1);					// page number
 dlRequest.setWs(1);					// scale factor
@@ -38,12 +38,9 @@ dlRequest.setWx(0);					// left edge of image (float from 0 to 1)
 dlRequest.setWy(0);					// top edge in image (float from 0 to 1)
 dlRequest.setWw(1);					// width of image (float from 0 to 1)
 dlRequest.setWh(1);					// height of image (float from 0 to 1)
+*/
 // overrriding default parameters with provided parameters from query-string
 dlRequest.setWithRequest(request);
-
-//String imageLocation = "http://" + request.getServerName() + "/docuserver/digitallibrary/servlet/Scaler/" + fn + "?pn=" + pn + "&ws=" + ws + "&mo=" + mo + "&wx=" + wx + "&wy=" + wy + "&ww=" + ww + "&wh=" + wh + "&dw=" + dw + "&dh=" + dh;
-
-String baseUrl = dlRequest.getBaseURL();
 
 String imageLocation = dlRequest.getBaseURL() + "/servlet/Scaler/?" + dlRequest.getAsString();
 %>
@@ -74,7 +71,7 @@ document.write('<script src="modules\/pagesTotal.js"><\/script>');
 
 </script>
 </head>
-<body bgcolor="#666666" onload='init_pagesTotal("<%= dlRequest.getFn() %>", "<%= dlRequest.getPn() %>", "<%= dlRequest.getWs() %>", "<%= dlRequest.getMo() %>", "<%= dlRequest.getMk() %>", "<%= dlRequest.getWx() %>", "<%= dlRequest.getWy() %>", "<%= dlRequest.getWw() %>", "<%= dlRequest.getWh() %>", "<%= dlRequest.getPt() %>")'>
+<body bgcolor="#666666" onload='init_pagesTotal("<%= dlRequest.getFilePath() %>", "<%= dlRequest.getPn() %>", "<%= dlRequest.getWs() %>", "<%= dlRequest.getMo() %>", "<%= dlRequest.getMk() %>", "<%= dlRequest.getWx() %>", "<%= dlRequest.getWy() %>", "<%= dlRequest.getWw() %>", "<%= dlRequest.getWh() %>", "<%= dlRequest.getPt() %>")'>
 
 <div id="lay1" style="position: absolute; left: 10px; top: 10px; visibility: visible"><img name="pic" src="<%= imageLocation %>" border="0"></div>
 
