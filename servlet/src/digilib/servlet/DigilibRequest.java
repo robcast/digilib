@@ -296,7 +296,7 @@ public class DigilibRequest {
         }
         s = request.getParameter("wy");
         if (s != null) {
-            setWy(wy);
+            setWy(s);
         }
         s = request.getParameter("ww");
         if (s != null) {

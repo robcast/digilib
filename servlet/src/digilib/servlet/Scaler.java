@@ -82,7 +82,7 @@ public class Scaler extends HttpServlet {
     baseDirs = servletOp.tryToGetPathArray(baseDirList, baseDirs);
     // use authentication information
     String useAuth = servletOp.tryToGetInitParam("use-authorization", "true");
-    if ((useAuth.indexOf("false") > 0)||(useAuth.indexOf("FALSE") > 0)) {
+    if ((useAuth.indexOf("false") > -1)||(useAuth.indexOf("FALSE") > -1)) {
       useAuthentication = false;
     } else {
       useAuthentication = true;

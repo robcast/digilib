@@ -37,6 +37,8 @@ public class DocumentBean implements AuthOps {
   private AuthOps authOp;
   // FileOps object
   private FileOps fileOp = new FileOps(util);
+  // use authorization database
+  boolean useAuthentication = true;
 
   // base directories in order of preference (prescaled versions first)
   private String[] baseDirs = {"/docuserver/scaled/small", "/docuserver/images", "/docuserver/scans/quellen"};
@@ -60,7 +62,7 @@ public class DocumentBean implements AuthOps {
     baseDirs = servletOp.tryToGetPathArray(bl, baseDirs);
     util.dprintln(3, "basedir-list: "+bl);
     
-    /**
+    /*
      *  auth-url-path : part of URL to indicate authenticated access
      */
     String au = servletOp.tryToGetInitParam("auth-url-path", null);
@@ -68,18 +70,24 @@ public class DocumentBean implements AuthOps {
       authURLpath = au;
       util.dprintln(3, "auth-url-path: "+au);
     }
-    /**
+    /*
      *  authentication
      */
-    try {
-      // DB version
-      //private AuthOps authOp = new DBAuthOpsImpl(util);
-      // XML version
-      String cp = servletOp.tryToGetInitParam("auth-file", "/docuserver/www/digitallibrary/WEB-INF/digilib-auth.xml");
-      util.dprintln(3, "auth-file: "+cp);
-      authOp = new XMLAuthOps(util, cp);
-    } catch (AuthOpException e) {
-      throw new ServletException(e);
+    String useAuth = servletOp.tryToGetInitParam("use-authorization", "true");
+    if ((useAuth.indexOf("false") > -1)||(useAuth.indexOf("FALSE") > -1)) {
+      useAuthentication = false;
+    } else {
+      useAuthentication = true;
+      try {
+          // DB version
+          //private AuthOps authOp = new DBAuthOpsImpl(util);
+          // XML version
+          String cp = servletOp.tryToGetInitParam("auth-file", "/docuserver/www/digitallibrary/WEB-INF/digilib-auth.xml");
+          util.dprintln(3, "auth-file: "+cp);
+          authOp = new XMLAuthOps(util, cp);
+        } catch (AuthOpException e) {
+          throw new ServletException(e);
+        }
     }
   }
 
@@ -106,12 +114,12 @@ public class DocumentBean implements AuthOps {
    */
   public boolean isAuthRequired(HttpServletRequest request) throws AuthOpException {
     util.dprintln(10, "isAuthRequired");
-    return authOp.isAuthRequired(getDocuPath(request), request);
+    return useAuthentication ? authOp.isAuthRequired(getDocuPath(request), request) : false;
   }
 
   public boolean isAuthRequired(String filepath, HttpServletRequest request) throws AuthOpException {
     util.dprintln(10, "isAuthRequired");
-    return authOp.isAuthRequired(filepath, request);
+    return useAuthentication ? authOp.isAuthRequired(filepath, request) : false;
   }
 
   /**
@@ -119,12 +127,12 @@ public class DocumentBean implements AuthOps {
    */
   public boolean isAuthorized(HttpServletRequest request) throws AuthOpException {
     util.dprintln(10, "isAuthorized");
-    return authOp.isAuthorized(getDocuPath(request), request);
+    return useAuthentication ? authOp.isAuthorized(getDocuPath(request), request) : true;
   }
 
   public boolean isAuthorized(String filepath, HttpServletRequest request) throws AuthOpException {
     util.dprintln(10, "isAuthorized");
-    return authOp.isAuthorized(filepath, request);
+    return useAuthentication ? authOp.isAuthorized(filepath, request) : true;
   }
 
   /**
@@ -133,7 +141,7 @@ public class DocumentBean implements AuthOps {
    */
   public List rolesForPath(String filepath, HttpServletRequest request) throws AuthOpException {
     util.dprintln(10, "rolesForPath");
-    return authOp.rolesForPath(filepath, request);
+    return useAuthentication ? authOp.rolesForPath(filepath, request) : null;
   }
 
   /**
@@ -141,7 +149,7 @@ public class DocumentBean implements AuthOps {
    */
   public boolean isRoleAuthorized(List roles, HttpServletRequest request) {
     util.dprintln(10, "isRoleAuthorized");
-    return authOp.isRoleAuthorized(roles, request);
+    return useAuthentication ? authOp.isRoleAuthorized(roles, request) : true;
   }
 
   /**
