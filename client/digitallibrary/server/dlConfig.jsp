@@ -65,6 +65,19 @@ digilib.io.DocuDirCache dirCache = (digilib.io.DocuDirCache) dlConfig.getValue("
 %>
 </table>
 
+<h2>Threads</h2>
+
+<table>
+  <tr>
+    <td>currently waiting</td><td><b><%= digilib.servlet.DigilibWorker.getNumWaiting() %></b></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>currently running</td><td><b><%= digilib.servlet.DigilibWorker.getNumRunning() %></b></td>
+    <td></td>
+  </tr>
+</table>
+
 <h2>Directory cache</h2>
 
 <table>

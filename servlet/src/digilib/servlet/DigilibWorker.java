@@ -37,6 +37,8 @@ public abstract class DigilibWorker {
 
 	private static int runningThreads = 0;
 
+	private static int waitingThreads = 0;
+
 	public static Semaphore lock = new FIFOSemaphore(1);
 
 	protected boolean busy = false;
@@ -58,11 +60,14 @@ public abstract class DigilibWorker {
 	 * Do the work.
 	 */
 	public void run() {
+		logger.debug((++waitingThreads) + " waiting threads");
 		try {
 			lock.acquire();
+			waitingThreads--;
 		} catch (InterruptedException e) {
 			error = e;
 			busy = false;
+			waitingThreads--;
 			return;
 		}
 		logger.debug((++runningThreads) + " running threads");
@@ -122,5 +127,19 @@ public abstract class DigilibWorker {
 	 */
 	public static void setLock(Semaphore lock) {
 		DigilibWorker.lock = lock;
+	}
+	
+	/** The number of currently running threads (approximate).
+	 * @return
+	 */
+	public static int getNumRunning() {
+		return runningThreads;
+	}
+
+	/** The number of currently waiting threads (approximate).
+	 * @return
+	 */
+	public static int getNumWaiting() {
+		return waitingThreads;
 	}
 }
