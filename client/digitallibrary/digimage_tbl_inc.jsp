@@ -2,6 +2,8 @@
 // retrieve objects from context
 digilib.servlet.DocumentBean docBean = (digilib.servlet.DocumentBean) pageContext.getAttribute("docBean", pageContext.REQUEST_SCOPE);
 digilib.servlet.DigilibRequest dlRequest = docBean.getRequest();
+String ua = request.getHeader("User-Agent");
+boolean isN4 = ((ua.indexOf("Mozilla/4.") > -1)&&(ua.indexOf("MSIE") == -1));
 %>
 <table border="0"  cellpadding="0" cellspacing="0">
   <tr>
@@ -19,15 +21,27 @@ digilib.servlet.DigilibRequest dlRequest = docBean.getRequest();
         %><a href="javascript:moveBy(-0.5, 0)"><img src="img/left.gif" border="0" /></a><%
       }
       %></td>
-      <td>
-<div id="scaler" style="visibility:visible">
+	  <td>
+<%
+	  if(isN4) {
+	      %><ilayer name="scaler"><%
+		  } else {
+	      %><div id="scaler" style="visibility:visible"><%
+		  }
+%>
 <script type="text/javascript">
 var ps = bestPicSize(getElement('scaler'), 10);
 document.write('<img id="pic" src="<%=
   dlRequest.getAsString("base.url") + "/servlet/Scaler?" + dlRequest.getAsString('s')
 %>&dw='+ps.width+'&dh='+ps.height+'" />');
 </script>
-</div>
+<% 
+    if(isN4) {
+	%></ilayer><%
+	    } else {
+	%></div><%
+	    }
+%>
     </td>
     <td valign="center"><%
       if (docBean.canMoveRight()) {
