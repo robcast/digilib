@@ -20,13 +20,20 @@
 
 package digilib.servlet;
 
-import java.util.*;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import java.util.List;
 
-import digilib.*;
-import digilib.io.*;
-import digilib.auth.*;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import digilib.Utils;
+import digilib.auth.AuthOpException;
+import digilib.auth.AuthOps;
+import digilib.io.DocuDirCache;
+import digilib.io.DocuDirectory;
+import digilib.io.FileOps;
 
 public class DocumentBean {
 
@@ -38,6 +45,8 @@ public class DocumentBean {
 	private FileOps fileOp = new FileOps(util);
 	// use authorization database
 	private boolean useAuthentication = true;
+	// path to add for authenticated access
+	private String authURLPath = "";
 	// DocuDirCache
 	private DocuDirCache dirCache = null;
 
@@ -80,13 +89,14 @@ public class DocumentBean {
 		// get util
 		util = dlConfig.getUtil();
 		// get cache
-		dirCache = dlConfig.getDirCache();
+		dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 
 		/*
 		 *  authentication
 		 */
-		useAuthentication = dlConfig.isUseAuthentication();
-		authOp = dlConfig.getAuthOp();
+		useAuthentication = dlConfig.getAsBoolean("use-authorization");
+		authOp = (AuthOps) dlConfig.getValue("servlet.auth.op");
+		authURLPath = dlConfig.getAsString("auth-url-path");
 	}
 
 	/**
@@ -147,7 +157,7 @@ public class DocumentBean {
 				util.dprintln(3, "auth required, redirect");
 				// we are not yet authenticated -> redirect
 				response.sendRedirect(
-					dlConfig.getAuthURLPath()
+					authURLPath
 						+ ((HttpServletRequest) request.getServletRequest())
 							.getServletPath()
 						+ "?"
@@ -172,7 +182,10 @@ public class DocumentBean {
 	 */
 	public int getNumPages(DigilibRequest request) throws Exception {
 		util.dprintln(10, "getNumPages");
-		DocuDirectory dd = (dirCache != null) ? dirCache.getDirectory(request.getFilePath()) : null;
+		DocuDirectory dd =
+			(dirCache != null)
+				? dirCache.getDirectory(request.getFilePath())
+				: null;
 		if (dd != null) {
 			return dd.size();
 		}

@@ -58,7 +58,7 @@ import digilib.io.FileOps;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.15b1";
+	public static final String dlVersion = "1.16a1";
 
 	// Utils instance with debuglevel
 	Utils util;
@@ -70,6 +70,17 @@ public class Scaler extends HttpServlet {
 	ServletOps servletOp;
 	// DocuDirCache instance
 	DocuDirCache dirCache;
+	
+	// deny image file
+	File denyImgFile;
+	// error image file
+	File errorImgFile;
+	// subsampling before scaling
+	float minSubsample = 2f;
+	// send files as is?
+	boolean sendFileAllowed = true;
+	// default scaling quality
+	int defaultQuality = 1;
 
 	// DigilibConfiguration instance
 	DigilibConfiguration dlConfig;
@@ -90,6 +101,7 @@ public class Scaler extends HttpServlet {
 
 		// Debuggin!
 		//TCTool tctool = new TCTool();
+
 		System.out.println(
 			"***** Digital Image Library Servlet (version "
 				+ dlVersion
@@ -110,19 +122,22 @@ public class Scaler extends HttpServlet {
 				throw new ServletException(e);
 			}
 		}
-		// set the servlet version
-		dlConfig.setServletVersion(dlVersion);
 		// first we need an Utils
 		util = dlConfig.getUtil();
 		// set our AuthOps
-		useAuthentication = dlConfig.isUseAuthentication();
-		authOp = dlConfig.getAuthOp();
+		useAuthentication = dlConfig.getAsBoolean("use-authorization");
+		authOp = (AuthOps) dlConfig.getValue("servlet.auth.op");
 		// FileOps instance
 		fileOp = new FileOps(util);
 		// AuthOps instance
 		servletOp = new ServletOps(util);
 		// DocuDirCache instance
-		dirCache = dlConfig.getDirCache();
+		dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
+		denyImgFile = new File(dlConfig.getAsString("denied-image"));
+		errorImgFile = new File(dlConfig.getAsString("error-image"));
+		sendFileAllowed = dlConfig.getAsBoolean("sendfile-allowed");
+		minSubsample = dlConfig.getAsFloat("subsample-minimum");
+		defaultQuality = dlConfig.getAsInt("default-quality");
 	}
 
 	/** Process the HTTP Get request*/
@@ -183,7 +198,7 @@ public class Scaler extends HttpServlet {
 		// use hires images only
 		boolean hiresOnly = false;
 		// interpolation to use for scaling
-		int scaleQual = 1;
+		int scaleQual = defaultQuality;
 		// send html error message (or image file)
 		boolean errorMsgHtml = false;
 		// mirror the image
@@ -265,7 +280,7 @@ public class Scaler extends HttpServlet {
 		} else if (dlRequest.isOption("file")) {
 			scaleToFit = false;
 			absoluteScale = false;
-			if (dlConfig.isSendFileAllowed()) {
+			if (sendFileAllowed) {
 				cropToFit = false;
 				sendFile = true;
 			} else {
@@ -336,9 +351,7 @@ public class Scaler extends HttpServlet {
 								"ERROR: Unauthorized access!",
 								response);
 						} else {
-							servletOp.sendFile(
-								new File(dlConfig.getDenyImgFileName()),
-								response);
+							servletOp.sendFile(denyImgFile, response);
 						}
 						return;
 					}
@@ -445,7 +458,8 @@ public class Scaler extends HttpServlet {
 			if ((loresOnly
 				&& imageSendable
 				&& fileToLoad.getSize().isSmallerThan(expectedSourceSize))
-				|| (!(loresOnly || hiresOnly) && fileToLoad.getSize().fitsIn(expectedSourceSize))
+				|| (!(loresOnly || hiresOnly)
+					&& fileToLoad.getSize().fitsIn(expectedSourceSize))
 				|| sendFile) {
 
 				util.dprintln(1, "Sending File as is.");
@@ -630,7 +644,7 @@ public class Scaler extends HttpServlet {
 					if (scaleQual > 0) {
 						subsamp =
 							Math.max(
-								Math.floor(subf / dlConfig.getMinSubsample()),
+								Math.floor(subf / minSubsample),
 								1d);
 					} else {
 						subsamp = Math.floor(subf);
@@ -762,9 +776,7 @@ public class Scaler extends HttpServlet {
 						"ERROR: File IO Error: " + e,
 						response);
 				} else {
-					servletOp.sendFile(
-						new File(dlConfig.getErrorImgFileName()),
-						response);
+					servletOp.sendFile(errorImgFile, response);
 				}
 			} catch (FileOpException ex) {
 			} // so we don't get a loop
@@ -776,9 +788,7 @@ public class Scaler extends HttpServlet {
 						"ERROR: Authorization error: " + e,
 						response);
 				} else {
-					servletOp.sendFile(
-						new File(dlConfig.getErrorImgFileName()),
-						response);
+					servletOp.sendFile(errorImgFile, response);
 				}
 			} catch (FileOpException ex) {
 			} // so we don't get a loop
@@ -790,9 +800,7 @@ public class Scaler extends HttpServlet {
 						"ERROR: Image Operation Error: " + e,
 						response);
 				} else {
-					servletOp.sendFile(
-						new File(dlConfig.getErrorImgFileName()),
-						response);
+					servletOp.sendFile(errorImgFile, response);
 				}
 			} catch (FileOpException ex) {
 			} // so we don't get a loop
@@ -805,9 +813,7 @@ public class Scaler extends HttpServlet {
 						"ERROR: Other Image Operation Error: " + e,
 						response);
 				} else {
-					servletOp.sendFile(
-						new File(dlConfig.getErrorImgFileName()),
-						response);
+					servletOp.sendFile(errorImgFile, response);
 				}
 			} catch (FileOpException ex) {
 			} // so we don't get a loop
