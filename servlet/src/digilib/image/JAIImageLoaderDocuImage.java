@@ -34,7 +34,6 @@ import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.JAI;
-import javax.media.jai.ParameterBlockJAI;
 
 import digilib.io.DocuFile;
 import digilib.io.FileOpException;
@@ -93,34 +92,6 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 		}
 	}
 
-	/* Load an image file into the Object. */
-	public void loadSubimage(File f, Rectangle region, int prescale)
-		throws FileOpException {
-		System.gc();
-		try {
-			if ((reader == null) || (imgFile != f)) {
-				preloadImage(f);
-			}
-			ImageInputStream istream = (ImageInputStream) reader.getInput();
-			ImageReadParam readParam = reader.getDefaultReadParam();
-			readParam.setSourceRegion(region);
-			readParam.setSourceSubsampling(prescale, prescale, 0, 0);
-			ParameterBlockJAI pb = new ParameterBlockJAI("imageread");
-			pb.setParameter("Input", istream);
-			pb.setParameter("ReadParam", readParam);
-			pb.setParameter("Reader", reader);
-			img = JAI.create("imageread", pb);
-		} catch (IOException e) {
-			util.dprintln(3, "ERROR(loadImage): unable to load file");
-			throw new FileOpException("Unable to load File!");
-		}
-		if (img == null) {
-			util.dprintln(3, "ERROR(loadImage): unable to load file");
-			throw new FileOpException("Unable to load File!");
-		}
-		imgFile = f;
-	}
-
 	/* Get an ImageReader for the image file. */
 	public void preloadImage(File f) throws IOException {
 		System.gc();
@@ -133,6 +104,37 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 			util.dprintln(3, "ERROR(loadImage): unable to load file");
 			throw new FileOpException("Unable to load File!");
 		}
+	}
+
+	/* Load an image file into the Object. */
+	public void loadSubimage(File f, Rectangle region, int prescale)
+		throws FileOpException {
+		System.gc();
+		try {
+			if ((reader == null) || (imgFile != f)) {
+				preloadImage(f);
+			}
+			ImageInputStream istream = (ImageInputStream) reader.getInput();
+			ImageReadParam readParam = reader.getDefaultReadParam();
+			readParam.setSourceRegion(region);
+			readParam.setSourceSubsampling(prescale, prescale, 0, 0);
+			img = reader.read(0, readParam);
+			/* JAI imageread seems to ignore the readParam :-(
+			ParameterBlockJAI pb = new ParameterBlockJAI("imageread");
+			pb.setParameter("Input", istream);
+			pb.setParameter("ReadParam", readParam);
+			pb.setParameter("Reader", reader);
+			img = JAI.create("imageread", pb);
+			*/
+		} catch (IOException e) {
+			util.dprintln(3, "ERROR(loadImage): unable to load file");
+			throw new FileOpException("Unable to load File!");
+		}
+		if (img == null) {
+			util.dprintln(3, "ERROR(loadImage): unable to load file");
+			throw new FileOpException("Unable to load File!");
+		}
+		imgFile = f;
 	}
 
 	/* Write the current image to an OutputStream. */
@@ -154,7 +156,6 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 			}
 			// render output
 			JAI.create("ImageWrite", pb3);
-
 		} catch (IOException e) {
 			throw new FileOpException("Error writing image.");
 		}

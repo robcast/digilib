@@ -27,7 +27,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import javax.media.jai.*;
+import javax.media.jai.BorderExtender;
+import javax.media.jai.Interpolation;
+import javax.media.jai.JAI;
+import javax.media.jai.KernelJAI;
+import javax.media.jai.ParameterBlockJAI;
 import javax.media.jai.operator.TransposeDescriptor;
 import javax.media.jai.operator.TransposeType;
 
@@ -126,22 +130,28 @@ public class JAIDocuImage extends DocuImageImpl {
 
 	/* scales the current image */
 	public void scale(double scale) throws ImageOpException {
-		float sf = (float) scale;
-		// setup scale
-		ParameterBlock param = new ParameterBlock();
-		param.addSource(img);
-		param.add(sf);
-		param.add(sf);
-		param.add(0f);
-		param.add(0f);
-		param.add(interpol);
-		// hint with border extender
-		RenderingHints hint =
-			new RenderingHints(
-				JAI.KEY_BORDER_EXTENDER,
-				BorderExtender.createInstance(BorderExtender.BORDER_COPY));
-
-		RenderedImage scaledImg = JAI.create("scale", param, hint);
+		RenderedImage scaledImg = null;
+		if ((scale < 1)
+			&& (img.getColorModel().getPixelSize() == 1)
+			&& (quality > 0)) {
+			/*
+			 * "SubsampleBinaryToGray" for downscaling BW
+			 */
+			scaledImg = scaleBinary((float) scale, img);
+		} else if ((scale <= 0.5) && (quality > 1)) {
+			/*
+			 * blur and "Scale" for downscaling color images
+			 */
+			int subsample = (int) Math.floor(1 / scale);
+			RenderedImage prescaledImg = img;
+			prescaledImg = blur(subsample, img);
+			scaledImg = scaleAll((float) scale, prescaledImg);
+		} else {
+			/*
+			 * "Scale" for the rest
+			 */
+			scaledImg = scaleAll((float) scale, img);
+		}
 
 		//DEBUG
 		util.dprintln(
@@ -158,6 +168,68 @@ public class JAIDocuImage extends DocuImageImpl {
 			throw new ImageOpException("Unable to scale");
 		}
 		img = scaledImg;
+	}
+
+	private RenderedImage scaleAll(float scale, RenderedImage image) {
+		RenderedImage scaledImg;
+		//DEBUG
+		util.dprintln(4, "scaleAll: " + scale);
+		ParameterBlockJAI param = new ParameterBlockJAI("Scale");
+		param.addSource(image);
+		param.setParameter("xScale", scale);
+		param.setParameter("yScale", scale);
+		param.setParameter("interpolation", interpol);
+		// hint with border extender
+		RenderingHints hint =
+			new RenderingHints(
+				JAI.KEY_BORDER_EXTENDER,
+				BorderExtender.createInstance(BorderExtender.BORDER_COPY));
+		// scale
+		scaledImg = JAI.create("Scale", param, hint);
+		return scaledImg;
+	}
+
+	private RenderedImage blur(int radius, RenderedImage image) {
+		RenderedImage blurredImg;
+		//DEBUG
+		util.dprintln(4, "blur: " + radius);
+		int klen = Math.max(radius, 2);
+		int ksize = klen * klen;
+		float f = 1f / ksize;
+		float[] kern = new float[ksize];
+		for (int i = 0; i < ksize; i++) {
+			kern[i] = f;
+		}
+		KernelJAI blur = new KernelJAI(klen, klen, kern);
+		ParameterBlockJAI param = new ParameterBlockJAI("Convolve");
+		param.addSource(image);
+		param.setParameter("kernel", blur);
+		// hint with border extender
+		RenderingHints hint =
+			new RenderingHints(
+				JAI.KEY_BORDER_EXTENDER,
+				BorderExtender.createInstance(BorderExtender.BORDER_COPY));
+		blurredImg = JAI.create("Convolve", param, hint);
+		return blurredImg;
+	}
+
+	RenderedImage scaleBinary(float scale, RenderedImage image) {
+		RenderedImage scaledImg;
+		//DEBUG
+		util.dprintln(4, "scaleBinary: " + scale);
+		ParameterBlockJAI param =
+			new ParameterBlockJAI("SubsampleBinaryToGray");
+		param.addSource(image);
+		param.setParameter("xScale", scale);
+		param.setParameter("yScale", scale);
+		// hint with border extender
+		RenderingHints hint =
+			new RenderingHints(
+				JAI.KEY_BORDER_EXTENDER,
+				BorderExtender.createInstance(BorderExtender.BORDER_COPY));
+		// scale
+		scaledImg = JAI.create("SubsampleBinaryToGray", param, hint);
+		return scaledImg;
 	}
 
 	/* crops the current image */

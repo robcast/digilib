@@ -58,7 +58,7 @@ import digilib.io.FileOps;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.12b2";
+	public static final String dlVersion = "1.12b3";
 
 	// Utils instance with debuglevel
 	Utils util;
@@ -178,7 +178,7 @@ public class Scaler extends HttpServlet {
 		// use hires images (if autoRes == false) 
 		boolean hiresOnly = false;
 		// interpolation to use for scaling
-		int scaleQual = 0;
+		int scaleQual = 1;
 		// send html error message (or image file)
 		boolean errorMsgHtml = false;
 		// mirror the image
