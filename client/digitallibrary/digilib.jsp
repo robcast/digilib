@@ -103,17 +103,27 @@ switch (dlRequest.getAsInt("lv")) {
 
 function redirect() {
 
-  if (document.body) {
-
-    // internet explorer + opera
-    client = "&dw=" + (document.body.clientWidth-30) + "&dh=" + (document.body.clientHeight-30);
-
-  } else {
-
-    // mozilla-browsers (netscape 4.xx, netscape 6.xx, etc.)
-    client = "&dw=" + (innerWidth-30) + "&dh=" + (innerHeight-30);
-
+  var wwidth, wheight;
+  if (self.innerHeight) // all except Explorer
+  {
+      wwidth = self.innerWidth;
+      wheight = self.innerHeight;
   }
+  else if (document.documentElement && document.documentElement.clientHeight)
+  // Explorer 6 Strict Mode
+  {
+      wwidth = document.documentElement.clientWidth;
+      wheight = document.documentElement.clientHeight;
+  }
+  else if (document.body) // other Explorers
+  {
+      wwidth = document.body.clientWidth;
+      wheight = document.body.clientHeight;
+  }
+
+  client = "&dw=" + (wwidth-30) + "&dh=" + (wheight-30);
+  //alert("CLIENT: "+client);
+
 <%
   if (dlRequest.isRDF()){
     String strAllParams=dlRequest.getAsString();
@@ -145,7 +155,7 @@ function redirect() {
 
 <html>
 <head>
-<title>Digital Document Library - Alcatraz (Level 1)</title>
+<title>Digital Document Library (L1)</title>
 
 <script src="navigation.js" type="text/javascript"> </script>
 
@@ -226,13 +236,13 @@ newParameter('ddpiy', '<%= dlRequest.getAsString("ddpiy") %>', '', 9);
 
 <html>
 <head>
-<title>Digital Document Library - Alcatraz (Level 2)</title>
+<title>Digital Document Library (L2)</title>
 </head>
 
 <frameset cols="*,90" border="0">
   <frame name="mainFrame" src="<%= query %>" scrolling="auto">
   <frameset rows="20,*" border="0">
-    <frame name="pageFrame" src="about:blank" scrolling="no" noresize>
+    <frame name="pageFrame" src="empty.html" scrolling="no" noresize>
     <frame name="rightFrame" src="dlMenu.html" scrolling="no" noresize>
   </frameset>
 </frameset>
