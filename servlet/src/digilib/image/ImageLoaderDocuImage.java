@@ -467,8 +467,10 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	public void dispose() {
 		// we must dispose the ImageReader because it keeps the filehandle
 		// open!
-		reader.dispose();
-		reader = null;
+		if (reader != null) {
+			reader.dispose();
+			reader = null;
+		}
 		img = null;
 	}
 
