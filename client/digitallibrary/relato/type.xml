@@ -70,4 +70,14 @@
     <button name="relation" command="navigation.relation()" />
   </buttons>
 
+  <protected>
+    <frame name="navigation" />
+    <frame name="links" />
+    <frame name="text" />
+  </protected>
+
+  <default>
+    <frame name="mainFrame" />
+  </default>
+
 </relato>

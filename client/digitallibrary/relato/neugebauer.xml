@@ -74,4 +74,12 @@
     <button name="database" command="navigation.database()" />
   </buttons>
 
+  <protected>
+    <frame name="navigation" />
+  </protected>
+
+  <default>
+    <frame name="mainFrame" />
+  </default>
+
 </relato>

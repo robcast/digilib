@@ -74,4 +74,8 @@
     <button name="e-publications" command="navigation.publications()" />
   </buttons>
 
+  <protected>
+    <frame name="navigation" />
+  </protected>
+
 </relato>

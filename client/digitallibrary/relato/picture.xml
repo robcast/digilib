@@ -73,6 +73,18 @@
     <button name="work" command="navigation.work()" />
     <button name="type" command="navigation.type()" />
     <button name="relation" command="navigation.relation()" />
+    <!--<button name="new window" command="navigation.newwindow()" />-->
   </buttons>
+
+  <protected>
+    <frame name="navigation" />
+    <frame name="picturelabel" />
+    <frame name="title" />
+    <frame name="text" />
+  </protected>
+
+  <default>
+    <frame name="mainFrame" />
+  </default>
 
 </relato>

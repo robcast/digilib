@@ -3,16 +3,10 @@
 <relato>
 
   <frames>
-    <frameset cols="0,50%,50%" border="0" frameborder="0" framespacing="0">
-      <frame name="navigation" />
-      <frameset rows="70%,30%" border="0" frameborder="0" framespacing="0">
-        <frame name="mainFrame" />
-        <frame name="links" />
-      </frameset>
-      <frameset rows="15%,85%" border="0" frameborder="0" framespacing="0">
-        <frame name="title" />
-        <frame name="text" />
-      </frameset>
+    <frameset cols="0,256,*" border="1" frameborder="1" framespacing="0">
+      <frame name="navigation" src="http://pythia2.unibe.ch:8080/docuserver/digitallibrary/contexto/contexto.jsp?htmlURL=http://www.philoscience.unibe.ch/docuserver/echo/projekte/neugebauer/navigation.html" />
+      <frame name="digicat" />
+      <frame name="mainFrame" />
       <noframes>
         In order to use <i>relato</i> you need to have a frame capable browser.
       </noframes>
@@ -21,15 +15,20 @@
   
   <functions>
     <function name="getParameter" quiet="true">
+      <validInFrame name="digicat" />
       <validInFrame name="mainFrame" />
     </function>
     <function name="listParameters" quiet="true">
+      <validInFrame name="digicat" />
       <validInFrame name="mainFrame" />
     </function>
     <function name="listParametersAsString" quiet="true">
+      <validInFrame name="digicat" />
       <validInFrame name="mainFrame" />
     </function>
     <function name="page">
+      <validInFrame name="digicat" />
+      <validInFrame name="mainFrame" />
     </function>
     <function name="zoomPoint">
       <validInFrame name="mainFrame" />
@@ -38,8 +37,10 @@
       <validInFrame name="mainFrame" />
     </function>
     <function name="mark">
+      <validInFrame name="mainFrame" />
     </function>
     <function name="ref">
+      <validInFrame name="mainFrame" />
     </function>
     <function name="zoomOut">
       <validInFrame name="mainFrame" />
@@ -48,17 +49,22 @@
       <validInFrame name="mainFrame" />
     </function>
     <function name="moveTo">
+      <validInFrame name="mainFrame" />
     </function>
     <function name="scale">
       <validInFrame name="mainFrame" />
     </function>
     <function name="brightnessContrast">
+      <validInFrame name="mainFrame" />
     </function>
     <function name="mirror">
+      <validInFrame name="mainFrame" />
     </function>
     <function name="rotation">
+      <validInFrame name="mainFrame" />
     </function>
     <function name="colors">
+      <validInFrame name="mainFrame" />
     </function>
     <function name="pixelByPixel">
       <validInFrame name="mainFrame" />
@@ -68,21 +74,8 @@
     </function>
   </functions>
 
-  <buttons>
-    <button name="home" command="navigation.home()" />
-    <!--
-    <button name="description" command="navigation.description()" />
-    -->
-    <!--
-    <button name="new window" command="navigation.newwindow()" />
-    -->
-  </buttons>
-
   <protected>
-    <frame name="navigation" />
-    <frame name="links" />
-    <frame name="title" />
-    <frame name="text" />
+    <frame name="digicat" />
   </protected>
 
   <default>
