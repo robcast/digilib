@@ -115,7 +115,7 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 	public void loadSubimage(ImageFile f, Rectangle region, int prescale)
 		throws FileOpException {
 		logger.debug("loadSubimage: "+f.getFile());
-		System.gc();
+		//System.gc();
 		try {
 			if ((reader == null) || (imgFile != f.getFile())) {
 				getReader(f);
