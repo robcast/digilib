@@ -24,7 +24,7 @@ function loadThumbTable() {
 	whichFrame.document.write('<style type="text/css">.myFont {font-family: sans-serif, Arial; font-size: 11px; color: #FFFFFF}</style>');
 	whichFrame.document.write('<script language="Javascript">');
 	whichFrame.document.write('function loadDigilib(idx) {');
-	whichFrame.document.write('linkRef = "http://' + location.host + '/docuserver/digitallibrary/digilib.html?' + parent.att[0] + '+" + idx;');
+	whichFrame.document.write('linkRef = "' + parent.baseUrl + '/digilib.jsp?' + parent.att[0] + '+" + idx;');
 	whichFrame.document.write('win = window.open(linkRef, "digilib");');
 	whichFrame.document.write('win.focus();');	
 	whichFrame.document.write('}');	
@@ -37,7 +37,7 @@ function loadThumbTable() {
 		whichFrame.document.write('<tr>');
 		for (j = 0; j < att[3]; j++) {
 			indexNr = parseInt(att[1])+i*parseInt(att[3])+j;
-			thumb  = "http://" + location.host + "/docuserver/digitallibrary/servlet/Scaler/"
+			thumb  = parent.baseUrl + "/servlet/Scaler/";
 			thumb += att[0] + "?" + "pn=" + indexNr + "&ws=1.0&mo=fit&dw=" + cellWidth + "&dh=" + (cellHeight-25);
 			whichFrame.document.write('<td align="center" valign="middle" width="' + cellWidth + '" height="' + cellHeight + '" class="myFont">');
 			whichFrame.document.write('<a href="javascript:loadDigilib(' + indexNr + ')">');

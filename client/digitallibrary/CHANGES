@@ -10,6 +10,13 @@ digilib.jsp       ->  digilib19.jsp
 
 CHANGES
 
+13.8.2002 - [different files] : roc
+
+- changed all hardcoded occurrences of /docuserver/digitallibrary to
+  work relative or take the path from the request URL. Introduced a
+  variable baseURL to hold the URL path (up to digilib.jsp etc.). Now
+  it should be possible to install digilib in other directories.
+
 20.05.2002 - navigation_o6.js : luginbuehl
 
 - Opera browser support done. the 'b'-key does not work currently, beause

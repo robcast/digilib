@@ -143,7 +143,7 @@ function page(keepArea) {
 
 
 function digicat() {
-	var url = "http://" + location.host + "/docuserver/digitallibrary/digicat.html?" + att[0] + "+" + att[1];
+	var url = "digicat.html?" + att[0] + "+" + att[1];
 	win = window.open(url, "digicat");
 	win.focus();
 }
@@ -151,7 +151,7 @@ function digicat() {
 
 function ref(refselect) {
 
-	var hyperlinkRef = "http://" + location.host + "/docuserver/digitallibrary/digilib.jsp?";
+	var hyperlinkRef = baseUrl + "digilib.jsp?";
 	hyperlinkRef += att[0] + "+" + att[1] + "+" + att[2] + "+" + att[3] + "+" + att[4];
 	
 	if ((att[5] != 0) || (att[6] != 0) || (att[7] != 1) || (att[8] != 1)) {

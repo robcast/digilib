@@ -32,7 +32,7 @@ helpText[7]  = "'zoom point'-button|Click on 'zoom point' then click into a poin
 helpText[8]  = "'zoom out'-button|To gain the original unzoomed picture, click on 'zoom out'.<br>Note that any set marks are still saved at their positions.";
 helpText[9]  = "'move to'-button|This button allows you change the center of a zoomed picture, while not changing the current zoom-factor.<br>Use: Click on the point in the picture you want to be the new center of the image.";
 helpText[10] = "'scale'-button|By clicking on one of the menu entries you can select the factor the currently displayed picture will be scaled.<br>Note: a scale factor of '1.0' means that the picture fits right into the working area, while '2.0' means that it will be twice as high and large.";
-helpText[11] = "'make pdf'-button|You can make a PDF with several pictures from this directory in it. Click the button and follow the instructions.";
+//helpText[11] = "'make pdf'-button|You can make a PDF with several pictures from this directory in it. Click the button and follow the instructions.";
 helpText[12] = "'?'-button|In its menu you are able change options like the visibility of this contextsensitive help, with 'Keep area' the program keeps its current area when changing to another page or with 'Fit GIFs' you can force to program to adjust the size of GIF-images to the working area.";
 
 
@@ -71,25 +71,27 @@ function checkAtt3() {
 <a href="javascript:parent.mainFrame.zoomOut()" onmouseover="overButton(8)" onmouseout="awayButton(8)"><img src="buttons/zoomout0.gif" width="73" height="30" border="0"></a><br>
 <a href="javascript:parent.mainFrame.moveTo()" onmouseover="overButton(9)" onmouseout="awayButton(9)"><img src="buttons/moveto0.gif" width="73" height="30" border="0"></a><br><br>
 <a href="javascript:hideMenu(); showMenu(2)" onmouseover="overButton(10)" onmouseout="awayButton(10)"><img src="buttons/scale0.gif" width="73" height="30" border="0"></a><br><br>
+<!-- 
 <a href="javascript:parent.mainFrame.makePDF()" onmouseover="overButton(11)" onmouseout="awayButton(11)"><img src="buttons/makepdf0.gif" width="73" height="30" border="0"></a><br><br>
+-->
 <a href="javascript:hideMenu(); showMenu(3)" onmouseover="overButton(12)" onmouseout="awayButton(12)"><img src="buttons/questionmark0.gif" width="73" height="30" border="0"></a>
 
-<div id="menu1" class="menu" style="top:211; left:31; width:54; height:33; clip:rect(0,54,33,0)"></div>
- <div id="menu11" class="item1" style="top:213"><center><a href="#" class="text" onClick="hideMenu(); parent.mainFrame.ref(0); return false;" onmouseover="overItem(11)" onmouseout="awayItem(11)">LaTeX</a></center></div>
- <div id="menu12" class="item1" style="top:228"><center><a href="#" class="text" onClick="hideMenu(); parent.mainFrame.ref(1); return false;" onmouseover="overItem(12)" onmouseout="awayItem(12)">HTML</a></center></div>
+<div id="menu1" class="menu" style="top:201; left:31; width:54; height:33; clip:rect(0,54,33,0)"></div>
+ <div id="menu11" class="item1" style="top:203"><center><a href="#" class="text" onClick="hideMenu(); parent.mainFrame.ref(0); return false;" onmouseover="overItem(11)" onmouseout="awayItem(11)">LaTeX</a></center></div>
+ <div id="menu12" class="item1" style="top:218"><center><a href="#" class="text" onClick="hideMenu(); parent.mainFrame.ref(1); return false;" onmouseover="overItem(12)" onmouseout="awayItem(12)">HTML</a></center></div>
 
-<div id="menu2" class="menu" style="top:399; left:41; width:44; height:93; clip:rect(0,44,93,0)"></div>
- <div id="menu21" class="item2" style="top:401"><center><a href="#" class="text" onClick="hideMenu(); parent.mainFrame.scale(0.7); return false;" onmouseover="overItem(21)" onmouseout="awayItem(21)">0.7</a></center></div>
- <div id="menu22" class="item2" style="top:416"><center><a href="#" class="text" onClick="hideMenu(); parent.mainFrame.scale(1.0); return false;" onmouseover="overItem(22)" onmouseout="awayItem(22)">1.0</a></center></div>
- <div id="menu23" class="item2" style="top:431"><center><a href="#" class="text" onClick="hideMenu(); parent.mainFrame.scale(1.5); return false;" onmouseover="overItem(23)" onmouseout="awayItem(23)">1.5</a></center></div>
- <div id="menu24" class="item2" style="top:446"><center><a href="#" class="text" onClick="hideMenu(); parent.mainFrame.scale(2.0); return false;" onmouseover="overItem(24)" onmouseout="awayItem(24)">2.0</a></center></div>
- <div id="menu25" class="item2" style="top:461"><center><a href="#" class="text" onClick="hideMenu(); parent.mainFrame.scale(2.5); return false;" onmouseover="overItem(25)" onmouseout="awayItem(25)">2.5</a></center></div>
- <div id="menu26" class="item2" style="top:476"><center><a href="#" class="text" onClick="hideMenu(); parent.mainFrame.scale(3.0); return false;" onmouseover="overItem(26)" onmouseout="awayItem(26)">3.0</a></center></div>
+<div id="menu2" class="menu" style="top:379; left:41; width:44; height:93; clip:rect(0,44,93,0)"></div>
+ <div id="menu21" class="item2" style="top:381"><center><a href="#" class="text" onClick="hideMenu(); parent.mainFrame.scale(0.7); return false;" onmouseover="overItem(21)" onmouseout="awayItem(21)">0.7</a></center></div>
+ <div id="menu22" class="item2" style="top:396"><center><a href="#" class="text" onClick="hideMenu(); parent.mainFrame.scale(1.0); return false;" onmouseover="overItem(22)" onmouseout="awayItem(22)">1.0</a></center></div>
+ <div id="menu23" class="item2" style="top:411"><center><a href="#" class="text" onClick="hideMenu(); parent.mainFrame.scale(1.5); return false;" onmouseover="overItem(23)" onmouseout="awayItem(23)">1.5</a></center></div>
+ <div id="menu24" class="item2" style="top:426"><center><a href="#" class="text" onClick="hideMenu(); parent.mainFrame.scale(2.0); return false;" onmouseover="overItem(24)" onmouseout="awayItem(24)">2.0</a></center></div>
+ <div id="menu25" class="item2" style="top:441"><center><a href="#" class="text" onClick="hideMenu(); parent.mainFrame.scale(2.5); return false;" onmouseover="overItem(25)" onmouseout="awayItem(25)">2.5</a></center></div>
+ <div id="menu26" class="item2" style="top:456"><center><a href="#" class="text" onClick="hideMenu(); parent.mainFrame.scale(3.0); return false;" onmouseover="overItem(26)" onmouseout="awayItem(26)">3.0</a></center></div>
 
-<div id="menu3" class="menu" style="top:490; left:1; width:84; height:48; clip:rect(0,84,48,0)"></div>
- <div id="menu31" class="item3" style="top:492"><center><a href="#" class="text" onclick="changeMark(31); hideMenu(); changeHelp(); return false;" onmouseover="overItem(31)" onmouseout="awayItem(31)"><img id="mark31" src="buttons/nomark.gif" border="0">Contexthelp</a></center></div>
- <div id="menu32" class="item3" style="top:507"><center><a href="#" class="text" onclick="changeMark(32); keepArea = !keepArea; return false;" onmouseover="overItem(32)" onmouseout="awayItem(32)"><img id="mark32" src="buttons/mark.gif" border="0">Keep&nbsp;area</a></center></div>
- <div id="menu33" class="item3" style="top:522"><center><a href="#" class="text" onclick="changeMark(33); (parent.mainFrame.att[3].indexOf('f') > -1) ? parent.mainFrame.att[3] = '' : parent.mainFrame.att[3] = 'fit'; parent.mainFrame.loadPicture(2, keepArea); return false;" onmouseover="overItem(33)" onmouseout="awayItem(33)"><img id="mark33" src="buttons/nomark.gif" border="0">Fit&nbsp;GIFs</a></center></div>
+<div id="menu3" class="menu" style="top:430; left:1; width:84; height:48; clip:rect(0,84,48,0)"></div>
+ <div id="menu31" class="item3" style="top:432"><center><a href="#" class="text" onclick="changeMark(31); hideMenu(); changeHelp(); return false;" onmouseover="overItem(31)" onmouseout="awayItem(31)"><img id="mark31" src="buttons/nomark.gif" border="0">Contexthelp</a></center></div>
+ <div id="menu32" class="item3" style="top:447"><center><a href="#" class="text" onclick="changeMark(32); keepArea = !keepArea; return false;" onmouseover="overItem(32)" onmouseout="awayItem(32)"><img id="mark32" src="buttons/mark.gif" border="0">Keep&nbsp;area</a></center></div>
+ <div id="menu33" class="item3" style="top:462"><center><a href="#" class="text" onclick="changeMark(33); (parent.mainFrame.att[3].indexOf('f') > -1) ? parent.mainFrame.att[3] = '' : parent.mainFrame.att[3] = 'fit'; parent.mainFrame.loadPicture(2, keepArea); return false;" onmouseover="overItem(33)" onmouseout="awayItem(33)"><img id="mark33" src="buttons/nomark.gif" border="0">Fit&nbsp;GIFs</a></center></div>
 
 
 <script language="Javascript">

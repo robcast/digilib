@@ -56,13 +56,25 @@ if (request.getParameter("dw") != null) dw = request.getParameter("dw");
 if (request.getParameter("dh") != null) dh = request.getParameter("dh");
 if (request.getParameter("pt") != null) pt = request.getParameter("pt");
 
-String imageLocation = "http://" + request.getServerName() + "/docuserver/digitallibrary/servlet/Scaler/" + fn + "?pn=" + pn + "&ws=" + ws + "&mo=" + mo + "&wx=" + wx + "&wy=" + wy + "&ww=" + ww + "&wh=" + wh + "&dw=" + dw + "&dh=" + dh;
+//String imageLocation = "http://" + request.getServerName() + "/docuserver/digitallibrary/servlet/Scaler/" + fn + "?pn=" + pn + "&ws=" + ws + "&mo=" + mo + "&wx=" + wx + "&wy=" + wy + "&ww=" + ww + "&wh=" + wh + "&dw=" + dw + "&dh=" + dh;
+
+String baseUrl = request.getRequestURL().toString();
+int eop = baseUrl.lastIndexOf("/");
+if (eop > 0) {
+    baseUrl = baseUrl.substring(0, eop);
+} else {
+    baseUrl = "http://" + request.getServerName() + "/docuserver/digitallibrary";
+}
+
+String imageLocation = baseUrl + "/servlet/Scaler/" + fn + "?pn=" + pn + "&ws=" + ws + "&mo=" + mo + "&wx=" + wx + "&wy=" + wy + "&ww=" + ww + "&wh=" + wh + "&dw=" + dw + "&dh=" + dh;
 
 %>
 
 <html>
 <head>
 <script language="JavaScript">
+
+var baseUrl = "<%= baseUrl %>";
 
 // browser version test to include the corresponding navigation-file
 if (navigator.userAgent.toLowerCase().indexOf("opera") > -1) {
@@ -80,7 +92,7 @@ if (navigator.userAgent.toLowerCase().indexOf("opera") > -1) {
 
 // add module to show the total number of pages (not browser dependant!)
 document.write('<script src="modules\/pagesTotal.js"><\/script>');
-document.write('<script src="modules\/pdfMaker.js"><\/script>');
+// document.write('<script src="modules\/pdfMaker.js"><\/script>');
 
 </script>
 </head>
