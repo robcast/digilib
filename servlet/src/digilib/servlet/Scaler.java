@@ -30,6 +30,7 @@ import digilib.io.*;
 import digilib.image.*;
 import digilib.auth.*;
 
+//import tilecachetool.*;
 
 //public class Scaler extends HttpServlet implements SingleThreadModel {
 public class Scaler extends HttpServlet {
@@ -61,6 +62,9 @@ public class Scaler extends HttpServlet {
   public void init(ServletConfig config) throws ServletException {
     super.init(config);
 
+    // Debuggin!
+    //TCTool tctool = new TCTool();
+    
     // first we need an Utils to setup ServletOps UGLY!!
     util = new Utils(5);
     // servletOps takes a ServletConfig to get the config file name
@@ -99,10 +103,10 @@ public class Scaler extends HttpServlet {
     // FileOps instance
     fileOp = new FileOps(util);
     // global DocuImage instance (don't reuse inside a request!)
-    globalImage = new JAIDocuImage(util);
-//    globalImage = new JIMIDocuImage(util);
+    //globalImage = new JAIDocuImage(util);
+    // globalImage = new JIMIDocuImage(util);
     //globalImage = new ImageLoaderDocuImage(util);
-
+    globalImage = new JAIImageLoaderDocuImage(util);
   }
 
   /**Process the HTTP Get request*/
@@ -207,10 +211,10 @@ public class Scaler extends HttpServlet {
     try {
 
     // DocuImage instance
-    DocuImage docuImage = new JAIDocuImage(util);
-//    DocuImage docuImage = new JIMIDocuImage(util);
+    //DocuImage docuImage = new JAIDocuImage(util);
+    //DocuImage docuImage = new JIMIDocuImage(util);
     //DocuImage docuImage = new ImageLoaderDocuImage(util);
-
+    DocuImage docuImage = new JAIImageLoaderDocuImage(util);
 
     /**
      *  find the file to load/send

@@ -32,6 +32,7 @@ public class FileOps {
   public static String[] fileTypes = {
             "jpg", "image/jpeg",
             "jpeg", "image/jpeg",
+            "jp2", "image/jp2",
             "png", "image/png",
             "gif", "image/gif",
             "tif", "image/tiff",
