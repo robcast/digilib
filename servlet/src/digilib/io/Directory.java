@@ -82,10 +82,10 @@ public class Directory {
 	 */
 	public boolean readDir() {
 		if (dir != null) {
-			System.out.println("start reading dir");
+			logger.debug("start reading dir");
 			list = dir.list();
 			Arrays.sort(list);
-			System.out.println("done reading dir");
+			logger.debug("done reading dir");
 		}
 		return (list != null);
 	}
