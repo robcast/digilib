@@ -222,9 +222,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		BufferedImage scaledImg = null;
 		// enforce grey destination image for greyscale *Java2D BUG*
 		if ((quality > 0)
-			&& ((img.getType() == BufferedImage.TYPE_BYTE_GRAY)
-				|| (img.getType() == BufferedImage.TYPE_BYTE_BINARY)
-				|| (img.getType() == BufferedImage.TYPE_USHORT_GRAY))) {
+			&& (img.getColorModel().getNumColorComponents() == 1)) {
 			Rectangle2D dstBounds = scaleOp.getBounds2D(img);
 			scaledImg =
 				new BufferedImage(
@@ -250,7 +248,6 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	}
 
 	public void blur(int radius) throws ImageOpException {
-		BufferedImage blurredImg;
 		//DEBUG
 		util.dprintln(4, "blur: " + radius);
 		// minimum radius is 2
@@ -265,7 +262,16 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		Kernel blur = new Kernel(klen, klen, kern);
 		// blur with convolve operation
 		ConvolveOp blurOp = new ConvolveOp(blur, ConvolveOp.EDGE_NO_OP, null);
-		blurredImg = blurOp.filter(img, null);
+		// blur needs explicit destination image type for color *Java2D BUG*
+		BufferedImage blurredImg = null;
+		if (img.getType() == BufferedImage.TYPE_3BYTE_BGR) {
+			blurredImg =
+				new BufferedImage(
+					img.getWidth(),
+					img.getHeight(),
+					img.getType());
+		}
+		blurredImg = blurOp.filter(img, blurredImg);
 		if (blurredImg == null) {
 			util.dprintln(2, "ERROR(cropAndScale): error in scale");
 			throw new ImageOpException("Unable to scale");
@@ -291,15 +297,15 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 
 	public void enhance(float mult, float add)
 		throws ImageOpException { /* Only one constant should work regardless of the number of bands 
-			 * according to the JDK spec.
-			 * Doesn't work on JDK 1.4 for OSX and Linux (at least).
-			 */ /*		RescaleOp scaleOp =
-						new RescaleOp(
-							(float)mult, (float)add,
-							null);
-					scaleOp.filter(img, img);
-			*/ /* The number of constants must match the number of bands in the image.
-			 */
+				 * according to the JDK spec.
+				 * Doesn't work on JDK 1.4 for OSX and Linux (at least).
+				 */ /*		RescaleOp scaleOp =
+							new RescaleOp(
+								(float)mult, (float)add,
+								null);
+						scaleOp.filter(img, img);
+				*/ /* The number of constants must match the number of bands in the image.
+				 */
 		int ncol = img.getColorModel().getNumColorComponents();
 		float[] dm = new float[ncol];
 		float[] da = new float[ncol];
@@ -313,8 +319,8 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 
 	public void enhanceRGB(float[] rgbm, float[] rgba)
 		throws ImageOpException { /* The number of constants must match the number of bands in the image.
-			 * We do only 3 (RGB) bands.
-			 */
+				 * We do only 3 (RGB) bands.
+				 */
 		int ncol = img.getColorModel().getNumColorComponents();
 		if ((ncol != 3) || (rgbm.length != 3) || (rgba.length != 3)) {
 			util.dprintln(
@@ -328,7 +334,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			new RescaleOp(rgbOrdered(rgbm), rgbOrdered(rgba), null);
 		scaleOp.filter(img, img);
 	} /** Ensures that the array f is in the right order to map the images RGB components. 
-				 */
+					 */
 	public float[] rgbOrdered(float[] fa) {
 		float[] fb = new float[3];
 		int t = img.getType();
