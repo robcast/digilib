@@ -17,7 +17,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
 Authors: 
   Christian Luginbuehl, 01.05.2003 (first version)
   DW 24.03.2004 (Changed for digiLib in Zope)
-  Robert Casties, 27.10.2004
+  Robert Casties, 1.11.2004
 
 */
 
@@ -85,6 +85,10 @@ function Size(w, h) {
     this.height = parseFloat(h);
     return this;
 }
+Size.prototype.toString = function() {
+    return this.width + "x" + this.height;
+}
+
 
 /*
  * Position class
@@ -93,6 +97,9 @@ function Position(x, y) {
     this.x = parseFloat(x);
     this.y = parseFloat(y);
     return this;
+}
+Position.prototype.toString = function() {
+    return this.x + "," + this.y;
 }
 
 /*
@@ -104,6 +111,9 @@ function Rectangle(x, y, w, h) {
     this.width = parseFloat(w);
     this.height = parseFloat(h);
     return this;
+}
+Rectangle.prototype.toString = function() {
+    return this.width+"x"+this.height+"@"+this.x+","+this.y;
 }
 Rectangle.prototype.copy = function() {
     // returns a copy of this Rectangle
@@ -276,6 +286,14 @@ function setParameter(name, value) {
 	dlParams[name].value = value;
 	dlParams[name].hasValue = true;
 	return true;
+    }
+    return false;
+}
+
+function hasParameter(name) {
+    // returns if the parameter's value has been set
+    if (defined(dlParams[name])) {
+	return dlParams[name].hasValue;
     }
     return false;
 }
@@ -559,6 +577,13 @@ function getWinSize() {
     var wsize = new Size(100, 100);
     if (defined(self.innerHeight))  {
 	// all except Explorer
+	if ((self.innerWidth == 0)||(self.innerHeight == 0)) {
+	    // Safari 1.2 bug
+	    if (parent) {
+		parent.innerHeight;
+		parent.innerWidth;
+	    }
+	}
 	wsize.width = self.innerWidth;
 	wsize.height = self.innerHeight;
     } else if (document.documentElement && document.documentElement.clientHeight) {
