@@ -1,5 +1,5 @@
-/* Copyright (C) 2003,2004 WTWG, Uni Bern and others
- 
+/* Copyright (C) 2003,2004 IT-Group MPIWG, WTWG Uni Bern and others
+
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
@@ -14,9 +14,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  
-Authors: ROC 03.06.2004
-  first version by Christian Luginbuehl, 01.05.2003
-  Changed for digiLib in Zope by DW 24.03.2004
+Authors: 
+  Christian Luginbuehl, 01.05.2003 (first version)
+  DW 24.03.2004 (Changed for digiLib in Zope)
+  Robert Casties, 03.08.2004
+
 */
 
 function getInt(n) {
@@ -467,70 +469,90 @@ function evtPosition(evt) {
     return new Position(x, y);
 }
 
+function registerEvent(type, elem, handler) {
+    // register the given event handler on the indicated element
+     if (elem.addEventListener) {
+	 elem.addEventListener(type, handler, false);
+     } else {
+	 if (type = "mousedown") {
+	     if (elem.captureEvents) {
+		 elem.captureEvents(Event.MOUSEDOWN);
+	     }
+	     elem.onmousedown = handler;
+	 } else if (type = "mouseup") {
+	     if (elem.captureEvents) {
+		 elem.captureEvents(Event.MOUSEUP);
+	     }
+	     elem.onmouseup = handler;
+	 } else if (type = "mousemove") {
+	     if (elem.captureEvents) {
+		 elem.captureEvents(Event.MOUSEMOVE);
+	     }
+	     elem.onmousemove = handler;
+	 } else if (type = "keypress") {
+	     if (elem.captureEvents) {
+		 elem.captureEvents(Event.KEYPRESS);
+	     }
+	     elem.onkeypress = handler;
+	 } else {
+	     alert("registerEvent: unknown event type "+type);
+	     return false;
+	 }
+    }
+    return true;
+}
+
+function unregisterEvent(type, elem, handler) {
+    // unregister the given event handler from the indicated element
+     if (elem.removeEventListener) {
+	 elem.removeEventListener(type, handler, false);
+     } else {
+	 if (type = "mousedown") {
+	     if (elem.releaseEvents) {
+		 elem.releaseEvents(Event.MOUSEDOWN);
+	     }
+	     elem.onmousedown = null;
+	 } else if (type = "mouseup") {
+	     if (elem.releaseEvents) {
+		 elem.releaseEvents(Event.MOUSEUP);
+	     }
+	     elem.onmouseup = null;
+	 } else if (type = "mousemove") {
+	     if (elem.releaseEvents) {
+		 elem.releaseEvents(Event.MOUSEMOVE);
+	     }
+	     elem.onmousemove = null;
+	 } else if (type = "keypress") {
+	     if (elem.releaseEvents) {
+		 elem.releaseEvents(Event.KEYPRESS);
+	     }
+	     elem.onkeypress = null;
+	 } else {
+	     alert("unregisterEvent: unknown event type "+type);
+	     return false;
+	 }
+    }
+    return true;
+}
+
+
+// old registerXXYY API for compatibility
 function registerMouseDown(elem, handler) {
-    // register a mouse down event handler on the indicated element
-    if (elem.addEventListener) {
-	elem.addEventListener("mousedown", handler, false);
-    } else {
-	if (elem.captureEvents) {
-	    elem.captureEvents(Event.MOUSEDOWN);
-	}
-	elem.onmousedown = handler;
-    }
-    return true;
+    return registerEvent("mousedown", elem, handler);
 }
-
 function unregisterMouseDown(elem, handler) {
-    // unregister the mouse down event handler
-    if (elem.removeEventListener) {
-	elem.removeEventListener("mousedown", handler, false);
-    } else {
-	if (elem.releaseEvents) {
-	    elem.releaseEvents(Event.MOUSEDOWN);
-	}
-	elem.onmousedown = null;
-    }
-    return true;
+    return unregisterEvent("mousedown", elem, handler);
 }
-
 function registerMouseMove(elem, handler) {
-    // register a mouse move event handler on the indicated element
-    if (elem.addEventListener) {
-	elem.addEventListener("mousemove", handler, false);
-    } else {
-	if (elem.captureEvents) {
-	    elem.captureEvents(Event.MOUSEMOVE);
-	}
-	elem.onmousemove = handler;
-    }
-    return true;
+    return registerEvent("mousemove", elem, handler);
 }
-
 function unregisterMouseMove(elem, handler) {
-    // unregister the mouse move event handler
-    if (elem.removeEventListener) {
-	elem.removeEventListener("mousemove", handler, false);
-    } else {
-	if (elem.releaseEvents) {
-	    elem.releaseEvents(Event.MOUSEMOVE);
-	}
-	elem.onmousemove = null;
-    }
-    return true;
+    return unregisterEvent("mousemove", elem, handler);
+}
+function registerKeyDown(handler) {
+    return registerEvent("keypress", elem, handler);
 }
 
-function registerKeyDown(handler) {
-    // register a key down handler
-    if ( document.addEventListener ) {
-	this.document.addEventListener('keypress', handler, false);
-    } else {
-	if (elem.captureEvents) {
-	    elem.captureEvents(Event.MOUSEDOWN);
-	}
-	this.document.onkeypress = handler
-    }
-    return true;
-}
 
 function getWinSize() {
     // returns a Size with the current window size (mostly from www.quirksmode.org)
