@@ -8,7 +8,7 @@
   under  the terms of  the GNU General  Public License as published by the
   Free Software Foundation;  either version 2 of the  License, or (at your
   option) any later version.
-   
+
   Please read license.txt for the full details. A copy of the GPL
   may be found at http://www.gnu.org/copyleft/lgpl.html
 
@@ -38,7 +38,7 @@ import digilib.io.FileOps;
 import digilib.io.TextFile;
 
 /** Servlet for displaying text
- * 
+ *
  * @author casties
  *
  */
@@ -135,62 +135,47 @@ public class Texter extends HttpServlet {
 		processRequest(request, response);
 	}
 
-	protected void processRequest(
-		HttpServletRequest request,
-		HttpServletResponse response)
-		throws ServletException, IOException {
 
-		/*
-		 *  request parameters
-		 */
+    protected void processRequest(
+        HttpServletRequest request,
+        HttpServletResponse response)
+        throws ServletException, IOException {
 
-		DigilibRequest dlRequest =
-			(DigilibRequest) request.getAttribute("digilib.servlet.request");
+        /*
+         *  request parameters
+         */
+        DigilibRequest dlRequest =
+                (DigilibRequest) request.getAttribute("digilib.servlet.request");
+        try {
 
-		try {
+            /*
+             *  find the file to load/send
+             */
+            if(this.getTextFile(dlRequest,"/txt") != null) {
+                     servletOp.sendFile(this.getTextFile(dlRequest,"txt").getFile(), response);
+            } else if(this.getTextFile(dlRequest,"") != null) {
+                     servletOp.sendFile(this.getTextFile(dlRequest,"").getFile(), response);
+            } else {
+                    ServletOps.htmlMessage("No Text-File!", response);
+            }
 
-			/*
-			 *  find the file to load/send
-			 */
+        } catch (FileOpException e) {
+            util.dprintln(1, "ERROR: File IO Error: " + e);
+            try {
+                ServletOps.htmlMessage("ERROR: File IO Error: "+ e, response);
+            } catch (FileOpException ex) { } // so we don't get a loop
+        }
+    }
 
-			// get PathInfo
-			String loadPathName = dlRequest.getFilePath();
-			// find the file(set)
-			TextFile fileToLoad =
-				(TextFile) dirCache.getFile(
-					loadPathName,
-					dlRequest.getPn(),
-					FileOps.CLASS_TEXT);
-			if (fileToLoad == null) {
-				throw new FileOpException(
-					"File "
-						+ loadPathName
-						+ "("
-						+ dlRequest.getPn()
-						+ ") not found.");
-			}
-
-			/*
-			 * do something with the file
-			 */
-			 
-
-
-			/*
-			 * send the result
-			 */
-			 
-			servletOp.sendFile(fileToLoad.getFile(), response);
-			
-
-		} catch (FileOpException e) {
-			util.dprintln(1, "ERROR: File IO Error: " + e);
-			try {
-				ServletOps.htmlMessage("ERROR: File IO Error: " + e, response);
-			} catch (FileOpException ex) {
-			} // so we don't get a loop
-		}
-
-	}
-
+    /**
+     * Looks for a file in the given subDirectory.
+     * @param dlRequest The received request which has the file path.
+     * @param subDirectory The subDirectory of the file path where the file should be found.
+     * @return The wanted Textfile or null if there wasn't a file.
+     */
+    private TextFile getTextFile(DigilibRequest dlRequest,String subDirectory) {
+        String loadPathName = dlRequest.getFilePath() + subDirectory;
+        // find the file(set)
+        return (TextFile) dirCache.getFile(loadPathName,dlRequest.getPn(),FileOps.CLASS_TEXT);
+    }
 }
