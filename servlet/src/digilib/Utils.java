@@ -22,6 +22,8 @@ package digilib;
 
 public class Utils {
 
+  private int debugLevel = 10;
+
   public Utils() {
   }
 
@@ -29,7 +31,6 @@ public class Utils {
     debugLevel = dbg;
   }
   
-  public static int debugLevel = 10;
   public void setDebugLevel(int lvl) {
     debugLevel = lvl;
   }
