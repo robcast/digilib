@@ -42,6 +42,8 @@ import digilib.io.TextFile;
  */
 public class Texter extends HttpServlet {
 
+	private static final long serialVersionUID = -8539178734033662322L;
+
 	/** Servlet version */
 	public static String tlVersion = "0.1b1";
 

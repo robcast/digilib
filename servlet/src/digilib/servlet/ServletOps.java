@@ -29,7 +29,6 @@ import java.io.PrintWriter;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletConfig;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
@@ -59,6 +58,27 @@ public class ServletOps {
 			pathArray[i] = dirs.nextToken();
 		}
 		return pathArray;
+	}
+
+	/**
+	 * get a real File for a config File.
+	 * 
+	 * If the File is not absolute the path is
+	 * appended to the WEB-INF directory of the web-app.
+	 * 
+	 * @param file
+	 * @param sc
+	 * @return
+	 */
+	public static File getConfigFile(File f, ServletConfig sc) {
+		// is the filename absolute?
+		if (!f.isAbsolute()) {
+			// relative path -> use getRealPath to resolve in WEB-INF
+			String fn = sc.getServletContext()
+					.getRealPath("WEB-INF/" + f.getPath());
+			f = new File(fn);
+		}
+		return f;
 	}
 
 	/**
@@ -120,7 +140,7 @@ public class ServletOps {
 	 * @throws FileOpException
 	 *             Exception is thrown for a IOException.
 	 */
-	public static void sendFile(File f, String mt, ServletResponse response)
+	public static void sendFile(File f, String mt, HttpServletResponse response)
 			throws FileOpException {
 		logger.debug("sendRawFile(" + mt + ", " + f + ")");
 		if (mt == null) {
@@ -133,6 +153,9 @@ public class ServletOps {
 		response.setContentType(mt);
 		// open file
 		try {
+			if (mt.equals("application/octet-stream")) {
+				response.addHeader("Content-Disposition", "attachment; filename=\""+f.getName()+"\"");
+			}
 			FileInputStream inFile = new FileInputStream(f);
 			OutputStream outStream = response.getOutputStream();
 			byte dataBuffer[] = new byte[4096];
