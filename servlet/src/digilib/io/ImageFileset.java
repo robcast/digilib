@@ -25,7 +25,9 @@ import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Map;
 
-import digilib.image.DocuInfo;
+import org.apache.log4j.Logger;
+
+import digilib.image.ImageOps;
 import digilib.image.ImageSize;
 
 /**
@@ -35,6 +37,9 @@ public class ImageFileset extends DocuDirent {
 
 	/** this is an image file */
 	protected static int fileClass = FileOps.CLASS_IMAGE;
+	
+	/** logger for this class */
+	private static Logger logger = Logger.getLogger(ImageFileset.class);
 
 	/** list of files (ImageFile) */
 	private ArrayList list = null;
@@ -71,10 +76,9 @@ public class ImageFileset extends DocuDirent {
 		int nb = dirs.length;
 		list = new ArrayList(nb);
 		parent = dirs[0];
-		fill(dirs, file, hints);		
+		fill(dirs, file, hints);
 	}
-	
-	
+
 	/**
 	 * Adds an ImageFile to this Fileset.
 	 * 
@@ -132,12 +136,12 @@ public class ImageFileset extends DocuDirent {
 	 * @param info
 	 * @return
 	 */
-	public ImageFile getNextSmaller(ImageSize size, DocuInfo info) {
+	public ImageFile getNextSmaller(ImageSize size) {
 		for (Iterator i = getHiresIterator(); i.hasNext();) {
 			ImageFile f = (ImageFile) i.next();
 			try {
 				if (!f.isChecked()) {
-					info.checkFile(f);
+					ImageOps.checkFile(f);
 				}
 				if (f.getSize().isTotallySmallerThan(size)) {
 					return f;
@@ -160,12 +164,12 @@ public class ImageFileset extends DocuDirent {
 	 * @param info
 	 * @return
 	 */
-	public ImageFile getNextBigger(ImageSize size, DocuInfo info) {
+	public ImageFile getNextBigger(ImageSize size) {
 		for (ListIterator i = getLoresIterator(); i.hasPrevious();) {
 			ImageFile f = (ImageFile) i.previous();
 			try {
 				if (!f.isChecked()) {
-					info.checkFile(f);
+					ImageOps.checkFile(f);
 				}
 				if (f.getSize().isBiggerThan(size)) {
 					return f;
@@ -230,7 +234,7 @@ public class ImageFileset extends DocuDirent {
 	 * @param fl
 	 *            file (from first base dir)
 	 * @param hints
-	 *            
+	 *  
 	 */
 	void fill(Directory[] dirs, File fl, Map hints) {
 		String scalext = (String) hints.get(FileOps.HINT_FILEEXT);
@@ -240,44 +244,43 @@ public class ImageFileset extends DocuDirent {
 		// add the first ImageFile to the ImageFileset
 		add(new ImageFile(fn, this, parent));
 		// iterate the remaining base directories
-		for (int j = 1; j < nb; j++) {
-			if (dirs[j] == null) {
+		for (int dirIdx = 1; dirIdx < nb; dirIdx++) {
+			if (dirs[dirIdx] == null) {
 				continue;
 			}
-			// read the directories
-			if (dirs[j].getFilenames() == null) {
-				dirs[j].readDir();
+			// read the directory
+			if (dirs[dirIdx].getFilenames() == null) {
+				dirs[dirIdx].readDir();
 			}
-			File f = null;
-			String[] dirFiles = dirs[j].getFilenames();
-			if (scalext != null) {
-				// use the last extension
-				int i = Arrays.binarySearch(dirFiles, baseFn + scalext);
-				if (i >= 0) {
-					f = new File(dirs[j].getDir(), dirFiles[i]);
-				}
-			} else {
-				// try the same filename as the original
-				int i = Arrays.binarySearch(dirFiles, fn);
-				if (i >= 0) {
-					f = new File(dirs[j].getDir(), dirFiles[i]);
-				}
-			}
-			// if the file doesn't exists, try other file extensions
-			if (f == null) {
-				// try other file extensions
-				for (Iterator exts = FileOps.getImageExtensionIterator(); exts.hasNext();) {
-					String s = (String) exts.next();
-					int i = Arrays.binarySearch(dirFiles, baseFn + s);
-					if (i >= 0) {
-						hints.put(FileOps.HINT_FILEEXT, s);
-						f = new File(dirs[j].getDir(), dirFiles[i]);
-						break;
-					}
+			String[] dirFiles = dirs[dirIdx].getFilenames();
+			// try the same filename as the original
+			int fileIdx = Arrays.binarySearch(dirFiles, fn);
+			if (fileIdx < 0) {
+				// try closest matches without extension
+				fileIdx = -fileIdx - 1;
+				// try idx
+				if ((fileIdx < dirFiles.length)
+						&& (FileOps.basename(dirFiles[fileIdx]).equals(baseFn))) {
+					// idx ok
+				} else if ((fileIdx > 0)
+						&& (FileOps.basename(dirFiles[fileIdx - 1])
+								.equals(baseFn))) {
+					// idx-1 ok
+					fileIdx = fileIdx - 1;
+				} else if ((fileIdx+1 < dirFiles.length)
+						&& (FileOps.basename(dirFiles[fileIdx + 1])
+								.equals(baseFn))) {
+					// idx+1 ok
+					fileIdx = fileIdx + 1;
+				} else {
+					// basename doesn't match
+					continue;
 				}
 			}
-			if (f != null) {
-				add(new ImageFile(f.getName(), this, dirs[j]));
+			if (FileOps.classForFilename(dirFiles[fileIdx]) == FileOps.CLASS_IMAGE) {
+				logger.debug("adding file " + dirFiles[fileIdx]
+						+ " to Fileset " + this.getName());
+				add(new ImageFile(dirFiles[fileIdx], this, dirs[dirIdx]));
 			}
 		}
 	}

@@ -99,8 +99,8 @@ public class ImageFile {
 	 * Sets the mimetype.
 	 * @param mimetype The mimetype to set
 	 */
-	public void setMimetype(String mimetype) {
-		this.mimetype = mimetype;
+	public void setMimetype(String filetype) {
+		this.mimetype = filetype;
 	}
 
 	/**

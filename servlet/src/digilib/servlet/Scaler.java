@@ -40,9 +40,8 @@ import org.apache.log4j.Logger;
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthOps;
 import digilib.image.DocuImage;
-import digilib.image.DocuInfo;
-import digilib.image.ImageLoaderImageInfoDocuInfo;
 import digilib.image.ImageOpException;
+import digilib.image.ImageOps;
 import digilib.image.ImageSize;
 import digilib.io.DocuDirCache;
 import digilib.io.FileOpException;
@@ -61,7 +60,7 @@ public class Scaler extends HttpServlet {
 	private static final long serialVersionUID = -325080527268912852L;
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.21b3";
+	public static final String dlVersion = "1.22b1";
 
 	// logger for accounting requests
 	Logger accountlog = Logger.getLogger("account.request");
@@ -326,9 +325,6 @@ public class Scaler extends HttpServlet {
 			// ImageFileset of the image to load
 			ImageFileset fileset = null;
 
-			// new DocuInfo instance
-			DocuInfo docuInfo = new ImageLoaderImageInfoDocuInfo();
-
 			/* find the file to load/send */
 
 			// get PathInfo
@@ -393,7 +389,7 @@ public class Scaler extends HttpServlet {
 			} else if (loresOnly) {
 				// enforced lores uses next smaller resolution
 				fileToLoad =
-					fileset.getNextSmaller(expectedSourceSize, docuInfo);
+					fileset.getNextSmaller(expectedSourceSize);
 				if (fileToLoad == null) {
 					// this is the smallest we have
 					fileToLoad = fileset.getSmallest();
@@ -401,7 +397,7 @@ public class Scaler extends HttpServlet {
 			} else {
 				// autores: use next higher resolution
 				fileToLoad =
-					fileset.getNextBigger(expectedSourceSize, docuInfo);
+					fileset.getNextBigger(expectedSourceSize);
 				if (fileToLoad == null) {
 					// this is the highest we have
 					fileToLoad = fileset.getBiggest();
@@ -447,7 +443,7 @@ public class Scaler extends HttpServlet {
 
 			// check the source image
 			if (!fileToLoad.isChecked()) {
-				docuInfo.checkFile(fileToLoad);
+				ImageOps.checkFile(fileToLoad);
 			}
 			// get the source image type
 			mimeType = fileToLoad.getMimetype();
