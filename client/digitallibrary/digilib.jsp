@@ -20,22 +20,78 @@ DB.doAuthentication(request, response);
 // parsing the query
 // -----------------
 
-String query = "";
+String query = "dlImage.jsp?";
+String token;
 
 if (request.getQueryString() != null) {
-	StringTokenizer tokenizer = new StringTokenizer(request.getQueryString(), "+");
+	// have to enable the passing of delimiter to get empty parameters
+	StringTokenizer tokenizer = new StringTokenizer(request.getQueryString(), "+", true);
 
-	int numTokens = tokenizer.countTokens(); 
-
-	if (numTokens >= 1) query += "fn=" + tokenizer.nextToken();
-	if (numTokens >= 2) query += "&pn=" + tokenizer.nextToken();
-	if (numTokens >= 3) query += "&ws=" + tokenizer.nextToken();
-	if (numTokens >= 4) query += "&mo=" + tokenizer.nextToken();
-	if (numTokens >= 5) query += "&mk=" + tokenizer.nextToken();
-	if (numTokens >= 6) query += "&wx=" + tokenizer.nextToken();
-	if (numTokens >= 7) query += "&wy=" + tokenizer.nextToken();
-	if (numTokens >= 8) query += "&ww=" + tokenizer.nextToken();
-	if (numTokens >= 9) query += "&wh=" + tokenizer.nextToken();
+	// looks ugly but it works - hopefully...
+	
+	if (tokenizer.hasMoreTokens()) {
+		token = tokenizer.nextToken();
+		if (token != "+") {
+			query += "fn=" + token;
+			if (tokenizer.hasMoreTokens()) tokenizer.nextToken();
+		}
+	}
+	if (tokenizer.hasMoreTokens()) {
+		token = tokenizer.nextToken();
+		if (token != "+") {
+			query += "&pn=" + token;
+			if (tokenizer.hasMoreTokens()) tokenizer.nextToken();
+		}
+	}
+	if (tokenizer.hasMoreTokens()) {
+		token = tokenizer.nextToken();
+		if (token != "+") {
+			query += "&ws=" + token;
+			if (tokenizer.hasMoreTokens()) tokenizer.nextToken();
+		}
+	}
+	if (tokenizer.hasMoreTokens()) {
+		token = tokenizer.nextToken();
+		if (!token.equals("+")) {
+			query += "&mo=" + token;
+			if (tokenizer.hasMoreTokens()) tokenizer.nextToken();
+		}
+	}
+	if (tokenizer.hasMoreTokens()) {
+		token = tokenizer.nextToken();
+		if (!token.equals("+")) {
+			query += "&mk=" + token;
+			if (tokenizer.hasMoreTokens()) tokenizer.nextToken();
+		}
+	}
+	if (tokenizer.hasMoreTokens()) {
+		token = tokenizer.nextToken();
+		if (token != "+") {
+			query += "&wx=" + token;
+			if (tokenizer.hasMoreTokens()) tokenizer.nextToken();
+		}
+	}
+	if (tokenizer.hasMoreTokens()) {
+		token = tokenizer.nextToken();
+		if (token != "+") {
+			query += "&wy=" + token;
+			if (tokenizer.hasMoreTokens()) tokenizer.nextToken();
+		}
+	}
+	if (tokenizer.hasMoreTokens()) {
+		token = tokenizer.nextToken();
+		if (token != "+") {
+			query += "&ww=" + token;
+			if (tokenizer.hasMoreTokens()) tokenizer.nextToken();
+		}
+	}
+	if (tokenizer.hasMoreTokens()) {
+		token = tokenizer.nextToken();
+		if (token != "+") {
+			query += "&wh=" + token;
+			if (tokenizer.hasMoreTokens()) tokenizer.nextToken();
+		}
+	}
 
 	// a module update for total number of pages
 	query += "&pt=" + DB.getNumPages(request);
@@ -43,7 +99,7 @@ if (request.getQueryString() != null) {
 %>
 
 <frameset cols="*,90" border="0">
-  <frame name="mainFrame" src="dlImage.jsp?<%= query %>" scrolling="auto">
+  <frame name="mainFrame" src="<%= query %>" scrolling="auto">
   <frameset rows="20,*" border="0">
     <frame name="pageFrame" src="about:blank" scrolling="no" noresize>
     <frame name="rightFrame" src="dlMenu.html" scrolling="no" noresize>

@@ -61,10 +61,11 @@ function nextPage(keepArea) {
 function page(keepArea) {
 
 	do {
-    	page = prompt("Goto Page (1 - " + att[9] + "):", 1);
-	} while (!isNaN(att[9]) && (page != null) && ((page < 1) || (page > parent.numPages)));
+    	var page = prompt("Goto Page (1 - " + att[9] + "):", 1);
+    	
+	} while ((page != null) && ((isNaN(page)) || (page < 1) || (page > att[9])));
 
-   	if (page != null && page != att[1]) {
+   	if ((page != null) && (page != att[1])) {
 		att[1] = page;
 		loadPicture(0, keepArea);
 	}
