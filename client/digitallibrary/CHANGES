@@ -1,0 +1,28 @@
+changes document for digilib-client
+-----------------------------------
+
+
+CURRENT SYMLINKS
+
+navigation_XX.js  ->  navigation14_XX.js
+digilib.jsp       ->  digilib19.jsp
+
+
+CHANGES
+
+20.05.2002 - navigation_o6.js : luginbuehl
+
+- Opera browser support done. the 'b'-key does not work currently, beause
+  Opera uses this key on its own - have to work something out...
+
+18.05.2002 - [different files] : luginbuehl
+
+- works on Opera browser support (functionality is getting better, menu 
+  still has lots of errors)
+- working on a Opera version that does work independantly of the http
+  browser imitation set (though!)
+
+18.05.2002 - modules/pagesTotal.js : luginbuehl
+
+- fixied an error in function page(keepArea) which did not work on all 
+  browsers correctly.
