@@ -315,10 +315,25 @@ public class DigilibRequest extends ParameterMap {
 	 * @return String of request parameters in parameter form.
 	 */
 	public String getAsString() {
+		return getAsString(0);
+	}
+
+	/**
+	 * Return the request parameters of a given type type as a String in the
+	 * parameter form 'fn=/icons&amp;pn=1'. Empty (undefined) fields are not
+	 * included.
+	 * 
+	 * @return String of request parameters in parameter form.
+	 */
+	public String getAsString(int type) {
 		StringBuffer s = new StringBuffer(50);
 		// go through all values
 		for (Iterator i = this.values().iterator(); i.hasNext();) {
 			Parameter p = (Parameter) i.next();
+			if ((type > 0)&&(p.getType() != type)) {
+				// skip the wrong types
+				continue;
+			}
 			String name = p.getName();
 			/*
 			 * handling special cases
