@@ -35,7 +35,7 @@ function ref(select) {
 
   var hyperlinkRef = baseUrl + "/digilib.jsp?";
 
-  if ( select == 2 ) {
+  if ( select >= 2 ) {
     
     // no original size is referenced at the moment,
     // because the dpi values are not constant from user to user
@@ -49,11 +49,15 @@ function ref(select) {
       }
     }
     
-    parameterString += "&lv=3";    // level three
-
-    parameterString = parameterString.slice(1);
-
-    prompt("Alcatraz-style HTML link", hyperlinkRef + parameterString);
+    if (select == 2) {
+      parameterString += "&lv=3";    // level three
+      parameterString = parameterString.slice(1);
+      prompt("Alcatraz-style HTML link", hyperlinkRef + parameterString);
+    } else {
+      parameterString += "&lv=1";    // i just really want the image
+      parameterString = parameterString.slice(1);
+      return hyperlinkRef + parameterString;
+    }
 
   } else {
                 
@@ -68,7 +72,7 @@ function ref(select) {
   	}
 
     if ( select == 1 ) {
-      prompt("Link for HTML-documents", hyperlinkRef+ parameterString);
+      prompt("Link for HTML-documents", hyperlinkRef + parameterString);
     }
     
     if ( select == 0 ) {
