@@ -192,7 +192,7 @@ public class DocuDirCache {
 			// cache miss
 			misses++;
 			/*
-			 * see if it's a directory
+			 * see if fn is a directory
 			 */
 			File f = new File(baseDirNames[0], fn);
 			if (f.isDirectory()) {
