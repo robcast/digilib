@@ -1,7 +1,6 @@
-<%@ page language="java" %>
-<%!
-// authentication stuff - robert
-// -----------------------------
+<%@ page language="java" %><%!
+// -- JSP init -------------
+
 // create DocumentBean instance for all JSP requests
 digilib.servlet.DocumentBean docBean = new digilib.servlet.DocumentBean();
 
@@ -14,8 +13,10 @@ public void jspInit() {
         System.out.println(e);
     }
 }
-%>
-<%
+// -- end of JSP init -------------
+%><%
+// -- JSP request -------------
+
 // parsing the query
 // -----------------
 digilib.servlet.DigilibRequest dlRequest = new digilib.servlet.DigilibRequest(request);
@@ -32,7 +33,7 @@ String imageLocation = dlRequest.getAsString("base.url") + "/servlet/Scaler?" + 
 <script type="text/javascript">
   var dlTarget = window.name;
   var baseUrl = '<%= dlRequest.getAsString("base.url") %>';
-  var toolbarEnabledURL = window.location;
+  var toolbarEnabledURL = window.location.href;
   newParameter('fn', '', 1);
   newParameter('pn', '1', 1);
   newParameter('ws', '1.0', 1);
@@ -54,7 +55,7 @@ String imageLocation = dlRequest.getAsString("base.url") + "/servlet/Scaler?" + 
   dl_param_init();
 </script>
 </head>
-<body bgcolor="#666666" onload="dl_init()">
+<body bgcolor="#666666" onload="dl_init();">
 
 <div id="scaler" style="position:absolute; left:10px; top:10px; visibility:visible">
 <script type="text/javascript">
