@@ -1,0 +1,28 @@
+<!-- Digilib servlet config file -->
+
+<digilib-config>
+  <parameter name="debug-level" value="0" />
+
+  <!--  Image to be sent to indicate general failure. -->
+  <parameter name="error-image" value="/docuserver/images/icons/broken.gif" />
+
+  <!--  Image to be sent to indicate authorization failure. -->
+  <parameter name="denied-image" value="/docuserver/images/icons/alert.red.gif" />
+
+  <!-- List of directories where images are searched.
+       Directories with low-resolution images are first in list. -->
+  <parameter name="basedir-list" value="/docuserver/scaled/small:/docuserver/images:/docuserver/scans/quellen" />
+
+  <!-- Restrict access to authorized users.
+       User authentication and roles are provided by the servlet container 
+       (see tomcat-users.xml).
+       Authorization for resources (directories) is evaluated by the servlet 
+       (see auth-file). -->
+  <parameter name="use-authorization" value="true" />
+
+  <!-- 	  URL location of XML file with authorization requirements. -->
+  <parameter name="auth-file" value="/docuserver/www/digitallibrary/WEB-INF/digilib-auth.xml" />
+
+  <!-- Part of URL to indicate authenticated access to Tomcat. -->
+  <parameter name="auth-url-path" value="authenticated/" />
+</digilib-config>
