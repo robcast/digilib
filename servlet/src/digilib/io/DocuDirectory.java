@@ -1,20 +1,20 @@
 /* DocuDirectory -- Directory of DocuFilesets.
 
-  Digital Image Library servlet components
+ Digital Image Library servlet components
 
-  Copyright (C) 2003 Robert Casties (robcast@mail.berlios.de)
+ Copyright (C) 2003 Robert Casties (robcast@mail.berlios.de)
 
-  This program is free software; you can redistribute  it and/or modify it
-  under  the terms of  the GNU General  Public License as published by the
-  Free Software Foundation;  either version 2 of the  License, or (at your
-  option) any later version.
-   
-  Please read license.txt for the full details. A copy of the GPL
-  may be found at http://www.gnu.org/copyleft/lgpl.html
+ This program is free software; you can redistribute  it and/or modify it
+ under  the terms of  the GNU General  Public License as published by the
+ Free Software Foundation;  either version 2 of the  License, or (at your
+ option) any later version.
+ 
+ Please read license.txt for the full details. A copy of the GPL
+ may be found at http://www.gnu.org/copyleft/lgpl.html
 
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
  * Created on 25.02.2003
  */
@@ -25,7 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -37,34 +37,45 @@ import org.xml.sax.SAXException;
  */
 public class DocuDirectory extends Directory {
 
-	// list of files (DocuDirent)
+	/** list of files (DocuDirent) */
 	private ArrayList[] list = null;
-	// directory object is valid (exists on disk)
+
+	/** directory object is valid (exists on disk) */
 	private boolean isValid = false;
-	// reference of the parent DocuDirCache
+
+	/** reference of the parent DocuDirCache */
 	private DocuDirCache cache = null;
-	// directory name (digilib canonical form)
+
+	/** directory name (digilib canonical form) */
 	private String dirName = null;
-	// directory metadata
-	private HashMap dirMeta = null;
-	// state of metadata is valid
+
+	/** directory metadata */
+	private Map dirMeta = null;
+
+	/** state of metadata is valid */
 	private boolean metaChecked = false;
-	// unresolved file metadata
-	private HashMap unresolvedFileMeta = null;
-	// time of last access of this object (not the filesystem)
+
+	/** unresolved file metadata */
+	private Map unresolvedFileMeta = null;
+
+	/** time of last access of this object (not the filesystem) */
 	private long objectATime = 0;
-	// time the file system directory was last modified
+
+	/** time directory was last modified on the file system */
 	private long dirMTime = 0;
 
-	/** Constructor with digilib directory path and a parent DocuDirCache.
+	/**
+	 * Constructor with digilib directory path and a parent DocuDirCache.
 	 * 
-	 * Directory names at the given path are appended to the base directories 
-	 * from the cache. The directory is checked on disk and isValid is set. 
+	 * Directory names at the given path are appended to the base directories
+	 * from the cache. The directory is checked on disk and isValid is set.
 	 * 
 	 * @see readDir
-	 *  
-	 * @param path digilib directory path name
-	 * @param cache parent DocuDirCache
+	 * 
+	 * @param path
+	 *            digilib directory path name
+	 * @param cache
+	 *            parent DocuDirCache
 	 */
 	public DocuDirectory(String path, DocuDirCache cache) {
 		this.dirName = path;
@@ -73,8 +84,9 @@ public class DocuDirectory extends Directory {
 		checkDir();
 	}
 
-	/** Sets and checks the dir object.
-	 * 
+	/**
+	 * Sets and checks the dir object.
+	 *  
 	 */
 	protected void initDir() {
 		String baseDirName = cache.getBaseDirNames()[0];
@@ -86,35 +98,26 @@ public class DocuDirectory extends Directory {
 		dir = new File(baseDirName, dirName);
 	}
 
-	/** The digilib name of the parent directory.
-	 * 
-	 * Returns null if there is no parent.
-	 */
-	public String getParentDirName() {
-		String s = null;
-		int lastidx = dirName.lastIndexOf("/");
-		if (lastidx > 0) {
-			s = dirName.substring(0, lastidx);
-		}
-		return s;
-	}
-
-	/** number of DocuFiles in this directory.
-	 * 
+	/**
+	 * number of DocuFiles in this directory.
+	 *  
 	 */
 	public int size() {
-		return ((list != null)&&(list[0] != null)) ? list[0].size() : 0;
+		return ((list != null) && (list[0] != null)) ? list[0].size() : 0;
 	}
 
-	/** number of files of this class in this directory.
+	/**
+	 * number of files of this class in this directory.
 	 * 
-	 * @param fc fileClass
+	 * @param fc
+	 *            fileClass
 	 */
 	public int size(int fc) {
-		return ((list != null)&&(list[fc] != null)) ? list[fc].size() : 0;
+		return ((list != null) && (list[fc] != null)) ? list[fc].size() : 0;
 	}
 
-	/** Returns the ImageFile at the index.
+	/**
+	 * Returns the ImageFile at the index.
 	 * 
 	 * @param index
 	 * @return
@@ -126,10 +129,12 @@ public class DocuDirectory extends Directory {
 		return (ImageFileset) list[0].get(index);
 	}
 
-	/** Returns the file of the class at the index.
+	/**
+	 * Returns the file of the class at the index.
 	 * 
 	 * @param index
-	 * @param fc fileClass
+	 * @param fc
+	 *            fileClass
 	 * @return
 	 */
 	public DocuDirent get(int index, int fc) {
@@ -139,7 +144,8 @@ public class DocuDirectory extends Directory {
 		return (DocuDirent) list[fc].get(index);
 	}
 
-	/** Checks if the directory exists on the filesystem.
+	/**
+	 * Checks if the directory exists on the filesystem.
 	 * 
 	 * Sets isValid.
 	 * 
@@ -153,42 +159,26 @@ public class DocuDirectory extends Directory {
 		return isValid;
 	}
 
-	/** Read the filesystem directory and fill this object.
+	/**
+	 * Read the filesystem directory and fill this object.
 	 * 
 	 * Clears the List and (re)reads all files.
 	 * 
 	 * @return boolean the directory exists
 	 */
 	public boolean readDir() {
-		// list of base dirs from the parent cache
-		String[] baseDirNames = cache.getBaseDirNames();
-		// first file extension to try for scaled directories
-		String scalext = null;
-		// number of base dirs
-		int nb = baseDirNames.length;
-		// array of base dirs
-		Directory[] dirs = new Directory[nb];
 		// check directory first
 		checkDir();
 		if (!isValid) {
 			return false;
 		}
-		// first entry is this directory
-		dirs[0] = this;
-		// fill array with the remaining directories
-		for (int j = 1; j < nb; j++) {
-			File d = new File(baseDirNames[j], dirName);
-			if (d.isDirectory()) {
-				dirs[j] = new Directory(d);
-				dirs[j].readDir();
-			}
-		}
-
+		// first file extension to try for scaled directories
+		String scalext = null;
 		// read all filenames
-		logger.debug("reading directory "+dir.getPath());
+		logger.debug("reading directory " + dir.getPath());
 		/*
-		 * using ReadableFileFilter is safer (we won't get directories
-		 * with file extensions) but slower.
+		 * using ReadableFileFilter is safer (we won't get directories with file
+		 * extensions) but slower.
 		 */
 		File[] allFiles = null;
 		if (cache.safeDirIndex) {
@@ -201,28 +191,58 @@ public class DocuDirectory extends Directory {
 			// not a directory
 			return false;
 		}
+		// list of base dirs from the parent cache
+		String[] baseDirNames = cache.getBaseDirNames();
+		// number of base dirs
+		int nb = baseDirNames.length;
+		// array of base dirs
+		Directory[] dirs = new Directory[nb];
+		// first entry is this directory
+		dirs[0] = this;
+		// fill array with the remaining directories
+		for (int j = 1; j < nb; j++) {
+			File d = new File(baseDirNames[j], dirName);
+			if (d.isDirectory()) {
+				dirs[j] = new Directory(d);
+				dirs[j].readDir();
+			}
+		}
+
 		// go through all file classes
-		for (int nc = 0; nc < FileOps.NUM_CLASSES; nc++) {
-			int fc = cache.getFileClasses()[nc];
-			//logger.debug("filtering directory "+dir.getPath()+" for class "+fc);
-			File[] fl = FileOps.listFiles(allFiles, FileOps.filterForClass(fc));
-			//logger.debug("  done");
+		for (int classIdx = 0; classIdx < FileOps.NUM_CLASSES; classIdx++) {
+			int fileClass = cache.getFileClasses()[classIdx];
+			//logger.debug("filtering directory "+dir.getPath()+" for class
+			// "+fc);
+			File[] fileList = FileOps.listFiles(allFiles, FileOps
+					.filterForClass(fileClass));
+			//logger.debug(" done");
 			// number of files in the directory
-			int nf = fl.length;
-			if (nf > 0) {
+			int numFiles = fileList.length;
+			if (numFiles > 0) {
 				// create new list
-				list[fc] = new ArrayList(nf);
+				list[fileClass] = new ArrayList(numFiles);
 				// sort the file names alphabetically and iterate the list
-				Arrays.sort(fl);
+				Arrays.sort(fileList);
 				Map hints = FileOps.newHints(FileOps.HINT_BASEDIRS, dirs);
 				hints.put(FileOps.HINT_FILEEXT, scalext);
-				for (int i = 0; i < nf; i++) {
-					DocuDirent f = FileOps.fileForClass(fc, fl[i], hints);
+				for (int i = 0; i < numFiles; i++) {
+					DocuDirent f = FileOps.fileForClass(fileClass, fileList[i],
+							hints);
 					// add the file to our list
-					list[fc].add(f);
+					list[fileClass].add(f);
 					f.setParent(this);
 				}
 			}
+		}
+		// clear the scaled directories
+		for (int j = 1; j < nb; j++) {
+			if (dirs[j] != null) {
+				dirs[j].clearFilenames();
+			}
+		}
+		// update number of cached files if this was the first time
+		if (dirMTime == 0) {
+			cache.numFiles += size();
 		}
 		dirMTime = dir.lastModified();
 		// read metadata as well
@@ -230,7 +250,8 @@ public class DocuDirectory extends Directory {
 		return isValid;
 	}
 
-	/** Check to see if the directory has been modified and reread if necessary.
+	/**
+	 * Check to see if the directory has been modified and reread if necessary.
 	 * 
 	 * @return boolean the directory is valid
 	 */
@@ -245,8 +266,9 @@ public class DocuDirectory extends Directory {
 		return isValid;
 	}
 
-	/** Read directory metadata. 
-	 * 
+	/**
+	 * Read directory metadata.
+	 *  
 	 */
 	public void readMeta() {
 		// check for directory metadata...
@@ -255,12 +277,12 @@ public class DocuDirectory extends Directory {
 			XMLMetaLoader ml = new XMLMetaLoader();
 			try {
 				// read directory meta file
-				HashMap fileMeta = ml.loadURL(mf.getAbsolutePath());
+				Map fileMeta = ml.loadURL(mf.getAbsolutePath());
 				if (fileMeta == null) {
 					return;
 				}
 				// meta for the directory itself is in the "" bin
-				dirMeta = (HashMap) fileMeta.remove("");
+				dirMeta = (Map) fileMeta.remove("");
 				// read meta for files in this directory
 				readFileMeta(fileMeta, null);
 				// is there meta for other files left?
@@ -281,8 +303,9 @@ public class DocuDirectory extends Directory {
 		metaChecked = true;
 	}
 
-	/** Read metadata from all known parent directories.
-	 * 
+	/**
+	 * Read metadata from all known parent directories.
+	 *  
 	 */
 	public void readParentMeta() {
 		// check the parent directories for additional file meta
@@ -299,16 +322,18 @@ public class DocuDirectory extends Directory {
 		}
 	}
 
-	/** Read metadata for the files in this directory.
+	/**
+	 * Read metadata for the files in this directory.
 	 * 
-	 * Takes a HashMap with meta-information, adding the relative path
-	 * before the lookup.
+	 * Takes a Map with meta-information, adding the relative path before the
+	 * lookup.
 	 * 
 	 * @param fileMeta
 	 * @param relPath
-	 * @param fc fileClass
+	 * @param fc
+	 *            fileClass
 	 */
-	protected void readFileMeta(HashMap fileMeta, String relPath) {
+	protected void readFileMeta(Map fileMeta, String relPath) {
 		if (list == null) {
 			// there are no files
 			return;
@@ -326,7 +351,7 @@ public class DocuDirectory extends Directory {
 				// prepend path to the filename
 				String fn = path + f.getName();
 				// look up meta for this file and remove from dir
-				HashMap meta = (HashMap) fileMeta.remove(fn);
+				Map meta = (Map) fileMeta.remove(fn);
 				if (meta != null) {
 					// store meta in file
 					f.setFileMeta(meta);
@@ -335,7 +360,7 @@ public class DocuDirectory extends Directory {
 		}
 	}
 
-	protected void notifyChildMeta(HashMap childmeta) {
+	protected void notifyChildMeta(Map childmeta) {
 		List children = cache.getChildren(this.dirName, true);
 		if (children.size() > 0) {
 			for (Iterator i = children.iterator(); i.hasNext();) {
@@ -345,7 +370,8 @@ public class DocuDirectory extends Directory {
 		}
 	}
 
-	/** Update access time.
+	/**
+	 * Update access time.
 	 * 
 	 * @return long time of last access.
 	 */
@@ -355,26 +381,31 @@ public class DocuDirectory extends Directory {
 		return t;
 	}
 
-	/** Searches for the file with the name <code>fn</code>.
+	/**
+	 * Searches for the file with the name <code>fn</code>.
 	 * 
-	 * Searches the directory for the file with the name <code>fn</code> and returns 
-	 * its index. Returns -1 if the file cannot be found. 
-	 *  
-	 * @param fn filename
-	 * @param fc file class
+	 * Searches the directory for the file with the name <code>fn</code> and
+	 * returns its index. Returns -1 if the file cannot be found.
+	 * 
+	 * @param fn
+	 *            filename
+	 * @param fc
+	 *            file class
 	 * @return int index of file <code>fn</code>
 	 */
 	public int indexOf(String fn) {
 		int fc = FileOps.classForFilename(fn);
 		return indexOf(fn, fc);
 	}
-	
-	/** Searches for the file with the name <code>fn</code> and class fc.
+
+	/**
+	 * Searches for the file with the name <code>fn</code> and class fc.
 	 * 
-	 * Searches the directory for the file with the name <code>fn</code> and returns 
-	 * its index. Returns -1 if the file cannot be found. 
-	 *  
-	 * @param fn filename
+	 * Searches the directory for the file with the name <code>fn</code> and
+	 * returns its index. Returns -1 if the file cannot be found.
+	 * 
+	 * @param fn
+	 *            filename
 	 * @return int index of file <code>fn</code>
 	 */
 	public int indexOf(String fn, int fc) {
@@ -388,32 +419,37 @@ public class DocuDirectory extends Directory {
 		if (list[fc] == null) {
 			return -1;
 		}
-		// linear search -> worst performance
-		int n = list[fc].size();
-		for (int i = 0; i < n; i++) {
-			DocuDirent fs = (DocuDirent) list[fc].get(i);
-			if (fs.getName().equals(fn)) {
-				// filename matches
-				return i;
-			}
-		}
-		// try again without extension
-		for (int i = 0; i < n; i++) {
-			DocuDirent fs = (DocuDirent) list[fc].get(i);
-			if (FileOps.basename(fs.getName()).equals(FileOps.basename(fn))) {
+		// search for exact match
+		int idx = Collections.binarySearch(list[fc], fn);
+		if (idx >= 0) {
+			return idx;
+		} else {
+			// try closest matches without extension
+			idx = -idx;
+			String fb = FileOps.basename(fn);
+			DocuDirent fs = (DocuDirent) list[fc].get(idx - 1);
+			if (FileOps.basename(fs.getName()).equals(fb)) {
 				// basename matches
-				return i;
+				return idx - 1;
 			}
+			fs = (DocuDirent) list[fc].get(idx + 1);
+			if (FileOps.basename(fs.getName()).equals(fb)) {
+				// basename matches
+				return idx + 1;
+			}
+
 		}
 		return -1;
 	}
 
-	/** Finds the DocuDirent with the name <code>fn</code>.
+	/**
+	 * Finds the DocuDirent with the name <code>fn</code>.
 	 * 
-	 * Searches the directory for the DocuDirent with the name <code>fn</code> and returns 
-	 * it. Returns null if the file cannot be found. 
-	 *  
-	 * @param fn filename
+	 * Searches the directory for the DocuDirent with the name <code>fn</code>
+	 * and returns it. Returns null if the file cannot be found.
+	 * 
+	 * @param fn
+	 *            filename
 	 * @return DocuDirent
 	 */
 	public DocuDirent find(String fn) {
@@ -425,12 +461,15 @@ public class DocuDirectory extends Directory {
 		return null;
 	}
 
-	/** Finds the DocuDirent with the name <code>fn</code> and class <code>fc</code>.
+	/**
+	 * Finds the DocuDirent with the name <code>fn</code> and class
+	 * <code>fc</code>.
 	 * 
-	 * Searches the directory for the DocuDirent with the name <code>fn</code> and returns 
-	 * it. Returns null if the file cannot be found. 
-	 *  
-	 * @param fn filename
+	 * Searches the directory for the DocuDirent with the name <code>fn</code>
+	 * and returns it. Returns null if the file cannot be found.
+	 * 
+	 * @param fn
+	 *            filename
 	 * @return DocuDirent
 	 */
 	public DocuDirent find(String fn, int fc) {
@@ -442,13 +481,16 @@ public class DocuDirectory extends Directory {
 	}
 
 	/**
-	 * @return String
+	 * Returns the digilib canonical name.
+	 * 
+	 * @return
 	 */
 	public String getDirName() {
 		return dirName;
 	}
 
-	/** The directory is valid (exists on disk).
+	/**
+	 * The directory is valid (exists on disk).
 	 * 
 	 * @return boolean
 	 */
@@ -456,7 +498,8 @@ public class DocuDirectory extends Directory {
 		return isValid;
 	}
 
-	/** The directory has been read from disk.
+	/**
+	 * The directory has been read from disk.
 	 * 
 	 * @return
 	 */
@@ -474,10 +517,10 @@ public class DocuDirectory extends Directory {
 	/**
 	 * @return Hashtable
 	 */
-	public HashMap getDirMeta() {
+	public Map getDirMeta() {
 		return dirMeta;
 	}
-	
+
 	/**
 	 * Checks metadata
 	 *  
@@ -499,9 +542,11 @@ public class DocuDirectory extends Directory {
 
 	/**
 	 * Sets the dirMeta.
-	 * @param dirMeta The dirMeta to set
+	 * 
+	 * @param dirMeta
+	 *            The dirMeta to set
 	 */
-	public void setDirMeta(HashMap dirMeta) {
+	public void setDirMeta(Map dirMeta) {
 		this.dirMeta = dirMeta;
 	}
 

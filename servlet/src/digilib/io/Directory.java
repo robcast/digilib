@@ -125,10 +125,15 @@ public class Directory {
 	public String[] getFilenames() {
 		return list;
 	}
+	
 	/**
 	 * @param filenames The filenames to set.
 	 */
 	public void setFilenames(String[] filenames) {
 		this.list = filenames;
+	}
+	
+	public void clearFilenames() {
+		this.list = null;
 	}
 }

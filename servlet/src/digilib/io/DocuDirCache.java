@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -38,21 +39,23 @@ import digilib.servlet.DigilibConfiguration;
 public class DocuDirCache {
 
 	/** general logger for this class */
-	protected Logger logger = Logger.getLogger(this.getClass());
+	Logger logger = Logger.getLogger(this.getClass());
 	/** HashMap of directories */
-	protected HashMap map = null;
+	Map map = null;
 	/** names of base directories */
-	private String[] baseDirNames = null;
+	String[] baseDirNames = null;
 	/** array of allowed file classes (image/text) */
 	private int[] fileClasses = null;
 	/** number of files in the whole cache (approximate) */
-	private long numFiles = 0;
+	long numFiles = 0;
 	/** number of cache hits */
-	private long hits = 0;
+	long hits = 0;
 	/** number of cache misses */
-	private long misses = 0;
+	long misses = 0;
 	/** use safe (but slow) indexing */
 	boolean safeDirIndex = false;
+	/** the root directory element */
+	public static Directory ROOT = null;
 
 	/**
 	 * Constructor with array of base directory names and file classes.
@@ -111,8 +114,8 @@ public class DocuDirCache {
 	 */
 	public void putDir(DocuDirectory newDir) {
 		put(newDir);
-		String parent = newDir.getParentDirName();
-		if (parent != null) {
+		String parent = FileOps.parent(newDir.getDirName());
+		if (parent != "") {
 			// check the parent in the cache
 			DocuDirectory pd = (DocuDirectory) map.get(parent);
 			if (pd == null) {
@@ -146,7 +149,7 @@ public class DocuDirCache {
 					l.add(dd);
 				}
 			} else {
-				if (dd.getParentDirName().equals(dirname)) {
+				if (FileOps.parent(dd.getDirName()).equals(dirname)) {
 					l.add(dd);
 				}
 			}
