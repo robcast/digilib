@@ -23,8 +23,8 @@
 package digilib.io;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import digilib.servlet.DigilibConfiguration;
 
@@ -45,7 +45,7 @@ public class AliasingDocuDirCache extends DocuDirCache {
 			throws FileOpException {
 		// create standard DocuDirCache
 		super(baseDirs, fileClasses, dlConfig);
-		HashMap pathMap = null;
+		Map pathMap = null;
 		// read alias config file
 		try {
 			// load into pathMap
