@@ -56,7 +56,7 @@ import digilib.io.FileOps;
 public class Scaler extends HttpServlet {
 
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.8b1";
+	public static final String dlVersion = "1.8b4";
 
 	// Utils instance with debuglevel
 	Utils util;
@@ -69,7 +69,7 @@ public class Scaler extends HttpServlet {
 	// DocuDirCache instance
 	DocuDirCache dirCache;
 
-	// DigilibParameters instance
+	// DigilibConfiguration instance
 	DigilibConfiguration dlConfig;
 
 	// use authorization database
@@ -276,10 +276,6 @@ public class Scaler extends HttpServlet {
 
 			// get PathInfo
 			String loadPathName = dlRequest.getFilePath();
-			// if it's zoomed, try hires version (to be optimized...)
-			if ((paramWW < 1f) || (paramWH < 1f)) {
-				preScaledFirst = false;
-			}
 
 			/*
 			 * check permissions
@@ -308,14 +304,31 @@ public class Scaler extends HttpServlet {
 				}
 			}
 
+			// if it's zoomed, try hires version (to be optimized...)
+			if ((paramWW < 1f) || (paramWH < 1f)) {
+				preScaledFirst = false;
+			}
+
 			// find the file
 			DocuFile fileToLoad;
-			DocuFileset fileset = dirCache.getFileset(loadPathName, dlRequest.getPn());
+			DocuFileset fileset =
+				dirCache.getFileset(loadPathName, dlRequest.getPn());
+			if (fileset == null) {
+				throw new FileOpException(
+					"File "
+						+ loadPathName
+						+ "("
+						+ dlRequest.getPn()
+						+ ") not found.");
+			}
+
 			// simplistic selection of resolution
 			if (preScaledFirst) {
-				fileToLoad = (DocuFile)fileset.lastElement();
+				// get last element
+				fileToLoad = fileset.get(fileset.size() - 1);
 			} else {
-				fileToLoad = (DocuFile)fileset.firstElement();
+				// get first element
+				fileToLoad = fileset.get(0);
 			}
 			util.dprintln(1, "Loading: " + fileToLoad.getFile());
 
@@ -362,7 +375,7 @@ public class Scaler extends HttpServlet {
 				imgWidth = fileToLoad.getSize().width;
 				imgHeight = fileToLoad.getSize().height;
 			}
-			
+
 			util.dprintln(2, "IMG: " + imgWidth + "x" + imgHeight);
 			util.dprintln(
 				2,
@@ -570,14 +583,13 @@ public class Scaler extends HttpServlet {
 
 			// rotate image (first shot :-)
 			if (paramROT != 0) {
-				docuImage.rotate(
-					paramROT);
+				docuImage.rotate(paramROT);
 			}
 
 			// contrast and brightness enhancement
 			if ((paramCONT != 0) || (paramBRGT != 0)) {
 				double mult = Math.pow(2, paramCONT);
-				docuImage.enhance((float)mult, (float)paramBRGT);
+				docuImage.enhance((float) mult, (float) paramBRGT);
 			}
 
 			// color modification
@@ -592,11 +604,11 @@ public class Scaler extends HttpServlet {
 				// calculate "contrast" values
 				float[] mult = new float[3];
 				for (int i = 0; i < 3; i++) {
-					mult[i] = (float)Math.pow(2, (double)paramRGBM[i]);
+					mult[i] = (float) Math.pow(2, (double) paramRGBM[i]);
 				}
 				docuImage.enhanceRGB(mult, paramRGBA);
 			}
-			
+
 			util.dprintln(
 				2,
 				"time " + (System.currentTimeMillis() - startTime) + "ms");
