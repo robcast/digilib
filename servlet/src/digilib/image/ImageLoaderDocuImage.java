@@ -286,32 +286,37 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		// create offset to make shure the rotated image has no negative coordinates
 		double w = img.getWidth();
 		double h = img.getHeight();
-		double xoff = (w / 2) * Math.sin(rangle);
-		double yoff = (h / 2) * Math.sin(rangle);
-		double off = Math.max(xoff, yoff)+10;
-		// move image
-		AffineTransform trafo = AffineTransform.getTranslateInstance(off, off);
-		// new center of rotation 
-		double x = (w / 2) + off;
-		double y = (h / 2) + off;
+		AffineTransform trafo = new AffineTransform();
+		// center of rotation 
+		double x = (w / 2);
+		double y = (h / 2);
 		trafo.rotate(rangle, x, y);
-		// transform image
+		// try rotation to see how far we're out of bounds
 		AffineTransformOp rotOp = new AffineTransformOp(trafo, interpol);
+		Rectangle2D rotbounds = rotOp.getBounds2D(img);
+		double xoff = rotbounds.getX();
+		double yoff = rotbounds.getY();
+		// move image back in line
+		trafo.preConcatenate(AffineTransform.getTranslateInstance(-xoff, -yoff));
+		// transform image
+		rotOp = new AffineTransformOp(trafo, interpol);
 		BufferedImage rotImg = rotOp.filter(img, null);
 		// calculate new bounding box
-		Rectangle2D bounds = rotOp.getBounds2D(img);
+		//Rectangle2D bounds = rotOp.getBounds2D(img);
 
 		if (rotImg == null) {
 			util.dprintln(2, "ERROR: error in rotate");
 			throw new ImageOpException("Unable to rotate");
 		}
+		img = rotImg;
 		// crop new image (with self-made rounding)
-		img =
+		/* img =
 			rotImg.getSubimage(
 				(int) (bounds.getX()+0.5),
 				(int) (bounds.getY()+0.5),
 				(int) (bounds.getWidth()+0.5),
 				(int) (bounds.getHeight()+0.5));
+		*/
 	}
 
 	public void mirror(double angle) throws ImageOpException {
