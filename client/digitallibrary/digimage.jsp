@@ -51,6 +51,7 @@ String imageLocation = dlRequest.getAsString("base.url") + "/servlet/Scaler?" + 
   newParameter('ddpix', '', 9);
   newParameter('ddpiy', '', 9);
   document.id='digilib';
+  dl_param_init();
 </script>
 </head>
 <body bgcolor="#666666" onload="dl_init()">

@@ -193,7 +193,21 @@ function bestPicSize(elem, inset) {
 var elemScaler = null;
 var picElem = null;
 
+
+function dl_param_init() {
+    // parameter initialisation before onload
+
+    // put the query parameters (sans "?") in the parameters array
+    parseParameters(location.search.slice(1));
+    // treat special parameters
+    dlMarks = parseMarks();
+    dlArea = parseArea();
+    dlFlags = parseFlags();
+}
+
+
 function dl_init() {
+    // initalisation on load
     elemScaler = getElement("scaler", true);
     picElem = getElement("pic", true);
     if (picElem == null && elemScaler) {
@@ -422,7 +436,7 @@ function removeMark() {
 }
 
 
-function getRef(select) {
+function getRef() {
     // returns a reference to the current digilib set
     if (! baseUrl) {
 	var baseUrl = location.protocol + "//" + location.host + location.pathname;
