@@ -6,6 +6,9 @@ var pt = "-";
 if ((parent.mainFrame.getParameter)&&(parent.mainFrame.getParameter("pn"))) {
     pt = parent.mainFrame.getParameter("pt");
     pn = parent.mainFrame.getParameter("pn");
+} else {
+    // if the mainFrame is not ready then wait
+    setTimeout("show()", 500);
 }
 
 function show() {
