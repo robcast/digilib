@@ -130,4 +130,7 @@ public abstract class DocuImageImpl implements DocuImage {
 		// emtpy implementation
 	}
 
+	public void dispose() {
+	}
+
 }

@@ -207,5 +207,12 @@ public interface DocuImage {
 	 * @param quality The quality to set
 	 */
 	public void setQuality(int quality);
+	
+	/** Frees all resources bound to the DocuImage.
+	 * 
+	 * Things that should be freed are image objects and open files.
+	 * 
+	 */
+	public void dispose();
 
 }
