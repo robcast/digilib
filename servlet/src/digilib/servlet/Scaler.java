@@ -58,8 +58,10 @@ import digilib.io.ImageFileset;
 //public class Scaler extends HttpServlet implements SingleThreadModel {
 public class Scaler extends HttpServlet {
 
+	private static final long serialVersionUID = -325080527268912852L;
+
 	// digilib servlet version (for all components)
-	public static final String dlVersion = "1.19b5";
+	public static final String dlVersion = "1.21b1";
 
 	// logger for accounting requests
 	Logger accountlog = Logger.getLogger("account.request");
@@ -417,7 +419,12 @@ public class Scaler extends HttpServlet {
 					if (dlRequest.hasOption("mo", "rawfile")) {
 						mt = "application/octet-stream";
 					}
+					logger.debug("Sending RAW File as is.");
 					ServletOps.sendFile(fileToLoad.getFile(), mt, response);
+					logger.info("Done in "
+							+ (System.currentTimeMillis() - startTime)
+							+ "ms");
+					return;
 				}
 			}
 
