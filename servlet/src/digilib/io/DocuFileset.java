@@ -19,55 +19,105 @@
  */
 package digilib.io;
 
-import java.util.Collection;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.ListIterator;
 
 /**
  * @author casties
  */
-public class DocuFileset extends Vector {
+public class DocuFileset {
 
+	// list of files
+	private ArrayList list = null;
 	// metadata
-	private Hashtable fileMeta = null;
+	private HashMap fileMeta = null;
 	// parent directory
 	private DocuDirectory parent = null;
 
-	public DocuFileset(int initialCapacity, int capacityIncrement) {
-		super(initialCapacity, capacityIncrement);
-	}
+	/*
+	 * constructors
+	 */
 
 	public DocuFileset(int initialCapacity) {
-		super(initialCapacity);
+		list = new ArrayList(initialCapacity);
 	}
 
-	public DocuFileset() {
-		super();
-	}
-
-	public DocuFileset(Collection c) {
-		super(c);
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.Collection#add(java.lang.Object)
+	/*
+	 * other stuff
 	 */
-	public synchronized boolean add(DocuFile f) {
-		f.setParent(this);
-		return super.add(f);
-	}
 
-	public void readMeta() {
+	/** Adds a DocuFile to this Fileset.
+	 * 
+	 * The files should be added in the order of lower resolutions. The first
+	 * file is considered the hires "original". 
+	 * 
+	 * @param f file to add
+	 * @return true (always)
+	 */
+	public boolean add(DocuFile f) {
+		f.setParent(this);
+		return list.add(f);
+	}
+	
+	/** The number of image files in this Fileset.
+	 * 
+	 * @return number of image files
+	 */
+	public int size() {
+		return (list != null) ? list.size() : 0;
+	}
+	
+	/** Get the DocuFile at the index.
+	 * 
+	 * @param index
+	 * @return
+	 */
+	public DocuFile get(int index) {
+		return (DocuFile) list.get(index);
+	}
+	
+	
+	/** Get an Iterator for this Fileset starting at the highest resolution 
+	 * images.
+	 * 
+	 * @return
+	 */
+	public ListIterator getHiresIterator() {
+		return list.listIterator();
+	}
+	
+	/** Get an Iterator for this Fileset starting at the lowest resolution 
+	 * images.
+	 * 
+	 * The Iterator starts at the last element, so you have to use it backwards 
+	 * with hasPrevious() and previous().
+	 * 
+	 * @return
+	 */
+	public ListIterator getLoresIterator() {
+		return list.listIterator(list.size());
+	}
+	
+	/** Reads meta-data for this Fileset if there is any.
+	 * (not yet implemented)
+	 */
+	public void checkMeta() {
 		// check for file metadata...
 	}
 
+	/** The name of the (original) image file.
+	 * 
+	 * @return
+	 */
 	public String getName() {
-		if (this.elementCount > 0) {
-			return ((DocuFile) firstElement()).getName();
+		if (!list.isEmpty()) {
+			return ((DocuFile) list.get(0)).getName();
 		}
 		return null;
 	}
-	/**
+	
+	/** Returns the parent DocuDirectory.
 	 * @return DocuDirectory
 	 */
 	public DocuDirectory getParent() {
@@ -80,6 +130,22 @@ public class DocuFileset extends Vector {
 	 */
 	public void setParent(DocuDirectory parent) {
 		this.parent = parent;
+	}
+
+	/** Returns the meta-data for this fileset.
+	 * 
+	 * @return HashMap
+	 */
+	public HashMap getFileMeta() {
+		return fileMeta;
+	}
+
+	/**
+	 * Sets the fileMeta.
+	 * @param fileMeta The fileMeta to set
+	 */
+	public void setFileMeta(HashMap fileMeta) {
+		this.fileMeta = fileMeta;
 	}
 
 }

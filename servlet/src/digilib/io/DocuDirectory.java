@@ -22,16 +22,18 @@
 package digilib.io;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * @author casties
  */
-public class DocuDirectory extends Vector {
+public class DocuDirectory {
 
+	// list of files
+	private ArrayList list = null;
 	// directory object is valid (has been read)
 	private boolean isValid = false;
 	// names of base directories
@@ -41,30 +43,14 @@ public class DocuDirectory extends Vector {
 	// default/hires directory
 	private File dir = null;
 	// directory metadata
-	private Hashtable dirMeta = null;
+	private HashMap dirMeta = null;
 	// time of last access of this object (not the filesystem)
 	private long objectATime = 0;
 	// time the file system directory was last modified
 	private long dirMTime = 0;
 
 	/*
-	 * inherited stuff
-	 */
-
-	public DocuDirectory(int initialCapacity, int capacityIncrement) {
-		super(initialCapacity, capacityIncrement);
-	}
-
-	public DocuDirectory(int initialCapacity) {
-		super(initialCapacity);
-	}
-
-	public DocuDirectory(Collection c) {
-		super(c);
-	}
-
-	/*
-	 * new stuff
+	 * constructors
 	 */
 
 	/** Constructor with directory path and set of base directories.
@@ -77,10 +63,21 @@ public class DocuDirectory extends Vector {
 	 * @param bd array of base directory names
 	 */
 	public DocuDirectory(String path, String[] bd) {
-		super();
 		dirName = path;
 		baseDirNames = bd;
 		readDir();
+	}
+
+	/*
+	 * other stuff
+	 */
+
+	public int size() {
+		return (list != null) ? list.size() : 0;
+	}
+
+	public DocuFileset get(int index) {
+		return (list != null) ? (DocuFileset) list.get(index) : null;
 	}
 
 	/** Read the directory and fill this object.
@@ -90,8 +87,10 @@ public class DocuDirectory extends Vector {
 	 * @return boolean the directory exists
 	 */
 	public boolean readDir() {
+		// first file extension to try for scaled directories
+		String fext = null;
 		// clear directory first
-		clear();
+		list = null;
 		isValid = false;
 		// number of base dirs
 		int nb = baseDirNames.length;
@@ -114,16 +113,18 @@ public class DocuDirectory extends Vector {
 				// not a directory
 				return false;
 			}
-			// number of image files
+			// number of image files in the directory
 			int nf = fl.length;
 			if (nf > 0) {
-				// resize Vector
-				this.ensureCapacity(nf);
+				// create new list
+				list = new ArrayList(nf);
 
 				// sort the file names alphabetically and iterate the list
 				Arrays.sort(fl);
 				for (int i = 0; i < nf; i++) {
 					String fn = fl[i].getName();
+					String fnx =
+						fn.substring(0, fn.lastIndexOf('.') + 1);
 					// add the first DocuFile to a new DocuFileset 
 					DocuFileset fs = new DocuFileset(nb);
 					fs.add(new DocuFile(fl[i]));
@@ -132,14 +133,37 @@ public class DocuDirectory extends Vector {
 						if (dirs[j] == null) {
 							continue;
 						}
-						File f = new File(dirs[j], fn);
+						File f;
+						if (fext != null) {
+							// use the last extension
+							f = new File(dirs[j], fnx + fext);
+						} else {
+							// try the same filename as the original
+							f = new File(dirs[j], fn);
+						}
 						// if the file exists, add to the DocuFileset
 						if (f.canRead()) {
 							fs.add(new DocuFile(f));
+						} else {
+							// try other file extensions
+							Iterator exts = FileOps.getImageExtensionIterator();
+							while (exts.hasNext()) {
+								String s = (String) exts.next();
+								f =
+									new File(
+										dirs[j],
+										fnx + s);
+								// if the file exists, add to the DocuFileset
+								if (f.canRead()) {
+									fs.add(new DocuFile(f));
+									fext = s;
+									break;
+								}
+							}
 						}
 					}
-					// add the fileset to our Vector
-					add(fs);
+					// add the fileset to our list
+					list.add(fs);
 					fs.setParent(this);
 				}
 			}
@@ -192,8 +216,9 @@ public class DocuDirectory extends Vector {
 	 */
 	public int indexOf(String fn) {
 		// linear search -> worst performance
-		for (int i = 0; i < elementCount; i++) {
-			DocuFileset fs = (DocuFileset) get(i);
+		int n = list.size();
+		for (int i = 0; i < n; i++) {
+			DocuFileset fs = (DocuFileset) list.get(i);
 			if (fs.getName().equals(fn)) {
 				return i;
 			}
@@ -212,7 +237,7 @@ public class DocuDirectory extends Vector {
 	public DocuFileset find(String fn) {
 		int i = indexOf(fn);
 		if (i >= 0) {
-			return (DocuFileset) get(i);
+			return (DocuFileset) list.get(i);
 		}
 		return null;
 	}
@@ -241,7 +266,7 @@ public class DocuDirectory extends Vector {
 	/**
 	 * @return Hashtable
 	 */
-	public Hashtable getDirMeta() {
+	public HashMap getDirMeta() {
 		return dirMeta;
 	}
 
@@ -256,7 +281,7 @@ public class DocuDirectory extends Vector {
 	 * Sets the dirMeta.
 	 * @param dirMeta The dirMeta to set
 	 */
-	public void setDirMeta(Hashtable dirMeta) {
+	public void setDirMeta(HashMap dirMeta) {
 		this.dirMeta = dirMeta;
 	}
 

@@ -22,48 +22,38 @@
 package digilib.io;
 
 import java.io.File;
-import java.util.Hashtable;
+import java.util.HashMap;
 
 /**
  * @author casties
  */
-public class DocuDirCache extends Hashtable {
+public class DocuDirCache {
 
+	// HashMap of directories
+	private HashMap map = null;
 	// names of base directories
 	private String[] baseDirNames = null;
-	// number of files in the whole cache (not reliable)
+	// number of files in the whole cache (approximate)
 	private long numFiles = 0;
 	// number of cache hits
 	private long hits = 0;
 	// number of cache misses
 	private long misses = 0;
 
-	/* 
-	 * inherited constructors
-	 */
-	public DocuDirCache(int initialCapacity, float loadFactor) {
-		super(initialCapacity, loadFactor);
-	}
-
-	public DocuDirCache(int initialCapacity) {
-		super(initialCapacity);
-	}
-
-	public DocuDirCache() {
-		super();
-	}
-
-	/* 
-	 * new and exiting stuff 
-	 */
-
 	/** Constructor with array of base directory names.
 	 *  
 	 * @param bd base directory names
 	 */
 	public DocuDirCache(String[] bd) {
-		super();
 		baseDirNames = bd;
+		map = new HashMap();
+	}
+
+	/** The number of directories in the cache.
+	 * @return
+	 */
+	public int size() {
+		return (map != null) ? map.size() : 0;
 	}
 
 	/** Add a DocuDirectory to the cache.
@@ -72,20 +62,30 @@ public class DocuDirCache extends Hashtable {
 	 */
 	public void put(DocuDirectory newdir) {
 		String s = newdir.getDirName();
-		if (containsKey(s)) {
+		if (map.containsKey(s)) {
 			System.out.println("Baah, duplicate key in DocuDirectory.put!");
 		} else {
-			super.put(s, newdir);
+			map.put(s, newdir);
 			numFiles += newdir.size();
 		}
 	}
 
+	/** Returns the DocuFileset with the pathname <code>fn</code> and the 
+	 * index <code>in</code>.
+	 * 
+	 * If <code>fn</code> is a file then the corresponding Fileset is 
+	 * returned and the index is ignored.
+	 * 
+	 * @param fn digilib pathname
+	 * @param in file index
+	 * @return 
+	 */
 	public DocuFileset getFileset(String fn, int in) {
 		DocuDirectory dd;
 		// file number is 1-based, vector index is 0-based
 		int n = in - 1;
 		// first, assume fn is a directory and look in the cache
-		dd = (DocuDirectory) get(fn);
+		dd = (DocuDirectory) map.get(fn);
 		if (dd == null) {
 			// cache miss
 			misses++;
@@ -100,11 +100,13 @@ public class DocuDirCache extends Hashtable {
 			} else {
 				// maybe it's a file
 				if (f.canRead()) {
-					// try the parent directory in the cache
-					dd = (DocuDirectory) get(f.getParent());
+					// get the parent directory
+					String d = fn.substring(0, fn.lastIndexOf(File.separator));
+					// try it in the cache
+					dd = (DocuDirectory) map.get(d);
 					if (dd == null) {
 						// try to read from disk
-						dd = new DocuDirectory(f.getParent(), baseDirNames);
+						dd = new DocuDirectory(d, baseDirNames);
 						if (dd.isValid()) {
 							// add to the cache
 							put(dd);
@@ -112,6 +114,9 @@ public class DocuDirCache extends Hashtable {
 							// invalid path
 							return null;
 						}
+					} else {
+						// not a real cache miss then
+						misses--;
 					}
 					// get the file's index
 					n = dd.indexOf(f.getName());
@@ -124,17 +129,24 @@ public class DocuDirCache extends Hashtable {
 		dd.refresh();
 		if (dd.isValid()) {
 			try {
-				return (DocuFileset) dd.elementAt(n);
+				return dd.get(n);
 			} catch (ArrayIndexOutOfBoundsException e) {
 			}
 		}
 		return null;
 	}
 
+	/** Returns the DocuDirectory indicated by the pathname <code>fn</code>.
+	 * 
+	 * If <code>fn</code> is a file then its parent directory is returned.
+	 * 
+	 * @param fn digilib pathname
+	 * @return
+	 */
 	public DocuDirectory getDirectory(String fn) {
 		DocuDirectory dd;
 		// first, assume fn is a directory and look in the cache
-		dd = (DocuDirectory) get(fn);
+		dd = (DocuDirectory) map.get(fn);
 		if (dd == null) {
 			// cache miss
 			misses++;
@@ -150,7 +162,7 @@ public class DocuDirCache extends Hashtable {
 				// maybe it's a file
 				if (f.canRead()) {
 					// try the parent directory in the cache
-					dd = (DocuDirectory) get(f.getParent());
+					dd = (DocuDirectory) map.get(f.getParent());
 					if (dd == null) {
 						// try to read from disk
 						dd = new DocuDirectory(f.getParent(), baseDirNames);
@@ -161,6 +173,9 @@ public class DocuDirCache extends Hashtable {
 							// invalid path
 							return null;
 						}
+					} else {
+						// not a real cache miss then
+						misses--;
 					}
 				}
 			}
