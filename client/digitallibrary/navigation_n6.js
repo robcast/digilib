@@ -1,7 +1,26 @@
+/*
+Copyright (C) 2003 WTWG, Uni Bern
+ 
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+ 
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+ 
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ 
+Author: Christian Luginbuehl, 01.05.2003 , Version Alcatraz 0.3
+*/
 // this global variable has to be initialised before the frist use of the functions below
 // to fill in the attributes you can use the function init provided below
 // - array with all attributes
-var att = new Array();
+var att = new Object();
 
 // fill in the values of the "att"-array
 function init(fn, pn, ws, mo, mk, wx, wy, ww, wh) {
@@ -10,27 +29,28 @@ function init(fn, pn, ws, mo, mk, wx, wy, ww, wh) {
 	//alert ("DEBUG message (parameters in init):\n\npu = " + pu + "\npn = " + pn + "\nws = " + ws + "\nmo = " + mo + "\nmk = " + mk + "\nwx = " + wx + "\nwy = " + wy + "\nww = " + ww + "\nwh = " + wh);
 
 	// attaching the values to the att-array
-	att[0] = fn;
-	att[1] = parseInt(pn);
-	att[2] = parseFloat(ws);
-	att[3] = mo;
-	att[4] = mk;
-	att[5] = parseFloat(wx);
-	att[6] = parseFloat(wy);
-	att[7] = parseFloat(ww);
-	att[8] = parseFloat(wh);
+	att.fn = fn;
+	att.pn = parseInt(pn);
+	att.ws = parseFloat(ws);
+	att.mo = mo;
+	att.mk = mk;
+	att.wx = parseFloat(wx);
+	att.wy = parseFloat(wy);
+	att.ww = parseFloat(ww);
+	att.wh = parseFloat(wh);
 	
 	// compatablility issue
-	if (att[3].indexOf("f") > -1) {
-		att[3] = "fit";
-	}
+// dangerous at the time - lugi
+//	if (att.mo.indexOf("f") > -1) {
+//		att.mo = "fit";
+//	}
 
 	// converts the old mark format (0-1000) to new format(0.0 - 1.0)
 	// could even be useless now
-	if (att[4] != "0/0") {
-		var tmp = att[4].split(";");
+	if (att.mk != "0/0" && att.mk != "") {
+		var tmp = att.mk.split(";");
 		
-		att[4] = "";
+		att.mk = "";
 		
 		for (i = 0; i < tmp.length; i++) {
 			tmp[i] = tmp[i].split("/");
@@ -40,9 +60,9 @@ function init(fn, pn, ws, mo, mk, wx, wy, ww, wh) {
 				tmp[i][1] /= 1000;
 			}
 			
-			att[4] += tmp[i][0] + "/" + tmp[i][1] + ";";
+			att.mk += tmp[i][0] + "/" + tmp[i][1] + ";";
 		}
-		att[4] = att[4].slice(0, -1);
+		att.mk = att.mk.slice(0, -1);
 	}
 
 	// initialisation stuff
@@ -67,26 +87,27 @@ function init(fn, pn, ws, mo, mk, wx, wy, ww, wh) {
 
 function loadPicture(detailGrade, keepArea) {
 
-	var newQuery = "fn=" + att[0] + "&pn=" + att[1] + "&ws=" + att[2] + "&mo=" + att[3];
+	var newQuery = "fn=" + att.fn + "&pn=" + att.pn + "&ws=" + att.ws + "&mo=" + att.mo;
 
 	if (detailGrade == 0) {
-		att[4] = "0/0";
+		att.mk = "0/0";
 	}
 
 	if ((detailGrade == 1) || (detailGrade == 0 && !keepArea)) {
-		att[5] = 0;
-		att[6] = 0;
-		att[7] = 1;
-		att[8] = 1;
+		att.wx = 0;
+		att.wy = 0;
+		att.ww = 1;
+		att.wh = 1;
 	}
 
-	newQuery += "&mk=" + att[4] + "&wx=" + att[5] + "&wy=" + att[6] + "&ww=" + att[7] + "&wh=" + att[8];
+	newQuery += "&mk=" + att.mk + "&wx=" + att.wx + "&wy=" + att.wy + "&ww=" + att.ww + "&wh=" + att.wh;
 	newQuery += "&dw=" + (innerWidth-30) + "&dh=" + (innerHeight-30);
-	
-	// debug window - checking the parameters passed to the next image
-	//alert ("DEBUG MESSAGE (query-string in loadPicture):\n\n" + newQuery);
+	newQuery += "&lv=1"
 
-	location.href = location.pathname + "?" + newQuery;
+	// debug window - checking the parameters passed to the next image
+	alert ("DEBUG MESSAGE (query-string in loadPicture):\n\n" + newQuery);
+
+	location.href = location.protocol + "//" + location.host + location.pathname + "?" + newQuery;
 }
 
 
@@ -99,8 +120,8 @@ function Point(event) {
 	this.x = this.pageX-parseInt(document.getElementById("lay1").style.left);
 	this.y = this.pageY-parseInt(document.getElementById("lay1").style.top);
 	
-	this.relX = cropFloat(att[5]+(att[7]*this.x/document.pic.offsetWidth));
-	this.relY = cropFloat(att[6]+(att[8]*this.y/document.pic.offsetHeight));
+	this.relX = cropFloat(att.wx+(att.ww*this.x/document.pic.offsetWidth));
+	this.relY = cropFloat(att.wy+(att.wh*this.y/document.pic.offsetHeight));
 
 	return this;
 }
@@ -108,12 +129,12 @@ function Point(event) {
 
 function backPage(keepArea) {
 
-    att[1] = parseInt(att[1]) - 1;
+    att.pn = parseInt(att.pn) - 1;
 
-    if (att[1] > 0) {
+    if (att.pn > 0) {
         loadPicture(0, keepArea);
     } else {
-	    att[1] = parseInt(att[1]) + 1;
+	    att.pn = parseInt(att.pn) + 1;
         alert("You are already on the first page!");
     }
 }
@@ -121,7 +142,7 @@ function backPage(keepArea) {
 
 function nextPage(keepArea) {
 
-    att[1] = parseInt(att[1]) + 1;
+    att.pn = parseInt(att.pn) + 1;
 
 	loadPicture(0, keepArea);
 }
@@ -133,15 +154,15 @@ function page(keepArea) {
     	page = prompt("Goto Page:", 1);
 	} while ((page != null) && (page < 1));
 
-   	if (page != null && page != att[1]) {
-		att[1] = page;
+   	if (page != null && page != att.pn) {
+		att.pn = page;
 		loadPicture(0, keepArea);
 	}
 }
 
 
 function digicat() {
-	var url = "digicat.html?" + att[0] + "+" + att[1];
+	var url = baseUrl + "/digicat.jsp?" + att.fn + "+" + att.pn;
 	win = window.open(url, "digicat");
 	win.focus();
 }
@@ -150,10 +171,10 @@ function digicat() {
 function ref(refselect) {
 
 	var hyperlinkRef = baseUrl + "/digilib.jsp?";
-	hyperlinkRef += att[0] + "+" + att[1] + "+" + att[2] + "+" + att[3] + "+" + att[4];
+	hyperlinkRef += att.fn + "+" + att.pn + "+" + att.ws + "+" + att.mo + "+" + att.mk;
 	
-	if ((att[5] != 0) || (att[6] != 0) || (att[7] != 1) || (att[8] != 1)) {
-		hyperlinkRef += "+" + att[5] + "+" + att[6] + "+" + att[7] + "+" + att[8];
+	if ((att.wx != 0) || (att.wy != 0) || (att.ww != 1) || (att.wh != 1)) {
+		hyperlinkRef += "+" + att.wx + "+" + att.wy + "+" + att.ww + "+" + att.wh;
 	}
 
 	if (refselect == 1) {
@@ -166,20 +187,20 @@ function ref(refselect) {
 
 function mark() {
 
-	if (att[4].split(";").length > 7) {
+	if (att.mk.split(";").length > 7) {
 		alert("Only 8 marks are possible at the moment!");
 		return;
 	}
 
 	function markEvent(event) {
-	    var point = new Point(event);
-
-		if ((att[4] != "") && (att[4] != "0/0")) {
-			att[4] += ";";
+    var point = new Point(event);
+    
+		if ((att.mk != "") && (att.mk != "0/0")) {
+			att.mk += ";";
 		} else {
-			att[4] = "";
+			att.mk = "";
 		}
-		att[4] += point.relX + "/" + point.relY;
+		att.mk += point.relX + "/" + point.relY;
 
 		document.getElementById("lay1").removeEventListener("mousedown", markEvent, true);		
 		setMarks();
@@ -233,13 +254,13 @@ function zoomArea() {
 			document.getElementById("eck3").style.visibility="hidden";
 			document.getElementById("eck4").style.visibility="hidden";
 
-			att[5] = Math.min(pt1.relX, pt2.relX);
-			att[6] = Math.min(pt1.relY, pt2.relY);
+			att.wx = parseFloat(Math.min(pt1.relX, pt2.relX));
+			att.wy = parseFloat(Math.min(pt1.relY, pt2.relY));
 
-			att[7] = Math.abs(pt1.relX-pt2.relX);
-			att[8] = Math.abs(pt1.relY-pt2.relY);
+			att.ww = parseFloat(Math.abs(pt1.relX-pt2.relX));
+			att.wh = parseFloat(Math.abs(pt1.relY-pt2.relY));
 
-			if (att[7] != 0 && att[8] != 0) {
+			if (att.ww != 0 && att.wh != 0) {
 				loadPicture(2);
 			}
 		}
@@ -269,23 +290,23 @@ function zoomPoint() {
 	function zoomPointEvent(event) {
 	    var point = new Point(event);
 
-		att[5] = cropFloat(point.relX-0.5*att[7]*0.7);
-		att[6] = cropFloat(point.relY-0.5*att[8]*0.7);
+		att.wx = cropFloat(point.relX-0.5*att.ww*0.7);
+		att.wy = cropFloat(point.relY-0.5*att.wh*0.7);
 
-		att[7] = cropFloat(att[7]*0.7);
-		att[8] = cropFloat(att[8]*0.7);
+		att.ww = cropFloat(att.ww*0.7);
+		att.wh = cropFloat(att.wh*0.7);
 
-		if (att[5] < 0) {
-			att[5] = 0;
+		if (att.wx < 0) {
+			att.wx = 0;
 		}
-		if (att[6] < 0) {
-			att[6] = 0;
+		if (att.wy < 0) {
+			att.wy = 0;
 		}
-		if (att[5]+att[7] > 1) {
-			att[5] = 1-att[7];
+		if (att.wx+att.ww > 1) {
+			att.wx = 1-att.ww;
 		}
-		if (att[6]+att[8] > 1) {
-			att[6] = 1-att[8];
+		if (att.wy+att.wh > 1) {
+			att.wy = 1-att.wh;
 		}
 
 		document.getElementById("lay1").removeEventListener("mousedown", zoomPointEvent, true);
@@ -309,20 +330,20 @@ function moveTo() {
 
 	    var point = new Point(event);
 
-		att[5] = cropFloat(point.relX-0.5*att[7]);
-		att[6] = cropFloat(point.relY-0.5*att[8]);
+		att.wx = cropFloat(point.relX-0.5*att.ww);
+		att.wy = cropFloat(point.relY-0.5*att.wh);
 
-		if (att[5] < 0) {
-			att[5] = 0;
+		if (att.wx < 0) {
+			att.wx = 0;
 		}
-		if (att[6] < 0) {
-			att[6] = 0;
+		if (att.wy < 0) {
+			att.wy = 0;
 		}
-		if (att[5]+att[7] > 1) {
-			att[5] = 1-att[7];
+		if (att.wx+att.ww > 1) {
+			att.wx = 1-att.ww;
 		}
-		if (att[6]+att[8] > 1) {
-			att[6] = 1-att[8];
+		if (att.wy+att.wh > 1) {
+			att.wy = 1-att.wh;
 		}
 
 		document.getElementById("lay1").removeEventListener("mousedown", moveToEvent, true);		
@@ -336,15 +357,15 @@ function moveTo() {
 
 function scale(scaledef) {
 
-	att[2] = scaledef;
+	att.ws = scaledef;
 	loadPicture(2);
 }
 
 
 function setMarks() {
 
-	if (att[4] != "" && att[4] != "0/0") {
-		var mark = att[4].split(";");
+	if (att.mk != "" && att.mk != "0/0") {
+		var mark = att.mk.split(";");
 
 		var countMarks = mark.length;
 		
@@ -364,10 +385,10 @@ function setMarks() {
 			for (var i = 0; i < countMarks; i++) {
 				mark[i] = mark[i].split("/");
 
-				if ((mark[i][0] > att[5]) && (mark[i][1] > att[6]) && (mark[i][0] < (att[5]+att[7])) && (mark[i][1] < (att[6]+att[8]))) {
+				if ((mark[i][0] >= att.wx) && (mark[i][1] >= att.wy) && (mark[i][0] <= (att.wx+att.ww)) && (mark[i][1] <= (att.wy+att.wh))) {
 
-					mark[i][0] = parseInt(xoffset+picWidth*(mark[i][0]-att[5])/att[7]);
-					mark[i][1] = parseInt(yoffset+picHeight*(mark[i][1]-att[6])/att[8]);
+					mark[i][0] = parseInt(xoffset+picWidth*(mark[i][0]-att.wx)/att.ww);
+					mark[i][1] = parseInt(yoffset+picHeight*(mark[i][1]-att.wy)/att.wh);
 
 
 					document.getElementById("dot" + i).style.left = mark[i][0]-5;
@@ -385,10 +406,10 @@ function setMarks() {
 // ascii-values of n = 110, b = 98
 function parseKeypress (event) {
 	if (event.charCode == 110) {
-		Nextpage();
+		nextPage();
 	}
 	if (event.charCode == 98) {
-		Backpage();
+		backPage();
 	}
 }
 
