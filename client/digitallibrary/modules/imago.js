@@ -218,7 +218,7 @@ function originalSize(dpi_v, dpi_h) {
 
   dlParams.ddpix.value = cropFloat(dpi_h);
   dlParams.ddpiy.value = cropFloat(dpi_v);
-  
+
   display(3);
 
 }
