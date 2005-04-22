@@ -143,6 +143,8 @@ public class DigilibConfiguration extends ParameterMap {
 		newParameter("safe-dir-index", Boolean.FALSE, null, 'f');
 		// number of working threads
 		newParameter("worker-threads", new Integer(1), null, 'f');
+		// max number of waiting threads
+		newParameter("max-waiting-threads", new Integer(0), null, 'f');
 
 	}
 

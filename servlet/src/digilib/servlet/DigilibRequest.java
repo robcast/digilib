@@ -157,6 +157,10 @@ public class DigilibRequest extends ParameterMap {
 		newParameter("img.dpix", new Integer(0), null, 'c');
 		// image dpi y
 		newParameter("img.dpiy", new Integer(0), null, 'c');
+		// hires image size x
+		newParameter("img.pix_x", new Integer(0), null, 'c');
+		// hires image size y
+		newParameter("img.pix_y", new Integer(0), null, 'c');
 		// total number of pages
 		newParameter("pt", new Integer(0), null, 'c');
 		//	display level of digilib (0 = just image, 1 = one HTML page

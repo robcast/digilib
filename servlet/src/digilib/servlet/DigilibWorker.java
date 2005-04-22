@@ -29,7 +29,6 @@ import EDU.oswego.cs.dl.util.concurrent.Semaphore;
  * image operation worker.
  * 
  * @author casties
- *  
  */
 public abstract class DigilibWorker {
 
@@ -38,6 +37,8 @@ public abstract class DigilibWorker {
 	private static int runningThreads = 0;
 
 	private static int waitingThreads = 0;
+
+	private static int maxWaitingThreads = 0;
 
 	public static Semaphore lock = new FIFOSemaphore(1);
 
@@ -76,21 +77,30 @@ public abstract class DigilibWorker {
 		} catch (Exception e) {
 			error = e;
 			logger.error(e);
+		} finally {
+			busy = false;
+			runningThreads--;
+			lock.release();
 		}
-		busy = false;
-		runningThreads--;
-		lock.release();
 	}
 
-	
-	/** Returns the name of this thread.
+	/**
+	 * Returns the name of this thread.
 	 * 
 	 * @return
 	 */
 	public String getName() {
 		return Thread.currentThread().getName();
 	}
-	
+
+	/** Returns if the worker could run (i.e. is not overloaded).
+	 * 
+	 * @return
+	 */
+	public static boolean canRun() {
+		return ((DigilibWorker.maxWaitingThreads == 0) || (DigilibWorker.waitingThreads <= DigilibWorker.maxWaitingThreads));
+	}
+
 	/**
 	 * @return Returns the busy.
 	 */
@@ -128,18 +138,36 @@ public abstract class DigilibWorker {
 	public static void setLock(Semaphore lock) {
 		DigilibWorker.lock = lock;
 	}
-	
-	/** The number of currently running threads (approximate).
+
+	/**
+	 * The number of currently running threads (approximate).
+	 * 
 	 * @return
 	 */
 	public static int getNumRunning() {
 		return runningThreads;
 	}
 
-	/** The number of currently waiting threads (approximate).
+	/**
+	 * The number of currently waiting threads (approximate).
+	 * 
 	 * @return
 	 */
 	public static int getNumWaiting() {
 		return waitingThreads;
+	}
+
+	/**
+	 * @return Returns the maxWaitingThreads.
+	 */
+	public static int getMaxWaitingThreads() {
+		return maxWaitingThreads;
+	}
+
+	/**
+	 * @param maxWaitingThreads The maxWaitingThreads to set.
+	 */
+	public static void setMaxWaitingThreads(int maxWaitingThreads) {
+		DigilibWorker.maxWaitingThreads = maxWaitingThreads;
 	}
 }
