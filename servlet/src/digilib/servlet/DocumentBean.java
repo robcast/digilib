@@ -21,7 +21,7 @@
 
 package digilib.servlet;
 
-import java.util.*;
+import java.util.List;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -33,9 +33,12 @@ import org.apache.log4j.Logger;
 
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthOps;
+import digilib.image.ImageOps;
+import digilib.image.ImageSize;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
 import digilib.io.FileOps;
+import digilib.io.ImageFile;
 import digilib.io.ImageFileset;
 
 public class DocumentBean {
@@ -202,7 +205,21 @@ public class DocumentBean {
 		// get number of pages in directory
 		DocuDirectory dd = dirCache.getDirectory(fn);
 		if (dd != null) {
+			// add pt
 			dlRequest.setValue("pt", dd.size());
+		}
+		// get original pixel size
+		ImageFile origfile = fileset.getBiggest();
+		// check image for size if mo=hires
+		if ((! origfile.isChecked())&&dlRequest.hasOption("mo", "hires")) {
+			logger.debug("pre-checking image!");
+			ImageOps.checkFile(origfile);
+		}
+		ImageSize pixsize = origfile.getSize();
+		if (pixsize != null) {
+			// add pixel size
+			dlRequest.setValue("img.pix_x", new Integer(pixsize.getWidth()));
+			dlRequest.setValue("img.pix_y", new Integer(pixsize.getHeight()));
 		}
 	}
 
