@@ -137,6 +137,8 @@ public class Initialiser extends HttpServlet {
 				int nt = dlConfig.getAsInt("worker-threads");
 				Semaphore lck = new FIFOSemaphore(nt); 
 				DigilibWorker.setLock(lck);
+				int mt = dlConfig.getAsInt("max-waiting-threads");
+				DigilibWorker.setMaxWaitingThreads(mt);
 				// set as the servlets main config
 				context.setAttribute("digilib.servlet.configuration", dlConfig);
 

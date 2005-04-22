@@ -53,13 +53,13 @@ import digilib.io.ImageFileset;
 /**
  * @author casties
  */
-//public class Scaler extends HttpServlet implements SingleThreadModel {
+// public class Scaler extends HttpServlet implements SingleThreadModel {
 public class Scaler extends HttpServlet {
 
 	private static final long serialVersionUID = -325080527268912852L;
 
 	/** digilib servlet version (for all components) */
-	public static final String dlVersion = "1.5.5b";
+	public static final String dlVersion = "1.5.7b";
 
 	/** logger for accounting requests */
 	private static Logger accountlog = Logger.getLogger("account.request");
@@ -202,7 +202,7 @@ public class Scaler extends HttpServlet {
 	}
 
 	/** main request handler. */
-	void processRequest(HttpServletRequest request, HttpServletResponse response)
+void processRequest(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException {
 
 		if (dlConfig == null) {
@@ -315,7 +315,7 @@ public class Scaler extends HttpServlet {
 		}
 		// operation mode: "lores": try to use scaled image, "hires": use
 		// unscaled image
-		//   "autores": try best fitting resolution
+		// "autores": try best fitting resolution
 		if (dlRequest.hasOption("mo", "lores")) {
 			loresOnly = true;
 			hiresOnly = false;
@@ -355,7 +355,7 @@ public class Scaler extends HttpServlet {
 					: paramDH;
 		}
 
-		//"big" try for all file/image actions
+		// "big" try for all file/image actions
 		try {
 
 			// ImageFileset of the image to load
@@ -478,6 +478,29 @@ public class Scaler extends HttpServlet {
 				return;
 			}
 
+			
+			/*
+			 * stop here if we're overloaded...
+			 * 
+			 * 503 Service Unavailable 
+			 * The server is currently unable to
+			 * handle the request due to a temporary overloading or maintenance
+			 * of the server. The implication is that this is a temporary
+			 * condition which will be alleviated after some delay. If known,
+			 * the length of the delay MAY be indicated in a Retry-After header.
+			 * If no Retry-After is given, the client SHOULD handle the response
+			 * as it would for a 500 response. Note: The existence of the 503
+			 * status code does not imply that a server must use it when
+			 * becoming overloaded. Some servers may wish to simply refuse the
+			 * connection.
+			 * (RFC2616 HTTP1.1)
+			 */
+			if (! DigilibWorker.canRun()) {
+				logger.error("Servlet overloaded!");
+				response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+				return;
+			}
+			
 			// set missing dw or dh from aspect ratio
 			float imgAspect = fileToLoad.getAspect();
 			if (paramDW == 0) {
@@ -645,7 +668,6 @@ public class Scaler extends HttpServlet {
 					"ERROR: Other Image Operation Error: " + e, response);
 		}
 	}
-
 	/**
 	 * Returns the DocuDirent corresponding to the DigilibRequest.
 	 * 
@@ -693,4 +715,4 @@ public class Scaler extends HttpServlet {
 
 	}
 
-} //Scaler class
+} // Scaler class
