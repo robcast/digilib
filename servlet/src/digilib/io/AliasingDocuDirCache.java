@@ -64,13 +64,17 @@ public class AliasingDocuDirCache extends DocuDirCache {
 		 */
 
 		for (Iterator i = pathMap.keySet().iterator(); i.hasNext();) {
-			String link = FileOps.normalName((String) i.next());
+			String link = (String) i.next();
 			String dir = (String) pathMap.get(link);
+			if (dir == null) {
+				logger.error("Key mismatch in mapping file!");
+				break;	
+			}
 			DocuDirectory destDir = new DocuDirectory(dir, this);
 			if (destDir.isValid()) {
 				logger.debug("Aliasing dir: " + link);
 				// add the alias name
-				putName(link, destDir);
+				putName(FileOps.normalName(link), destDir);
 				// add the real dir
 				putDir(destDir);
 			}
