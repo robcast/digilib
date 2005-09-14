@@ -33,12 +33,18 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.Iterator;
+import java.util.Locale;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 
 import digilib.io.FileOpException;
 import digilib.io.ImageFile;
@@ -66,7 +72,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	public void setQuality(int qual) {
 		quality = qual;
 		renderHint = new RenderingHints(null);
-		//hint.put(RenderingHints.KEY_ANTIALIASING,
+		// hint.put(RenderingHints.KEY_ANTIALIASING,
 		// RenderingHints.VALUE_ANTIALIAS_OFF);
 		// setup interpolation quality
 		if (qual > 0) {
@@ -111,7 +117,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	/* load image file */
 	public void loadImage(ImageFile f) throws FileOpException {
 		logger.debug("loadImage " + f.getFile());
-		//System.gc();
+		// System.gc();
 		try {
 			img = ImageIO.read(f.getFile());
 			if (img == null) {
@@ -134,10 +140,10 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			// clean up old reader
 			dispose();
 		}
-		//System.gc();
+		// System.gc();
 		RandomAccessFile rf = new RandomAccessFile(f.getFile(), "r");
 		ImageInputStream istream = new FileImageInputStream(rf);
-		//Iterator readers = ImageIO.getImageReaders(istream);
+		// Iterator readers = ImageIO.getImageReaders(istream);
 		String mt = f.getMimetype();
 		logger.debug("File type:" + mt);
 		Iterator readers = ImageIO.getImageReadersByMIMEType(mt);
@@ -150,7 +156,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		while (readers.hasNext()) {
 			logger.debug("ImageIO: next reader: " + readers.next().getClass());
 		}
-		//*/
+		// */
 		reader.setInput(istream);
 		imgFile = f.getFile();
 		return reader;
@@ -160,7 +166,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	public void loadSubimage(ImageFile f, Rectangle region, int prescale)
 			throws FileOpException {
 		logger.debug("loadSubimage");
-		//System.gc();
+		// System.gc();
 		try {
 			if ((reader == null) || (imgFile != f.getFile())) {
 				getReader(f);
@@ -189,41 +195,64 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		logger.debug("writeImage");
 		try {
 			// setup output
-			String type = "png";
+			ImageWriter writer = null;
+			ImageOutputStream imgout = ImageIO.createImageOutputStream(ostream);
 			if (mt == "image/jpeg") {
-				type = "jpeg";
+				/*
+				 * JPEG doesn't do transparency so we have to convert any RGBA
+				 * image to RGB :-( *Java2D BUG*
+				 */
+				if (img.getColorModel().hasAlpha()) {
+					logger.debug("BARF: JPEG with transparency!!");
+					int w = img.getWidth();
+					int h = img.getHeight();
+					// BufferedImage.TYPE_INT_RGB seems to be fastest (JDK1.4.1,
+					// OSX)
+					int destType = BufferedImage.TYPE_INT_RGB;
+					BufferedImage img2 = new BufferedImage(w, h, destType);
+					img2.createGraphics().drawImage(img, null, 0, 0);
+					img = img2;
+				}
+				writer = (ImageWriter) ImageIO.getImageWritersByFormatName(
+						"jpeg").next();
+				if (writer == null) {
+					throw new FileOpException("Unable to get JPEG writer");
+				}
+				ImageWriteParam param = writer.getDefaultWriteParam();
+				if (quality > 1) {
+					// change JPEG compression quality
+					if (param.getCompressionMode() != ImageWriteParam.MODE_EXPLICIT) {
+						// work around problem with J2RE 1.4 JPEG writer
+						logger.debug("creating new ImageWriteParam");
+						param = new CompressibleJPEGImageWriteParam(param
+								.getLocale());
+						param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+					}
+					logger.debug("JPEG qual before: "
+							+ Float.toString(param.getCompressionQuality()));
+					param.setCompressionQuality(0.9f);
+					logger.debug("JPEG qual now: "
+							+ Float.toString(param.getCompressionQuality()));
+				}
+				writer.setOutput(imgout);
+				// render output
+				logger.debug("writing");
+				writer.write(null, new IIOImage(img, null, null), param);
 			} else if (mt == "image/png") {
-				type = "png";
+				// render output
+				writer = (ImageWriter) ImageIO.getImageWritersByFormatName(
+						"png").next();
+				if (writer == null) {
+					throw new FileOpException("Unable to get PNG writer");
+				}
+				writer.setOutput(imgout);
+				logger.debug("writing");
+				writer.write(img);
 			} else {
 				// unknown mime type
 				throw new FileOpException("Unknown mime type: " + mt);
 			}
 
-			/*
-			 * JPEG doesn't do transparency so we have to convert any RGBA image
-			 * to RGB :-( *Java2D BUG*
-			 */
-			if ((type == "jpeg") && (img.getColorModel().hasAlpha())) {
-				logger.debug("BARF: JPEG with transparency!!");
-				int w = img.getWidth();
-				int h = img.getHeight();
-				// BufferedImage.TYPE_INT_RGB seems to be fastest (JDK1.4.1,
-				// OSX)
-				int destType = BufferedImage.TYPE_INT_RGB;
-				BufferedImage img2 = new BufferedImage(w, h, destType);
-				img2.createGraphics().drawImage(img, null, 0, 0);
-				img = img2;
-			}
-
-			// render output
-			logger.debug("writing");
-			if (ImageIO.write(img, type, ostream)) {
-				// writing was OK
-				return;
-			} else {
-				throw new FileOpException(
-						"Error writing image: Unknown image format!");
-			}
 		} catch (IOException e) {
 			throw new FileOpException("Error writing image.");
 		}
@@ -255,7 +284,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		if (scaledImg == null) {
 			throw new ImageOpException("Unable to scale");
 		}
-		//DEBUG
+		// DEBUG
 		logger.debug("SCALE: " + scale + " ->" + scaledImg.getWidth() + "x"
 				+ scaledImg.getHeight());
 		img = scaledImg;
@@ -263,7 +292,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	}
 
 	public void blur(int radius) throws ImageOpException {
-		//DEBUG
+		// DEBUG
 		logger.debug("blur: " + radius);
 		// minimum radius is 2
 		int klen = Math.max(radius, 2);
@@ -298,8 +327,8 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		BufferedImage croppedImg = img.getSubimage(x_off, y_off, width, height);
 		logger.debug("CROP:" + croppedImg.getWidth() + "x"
 				+ croppedImg.getHeight());
-		//DEBUG
-		//    util.dprintln(2, " time
+		// DEBUG
+		// util.dprintln(2, " time
 		// "+(System.currentTimeMillis()-startTime)+"ms");
 		if (croppedImg == null) {
 			throw new ImageOpException("Unable to crop");
@@ -413,7 +442,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		rotOp = new AffineTransformOp(trafo, renderHint);
 		BufferedImage rotImg = rotOp.filter(img, null);
 		// calculate new bounding box
-		//Rectangle2D bounds = rotOp.getBounds2D(img);
+		// Rectangle2D bounds = rotOp.getBounds2D(img);
 		if (rotImg == null) {
 			throw new ImageOpException("Unable to rotate");
 		}
@@ -477,4 +506,25 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		img = null;
 	}
 
+	/**
+	 * Modified JPEGImageWriteParam that accepts a compression quality to work
+	 * around problem with J2RE 1.4.
+	 * 
+	 * @author casties
+	 * 
+	 */
+	public class CompressibleJPEGImageWriteParam extends JPEGImageWriteParam {
+
+		public CompressibleJPEGImageWriteParam(Locale arg0) {
+			super(arg0);
+			// TODO Auto-generated constructor stub
+		}
+
+		public void setCompressionQuality(float quality) {
+			if (quality < 0.0F || quality > 1.0F) {
+				throw new IllegalArgumentException("Quality out-of-bounds!");
+			}
+			this.compressionQuality = quality;
+		}
+	}
 }

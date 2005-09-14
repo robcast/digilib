@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import digilib.image.DocuImage;
 import digilib.image.ImageOpException;
+import digilib.image.ImageOps;
 import digilib.io.FileOpException;
 import digilib.io.ImageFile;
 
@@ -81,7 +82,7 @@ public class DigilibImageWorker extends DigilibWorker {
 
 	boolean wholeRotArea;
 
-	private boolean forceJPEG;
+	int forceType;
 
 	/**
 	 * @param dlConfig
@@ -100,7 +101,7 @@ public class DigilibImageWorker extends DigilibWorker {
 	 * @param innerUserImgArea
 	 * @param minSubsample
 	 * @param wholeRotArea
-	 * @param forceJPEG
+	 * @param forceType
 	 */
 	public DigilibImageWorker(DigilibConfiguration dlConfig,
 			HttpServletResponse response, String mimeType, int scaleQual,
@@ -108,7 +109,7 @@ public class DigilibImageWorker extends DigilibWorker {
 			float paramBRGT, float[] paramRGBM, float[] paramRGBA,
 			ImageFile fileToLoad, float scaleXY, Rectangle2D outerUserImgArea,
 			Rectangle2D innerUserImgArea, float minSubsample,
-			boolean wholeRotArea, boolean forceJPEG) {
+			boolean wholeRotArea, int forceType) {
 		super();
 		this.dlConfig = dlConfig;
 		this.response = response;
@@ -126,7 +127,7 @@ public class DigilibImageWorker extends DigilibWorker {
 		this.innerUserImgArea = innerUserImgArea;
 		this.minSubsample = minSubsample;
 		this.wholeRotArea = wholeRotArea;
-		this.forceJPEG = forceJPEG;
+		this.forceType = forceType;
 	}
 
 	/*
@@ -246,10 +247,16 @@ public class DigilibImageWorker extends DigilibWorker {
 
 		/* write the resulting image */
 
-		// setup output -- if source is JPG then dest will be JPG else it's
-		// PNG
-		if (forceJPEG
-				|| (mimeType.equals("image/jpeg") || mimeType
+		// setup output -- if output type is forced use that otherwise  
+		// if source is JPG then dest will be JPG else it's PNG
+		if (forceType != ImageOps.TYPE_AUTO) {
+			if (forceType == ImageOps.TYPE_JPEG) {
+				mimeType = "image/jpeg";				
+			}
+			if (forceType == ImageOps.TYPE_PNG) {
+				mimeType = "image/png";				
+			}
+		} else if ((mimeType.equals("image/jpeg") || mimeType
 						.equals("image/jp2"))) {
 			mimeType = "image/jpeg";
 		} else {

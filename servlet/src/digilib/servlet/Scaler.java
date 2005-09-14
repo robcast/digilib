@@ -59,7 +59,7 @@ public class Scaler extends HttpServlet {
 	private static final long serialVersionUID = -325080527268912852L;
 
 	/** digilib servlet version (for all components) */
-	public static final String dlVersion = "1.5.8b";
+	public static final String dlVersion = "1.5.9b";
 
 	/** logger for accounting requests */
 	private static Logger accountlog = Logger.getLogger("account.request");
@@ -231,8 +231,8 @@ void processRequest(HttpServletRequest request, HttpServletResponse response)
 		boolean loresOnly = false;
 		// use hires images only
 		boolean hiresOnly = false;
-		// send the image always as JPEG
-		boolean forceJPEG = false;
+		// send the image always as a specific type (e.g. JPEG or PNG)
+		int forceType = ImageOps.TYPE_AUTO;
 		// interpolation to use for scaling
 		int scaleQual = defaultQuality;
 		// send html error message (or image file)
@@ -343,7 +343,11 @@ void processRequest(HttpServletRequest request, HttpServletResponse response)
 		}
 		// operation mode: "jpg": always use JPEG
 		if (dlRequest.hasOption("mo", "jpg")) {
-			forceJPEG = true;
+			forceType = ImageOps.TYPE_JPEG;
+		}
+		// operation mode: "png": always use PNG
+		if (dlRequest.hasOption("mo", "png")) {
+			forceType = ImageOps.TYPE_PNG;
 		}
 
 		// check with the maximum allowed size (if set)
@@ -636,7 +640,7 @@ void processRequest(HttpServletRequest request, HttpServletResponse response)
 					mimeType, scaleQual, dlRequest, paramROT, paramCONT,
 					paramBRGT, paramRGBM, paramRGBA, fileToLoad, scaleXY,
 					outerUserImgArea, innerUserImgArea, minSubsample,
-					wholeRotArea, forceJPEG);
+					wholeRotArea, forceType);
 
 			job.run();
 			if (job.hasError()) {

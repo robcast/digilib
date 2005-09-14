@@ -46,6 +46,11 @@ public class ImageOps {
 
 	private static Logger logger = Logger.getLogger(ImageOps.class);
 
+	public static int TYPE_AUTO = 0;
+	public static int TYPE_JPEG = 1;
+	public static int TYPE_PNG = 2;
+	
+	
 	/** Check image size and type and store in ImageFile f */
 	public static boolean checkFile(ImageFile imgf) throws IOException {
 		// fileset to store the information
