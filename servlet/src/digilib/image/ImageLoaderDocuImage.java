@@ -193,10 +193,11 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	public void writeImage(String mt, OutputStream ostream)
 			throws FileOpException {
 		logger.debug("writeImage");
+		// setup output
+		ImageWriter writer = null;
+		ImageOutputStream imgout = null;
 		try {
-			// setup output
-			ImageWriter writer = null;
-			ImageOutputStream imgout = ImageIO.createImageOutputStream(ostream);
+			imgout = ImageIO.createImageOutputStream(ostream);
 			if (mt == "image/jpeg") {
 				/*
 				 * JPEG doesn't do transparency so we have to convert any RGBA
@@ -221,13 +222,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 				ImageWriteParam param = writer.getDefaultWriteParam();
 				if (quality > 1) {
 					// change JPEG compression quality
-					if (param.getCompressionMode() != ImageWriteParam.MODE_EXPLICIT) {
-						// work around problem with J2RE 1.4 JPEG writer
-						logger.debug("creating new ImageWriteParam");
-						param = new CompressibleJPEGImageWriteParam(param
-								.getLocale());
-						param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-					}
+					param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
 					logger.debug("JPEG qual before: "
 							+ Float.toString(param.getCompressionQuality()));
 					param.setCompressionQuality(0.9f);
@@ -255,6 +250,11 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 
 		} catch (IOException e) {
 			throw new FileOpException("Error writing image.");
+		} finally {
+			// clean up
+			if (writer != null) {
+				writer.dispose();
+			}
 		}
 	}
 
@@ -506,25 +506,4 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		img = null;
 	}
 
-	/**
-	 * Modified JPEGImageWriteParam that accepts a compression quality to work
-	 * around problem with J2RE 1.4.
-	 * 
-	 * @author casties
-	 * 
-	 */
-	public class CompressibleJPEGImageWriteParam extends JPEGImageWriteParam {
-
-		public CompressibleJPEGImageWriteParam(Locale arg0) {
-			super(arg0);
-			// TODO Auto-generated constructor stub
-		}
-
-		public void setCompressionQuality(float quality) {
-			if (quality < 0.0F || quality > 1.0F) {
-				throw new IllegalArgumentException("Quality out-of-bounds!");
-			}
-			this.compressionQuality = quality;
-		}
-	}
 }
