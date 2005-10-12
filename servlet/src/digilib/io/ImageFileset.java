@@ -308,14 +308,15 @@ public class ImageFileset extends DocuDirent {
 						gp.checkMeta();
 						if (gp.getDirMeta() != null) {
 							fileMeta = gp.getDirMeta();
-						} else {
-							// no metadata available
-							metaChecked = true;
-							return;
 						}
 					}
 				}
 			}
+		}
+		if (fileMeta == null) {
+			// no metadata available
+			metaChecked = true;
+			return;
 		}
 		metaChecked = true;
 		String s;
