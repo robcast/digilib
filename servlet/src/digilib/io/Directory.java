@@ -84,7 +84,9 @@ public class Directory {
 		if (dir != null) {
 			//logger.debug("reading dir: "+dir.getPath());
 			list = dir.list();
-			Arrays.sort(list);
+			if (list != null) {
+				Arrays.sort(list);
+			}
 			//logger.debug("  done");
 		}
 		return (list != null);
