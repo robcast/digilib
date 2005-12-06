@@ -59,7 +59,7 @@ public class Scaler extends HttpServlet {
 	private static final long serialVersionUID = -325080527268912852L;
 
 	/** digilib servlet version (for all components) */
-	public static final String dlVersion = "1.5.9e";
+	public static final String dlVersion = "1.5.9f";
 
 	/** logger for accounting requests */
 	private static Logger accountlog = Logger.getLogger("account.request");
@@ -90,6 +90,9 @@ public class Scaler extends HttpServlet {
 
 	/** image error image file */
 	File errorImgFile;
+
+	/** not found error image file */
+	File notfoundImgFile;
 
 	/** subsampling before scaling */
 	float minSubsample = 2f;
@@ -146,6 +149,7 @@ public class Scaler extends HttpServlet {
 		dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 		denyImgFile = (File) dlConfig.getValue("denied-image");
 		errorImgFile = (File) dlConfig.getValue("error-image");
+		notfoundImgFile = (File) dlConfig.getValue("notfound-image");
 		sendFileAllowed = dlConfig.getAsBoolean("sendfile-allowed");
 		minSubsample = dlConfig.getAsFloat("subsample-minimum");
 		defaultQuality = dlConfig.getAsInt("default-quality");
@@ -702,6 +706,11 @@ void processRequest(HttpServletRequest request, HttpServletResponse response)
 					msg = "ERROR: Unauthorized access!";
 				}
 				img = denyImgFile;
+			} else if (type == ERROR_FILE) {
+				if (msg == null) {
+					msg = "ERROR: Image file not found!";
+				}
+				img = notfoundImgFile;
 			} else {
 				if (msg == null) {
 					msg = "ERROR: Other image error!";
