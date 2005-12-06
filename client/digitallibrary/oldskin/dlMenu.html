@@ -6,6 +6,7 @@
 .item1 {position:absolute; left:33; width:50; height:14; clip:rect(0,50,14,0); visibility:hidden}
 .item2 {position:absolute; left:43; width:40; height:14; clip:rect(0,40,14,0); visibility:hidden}
 .item3 {position:absolute; left:3; width:80; height:14; clip:rect(0,80,14,0); visibility:hidden}
+.logo { font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 12px; color: black; text-align: center; margin: 0px }
 
 .text {font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 10px; color: #FFFFFF; text-decoration: none}
 </style>
@@ -155,6 +156,7 @@ helpText[11] = "'?'-button|In its menu you are able change options like the visi
 <div id="menu3" class="menu" style="top:430; left:1; width:84; height:33; clip:rect(0,84,33,0)"></div>
  <div id="menu31" class="item3" style="top:432"><center><a href="#" class="text" onclick="changeMark(31); hideMenu(); changeHelp(); return false;" onmouseover="overItem(31)" onmouseout="awayItem(31)"><img id="mark31" src="buttons/nomark.gif" border="0">Contexthelp</a></center></div>
  <div id="menu32" class="item3" style="top:447"><center><a href="#" class="text" onclick="changeMark(32); keepArea = (keepArea == 1) ? 2 : 1; return false;" onmouseover="overItem(32)" onmouseout="awayItem(32)"><img id="mark32" src="buttons/mark.gif" border="0">Keep&nbsp;area</a></center></div>
+ <div id="logo" class="logo"><img src="../img/digilib-logo-text1.png" title="Digilib"></img></div>
 
 <script language="Javascript">
 // initial background color of the menues (has to be done like this, 
