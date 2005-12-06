@@ -154,7 +154,7 @@ public abstract class DocuDirent implements Comparable {
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	public int compareTo(Object arg0) {
-		return (getName().compareTo(arg0));
+		return (getName().compareTo((String) arg0));
 	}
 	
 }
