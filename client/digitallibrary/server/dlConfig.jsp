@@ -32,6 +32,7 @@ digilib.io.DocuDirCache dirCache = (digilib.io.DocuDirCache) dlConfig.getValue("
 <head>
 <title>Digilib configuration page</title>
 </head>
+<body>
 
 <h1>Global servlet configuration</h1>
 
@@ -131,6 +132,20 @@ digilib.io.DocuDirCache dirCache = (digilib.io.DocuDirCache) dlConfig.getValue("
     <td></td>
   </tr>
 </table>
+
+<h2>ImageIO configuration</h2>
+
+<p>Supported image types</p>
+<ul>
+<% 
+	String[] formats = javax.imageio.ImageIO.getReaderFormatNames();
+	for (int i = 0; i < formats.length; i++) {
+%>
+	<li><%= formats[i] %></li>
+<% 
+	}
+%>
+</ul>
 
 </body>
 </html>
