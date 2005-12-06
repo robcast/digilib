@@ -44,6 +44,8 @@ import org.w3c.dom.svg.SVGSVGElement;
 
 import digilib.auth.AuthOps;
 import digilib.io.DocuDirCache;
+import digilib.io.DocuDirectory;
+import digilib.io.DocuDirent;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.SVGFile;
@@ -59,7 +61,7 @@ public class Raster extends HttpServlet {
 	private static final long serialVersionUID = -7756999389932675241L;
 
 	/** Servlet version */
-	public static String servletVersion = "0.1b1";
+	public static String servletVersion = "0.2b1";
 	/** DigilibConfiguration instance */
 	DigilibConfiguration dlConfig = null;
 	/** general logger */
@@ -157,6 +159,39 @@ public class Raster extends HttpServlet {
 		processRequest(request, response);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see javax.servlet.http.HttpServlet#getLastModified(javax.servlet.http.HttpServletRequest)
+	 */
+	protected long getLastModified(HttpServletRequest request) {
+		logger.debug("GetLastModified from " + request.getRemoteAddr()
+				+ " for " + request.getQueryString());
+		long mtime = -1;
+		// create new request with defaults
+		DigilibRequest dlReq = new DigilibRequest();
+		// set with request parameters
+		dlReq.setWithRequest(request);
+		// find the requested file
+		
+		// get PathInfo
+		String loadPathName = dlReq.getFilePath();
+		// find the file(set)
+		SVGFile fileToLoad =
+			(SVGFile) dirCache.getFile(
+				loadPathName,
+				dlReq.getAsInt("pn"),
+				FileOps.CLASS_SVG);
+		if (fileToLoad != null) {
+			DocuDirectory dd = (DocuDirectory) fileToLoad.getParent();
+			mtime = dd.getDirMTime() / 1000 * 1000;
+		}
+		return mtime;
+	}
+
+	
+	
+	
 	protected void processRequest(
 		HttpServletRequest request,
 		HttpServletResponse response)
@@ -221,7 +256,8 @@ public class Raster extends HttpServlet {
 			// get document width and height
 			float imgWidth = svgroot.getWidth().getBaseVal().getValue();
 			float imgHeight = svgroot.getHeight().getBaseVal().getValue();
-
+			logger.debug("IMG: "+imgWidth+"x"+imgHeight);
+			
 			/*
 			 * set up the transcoder
 			 */
