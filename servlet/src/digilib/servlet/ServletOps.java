@@ -61,6 +61,47 @@ public class ServletOps {
 	}
 
 	/**
+	 * get a real File for a web app File.
+	 * 
+	 * If the File is not absolute the path is appended to the base directory
+	 * of the web-app.
+	 * 
+	 * @param file
+	 * @param sc
+	 * @return
+	 */
+	public static File getFile(File f, ServletConfig sc) {
+		// is the filename absolute?
+		if (!f.isAbsolute()) {
+			// relative path -> use getRealPath to resolve in WEB-INF
+			String fn = sc.getServletContext().getRealPath(f.getPath());
+			f = new File(fn);
+		}
+		return f;
+	}
+
+	/**
+	 * get a real file name for a web app file pathname.
+	 * 
+	 * If filename starts with "/" its treated as absolute else the path is
+	 * appended to the base directory of the web-app.
+	 * 
+	 * @param filename
+	 * @param sc
+	 * @return
+	 */
+	public static String getFile(String filename, ServletConfig sc) {
+		File f = new File(filename);
+		// is the filename absolute?
+		if (!f.isAbsolute()) {
+			// relative path -> use getRealPath to resolve in WEB-INF
+			filename = sc.getServletContext()
+					.getRealPath(filename);
+		}
+		return filename;
+	}
+
+	/**
 	 * get a real File for a config File.
 	 * 
 	 * If the File is not absolute the path is appended to the WEB-INF directory
