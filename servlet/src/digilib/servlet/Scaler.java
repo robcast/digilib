@@ -59,7 +59,7 @@ public class Scaler extends HttpServlet {
 	private static final long serialVersionUID = -325080527268912852L;
 
 	/** digilib servlet version (for all components) */
-	public static final String dlVersion = "1.5.9f";
+	public static final String dlVersion = "1.5.9g";
 
 	/** logger for accounting requests */
 	private static Logger accountlog = Logger.getLogger("account.request");
@@ -147,9 +147,9 @@ public class Scaler extends HttpServlet {
 
 		// DocuDirCache instance
 		dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
-		denyImgFile = (File) dlConfig.getValue("denied-image");
-		errorImgFile = (File) dlConfig.getValue("error-image");
-		notfoundImgFile = (File) dlConfig.getValue("notfound-image");
+		denyImgFile = ServletOps.getFile((File) dlConfig.getValue("denied-image"), config);
+		errorImgFile = ServletOps.getFile((File) dlConfig.getValue("error-image"), config);
+		notfoundImgFile = ServletOps.getFile((File) dlConfig.getValue("notfound-image"), config);
 		sendFileAllowed = dlConfig.getAsBoolean("sendfile-allowed");
 		minSubsample = dlConfig.getAsFloat("subsample-minimum");
 		defaultQuality = dlConfig.getAsInt("default-quality");
@@ -227,10 +227,6 @@ void processRequest(HttpServletRequest request, HttpServletResponse response)
 		boolean scaleToFit = true;
 		// scale the image by a fixed factor only
 		boolean absoluteScale = false;
-		// only crop the image to fit
-		boolean cropToFit = false;
-		// send the file as is
-		boolean sendFile = false;
 		// use low resolution images only
 		boolean loresOnly = false;
 		// use hires images only
@@ -241,10 +237,6 @@ void processRequest(HttpServletRequest request, HttpServletResponse response)
 		int scaleQual = defaultQuality;
 		// send html error message (or image file)
 		boolean errorMsgHtml = false;
-		// mirror the image
-		boolean doMirror = false;
-		// angle of mirror axis
-		float mirrorAngle = 0;
 		// original (hires) image resolution
 		float origResX = 0;
 		float origResY = 0;
@@ -301,20 +293,14 @@ void processRequest(HttpServletRequest request, HttpServletResponse response)
 		if (dlRequest.hasOption("mo", "clip")) {
 			scaleToFit = false;
 			absoluteScale = false;
-			cropToFit = true;
-			sendFile = false;
 			hiresOnly = true;
 		} else if (dlRequest.hasOption("mo", "fit")) {
 			scaleToFit = true;
 			absoluteScale = false;
-			cropToFit = false;
-			sendFile = false;
 			hiresOnly = false;
 		} else if (dlRequest.hasOption("mo", "osize")) {
 			scaleToFit = false;
 			absoluteScale = true;
-			cropToFit = false;
-			sendFile = false;
 			hiresOnly = true;
 		}
 		// operation mode: "lores": try to use scaled image, "hires": use
@@ -543,8 +529,6 @@ void processRequest(HttpServletRequest request, HttpServletResponse response)
 					+ "ms");
 
 			// coordinates and scaling
-			float areaXoff;
-			float areaYoff;
 			float areaWidth;
 			float areaHeight;
 			float scaleX;

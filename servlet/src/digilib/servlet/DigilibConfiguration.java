@@ -99,19 +99,19 @@ public class DigilibConfiguration extends ParameterMap {
 		// image file to send in case of error
 		newParameter(
 			"error-image",
-			new File("/docuserver/images/icons/digilib-error.png"),
+			new File("img/digilib-error.png"),
 			null,
 			'f');
 		// image file to send if access is denied
 		newParameter(
 			"denied-image",
-			new File("/docuserver/images/icons/digilib-denied.png"),
+			new File("img/digilib-denied.png"),
 			null,
 			'f');
 		// image file to send if image file not found
 		newParameter(
 			"notfound-image",
-			new File("/docuserver/images/icons/digilib-notfound.png"),
+			new File("img/digilib-notfound.png"),
 			null,
 			'f');
 		// base directories in order of preference (prescaled versions last)
