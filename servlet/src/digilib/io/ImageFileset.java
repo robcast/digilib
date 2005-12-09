@@ -25,8 +25,6 @@ import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
 import digilib.image.ImageOps;
 import digilib.image.ImageSize;
 
@@ -38,9 +36,6 @@ public class ImageFileset extends DocuDirent {
 	/** this is an image file */
 	protected static int fileClass = FileOps.CLASS_IMAGE;
 	
-	/** logger for this class */
-	private static Logger logger = Logger.getLogger(ImageFileset.class);
-
 	/** list of files (ImageFile) */
 	private ArrayList list = null;
 
@@ -237,7 +232,6 @@ public class ImageFileset extends DocuDirent {
 	 *  
 	 */
 	void fill(Directory[] dirs, File fl, Map hints) {
-		String scalext = (String) hints.get(FileOps.HINT_FILEEXT);
 		int nb = dirs.length;
 		String fn = fl.getName();
 		String baseFn = FileOps.basename(fn);
@@ -319,7 +313,6 @@ public class ImageFileset extends DocuDirent {
 			return;
 		}
 		metaChecked = true;
-		String s;
 		float dpi = 0;
 		float dpix = 0;
 		float dpiy = 0;
