@@ -45,6 +45,7 @@
 		a.icon		{ margin: 0px; padding: 0px; }
 
 		img.png 	{ border: none; }
+        img.png:hover { background-image: url('corona.png'); }
 		img.mark 	{ border: none; }
 
 		div.button	{ padding: 0px; }
@@ -53,7 +54,7 @@
 
 		div#buttons	{ position: absolute; right: 5px; top: 5px; background-color: #E0E0E0; }
 		div#dloptions	{ position: absolute; right: 5px; top: 5px; background-color: #E0E0E0; visibility: hidden; }
-		div#zoom	{ position: absolute; border: 2px solid #f0cccc; visibility: hidden; }
+		div#zoom	{ position: absolute; border: 2px solid red; visibility: hidden; }
 		
 	</style>
 	
@@ -158,8 +159,7 @@
 			<img
 				class="png"
 				id="reference"
-				onmouseover="highlightPNG('reference', 1)"
-				onmouseout="highlightPNG('reference', 0)"
+
 				title="get a reference URL"
 				src="reference.png"
 			>
@@ -175,8 +175,7 @@
 			<img
 				class="png"
 				id="zoom-in"
-				onmouseover="highlightPNG('zoom-in', 1)"
-				onmouseout="highlightPNG('zoom-in', 0)"
+
 				title="zoom in"
 				src="zoom-in.png"
 			>
@@ -192,8 +191,7 @@
 			<img
 				class="png"
 				id="zoom-out"
-				onmouseover="highlightPNG('zoom-out', 1)"
-				onmouseout="highlightPNG('zoom-out', 0)"
+
 				title="zoom out"
 				src="zoom-out.png"
 			>
@@ -203,14 +201,13 @@
 	<div class="button">
 		<a
 			class="icon"
-			href="javascript:showOptions(0);zoomArea()"
+			href="javascript:zoomArea()"
 			>
 
 			<img
 				class="png"
 				id="zoom-area"
-				onmouseover="highlightPNG('zoom-area', 1)"
-				onmouseout="highlightPNG('zoom-area', 0)"
+
 				title="zoom area"
 				src="zoom-area.png"
 			>
@@ -226,8 +223,7 @@
 			<img
 				class="png"
 				id="zoom-full"
-				onmouseover="highlightPNG('zoom-full', 1)"
-				onmouseout="highlightPNG('zoom-full', 0)"
+
 				title="view the whole image"
 				src="zoom-full.png"
 			>
@@ -243,8 +239,7 @@
 			<img
 				class="png"
 				id="back"
-				onmouseover="highlightPNG('back', 1)"
-				onmouseout="highlightPNG('back', 0)"
+
 				title="goto previous image"
 				src="back.png"
 			>
@@ -260,8 +255,7 @@
 			<img
 				class="png"
 				id="fwd"
-				onmouseover="highlightPNG('fwd', 1)"
-				onmouseout="highlightPNG('fwd', 0)"
+
 				title="goto next image"
 				src="fwd.png"
 			>
@@ -277,8 +271,7 @@
 			<img
 				class="png"
 				id="help"
-				onmouseover="highlightPNG('help', 1)"
-				onmouseout="highlightPNG('help', 0)"
+
 				title="help"
 				src="help.png"
 			>
@@ -294,8 +287,7 @@
 			<img
 				class="png"
 				id="options"
-				onmouseover="highlightPNG('options', 1)"
-				onmouseout="highlightPNG('options', 0)"
+
 				title="more options"
 				src="options.png"
 			>
@@ -310,14 +302,13 @@
 	<div class="button">
 		<a
 			class="icon"
-			href="javascript:showOptions(0);setMark()"
+			href="javascript:setMark()"
 			>
 
 			<img
 				class="png"
 				id="mark"
-				onmouseover="highlightPNG('mark', 1)"
-				onmouseout="highlightPNG('mark', 0)"
+
 				title="set a mark"
 				src="mark.png"
 			>
@@ -333,8 +324,7 @@
 			<img
 				class="png"
 				id="delmark"
-				onmouseover="highlightPNG('delmark', 1)"
-				onmouseout="highlightPNG('delmark', 0)"
+
 				title="delete the last mark"
 				src="delmark.png"
 				>
@@ -350,8 +340,7 @@
 			<img
 				class="png"
 				id="mirror-h"
-				onmouseover="highlightPNG('mirror-h', 1)"
-				onmouseout="highlightPNG('mirror-h', 0)"
+
 				title="mirror horizontally"
 				src="mirror-horizontal.png"
 			>
@@ -367,8 +356,7 @@
 			<img
 				class="png"
 				id="mirror-v"
-				onmouseover="highlightPNG('mirror-v', 1)"
-				onmouseout="highlightPNG('mirror-v', 0)"
+
 				title="mirror vertically"
 				src="mirror-vertical.png"
 			>
@@ -384,8 +372,7 @@
 			<img
 				class="png"
 				id="rotate"
-				onmouseover="highlightPNG('rotate', 1)"
-				onmouseout="highlightPNG('rotate', 0)"
+
 				title="rotate image"
 				src="rotate.png"
 			>
@@ -401,8 +388,7 @@
 			<img
 				class="png"
 				id="brightness"
-				onmouseover="highlightPNG('brightness', 1)"
-				onmouseout="highlightPNG('brightness', 0)"
+
 				title="set brightness"
 				src="brightness.png"
 			>
@@ -418,8 +404,7 @@
 			<img
 				class="png"
 				id="contrast"
-				onmouseover="highlightPNG('contrast', 1)"
-				onmouseout="highlightPNG('contrast', 0)"
+
 				title="set contrast"
 				src="contrast.png"
 			>
@@ -435,8 +420,7 @@
 			<img
 				class="png"
 				id="rgb"
-				onmouseover="highlightPNG('rgb', 1)"
-				onmouseout="highlightPNG('rgb', 0)"
+
 				title="set rgb values"
 				src="rgb.png"
 			>
@@ -452,8 +436,7 @@
 			<img
 				class="png"
 				id="size"
-				onmouseover="highlightPNG('size', 1)"
-				onmouseout="highlightPNG('size', 0)"
+
 				title="resize page"
 				src="size.png"
 			>
@@ -469,8 +452,7 @@
 			<img
 				class="png"
 				id="quality"
-				onmouseover="highlightPNG('quality', 1)"
-				onmouseout="highlightPNG('quality', 0)"
+
 				title="set image quality"
 				src="quality.png"
 			>
@@ -486,8 +468,7 @@
 			<img
 				class="png"
 				id="page"
-				onmouseover="highlightPNG('page', 1)"
-				onmouseout="highlightPNG('page', 0)"
+
 				title="specify image"
 				src="page.png"
 			>
@@ -503,8 +484,7 @@
 			<img
 				class="png"
 				id="pixel-by-pixel"
-				onmouseover="highlightPNG('pixel-by-pixel', 1)"
-				onmouseout="highlightPNG('pixel-by-pixel', 0)"
+
 				title="view image pixel by pixel"
 				src="pixel-by-pixel.png"
 			>
@@ -520,8 +500,7 @@
 			<img
 				class="png"
 				id="original-size"
-				onmouseover="highlightPNG('original-size', 1)"
-				onmouseout="highlightPNG('original-size', 0)"
+
 				title="view image in original size"
 				src="original-size.png"
 			>
@@ -537,8 +516,7 @@
 			<img
 				class="png"
 				id="options-1"
-				onmouseover="highlightPNG('options-1', 1)"
-				onmouseout="highlightPNG('options-1', 0)"
+
 				title="hide options"
 				src="options.png"
 			>

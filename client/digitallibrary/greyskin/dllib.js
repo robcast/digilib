@@ -366,14 +366,14 @@ function zoomArea() {
             // first click -- start moving
             click = 2;
             pt1 = evtPosition(evt);
-            moveElement(zoomdiv, Rectangle(pt1.x, pt1.y, 0, 0));
+            moveElement(zoomdiv, new Rectangle(pt1.x, pt1.y, 0, 0));
             showElement(zoomdiv, true);
             // show moving
             registerEvent("mousemove", elemScaler, zoomMove);
             registerEvent("mousemove", zoomdiv, zoomMove);
             // enable drag-to-zoom
             registerEvent("mouseup", elemScaler, zoomClick);
-            registerEvent("mouseup", zoomdiv, zoomClick);
+            //registerEvent("mouseup", zoomdiv, zoomClick);
         } else {
             // second click -- end moving
             pt2 = evtPosition(evt);
@@ -403,7 +403,8 @@ function zoomArea() {
         // mouse move handler
         pt2 = evtPosition(evt);
         // restrict marks to move right and down
-        moveElement(zoomdiv, Rectangle(pt1.x, pt1.y, Math.abs(pt1.x - pt2.x), Math.abs(pt1.y - pt2.y)));
+        var newrect = new Rectangle(pt1.x, pt1.y, Math.abs(pt1.x - pt2.x), Math.abs(pt1.y - pt2.y));
+        moveElement(zoomdiv, newrect);
     }
 
     // starting event capture
