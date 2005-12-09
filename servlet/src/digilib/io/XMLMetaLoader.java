@@ -37,7 +37,6 @@ import org.xml.sax.helpers.DefaultHandler;
 public class XMLMetaLoader {
 
 	private Logger logger = Logger.getLogger(this.getClass());
-	private String outerTag = "resource";
 	private String metaTag = "meta";
 	private String fileTag = "file";
 	private String fileNameTag = "name";

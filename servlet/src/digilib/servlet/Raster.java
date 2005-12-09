@@ -45,7 +45,6 @@ import org.w3c.dom.svg.SVGSVGElement;
 import digilib.auth.AuthOps;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
-import digilib.io.DocuDirent;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.SVGFile;
