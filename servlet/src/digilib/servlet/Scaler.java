@@ -221,7 +221,7 @@ void processRequest(HttpServletRequest request, HttpServletResponse response)
 		// output mime-type
 		String mimeType = "image/png";
 
-		/* parameters for a session */
+		/* preset request parameters */
 
 		// scale the image file to fit window size i.e. respect dw,dh
 		boolean scaleToFit = true;
@@ -660,6 +660,7 @@ void processRequest(HttpServletRequest request, HttpServletResponse response)
 					"ERROR: Other Image Operation Error: " + e, response);
 		}
 	}
+
 	/**
 	 * Returns the DocuDirent corresponding to the DigilibRequest.
 	 * 
