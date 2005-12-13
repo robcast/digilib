@@ -18,15 +18,13 @@ Authors:
   Christian Luginbuehl, 01.05.2003 (first version)
   DW 24.03.2004 (Changed for digiLib in Zope)
   Robert Casties, 2.11.2004
+  Martin Raspe, 12.12.2005 (changes for Digilib NG)
 
 */
 
-function base_init() {
-    // init function
-    baseScriptVersion = "1.2";
-    dlParams = new Object();
-    browserType = getBrowserType();
-}
+// was: function base_init() {
+baseLibVersion = "2.0";
+browserType = getBrowserType();
 
 
 function getInt(n) {
@@ -43,7 +41,7 @@ function defined(x) {
 
 function cropFloat(x) {
     // auxiliary function to crop senseless precision
-    return parseInt(10000*x)/10000;
+    return parseInt(10000 * x) / 10000;
 }
 
 function getBrowserType() {
@@ -260,6 +258,7 @@ function getScale(size) {
 /* **********************************************
  *     parameter routines
  * ******************************************** */
+dlParams = new Object();
 
 function newParameter(name, defaultValue, detail) {
     // create a new parameter with a name and a default value
@@ -275,45 +274,36 @@ function newParameter(name, defaultValue, detail) {
 
 function getParameter(name) {
     // returns the named parameter value or its default value
-    if (defined(dlParams[name])) {
-        if (dlParams[name].hasValue) {
-            return dlParams[name].value;
-        } else {
+    if (!defined(dlParams[name])) return null;
+    if (dlParams[name].hasValue)
+	    return dlParams[name].value;
+    else
             return dlParams[name].defaultValue;
-        }
-    } else {
-        return null;
     }
-}
 
 function setParameter(name, value, relative) {
     // sets parameter value (relative values with +/- unless literal)
-    if (defined(dlParams[name])) {
-    	if ((relative)&&(value.slice)) {
-	    	var sign = value.slice(0,1);
-			if (sign == '+') {
-				dlParams[name].value = parseFloat(dlParams[name].value) + parseFloat(value.slice(1));
-			} else if (sign == '-') {
-				dlParams[name].value = parseFloat(dlParams[name].value) - parseFloat(value.slice(1));
-			} else {
-	        	dlParams[name].value = value;
-	        }
-	    } else {
-	        dlParams[name].value = value;
-	    }
-        dlParams[name].hasValue = true;
-        return true;
-    }
-    return false;
-}
+	if (!defined(dlParams[name])) return null;
+	var p = dlParams[name];
+	if (relative && value.slice) {
+		var sign = value.slice(0, 1);
+		if (sign == '+') {
+			p.value = parseFloat(p.value) + parseFloat(value.slice(1));
+		} else if (sign == '-') {
+			p.value = parseFloat(p.value) - parseFloat(value.slice(1));
+		} else {
+			p.value = value;
+		}
+	} else p.value = value;
+	p.hasValue = true;
+	return p.value;
+	}
 
 function hasParameter(name) {
-    // returns if the parameter's value has been set
-    if (defined(dlParams[name])) {
-        return dlParams[name].hasValue;
-    }
-    return false;
-}
+	// returns if the parameter's value has been set
+	if (!defined(dlParams[name])) return null;
+	return dlParams[name].hasValue;
+	}
 
 function getAllParameters(detail) {
     // returns a string of all parameters in query format
@@ -332,8 +322,6 @@ function getAllParameters(detail) {
     return params.join("&");
 }
 
-getQueryString = getAllParameters;
-
 function parseParameters(query) {
     // gets parameter values from query format string
     var params = query.split("&");
@@ -345,6 +333,28 @@ function parseParameters(query) {
     }
 }
 
+function resetParameters() {
+    // reset parameters to initial values
+	newParameter('fn', '', 1);
+	newParameter('pn', '1', 1);
+	newParameter('ws', '1.0', 1);
+	newParameter('mo', '', 1);
+	newParameter('mk', '', 3);
+	newParameter('wx', '0.0', 2);
+	newParameter('wy', '0.0', 2);
+	newParameter('ww', '1.0', 2);
+	newParameter('wh', '1.0', 2);
+	newParameter('pt', '<%= dlRequest.getAsString("pt") %>', 1);
+	newParameter('brgt', '0.0', 1);
+	newParameter('cont', '0.0', 1);
+	newParameter('rot', '0.0', 1);
+	newParameter('rgba', '', 1);
+	newParameter('rgbm', '', 1);
+	newParameter('ddpix', '', 1);
+	newParameter('ddpiy', '', 1);
+	}
+		
+getQueryString = getAllParameters;
 
 /* **********************************************
  *     HTML/DOM routines
@@ -507,71 +517,68 @@ function evtPosition(evt) {
 }
 
 function registerEvent(type, elem, handler) {
-    // register the given event handler on the indicated element
-    if (elem.addEventListener) {
-        elem.addEventListener(type, handler, false);
-    } else {
-        if (type == "mousedown") {
-            if (elem.captureEvents) {
-                elem.captureEvents(Event.MOUSEDOWN);
-            }
-            elem.onmousedown = handler;
-        } else if (type == "mouseup") {
-            if (elem.captureEvents) {
-                elem.captureEvents(Event.MOUSEUP);
-            }
-            elem.onmouseup = handler;
-        } else if (type == "mousemove") {
-            if (elem.captureEvents) {
-                elem.captureEvents(Event.MOUSEMOVE);
-            }
-            elem.onmousemove = handler;
-        } else if (type == "keypress") {
-            if (elem.captureEvents) {
-                elem.captureEvents(Event.KEYPRESS);
-            }
-            elem.onkeypress = handler;
-        } else {
-            alert("registerEvent: unknown event type "+type);
-            return false;
-        }
-    }
-    return true;
-}
-
+	// register the given event handler on the indicated element
+	if (elem.addEventListener) {
+		elem.addEventListener(type, handler, false);	// bubble
+		}
+	else if (elem.attachEvent) {
+		elem.attachEvent("on" + type, handler);
+		}
+	else if (elem.captureEvents) {
+		if (Event) { 
+			t = type.toUpperCase();
+			elem.captureEvents(Event[t]);
+			elem[ "on" + t ] = handler;
+			}
+		}
+	else {
+		alert("Could not register event of type " + type);
+		return false;
+		}
+	return true;
+	}
+	
 function unregisterEvent(type, elem, handler) {
-    // unregister the given event handler from the indicated element
-    if (elem.removeEventListener) {
-        elem.removeEventListener(type, handler, false);
-    } else {
-        if (type == "mousedown") {
-            if (elem.releaseEvents) {
-                elem.releaseEvents(Event.MOUSEDOWN);
-            }
-            elem.onmousedown = null;
-        } else if (type == "mouseup") {
-            if (elem.releaseEvents) {
-                elem.releaseEvents(Event.MOUSEUP);
-            }
-            elem.onmouseup = null;
-        } else if (type == "mousemove") {
-            if (elem.releaseEvents) {
-                elem.releaseEvents(Event.MOUSEMOVE);
-            }
-            elem.onmousemove = null;
-        } else if (type == "keypress") {
-            if (elem.releaseEvents) {
-                elem.releaseEvents(Event.KEYPRESS);
-            }
-            elem.onkeypress = null;
-        } else {
-            alert("unregisterEvent: unknown event type "+type);
-            return false;
-        }
-    }
-    return true;
+	// unregister the given event handler from the indicated element
+	if (elem.removeEventListener) {
+		elem.removeEventListener(type, handler, false);
+    		}
+	else if (elem.detachEvent) {
+		elem.detachEvent('on' + type, handler);
+		}
+	else if (elem.releaseEvents) {
+		if (Event) { 
+			t = type.toUpperCase();
+			elem.releaseEvents(Event[t]);
+			elem[ "on" + t ] = null;
+			}
+		}
+	else {
+		alert("Could not register event of type " + type);
+		return false;
+		}
+	return true;
 }
 
+function registerEventById(type, id, handler) {
+	registerEvent(type, document.getElementById(id), handler);
+	}
+
+function unregisterEventById(type, id, handler) {
+	unregisterEvent(type, document.getElementById(id), handler);
+	}
+
+function stopEvent(e) {
+	if (!e) var e = window.event;
+	e.cancelBubble = true;
+	if (e.stopPropagation) e.stopPropagation();
+	return false;
+}
+
+function getEventSrc(e) {
+	if (e.target) return e.target;
+	if (e.srcElement) return e.srcElement;
+}
 
 // old registerXXYY API for compatibility
 function registerMouseDown(elem, handler) {
