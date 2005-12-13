@@ -18,16 +18,20 @@ Authors:
   Christian Luginbuehl, 01.05.2003 (first version)
   DW 24.03.2004 (Changed for digiLib in Zope)
   Robert Casties, 8.11.2005
+  Martin Raspe <hertzhaft@biblhertz.it>, 12.12.2005
 
   ! Requires baselib.js !
 
 */
-
+digilibVersion = "Digilib NG";
+dllibVersion = "2.0";
+isDigilibInitialized = false;	// gets set to true in dl_param_init
+reloadPage = true;		// reload the page when parameters were changed
 
 function identify() {
         // used for identifying a digilib instance
         // Relato uses that function - lugi
-        return "Digilib 0.6";
+        return digilibVersion;
 }
 /*
  * more parameter handling
@@ -35,17 +39,21 @@ function identify() {
 
 function parseArea() {
     // returns area Rectangle from current parameters
-    return new Rectangle(getParameter("wx"), getParameter("wy"), getParameter("ww"), getParameter("wh"));
-}
+    return new Rectangle(
+    	getParameter("wx"),
+	getParameter("wy"),
+	getParameter("ww"),
+	getParameter("wh"));
+	}
 
 function setParamFromArea(rect) {
-    // sets digilib wx etc. from rect
-    setParameter("wx", cropFloat(rect.x));
-    setParameter("wy", cropFloat(rect.y));
-    setParameter("ww", cropFloat(rect.width));
-    setParameter("wh", cropFloat(rect.height));
-    return true;
-}
+	// sets digilib wx etc. from rect
+	setParameter("wx", cropFloat(rect.x));
+	setParameter("wy", cropFloat(rect.y));
+	setParameter("ww", cropFloat(rect.width));
+	setParameter("wh", cropFloat(rect.height));
+	return true;
+	}
 
 function parseTrafo(elem) {
     // returns Transform from current dlArea and picsize
@@ -69,81 +77,83 @@ function parseTrafo(elem) {
     return trafo;
 }
 
-
 function parseMarks() {
     // returns marks array from current parameters
     var marks = new Array();
-    var ma;
-    var mk = getParameter("mk");
-    if (mk.indexOf(";") >= 0) {
-        // old format with ";"
-        ma = mk.split(";");
-    } else {
-        ma = mk.split(",");
-    }
-    for (var i = 0; i < ma.length ; i++) {
-        var pos = ma[i].split("/");
-        if (pos.length > 1) {
-            marks.push(new Position(pos[0], pos[1]));
+    var param = getParameter("mk");
+    var pairs = (param.indexOf(";") >= 0)
+        ? param.split(";")	// old format with ";"
+        : param.split(",");	// new format
+    for (var i = 0; i < pairs.length ; i++) {
+        var pos = pairs[i].split("/");
+        if (pos.length > 1) marks.push(new Position(pos[0], pos[1]));
         }
-    }
     return marks;
-}
+    }
 
 function getAllMarks() {
     // returns a string with all marks in query format
     var marks = new Array();
-    for (var i = 0; i < dlMarks.length; i++) {
+    for (var i = 0; i < dlMarks.length; i++)
         marks.push(cropFloat(dlMarks[i].x) + "/" + cropFloat(dlMarks[i].y));
-    }
     return marks.join(",");
-}
+    }
 
-function addMark(pos) {
-    // add a mark
-    dlMarks.push(pos);
-    setParameter("mk", getAllMarks());
-    return true;
-}
+getMarksQueryString = getAllMarks;
+
+function addMark(evt) {
+	// add a mark
+	var pos = dlTrafo.invtransform(evtPosition(evt));
+	dlMarks.push(pos)
+	setParameter("mk", getAllMarks());
+	return true;
+	}
+
+function createMarkDiv(index) {
+	var div = document.createElement("div");
+	div.className = "mark";
+	div.id = "mark" + index;
+	div.innerHTML = index + 1;
+	document.body.appendChild(div);
+	return div;
+	}
 
 function deleteMark() {
-    // delete the last mark
-    dlMarks.pop();
-    setParameter("mk", getAllMarks());
-    return true;
-}
+	// delete the last mark
+	var mark = dlMarks.pop();
+	setParameter("mk", getAllMarks());
+	return true;
+	}
 
 function hasFlag(mode) {
-    // returns if mode flag is set
-    return (dlFlags[mode]);
-}
+	// returns if mode flag is set
+	return (dlFlags[mode]);
+	}
 
 function addFlag(mode) {
-    // add a mode flag
-    dlFlags[mode] = mode;
-    setParameter("mo", getAllFlags());
-    return true;
-}
+	// add a mode flag
+	dlFlags[mode] = mode;
+	setParameter("mo", getAllFlags());
+	return true;
+	}
 
 function removeFlag(mode) {
-    // remove a mode flag
-    if (dlFlags[mode]) {
-        delete dlFlags[mode];
-    }
-    setParameter("mo", getAllFlags());
-    return true;
-}
+	// remove a mode flag
+	if (dlFlags[mode]) delete dlFlags[mode];
+	setParameter("mo", getAllFlags());
+	return true;
+	}
 
 function toggleFlag(mode) {
-    // change a mode flag
-    if (dlFlags[mode]) {
-        delete dlFlags[mode];
-    } else {
-        dlFlags[mode] = mode;
-    }
-    setParameter("mo", getAllFlags());
-    return true;
-}
+	// change a mode flag
+	if (dlFlags[mode]) {
+		delete dlFlags[mode];
+	} else {
+		dlFlags[mode] = mode;
+	}
+	setParameter("mo", getAllFlags());
+	return true;
+	}
 
 function getAllFlags() {
     // returns a string with all flags in query format
@@ -167,7 +177,7 @@ function parseFlags() {
         }
     }
     return flags;
-}    
+}
 
 
 function bestPicSize(elem, inset) {
@@ -210,137 +220,132 @@ function setDLParam(e, s, relative) {
  * ******************************************** */
 
 
+function parseAllParameters() {
+	// put the query parameters (sans "?") in the parameters array
+	parseParameters(location.search.slice(1));
+	// treat special parameters
+	dlMarks = parseMarks();
+	dlArea = parseArea();
+	dlFlags = parseFlags();
+	}
+
 function dl_param_init() {
-    // parameter initialisation before onload
-    if (!baseScriptVersion) {
-        base_init();
-    }
-    dlScriptVersion = "1.2b";
-    dlArea = new Rectangle(0.0, 0.0, 1.0, 1.0);
-    dlMaxArea = new Rectangle(0.0, 0.0, 1.0, 1.0);
-    dlTrafo = new Transform();
-    dlMarks = new Array();
-    dlFlags = new Object();
-    elemScaler = null;
-    picElem = null;
-    ZOOMFACTOR = Math.sqrt(2);
-
-    // put the query parameters (sans "?") in the parameters array
-    parseParameters(location.search.slice(1));
-    // treat special parameters
-    dlMarks = parseMarks();
-    dlArea = parseArea();
-    dlFlags = parseFlags();
-}
-
+	// initialisation before onload
+	if (!baseLibVersion) alert("ERROR: baselib.js not loaded!");
+	if (isDigilibInitialized) return false;	// dl_param_init was already run 
+	dlArea = new Rectangle(0.0, 0.0, 1.0, 1.0);
+	dlMaxArea = new Rectangle(0.0, 0.0, 1.0, 1.0);
+	dlTrafo = new Transform();
+	dlMarks = new Array();
+	dlFlags = new Object();
+	elemScaler = null;
+	picElem = null;
+	ZOOMFACTOR = Math.sqrt(2);
+	// parse parameters
+	parseAllParameters();
+	isDigilibInitialized = true;
+	return true;
+	}
 
 function dl_init() {
-    // initalisation on load
-    if (!dlScriptVersion) {
-        dl_param_init();
-    }
-    elemScaler = getElement("scaler", true);
-    picElem = getElement("pic", true);
-    if (picElem == null && elemScaler) {
-        // in N4 pic is in the scaler layer
-        picElem = elemScaler.document.images[0];
-    }
-    if (!elemScaler) {
-        alert("Digilib problem: No element with id 'scaler' found");
-        return false;
+	// initalisation on load
+	if (!isDigilibInitialized) dl_param_init();
+	elemScaler = getElement("scaler");
+	picElem = getElement("pic", true);
+	// in N4 pic is in the scaler layer
+	if (picElem == null && elemScaler) {
+		picElem = elemScaler.document.images[0];
+		}
+	// give a name to the window containing digilib
+	window.name = defined(dlTarget) && dlTarget
+		? dlTarget
+		: "digilib";
+	// put the query parameters (sans "?") in the parameters array
+        parseAllParameters();
+	// wait for image to load and display marks
+	renderMarks();
+	// done
+	focus();
 	}
-    if (!picElem) {
-        alert("Digilib problem: No element with id 'pic' found");
-        return false;
-	}
-    // give a name to the window containing digilib
-    if (defined(dlTarget) && (dlTarget)) {
-        window.name = dlTarget;
-    } else {
-        window.name = "digilib";
-    }
-    // put the query parameters (sans "?") in the parameters array
-    parseParameters(location.search.slice(1));
-    // treat special parameters
-    dlMarks = parseMarks();
-    dlArea = parseArea();
-    dlFlags = parseFlags();
-    // wait for image to load and display marks
-    renderMarks();
-    // done
-    focus();
-    return;
-}
 
+function loadScalerImage(detail) {
+	var pic = getElement('pic');
+	var scaler = getElement('scaler');
+	var zoomDiv = getElement("zoom");	// test for presence only
+	var overlay = getElement("overlay");	// test for presence only
+	var picsize = bestPicSize(scaler, 50);
+	var src = "../servlet/Scaler?" 
+		+ getQueryString()
+		+ "&dw=" + picsize.width
+		+ "&dh=" + picsize.height;
+	// debug(src);
+	pic.src = src;
+	dl_init();	// dl_init braucht die endgültigen Maße des pic Elements
+	}
 
 function display(detail) {
-    // redisplay the page
-    if (! detail) {
-        detail = 255;
-    }
-    var queryString = getAllParameters(detail);
-    location.href = location.protocol + "//" + location.host + location.pathname + "?" + queryString;
-}
-
+	// redisplay the page
+	if (! detail) detail = 255;
+	var queryString = getAllParameters(detail);
+	if (reloadPage) {
+		location.href
+			= location.protocol + "//"
+			+ location.host
+			+ location.pathname
+			+ "?" + queryString;
+	} else {
+		loadScalerImage();
+		}
+	}
 
 /* **********************************************
  *     interactive digilib functions
  * ******************************************** */
 
-// TO BE CHANGED
 function renderMarks() {
-    // put the visible marks on the image
-    var mark_count = dlMarks.length;
     // make shure the image is loaded so we know its size
-    if (defined(picElem.complete) && picElem.complete == false && ! browserType.isN4 ) {
-        setTimeout("renderMarks()", 100);
-    } else {
-        dlTrafo = parseTrafo(picElem);
-        for (var i = 0; i < 8; i++) {
-            var me = getElement("dot"+i);
-            if (i < mark_count) {
-                if (dlArea.containsPosition(dlMarks[i])) {
-                    var mpos = dlTrafo.transform(dlMarks[i]);
-                    // suboptimal to place -5 pixels and not half size of mark-image
-                    mpos.x = mpos.x -5;
-                    mpos.y = mpos.y -5;
-                    moveElement(me, mpos);
-                    showElement(me, true);
-                }
-            } else {
-                // hide the other marks
-                showElement(me, false);
+    if (defined(picElem.complete) && !picElem.complete && !browserType.isN4 ) {
+	    setTimeout("renderMarks()", 100);
+	    return;
             }
+    // put the visible marks on the image
+    dlTrafo = parseTrafo(picElem);
+    for (var i = 0; i < dlMarks.length; i++) {
+	var div = document.getElementById("mark" + i) || createMarkDiv(i);
+        var mark = dlMarks[i];
+	if (dlArea.containsPosition(mark)) {
+	    var mpos = dlTrafo.transform(mark);
+	    // suboptimal to place -5 pixels and not half size of mark-image
+	    // mpos.x = mpos.x -5;
+	    // mpos.y = mpos.y -5;
+	    moveElement(div, mpos);
+	    showElement(div, true);
+	} else {
+	    // hide the other marks
+	    showElement(div, false);
+	    }
         }
     }
-}
-
 
 function setMark(reload) {
-    // add a mark where clicked
-    if ( dlMarks.length > 7 ) {
-        alert("Only 8 marks are possible at the moment!");
-        return;
-    }
-    window.focus();
 
-    function markEvent(evt) {
-        // event handler adding a new mark
-        unregisterEvent("mousedown", elemScaler, markEvent);
-        var p = dlTrafo.invtransform(evtPosition(evt));
-        addMark(p);
-        if (defined(reload)&&(!reload)) {
-            // don't redisplay
-            renderMarks();
-            return;
-        }
-        display();
-    }
-
-    // starting event capture
-    registerEvent("mousedown", elemScaler, markEvent);
-}
-
+	function markEvent(evt) {
+	// event handler adding a new mark
+		unregisterEvent("mousedown", elemScaler, markEvent);
+		addMark(evt);
+		if ( defined(reload) && !reload ) {
+			// don't redisplay
+			renderMarks();
+			return;
+			}
+		display();
+		}
+	
+	// add a mark where clicked
+	window.focus();
+	// start event capturing
+	registerEvent("mousedown", elemScaler, markEvent);
+	}
 
 function removeMark(reload) {
     // remove the last mark
@@ -353,63 +358,81 @@ function removeMark(reload) {
     display();
 }
 
-
 function zoomArea() {
-    var click = 1;
-    var pt1, pt2;
-    window.focus();
-    var zoomdiv = getElement("zoom");
+	var pt1, pt2;
+	var zoomdiv = getElement("zoom");
+	var overlay = getElement("overlay");
+	// use overlay div to avoid <img> mousemove problems
+	moveElement(overlay, getElementRect(picElem));
+	showElement(overlay, true);
+	// start event capturing
+	registerEvent("mousedown", overlay, zoomStart);
+	window.focus();
 
-    function zoomClick(evt) {
-        // mouse click handler
-        if (click == 1) {
-            // first click -- start moving
-            click = 2;
-            pt1 = evtPosition(evt);
-            moveElement(zoomdiv, new Rectangle(pt1.x, pt1.y, 0, 0));
-            showElement(zoomdiv, true);
-            // show moving
-            registerEvent("mousemove", elemScaler, zoomMove);
-            registerEvent("mousemove", zoomdiv, zoomMove);
-            // enable drag-to-zoom
-            registerEvent("mouseup", elemScaler, zoomClick);
-            //registerEvent("mouseup", zoomdiv, zoomClick);
-        } else {
-            // second click -- end moving
-            pt2 = evtPosition(evt);
-            showElement(zoomdiv, false);
-            unregisterEvent("mousemove", elemScaler, zoomMove);
-            unregisterEvent("mousemove", zoomdiv, zoomMove);
-            unregisterEvent("mousedown", elemScaler, zoomClick);
-            unregisterEvent("mousedown", zoomdiv, zoomClick);
-            var p1 = dlTrafo.invtransform(pt1);
-            var p2 = dlTrafo.invtransform(pt2);
-            var ww = p2.x-p1.x;
-            var wh = p2.y-p1.y;
-            if ((ww > 0)&&(wh > 0)) {
-                setParameter("wx", cropFloat(p1.x));
-                setParameter("wy", cropFloat(p1.y));
-                setParameter("ww", cropFloat(ww));
-                setParameter("wh", cropFloat(wh));
-                parseArea();
-                // zoomed is always fit
-                setParameter("ws", 1);
-                display();
-            }
-        }
-    }
-
-    function zoomMove(evt) {
-        // mouse move handler
-        pt2 = evtPosition(evt);
-        // restrict marks to move right and down
-        var newrect = new Rectangle(pt1.x, pt1.y, Math.abs(pt1.x - pt2.x), Math.abs(pt1.y - pt2.y));
-        moveElement(zoomdiv, newrect);
-    }
-
-    // starting event capture
-    registerEvent("mousedown", elemScaler, zoomClick);
-    registerEvent("mousedown", zoomdiv, zoomClick);
+// mousedown handler: start moving
+	function zoomStart(evt) {
+		pt1 = evtPosition(evt);
+		unregisterEvent("mousedown", overlay, zoomStart);
+		// unregisterEvent("mousedown", zoomdiv, zoomStart);
+		// setup and show zoom div
+		moveElement(zoomdiv, Rectangle(pt1.x, pt1.y, 0, 0));
+		showElement(zoomdiv, true);
+		// register move events
+		registerEvent("mousemove", overlay, zoomMove);
+		registerEvent("mousemove", zoomdiv, zoomMove);
+		// register up events for drag end
+		registerEvent("mouseup", overlay, zoomEnd);
+		registerEvent("mouseup", zoomdiv, zoomEnd);
+		return stopEvent(evt);
+		}
+	
+// mouseup handler: end moving
+	function zoomEnd(evt) {
+		pt2 = evtPosition(evt);
+		// hide zoom div
+		showElement(zoomdiv, false);
+		showElement(overlay, false);
+		// unregister move events
+		unregisterEvent("mousemove", overlay, zoomMove);
+		unregisterEvent("mousemove", zoomdiv, zoomMove);
+		// unregister drag events
+		unregisterEvent("mouseup", overlay, zoomEnd);
+		unregisterEvent("mouseup", zoomdiv, zoomEnd);
+		// calc offsets
+		var rect = getRect(
+			dlTrafo.invtransform(pt1),
+			dlTrafo.invtransform(pt2)
+			);
+		// try again if area is too small
+		if (rect.getArea() < 0.00001) return zoomArea();
+		setParameter("wx", cropFloat(rect.x));
+		setParameter("wy", cropFloat(rect.y));
+		setParameter("ww", cropFloat(rect.width));
+		setParameter("wh", cropFloat(rect.height));
+		parseArea();
+		// zoomed is always fit
+		setParameter("ws", 1);
+		display();
+		return stopEvent(evt);
+		}
+	
+// mouse move handler
+	function zoomMove(evt) {
+		pt2 = evtPosition(evt);
+		// update zoom div
+		moveElement(zoomdiv, getRect(pt1, pt2));
+		return stopEvent(evt);
+		}
+	
+// get zoom area from two points
+	function getRect(p1, p2) {
+		return new Rectangle(
+			Math.min(p1.x, p2.x),
+			Math.min(p1.y, p2.y),
+			Math.abs(p1.x - p2.x),
+			Math.abs(p1.y - p2.y)
+			);
+		}
 }
 
 function zoomBy(factor) {
@@ -475,60 +498,49 @@ function moveBy(movx, movy) {
     display();
 }
 
-function getRef() {
+function getRef(baseURL) {
     // returns a reference to the current digilib set
-    if (! baseUrl) {
-        var baseUrl = location.protocol + "//" + location.host + location.pathname;
-    }
+    if (!baseUrl) baseUrl
+	= location.protocol
+	+ "//" 
+	+ location.host
+	+ location.pathname;
     var hyperlinkRef = baseUrl;
-    var par = getAllParameters(7+16); // all without ddpi, pt
-    if (par.length > 0) {
-        hyperlinkRef += "?" + par;
-    }
+    var params = getAllParameters(7 + 16); // all without ddpi, pt
+    if (params.length > 0) hyperlinkRef += "?" + params;
     return hyperlinkRef;
-}
+    }
 
 function getRefWin(type, msg) {
     // shows an alert with a reference to the current digilib set
-    if (! msg) {
-        msg = "Link for HTML documents";
-    }
+    if (! msg) msg = "URL reference to the current view";
     prompt(msg, getRef());
-}
+    }
 
 function getQuality() {
-	// returns the current q setting
+    // returns the current q setting
     for (var i = 0; i < 3; i++) {
-        if (hasFlag("q"+i)) {
-        	return i;
-        }
-    }
+        if (hasFlag("q"+i)) return i;
+    	}
     return 1
-}
+    }
 
 function setQuality(qual) {
     // set the image quality
-    for (var i = 0; i < 3; i++) {
-        removeFlag("q"+i);
-        if (i == qual) {
-            addFlag("q"+i);
-        }
-    }
+    for (var i = 0; i < 3; i++) removeFlag("q" + i);
+    if (qual > 2) return alert("Quality number not supported");
+    addFlag("q" + i);
     setParameter("mo", getAllFlags());
     display();
-}    
+}
 
 function setQualityWin(msg) {
 	// dialog for setting quality
-	if (! msg) {
-		msg = "Quality (0..2)";
-	}
+	if (! msg) msg = "Quality (0..2)";
 	var q = getQuality();
 	var newq = window.prompt(msg, q);
-	if (newq) {
-		setQuality(newq);
+	if (newq) setQuality(newq);
 	}
-}
 
 function mirror(dir) {
     // mirror the image horizontally or vertically
@@ -560,9 +572,9 @@ function gotoPage(gopage, keep) {
 		}
 	}
 	if (keep) {
-		display(15+32); // all, no mark
+		display(15 + 32); // all, no mark
 	} else {	
-		display(3+32); // fn, pn, ws, mo + pt
+		display(3  + 32); // fn, pn, ws, mo + pt
 	}
 }
 
@@ -570,10 +582,8 @@ function gotoPageWin() {
 	// dialog to ask for new page nr
 	var pn = getParameter("pn");
 	var gopage = window.prompt("Go to page", pn);
-	if (gopage) {
-		gotoPage(gopage);
+	if (gopage) gotoPage(gopage);
 	}
-}
 
 function setParamWin(param, text, relative) {
 	// dialog to ask for new parameter value
@@ -589,4 +599,21 @@ function showOptions(show) {
 	// show or hide option div
 	var elem = getElement("dloptions");
 	showElement(elem, show);
-}
+	}
+
+function showAboutDiv(show) {
+	// show or hide "about" div
+	var elem = getElement("about");
+	if (elem == null) {
+		if (!show) return;
+		alert("About Digilib - dialog missing in HTML code!"
+			+ "\nDigilib Version: " + digilibVersion
+			+ "\ndlLib Version: " + dllibVersion
+			+ "\nbaseLib Version: " + baseLibVersion);
+		return;
+		}
+	document.getElementById("digilib-version").innerHTML = "Digilib Version: " + digilibVersion;
+	document.getElementById("baselib-version").innerHTML = "baseLib Version: " + baseLibVersion;
+	document.getElementById("dllib-version").innerHTML = "dlLib Version: " + dllibVersion;
+	showElement(elem, show);
+	}
