@@ -36,93 +36,58 @@
 <head>
 	<title>Digital Document Library NG</title>
 	
-	<style type="text/css">
-
-		body		{ background-color: #E0E0E0; color: black; font-size: 8pt }
-		code		{ font-family: monospace; color: blue; }
-		pre		{ color: #006060; }
-
-		a.icon		{ margin: 0px; padding: 0px; }
-
-		img.png 	{ border: none; }
-        img.png:hover { background-image: url('corona.png'); }
-		img.mark 	{ border: none; }
-
-		div.button	{ padding: 0px; }
-		div.dot		{ position: absolute; left: -20; top: 100; visibility: hidden }	
-		div#scaler-table { padding-right: 40px; }
-
-		div#buttons	{ position: absolute; right: 5px; top: 5px; background-color: #E0E0E0; }
-		div#dloptions	{ position: absolute; right: 5px; top: 5px; background-color: #E0E0E0; visibility: hidden; }
-		div#zoom	{ position: absolute; border: 2px solid red; visibility: hidden; }
-		
-	</style>
+	<link rel="stylesheet" type="text/css" href="diginew.css" />
 	
+	<script type="text/javascript" src="debug.js"></script>
+
 	<script type="text/javascript" src="baselib.js"></script>
 	
 	<script type="text/javascript" src="dllib.js"></script>
 
 	<script language="JavaScript">
-		var isOptionDivVisible = false;
-		var dlTarget = window.name;
-		var baseUrl = '<%= dlRequest.getAsString("base.url") %>';
-		var toolbarEnabledURL = window.location.href;
 
-		function resetParams() {
-			newParameter('fn', '', 1);
-			newParameter('pn', '1', 1);
-			newParameter('ws', '1.0', 1);
-			newParameter('mo', '', 1);
-			newParameter('mk', '', 3);
-			newParameter('wx', '0.0', 2);
-			newParameter('wy', '0.0', 2);
-			newParameter('ww', '1.0', 2);
-			newParameter('wh', '1.0', 2);
-			newParameter('pt', '<%= dlRequest.getAsString("pt") %>', 1);
-			newParameter('brgt', '0.0', 1);
-			newParameter('cont', '0.0', 1);
-			newParameter('rot', '0.0', 1);
-			newParameter('rgba', '', 1);
-			newParameter('rgbm', '', 1);
-			newParameter('ddpix', '', 1);
-			newParameter('ddpiy', '', 1);
-			document.id='digilib';
-			}
-		
+	var isOptionDivVisible = false;
+	var isAboutDivVisible = false;
+	var dlTarget = window.name;
+	var baseUrl = '<%= dlRequest.getAsString("base.url") %>';
+	var toolbarEnabledURL = window.location.href;
+	var timeOut;
 
-		function toggleOptionDiv() {
-			isOptionDivVisible = !isOptionDivVisible;
-			showOptions(isOptionDivVisible);
-			}
-
-		function highlightPNG(id, on) {
-			var img = document.getElementById(id);
-			var a = img.parentNode
-			var div = a.parentNode;
-			var src = img.src;
-			// FIXME: IE - transparente PNGs offenbar nicht nachladbar
-			
-			// if (browserType.isIE)
-			//	img.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" + src + "');"
-			div.style.backgroundImage = on 
-				? "url('corona.png')"
-				: "";
+	function toggleOptionDiv() {
+		isOptionDivVisible = !isOptionDivVisible;
+		showOptions(isOptionDivVisible);
 		}
 
-		// initialize image; called by body.onload
-		function onBodyLoaded() {
-			var scaler = getElement('scaler');
-			var pic = getElement('pic');
-			var ps = bestPicSize(scaler, 50);
-			var src = "../servlet/Scaler?" + getQueryString() + "&dw=" + ps.width + "&dh=" + ps.height;
-			pic.src = src;
-			dl_init();	// dl_init braucht die endgültigen Maße des pic Elements
-			}
+	function toggleAboutDiv() {
+		isAboutDivVisible = !isAboutDivVisible;
+		showAboutDiv(isAboutDivVisible);
+		}
+
+	function highlightPNG(id, on) {
+		var img = document.getElementById(id);
+		var a = img.parentNode
+		var div = a.parentNode;
+		var src = img.src;
+		// FIXME: IE - transparente PNGs offenbar nicht nachladbar
 		
-		base_init();		// browser recognition
-		resetParams();		// default values
+		if (browserType.isIE)
+			img.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" + src + "');"
+		div.style.backgroundImage = on 
+			? "url('corona.png')"
+			: "";
+		}
+
+	// initialize image; called by body.onload
+	function onBodyLoaded() {
+		document.id = 'digilib';
+		resetParameters();	// set default values if not given
 		dl_param_init();	// parse parameter values
-			
+		loadScalerImage();
+		dl_init();
+		}
+
+	// base_init();		// now done on loading baselib.js
+
 	</script>
 </head>
 
@@ -135,19 +100,24 @@
 	</div>
  </div>
 
- <!-- slot for the zoom -->
+ <!-- sensitive overlay for zoom area etc -->
+ <div id="overlay">
+ </div>
+ 
+ <!-- the zoom area selection rectangle -->
  <div id="zoom">
  </div>
+ 
+ <div id="about" class="about" onclick="toggleAboutDiv()">
+ 	<p>Digilib Graphic Viewer</p>
+ 	<a href="http://digilib.berlios.de" target="_blank" >
+ 		<img class="logo" src="../img/digilib-logo-text1.png" title="digilib"></img>
+	</a>
+	<p id="digilib-version"></p>
+	<p id="baselib-version"></p>
+	<p id="dllib-version"></p>
+ </div>
 
- <!-- marks as dynamically created divs with numbers or text? -->
- <div id="dot0" class="dot"><img class="mark" src="../img/mark1.gif" ></div>
- <div id="dot1" class="dot"><img class="mark" src="../img/mark2.gif" ></div>
- <div id="dot2" class="dot"><img class="mark" src="../img/mark3.gif" ></div>
- <div id="dot3" class="dot"><img class="mark" src="../img/mark4.gif" ></div>
- <div id="dot4" class="dot"><img class="mark" src="../img/mark5.gif" ></div>
- <div id="dot5" class="dot"><img class="mark" src="../img/mark6.gif" ></div>
- <div id="dot6" class="dot"><img class="mark" src="../img/mark7.gif" ></div>
- <div id="dot7" class="dot"><img class="mark" src="../img/mark8.gif" ></div>
 
  <div id="buttons">
 	<div class="button">
@@ -159,7 +129,6 @@
 			<img
 				class="png"
 				id="reference"
-
 				title="get a reference URL"
 				src="reference.png"
 			>
@@ -175,7 +144,6 @@
 			<img
 				class="png"
 				id="zoom-in"
-
 				title="zoom in"
 				src="zoom-in.png"
 			>
@@ -191,7 +159,6 @@
 			<img
 				class="png"
 				id="zoom-out"
-
 				title="zoom out"
 				src="zoom-out.png"
 			>
@@ -207,7 +174,6 @@
 			<img
 				class="png"
 				id="zoom-area"
-
 				title="zoom area"
 				src="zoom-area.png"
 			>
@@ -223,7 +189,6 @@
 			<img
 				class="png"
 				id="zoom-full"
-
 				title="view the whole image"
 				src="zoom-full.png"
 			>
@@ -239,7 +204,6 @@
 			<img
 				class="png"
 				id="back"
-
 				title="goto previous image"
 				src="back.png"
 			>
@@ -255,7 +219,6 @@
 			<img
 				class="png"
 				id="fwd"
-
 				title="goto next image"
 				src="fwd.png"
 			>
@@ -265,14 +228,13 @@
 	<div class="button">
 		<a
 			class="icon"
-			href="javascript:help()"
+			href="javascript:toggleAboutDiv()"
 			>
 
 			<img
 				class="png"
 				id="help"
-
-				title="help"
+				title="about Digilib"
 				src="help.png"
 			>
 		</a>
@@ -287,7 +249,6 @@
 			<img
 				class="png"
 				id="options"
-
 				title="more options"
 				src="options.png"
 			>
@@ -302,13 +263,12 @@
 	<div class="button">
 		<a
 			class="icon"
-			href="javascript:setMark()"
+			href="javascript:setMark();"
 			>
 
 			<img
 				class="png"
 				id="mark"
-
 				title="set a mark"
 				src="mark.png"
 			>
@@ -324,7 +284,6 @@
 			<img
 				class="png"
 				id="delmark"
-
 				title="delete the last mark"
 				src="delmark.png"
 				>
@@ -340,7 +299,6 @@
 			<img
 				class="png"
 				id="mirror-h"
-
 				title="mirror horizontally"
 				src="mirror-horizontal.png"
 			>
@@ -356,7 +314,6 @@
 			<img
 				class="png"
 				id="mirror-v"
-
 				title="mirror vertically"
 				src="mirror-vertical.png"
 			>
@@ -372,7 +329,6 @@
 			<img
 				class="png"
 				id="rotate"
-
 				title="rotate image"
 				src="rotate.png"
 			>
@@ -388,7 +344,6 @@
 			<img
 				class="png"
 				id="brightness"
-
 				title="set brightness"
 				src="brightness.png"
 			>
@@ -404,7 +359,6 @@
 			<img
 				class="png"
 				id="contrast"
-
 				title="set contrast"
 				src="contrast.png"
 			>
@@ -420,7 +374,6 @@
 			<img
 				class="png"
 				id="rgb"
-
 				title="set rgb values"
 				src="rgb.png"
 			>
@@ -436,7 +389,6 @@
 			<img
 				class="png"
 				id="size"
-
 				title="resize page"
 				src="size.png"
 			>
@@ -452,7 +404,6 @@
 			<img
 				class="png"
 				id="quality"
-
 				title="set image quality"
 				src="quality.png"
 			>
@@ -468,7 +419,6 @@
 			<img
 				class="png"
 				id="page"
-
 				title="specify image"
 				src="page.png"
 			>
@@ -484,7 +434,6 @@
 			<img
 				class="png"
 				id="pixel-by-pixel"
-
 				title="view image pixel by pixel"
 				src="pixel-by-pixel.png"
 			>
@@ -500,7 +449,6 @@
 			<img
 				class="png"
 				id="original-size"
-
 				title="view image in original size"
 				src="original-size.png"
 			>
@@ -516,13 +464,14 @@
 			<img
 				class="png"
 				id="options-1"
-
 				title="hide options"
 				src="options.png"
 			>
 		</a>
 	</div>
 </div>
+
+<div class="debug" id="debug"><p class="debug">Debug</p></div>
 
 </body>
 
