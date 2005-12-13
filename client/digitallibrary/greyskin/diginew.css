@@ -1,0 +1,129 @@
+/* Styles for Digilib NG */
+/* (c) 2005 by Martin Raspe <hertzhaft@biblhertz.it> */
+/* Bibliotheca Hertziana (Max-Planck-Institute for Art History), Rome */
+
+body {
+	background-color: #E0E0E0;
+	color: black;
+	font-size: 8pt;
+	}
+
+code {
+	font-family: monospace;
+	color: blue;
+	}
+
+pre	{ color: #006060; }
+
+
+a.icon {
+	margin: 0px;
+	padding: 0px;
+	}
+
+/* Images */
+
+img.logo {
+	border: none;
+	}
+
+img.png {
+	border: none;
+	}
+	
+img.png:hover {
+	background-image: url('corona.png');
+	}
+
+/* DIVs */
+
+div.button {
+	padding: 0px;
+	}
+
+div.mark {
+	position: absolute;
+	color: white;
+	background: url('mark-bg-16.png');
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	font-size:11px;
+	height: 16px;
+	width: 16px;
+	text-align: center;
+	z-index: 10;
+	/* filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='mark-bg-16.png') */
+	}
+		
+div#scaler-table {
+	padding-right: 40px;
+	}
+
+div#overlay {
+	position: absolute;
+	background: transparent;
+	border: 2px solid lightcyan;
+	z-index: 20;
+	visibility: hidden;
+	}
+
+div#buttons {
+	position: absolute;
+	right: 5px;
+	top: 5px;
+	background-color: #E0E0E0;
+	}
+
+div#dloptions {
+	position: absolute;
+	right: 5px;
+	top: 5px;
+	background-color: #E0E0E0;
+	visibility: hidden;
+	}
+
+div#zoom {
+	position: absolute;
+	border: 2px solid #ffff80;
+	visibility: hidden;
+	}
+
+div#about {
+	position: absolute;
+	width: 200px;
+	top: 100px;
+	left: 350px;
+	height: 200px;
+	padding: 0px 2px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	border: 3px solid lightcyan;
+	background-color: lightgrey;
+	text-align: center;
+	visibility: hidden;
+	z-index: 1000;
+	}
+
+/* DEBUG elements */
+
+div#debug {
+	position: absolute;
+	width: 200px;
+	top: 10px;
+	left: 10px;
+	bottom: 10px;
+	overflow: auto;
+	padding: 0px 2px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	color: lightgreen;
+	border: 1px dotted lightcyan;
+	background: transparent;
+	}
+
+p.debug {
+	font-weight: bold;
+	color: lightcyan;
+	margin: 0px;
+	padding: 0px;
+	}
+
+
