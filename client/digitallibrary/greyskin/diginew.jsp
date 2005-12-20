@@ -48,6 +48,7 @@
 
 	var isOptionDivVisible = false;
 	var isAboutDivVisible = false;
+	var isBirdDivVisible = false;
 	var dlTarget = window.name;
 	var baseUrl = '<%= dlRequest.getAsString("base.url") %>';
 	var toolbarEnabledURL = window.location.href;
@@ -63,27 +64,37 @@
 		showAboutDiv(isAboutDivVisible);
 		}
 
-	function highlightPNG(id, on) {
-		var img = document.getElementById(id);
-		var a = img.parentNode
-		var div = a.parentNode;
-		var src = img.src;
-		// FIXME: IE - transparente PNGs offenbar nicht nachladbar
-		
-		if (browserType.isIE)
-			img.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='" + src + "');"
-		div.style.backgroundImage = on 
-			? "url('corona.png')"
-			: "";
+	function toggleBirdDiv() {
+		isBirdDivVisible = !isBirdDivVisible;
+		showBirdDiv(isBirdDivVisible);
 		}
 
+	// replace img src and display "on" status
+	function setOnImage(id, src) {
+		var elem = getElement(id);
+		elem.src = src;
+		elem.title += ": on";
+		}
+
+	// change icons if image functions are on
+	function reflectImageStatus() {
+		if (hasFlag("hmir")) setOnImage("hmir", "mirror-horizontal-on.png");
+		if (hasFlag("vmir")) setOnImage("vmir", "mirror-vertical-on.png");
+		if (hasParameter("brgt")) setOnImage("brgt", "brightness-on.png");
+		if (hasParameter("cont")) setOnImage("cont", "contrast-on.png");
+		if (hasParameter("rot")) setOnImage("rot", "rotate-on.png");
+		if (hasParameter("rgb")) setOnImage("rgb", "rgb-on.png");
+		}
+		
 	// initialize image; called by body.onload
 	function onBodyLoaded() {
 		document.id = 'digilib';
-		resetParameters();	// set default values if not given
+		initParameters();	// load default values and detail
 		dl_param_init();	// parse parameter values
-		loadScalerImage();
-		dl_init();
+		loadScalerImage();	// ruft auch dl_init() / initScaler auf
+		loadBirdImage();	// lädt das Bird's Eye Bild
+		reflectImageStatus();	// adjust icons
+		showArrows();
 		}
 
 	// base_init();		// now done on loading baselib.js
@@ -95,7 +106,7 @@
 
  <!-- slot for the scaled image -->
  <div id="scaler-table">
- 	<div id="scaler" style="visibility:visible">
+ 	<div id="scaler">
 		<img id="pic"></img>
 	</div>
  </div>
@@ -108,6 +119,20 @@
  <div id="zoom">
  </div>
  
+ <!-- the bird's eye overview image -->
+ <img id="bird-image"></img>
+
+ <!-- the bird's eye select area -->
+ <div id="bird-area">
+ </div>
+ 
+ <!-- the arrows -->
+ <a class="arrow" id="up"    href="javascript:moveBy(0, -0.5)"></a>
+ <a class="arrow" id="down"  href="javascript:moveBy(0, 0.5)"></a>
+ <a class="arrow" id="left"  href="javascript:moveBy(-0.5, 0)"></a>
+ <a class="arrow" id="right" href="javascript:moveBy(0.5, 0)"></a>
+
+ <!-- the about window -->
  <div id="about" class="about" onclick="toggleAboutDiv()">
  	<p>Digilib Graphic Viewer</p>
  	<a href="http://digilib.berlios.de" target="_blank" >
@@ -228,6 +253,21 @@
 	<div class="button">
 		<a
 			class="icon"
+			href="javascript:toggleBirdDiv()"
+			>
+
+			<img
+				class="png"
+				id="bird"
+				title="show bird's eye view"
+				src="birds-eye.png"
+			>
+		</a>
+	</div>
+
+	<div class="button">
+		<a
+			class="icon"
 			href="javascript:toggleAboutDiv()"
 			>
 
@@ -298,7 +338,7 @@
 
 			<img
 				class="png"
-				id="mirror-h"
+				id="hmir"
 				title="mirror horizontally"
 				src="mirror-horizontal.png"
 			>
@@ -313,7 +353,7 @@
 
 			<img
 				class="png"
-				id="mirror-v"
+				id="vmir"
 				title="mirror vertically"
 				src="mirror-vertical.png"
 			>
@@ -328,7 +368,7 @@
 
 			<img
 				class="png"
-				id="rotate"
+				id="rot"
 				title="rotate image"
 				src="rotate.png"
 			>
@@ -343,7 +383,7 @@
 
 			<img
 				class="png"
-				id="brightness"
+				id="brgt"
 				title="set brightness"
 				src="brightness.png"
 			>
@@ -358,7 +398,7 @@
 
 			<img
 				class="png"
-				id="contrast"
+				id="cont"
 				title="set contrast"
 				src="contrast.png"
 			>
