@@ -141,11 +141,34 @@ Rectangle.prototype.getArea = function() {
     return (this.width * this.height);
 }
 Rectangle.prototype.containsPosition = function(pos) {
-    // returns if the given Position lies in this Rectangle
-    return ((pos.x >= this.x)&&(pos.y >= this.y)&&(pos.x <= this.x+this.width)&&(pos.y <= this.y+this.width));
+    // returns if Position "pos" lies inside of this rectangle
+    return ((pos.x >= this.x)
+        && (pos.y >= this.y)
+    && (pos.x <= this.x + this.width)
+    && (pos.y <= this.y + this.width)
+    );
+}
+Rectangle.prototype.containsRect = function(rect) {
+    // returns if rectangle "rect" is contained in this rectangle
+    return (this.containsPosition(rect) 
+        && this.containsPosition(new Position(
+        rect.x + rect.width,
+        rect.y + rect.height
+        )));
+}
+Rectangle.prototype.stayInside = function(rect) {
+    // changes this rectangle's x/y values so it stays inside of rectangle rect
+    if (this.x < rect.x) this.x = rect.x;
+    if (this.y < rect.y) this.y = rect.y;
+    if (this.x + this.width > rect.x + rect.width) 
+        this.x = rect.x + rect.width - this.width;
+    if (this.y + this.height > rect.y + rect.height)
+        this.y = rect.y + rect.height - this.height;
+    return this;
 }
 Rectangle.prototype.intersect = function(rect) {
     // returns the intersection of the given Rectangle and this one
+    // FIX ME: not really, it should return null if there is no overlap 
     var sec = rect.copy();
     if (sec.x < this.x) {
         sec.width = sec.width - (this.x - sec.x);
@@ -272,38 +295,56 @@ function newParameter(name, defaultValue, detail) {
     return dlParams[name];
     }
 
+function resetParameter(name) {
+    // resets the given parameter to its default value
+    if (!defined(dlParams[name])) {
+    alert("Could not reset non-existing parameter '" + name + "'");
+    return false;
+        }
+    dlParams[name].hasValue = false;
+    dlParams[name].value = defaultValue;
+    return dlParams[name];
+    }
+
+function deleteParameter(name) {
+    // create a new parameter with a name and a default value
+    if (!defined(dlParams[name])) return false;
+    delete dlParams[name];
+    return true;
+    }
+
 function getParameter(name) {
     // returns the named parameter value or its default value
     if (!defined(dlParams[name])) return null;
     if (dlParams[name].hasValue)
-	    return dlParams[name].value;
+        return dlParams[name].value;
     else
             return dlParams[name].defaultValue;
     }
 
 function setParameter(name, value, relative) {
     // sets parameter value (relative values with +/- unless literal)
-	if (!defined(dlParams[name])) return null;
-	var p = dlParams[name];
-	if (relative && value.slice) {
-		var sign = value.slice(0, 1);
-		if (sign == '+') {
-			p.value = parseFloat(p.value) + parseFloat(value.slice(1));
-		} else if (sign == '-') {
-			p.value = parseFloat(p.value) - parseFloat(value.slice(1));
-		} else {
-			p.value = value;
-		}
-	} else p.value = value;
-	p.hasValue = true;
-	return p.value;
-	}
+    if (!defined(dlParams[name])) return null;
+    var p = dlParams[name];
+    if (relative && value.slice) {
+        var sign = value.slice(0, 1);
+        if (sign == '+') {
+            p.value = parseFloat(p.value) + parseFloat(value.slice(1));
+        } else if (sign == '-') {
+            p.value = parseFloat(p.value) - parseFloat(value.slice(1));
+        } else {
+            p.value = value;
+        }
+    } else p.value = value;
+    p.hasValue = true;
+    return p.value;
+    }
 
 function hasParameter(name) {
-	// returns if the parameter's value has been set
-	if (!defined(dlParams[name])) return null;
-	return dlParams[name].hasValue;
-	}
+    // returns if the parameter's value has been set
+    if (!defined(dlParams[name])) return null;
+    return dlParams[name].hasValue;
+    }
 
 function getAllParameters(detail) {
     // returns a string of all parameters in query format
@@ -333,27 +374,6 @@ function parseParameters(query) {
     }
 }
 
-function resetParameters() {
-    // reset parameters to initial values
-	newParameter('fn', '', 1);
-	newParameter('pn', '1', 1);
-	newParameter('ws', '1.0', 1);
-	newParameter('mo', '', 1);
-	newParameter('mk', '', 3);
-	newParameter('wx', '0.0', 2);
-	newParameter('wy', '0.0', 2);
-	newParameter('ww', '1.0', 2);
-	newParameter('wh', '1.0', 2);
-	newParameter('pt', '<%= dlRequest.getAsString("pt") %>', 1);
-	newParameter('brgt', '0.0', 1);
-	newParameter('cont', '0.0', 1);
-	newParameter('rot', '0.0', 1);
-	newParameter('rgba', '', 1);
-	newParameter('rgbm', '', 1);
-	newParameter('ddpix', '', 1);
-	newParameter('ddpiy', '', 1);
-	}
-		
 getQueryString = getAllParameters;
 
 /* **********************************************
@@ -441,6 +461,7 @@ function getElementSize(elem) {
 
 function getElementRect(elem) {
     // returns a Rectangle with the size and position of the element
+    // FIX ME: what about borders?
     var pos = getElementPosition(elem);
     var size = getElementSize(elem);
     return new Rectangle(pos.x, pos.y, size.width, size.height);
@@ -517,67 +538,67 @@ function evtPosition(evt) {
 }
 
 function registerEvent(type, elem, handler) {
-	// register the given event handler on the indicated element
-	if (elem.addEventListener) {
-		elem.addEventListener(type, handler, false);	// bubble
-		}
-	else if (elem.attachEvent) {
-		elem.attachEvent("on" + type, handler);
-		}
-	else if (elem.captureEvents) {
-		if (Event) { 
-			t = type.toUpperCase();
-			elem.captureEvents(Event[t]);
-			elem[ "on" + t ] = handler;
-			}
-		}
-	else {
-		alert("Could not register event of type " + type);
-		return false;
-		}
-	return true;
-	}
-	
+    // register the given event handler on the indicated element
+    if (elem.addEventListener) {
+        elem.addEventListener(type, handler, false);    // bubble
+        }
+    else if (elem.attachEvent) {
+        elem.attachEvent("on" + type, handler);
+        }
+    else if (elem.captureEvents) {
+        if (Event) { 
+            t = type.toUpperCase();
+            elem.captureEvents(Event[t]);
+            elem[ "on" + t ] = handler;
+            }
+        }
+    else {
+        alert("Could not register event of type " + type);
+        return false;
+        }
+    return true;
+    }
+    
 function unregisterEvent(type, elem, handler) {
-	// unregister the given event handler from the indicated element
-	if (elem.removeEventListener) {
-		elem.removeEventListener(type, handler, false);
-    		}
-	else if (elem.detachEvent) {
-		elem.detachEvent('on' + type, handler);
-		}
-	else if (elem.releaseEvents) {
-		if (Event) { 
-			t = type.toUpperCase();
-			elem.releaseEvents(Event[t]);
-			elem[ "on" + t ] = null;
-			}
-		}
-	else {
-		alert("Could not register event of type " + type);
-		return false;
-		}
-	return true;
+    // unregister the given event handler from the indicated element
+    if (elem.removeEventListener) {
+        elem.removeEventListener(type, handler, false);
+            }
+    else if (elem.detachEvent) {
+        elem.detachEvent('on' + type, handler);
+        }
+    else if (elem.releaseEvents) {
+        if (Event) { 
+            t = type.toUpperCase();
+            elem.releaseEvents(Event[t]);
+            elem[ "on" + t ] = null;
+            }
+        }
+    else {
+        alert("Could not register event of type " + type);
+        return false;
+        }
+    return true;
 }
 
 function registerEventById(type, id, handler) {
-	registerEvent(type, document.getElementById(id), handler);
-	}
+    registerEvent(type, document.getElementById(id), handler);
+    }
 
 function unregisterEventById(type, id, handler) {
-	unregisterEvent(type, document.getElementById(id), handler);
-	}
+    unregisterEvent(type, document.getElementById(id), handler);
+    }
 
 function stopEvent(e) {
-	if (!e) var e = window.event;
-	e.cancelBubble = true;
-	if (e.stopPropagation) e.stopPropagation();
-	return false;
+    if (!e) var e = window.event;
+    e.cancelBubble = true;
+    if (e.stopPropagation) e.stopPropagation();
+    return false;
 }
 
 function getEventSrc(e) {
-	if (e.target) return e.target;
-	if (e.srcElement) return e.srcElement;
+    if (e.target) return e.target;
+    if (e.srcElement) return e.srcElement;
 }
 
 // old registerXXYY API for compatibility
