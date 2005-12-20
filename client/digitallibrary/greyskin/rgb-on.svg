@@ -14,8 +14,8 @@
    sodipodi:version="0.32"
    inkscape:version="0.43"
    sodipodi:docbase="C:\Digilib\greyskin"
-   sodipodi:docname="options.svg"
-   inkscape:export-filename="C:\digilib\greyskin\options.png"
+   sodipodi:docname="rgb-on.svg"
+   inkscape:export-filename="C:\digilib\greyskin\rgb-on.png"
    inkscape:export-xdpi="60.000000"
    inkscape:export-ydpi="60.000000">
   <defs
@@ -68,10 +68,11 @@
   <g
      id="layer1"
      inkscape:label="Layer 1"
-     inkscape:groupmode="layer">
+     inkscape:groupmode="layer"
+     style="display:inline">
     <path
-       style="opacity:1.0000000;fill:#707070;fill-opacity:0.35526314;fill-rule:evenodd;stroke:#000000;stroke-width:0.52918273;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4.0000000;stroke-dasharray:none;stroke-opacity:0.50331128"
-       d="M 23.1875 3.53125 C 13.239732 4.1660714 5.3749998 12.609754 5.375 22.875 C 5.375 33.552802 13.927192 42.218749 24.4375 42.21875 C 34.947807 42.21875 43.468749 33.552802 43.46875 22.875 C 43.46875 12.197198 34.947807 3.53125 24.4375 3.53125 C 24.191165 3.53125 23.931575 3.5218149 23.6875 3.53125 C 23.608048 3.5343213 23.516701 3.5271892 23.4375 3.53125 C 23.358917 3.5352791 23.265829 3.5262514 23.1875 3.53125 z M 12 23 L 17.5625 23 L 17.5625 28.5625 L 12 28.5625 L 12 23 z M 21.5 23 L 27.0625 23 L 27.0625 28.5625 L 21.5 28.5625 L 21.5 23 z M 31 23 L 36.5625 23 L 36.5625 28.5625 L 31 28.5625 L 31 23 z "
+       style="opacity:1;fill:#707070;fill-opacity:0.35526315;fill-rule:evenodd;stroke:#000000;stroke-width:0.52918273;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.50331128"
+       d="M 23.6875 3.53125 C 13.517688 3.9243803 5.3749998 12.44746 5.375 22.875 C 5.375 33.552802 13.927192 42.218749 24.4375 42.21875 C 34.947807 42.21875 43.468749 33.552802 43.46875 22.875 C 43.46875 12.197198 34.947807 3.53125 24.4375 3.53125 C 24.191165 3.53125 23.931575 3.5218149 23.6875 3.53125 z M 24.3125 14.71875 C 24.347511 14.718306 24.402384 14.71875 24.4375 14.71875 C 28.932357 14.71875 32.5625 18.380143 32.5625 22.875 C 32.5625 27.369858 28.932357 31.03125 24.4375 31.03125 C 19.942642 31.031249 16.28125 27.369857 16.28125 22.875 C 16.28125 18.415259 19.866057 14.775135 24.3125 14.71875 z "
        id="path2396" />
   </g>
   <g
@@ -92,5 +93,27 @@
      inkscape:groupmode="layer"
      id="layer3"
      inkscape:label="l3"
-     style="display:inline" />
+     style="display:inline">
+    <rect
+       style="opacity:1;color:#000000;fill:#ff2424;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.5625;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible"
+       id="rect4326"
+       width="11"
+       height="11.428572"
+       x="19"
+       y="8.5714283" />
+    <rect
+       style="opacity:1;color:#000000;fill:#3cff27;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.5625;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible"
+       id="rect4328"
+       width="11"
+       height="11.428572"
+       x="12"
+       y="22" />
+    <rect
+       style="opacity:1;color:#000000;fill:#2330ff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.5625;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible"
+       id="rect4330"
+       width="11"
+       height="11.428572"
+       x="26"
+       y="22" />
+  </g>
 </svg>

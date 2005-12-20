@@ -13,9 +13,9 @@
    id="svg2388"
    sodipodi:version="0.32"
    inkscape:version="0.43"
-   sodipodi:docbase="C:\src\ECHO\digilib\client\digitallibrary\greyskin"
+   sodipodi:docbase="C:\Digilib\greyskin"
    sodipodi:docname="pixel-by-pixel.svg"
-   inkscape:export-filename="C:\src\ECHO\digilib\client\digitallibrary\greyskin\original-size.png"
+   inkscape:export-filename="C:\digilib\greyskin\pixel-by-pixel.png"
    inkscape:export-xdpi="60.000000"
    inkscape:export-ydpi="60.000000">
   <defs
@@ -43,9 +43,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="7"
-     inkscape:cx="24"
-     inkscape:cy="18.655462"
+     inkscape:zoom="14"
+     inkscape:cx="27.241845"
+     inkscape:cy="23.144712"
      inkscape:current-layer="layer3"
      showgrid="true"
      inkscape:grid-bbox="true"
@@ -89,20 +89,24 @@
      id="layer3"
      inkscape:label="l3"
      style="display:inline">
-    <rect
-       style="opacity:1;color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.5625;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible"
-       id="rect3532"
-       width="10.428572"
-       height="10.428572"
-       x="8"
-       y="18" />
-    <rect
-       style="opacity:1;color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.5625;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible"
-       id="rect3534"
-       width="10.428572"
-       height="10.428572"
-       x="30.571428"
-       y="18" />
+    <g
+       id="g3773"
+       transform="translate(0.251193,0)">
+      <rect
+         y="18.237497"
+         x="10.237497"
+         height="8.8062553"
+         width="8.8062553"
+         id="rect3532"
+         style="opacity:1;color:#000000;fill:#7f7f7f;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.4749949;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible" />
+      <rect
+         y="18.237497"
+         x="29.297611"
+         height="8.8062553"
+         width="8.8062553"
+         id="rect3534"
+         style="opacity:1;color:#000000;fill:#7f7f7f;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.4749949;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible" />
+    </g>
     <g
        id="g3544"
        transform="translate(0.214285,0.428572)">

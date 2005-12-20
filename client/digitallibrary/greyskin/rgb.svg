@@ -13,9 +13,9 @@
    id="svg2388"
    sodipodi:version="0.32"
    inkscape:version="0.43"
-   sodipodi:docbase="C:\src\ECHO\digilib\client\digitallibrary\greyskin"
+   sodipodi:docbase="C:\Digilib\greyskin"
    sodipodi:docname="rgb.svg"
-   inkscape:export-filename="C:\src\ECHO\digilib\client\digitallibrary\greyskin\rgb.png"
+   inkscape:export-filename="C:\digilib\greyskin\rgb.png"
    inkscape:export-xdpi="60.000000"
    inkscape:export-ydpi="60.000000">
   <defs
@@ -101,21 +101,21 @@
      inkscape:label="l3"
      style="display:inline">
     <rect
-       style="opacity:1;color:#000000;fill:#ff2424;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.5625;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible"
+       style="opacity:1;color:#000000;fill:#ff2424;fill-opacity:0.5;fill-rule:nonzero;stroke:none;stroke-width:0.5625;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible"
        id="rect4326"
        width="11"
        height="11.428572"
        x="19"
        y="8.5714283" />
     <rect
-       style="opacity:1;color:#000000;fill:#3cff27;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.5625;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible"
+       style="opacity:1;color:#000000;fill:#3cff27;fill-opacity:0.50196081;fill-rule:nonzero;stroke:none;stroke-width:0.5625;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible"
        id="rect4328"
        width="11"
        height="11.428572"
        x="12"
        y="22" />
     <rect
-       style="opacity:1;color:#000000;fill:#2330ff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.5625;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible"
+       style="opacity:1;color:#000000;fill:#2330ff;fill-opacity:0.50196081;fill-rule:nonzero;stroke:none;stroke-width:0.5625;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible"
        id="rect4330"
        width="11"
        height="11.428572"
