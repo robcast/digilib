@@ -47,14 +47,28 @@ function debug() {
 	return appendNewElement(D, "p", msg);
 	}
 
-function debugObject(obj) {
+function debugProps(obj, msg) {
+	var D = getDebug();
+	if (msg) appendNewElement(D, "h1", msg);
+	for (var item in obj) {
+		var typ = typeof(obj[item]);
+		if (typ != "function") appendNewElement(D, "p",
+			item 
+			+ " (" + typ + "): "
+			+ obj[item]
+			);
+		};
+	}
+
+function debugObject(obj, msg) {
+	if (msg) appendNewElement(D, "h1", msg);
 	var D = getDebug();
 	var A = new Array();
 	for (var i in obj) A[i] = typeof(obj[i]); 
 	var T = appendNewElement(D, "table");
 	for (var item in A) {
 		var TR = appendNewElement(T, "tr");
-		appendNewElement(TR, "td", element("b", item));
+		appendNewElement(TR, "td", newElement("b", item));
 		appendNewElement(TR, "td", A[item]); 
 		if (A[item] == "function") 
 			appendNewElement(TR, "td", A[item].toSource());
