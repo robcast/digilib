@@ -13,9 +13,9 @@
    id="svg2388"
    sodipodi:version="0.32"
    inkscape:version="0.43"
-   sodipodi:docbase="C:\src\ECHO\digilib\client\digitallibrary\greyskin"
+   sodipodi:docbase="C:\Digilib\greyskin"
    sodipodi:docname="down.svg"
-   inkscape:export-filename="C:\src\ECHO\digilib\client\digitallibrary\greyskin\down.png"
+   inkscape:export-filename="C:\digilib\greyskin\down.png"
    inkscape:export-xdpi="60.000000"
    inkscape:export-ydpi="60.000000"
    version="1.0">
@@ -53,8 +53,8 @@
      inkscape:document-units="px"
      inkscape:window-width="830"
      inkscape:window-height="540"
-     inkscape:window-x="17"
-     inkscape:window-y="22" />
+     inkscape:window-x="234"
+     inkscape:window-y="77" />
   <metadata
      id="metadata2393">
     <rdf:RDF>
@@ -72,7 +72,7 @@
      inkscape:groupmode="layer"
      style="display:inline">
     <path
-       style="opacity:1;fill:#707070;fill-opacity:0.35526315;fill-rule:evenodd;stroke:#000000;stroke-width:0.52918273;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.50331128"
+       style="opacity:1;fill:#ffa060;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.52918273;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.50331128"
        d="M 23.6875,42.214557 C 13.517688,41.821426 5.3749998,33.298347 5.375,22.870807 C 5.375,12.193005 13.927192,3.5270576 24.4375,3.5270566 C 31.499113,3.5270566 37.650231,7.4400376 40.9375,13.245807 L 24.5,13.245807 L 8,13.245807 L 16.25,27.527057 L 24.5,41.808307 L 32.75,27.527057 L 40.96875,13.308307 C 42.552395,16.129468 43.46875,19.392821 43.46875,22.870807 C 43.46875,33.548609 34.947807,42.214557 24.4375,42.214557 C 24.191165,42.214557 23.931575,42.223992 23.6875,42.214557 z "
        id="path2396" />
   </g>
