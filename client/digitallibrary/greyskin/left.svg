@@ -13,9 +13,9 @@
    id="svg2388"
    sodipodi:version="0.32"
    inkscape:version="0.43"
-   sodipodi:docbase="C:\src\ECHO\digilib\client\digitallibrary\greyskin"
+   sodipodi:docbase="C:\Digilib\greyskin"
    sodipodi:docname="left.svg"
-   inkscape:export-filename="C:\src\ECHO\digilib\client\digitallibrary\greyskin\left.png"
+   inkscape:export-filename="C:\digilib\greyskin\left.png"
    inkscape:export-xdpi="60.000000"
    inkscape:export-ydpi="60.000000"
    version="1.0">
@@ -72,7 +72,7 @@
      inkscape:groupmode="layer"
      style="display:inline">
     <path
-       style="opacity:1;fill:#707070;fill-opacity:0.35526315;fill-rule:evenodd;stroke:#000000;stroke-width:0.52918273;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.50331128"
+       style="opacity:1;fill:#ffa060;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.52918273;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.50331128"
        d="M 5.0802215,22.138528 C 5.4733525,11.968716 13.996431,3.8260283 24.423971,3.8260285 C 35.101773,3.8260285 43.767721,12.37822 43.767722,22.888528 C 43.767722,29.950141 39.854741,36.101259 34.048971,39.388528 L 34.048971,22.951028 L 34.048971,6.4510285 L 19.767721,14.701028 L 5.4864715,22.951028 L 19.767721,31.201028 L 33.986471,39.419778 C 31.16531,41.003423 27.901957,41.919778 24.423971,41.919778 C 13.746169,41.919778 5.0802215,33.398835 5.0802215,22.888528 C 5.0802215,22.642193 5.0707865,22.382603 5.0802215,22.138528 z "
        id="path2396" />
   </g>
