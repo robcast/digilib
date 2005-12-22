@@ -14,7 +14,7 @@ function newElement(tagname, content) {
 function appendNewElement(node, tagname, content) {
 	// appends a new element to "node", adding content if given
 	if (!node.appendChild) {
-		alert("Could not append: " + typeof(node));
+		alert("Could not append '" + tagname + "' to " + typeof(node));
 		return null;
 		}
 	return node.appendChild(newElement(tagname, content));
