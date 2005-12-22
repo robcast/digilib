@@ -97,7 +97,10 @@ function Size(w, h) {
 Size.prototype.toString = function() {
     return this.width + "x" + this.height;
 }
-
+Size.prototype.equals = function(other) {
+	return (this.width == other.width
+        &&  this.height == other.height)
+    }
 
 /*
  * Position class
@@ -110,7 +113,10 @@ function Position(x, y) {
 Position.prototype.toString = function() {
     return this.x + "," + this.y;
 }
-
+Position.prototype.equals = function(other) {
+	return (this.x == other.x
+        &&  this.y == other.y)
+    }
 /*
  * Rectangle class
  */
@@ -136,6 +142,12 @@ Rectangle.prototype.getSize = function() {
     // returns the size of this Rectangle
     return new Size(this.width, this.height);
 }
+Rectangle.prototype.equals = function(other) {
+    // equal props
+    return (this.getPosition().equals(other.getPosition())
+        &&  this.getSize().equals(other.getSize())
+        );
+}
 Rectangle.prototype.getArea = function() {
     // returns the area of this Rectangle
     return (this.width * this.height);
@@ -158,6 +170,7 @@ Rectangle.prototype.containsRect = function(rect) {
 }
 Rectangle.prototype.stayInside = function(rect) {
     // changes this rectangle's x/y values so it stays inside of rectangle rect
+    // but not its proportions
     if (this.x < rect.x) this.x = rect.x;
     if (this.y < rect.y) this.y = rect.y;
     if (this.x + this.width > rect.x + rect.width) 
@@ -190,7 +203,7 @@ Rectangle.prototype.fit = function(rect) {
     // returns a Rectangle that fits into this one (by moving first)
     var sec = rect.copy();
     sec.x = Math.max(sec.x, this.x);
-    sec.x = Math.max(sec.x, this.x);
+    sec.y = Math.max(sec.y, this.x);
     if (sec.x + sec.width > this.x + this.width) {
         sec.x = this.x + this.width - sec.width;
     }
