@@ -26,8 +26,19 @@ Authors:
 digilibVersion = "Digilib NG";
 dllibVersion = "2.0";
 isDigilibInitialized = false;    // gets set to true in dl_param_init
-reloadPage = true;        // reload the page when parameters are changed
-                // (false: update only "src" attribute of scaler img) 
+reloadPage = true; // reload the page when parameters are changed, otherwise update only "src" attribute of scaler img 
+
+// global variables
+dlTrafo = new Transform();
+dlMaxArea = new Rectangle(0.0, 0.0, 1.0, 1.0);
+dlArea = null;
+dlMarks = null;
+dlFlags = null;
+
+// global elements
+elemScaler = null;
+picElem = null;
+
 
 // flags for parameter sets
 PARAM_FILE = 1;
@@ -303,13 +314,9 @@ function dl_param_init() {
     // initialisation before onload
     if (!baseLibVersion) alert("ERROR: baselib.js not loaded!");
     if (isDigilibInitialized) return false;    // dl_param_init was already run 
-    dlMaxArea = new Rectangle(0.0, 0.0, 1.0, 1.0);
-    dlTrafo = new Transform();
     // dlArea = new Rectangle(0.0, 0.0, 1.0, 1.0); // overwritten by parseAllParameters() below
     // dlMarks = new Array(); // dito
     // dlFlags = new Object(); // dito
-    elemScaler = null; // ?
-    picElem = null; // ?
     // parse parameters
     parseAllParameters();
     isDigilibInitialized = true;
@@ -386,10 +393,10 @@ function renderMarks() {
     for (var i = 0; i < dlMarks.length; i++) {
     var div = document.getElementById("mark" + i) || createMarkDiv(i);
         var mark = dlMarks[i];
-    debugProps(mark, "mark");
+    // debugProps(mark, "mark");
     if (dlArea.containsPosition(mark)) {
         var mpos = dlTrafo.transform(mark); // FIX ME: transform does not change anything 
-        debugProps(mark, "mpos");
+        // debugProps(mark, "mpos");
         // suboptimal to place -5 pixels and not half size of mark-image
         // better not hide the marked spot (MR)
         // mpos.x = mpos.x -5;
@@ -556,10 +563,19 @@ function moveCenter() {
 
     function moveCenterEvent(evt) {
         // move to handler
-        unregisterEvent("mousedown", elemScaler, moveCenterEvent);
         var pt = dlTrafo.invtransform(evtPosition(evt));
-        var newarea = new Rectangle(pt.x-0.5*dlArea.width, pt.y-0.5*dlArea.height, dlArea.width, dlArea.height);
-        newarea = dlMaxArea.fit(newarea);
+        var newarea = new Rectangle(
+            pt.x - 0.5 * dlArea.width,
+            pt.y - 0.5 * dlArea.height,
+            dlArea.width,
+            dlArea.height
+            );
+        newarea.stayInside(dlMaxArea);
+        // newarea = dlMaxArea.fit(newarea);
+        // debugProps(newarea, "newarea");
+        // debugProps(dlArea, "dlArea");
+        if (newarea.equals(dlArea)) return; // keep event handler
+        unregisterEvent("mousedown", elemScaler, moveCenterEvent);
         // set parameters
         setParamFromArea(newarea);
         parseArea();
@@ -576,7 +592,8 @@ function isFullArea(area) {
     }
 
 function canMove(movx, movy) {
-    if (isFullArea) return false;
+    if (isFullArea()) return false;
+    // debugProps(dlArea);
     return ((movx < 0) && (dlArea.x > 0))
         || ((movy < 0) && (dlArea.y > 0))
         || ((movx > 0) && (dlArea.x + dlArea.width < 1.0))
@@ -585,8 +602,7 @@ function canMove(movx, movy) {
 
 function moveBy(movx, movy) {
     // move visible area by movx and movy (in units of ww, wh)
-    if (isFullArea) return;
-        // nothing to do
+    if (!canMove(movx, movy)) return; // nothing to do
     var newarea = dlArea.copy();
     newarea.x += parseFloat(movx)*dlArea.width;
     newarea.y += parseFloat(movy)*dlArea.height;
@@ -599,11 +615,11 @@ function moveBy(movx, movy) {
 
 function getRef(baseURL) {
     // returns a reference to the current digilib set
-    if (!baseUrl) baseUrl
-    = location.protocol
-    + "//" 
-    + location.host
-    + location.pathname;
+    if (!baseUrl) baseUrl 
+        = location.protocol
+        + "//" 
+        + location.host
+        + location.pathname;
     var hyperlinkRef = baseUrl;
     var params = getAllParameters(PARAM_ALL & ~(PARAM_DPI | PARAM_PAGES)); // all without ddpi, pt
     if (params.length > 0) hyperlinkRef += "?" + params;
@@ -643,11 +659,10 @@ function setQualityWin(msg) {
 
 function mirror(dir) {
     // mirror the image horizontally or vertically
-    if (dir == "h") {
-        toggleFlag("hmir");
-    } else {
-        toggleFlag("vmir");
-    }
+    toggleFlag(dir == "h"
+        ? "hmir"
+        : "vmir"
+        );
     setParameter("mo", getAllFlags());
     display();
 }
@@ -805,41 +820,33 @@ function showBirdDiv(show) {
         }
     }
 
-	function showArrows() {
-        if (defined(picElem.complete) && !picElem.complete && !browserType.isN4 ) {
-            setTimeout("showArrows()", 100);
-            return;
-            }
-		var arrow, pos, r;
-		r = getElementRect(picElem);
-		// up
-		arrow = getElement("up");
-		pos = r.copy();
-		pos.height = ARROW_WIDTH;
-		moveElement(arrow, pos);
-		showElement(arrow, true);
-		// down
-		arrow = getElement("down");
-		pos = r.copy();
-		pos.y = pos.y + pos.height - ARROW_WIDTH;
-		pos.height = ARROW_WIDTH;
-		debugProps(pos);
-		moveElement(arrow, pos);
-		showElement(arrow, true);
-		// left
-		arrow = getElement("left");
-		pos = r.copy();
-		pos.width = ARROW_WIDTH;
-		debugProps(pos);
-		moveElement(arrow, pos);
-		showElement(arrow, true);
-		// right
-		arrow = getElement("right");
-		pos = r.copy();
-		pos.x = pos.x + pos.width - ARROW_WIDTH;
-		pos.width = ARROW_WIDTH;
-		debugProps(pos);
-		moveElement(arrow, pos);
-		showElement(arrow, true);
-		}
+function showArrow(name, rect, show) {
+    var arrow = getElement(name);
+	moveElement(arrow, rect);
+	showElement(arrow, show);
+	}
+	
+function showArrows() {
+    if (defined(picElem.complete) && !picElem.complete && !browserType.isN4 ) {
+        setTimeout("showArrows()", 100);
+        return;
+        }
+	var r = getElementRect(picElem);
+    showArrow('up',
+        new Rectangle(r.x, r.y, r.width, ARROW_WIDTH), 
+        canMove(0, -1)
+        );
+    showArrow('down',
+        new Rectangle(r.x, r.y + r.height - ARROW_WIDTH, r.width, ARROW_WIDTH),
+        canMove(0, 1)
+        );
+    showArrow('left',
+        new Rectangle(r.x, r.y, ARROW_WIDTH, r.height),
+        canMove(-1, 0)
+        );
+    showArrow('right',
+        new Rectangle(r.x + r.width - ARROW_WIDTH, r.y, ARROW_WIDTH, r.height),
+        canMove(1, 0)
+        );
+	}
 
