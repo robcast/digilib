@@ -94,7 +94,8 @@
 		loadScalerImage();	// ruft auch dl_init() / initScaler auf
 		loadBirdImage();	// lädt das Bird's Eye Bild
 		reflectImageStatus();	// adjust icons
-		showArrows();
+		showArrows();		// show arrow overlays for zoom navigation
+		moveCenter();		// click to move point to center
 		}
 
 	// base_init();		// now done on loading baselib.js

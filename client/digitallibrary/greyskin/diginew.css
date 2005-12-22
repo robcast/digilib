@@ -29,28 +29,25 @@ a.arrow {
 	}
 
 a.arrow:hover {
-/*	background-color: lightgray; */
+	/* background-color: lightgray; */
 	background-repeat: no-repeat;
+	background-position: center;
 	}
 	
 a#up:hover {
 	background-image: url('up.png');
-	background-position: center;
 	}
 
 a#down:hover {
 	background-image: url('down.png');
-	background-position: center;
 	}
 
 a#left:hover {
 	background-image: url('left.png');
-	background-position: middle;
 	}
 
 a#right:hover {
 	background-image: url('right.png');
-	background-position: middle;
 	}
 
 /* Images */
