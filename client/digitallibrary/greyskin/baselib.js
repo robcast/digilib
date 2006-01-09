@@ -412,7 +412,8 @@ function getAllParameters(detail) {
     }
     var params = new Array();
     for (param in dlParams) {
-        if (((dlParams[param].detail & detail) > 0)&&(dlParams[param].hasValue)) {
+        if (((dlParams[param].detail & detail) > 0)
+        && (dlParams[param].hasValue)) {
             var val = getParameter(param);
             if (val != "") {
                 params.push(param + "=" + val);
@@ -555,21 +556,12 @@ function moveElement(elem, rect) {
 
 function showElement(elem, show) {
     // shows or hides the element
-    if (elem.style) {
-        if (show) {
-            elem.style.visibility = "visible";
-        } else {
-            elem.style.visibility = "hidden";
-        }
-    } else if (defined(elem.visibility)) {
-        if (show) {
-            elem.visibility = "show";
-        } else {
-            elem.visibility = "hide";
-        }
-    } else {
-        alert("showelement: no style nor layer property!");
-    }
+    if (elem.style)
+        elem.style.visibility = show ? "visible" : "hidden";
+    } else if (defined(elem.visibility))
+        elem.visibility = show ? "show" : "hide";
+    } else
+        alert("showElement(): element has no style or layer property!");
     return true;
 }
 
@@ -579,18 +571,18 @@ function evtPosition(evt) {
     var y;
     evt = (evt) ? evt : window.event;
     if (!evt) {
-        alert("no event found! "+evt);
+        alert("no event found! " + evt);
         return;
-    }
+        }
     if (defined(evt.pageX)) {
         x = parseInt(evt.pageX);
         y = parseInt(evt.pageY);
     } else if (defined(evt.clientX)) {
-        x = parseInt(document.body.scrollLeft+evt.clientX);
-        y = parseInt(document.body.scrollTop+evt.clientY);
+        x = parseInt(document.body.scrollLeft + evt.clientX);
+        y = parseInt(document.body.scrollTop  + evt.clientY);
     } else {
-        alert("evtPosition: don't know how to deal with "+evt);
-    }
+        alert("evtPosition(): don't know how to deal with " + evt);
+        }
     return new Position(x, y);
 }
 
@@ -723,7 +715,7 @@ function Cookie() {
 
 Cookie.prototype.read = function() {
     var s = document.cookie;
-    var lines = s.split("; ");
+    var lines = s.split("; ");  // semicolon and space for all browsers?
     for (var i in lines) {
         var line = lines[i];
         var sep = line.indexOf("=");
