@@ -26,14 +26,10 @@ a.arrow {
 	position: absolute;
 	border: none;
 	z-index: 150;
-	}
-
-a.arrow:hover {
-	/* background-color: lightgray; */
 	background-repeat: no-repeat;
 	background-position: center;
 	}
-	
+
 a#up:hover {
 	background-image: url('up.png');
 	}
@@ -99,8 +95,8 @@ div#scaler-table {
 
 div#overlay {
 	position: absolute;
-	/* background: transparent; */
-	border: 2px solid lightcyan;
+	background-color: transparent;
+	border: 1px dotted lightcyan;
 	z-index: 100;
 	visibility: hidden;
 	box-sizing: border-box;
@@ -131,14 +127,6 @@ div#zoom {
 	-moz-box-sizing: border-box;
 	}
 
-/* 
-div#bird-frame {
-	position: absolute;
-	border: 2px solid lightcyan;
-	visibility: hidden;
-	}
-*/
-
 div#bird-area {
 	position: absolute;
 	border: 2px solid #ffa060;
@@ -147,6 +135,17 @@ div#bird-area {
 	box-sizing: border-box;
 	-moz-box-sizing: border-box;
 	z-index: 10;
+	}
+
+div#calibration {
+	position: absolute;
+	padding: 0px 2px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	border: 3px solid lightcyan;
+	background-color: lightgrey;
+	text-align: center;
+	visibility: hidden;
+	z-index: 1000;
 	}
 
 div#about {
@@ -164,18 +163,23 @@ div#about {
 	z-index: 1000;
 	}
 
+div#about p {
+	margin: 6px;
+	}
+
+	
 /* DEBUG elements */
 
 div#debug {
 	position: absolute;
-	width: 200px;
-	top: 10px;
-	left: 10px;
-	bottom: 10px;
+	width: 150px;
+	top: 50px;
+	right: 36px;
+	bottom: 50px;
 	overflow: auto;
 	padding: 0px 2px;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
-	color: lightgreen;
+	color: green;
 	border: 1px dotted lightcyan;
 	background-color: transparent;
 	}
