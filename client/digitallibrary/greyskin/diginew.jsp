@@ -46,9 +46,13 @@
 
 	<script language="JavaScript">
 
-	var isOptionDivVisible = false;
+	var jspVersion = "diginew.jsp 1.009";
+	var cookie = new Cookie();
+	// alert(strObject(cookie));
+
+	var isOptionDivVisible = cookie.getbool("isOptionDivVisible");
+	var isBirdDivVisible = cookie.getbool("isBirdDivVisible");
 	var isAboutDivVisible = false;
-	var isBirdDivVisible = false;
 	var dlTarget = window.name;
 	var baseUrl = '<%= dlRequest.getAsString("base.url") %>';
 	var toolbarEnabledURL = window.location.href;
@@ -56,17 +60,19 @@
 
 	function toggleOptionDiv() {
 		isOptionDivVisible = !isOptionDivVisible;
+		cookie.addbool("isOptionDivVisible", isOptionDivVisible);
 		showOptions(isOptionDivVisible);
+		}
+
+	function toggleBirdDiv() {
+		isBirdDivVisible = !isBirdDivVisible;
+		cookie.addbool("isBirdDivVisible", isBirdDivVisible);
+		showBirdDiv(isBirdDivVisible);
 		}
 
 	function toggleAboutDiv() {
 		isAboutDivVisible = !isAboutDivVisible;
 		showAboutDiv(isAboutDivVisible);
-		}
-
-	function toggleBirdDiv() {
-		isBirdDivVisible = !isBirdDivVisible;
-		showBirdDiv(isBirdDivVisible);
 		}
 
 	// replace img src and display "on" status
@@ -87,29 +93,33 @@
 		}
 		
 	// initialize image; called by body.onload
-	function onBodyLoaded() {
+	function onBodyLoad() {
 		document.id = 'digilib';
 		initParameters();	// load default values and detail
 		dl_param_init();	// parse parameter values
 		loadScalerImage();	// ruft auch dl_init() / initScaler auf
 		loadBirdImage();	// lädt das Bird's Eye Bild
 		reflectImageStatus();	// adjust icons
+		showOptions(isOptionDivVisible);
+		showBirdDiv(isBirdDivVisible);
 		showArrows();		// show arrow overlays for zoom navigation
-		moveCenter();		// click to move point to center
+		moveCenter(true);	// click to move point to center
 		}
 
+	function onBodyUnload() {
+		// alert(strObject(cookie));
+		cookie.store();
+		}
 	// base_init();		// now done on loading baselib.js
 
 	</script>
 </head>
 
-<body onload="onBodyLoaded();">
+<body onload="onBodyLoad();" onunload="onBodyUnload();">
 
  <!-- slot for the scaled image -->
- <div id="scaler-table">
- 	<div id="scaler">
-		<img id="pic"></img>
-	</div>
+ <div id="scaler">
+	<img id="pic"></img>
  </div>
 
  <!-- sensitive overlay for zoom area etc -->
@@ -126,7 +136,7 @@
  <!-- the bird's eye select area -->
  <div id="bird-area">
  </div>
- 
+
  <!-- the arrows -->
  <a class="arrow" id="up"    href="javascript:moveBy(0, -0.5)"></a>
  <a class="arrow" id="down"  href="javascript:moveBy(0, 0.5)"></a>
@@ -140,10 +150,13 @@
  		<img class="logo" src="../img/digilib-logo-text1.png" title="digilib"></img>
 	</a>
 	<p id="digilib-version"></p>
+	<p id="jsp-version"></p>
 	<p id="baselib-version"></p>
 	<p id="dllib-version"></p>
  </div>
 
+ <!-- the calibration div -->
+ <div id="calibration"><p>10 cm</p></div>
 
  <div id="buttons">
 	<div class="button">
@@ -247,6 +260,21 @@
 				id="fwd"
 				title="goto next image"
 				src="fwd.png"
+			>
+	</a>
+	</div>
+	
+	<div class="button">
+		<a
+			class="icon"
+			href="javascript:gotoPageWin()"
+			>
+
+			<img
+				class="png"
+				id="page"
+				title="specify image"
+				src="page.png"
 			>
 	</a>
 	</div>
@@ -454,18 +482,33 @@
 	<div class="button">
 		<a
 			class="icon"
-			href="javascript:gotoPageWin()"
+			href="javascript:calibrate('x')"
 			>
 
 			<img
 				class="png"
-				id="page"
-				title="specify image"
-				src="page.png"
+				id="calibration-x"
+				title="calibrate screen x-ratio"
+				src="calibration-x.png"
 			>
-	</a>
+		</a>
 	</div>
-	
+
+	<div class="button">
+		<a
+			class="icon"
+			href="javascript:calibrate('y')"
+			>
+
+			<img
+				class="png"
+				id="calibration-y"
+				title="calibrate screen y-ratio"
+				src="calibration-y.png"
+			>
+		</a>
+	</div>
+
 	<div class="button">
 		<a
 			class="icon"

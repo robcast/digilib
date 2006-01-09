@@ -24,7 +24,7 @@ Authors:
 
 */
 digilibVersion = "Digilib NG";
-dllibVersion = "2.0";
+dllibVersion = "2.027";
 isDigilibInitialized = false;    // gets set to true in dl_param_init
 reloadPage = true; // reload the page when parameters are changed, otherwise update only "src" attribute of scaler img 
 
@@ -36,19 +36,19 @@ dlMarks = null;
 dlFlags = null;
 
 // global elements
-elemScaler = null;
-picElem = null;
-
+scalerDiv = null;
+scalerImg = null;
 
 // flags for parameter sets
 PARAM_FILE = 1;
 PARAM_MODE = 2;
-PARAM_SIZE = 4;
+PARAM_DIM = 4;
 PARAM_IMAGE = 8;
 PARAM_DPI = 16;
 PARAM_MARK = 32;
 PARAM_PAGES = 64;
-PARAM_ALL = PARAM_FILE | PARAM_MODE | PARAM_SIZE | PARAM_IMAGE | PARAM_DPI | PARAM_MARK | PARAM_PAGES;
+PARAM_SIZE = 128;
+PARAM_ALL = PARAM_FILE | PARAM_MODE | PARAM_DIM | PARAM_IMAGE | PARAM_DPI | PARAM_MARK | PARAM_PAGES | PARAM_SIZE;
 
 // mouse drag area that counts as one click 
 MIN_AREA_SIZE = 3 * 3 + 1;
@@ -62,6 +62,9 @@ BIRD_MAXY = 100;
 
 // with of arrow bars
 ARROW_WIDTH = 32;
+
+// with of calibration bar
+CALIBRATION_WIDTH = 64;
 
 function identify() {
         // used for identifying a digilib instance
@@ -77,13 +80,12 @@ function initParameters() {
     newParameter('fn', '',    PARAM_FILE);
     newParameter('pn', '1',   PARAM_FILE);
 // mode
-    newParameter('ws', '1.0', PARAM_MODE);
     newParameter('mo', '',    PARAM_MODE);
 // relative dimensions of zoomed image
-    newParameter('wx', '0.0', PARAM_SIZE);
-    newParameter('wy', '0.0', PARAM_SIZE);
-    newParameter('ww', '1.0', PARAM_SIZE);
-    newParameter('wh', '1.0', PARAM_SIZE);
+    newParameter('wx', '0.0', PARAM_DIM);
+    newParameter('wy', '0.0', PARAM_DIM);
+    newParameter('ww', '1.0', PARAM_DIM);
+    newParameter('wh', '1.0', PARAM_DIM);
 // image manipulation
     newParameter('brgt', '0.0', PARAM_IMAGE);
     newParameter('cont', '0.0', PARAM_IMAGE);
@@ -98,7 +100,9 @@ function initParameters() {
     newParameter('mk', '', PARAM_MARK);
 // pages total
     newParameter('pt', '0', PARAM_PAGES);
-    }
+// size
+    newParameter('ws', '1.0', PARAM_SIZE);
+}
 
 function parseArea() {
     // returns area Rectangle from current parameters
@@ -326,11 +330,11 @@ function dl_param_init() {
 function dl_init() {
     // initalisation on load
     if (!isDigilibInitialized) dl_param_init();
-    elemScaler = getElement("scaler");
-    picElem = getElement("pic", true);
+    scalerDiv = getElement("scaler");
+    scalerImg = getElement("pic", true);
     // in N4 pic is in the scaler layer
-    if (picElem == null && elemScaler) {
-        picElem = elemScaler.document.images[0];
+    if (scalerImg == null && scalerDiv) {
+        scalerImg = scalerDiv.document.images[0];
         }
     // give a name to the window containing digilib
     window.name = defined(dlTarget) && dlTarget
@@ -383,12 +387,12 @@ function display(detail) {
  * ******************************************** */
 function renderMarks() {
     // make sure the image is loaded so we know its size
-    if (defined(picElem.complete) && !picElem.complete && !browserType.isN4 ) {
+    if (defined(scalerImg.complete) && !scalerImg.complete && !browserType.isN4 ) {
         setTimeout("renderMarks()", 100);
         return;
             }
     // put the visible marks on the image
-    dlTrafo = parseTrafo(picElem);
+    dlTrafo = parseTrafo(scalerImg);
     // debugProps(dlArea, "dlArea");
     for (var i = 0; i < dlMarks.length; i++) {
     var div = document.getElementById("mark" + i) || createMarkDiv(i);
@@ -414,7 +418,7 @@ function setMark(reload) {
 
     function markEvent(evt) {
     // event handler adding a new mark
-        unregisterEvent("mousedown", elemScaler, markEvent);
+        unregisterEvent("mousedown", scalerDiv, markEvent);
         addMark(evt);
         if ( defined(reload) && !reload ) {
             // don't redisplay
@@ -422,12 +426,14 @@ function setMark(reload) {
             return;
             }
         display();
+        return stopEvent(evt);
         }
     
     // add a mark where clicked
     window.focus();
+    moveCenter(false);
     // start event capturing
-    registerEvent("mousedown", elemScaler, markEvent);
+    registerEvent("mousedown", scalerDiv, markEvent);
     }
 
 function removeMark(reload) {
@@ -446,34 +452,28 @@ function zoomArea() {
     var zoomdiv = getElement("zoom");
     var overlay = getElement("overlay");
     // use overlay div to avoid <img> mousemove problems
-    var rect = getElementRect(picElem);
+    var picRect = getElementRect(scalerImg);
     // FIX ME: is there a way to query the border width from CSS info?
     // rect.x -= 2; // account for overlay borders
     // rect.y -= 2;
-    moveElement(overlay, rect);
+    moveElement(overlay, picRect);
     showElement(overlay, true);
     // start event capturing
     registerEvent("mousedown", overlay, zoomStart);
-    registerEvent("mousedown", elemScaler, zoomStart);
+    registerEvent("mousedown", scalerImg, zoomStart);
     window.focus();
 
 // mousedown handler: start moving
     function zoomStart(evt) {
         pt1 = evtPosition(evt);
         unregisterEvent("mousedown", overlay, zoomStart);
-        unregisterEvent("mousedown", elemScaler, zoomStart);
-        // unregisterEvent("mousedown", zoomdiv, zoomStart);
+        unregisterEvent("mousedown", scalerImg, zoomStart);
         // setup and show zoom div
         moveElement(zoomdiv, Rectangle(pt1.x, pt1.y, 0, 0));
         showElement(zoomdiv, true);
-        // register move events
-        registerEvent("mousemove", overlay, zoomMove);
-        registerEvent("mousemove", zoomdiv, zoomMove);
-        registerEvent("mousemove", elemScaler, zoomMove);
-        // register up events for drag end
-        registerEvent("mouseup", overlay, zoomEnd);
-        registerEvent("mouseup", zoomdiv, zoomEnd);
-        registerEvent("mouseup", elemScaler, zoomEnd);
+        // register events
+        registerEvent("mousemove", document, zoomMove);
+        registerEvent("mouseup", document, zoomEnd);
         return stopEvent(evt);
         }
     
@@ -481,24 +481,20 @@ function zoomArea() {
     function zoomEnd(evt) {
         pt2 = evtPosition(evt);
         // assume a click if the area is too small (up to 3 x 3 pixel)
-        var clickArea = getRect(pt1, pt2).getArea();
-        if (clickArea <= MIN_AREA_SIZE) return stopEvent(evt); 
+        var clickRect = getRect(pt1, pt2);
+        if (clickRect.getArea() <= MIN_AREA_SIZE) return stopEvent(evt); 
         // hide zoom div
         showElement(zoomdiv, false);
         showElement(overlay, false);
-        // unregister move events
-        unregisterEvent("mousemove", overlay, zoomMove);
-        unregisterEvent("mousemove", zoomdiv, zoomMove);
-        unregisterEvent("mousemove", elemScaler, zoomMove);
-        // unregister drag events
-        unregisterEvent("mouseup", overlay, zoomEnd);
-        unregisterEvent("mouseup", zoomdiv, zoomEnd);
-        unregisterEvent("mouseup", elemScaler, zoomMove);
+        // unregister events
+        unregisterEvent("mousemove", document, zoomMove);
+        unregisterEvent("mouseup", document, zoomMove);
         // calc offsets
+        clickRect.clipTo(picRect);
         var area = getRect(
             // FIX ME: liefert negative x/y Werte, wenn hmir/vmir=1
-            dlTrafo.invtransform(pt1),
-            dlTrafo.invtransform(pt2)
+            dlTrafo.invtransform(clickRect.getPt1()),
+            dlTrafo.invtransform(clickRect.getPt2())
             );
         setParameter("wx", cropFloat(area.x));
         setParameter("wy", cropFloat(area.y));
@@ -514,8 +510,10 @@ function zoomArea() {
 // mouse move handler
     function zoomMove(evt) {
         pt2 = evtPosition(evt);
+        var rect = getRect(pt1, pt2);
+        rect.clipTo(picRect);
         // update zoom div
-        moveElement(zoomdiv, getRect(pt1, pt2));
+        moveElement(zoomdiv, rect);
         return stopEvent(evt);
         }
     
@@ -553,52 +551,51 @@ function zoomFullpage() {
 }
 
 
-function moveCenter() {
+function moveCenter(on) {
     // move visible area so that it's centered around the clicked point
-    if ( (dlArea.width == 1.0) && (dlArea.height == 1.0) ) {
-        // nothing to do
-        return;
-    }
-    window.focus();
-
-    function moveCenterEvent(evt) {
-        // move to handler
-        var pt = dlTrafo.invtransform(evtPosition(evt));
-        var newarea = new Rectangle(
-            pt.x - 0.5 * dlArea.width,
-            pt.y - 0.5 * dlArea.height,
-            dlArea.width,
-            dlArea.height
-            );
-        newarea.stayInside(dlMaxArea);
-        // newarea = dlMaxArea.fit(newarea);
-        // debugProps(newarea, "newarea");
-        // debugProps(dlArea, "dlArea");
-        if (newarea.equals(dlArea)) return; // keep event handler
-        unregisterEvent("mousedown", elemScaler, moveCenterEvent);
-        // set parameters
-        setParamFromArea(newarea);
-        parseArea();
-        display();
-    }
-
+    if (isFullArea()) return; // nothing to do
     // starting event capture
-    registerEvent("mousedown", elemScaler, moveCenterEvent);
+    if (on) registerEvent("mousedown", scalerImg, moveCenterEvent);
+    else  unregisterEvent("mousedown", scalerImg, moveCenterEvent);
+    window.focus();
+}
+
+function moveCenterEvent(evt) {
+    // move to handler
+    var pt = dlTrafo.invtransform(evtPosition(evt));
+    var newarea = new Rectangle(
+        pt.x - 0.5 * dlArea.width,
+        pt.y - 0.5 * dlArea.height,
+        dlArea.width,
+        dlArea.height
+        );
+    newarea.stayInside(dlMaxArea);
+    // newarea = dlMaxArea.fit(newarea);
+    // debugProps(newarea, "newarea");
+    // debugProps(dlArea, "dlArea");
+    if (newarea.equals(dlArea)) return; // keep event handler
+    unregisterEvent("mousedown", scalerImg, moveCenterEvent);
+    // set parameters
+    setParamFromArea(newarea);
+    parseArea();
+    display();
 }
 
 function isFullArea(area) {
     if (!area) area = dlArea;
     return ((area.width == 1.0) && (area.height == 1.0));
-    }
+}
 
 function canMove(movx, movy) {
     if (isFullArea()) return false;
+    var x2 = dlArea.x + dlArea.width;
+    var y2 = dlArea.y + dlArea.height;
     // debugProps(dlArea);
     return ((movx < 0) && (dlArea.x > 0))
-        || ((movy < 0) && (dlArea.y > 0))
-        || ((movx > 0) && (dlArea.x + dlArea.width < 1.0))
-        || ((movy > 0) && (dlArea.y + dlArea.height < 1.0))
-    }
+    	|| ((movx > 0) && (x2 < 1.0))
+	|| ((movy < 0) && (dlArea.y > 0))
+    	|| ((movy > 0) && (y2 < 1.0))
+}
 
 function moveBy(movx, movy) {
     // move visible area by movx and movy (in units of ww, wh)
@@ -725,11 +722,13 @@ function showAboutDiv(show) {
         if (!show) return;
         alert("About Digilib - dialog missing in HTML code!"
             + "\nDigilib Version: " + digilibVersion
+            + "\JSP Version: " + jspVersion
             + "\ndlLib Version: " + dllibVersion
             + "\nbaseLib Version: " + baseLibVersion);
         return;
         }
     document.getElementById("digilib-version").innerHTML = "Digilib Version: " + digilibVersion;
+    document.getElementById("jsp-version").innerHTML = "JSP Version: " + jspVersion;
     document.getElementById("baselib-version").innerHTML = "baseLib Version: " + baseLibVersion;
     document.getElementById("dllib-version").innerHTML = "dlLib Version: " + dllibVersion;
     showElement(elem, show);
@@ -738,7 +737,7 @@ function showAboutDiv(show) {
 function loadBirdImage() {
     var img = getElement("bird-image");
     var src = "../servlet/Scaler?" 
-        + getQueryString(PARAM_FILE | PARAM_MODE)
+        + getQueryString(PARAM_FILE)
         + "&dw=" + BIRD_MAXX 
         + "&dh=" + BIRD_MAXY;
     img.src = src;
@@ -749,12 +748,14 @@ function showBirdDiv(show) {
     var startPos; // anchor for dragging
     var newRect;  // position after drag
     var birdImg = getElement("bird-image");
-    showElement(birdImg, show);
     var birdArea = getElement("bird-area");
-    // dont show selector if area is full size
+    var overlay = getElement("overlay");
+    showElement(birdImg, show);
+    // dont show selector if area has full size
     if (!show || isFullArea()) {
         // hide area
         showElement(birdArea, false);
+        showElement(overlay, false);
         return;
         };
     var birdImgRect = getElementRect(birdImg);
@@ -768,17 +769,19 @@ function showBirdDiv(show) {
         birdImgRect.height * area.height
         );
     moveElement(birdArea, birdAreaRect);
-    showElement(birdArea, show);
-    registerEvent("mousedown", birdArea, birdAreaStartDrag);
+    showElement(birdArea, true);
+    moveElement(overlay, birdImgRect);
+    showElement(overlay, true);
+    registerEvent("mousedown", overlay, birdAreaStartDrag);
+    registerEvent("mousedown", birdImg, birdAreaStartDrag);
 
     function birdAreaStartDrag(evt) {
     // mousedown handler: start drag
         startPos = evtPosition(evt);
-        registerEvent("mousemove", birdArea, birdAreaMove);
-        registerEvent("mousemove", birdImg, birdAreaMove);
-        registerEvent("mouseup",   birdArea, birdAreaEndDrag);
-        registerEvent("mouseup",   birdImg, birdAreaEndDrag);
-        
+        unregisterEvent("mousedown", overlay, birdAreaStartDrag);
+        unregisterEvent("mousedown", birdImg, birdAreaStartDrag);
+        registerEvent("mousemove", document, birdAreaMove);
+        registerEvent("mouseup",   document, birdAreaEndDrag);
         // debugProps(getElementRect(bird))
         return stopEvent(evt);
         }
@@ -803,16 +806,15 @@ function showBirdDiv(show) {
 
     function birdAreaEndDrag(evt) {
     // mouseup handler: reload page
-        unregisterEvent("mousemove", birdArea, birdAreaMove);
-        unregisterEvent("mouseup",   birdArea, birdAreaEndDrag);
-        unregisterEvent("mousemove", birdImg, birdAreaMove);
-        unregisterEvent("mouseup",   birdImg, birdAreaEndDrag);
+        unregisterEvent("mousemove", document, birdAreaMove);
+        unregisterEvent("mouseup",   document, birdAreaEndDrag);
+        showElement(overlay, false);
+        if (newRect == null) { // no movement happened
+            startPos = birdAreaRect.getCenter();
+            birdAreaMove(evt); // set center to click position
+            }
         setParameter("wx", cropFloat((newRect.x - birdImgRect.x) / birdImgRect.width));
         setParameter("wy", cropFloat((newRect.y - birdImgRect.y) / birdImgRect.height));
-        // width and height parameters remain the same
-        // setParameter("ww", cropFloat(newRect.width / birdImgRect.width));
-        // setParameter("ww", cropFloat(newRect.height / birdImgRect.height));
-        // parseArea(); // why?
         // zoomed is always fit
         setParameter("ws", 1);
         display();
@@ -827,11 +829,11 @@ function showArrow(name, rect, show) {
 	}
 	
 function showArrows() {
-    if (defined(picElem.complete) && !picElem.complete && !browserType.isN4 ) {
+    if (defined(scalerImg.complete) && !scalerImg.complete && !browserType.isN4 ) {
         setTimeout("showArrows()", 100);
         return;
         }
-	var r = getElementRect(picElem);
+	var r = getElementRect(scalerImg);
     showArrow('up',
         new Rectangle(r.x, r.y, r.width, ARROW_WIDTH), 
         canMove(0, -1)
@@ -849,4 +851,67 @@ function showArrows() {
         canMove(1, 0)
         );
 	}
+
+function calibrate(direction) {
+    // calibrate screen
+    var startPos; // anchor for dragging
+    var newRect;  // position after drag
+    var calDiv = getElement("calibration");
+    var overlay = getElement("overlay");
+    moveElement(overlay, getWinRect());
+    showElement(overlay, true);
+    var xDir = direction == "x";
+    moveCenter(false);
+    registerEvent("mousedown", document, calibrationStartDrag);
+
+    function calibrationStartDrag(evt) {
+    // mousedown handler: start drag
+        startPos = evtPosition(evt);
+        unregisterEvent("mousedown", document, calibrationStartDrag);
+        registerEvent("mousemove", document, calibrationMove);
+        registerEvent("mouseup",   document, calibrationEndDrag);
+        registerEvent("mousemove", calDiv, calibrationMove);
+        registerEvent("mouseup",   calDiv, calibrationEndDrag);
+        newRect = new Rectangle(
+            startPos.x,
+            startPos.y,
+            xDir ? 1 : CALIBRATION_WIDTH,
+            xDir ? CALIBRATION_WIDTH : 1
+            );
+        // stay within image
+        moveElement(calDiv, newRect);
+        showElement(calDiv, true);
+        // debugProps(getElementRect(bird))
+        return stopEvent(evt);
+        }
+
+    function calibrationMove(evt) {
+    // mousemove handler: drag
+        var pos = evtPosition(evt);
+        var dx = (xDir) ? pos.x - startPos.x : CALIBRATION_WIDTH;
+        var dy = (xDir) ? CALIBRATION_WIDTH : pos.y - startPos.y;
+        // move birdArea div, keeping size
+        newRect = new Rectangle(startPos.x, startPos.y, dx, dy);
+        // stay within image
+        moveElement(calDiv, newRect);
+        showElement(calDiv, true);
+        return stopEvent(evt);
+        }
+
+    function calibrationEndDrag(evt) {
+    // mouseup handler: calibrate
+        unregisterEvent("mousemove", document, calibrationMove);
+        unregisterEvent("mouseup",   document, calibrationEndDrag);
+        unregisterEvent("mousemove", calDiv, calibrationMove);
+        unregisterEvent("mouseup",   calDiv, calibrationEndDrag);
+        showElement(calDiv, false);
+        showElement(overlay, false);
+        moveCenter(true);
+
+        // TODO: calculate ...
+        return stopEvent(evt);
+        }
+    }
+
+// :tabSize=4:indentSize=4:noTabs=true:
 
