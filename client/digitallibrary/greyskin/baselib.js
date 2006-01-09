@@ -23,7 +23,7 @@ Authors:
 */
 
 // was: function base_init() {
-baseLibVersion = "2.0";
+baseLibVersion = "2.006";
 browserType = getBrowserType();
 
 
@@ -138,6 +138,34 @@ Rectangle.prototype.getPosition = function() {
     // returns the position of this Rectangle
     return new Position(this.x, this.y);
 }
+Rectangle.prototype.getPt1 = Rectangle.prototype.getPosition;
+
+Rectangle.prototype.getPt2 = function() {
+    // returns the second point position of this Rectangle
+    return new Position(this.x + this.width, this.y + this.height);
+}
+Rectangle.prototype.setPt1 = function(pos) {
+    // sets the first point to position pos
+    this.x = pos.x;
+    this.y = pos.y;
+    return this;
+}
+Rectangle.prototype.setPt2 = function(pos) {
+    // sets the second point to position pos
+    this.width = pos.x - this.x;
+    this.height = pos.y - this.y;
+    return this;
+}
+Rectangle.prototype.getCenter = function() {
+    // returns the center position of this Rectangle
+    return new Position(this.x + this.width / 2, this.y + this.height / 2);
+}
+Rectangle.prototype.setCenter = function(pos) {
+    // moves this Rectangle's center to position pos
+    this.x = pos.x - this.width / 2;
+    this.y = pos.y - this.height / 2;
+    return this;
+}
 Rectangle.prototype.getSize = function() {
     // returns the size of this Rectangle
     return new Size(this.width, this.height);
@@ -151,6 +179,15 @@ Rectangle.prototype.equals = function(other) {
 Rectangle.prototype.getArea = function() {
     // returns the area of this Rectangle
     return (this.width * this.height);
+}
+Rectangle.prototype.normalize = function() {
+    // eliminates negative width and height
+    var p = this.getPt2();
+    this.x = Math.min(this.x, p.x);
+    this.y = Math.min(this.y, p.y);
+    this.width = Math.abs(this.width);
+    this.height = Math.abs(this.height);
+    return this;
 }
 Rectangle.prototype.containsPosition = function(pos) {
     // returns if Position "pos" lies inside of this rectangle
@@ -170,13 +207,22 @@ Rectangle.prototype.containsRect = function(rect) {
 }
 Rectangle.prototype.stayInside = function(rect) {
     // changes this rectangle's x/y values so it stays inside of rectangle rect
-    // but not its proportions
+    // keeping the proportions
     if (this.x < rect.x) this.x = rect.x;
     if (this.y < rect.y) this.y = rect.y;
     if (this.x + this.width > rect.x + rect.width) 
         this.x = rect.x + rect.width - this.width;
     if (this.y + this.height > rect.y + rect.height)
         this.y = rect.y + rect.height - this.height;
+    return this;
+}
+Rectangle.prototype.clipTo = function(rect) {
+    // clips this rectangle so it stays inside of rectangle rect
+    p1 = rect.getPt1();
+    p2 = rect.getPt2();
+    this2 = this.getPt2();
+    this.setPt1(new Position(Math.max(this.x, p1.x), Math.max(this.y, p1.y)));
+    this.setPt2(new Position(Math.min(this2.x, p2.x), Math.min(this2.y, p2.y)));
     return this;
 }
 Rectangle.prototype.intersect = function(rect) {
@@ -480,8 +526,6 @@ function getElementRect(elem) {
     return new Rectangle(pos.x, pos.y, size.width, size.height);
 }
 
-
-
 function moveElement(elem, rect) {
     // moves and sizes the element
     if (elem.style) {
@@ -658,8 +702,78 @@ function getWinSize() {
     return wsize;
 }
 
+function getWinRect() {
+    var size = getWinSize();
+    return new Rectangle(0, 0, size.width, size.height);
+}
+    
 function openWin(url, name, params) {
     // open browser window
     var ow = window.open(url, name, params);
     ow.focus();
 }
+
+/* **********************************************
+ *     cookie class
+ * ******************************************** */
+
+function Cookie() {
+    return this.read();
+}
+
+Cookie.prototype.read = function() {
+    var s = document.cookie;
+    var lines = s.split("; ");
+    for (var i in lines) {
+        var line = lines[i];
+        var sep = line.indexOf("=");
+        if (sep != -1) this.add(
+            line.substr(0, sep),
+            line.substr(sep + 1)
+            );
+        }
+	return this;
+}
+
+Cookie.prototype.store = function() {
+    var lines = new Array();
+    for (var i in this) {
+        var item = this[i];
+        if (typeof(item) == typeof(lines)) // Array
+            lines.push(i + "=" + item.join(","));
+        else if (typeof(item) != "function") // single item
+            lines.push(i + "=" + item);
+        }
+    // var s = lines.join(";")
+	for (line in lines) document.cookie = lines[line];
+    return this;
+	}
+
+Cookie.prototype.add = function(key, value) {
+    if (value.indexOf(",") == -1) 
+            this[key] = value;  // single value
+        else
+            this[key] = value.split(",");   // list of values
+    return this[key];
+    }
+
+Cookie.prototype.get = function(key) {
+    return this[key];
+    }
+
+Cookie.prototype.addbool = function(key, value) {
+    this[key] = Boolean(value).toString();
+    return this[key];
+    }
+
+Cookie.prototype.getbool = function(key) {
+    var val = this[key];
+    return (val > "") && (val != "0") && (val != "false");
+    }
+
+Cookie.prototype.remove = function(key) {
+    delete this[key];
+    }
+
+// :tabSize=4:indentSize=4:noTabs=true:
+
