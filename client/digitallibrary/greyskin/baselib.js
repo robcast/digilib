@@ -23,7 +23,7 @@ Authors:
 */
 
 // was: function base_init() {
-baseLibVersion = "2.006";
+baseLibVersion = "2.007";
 browserType = getBrowserType();
 
 
@@ -495,7 +495,7 @@ function getElementPosition(elem) {
         x = elem.pageX;
         y = elem.pageY;
     } else {
-        alert("unable to get position of "+elem+" (id:"+elem.id+")");
+        alert("unable to get position of " + elem + " (id:" + elem.id + ")");
     }
     return new Position(getInt(x), getInt(y));
 }
@@ -514,7 +514,7 @@ function getElementSize(elem) {
         width = elem.clip.width;
         height = elem.clip.height;
     } else {
-        alert("unable to get size of "+elem+" (id:"+elem.id+")");
+        alert("unable to get size of " + elem + " (id:" + elem.id + ")");
     }
     return new Size(getInt(width), getInt(height));
 }
@@ -548,7 +548,7 @@ function moveElement(elem, rect) {
             elem.clip.height = getInt(rect.height);
         }
     } else {
-        alert("moveelement: no style nor layer property!");
+        alert("moveElement(): element has no style or layer property!");
         return false;
     }
     return true;
@@ -558,9 +558,9 @@ function showElement(elem, show) {
     // shows or hides the element
     if (elem.style)
         elem.style.visibility = show ? "visible" : "hidden";
-    } else if (defined(elem.visibility))
+    else if (defined(elem.visibility))
         elem.visibility = show ? "show" : "hide";
-    } else
+    else
         alert("showElement(): element has no style or layer property!");
     return true;
 }
@@ -598,7 +598,7 @@ function registerEvent(type, elem, handler) {
         if (Event) { 
             t = type.toUpperCase();
             elem.captureEvents(Event[t]);
-            elem[ "on" + t ] = handler;
+            elem[ "on" + type ] = handler;
             }
         }
     else {
@@ -614,13 +614,13 @@ function unregisterEvent(type, elem, handler) {
         elem.removeEventListener(type, handler, false);
             }
     else if (elem.detachEvent) {
-        elem.detachEvent('on' + type, handler);
+        elem.detachEvent("on" + type, handler);
         }
     else if (elem.releaseEvents) {
         if (Event) { 
             t = type.toUpperCase();
             elem.releaseEvents(Event[t]);
-            elem[ "on" + t ] = null;
+            elem[ "on" + type ] = null;
             }
         }
     else {
@@ -742,6 +742,7 @@ Cookie.prototype.store = function() {
 	}
 
 Cookie.prototype.add = function(key, value) {
+    value = value.toString();
     if (value.indexOf(",") == -1) 
             this[key] = value;  // single value
         else
