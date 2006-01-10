@@ -24,7 +24,7 @@ Authors:
 
 */
 digilibVersion = "Digilib NG";
-dllibVersion = "2.027";
+dllibVersion = "2.028";
 isDigilibInitialized = false;    // gets set to true in dl_param_init
 reloadPage = true; // reload the page when parameters are changed, otherwise update only "src" attribute of scaler img 
 
@@ -857,6 +857,7 @@ function calibrate(direction) {
     var startPos; // anchor for dragging
     var newRect;  // position after drag
     var calDiv = getElement("calibration");
+    var pixel = calDiv.getElementsByTagName("p")[0];
     var overlay = getElement("overlay");
     moveElement(overlay, getWinRect());
     showElement(overlay, true);
@@ -878,7 +879,6 @@ function calibrate(direction) {
             xDir ? 1 : CALIBRATION_WIDTH,
             xDir ? CALIBRATION_WIDTH : 1
             );
-        // stay within image
         moveElement(calDiv, newRect);
         showElement(calDiv, true);
         // debugProps(getElementRect(bird))
@@ -892,7 +892,7 @@ function calibrate(direction) {
         var dy = (xDir) ? CALIBRATION_WIDTH : pos.y - startPos.y;
         // move birdArea div, keeping size
         newRect = new Rectangle(startPos.x, startPos.y, dx, dy);
-        // stay within image
+        pixel.innerHTML = (xDir ? dx : dy) + " px";
         moveElement(calDiv, newRect);
         showElement(calDiv, true);
         return stopEvent(evt);
@@ -904,14 +904,35 @@ function calibrate(direction) {
         unregisterEvent("mouseup",   document, calibrationEndDrag);
         unregisterEvent("mousemove", calDiv, calibrationMove);
         unregisterEvent("mouseup",   calDiv, calibrationEndDrag);
+        if (xDir) {
+            var val = newRect.width * 0.254; // ratio dm/inch
+            cookie.add("ddpi", val);
+            cookie.add("ddpix", val);
+        } else {
+            var val = newRect.height * 0.254;
+            cookie.add("ddpiy", val);
+            }
         showElement(calDiv, false);
         showElement(overlay, false);
         moveCenter(true);
-
-        // TODO: calculate ...
         return stopEvent(evt);
         }
     }
 
+function originalSize() {
+    var dpi = cookie.get("ddpi");
+    if (dpi == null) {
+        alert("Screen has not yet been calibrated - using default value of 72 dpi");
+        dpi = 72;
+        }
+    setParameter("ddpi", dpi);
+    addFlag("osize");
+    display();
+}
+    
+function pixelByPixel() {
+    addFlag("clip");
+    display();
+}
 // :tabSize=4:indentSize=4:noTabs=true:
 

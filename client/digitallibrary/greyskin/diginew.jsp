@@ -156,24 +156,30 @@
  </div>
 
  <!-- the calibration div -->
- <div id="calibration"><p>10 cm</p></div>
+ <div id="calibration">
+ 	<div>
+	<p>0 px</p>
+ 	<p class="cm">10 cm</p>
+	</div>
+ </div>
 
+ <!-- the buttons -->
  <div id="buttons">
 	<div class="button">
 		<a
 			class="icon"
-			href="javascript:getRefWin()"
+			href="javascript:toggleBirdDiv()"
 			>
 
 			<img
 				class="png"
-				id="reference"
-				title="get a reference URL"
-				src="reference.png"
+				id="bird"
+				title="show bird's eye view"
+				src="birds-eye.png"
 			>
-		</a> 
+		</a>
 	</div>
-	
+
 	<div class="button">
 		<a
 			class="icon"
@@ -237,6 +243,21 @@
 	<div class="button">
 		<a
 			class="icon"
+			href="javascript:pageWidth()"
+			>
+
+			<img
+				class="png"
+				id="page-width"
+				title="page width"
+				src="pagewidth.png"
+			>
+		</a> 
+	</div>
+	
+	<div class="button">
+		<a
+			class="icon"
 			href="javascript:gotoPage('-1')"
 			>
 
@@ -282,18 +303,18 @@
 	<div class="button">
 		<a
 			class="icon"
-			href="javascript:toggleBirdDiv()"
+			href="javascript:getRefWin()"
 			>
 
 			<img
 				class="png"
-				id="bird"
-				title="show bird's eye view"
-				src="birds-eye.png"
+				id="reference"
+				title="get a reference URL"
+				src="reference.png"
 			>
-		</a>
+		</a> 
 	</div>
-
+	
 	<div class="button">
 		<a
 			class="icon"
