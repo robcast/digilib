@@ -24,7 +24,7 @@ Authors:
 
 */
 digilibVersion = "Digilib NG";
-dllibVersion = "2.028";
+dllibVersion = "2.029";
 isDigilibInitialized = false;    // gets set to true in dl_param_init
 reloadPage = true; // reload the page when parameters are changed, otherwise update only "src" attribute of scaler img 
 
@@ -934,5 +934,18 @@ function pixelByPixel() {
     addFlag("clip");
     display();
 }
+
+function resize(factor) {
+    setParameter("ws", factor);
+    display();
+    var menu = getElement("sizes");
+    showElement(menu, false);
+}
+
+function sizeMenu() {
+    var menu = getElement("sizes");
+    showElement(menu, true);
+}
+
 // :tabSize=4:indentSize=4:noTabs=true:
 

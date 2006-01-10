@@ -46,7 +46,7 @@
 
 	<script language="JavaScript">
 
-	var jspVersion = "diginew.jsp 1.009";
+	var jspVersion = "diginew.jsp 1.011";
 	var cookie = new Cookie();
 	// alert(strObject(cookie));
 
@@ -163,23 +163,34 @@
 	</div>
  </div>
 
+ <!-- the size menu -->
+ <div id="sizes">
+	<p><a href="javascript:resize(1)">1</a></p>
+	<p><a href="javascript:resize(1.41)">1.41</a></p>
+	<p><a href="javascript:resize(2)">2</a></p>
+	<p><a href="javascript:resize(3)">3</a></p>
+ </div>
+
  <!-- the buttons -->
  <div id="buttons">
+	<div class="separator">
+	</div>
+
 	<div class="button">
 		<a
 			class="icon"
-			href="javascript:toggleBirdDiv()"
+			href="javascript:getRefWin()"
 			>
 
 			<img
 				class="png"
-				id="bird"
-				title="show bird's eye view"
-				src="birds-eye.png"
+				id="reference"
+				title="get a reference URL"
+				src="reference.png"
 			>
-		</a>
+		</a> 
 	</div>
-
+	
 	<div class="button">
 		<a
 			class="icon"
@@ -258,6 +269,21 @@
 	<div class="button">
 		<a
 			class="icon"
+			href="javascript:sizeMenu()"
+			>
+
+			<img
+				class="png"
+				id="size"
+				title="resize page"
+				src="size.png"
+			>
+		</a>
+	</div>
+	
+	<div class="button">
+		<a
+			class="icon"
 			href="javascript:gotoPage('-1')"
 			>
 
@@ -303,18 +329,21 @@
 	<div class="button">
 		<a
 			class="icon"
-			href="javascript:getRefWin()"
+			href="javascript:toggleBirdDiv()"
 			>
 
 			<img
 				class="png"
-				id="reference"
-				title="get a reference URL"
-				src="reference.png"
+				id="bird"
+				title="show bird's eye view"
+				src="birds-eye.png"
 			>
-		</a> 
+		</a>
 	</div>
 	
+	<div class="separator">
+	</div>
+
 	<div class="button">
 		<a
 			class="icon"
@@ -345,11 +374,16 @@
 		</a>
 	</div>
 
+	<div class="separator">
+	</div>
 </div>
 
 <!-- options div -->
 
 <div id="dloptions">
+	<div class="separator">
+	</div>
+
 	<div class="button">
 		<a
 			class="icon"
@@ -473,21 +507,6 @@
 	<div class="button">
 		<a
 			class="icon"
-			href="javascript:setParamWin('size', '...')"
-			>
-
-			<img
-				class="png"
-				id="size"
-				title="resize page"
-				src="size.png"
-			>
-		</a>
-	</div>
-	
-	<div class="button">
-		<a
-			class="icon"
 			href="javascript:setQualityWin('Quality (0..2)')"
 			>
 
@@ -560,6 +579,9 @@
 		</a>
 	</div>
 
+	<div class="separator">
+	</div>
+
 	<div class="button">
 		<a
 			class="icon"
@@ -574,6 +596,10 @@
 			>
 		</a>
 	</div>
+
+	<div class="separator">
+	</div>
+
 </div>
 
 <div class="debug" id="debug"><p class="debug">Debug</p></div>
