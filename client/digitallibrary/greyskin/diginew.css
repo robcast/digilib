@@ -231,7 +231,7 @@ div#debug {
 	color: lightgreen;
 	border: 1px dotted black;
 	background-color: transparent;
-	/*visibility: hidden;*/
+	visibility: hidden;
 	}
 
 div#debug p.debug, h1 {

@@ -59,7 +59,7 @@
 	var dlTarget = window.name;
 	var baseUrl = '<%= dlRequest.getAsString("base.url") %>';
 	var toolbarEnabledURL = window.location.href;
-	var timeOut;
+	var waited = 0;
 
 	function toggleOptionDiv() {
 		isOptionDivVisible = !isOptionDivVisible;
@@ -122,19 +122,29 @@
 		if (hasParameter("rgb"))
 			setOnImage("rgb", "rgb-on.png", getParameter("rgb"));
 		}
-		
-	// initialize image; called by body.onload
+	function onImgLoad() {
+		// make sure the image is loaded so we know its size
+		if (defined(scalerImg.complete) && !scalerImg.complete && !browserType.isN4 ) {
+			setTimeout("onImgLoad()", 100);
+			waited += 100;
+			return;
+			}
+		reflectImageStatus();	// adjust icons
+		showOptions(isOptionDivVisible);
+		showBirdDiv(isBirdDivVisible);
+		showArrows();		// show arrow overlays for zoom navigation
+		moveCenter(true);	// click to move point to center
+		// new Slider("sizes", 1, 5, 2);
+		}
+
+	// initialize digilib; called by body.onload
 	function onBodyLoad() {
 		document.id = 'digilib';
 		initParameters();	// load default values and detail
 		dl_param_init();	// parse parameter values
 		loadScalerImage();	// ruft auch dl_init() / initScaler auf
 		loadBirdImage();	// lädt das Bird's Eye Bild
-		reflectImageStatus();	// adjust icons
-		showOptions(isOptionDivVisible);
-		showBirdDiv(isBirdDivVisible);
-		showArrows();		// show arrow overlays for zoom navigation
-		moveCenter(true);	// click to move point to center
+		onImgLoad();
 		}
 
 	function onBodyUnload() {
@@ -200,6 +210,10 @@
 	<p><a href="javascript:resize(1.41)">1.41 x</a></p>
 	<p><a href="javascript:resize(2)">2 x</a></p>
 	<p><a href="javascript:resize(3)">3 x</a></p>
+	<div id="sizes-bar">
+		<div id="sizes-slider"></div>
+	</div>
+	<p id="sizes-value"></p>
  </div>
 
  <!-- the buttons -->

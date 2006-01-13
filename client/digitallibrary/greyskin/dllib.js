@@ -39,6 +39,9 @@ dlFlags = null;
 scalerDiv = null;
 scalerImg = null;
 
+// default inset (for scalerImg relativ to scalerDiv 
+INSET = 40; // because of scrollbars of main window and scaler [Firefox bug?]
+
 // flags for parameter sets
 PARAM_FILE = 1;
 PARAM_MODE = 2;
@@ -943,6 +946,18 @@ function pixelByPixel(on) {
         display();
         }
     else removeFlag("clip");
+}
+
+function pageWidth() {
+    var divSize = getElementSize(scalerDiv);
+    divSize.width -= INSET; // allow for scrollbars [Firefox bug?]
+    var imgSize = getElementSize(scalerImg);
+    if (imgSize.width < divSize.width) {
+        setParameter("ws", cropFloat(divSize.width / imgSize.width));
+        display(PARAM_ALL & ~PARAM_DIM); // no zoom
+        };
+    // TODO: how to calculate correct width if zoom is on? (plus size?)
+
 }
 
 function resize(factor) {
