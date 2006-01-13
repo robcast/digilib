@@ -631,11 +631,11 @@ function unregisterEvent(type, elem, handler) {
 }
 
 function registerEventById(type, id, handler) {
-    registerEvent(type, document.getElementById(id), handler);
+    registerEvent(type, getElement(id), handler);
     }
 
 function unregisterEventById(type, id, handler) {
-    unregisterEvent(type, document.getElementById(id), handler);
+    unregisterEvent(type, getElement(id), handler);
     }
 
 function stopEvent(e) {
@@ -769,4 +769,85 @@ Cookie.prototype.remove = function(key) {
     }
 
 // :tabSize=4:indentSize=4:noTabs=true:
+
+function Slider(id, valMin, valMax, valStart, stepSize, onChange) {
+    // a (horizontal) slider widget
+    this.id = id;
+    this.elem   = getElement(id);
+    this.slider = getElement(id + ".slider");   // the slider handle
+    this.input  = getElement(id + ".input", 1); // optional input field
+    this.bar    = getElement(id + ".bar");      // the slider bar 
+    this.barRect = getElementRect(this.bar);
+    this.minX = this.barRect.x;
+    this.maxX = this.minX + this.barRect.width; 
+    this.valMin = valMin;
+    this.valMax = valMax;
+    this.valStart = valStart;
+    this.value = valStart;
+    this.stepSize = stepSize;
+    this.valueLabel  = getElement(id + ".value", 1);
+    this.valMinLabel = getElement(id + ".valmin", 1);
+    this.valMaxLabel = getElement(id + ".valmax", 1);
+    this.onChange = onChange ? onChange : function() {};
+    return this;
+    }
+
+Slider.prototype.show = function(show) {
+    showElement(this.elem, show);
+    }
+    
+Slider.prototype.activate = function() {
+    }
+
+Slider.prototype.disable = function() {
+    }
+
+Slider.prototype.reset = function() {
+    this.setValue(this.startVal);
+    }
+
+Slider.prototype.setValue = function(newVal) {
+    // sets slider to new value and updates
+    this.value = newVal;
+    this.update;
+    }
+
+Slider.prototype.update = function() {
+    // updates slider position to new value
+    }
+
+Slider.prototype.setupEvents = function() {
+    // installs all event callbacks
+    registerEvent("mousedown", this.slider, this.onDragStart);
+    }
+
+Slider.prototype.onDragStart = function(evt) {
+    unregisterEvent("mousedown", this.slider, this.onDragStart);
+    registerEvent("mousemove", document, this.onDrag);
+    registerEvent("mouseup",   document, this.onDragEnd);
+    this.startPos = evtPosition(evt);
+    return stopEvent(evt);
+    }
+
+Slider.prototype.onDrag = function(evt) {
+    var pos = evtPosition(evt);
+    var dx = pos.x - this.startPos;
+    // move birdArea div, keeping size
+    newRect = new Rectangle(startPos.x, startPos.y, dx, dy);
+    pixel.innerHTML = (xDir ? dx : dy) + " px";
+    moveElement(calDiv, newRect);
+    showElement(calDiv, true);
+    return stopEvent(evt);
+    }
+
+Slider.prototype.onDragEnd = function(evt) {
+    unregisterEvent("mousemove", document, this.onDrag);
+    unregisterEvent("mouseup",   document, this.onDragEnd);
+    this.onChange(this.value);
+    return stopEvent(evt);
+    }
+
+Slider.prototype.onInputChange = function() {
+    this.onChange(this.value);
+    }
 

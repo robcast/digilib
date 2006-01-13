@@ -109,8 +109,8 @@ div#overlay {
 	border: 1px dotted lightcyan;
 	z-index: 100;
 	visibility: hidden;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
+	/* box-sizing: border-box;
+	-moz-box-sizing: border-box; */
 	}
 
 div#buttons {
@@ -133,8 +133,8 @@ div#zoom {
 	border: 2px solid #ffa060;
 	visibility: hidden;
 	z-index: 200;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
+	/* box-sizing: border-box;
+	-moz-box-sizing: border-box; */
 	}
 
 div#bird-area {
@@ -142,8 +142,8 @@ div#bird-area {
 	border: 2px solid #ffa060;
 	visibility: hidden;
 	background-color: transparent;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
+	/* box-sizing: border-box;
+	-moz-box-sizing: border-box; */
 	z-index: 10;
 	}
 
@@ -174,11 +174,9 @@ p.cm {
 
 div#sizes {
 	position: absolute;
-	top: 100px;
-	right: 40px;
 	padding: 0px 2px;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
-	border: 3px solid lightcyan;
+	border: 2px solid lightcyan;
 	background-color: lightgrey;
 	text-align: center;
 	visibility: hidden;
@@ -186,17 +184,17 @@ div#sizes {
 	}
 
 div#sizes p {
-	margin: 2px;
+	margin: 2px 0px;
+	padding: 0px;
 	}
 
 div#sizes p:hover {
-	background-color: black;
+	background-color: #ffa060;
 	}
 
 div#sizes a {
 	text-decoration: none;
-	font-weight: bold;
-	color: lightcyan;
+	color: black;
 	}
 
 div#about {
@@ -207,7 +205,7 @@ div#about {
 	height: 200px;
 	padding: 0px 2px;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
-	border: 3px solid lightcyan;
+	border: 2px solid lightcyan;
 	background-color: lightgrey;
 	text-align: center;
 	visibility: hidden;
@@ -233,7 +231,7 @@ div#debug {
 	color: lightgreen;
 	border: 1px dotted black;
 	background-color: transparent;
-	visibility: hidden;
+	/*visibility: hidden;*/
 	}
 
 div#debug p.debug, h1 {
