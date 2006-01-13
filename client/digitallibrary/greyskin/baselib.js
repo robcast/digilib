@@ -23,9 +23,11 @@ Authors:
 */
 
 // was: function base_init() {
-baseLibVersion = "2.007";
+baseLibVersion = "2.008";
 browserType = getBrowserType();
 
+sliders = {};
+activeSlider = null;
 
 function getInt(n) {
     // returns always an integer
@@ -768,38 +770,46 @@ Cookie.prototype.remove = function(key) {
     delete this[key];
     }
 
-// :tabSize=4:indentSize=4:noTabs=true:
-
 function Slider(id, valMin, valMax, valStart, stepSize, onChange) {
     // a (horizontal) slider widget
     this.id = id;
     this.elem   = getElement(id);
-    this.slider = getElement(id + ".slider");   // the slider handle
-    this.input  = getElement(id + ".input", 1); // optional input field
-    this.bar    = getElement(id + ".bar");      // the slider bar 
+    this.slider = getElement(id + "-slider");   // the slider handle
+    this.input  = getElement(id + "-input", 1); // optional input field
+    this.bar    = getElement(id + "-bar");      // the slider bar 
     this.barRect = getElementRect(this.bar);
-    this.minX = this.barRect.x;
-    this.maxX = this.minX + this.barRect.width; 
+    this.sliderRect = getElementRect(this.slider);
+    this.xMin = this.barRect.x;
+    this.xMax = this.xMin + this.barRect.width; 
+    this.xDiff = this.xMax - this.xMin; 
+    this.Y = this.barRect.getCenter().y;        // middle axis of bar 
     this.valMin = valMin;
     this.valMax = valMax;
+    this.valDiff = Math.abs(valMax - valMin);
     this.valStart = valStart;
     this.value = valStart;
     this.stepSize = stepSize;
-    this.valueLabel  = getElement(id + ".value", 1);
-    this.valMinLabel = getElement(id + ".valmin", 1);
-    this.valMaxLabel = getElement(id + ".valmax", 1);
+    this.valueLabel  = getElement(id + "-value", 1);
+    this.valMinLabel = getElement(id + "-valmin", 1);
+    this.valMaxLabel = getElement(id + "-valmax", 1);
     this.onChange = onChange ? onChange : function() {};
+    this.update();
+    this.activate();
+    sliders[id + '-slider'] = this; // make a handle to the object
     return this;
     }
 
 Slider.prototype.show = function(show) {
     showElement(this.elem, show);
+    this.activate();
     }
     
 Slider.prototype.activate = function() {
+    this.setupEvents();
     }
 
-Slider.prototype.disable = function() {
+Slider.prototype.deactivate = function() {
+    unregisterEvent("mousedown", this.slider, this.onDragStart);
     }
 
 Slider.prototype.reset = function() {
@@ -809,11 +819,24 @@ Slider.prototype.reset = function() {
 Slider.prototype.setValue = function(newVal) {
     // sets slider to new value and updates
     this.value = newVal;
-    this.update;
+    this.update();
+    }
+
+Slider.prototype.calcValue = function() {
+    // calculates value from slider position
+    var xSlider = this.sliderRect.getCenter().x - this.xMin;
+    this.value = xSlider * this.valDiff / this.xDiff;
+    return this.value;
     }
 
 Slider.prototype.update = function() {
     // updates slider position to new value
+    var xSlider = this.value * this.xDiff / this.valDiff;
+    moveElement(this.slider, this.sliderRect.setCenter(
+        new Position(xSlider + this.xMin, this.Y)));
+    var strVal = this.value.toString();
+    if (this.valueLabel) this.valueLabel.innerHTML = strVal;
+    if (this.input) this.input.value = strVal;
     }
 
 Slider.prototype.setupEvents = function() {
@@ -822,32 +845,41 @@ Slider.prototype.setupEvents = function() {
     }
 
 Slider.prototype.onDragStart = function(evt) {
-    unregisterEvent("mousedown", this.slider, this.onDragStart);
-    registerEvent("mousemove", document, this.onDrag);
-    registerEvent("mouseup",   document, this.onDragEnd);
-    this.startPos = evtPosition(evt);
+    var slider = sliders[this.id];
+    activeSlider = slider;
+    unregisterEvent("mousedown", slider.slider, slider.onDragStart);
+    registerEvent("mousemove", document, slider.onDrag);
+    registerEvent("mouseup",   document, slider.onDragEnd);
+    slider.startPos = evtPosition(evt);
+    slider.startX = slider.sliderRect.getCenter().x;
     return stopEvent(evt);
     }
 
 Slider.prototype.onDrag = function(evt) {
+    var slider = activeSlider;
     var pos = evtPosition(evt);
-    var dx = pos.x - this.startPos;
-    // move birdArea div, keeping size
-    newRect = new Rectangle(startPos.x, startPos.y, dx, dy);
-    pixel.innerHTML = (xDir ? dx : dy) + " px";
-    moveElement(calDiv, newRect);
-    showElement(calDiv, true);
+    var currX = slider.slider
+    var newX = pos.x - slider.startPos + slider.startX;
+    if (newX < slider.xMin) newX = slider.xMin;
+    if (newX > slider.xMax) newX = slider.xMax;
+    moveElement(slider.slider, slider.sliderRect.setCenter(
+        new Position(newX, slider.Y)));
     return stopEvent(evt);
     }
 
 Slider.prototype.onDragEnd = function(evt) {
-    unregisterEvent("mousemove", document, this.onDrag);
-    unregisterEvent("mouseup",   document, this.onDragEnd);
-    this.onChange(this.value);
+    var slider = activeSlider;
+    unregisterEvent("mousemove", document, slider.onDrag);
+    unregisterEvent("mouseup",   document, slider.onDragEnd);
+    slider.onChange(slider.calcValue());
+    activeSlider = null;
     return stopEvent(evt);
     }
 
 Slider.prototype.onInputChange = function() {
-    this.onChange(this.value);
+    var slider = activeSlider;
+    slider.onChange(s.value);
     }
+
+// :tabSize=4:indentSize=4:noTabs=true:
 
