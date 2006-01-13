@@ -24,7 +24,7 @@ Authors:
 
 */
 digilibVersion = "Digilib NG";
-dllibVersion = "2.029";
+dllibVersion = "2.031";
 isDigilibInitialized = false;    // gets set to true in dl_param_init
 reloadPage = true; // reload the page when parameters are changed, otherwise update only "src" attribute of scaler img 
 
@@ -355,7 +355,7 @@ function loadScalerImage(detail) {
     var scaler = getElement('scaler');
     var zoomdiv = getElement("zoom");    // test for presence only
     var overlay = getElement("overlay");    // test for presence only
-    var about = getElement("bird");        // test for presence only
+    var about = getElement("about");        // test for presence only
     var bird = getElement("bird");        // test for presence only
     var picsize = bestPicSize(scaler, 50);
     var src = "../servlet/Scaler?" 
@@ -395,7 +395,7 @@ function renderMarks() {
     dlTrafo = parseTrafo(scalerImg);
     // debugProps(dlArea, "dlArea");
     for (var i = 0; i < dlMarks.length; i++) {
-    var div = document.getElementById("mark" + i) || createMarkDiv(i);
+    var div = getElement("mark" + i) || createMarkDiv(i);
         var mark = dlMarks[i];
     // debugProps(mark, "mark");
     if (dlArea.containsPosition(mark)) {
@@ -583,7 +583,8 @@ function moveCenterEvent(evt) {
 
 function isFullArea(area) {
     if (!area) area = dlArea;
-    return ((area.width == 1.0) && (area.height == 1.0));
+    // pixel by pixel is not always full area
+    return (area.width == 1.0) && (area.height == 1.0) && ! hasFlag("clip");
 }
 
 function canMove(movx, movy) {
@@ -719,18 +720,22 @@ function showAboutDiv(show) {
     // show or hide "about" div
     var elem = getElement("about");
     if (elem == null) {
-        if (!show) return;
-        alert("About Digilib - dialog missing in HTML code!"
+        if (show) alert("About Digilib - dialog missing in HTML code!"
             + "\nDigilib Version: " + digilibVersion
             + "\JSP Version: " + jspVersion
             + "\ndlLib Version: " + dllibVersion
             + "\nbaseLib Version: " + baseLibVersion);
         return;
         }
-    document.getElementById("digilib-version").innerHTML = "Digilib Version: " + digilibVersion;
-    document.getElementById("jsp-version").innerHTML = "JSP Version: " + jspVersion;
-    document.getElementById("baselib-version").innerHTML = "baseLib Version: " + baseLibVersion;
-    document.getElementById("dllib-version").innerHTML = "dlLib Version: " + dllibVersion;
+    if (show) {
+        getElement("digilib-version").innerHTML = "Digilib Version: " + digilibVersion;
+        getElement("jsp-version").innerHTML = "JSP Version: " + jspVersion;
+        getElement("baselib-version").innerHTML = "baseLib Version: " + baseLibVersion;
+        getElement("dllib-version").innerHTML = "dlLib Version: " + dllibVersion;
+        var aboutRect = getElementRect(elem);
+        aboutRect.setCenter(getWinRect().getCenter());
+        moveElement(elem, aboutRect);
+        }
     showElement(elem, show);
     }
     
@@ -829,6 +834,7 @@ function showArrow(name, rect, show) {
 	}
 	
 function showArrows() {
+    // show the 4 arrow bars on top of scaler img according to current dlArea
     if (defined(scalerImg.complete) && !scalerImg.complete && !browserType.isN4 ) {
         setTimeout("showArrows()", 100);
         return;
@@ -871,8 +877,6 @@ function calibrate(direction) {
         unregisterEvent("mousedown", document, calibrationStartDrag);
         registerEvent("mousemove", document, calibrationMove);
         registerEvent("mouseup",   document, calibrationEndDrag);
-        registerEvent("mousemove", calDiv, calibrationMove);
-        registerEvent("mouseup",   calDiv, calibrationEndDrag);
         newRect = new Rectangle(
             startPos.x,
             startPos.y,
@@ -902,8 +906,6 @@ function calibrate(direction) {
     // mouseup handler: calibrate
         unregisterEvent("mousemove", document, calibrationMove);
         unregisterEvent("mouseup",   document, calibrationEndDrag);
-        unregisterEvent("mousemove", calDiv, calibrationMove);
-        unregisterEvent("mouseup",   calDiv, calibrationEndDrag);
         if (xDir) {
             var val = newRect.width * 0.254; // ratio dm/inch
             cookie.add("ddpi", val);
@@ -919,33 +921,44 @@ function calibrate(direction) {
         }
     }
 
-function originalSize() {
-    var dpi = cookie.get("ddpi");
-    if (dpi == null) {
-        alert("Screen has not yet been calibrated - using default value of 72 dpi");
-        dpi = 72;
+function originalSize(on) {
+    // set osize flag, needs calibrated screen
+    if (on) {
+        var dpi = cookie.get("ddpi");
+        if (dpi == null) {
+            alert("Screen has not yet been calibrated - using default value of 72 dpi");
+            dpi = 72;
+            }
+        setParameter("ddpi", dpi);
+        addFlag("osize");
+        display();
         }
-    setParameter("ddpi", dpi);
-    addFlag("osize");
-    display();
+    else removeFlag("osize");
 }
     
-function pixelByPixel() {
-    addFlag("clip");
-    display();
+function pixelByPixel(on) {
+    // sets clip flag
+    if (on) { 
+        addFlag("clip");
+        display();
+        }
+    else removeFlag("clip");
 }
 
 function resize(factor) {
     setParameter("ws", factor);
+    showSizeMenu(false);
     display();
-    var menu = getElement("sizes");
-    showElement(menu, false);
 }
 
-function sizeMenu() {
+function showSizeMenu(show) {
     var menu = getElement("sizes");
-    showElement(menu, true);
+    if (show) {
+        // align menu with button
+        var buttonPos = getElementPosition(getElement("size"));
+        moveElement(menu, new Position(buttonPos.x - 50, buttonPos.y));
+        }
+    showElement(menu, show);
 }
-
 // :tabSize=4:indentSize=4:noTabs=true:
 

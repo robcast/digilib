@@ -46,13 +46,16 @@
 
 	<script language="JavaScript">
 
-	var jspVersion = "diginew.jsp 1.011";
+	var jspVersion = "diginew.jsp 1.013";
 	var cookie = new Cookie();
 	// alert(strObject(cookie));
 
 	var isOptionDivVisible = cookie.getbool("isOptionDivVisible");
 	var isBirdDivVisible = cookie.getbool("isBirdDivVisible");
 	var isAboutDivVisible = false;
+	var isSizeMenuVisible = false;
+	var isOriginalSize = false;
+	var isPixelByPixel = false;
 	var dlTarget = window.name;
 	var baseUrl = '<%= dlRequest.getAsString("base.url") %>';
 	var toolbarEnabledURL = window.location.href;
@@ -75,21 +78,49 @@
 		showAboutDiv(isAboutDivVisible);
 		}
 
+	function toggleSizeMenu() {
+		isSizeMenuVisible = !isSizeMenuVisible;
+		showSizeMenu(isSizeMenuVisible);
+		}
+
+	function toggleOriginalSize(on) {
+		isOriginalSize = (arguments.length == 1)
+			? on
+			: !isOriginalSize;
+		togglePixelByPixel(false);
+		originalSize(isOriginalSize);
+		}
+
+	function togglePixelByPixel(on) {
+		isPixelByPixel = (arguments.length == 1)
+			? on
+			: !isPixelByPixel;
+		toggleOriginalSize(false);
+		pixelByPixel(isPixelByPixel);
+		}
+
+	function setOnImage(id, src, value) {
 	// replace img src and display "on" status
-	function setOnImage(id, src) {
 		var elem = getElement(id);
 		elem.src = src;
-		elem.title += ": on";
+		if (value)
+			elem.title += ": " + value;
+		else
+			elem.title += ": on";
 		}
 
 	// change icons if image functions are on
 	function reflectImageStatus() {
 		if (hasFlag("hmir")) setOnImage("hmir", "mirror-horizontal-on.png");
 		if (hasFlag("vmir")) setOnImage("vmir", "mirror-vertical-on.png");
-		if (hasParameter("brgt")) setOnImage("brgt", "brightness-on.png");
-		if (hasParameter("cont")) setOnImage("cont", "contrast-on.png");
-		if (hasParameter("rot")) setOnImage("rot", "rotate-on.png");
-		if (hasParameter("rgb")) setOnImage("rgb", "rgb-on.png");
+		if (hasParameter("brgt"))
+			setOnImage("brgt", "brightness-on.png", getParameter("brgt"));
+		if (hasParameter("cont"))
+			setOnImage("cont", "contrast-on.png", getParameter("cont"));
+		if (hasParameter("rot"))
+			setOnImage("rot", "rotate-on.png", getParameter("rot"));
+		if (hasParameter("rgb"))
+			setOnImage("rgb", "rgb-on.png", getParameter("rgb"));
 		}
 		
 	// initialize image; called by body.onload
@@ -165,10 +196,10 @@
 
  <!-- the size menu -->
  <div id="sizes">
-	<p><a href="javascript:resize(1)">1</a></p>
-	<p><a href="javascript:resize(1.41)">1.41</a></p>
-	<p><a href="javascript:resize(2)">2</a></p>
-	<p><a href="javascript:resize(3)">3</a></p>
+	<p><a href="javascript:resize(1)">1 x</a></p>
+	<p><a href="javascript:resize(1.41)">1.41 x</a></p>
+	<p><a href="javascript:resize(2)">2 x</a></p>
+	<p><a href="javascript:resize(3)">3 x</a></p>
  </div>
 
  <!-- the buttons -->
@@ -269,7 +300,7 @@
 	<div class="button">
 		<a
 			class="icon"
-			href="javascript:sizeMenu()"
+			href="javascript:toggleSizeMenu()"
 			>
 
 			<img
