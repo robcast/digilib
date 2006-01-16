@@ -566,7 +566,9 @@ function mirror(dir) {
 function gotoPage(gopage, keep) {
 	// goto given page nr (+/-: relative)
 	var oldpn = parseInt(getParameter("pn"));
+	// try setParameter with relative value
 	setParameter("pn", gopage, true);
+	// check the result
 	var pn = parseInt(getParameter("pn"));
 	if (pn < 1) {
 		alert("No such page! (Page number too low)");
