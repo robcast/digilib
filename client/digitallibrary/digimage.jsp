@@ -54,7 +54,8 @@ pageContext.setAttribute("docBean", docBean, pageContext.REQUEST_SCOPE);
   newParameter('ddpix', '', 8);
   newParameter('ddpiy', '', 8);
   newParameter('mk', '', 16);
-  newParameter('pt', '<%= dlRequest.getAsString("pt") %>', 32);
+  newParameter('pt', '0', 32);
+  setParameter('pt', '<%= dlRequest.getAsString("pt") %>');
   document.id='digilib';
   dl_param_init();
 </script>

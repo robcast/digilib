@@ -22,38 +22,13 @@ if (document.layers && !document.getElementById) {
 /**
  * overriding 'page' in navigation.js
  */
-function page(page, details) {
+function page(page, keep) {
 
-    var pn = parseInt(parent.mainFrame.getParameter("pn"));
-    var pt = parseInt(parent.mainFrame.getParameter("pt"));
-
-    if ( details == null ) {
-      details = 35; // fn, pn, ws, mo + pt
-    }
-  
-    if ( page && page.indexOf('-') == 0 ) {
-      if ( pn > 1 ) {
-        page = Math.max(pn - parseInt(page.slice(1)), 1);
-        parent.mainFrame.setParameter("pn", page);
-        display(details);
-      } else {
-        alert("You are already on the first page!");
-      }
-    } else if ( page && page.indexOf('+') == 0 ) {
-      if ( pn < pt ) {
-        page = Math.min(pn + parseInt(page.slice(1)), pt);
-        parent.mainFrame.setParameter("pn", page);
-        display(details);
-      } else {
-        alert("You are already on the last page!");
-      }
-    } else if ( page && page == parseInt(page) ) {
-      if ( (page > 0) && (page <= pt) ) {
-        parent.mainFrame.setParameter("pn", page);
-        display(details);
-      } else {
-        alert ("Illegal page number (should be 1 - " + pt + ")!");
-      }
+    parent.mainFrame.gotoPage(page, keep);
+    if (parent.pageFrame.show) {
+      parent.pageFrame.show();
+    } else {
+      parent.pageFrame.location.reload();
     }
 }
 
@@ -107,7 +82,7 @@ var showHelp = false;
 
 // variable to tell if while changing to another page it should keep the area
 // change in the menuitem its original mark
-var keepArea = 35; // fn, pn, ws, mo + pt
+var keepArea = false;
 
 
 // variable that store the texts for contexthelp
@@ -158,7 +133,7 @@ helpText[11] = "'?'-button|In its menu you are able change options like the visi
 
 <div id="menu3" class="menu" style="top:430; left:1; width:84; height:33; clip:rect(0,84,33,0)"></div>
  <div id="menu31" class="item3" style="top:432"><center><a href="#" class="text" onclick="changeMark(31); hideMenu(); changeHelp(); return false;" onmouseover="overItem(31)" onmouseout="awayItem(31)"><img id="mark31" src="buttons/nomark.gif" border="0">Contexthelp</a></center></div>
- <div id="menu32" class="item3" style="top:447"><center><a href="#" class="text" onclick="changeMark(32); keepArea = (keepArea == 47) ? 35 : 47; return false;" onmouseover="overItem(32)" onmouseout="awayItem(32)"><img id="mark32" src="buttons/nomark.gif" border="0">Keep&nbsp;area</a></center></div>
+ <div id="menu32" class="item3" style="top:447"><center><a href="#" class="text" onclick="changeMark(32); keepArea = (keepArea) ? false : true; return false;" onmouseover="overItem(32)" onmouseout="awayItem(32)"><img id="mark32" src="buttons/nomark.gif" border="0">Keep&nbsp;area</a></center></div>
 <!-- <div id="logo" class="logo">
  	<a href="http://digilib.berlios.de" target="_blank" >
  		<img border="0" src="../img/digilib-logo-text1.png" title="digilib"></img>
