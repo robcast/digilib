@@ -1,4 +1,4 @@
-/* Copyright (C) 2003,2004 IT-Group MPIWG, WTWG Uni Bern and others
+/* Copyright (C) 2003-2006 IT-Group MPIWG, WTWG Uni Bern and others
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,13 +17,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
 Authors: 
   Christian Luginbuehl, 01.05.2003 (first version)
   DW 24.03.2004 (Changed for digiLib in Zope)
-  Robert Casties, 2.11.2004
+  Robert Casties, 2.11.2004 (almost complete rewrite)
   Martin Raspe, 12.12.2005 (changes for Digilib NG)
 
 */
 
 // was: function base_init() {
-baseLibVersion = "2.008";
+baseLibVersion = "2.010";
 browserType = getBrowserType();
 
 sliders = {};
@@ -32,8 +32,7 @@ activeSlider = null;
 function getInt(n) {
     // returns always an integer
     n = parseInt(n);
-    if (isNaN(n)) return 0;
-    return n;
+    return (isNaN(n)) ? 0 : n;
 }
 
 function defined(x) {
@@ -118,11 +117,19 @@ Position.prototype.toString = function() {
 Position.prototype.equals = function(other) {
 	return (this.x == other.x
         &&  this.y == other.y)
-    }
+}
 /*
  * Rectangle class
  */
 function Rectangle(x, y, w, h) {
+	if (typeof x == "object") {
+		// assume x and y are Position
+		this.x = x.x;
+		this.y = x.y;
+		this.width = y.x - x.x;
+		this.height = y.y - x.y;
+		return this;
+	}
     this.x = parseFloat(x);
     this.y = parseFloat(y);
     this.width = parseFloat(w);
@@ -141,19 +148,20 @@ Rectangle.prototype.getPosition = function() {
     return new Position(this.x, this.y);
 }
 Rectangle.prototype.getPt1 = Rectangle.prototype.getPosition;
+// returns the upper left corner position
 
 Rectangle.prototype.getPt2 = function() {
-    // returns the second point position of this Rectangle
+    // returns the lower right corner position of this Rectangle
     return new Position(this.x + this.width, this.y + this.height);
 }
 Rectangle.prototype.setPt1 = function(pos) {
-    // sets the first point to position pos
+    // sets the upper left corner to position pos
     this.x = pos.x;
     this.y = pos.y;
     return this;
 }
 Rectangle.prototype.setPt2 = function(pos) {
-    // sets the second point to position pos
+    // sets the lower right corner to position pos
     this.width = pos.x - this.x;
     this.height = pos.y - this.y;
     return this;
@@ -201,11 +209,8 @@ Rectangle.prototype.containsPosition = function(pos) {
 }
 Rectangle.prototype.containsRect = function(rect) {
     // returns if rectangle "rect" is contained in this rectangle
-    return (this.containsPosition(rect) 
-        && this.containsPosition(new Position(
-        rect.x + rect.width,
-        rect.y + rect.height
-        )));
+    return (this.containsPosition(rect.getPt1()) 
+        && this.containsPosition(rect.getPt2()));
 }
 Rectangle.prototype.stayInside = function(rect) {
     // changes this rectangle's x/y values so it stays inside of rectangle rect
@@ -220,9 +225,9 @@ Rectangle.prototype.stayInside = function(rect) {
 }
 Rectangle.prototype.clipTo = function(rect) {
     // clips this rectangle so it stays inside of rectangle rect
-    p1 = rect.getPt1();
-    p2 = rect.getPt2();
-    this2 = this.getPt2();
+    var p1 = rect.getPt1();
+    var p2 = rect.getPt2();
+    var this2 = this.getPt2();
     this.setPt1(new Position(Math.max(this.x, p1.x), Math.max(this.y, p1.y)));
     this.setPt2(new Position(Math.min(this2.x, p2.x), Math.min(this2.y, p2.y)));
     return this;
@@ -307,6 +312,11 @@ Transform.prototype.invtransform = function(pos) {
     var det = this.m00 * this.m11 - this.m01 * this.m10;
     var x = (this.m11 * pos.x - this.m01 * pos.y - this.m11 * this.m02 + this.m01 * this.m12) / det;
     var y = (- this.m10 * pos.x + this.m00 * pos.y + this.m10 * this.m02 - this.m00 * this.m12) / det;
+    if (pos.width) {
+        var width = (this.m11 * pos.width - this.m01 * pos.height - this.m11 * this.m02 + this.m01 * this.m12) / det;
+    		var height = (- this.m10 * pos.width + this.m00 * pos.height + this.m10 * this.m02 - this.m00 * this.m12) / det;
+    		return new Rectangle(x, y, width, height);
+    	}
     return new Position(x, y);
 }
 function getRotation(angle, pos) {
@@ -339,55 +349,56 @@ function getScale(size) {
 }
 
 
-/* **********************************************
- *     parameter routines
- * ******************************************** */
-dlParams = new Object();
+/*
+ *  parameters class
+ */
 
-function newParameter(name, defaultValue, detail) {
+function Parameters() {
+	this.params = new Object();
+	return this;
+}
+Parameters.prototype.define = function(name, defaultValue, detail) {
     // create a new parameter with a name and a default value
-    if (!defined(dlParams[name])) dlParams[name] = new Object(); // no error condition
-        //alert("Fatal: An object with name '" + name + "' already exists - cannot recreate!");
-        //return false;
-    dlParams[name].defaultValue = defaultValue;
-    dlParams[name].hasValue = false;
-    dlParams[name].value = defaultValue;
-    dlParams[name].detail = detail;
-    return dlParams[name];
-    }
-
-function resetParameter(name) {
+    if (!this.params[name]) this.params[name] = new Object();
+    this.params[name].defaultValue = defaultValue;
+    this.params[name].hasValue = false;
+    this.params[name].value = defaultValue;
+    this.params[name].detail = detail;
+    return this.params[name];
+}
+Parameters.prototype.reset = function(name) {
     // resets the given parameter to its default value
-    if (!defined(dlParams[name])) {
-    alert("Could not reset non-existing parameter '" + name + "'");
-    return false;
-        }
-    dlParams[name].hasValue = false;
-    dlParams[name].value = defaultValue;
-    return dlParams[name];
+    if (!this.params[name]) {
+    		alert("Could not reset non-existing parameter '" + name + "'");
+		return false;
     }
-
-function deleteParameter(name) {
-    // create a new parameter with a name and a default value
-    if (!defined(dlParams[name])) return false;
-    delete dlParams[name];
+    this.params[name].hasValue = false;
+    this.params[name].value = this.params[name].defaultValue;
+    return this.params[name];
+}
+Parameters.prototype.resetAll = function() {
+    // resets all parameters to their default values
+    for (var p in this.params) {
+    		this.reset(p);
+    	}
     return true;
-    }
-
-function getParameter(name) {
+}
+Parameters.prototype.remove = function(name) {
+    if (!defined(this.params[name])) return false;
+    delete this.params[name];
+    return true;
+}
+Parameters.prototype.get = function(name) {
     // returns the named parameter value or its default value
-    if (!defined(dlParams[name])) return null;
-    if (dlParams[name].hasValue)
-        return dlParams[name].value;
-    else
-            return dlParams[name].defaultValue;
-    }
-
-function setParameter(name, value, relative) {
-    // sets parameter value (relative values with +/- unless literal)
-    if (!defined(dlParams[name])) return null;
-    var p = dlParams[name];
+    if (!defined(this.params[name])) return null;
+    return this.params[name].hasValue ? this.params[name].value : this.params[name].defaultValue;
+}
+Parameters.prototype.set = function(name, value, relative) {
+    // sets parameter value (relative values with +/- if relative=true)
+    if (!defined(this.params[name])) return null;
+    var p = this.params[name];
     if (relative && value.slice) {
+    		// value is a string -- check if it starts with +/-
         var sign = value.slice(0, 1);
         if (sign == '+') {
             p.value = parseFloat(p.value) + parseFloat(value.slice(1));
@@ -396,47 +407,114 @@ function setParameter(name, value, relative) {
         } else {
             p.value = value;
         }
-    } else p.value = value;
+    } else {
+    		p.value = value;
+    	}
     p.hasValue = true;
     return p.value;
-    }
-
-function hasParameter(name) {
+}
+Parameters.prototype.isSet = function(name) {
     // returns if the parameter's value has been set
-    if (!defined(dlParams[name])) return null;
-    return dlParams[name].hasValue;
-    }
-
-function getAllParameters(detail) {
+    if (!defined(this.params[name])) return null;
+    return this.params[name].hasValue;
+}
+Parameters.prototype.getAll = function(detail) {
     // returns a string of all parameters in query format
-    if (! detail) {
-        detail = 255;
-    }
-    var params = new Array();
-    for (param in dlParams) {
-        if (((dlParams[param].detail & detail) > 0)
-        && (dlParams[param].hasValue)) {
-            var val = getParameter(param);
+    if (!detail) detail = 255;
+    var pa = new Array();
+    for (p in this.params) {
+        if (((this.params[p].detail & detail) > 0)
+        && (this.params[p].hasValue)) {
+            var val = this.params[p].value;
             if (val != "") {
-                params.push(param + "=" + val);
+                pa.push(p + "=" + val);
             }
         }
     }
-    return params.join("&");
+    return pa.join("&");
 }
-
-function parseParameters(query) {
+Parameters.prototype.parse = function(query) {
     // gets parameter values from query format string
-    var params = query.split("&");
-    for (var i = 0; i < params.length; i++) {
-        var keyval = params[i].split("=");
+    var pa = query.split("&");
+    for (var i = 0; i < pa.length; i++) {
+        var keyval = pa[i].split("=");
         if (keyval.length == 2) {
-            setParameter(keyval[0], keyval[1]);
+            this.set(keyval[0], keyval[1]);
         }
     }
 }
 
-getQueryString = getAllParameters;
+/*
+ * Flags class
+ *
+ * Flags are (hash-) collections of unique strings.
+ */
+function Flags() {
+    this.flags = new Object();
+    return this;
+}
+Flags.prototype.define = function(name, detail) {
+    // create a new flag with a name and detail level
+    this.flags[name] = new Object();
+    this.flags[name].set = false;
+    this.flags[name].detail = detail;
+    return this.flags[name];
+}
+Flags.prototype.get = function(name) {
+	return (this.flags[name]) ? this.flags[name].set : false;
+}
+Flags.prototype.set = function(name, value) {
+	if (!defined(value)) value = true;
+	if (!this.flags[name]) this.flags[name] = new Object;
+	this.flags[name].set = value;
+}
+Flags.prototype.reset = function(name) {
+	if (!this.flags[name]) this.flags[name] = new Object;
+	this.flags[name].set = false;
+}
+Flags.prototype.toggle = function(name) {
+	if (!this.flags[name]) this.flags[name] = new Object;
+	this.flags[name].set = !this.flags[name].set;
+}
+Flags.prototype.resetAll = function() {
+	for (var f in this.flags) {
+		this.flags[f].set = false;
+	}
+}
+Flags.prototype.parse = function(query, sep) {
+    // sets the flags from the string query
+    if (!sep) sep = ",";
+    var fa = query.split(sep);
+    for (var i = 0; i < fa.length ; i++) {
+        var f = fa[i];
+        if (f != "") {
+            this.set(f);
+        }
+    }
+}
+Flags.prototype.getAll = function(detail, sep) {
+    // returns a string of all flags in query format
+    if (!detail) detail = 255;
+    if (!sep) sep = ",";
+    var fa = new Array();
+    for (f in this.flags) {
+        if (this.flags[f].set) {
+        		// if the flag has a detail level it must match
+        		// otherwise we assume detail=128
+        		if (this.flags[f].detail) {
+	        		if ((this.flags[f].detail & detail) > 0) {
+	        			fa.push(f);
+	        		}
+	        	} else {
+        		  	if ((detail & 128) > 0) {
+        				fa.push(f);
+        			}
+        		}
+        	}
+    }
+    return fa.join(sep);
+}
+
 
 /* **********************************************
  *     HTML/DOM routines

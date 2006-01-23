@@ -7,16 +7,14 @@
 	// initialize DocumentBean instance in JSP init
 	public void jspInit() {
 	    try {
-		// set servlet init-parameter
-		docBean.setConfig(getServletConfig());
+            // set servlet init-parameter
+		    docBean.setConfig(getServletConfig());
 	    } catch (javax.servlet.ServletException e) {
-		System.out.println(e);
+		    System.out.println(e);
 	    }
 	}
 	// -- end of JSP init -------------
-%>
-
-<%
+%><%
 	// -- JSP request -------------
 	
 	// parsing the query
@@ -29,10 +27,8 @@
 	dlRequest.setValue("pt", docBean.getNumPages());
 	// store objects for jsp:include
 	pageContext.setAttribute("docBean", docBean, pageContext.REQUEST_SCOPE);
-%>
 
-<html>
-
+%><html>
 <head>
 	<title>Digital Document Library NG</title>
 	
@@ -46,7 +42,7 @@
 
 	<script language="JavaScript">
 
-	var jspVersion = "diginew.jsp 1.013";
+	var jspVersion = "diginew.jsp 1.020";
 	var cookie = new Cookie();
 	// alert(strObject(cookie));
 
@@ -113,38 +109,51 @@
 	function reflectImageStatus() {
 		if (hasFlag("hmir")) setOnImage("hmir", "mirror-horizontal-on.png");
 		if (hasFlag("vmir")) setOnImage("vmir", "mirror-vertical-on.png");
-		if (hasParameter("brgt"))
-			setOnImage("brgt", "brightness-on.png", getParameter("brgt"));
-		if (hasParameter("cont"))
-			setOnImage("cont", "contrast-on.png", getParameter("cont"));
-		if (hasParameter("rot"))
-			setOnImage("rot", "rotate-on.png", getParameter("rot"));
-		if (hasParameter("rgb"))
-			setOnImage("rgb", "rgb-on.png", getParameter("rgb"));
+		if (dlParams.isSet("brgt"))
+			setOnImage("brgt", "brightness-on.png", dlParams.get("brgt"));
+		if (dlParams.isSet("cont"))
+			setOnImage("cont", "contrast-on.png", dlParams.get("cont"));
+		if (dlParams.isSet("rot"))
+			setOnImage("rot", "rotate-on.png", dlParams.get("rot"));
+		if (dlParams.isSet("rgb"))
+			setOnImage("rgb", "rgb-on.png", dlParams.get("rgb"));
 		}
+    
 	function onImgLoad() {
 		// make sure the image is loaded so we know its size
-		if (defined(scalerImg.complete) && !scalerImg.complete && !browserType.isN4 ) {
+    	    if (defined(scalerImg.complete) && !scalerImg.complete && !browserType.isN4 ) {
 			setTimeout("onImgLoad()", 100);
 			waited += 100;
 			return;
-			}
+		}
+        dlTrafo = parseTrafo(scalerImg);
+        // display marks
+        renderMarks();
 		reflectImageStatus();	// adjust icons
 		showOptions(isOptionDivVisible);
 		showBirdDiv(isBirdDivVisible);
 		showArrows();		// show arrow overlays for zoom navigation
 		moveCenter(true);	// click to move point to center
 		// new Slider("sizes", 1, 5, 2);
+        focus();
 		}
 
 	// initialize digilib; called by body.onload
 	function onBodyLoad() {
 		document.id = 'digilib';
-		initParameters();	// load default values and detail
-		dl_param_init();	// parse parameter values
-		loadScalerImage();	// ruft auch dl_init() / initScaler auf
+        scalerDiv = getElement("scaler", true);
+        scalerImg = getElement("pic", true);
+        if (scalerImg == null && scalerDiv) {
+            // in N4 pic is in the scaler layer
+            scalerImg = scalerDiv.document.images[0];
+        }
+        if ((!scalerImg)||(!scalerDiv)) {
+            alert("Sorry, digilib doesn't work here!");
+            return false;
+        }
+		setScalerImage();	// ruft auch dl_init() / initScaler auf
 		loadBirdImage();	// lädt das Bird's Eye Bild
-		onImgLoad();
+		//onImgLoad();
 		}
 
 	function onBodyUnload() {
@@ -153,6 +162,7 @@
 		}
 	// base_init();		// now done on loading baselib.js
 
+    initParameters(); // load default values and detail
 	</script>
 </head>
 
