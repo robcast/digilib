@@ -6,6 +6,7 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://inkscape.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="210mm"
@@ -14,23 +15,9 @@
    sodipodi:version="0.32"
    inkscape:version="0.43"
    sodipodi:docbase="/Volumes/Schlachteplatte/Users/casties/Documents/prog/java/workspace/client/digitallibrary/greyskin"
-   sodipodi:docname="mark-bg2.svg"
-   inkscape:export-filename="/Volumes/Schlachteplatte/Users/casties/Documents/prog/java/workspace/client/digitallibrary/greyskin/mark-bg-16.png"
-   inkscape:export-xdpi="4.654716"
-   inkscape:export-ydpi="4.654716">
+   sodipodi:docname="mark-bg.svg">
   <defs
      id="defs4">
-    <linearGradient
-       id="linearGradient3076">
-      <stop
-         id="stop3078"
-         offset="0"
-         style="stop-color:#651f0f;stop-opacity:1;" />
-      <stop
-         id="stop3080"
-         offset="1"
-         style="stop-color:#e46648;stop-opacity:1;" />
-    </linearGradient>
     <linearGradient
        id="linearGradient3963">
       <stop
@@ -64,6 +51,17 @@
          offset="1"
          id="stop1314" />
     </linearGradient>
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3963"
+       id="radialGradient3969"
+       cx="163.01688"
+       cy="332.7197"
+       fx="163.01688"
+       fy="332.7197"
+       r="140.5"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(-5.18401e-7,0.572953,-0.63396,-5.735991e-7,373.7883,110.3898)" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -72,13 +70,13 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="3.8757764"
-     inkscape:cx="151.17398"
-     inkscape:cy="906.44231"
+     inkscape:zoom="1.3283607"
+     inkscape:cx="250.79029"
+     inkscape:cy="803.50858"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
-     inkscape:window-width="879"
-     inkscape:window-height="711"
+     inkscape:window-width="830"
+     inkscape:window-height="540"
      inkscape:window-x="88"
      inkscape:window-y="88"
      showguides="true"
@@ -108,12 +106,21 @@
      inkscape:groupmode="layer"
      id="layer1">
     <path
-       style="fill:#f12d00;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:4;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
-       d="M 86.073825,86.856886 C 110.16054,119.9571 127.91147,196.14366 127.15806,199.22781 C 127.15806,199.22781 120.92452,223.45391 120.92452,245.85115 C 120.92452,323.13115 174.1575,389.5 251.4375,389.5 C 328.7175,389.5 391.43749,326.78 391.4375,249.5 C 391.4375,172.22 326.99551,114.81273 249.97796,121.17633 L 207.73033,124.66706 C 202.54179,125.44165 124.88498,107.49727 86.073825,86.856886 z "
+       style="fill:#da4521;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 181.33867,127.68485 L 110.152,108.20218 L 135.62933,169.64752 L 181.33867,127.68485 z "
+       id="path1319" />
+    <path
+       sodipodi:type="arc"
+       style="fill:url(#radialGradient3969);fill-opacity:1.0;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        id="path3088"
-       sodipodi:nodetypes="ccsssscc"
-       inkscape:export-filename="/Volumes/Schlachteplatte/Users/casties/Documents/prog/java/workspace/client/digitallibrary/greyskin/mark-bg.png"
-       inkscape:export-xdpi="6.9820738"
-       inkscape:export-ydpi="6.9820738" />
+       sodipodi:cx="222.85715"
+       sodipodi:cy="238.07646"
+       sodipodi:rx="140"
+       sodipodi:ry="140"
+       d="M 362.85715 238.07646 A 140 140 0 1 1  82.857147,238.07646 A 140 140 0 1 1  362.85715 238.07646 z"
+       transform="translate(28.57143,11.42857)"
+       inkscape:export-filename="C:\Digilib\greyskin\mark-bg-16.png"
+       inkscape:export-xdpi="5.1245551"
+       inkscape:export-ydpi="5.1245551" />
   </g>
 </svg>
