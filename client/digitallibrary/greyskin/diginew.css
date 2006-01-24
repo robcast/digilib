@@ -87,20 +87,21 @@ div.mark {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	font-size:11px;
-	height: 16px;
+	height: 15px;
 	width: 16px;
+	padding-top: 1px;
 	text-align: center;
 	z-index: 10;
 	/* filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='mark-bg-16.png') */
 	}
 		
 div#scaler {
-	position: absolute;
+/*	position: absolute;
 	left: 8px;
 	top: 8px;
 	bottom: 30px;
 	right: 44px;
-	overflow: auto;
+*/	/* overflow: auto; */
 	}
 
 div#overlay {
@@ -114,17 +115,21 @@ div#overlay {
 	}
 
 div#buttons {
-	position: absolute;
+	position: fixed;
 	right: 5px;
 	top: 5px;
-	background-color: #E0E0E0;
-	}
+	padding: 3px;
+/*	background-color: #E0E0E0; */
+    background-color: lightgrey;	 
+  }
 
 div#dloptions {
-	position: absolute;
+	position: fixed;
 	right: 5px;
 	top: 5px;
-	background-color: #E0E0E0;
+	padding: 3px;
+/*	background-color: #E0E0E0; */
+    background-color: lightgrey;
 	visibility: hidden;
 	}
 

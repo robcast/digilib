@@ -26,27 +26,6 @@ Authors:
 digilibVersion = "Digilib NG";
 dllibVersion = "2.040";
 
-MAX_AREA = new Rectangle(0.0, 0.0, 1.0, 1.0);
-
-// default inset (for scalerImg relativ to scalerDiv 
-INSET = 40; // because of scrollbars of main window and scaler [Firefox bug?]
-
-// mouse drag area that counts as one click 
-MIN_AREA_SIZE = 3 * 3 + 1;
-
-// standard zoom factor
-ZOOMFACTOR = Math.sqrt(2);
-
-// bird's eye view dimensions
-BIRD_MAXX = 100;
-BIRD_MAXY = 100;
-
-// with of arrow bars
-ARROW_WIDTH = 32;
-
-// with of calibration bar
-CALIBRATION_WIDTH = 64;
-
 function identify() {
         // used for identifying a digilib instance
         // Relato uses that function - lugi
@@ -128,7 +107,7 @@ function DLParameters() {
 	this.PARAM_SIZE = 32;
 	this.PARAM_MARK = 64;
 	this.PARAM_PAGES = 128;
-	this.PARAM_ALL = 255;
+	this.PARAM_CLIENT = 256;
 	/* request parameters */
 	with (this) {
 	// file
@@ -157,6 +136,8 @@ function DLParameters() {
 	    define('pt', '0', PARAM_PAGES);
 	// size
 	    define('ws', '1.0', PARAM_SIZE);
+	    // client side options
+	    define('clop', '', PARAM_CLIENT);
 	}
 	return this;
 }
@@ -164,10 +145,12 @@ DLParameters.prototype = new Parameters();
 // move the inherited getAll because we need it later
 DLParameters.prototype._getAll = Parameters.prototype.getAll;
 DLParameters.prototype.getAll = function(paDetail, moDetail, digilib) {
-	// get Flags and Marks first
 	if (!digilib) digilib = dl;
+	// get Flags and Marks first
     var mo = digilib.flags.getAll(moDetail);
     this.set("mo", mo);
+    var clop = digilib.opts.getAll();
+    this.set("clop", clop);
     var mk = digilib.marks.getAll();
     this.set("mk", mk);
     var ret = this._getAll(paDetail);
@@ -206,10 +189,30 @@ DLFlags.prototype = new Flags();
  */
 function Digilib() {
     if (!baseLibVersion) alert("ERROR: baselib.js not loaded!");
+    /* constants */
+    this.MAX_AREA = new Rectangle(0.0, 0.0, 1.0, 1.0);
+	// default inset (for scalerImg relativ to scalerDiv 
+	this.INSET = 40; // because of scrollbars of main window and scaler [Firefox bug?]
+	// mouse drag area that counts as one click 
+	this.MIN_AREA_SIZE = 3 * 3 + 1;
+	// standard zoom factor
+	this.ZOOMFACTOR = Math.sqrt(2);
+	// bird's eye view dimensions
+	this.BIRD_MAXX = 100;
+	this.BIRD_MAXY = 100;
+	// witdh of arrow bars
+	this.ARROW_WIDTH = 32;
+	// width of calibration bar
+	this.CALIBRATION_WIDTH = 64;
+    /* variables */
+    this.fitOnlyWidth = false;
+    this.fitOnlyHeight = false;
     this.trafo = null;
 	// page elements
     this.scalerDiv = null;
     this.scalerImg = null;
+    this.buttons1Div = null;
+    this.buttons2Div = null;
     /* parse parameters */
     // put the query parameters (sans "?") in the parameters array
     this.params = new DLParameters();
@@ -220,44 +223,9 @@ function Digilib() {
     this.marks.parse(this.params.get("mk"));
     this.flags = new DLFlags();
     this.flags.parse(this.params.get("mo"));
-
+	this.opts = new Flags();
+	this.opts.parse(this.params.get("clop"));
 	return this;
-}
-Digilib.prototype.parseArea = function() {
-    // returns area Rectangle from current parameters
-    return new Rectangle(
-        this.params.get("wx"),
-        this.params.get("wy"),
-        this.params.get("ww"),
-        this.params.get("wh"));
-}
-Digilib.prototype.setParamFromArea = function(rect) {
-    // sets digilib wx etc. from rect
-    this.params.set("wx", cropFloat(rect.x));
-    this.params.set("wy", cropFloat(rect.y));
-    this.params.set("ww", cropFloat(rect.width));
-    this.params.set("wh", cropFloat(rect.height));
-    return true;
-}
-Digilib.prototype.parseTrafo = function(elem) {
-    // returns Transform from current dlArea and picsize
-    var picsize = getElementRect(elem);
-    var trafo = new Transform();
-    // subtract area offset and size
-    trafo.concat(getTranslation(new Position(-this.area.x, -this.area.y)));
-    trafo.concat(getScale(new Size(1/this.area.width, 1/this.area.height)));
-    // scale to screen size
-    trafo.concat(getScale(picsize));
-    trafo.concat(getTranslation(picsize));
-    // FIX ME: Robert, kannst Du mal nachsehen, ob das folgende tut, was es soll?
-    // oder gibt es dafuer neuen Code? -- ROC: Bisher funktioniert es nicht!
-    // rotate
-    //var rot = getRotation(- dl.params.get("rot"), new Position(0.5*picsize.width, 0.5*picsize.height));
-    //trafo.concat(rot);
-    // mirror
-    //if (hasFlag("hmir")) trafo.m00 = - trafo.m00; // ??
-    //if (hasFlag("vmir")) trafo.m11 = - trafo.m11; // ??
-    return trafo;
 }
 Digilib.prototype.setDLParam = function(e, s, relative) {
     // sets parameter based on HTML event
@@ -278,39 +246,102 @@ Digilib.prototype.setDLParam = function(e, s, relative) {
     }
     return true;
 }
+Digilib.prototype.parseArea = function() {
+    // returns area Rectangle from current parameters
+    return new Rectangle(
+        this.params.get("wx"),
+        this.params.get("wy"),
+        this.params.get("ww"),
+        this.params.get("wh"));
+}
+Digilib.prototype.setParamFromArea = function(rect) {
+    // sets digilib wx etc. from rect
+    this.params.set("wx", cropFloat(rect.x));
+    this.params.set("wy", cropFloat(rect.y));
+    this.params.set("ww", cropFloat(rect.width));
+    this.params.set("wh", cropFloat(rect.height));
+    return true;
+}
+
+Digilib.prototype.parseTrafo = function(elem) {
+    // returns Transform from current dlArea and picsize
+    var picsize = getElementRect(elem);
+    var trafo = new Transform();
+    // subtract area offset and size
+    trafo.concat(getTranslation(new Position(-this.area.x, -this.area.y)));
+    trafo.concat(getScale(new Size(1/this.area.width, 1/this.area.height)));
+    // scale to screen size
+    trafo.concat(getScale(picsize));
+    trafo.concat(getTranslation(picsize));
+    // FIX ME: Robert, kannst Du mal nachsehen, ob das folgende tut, was es soll?
+    // oder gibt es dafuer neuen Code? -- ROC: Bisher funktioniert es nicht!
+    // rotate
+    //var rot = getRotation(- dl.params.get("rot"), new Position(0.5*picsize.width, 0.5*picsize.height));
+    //trafo.concat(rot);
+    // mirror
+    //if (hasFlag("hmir")) trafo.m00 = - trafo.m00; // ??
+    //if (hasFlag("vmir")) trafo.m11 = - trafo.m11; // ??
+    return trafo;
+}
+
 Digilib.prototype.onLoad = function() {
 	// initialize digilib; called by body.onload
 	this.scalerDiv = getElement("scaler", true);
     this.scalerImg = getElement("pic", true);
-    if (this.scalerImg == null && this.scalerDiv) {
+    this.buttons1Div = getElement("buttons", true);
+    this.buttons2Div = getElement("options", true);
+    /* if (this.scalerImg == null && this.scalerDiv) {
         // in N4 pic is in the scaler layer
         this.scalerImg = this.scalerDiv.document.images[0];
-    }
+    } */
     if ((!this.scalerImg)||(!this.scalerDiv)) {
         alert("Sorry, digilib doesn't work here!");
         return false;
     }
+    // fix fixed menus
+    var ms1 = getElementSize(this.buttons1Div);
+    var ms2 = getElementSize(this.buttons2Div);
+    var maxh = (ms1.height > ms2.height) ? ms1.height : ms2.height;
+    var wins = getWinSize();
+    if ((wins.height <= maxh) || browserType.isIE) {
+    		// unlock fixed menus to absolute
+    		this.buttons1Div.style.position = "absolute";
+    		this.buttons2Div.style.position = "absolute";
+    	}
 	this.setScalerImage();	// setzt auch onImgLoad
-	this.loadBirdImage();	// l?dt das Bird's Eye Bild
+	this.setBirdImage();	// l?dt das Bird's Eye Bild
 }
-Digilib.prototype.setScalerImage = function(detail) {
+
+Digilib.prototype.setScalerImage = function() {
 	// set the scaler image source (needs the browser size)
-    var picsize = bestPicSize(this.scalerDiv, 50);
+    var picsize = bestPicSize(this.scalerDiv);
+    var menusize = getElementSize(this.buttons1Div);
+    // subtract menu width
+    picsize.width -= menusize.width;
+    picsize.height -= this.INSET;
+    // compose Scaler URL
     var src = "../servlet/Scaler?" 
-        + this.params.getAll(this.params.PARAM_ALL & ~(this.params.PARAM_MARK | this.params.PARAM_PAGES))
-        + "&dw=" + picsize.width
-        + "&dh=" + picsize.height;
+        + this.params.getAll(this.params.PARAM_ALL & ~(this.params.PARAM_MARK | this.params.PARAM_PAGES));
+    if (this.opts.get('fitwidth')) {
+		src += "&dw=" + picsize.width;
+    } else if (this.opts.get('fitheight')) {
+		src += "&dh=" + picsize.height;
+	} else {
+		src += "&dw=" + picsize.width + "&dh=" + picsize.height;
+	}
     // debug(src);
     this.scalerImg.onload = onImgLoad;
     this.scalerImg.src = src;
 
 	var digilib = this;
 	// this is a local callback function that can use the current scope
+	
     function onImgLoad() {
 		// make sure the image is loaded so we know its size
-	    if (defined(digilib.scalerImg.complete) && !digilib.scalerImg.complete && !digilib.browserType.isN4 ) {
-			alert("ERROR: the image seems not to be complete!?");
-		}
+		/* this test seems to have problems sometimes :-(
+	    if (defined(digilib.scalerImg.complete) && !digilib.scalerImg.complete) {
+			alert("ERROR: the image seems not to be complete in onImgLoad!?");
+		} */
 	    digilib.trafo = digilib.parseTrafo(digilib.scalerImg);
 	    // display marks
 	    digilib.renderMarks();
@@ -321,19 +352,10 @@ Digilib.prototype.setScalerImage = function(detail) {
 	    focus();
 	}
 }
-Digilib.prototype.display = function(detail, moDetail) {
-    // redisplay the page
-    var queryString = this.params.getAll(detail, moDetail);
-	location.href
-        = location.protocol + "//"
-    	    + location.host
-    	    + location.pathname
-        + "?" + queryString;
-}
 Digilib.prototype.renderMarks = function() {
     // make sure the image is loaded so we know its size
     if (!this.trafo) {
-    		alert("ERROR: cannot render marks!");
+    		alert("ERROR: trafo missing, cannot render marks!");
     		return;
     	}
     // debugProps(dlArea, "dlArea");
@@ -342,10 +364,10 @@ Digilib.prototype.renderMarks = function() {
 	    	var mark = this.marks[i];
 	    	// debugProps(mark, "mark");
 	    	if (this.area.containsPosition(mark)) {
-	        	var mpos = this.trafo.transform(mark); 
+	        	var mpos = this.trafo.transform(mark);
 	        	// debugProps(mark, "mpos");
-	       	// suboptimal to place -5 pixels and not half size of mark-image
 	       	// better not hide the marked spot (MR)
+	       	// suboptimal to place -5 pixels and not half size of mark-image
 	       	// mpos.x = mpos.x -5;
 	       	// mpos.y = mpos.y -5;
 	       	moveElement(div, mpos);
@@ -357,11 +379,21 @@ Digilib.prototype.renderMarks = function() {
     }
 }
 
+Digilib.prototype.display = function(detail, moDetail) {
+    // redisplay the page
+    var queryString = this.params.getAll(detail, moDetail);
+	location.href
+        = location.protocol + "//"
+    	    + location.host
+    	    + location.pathname
+        + "?" + queryString;
+}
+
 /* **********************************************
  *     interactive digilib functions
  * ******************************************** */
 
-Digilib.prototype.setMark = function(reload) {
+Digilib.prototype.setMark = function() {
     // add a mark where clicked
     window.focus();
     this.moveCenter(false);
@@ -375,25 +407,15 @@ Digilib.prototype.setMark = function(reload) {
     // event handler adding a new mark
         unregisterEvent("mousedown", digilib.scalerDiv, markEvent);
         digilib.marks.addEvent(evt);
-        if ( defined(reload) && !reload ) {
-            // don't redisplay
-            digilib.renderMarks();
-            return stopEvent(evt);
-        }
         digilib.display();
         return stopEvent(evt);
     }
     
 }
 
-Digilib.prototype.removeMark = function(reload) {
+Digilib.prototype.removeMark = function() {
     // remove the last mark
     this.marks.pop();
-    if (defined(reload)&&(!reload)) {
-        // don't redisplay
-        this.renderMarks();
-        return;
-    }
     this.display();
 }
 
@@ -416,7 +438,7 @@ Digilib.prototype.zoomArea = function() {
 	// our own reference to this for the local function
 	var digilib = this;
 	
-// mousedown handler: start moving
+	// mousedown handler: start moving
     function zoomStart(evt) {
         pt1 = evtPosition(evt);
         unregisterEvent("mousedown", overlay, zoomStart);
@@ -430,13 +452,13 @@ Digilib.prototype.zoomArea = function() {
         return stopEvent(evt);
     }
     
-// mouseup handler: end moving
+	// mouseup handler: end moving
     function zoomEnd(evt) {
         pt2 = evtPosition(evt);
         // assume a click if the area is too small (up to 3 x 3 pixel)
         var clickRect = new Rectangle(pt1, pt2);
         clickRect.normalize();
-        if (clickRect.getArea() <= MIN_AREA_SIZE) return stopEvent(evt); 
+        if (clickRect.getArea() <= this.MIN_AREA_SIZE) return stopEvent(evt); 
         // hide zoom div
         showElement(zoomdiv, false);
         showElement(overlay, false);
@@ -453,7 +475,7 @@ Digilib.prototype.zoomArea = function() {
         return stopEvent(evt);
     }
     
-// mouse move handler
+	// mouse move handler
     function zoomMove(evt) {
         pt2 = evtPosition(evt);
         var rect = new Rectangle(pt1, pt2);
@@ -472,18 +494,26 @@ Digilib.prototype.zoomBy = function(factor) {
     newarea.height /= factor;
     newarea.x -= 0.5 * (newarea.width - this.area.width);
     newarea.y -= 0.5 * (newarea.height - this.area.height);
-    newarea = MAX_AREA.fit(newarea);
+    newarea = this.MAX_AREA.fit(newarea);
     this.setParamFromArea(newarea);
     this.display();
 }
 
 
-Digilib.prototype.zoomFullpage = function() {
+Digilib.prototype.zoomFullpage = function(fit) {
     // zooms out to show the whole image
     this.params.set("wx", 0.0);
     this.params.set("wy", 0.0);
     this.params.set("ww", 1.0);
     this.params.set("wh", 1.0);
+    if (fit == "width") {
+    		this.opts.set('fitwidth');
+    	} else if (fit == "height") {
+    		this.opts.set('fitheight');
+    	} else {
+    		this.opts.reset('fitwidth');
+    		this.opts.reset('fitheight');
+	}
     this.display();
 }
 
@@ -504,7 +534,7 @@ Digilib.prototype.moveCenter = function(on) {
 	    var pt = digilib.trafo.invtransform(evtPosition(evt));
 	    var newarea = digilib.area.copy();
 		newarea.setCenter(pt);
-	    newarea.stayInside(MAX_AREA);
+	    newarea.stayInside(this.MAX_AREA);
 	    // newarea = dlMaxArea.fit(newarea);
 	    // debugProps(newarea, "newarea");
 	    // debugProps(dlArea, "dlArea");
@@ -519,7 +549,7 @@ Digilib.prototype.moveCenter = function(on) {
 Digilib.prototype.isFullArea = function(area) {
     if (!area) area = this.area;
     // pixel by pixel is not always full area
-    return (area.width == 1.0) && (area.height == 1.0) && ! hasFlag("clip");
+    return (area.width == 1.0) && (area.height == 1.0) && ! this.flags.get("clip");
 }
 
 Digilib.prototype.canMove = function(movx, movy) {
@@ -539,7 +569,7 @@ Digilib.prototype.moveBy = function(movx, movy) {
     var newarea = this.area.copy();
     newarea.x += parseFloat(movx)*this.area.width;
     newarea.y += parseFloat(movy)*this.area.height;
-    newarea = MAX_AREA.fit(newarea);
+    newarea = this.MAX_AREA.fit(newarea);
     // set parameters
     this.setParamFromArea(newarea);
     this.display();
@@ -554,7 +584,8 @@ Digilib.prototype.getRef = function(baseUrl) {
         + location.pathname;
     var hyperlinkRef = baseUrl;
     with (this.params) {
-    		var ps = getAll(PARAM_ALL & ~(PARAM_DPI | PARAM_PAGES)); // all without ddpi, pt
+    		// all without ddpi, pt
+    		var ps = getAll(PARAM_ALL & ~(PARAM_DPI | PARAM_PAGES | PARAM_CLIENT)); 
     	}
     if (ps.length > 0) hyperlinkRef += "?" + ps;
     return hyperlinkRef;
@@ -674,12 +705,12 @@ Digilib.prototype.showAboutDiv = function(show) {
     showElement(elem, show);
     }
     
-Digilib.prototype.loadBirdImage = function() {
+Digilib.prototype.setBirdImage = function() {
     var img = getElement("bird-image");
     var src = "../servlet/Scaler?" 
         + this.params.getAll(this.params.PARAM_FILE)
-        + "&dw=" + BIRD_MAXX 
-        + "&dh=" + BIRD_MAXY;
+        + "&dw=" + this.BIRD_MAXX 
+        + "&dh=" + this.BIRD_MAXY;
     img.src = src;
 }
     
@@ -773,24 +804,21 @@ Digilib.prototype.showArrow = function(name, rect, show) {
 	
 Digilib.prototype.showArrows = function() {
     // show the 4 arrow bars on top of scaler img according to current dlArea
-    if (defined(this.scalerImg.complete) && !this.scalerImg.complete && !browserType.isN4 ) {
-        alert("ERROR: scaler img not complete in showArrows!");
-        }
 	var r = getElementRect(this.scalerImg);
     this.showArrow('up',
-        new Rectangle(r.x, r.y, r.width, ARROW_WIDTH), 
+        new Rectangle(r.x, r.y, r.width, this.ARROW_WIDTH), 
         this.canMove(0, -1)
         );
     this.showArrow('down',
-        new Rectangle(r.x, r.y + r.height - ARROW_WIDTH, r.width, ARROW_WIDTH),
+        new Rectangle(r.x, r.y + r.height - this.ARROW_WIDTH, r.width, this.ARROW_WIDTH),
         this.canMove(0, 1)
         );
     this.showArrow('left',
-        new Rectangle(r.x, r.y, ARROW_WIDTH, r.height),
+        new Rectangle(r.x, r.y, this.ARROW_WIDTH, r.height),
         this.canMove(-1, 0)
         );
     this.showArrow('right',
-        new Rectangle(r.x + r.width - ARROW_WIDTH, r.y, ARROW_WIDTH, r.height),
+        new Rectangle(r.x + r.width - this.ARROW_WIDTH, r.y, this.ARROW_WIDTH, r.height),
         this.canMove(1, 0)
         );
 	}
@@ -884,14 +912,7 @@ Digilib.prototype.pixelByPixel = function(on) {
 }
 
 Digilib.prototype.pageWidth = function() {
-    var divSize = getElementSize(this.scalerDiv);
-    divSize.width -= INSET; // allow for scrollbars [Firefox bug?]
-    var imgSize = getElementSize(this.scalerImg);
-    if (imgSize.width < divSize.width) {
-        this.params.set("ws", cropFloat(divSize.width / imgSize.width));
-        this.display(this.params.PARAM_ALL & ~this.params.PARAM_DIM); // no zoom
-        };
-    // TODO: how to calculate correct width if zoom is on? (plus size?)
+	this.zoomFullpage('width');
 }
 
 Digilib.prototype.resize = function(factor) {

@@ -355,6 +355,7 @@ function getScale(size) {
 
 function Parameters() {
 	this.params = new Object();
+	this.PARAM_ALL = 65535;
 	return this;
 }
 Parameters.prototype.define = function(name, defaultValue, detail) {
@@ -420,7 +421,7 @@ Parameters.prototype.isSet = function(name) {
 }
 Parameters.prototype.getAll = function(detail) {
     // returns a string of all parameters in query format
-    if (!detail) detail = 255;
+    if (!detail) detail = this.PARAM_ALL;
     var pa = new Array();
     for (p in this.params) {
         if (((this.params[p].detail & detail) > 0)
