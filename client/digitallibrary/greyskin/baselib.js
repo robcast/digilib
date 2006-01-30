@@ -333,6 +333,7 @@ function getRotation(angle, pos) {
     }
     return traf;
 }
+Transform.prototype.getRotation = getRotation;
 function getTranslation(pos) {
     // returns a Transform that is a translation by [pos.x, pos,y]
     var traf = new Transform();
@@ -340,6 +341,7 @@ function getTranslation(pos) {
     traf.m12 = pos.y;
     return traf;
 }
+Transform.prototype.getTranslation = getTranslation;
 function getScale(size) {
     // returns a Transform that is a scale by [size.width, size.height]
     var traf = new Transform();
@@ -347,6 +349,7 @@ function getScale(size) {
     traf.m11 = size.height;
     return traf;
 }
+Transform.prototype.getScale = getScale;
 
 
 /*

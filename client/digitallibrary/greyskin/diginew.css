@@ -155,6 +155,7 @@ div#bird-area {
 div#calibration {
 	background: url('blue.png');
 	position: absolute;
+	width: 400px;
 	padding: 0px;
 	visibility: hidden;
 	z-index: 1000;
@@ -177,7 +178,7 @@ p.cm {
 	font-weight: bold;
 	}
 
-div#sizes {
+div.popup-menu {
 	position: absolute;
 	padding: 0px 2px;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
@@ -188,16 +189,16 @@ div#sizes {
 	z-index: 1005;
 	}
 
-div#sizes p {
+div.popup-menu p {
 	margin: 2px 0px;
 	padding: 0px;
 	}
 
-div#sizes p:hover {
+div.popup-menu p:hover {
 	background-color: #ffa060;
 	}
 
-div#sizes a {
+div.popup-menu a {
 	text-decoration: none;
 	color: black;
 	}
