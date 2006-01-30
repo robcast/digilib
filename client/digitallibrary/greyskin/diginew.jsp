@@ -50,6 +50,7 @@
 	var isBirdDivVisible = cookie.getbool("isBirdDivVisible");
 	var isAboutDivVisible = false;
 	var isSizeMenuVisible = false;
+    var isScaleMenuVisible = false;
 	var isOriginalSize = false;
 	var isPixelByPixel = false;
 	var dlTarget = window.name;
@@ -76,24 +77,13 @@
 
 	function toggleSizeMenu() {
 		isSizeMenuVisible = !isSizeMenuVisible;
-		showSizeMenu(isSizeMenuVisible);
+		showMenu("size-menu", "size", isSizeMenuVisible);
 		}
 
-	function toggleOriginalSize(on) {
-		isOriginalSize = (arguments.length == 1)
-			? on
-			: !isOriginalSize;
-		togglePixelByPixel(false);
-		originalSize(isOriginalSize);
-		}
-
-	function togglePixelByPixel(on) {
-		isPixelByPixel = (arguments.length == 1)
-			? on
-			: !isPixelByPixel;
-		toggleOriginalSize(false);
-		pixelByPixel(isPixelByPixel);
-		}
+    function toggleScaleMenu() {
+        isScaleMenuVisible = !isScaleMenuVisible;
+        showMenu("scale-menu", "scale", isScaleMenuVisible);
+        }
 
 	function setOnImage(id, src, value) {
 	// replace img src and display "on" status
@@ -137,26 +127,22 @@
 </head>
 
 <body onload="onBodyLoad();" onunload="onBodyUnload();">
-
  <!-- slot for the scaled image -->
  <div id="scaler">
 	<img id="pic"></img>
  </div>
 
  <!-- sensitive overlay for zoom area etc -->
- <div id="overlay">
- </div>
+ <div id="overlay"></div>
  
  <!-- the zoom area selection rectangle -->
- <div id="zoom">
- </div>
+ <div id="zoom"></div>
  
  <!-- the bird's eye overview image -->
  <img id="bird-image"></img>
 
  <!-- the bird's eye select area -->
- <div id="bird-area">
- </div>
+ <div id="bird-area"></div>
 
  <!-- the arrows -->
  <a class="arrow" id="up"    href="javascript:moveBy(0, -0.5)"></a>
@@ -179,21 +165,27 @@
  <!-- the calibration div -->
  <div id="calibration">
  	<div>
-	<p>0 px</p>
- 	<p class="cm">10 cm</p>
+ 	<p class="cm">measure the length of this scale on your screen</p>
 	</div>
  </div>
 
  <!-- the size menu -->
- <div id="sizes">
-	<p><a href="javascript:resize(1)">1 x</a></p>
-	<p><a href="javascript:resize(1.41)">1.41 x</a></p>
-	<p><a href="javascript:resize(2)">2 x</a></p>
-	<p><a href="javascript:resize(3)">3 x</a></p>
+ <div id="size-menu" class="popup-menu">
+	<p><a href="javascript:setSize(1)">1 x</a></p>
+	<p><a href="javascript:setSize(1.41)">1.41 x</a></p>
+	<p><a href="javascript:setSize(2)">2 x</a></p>
+	<p><a href="javascript:setSize(3)">3 x</a></p>
 	<div id="sizes-bar">
 		<div id="sizes-slider"></div>
 	</div>
 	<p id="sizes-value"></p>
+ </div>
+
+<!-- the scale menu -->
+ <div id="scale-menu" class="popup-menu">
+  <p><a href="javascript:setScale('fit')">fit to screen</a></p>
+  <p><a href="javascript:setScale('pixel')">pixel by pixel</a></p>
+  <p><a href="javascript:setScale('original')">original size</a></p>
  </div>
 
  <!-- the buttons -->
@@ -279,7 +271,7 @@
 	<div class="button">
 		<a
 			class="icon"
-			href="javascript:pageWidth()"
+			href="javascript:zoomFullpage('width')"
 			>
 
 			<img
@@ -289,21 +281,6 @@
 				src="pagewidth.png"
 			>
 		</a> 
-	</div>
-	
-	<div class="button">
-		<a
-			class="icon"
-			href="javascript:toggleSizeMenu()"
-			>
-
-			<img
-				class="png"
-				id="size"
-				title="resize page"
-				src="size.png"
-			>
-		</a>
 	</div>
 	
 	<div class="button">
@@ -544,6 +521,21 @@
 		</a>
 	</div>
 	
+  <div class="button">
+    <a
+      class="icon"
+      href="javascript:toggleSizeMenu()"
+      >
+
+      <img
+        class="png"
+        id="size"
+        title="set page size"
+        src="size.png"
+      >
+    </a>
+  </div>
+
 	<div class="button">
 		<a
 			class="icon"
@@ -558,47 +550,17 @@
 			>
 		</a>
 	</div>
-
+  
 	<div class="button">
 		<a
 			class="icon"
-			href="javascript:calibrate('y')"
+			href="javascript:toggleScaleMenu()"
 			>
 
 			<img
 				class="png"
-				id="calibration-y"
-				title="calibrate screen y-ratio"
-				src="calibration-y.png"
-			>
-		</a>
-	</div>
-
-	<div class="button">
-		<a
-			class="icon"
-			href="javascript:pixelByPixel()"
-			>
-
-			<img
-				class="png"
-				id="pixel-by-pixel"
-				title="view image pixel by pixel"
-				src="pixel-by-pixel.png"
-			>
-		</a>
-	</div>
-
-	<div class="button">
-		<a
-			class="icon"
-			href="javascript:originalSize()"
-			>
-
-			<img
-				class="png"
-				id="original-size"
-				title="view image in original size"
+				id="scale"
+				title="change image scale"
 				src="original-size.png"
 			>
 		</a>

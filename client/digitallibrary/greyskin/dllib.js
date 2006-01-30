@@ -214,8 +214,8 @@ function Digilib() {
     this.buttons1Div = null;
     this.buttons2Div = null;
     /* parse parameters */
-    // put the query parameters (sans "?") in the parameters array
     this.params = new DLParameters();
+    // put the query parameters (sans "?") in the parameters array
     this.params.parse(location.search.slice(1));
     // treat special parameters
     this.area = this.parseArea();
@@ -268,11 +268,11 @@ Digilib.prototype.parseTrafo = function(elem) {
     var picsize = getElementRect(elem);
     var trafo = new Transform();
     // subtract area offset and size
-    trafo.concat(getTranslation(new Position(-this.area.x, -this.area.y)));
-    trafo.concat(getScale(new Size(1/this.area.width, 1/this.area.height)));
+    trafo.concat(trafo.getTranslation(new Position(-this.area.x, -this.area.y)));
+    trafo.concat(trafo.getScale(new Size(1/this.area.width, 1/this.area.height)));
     // scale to screen size
-    trafo.concat(getScale(picsize));
-    trafo.concat(getTranslation(picsize));
+    trafo.concat(trafo.getScale(picsize));
+    trafo.concat(trafo.getTranslation(picsize));
     // FIX ME: Robert, kannst Du mal nachsehen, ob das folgende tut, was es soll?
     // oder gibt es dafuer neuen Code? -- ROC: Bisher funktioniert es nicht!
     // rotate
@@ -347,7 +347,7 @@ Digilib.prototype.setScalerImage = function() {
 	    digilib.renderMarks();
 		digilib.showBirdDiv(isBirdDivVisible);
 		digilib.showArrows();		// show arrow overlays for zoom navigation
-		digilib.moveCenter(true);	// click to move point to center
+		//digilib.moveCenter(true);	// click to move point to center
 		// new Slider("sizes", 1, 5, 2);
 	    focus();
 	}
@@ -548,8 +548,7 @@ Digilib.prototype.moveCenter = function(on) {
 
 Digilib.prototype.isFullArea = function(area) {
     if (!area) area = this.area;
-    // pixel by pixel is not always full area
-    return (area.width == 1.0) && (area.height == 1.0) && ! this.flags.get("clip");
+    return (area.width == 1.0) && (area.height == 1.0);
 }
 
 Digilib.prototype.canMove = function(movx, movy) {
@@ -731,14 +730,22 @@ Digilib.prototype.showBirdDiv = function(show) {
     };
     var birdImgRect = getElementRect(birdImg);
     var area = this.area;
-    // scale area down to img size
-    var birdAreaRect = new Rectangle(
-        // what about borders ??
-        birdImgRect.x + birdImgRect.width  * area.x,
-        birdImgRect.y + birdImgRect.height * area.y,
-        birdImgRect.width  * area.width,
-        birdImgRect.height * area.height
-        );
+    if (this.flags.get("osize") || this.flags.get("clip")) {
+    		// in original-size and pixel-by-pixel mode the area size is not valid
+    		var birdAreaRect = new Rectangle(
+        		birdImgRect.x + birdImgRect.width  * area.x,
+        		birdImgRect.y + birdImgRect.height * area.y, 
+        		5, 
+        		5);
+    } else {
+    		// scale area down to img size
+    		var birdAreaRect = new Rectangle(
+        		// what about borders ??
+        		birdImgRect.x + birdImgRect.width  * area.x,
+	        birdImgRect.y + birdImgRect.height * area.y,
+	        birdImgRect.width  * area.width,
+	        birdImgRect.height * area.height);
+	}
     moveElement(birdArea, birdAreaRect);
     showElement(birdArea, true);
     moveElement(overlay, birdImgRect);
@@ -823,110 +830,79 @@ Digilib.prototype.showArrows = function() {
         );
 	}
 
-Digilib.prototype.calibrate = function(direction) {
-    // calibrate screen
-    var startPos; // anchor for dragging
-    var newRect;  // position after drag
+Digilib.prototype.calibrate = function() {
+    // calibrate screen resolution
     var calDiv = getElement("calibration");
-    var pixel = calDiv.getElementsByTagName("p")[0];
-    var overlay = getElement("overlay");
-    moveElement(overlay, getWinRect());
-    showElement(overlay, true);
-    var xDir = direction == "x";
+    var calRect = getElementRect(calDiv);
     moveCenter(false);
-    registerEvent("mousedown", document, calibrationStartDrag);
+    var wins = getWinSize();
+    calRect.setCenter(new Position(wins.width / 2, wins.height / 2));
+    moveElement(calDiv, calRect);
+    showElement(calDiv, true);
+    var cm = window.prompt("The length of the scale on your screen in centimeter:");
+    if (cm) {
+    		var dpi = calRect.width / parseFloat(cm) * 2.54;
+    		this.params.set("ddpi", cropFloat(dpi));
+    	}
+    	showElement(calDiv, false);
+}
 
-    function calibrationStartDrag(evt) {
-    // mousedown handler: start drag
-        startPos = evtPosition(evt);
-        unregisterEvent("mousedown", document, calibrationStartDrag);
-        registerEvent("mousemove", document, calibrationMove);
-        registerEvent("mouseup",   document, calibrationEndDrag);
-        newRect = new Rectangle(
-            startPos.x,
-            startPos.y,
-            xDir ? 1 : CALIBRATION_WIDTH,
-            xDir ? CALIBRATION_WIDTH : 1
-            );
-        moveElement(calDiv, newRect);
-        showElement(calDiv, true);
-        // debugProps(getElementRect(bird))
-        return stopEvent(evt);
-        }
 
-    function calibrationMove(evt) {
-    // mousemove handler: drag
-        var pos = evtPosition(evt);
-        var dx = (xDir) ? pos.x - startPos.x : CALIBRATION_WIDTH;
-        var dy = (xDir) ? CALIBRATION_WIDTH : pos.y - startPos.y;
-        // move birdArea div, keeping size
-        newRect = new Rectangle(startPos.x, startPos.y, dx, dy);
-        pixel.innerHTML = (xDir ? dx : dy) + " px";
-        moveElement(calDiv, newRect);
-        showElement(calDiv, true);
-        return stopEvent(evt);
-        }
-
-    function calibrationEndDrag(evt) {
-    // mouseup handler: calibrate
-        unregisterEvent("mousemove", document, calibrationMove);
-        unregisterEvent("mouseup",   document, calibrationEndDrag);
-        if (xDir) {
-            var val = newRect.width * 0.254; // ratio dm/inch
-            cookie.add("ddpi", val);
-            cookie.add("ddpix", val);
-        } else {
-            var val = newRect.height * 0.254;
-            cookie.add("ddpiy", val);
-            }
-        showElement(calDiv, false);
-        showElement(overlay, false);
-        moveCenter(true);
-        return stopEvent(evt);
-        }
-    }
-
-Digilib.prototype.originalSize = function(on) {
-    // set osize flag, needs calibrated screen
-    if (on) {
-        var dpi = cookie.get("ddpi");
-        if (dpi == null) {
-            alert("Screen has not yet been calibrated - using default value of 72 dpi");
-            dpi = 72;
-            }
-        this.params.set("ddpi", dpi);
+Digilib.prototype.setScale = function(scale) {
+	// sets original-size, pixel-by-pixel or fit-to-screen scale type
+	if (scale == "pixel") {
+		// pixel by pixel
+		this.flags.set("clip");
+		this.flags.reset("osize");
+		this.flags.reset("fit");
+	} else if (scale == "original") {
+		// original size -- needs calibrated screen
+        if (!this.params.isSet("ddpi")) {
+        		var dpi = cookie.get("ddpi");
+	        if (dpi == null) {
+    		        alert("Your screen has not yet been calibrated - using default value of 72 dpi");
+            		dpi = 72;
+            	}
+        		this.params.set("ddpi", dpi);
+        	}
         this.flags.set("osize");
-        this.display();
+        this.flags.reset("clip");
+		this.flags.reset("fit");
     } else {
+    		// scale to screen size (default)
+    		this.flags.reset("clip");
     		this.flags.reset("osize");
     	}
+    this.display();
 }
 
-Digilib.prototype.pixelByPixel = function(on) {
-    // sets clip flag
-    if (on) { 
-        this.flags.set("clip");
-        this.display();
-        }
-    else this.flags.reset("clip");
-}
+Digilib.prototype.getScale = function() {
+	// returns scale type
+	if (this.flags.get("clip")) {
+		return "pixel";
+	} else if (this.flags.get("osize")) {
+		return "original";
+	} else {
+		return "fit";
+	}
+}	
 
 Digilib.prototype.pageWidth = function() {
 	this.zoomFullpage('width');
 }
 
-Digilib.prototype.resize = function(factor) {
+Digilib.prototype.setSize = function(factor) {
     this.params.set("ws", factor);
-    this.showSizeMenu(false);
     this.display();
 }
 
-Digilib.prototype.showSizeMenu = function(show) {
-    var menu = getElement("sizes");
+Digilib.prototype.showMenu = function(menuId, buttonId, show) {
+    var menu = getElement(menuId);
     if (show) {
-        // align menu with button
-        var buttonPos = getElementPosition(getElement("size"));
-        moveElement(menu, new Position(buttonPos.x - 50, buttonPos.y));
+        // align right side of menu with button
+        var buttonPos = getElementPosition(getElement(buttonId));
+        var menusize = getElementSize(menu);
+        moveElement(menu, new Position(buttonPos.x - menusize.width - 3, buttonPos.y));
         }
     showElement(menu, show);
 }
@@ -965,7 +941,7 @@ function setMark(reload) {dl.setMark(reload)};
 function removeMark(reload) {dl.removeMark(reload)};
 function zoomArea() {dl.zoomArea()};
 function zoomBy(factor) {dl.zoomBy(factor)};
-function zoomFullpage() {dl.zoomFullpage()};
+function zoomFullpage(a) {dl.zoomFullpage(a)};
 function moveCenter(on) {dl.moveCenter(on)};
 function isFullArea(area) {dl.isFullArea(area)};
 function canMove(movx, movy) {dl.canMove(movx, movy)};
@@ -983,11 +959,13 @@ function showOptions(show) {dl.showOptions(show)};
 function showBirdDiv(show) {dl.showBirdDiv(show)};
 function showAboutDiv(show) {dl.showAboutDiv(show)};
 function calibrate(direction) {dl.calibrate(direction)};
+function setScale(a) {dl.setScale(a)};
+function getScale(a) {dl.getScale(a)};
 function originalSize(on) {dl.originalSize(on)};
 function pixelByPixel(on) {dl.pixelByPixel(on)};
 function pageWidth() {dl.pageWidth()};
-function resize(factor) {dl.resize(factor)};
-function showSizeMenu(show) {dl.showSizeMenu(show)};
+function setSize(factor) {dl.setSize(factor)};
+function showMenu(a,b,c) {dl.showMenu(a,b,c)};
 
 
 // :tabSize=4:indentSize=4:noTabs=true:
