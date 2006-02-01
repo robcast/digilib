@@ -25,17 +25,19 @@ digilib.io.DocuDirectory dir = dirCache.getDirectory(dlRequest.getFilePath());
 
 %><!-- Automatically generated XML snippet with directory info -->
 <dir><% if (dir != null) { %>
+  <size><%= dir.size() %></size>
   <name><%= dir.getDirName() %></name>
   <fsname><%= dir.getDir().getPath() %></fsname> 
 <%
     int l = dir.size();
     for (int i = 0; i < l; i++) {
-    		digilib.io.DocuDirent f = dir.get(i); 
+    		digilib.io.DocuDirent f = dir.get(i);
+        String fn = (f != null) ? f.getName() : "null";
 %>  <file>
     <index><%= i+1 %></index>
-    <name><%= (f != null) ? f.getBasename() : "null" %></name>
-    <fsname><%= (f != null) ? f.getName() : "null" %></fsname>
-  </file> 
+    <name><%= digilib.io.FileOps.basename(fn) %></name>
+    <fsname><%= fn %></fsname>
+  </file>
 <%
     } // for 
   } // if dir 
