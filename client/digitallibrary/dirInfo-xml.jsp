@@ -29,9 +29,10 @@ digilib.io.DocuDirectory dir = dirCache.getDirectory(dlRequest.getFilePath());
   <name><%= dir.getDirName() %></name>
   <fsname><%= dir.getDir().getPath() %></fsname> 
 <%
-    int l = dir.size();
-    for (int i = 0; i < l; i++) {
-    		digilib.io.DocuDirent f = dir.get(i);
+    if (!dlRequest.hasOption("mo", "dir")) {
+      int l = dir.size();
+      for (int i = 0; i < l; i++) {
+        digilib.io.DocuDirent f = dir.get(i);
         String fn = (f != null) ? f.getName() : "null";
 %>  <file>
     <index><%= i+1 %></index>
@@ -39,6 +40,7 @@ digilib.io.DocuDirectory dir = dirCache.getDirectory(dlRequest.getFilePath());
     <fsname><%= fn %></fsname>
   </file>
 <%
-    } // for 
+      } // for 
+    } // if not dironly
   } // if dir 
 %></dir>
