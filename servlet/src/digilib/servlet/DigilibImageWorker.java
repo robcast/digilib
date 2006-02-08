@@ -21,6 +21,7 @@
 
 package digilib.servlet;
 
+import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 
@@ -149,6 +150,7 @@ public class DigilibImageWorker extends DigilibWorker {
 		// set interpolation quality
 		docuImage.setQuality(scaleQual);
 
+        Rectangle loadRect = outerUserImgArea.getBounds();
 		// use subimage loading if possible
 		if (docuImage.isSubimageSupported()) {
 			logger.debug("Subimage: scale " + scaleXY + " = " + (1 / scaleXY));
@@ -169,7 +171,7 @@ public class DigilibImageWorker extends DigilibWorker {
 						+ scaleXY);
 			}
 
-			docuImage.loadSubimage(fileToLoad, outerUserImgArea.getBounds(),
+			docuImage.loadSubimage(fileToLoad, loadRect,
 					(int) subsamp);
 
 			logger.debug("SUBSAMP: " + subsamp + " -> " + docuImage.getWidth()
@@ -180,8 +182,8 @@ public class DigilibImageWorker extends DigilibWorker {
 		} else {
 			// else load and crop the whole file
 			docuImage.loadImage(fileToLoad);
-			docuImage.crop((int) areaXoff, (int) areaYoff, (int) areaWidth,
-					(int) areaHeight);
+			docuImage.crop((int) loadRect.getX(), (int) loadRect.getY(), (int) loadRect.getWidth(),
+					(int) loadRect.getHeight());
 
 			docuImage.scale(scaleXY, scaleXY);
 		}
