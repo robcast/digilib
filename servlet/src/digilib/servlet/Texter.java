@@ -45,7 +45,7 @@ public class Texter extends HttpServlet {
 	private static final long serialVersionUID = -8539178734033662322L;
 
 	/** Servlet version */
-	public static String tlVersion = "0.1b1";
+	public static String tlVersion = "0.1b2";
 
 	/** DigilibConfiguration instance */
 	DigilibConfiguration dlConfig = null;
@@ -135,15 +135,15 @@ public class Texter extends HttpServlet {
 		processRequest(request, response);
 	}
 
-protected void processRequest(HttpServletRequest request,
+	protected void processRequest(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-
+		
 		/*
 		 * request parameters
 		 */
 		DigilibRequest dlRequest = (DigilibRequest) request.getAttribute("digilib.servlet.request");
 		try {
-
+			
 			/*
 			 * find the file to load/send
 			 */
@@ -154,11 +154,12 @@ protected void processRequest(HttpServletRequest request,
 				f = getTextFile(dlRequest, "");
 				if (f != null) {
 					ServletOps.sendFile(f.getFile(),	null, response);
-				} else {	
-					ServletOps.htmlMessage("No Text-File!", response);
+				} else {
+					response.sendError(HttpServletResponse.SC_NOT_FOUND, "Text-File not found!");
+					//ServletOps.htmlMessage("No Text-File!", response);
 				}
 			}
-
+			
 		} catch (FileOpException e) {
 			logger.error("ERROR: File IO Error: ", e);
 			try {
@@ -166,8 +167,8 @@ protected void processRequest(HttpServletRequest request,
 			} catch (FileOpException ex) {
 			} // so we don't get a loop
 		}
-	}	
-
+	}
+	
 
 	/**
 	 * Looks for a file in the given subDirectory.
