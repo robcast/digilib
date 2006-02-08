@@ -1,5 +1,5 @@
 /*
- * ImageFile.java -- digilib image file class. 
+ * ImageSize.java -- digilib image size class. 
  * Digital Image Library servlet components 
  * Copyright (C) 2003 Robert Casties (robcast@mail.berlios.de) 
  * This program is free software; you can redistribute it and/or modify it under the
