@@ -35,13 +35,14 @@ public class FileOps {
 	/**
 	 * Array of file extensions and corresponding mime-types.
 	 */
-	private static String[][] ft = { { "jpg", "image/jpeg" },
+	private static final String[][] ft = { { "jpg", "image/jpeg" },
 			{ "jpeg", "image/jpeg" }, { "jp2", "image/jp2" },
 			{ "png", "image/png" }, { "gif", "image/gif" },
 			{ "tif", "image/tiff" }, { "tiff", "image/tiff" },
+                        { "fpx", "image/fpx" },
 			{ "txt", "text/plain" }, { "html", "text/html" },
 			{ "htm", "text/html" }, { "xml", "text/xml" },
-			{ "svg", "image/svg+xml" } };
+			{ "svg", "image/svg+xml" }, { "meta", "text/xml" } };
 
 	public static Map fileTypes;
 
