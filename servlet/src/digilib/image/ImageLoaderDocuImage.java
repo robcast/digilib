@@ -19,6 +19,8 @@
 
 package digilib.image;
 
+import digilib.io.FileOps;
+import digilib.io.ImageFileset;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
@@ -46,6 +48,7 @@ import javax.imageio.stream.ImageOutputStream;
 
 import digilib.io.FileOpException;
 import digilib.io.ImageFile;
+import org.marcoschmidt.image.ImageInfo;
 
 /** Implementation of DocuImage using the ImageLoader API of Java 1.4 and Java2D. */
 public class ImageLoaderDocuImage extends DocuImageImpl {
@@ -112,10 +115,61 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		return w;
 	}
 
-	/* load image file */
+    /** Check image size and type and store in ImageFile f */
+    public boolean identify(ImageFile imgf) throws IOException {
+        // try parent method first
+        if (super.identify(imgf)) {
+            return true;
+        }
+        // fileset to store the information
+        ImageFileset imgfs = imgf.getParent();
+        File f = imgf.getFile();
+        if (f == null) {
+            throw new IOException("File not found!");
+        }
+        logger.debug("identifying (ImageIO) " + f);
+        /*
+         * try ImageReader
+         */
+        RandomAccessFile raf = new RandomAccessFile(f, "r");
+        ImageInputStream istream = ImageIO.createImageInputStream(raf);
+        Iterator readers = ImageIO.getImageReaders(istream);
+        if (readers.hasNext()) {
+            ImageReader reader = (ImageReader) readers.next();
+            /* are there more readers? */
+            logger.debug("ImageIO: this reader: " + reader.getClass());
+            while (readers.hasNext()) {
+                logger.debug("ImageIO: next reader: "
+                        + readers.next().getClass());
+            }
+            try {
+                reader.setInput(istream);
+                ImageSize d = new ImageSize(reader.getWidth(0), reader.getHeight(0));
+                imgf.setSize(d);
+                //String t = reader.getFormatName();
+                String t = FileOps.mimeForFile(f);
+                imgf.setMimetype(t);
+                //logger.debug("  format:"+t);
+                if (imgfs != null) {
+                    imgfs.setAspect(d);
+                }
+                return true;
+            } finally {
+                // dispose the reader to free resources
+                reader.dispose();
+                raf.close();
+            }
+        }
+        return false;
+//        } catch (Exception e) {
+//            throw new FileOpException("ERROR: unknown image file format!");
+//        }
+    }
+
+    
+    /* load image file */
 	public void loadImage(ImageFile f) throws FileOpException {
 		logger.debug("loadImage " + f.getFile());
-		// System.gc();
 		try {
 			img = ImageIO.read(f.getFile());
 			if (img == null) {

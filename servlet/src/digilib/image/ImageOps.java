@@ -48,91 +48,21 @@ public class ImageOps {
     
     private static Logger logger = Logger.getLogger(ImageOps.class);
     
-    public static int TYPE_AUTO = 0;
-    public static int TYPE_JPEG = 1;
-    public static int TYPE_PNG = 2;
+    public static final int TYPE_AUTO = 0;
+    public static final int TYPE_JPEG = 1;
+    public static final int TYPE_PNG = 2;
     
+    private static DocuImage docuImg;
     
-    /** Check image size and type and store in ImageFile f */
     public static boolean checkFile(ImageFile imgf) throws IOException {
-        // fileset to store the information
-        ImageFileset imgfs = imgf.getParent();
-        File f = imgf.getFile();
-        if (f == null) {
-            throw new IOException("File not found!");
-        }
-        RandomAccessFile raf = new RandomAccessFile(f, "r");
-        // set up ImageInfo object
-        ImageInfo iif = new ImageInfo();
-        iif.setInput(raf);
-        iif.setCollectComments(false);
-        iif.setDetermineImageNumber(false);
-        logger.debug("identifying (ImageInfo) " + f);
-        // try with ImageInfo first
-        if (iif.check()) {
-            ImageSize d = new ImageSize(iif.getWidth(), iif.getHeight());
-            imgf.setSize(d);
-            imgf.setMimetype(iif.getMimeType());
-            //logger.debug("  format:"+iif.getFormatName());
-            if (imgfs != null) {
-                imgfs.setAspect(d);
-            }
-            raf.close();
-            logger.debug("image size: " + imgf.getSize());
-            return true;
-        }
-        
-        logger.debug("identifying (ImageIO) " + f);
-        /*
-         * else try ImageReader
-         */
-        ImageInputStream istream = ImageIO.createImageInputStream(raf);
-        Iterator readers = ImageIO.getImageReaders(istream);
-        if (readers.hasNext()) {
-            ImageReader reader = (ImageReader) readers.next();
-            /* are there more readers? */
-            logger.debug("ImageIO: this reader: " + reader.getClass());
-            while (readers.hasNext()) {
-                logger.debug("ImageIO: next reader: "
-                        + readers.next().getClass());
-            }
-            try {
-                reader.setInput(istream);
-                ImageSize d = new ImageSize(reader.getWidth(0), reader.getHeight(0));
-                imgf.setSize(d);
-                //String t = reader.getFormatName();
-                String t = FileOps.mimeForFile(f);
-                imgf.setMimetype(t);
-                //logger.debug("  format:"+t);
-                if (imgfs != null) {
-                    imgfs.setAspect(d);
-                }
-                return true;
-            } finally {
-                // dispose the reader to free resources
-                reader.dispose();
-                raf.close();
-            }
-        }
-        /*
-         * else try JAI
-         */
-        logger.debug("identifying (JAI) " + f);
-        try {
-            RenderedOp img = JAI.create("fileload", f.getAbsolutePath());
-            ImageSize d = new ImageSize(img.getWidth(), img.getHeight());
-            imgf.setSize(d);
-            String t = FileOps.mimeForFile(f);
-            imgf.setMimetype(t);
-            //logger.debug("  format:"+t);
-            if (imgfs != null) {
-                imgfs.setAspect(d);
-            }
-            logger.debug("image size: " + imgf.getSize());
-            return true;
-        } catch (Exception e) {
-            throw new FileOpException("ERROR: unknown image file format!");
-        }
+        return docuImg.identify(imgf);
     }
     
+    public static void setDocuImage(DocuImage di) {
+        docuImg = di;
+    }
+    
+    public static DocuImage getDocuImage() {
+        return docuImg;
+    }
 }

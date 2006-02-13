@@ -20,6 +20,7 @@
  */
 package digilib.servlet;
 
+import digilib.image.ImageOps;
 import java.io.File;
 
 import javax.servlet.ServletConfig;
@@ -49,7 +50,7 @@ public class Initialiser extends HttpServlet {
 	private static final long serialVersionUID = -5126621114382549343L;
 
 	/** servlet version */
-	public static final String iniVersion = "0.1b1";
+	public static final String iniVersion = "0.1b2";
 
 	/** gengeral logger for this class */
 	private static Logger logger = Logger.getLogger("digilib.init");
@@ -133,6 +134,7 @@ public class Initialiser extends HttpServlet {
 						.getAsString("docuimage-class"));
 				dlConfig.setDocuImageClass(cl);
 				dlConfig.setValue("servlet.docuimage.class", cl.getName());
+                ImageOps.setDocuImage(dlConfig.getDocuImageInstance());
 				// worker threads
 				int nt = dlConfig.getAsInt("worker-threads");
 				Semaphore lck = new FIFOSemaphore(nt); 

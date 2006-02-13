@@ -20,12 +20,17 @@
 
 package digilib.image;
 
+import digilib.io.ImageFileset;
 import java.awt.Rectangle;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
 import org.apache.log4j.Logger;
 
 import digilib.io.FileOpException;
 import digilib.io.ImageFile;
+import org.marcoschmidt.image.ImageInfo;
 
 /** Simple abstract implementation of the <code>DocuImage</code> interface.
  *
@@ -65,7 +70,35 @@ public abstract class DocuImageImpl implements DocuImage {
 		this.quality = quality;
 	}
 
-	/** Crop and scale the current image.
+    /** Check image size and type and store in ImageFile f */
+    public boolean identify(ImageFile imgf) throws IOException {
+        // fileset to store the information
+        ImageFileset imgfs = imgf.getParent();
+        File f = imgf.getFile();
+        if (f == null) {
+            throw new IOException("File not found!");
+        }
+        RandomAccessFile raf = new RandomAccessFile(f, "r");
+        // set up ImageInfo object
+        ImageInfo iif = new ImageInfo();
+        iif.setInput(raf);
+        iif.setCollectComments(false);
+        iif.setDetermineImageNumber(false);
+        logger.debug("identifying (ImageInfo) " + f);
+        // try with ImageInfo first
+        if (iif.check()) {
+            ImageSize d = new ImageSize(iif.getWidth(), iif.getHeight());
+            imgf.setSize(d);
+            imgf.setMimetype(iif.getMimeType());
+            //logger.debug("  format:"+iif.getFormatName());
+            raf.close();
+            logger.debug("image size: " + imgf.getSize());
+            return true;
+        }
+        return false;
+    }
+        
+    /** Crop and scale the current image.
 	 *
 	 * The current image is cropped to a rectangle of width, height at position
 	 * x_off, y_off. The resulting image is scaled by the factor scale using the

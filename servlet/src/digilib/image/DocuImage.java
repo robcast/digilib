@@ -21,6 +21,7 @@
 package digilib.image;
 
 import java.awt.Rectangle;
+import java.io.IOException;
 import java.io.OutputStream;
 
 import digilib.io.ImageFile;
@@ -208,5 +209,10 @@ public interface DocuImage {
 	 * 
 	 */
 	public void dispose();
+
+    /**
+     * Check image size and type and store in ImageFile f
+     */
+    public boolean identify(ImageFile imgf) throws IOException;
 
 }

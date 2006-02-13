@@ -20,22 +20,28 @@
 
 package digilib.image;
 
+import digilib.io.FileOps;
+import digilib.io.ImageFileset;
 import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 
 import javax.media.jai.BorderExtender;
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
 import javax.media.jai.KernelJAI;
 import javax.media.jai.ParameterBlockJAI;
+import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.TransposeDescriptor;
 import javax.media.jai.operator.TransposeType;
 
 import digilib.io.ImageFile;
 import digilib.io.FileOpException;
+import org.marcoschmidt.image.ImageInfo;
 
 /** A DocuImage implementation using Java Advanced Imaging Library. */
 public class JAIDocuImage extends DocuImageImpl {
@@ -43,9 +49,41 @@ public class JAIDocuImage extends DocuImageImpl {
 	protected RenderedImage img;
 	protected Interpolation interpol = null;
 
-	/* Load an image file into the Object. */
+    /** Check image size and type and store in ImageFile f */
+    public boolean identify(ImageFile imgf) throws IOException {
+        // try parent method first
+        if (super.identify(imgf)) {
+            return true;
+        }
+        // fileset to store the information
+        ImageFileset imgfs = imgf.getParent();
+        File f = imgf.getFile();
+        if (f == null) {
+            throw new IOException("File not found!");
+        }
+        /*
+         * try JAI
+         */
+        logger.debug("identifying (JAI) " + f);
+        try {
+            RenderedOp img = JAI.create("fileload", f.getAbsolutePath());
+            ImageSize d = new ImageSize(img.getWidth(), img.getHeight());
+            imgf.setSize(d);
+            String t = FileOps.mimeForFile(f);
+            imgf.setMimetype(t);
+            //logger.debug("  format:"+t);
+            if (imgfs != null) {
+                imgfs.setAspect(d);
+            }
+            logger.debug("image size: " + imgf.getSize());
+            return true;
+        } catch (Exception e) {
+            throw new FileOpException("ERROR: unknown image file format!");
+        }
+    }
+
+    /* Load an image file into the Object. */
 	public void loadImage(ImageFile f) throws FileOpException {
-		System.gc();
 		img = JAI.create("fileload", f.getFile().getAbsolutePath());
 		if (img == null) {
 			throw new FileOpException("Unable to load File!");
