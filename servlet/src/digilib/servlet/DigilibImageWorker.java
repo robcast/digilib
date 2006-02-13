@@ -37,7 +37,7 @@ import digilib.io.ImageFile;
  * worker for image operations.
  * 
  * @author casties
- *  
+ * 
  */
 public class DigilibImageWorker extends DigilibWorker {
 
@@ -150,7 +150,7 @@ public class DigilibImageWorker extends DigilibWorker {
 		// set interpolation quality
 		docuImage.setQuality(scaleQual);
 
-        Rectangle loadRect = outerUserImgArea.getBounds();
+		Rectangle loadRect = outerUserImgArea.getBounds();
 		// use subimage loading if possible
 		if (docuImage.isSubimageSupported()) {
 			logger.debug("Subimage: scale " + scaleXY + " = " + (1 / scaleXY));
@@ -171,8 +171,7 @@ public class DigilibImageWorker extends DigilibWorker {
 						+ scaleXY);
 			}
 
-			docuImage.loadSubimage(fileToLoad, loadRect,
-					(int) subsamp);
+			docuImage.loadSubimage(fileToLoad, loadRect, (int) subsamp);
 
 			logger.debug("SUBSAMP: " + subsamp + " -> " + docuImage.getWidth()
 					+ "x" + docuImage.getHeight());
@@ -182,8 +181,8 @@ public class DigilibImageWorker extends DigilibWorker {
 		} else {
 			// else load and crop the whole file
 			docuImage.loadImage(fileToLoad);
-			docuImage.crop((int) loadRect.getX(), (int) loadRect.getY(), (int) loadRect.getWidth(),
-					(int) loadRect.getHeight());
+			docuImage.crop((int) loadRect.getX(), (int) loadRect.getY(),
+					(int) loadRect.getWidth(), (int) loadRect.getHeight());
 
 			docuImage.scale(scaleXY, scaleXY);
 		}
@@ -249,17 +248,17 @@ public class DigilibImageWorker extends DigilibWorker {
 
 		/* write the resulting image */
 
-		// setup output -- if output type is forced use that otherwise  
+		// setup output -- if output type is forced use that otherwise
 		// if source is JPG then dest will be JPG else it's PNG
 		if (forceType != ImageOps.TYPE_AUTO) {
 			if (forceType == ImageOps.TYPE_JPEG) {
-				mimeType = "image/jpeg";				
+				mimeType = "image/jpeg";
 			}
 			if (forceType == ImageOps.TYPE_PNG) {
-				mimeType = "image/png";				
+				mimeType = "image/png";
 			}
-		} else if ((mimeType.equals("image/jpeg") || mimeType
-						.equals("image/jp2"))) {
+		} else if ((mimeType.equals("image/jpeg")
+				|| mimeType.equals("image/jp2") || mimeType.equals("image/fpx"))) {
 			mimeType = "image/jpeg";
 		} else {
 			mimeType = "image/png";

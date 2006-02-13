@@ -1,34 +1,35 @@
 /* JAIDocuImage -- Image class implementation using JAI (Java Advanced Imaging)
 
-  Digital Image Library servlet components
+ Digital Image Library servlet components
 
-  Copyright (C) 2001, 2002, 2003 Robert Casties (robcast@mail.berlios.de)
+ Copyright (C) 2001, 2002, 2003 Robert Casties (robcast@mail.berlios.de)
 
-  This program is free software; you can redistribute  it and/or modify it
-  under  the terms of  the GNU General  Public License as published by the
-  Free Software Foundation;  either version 2 of the  License, or (at your
-  option) any later version.
-   
-  Please read license.txt for the full details. A copy of the GPL
-  may be found at http://www.gnu.org/copyleft/lgpl.html
+ This program is free software; you can redistribute  it and/or modify it
+ under  the terms of  the GNU General  Public License as published by the
+ Free Software Foundation;  either version 2 of the  License, or (at your
+ option) any later version.
+ 
+ Please read license.txt for the full details. A copy of the GPL
+ may be found at http://www.gnu.org/copyleft/lgpl.html
 
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-*/
+ */
 
 package digilib.image;
 
-import digilib.io.FileOps;
-import digilib.io.ImageFileset;
 import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.media.jai.BorderExtender;
 import javax.media.jai.Interpolation;
@@ -39,50 +40,66 @@ import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.TransposeDescriptor;
 import javax.media.jai.operator.TransposeType;
 
-import digilib.io.ImageFile;
+import com.sun.media.jai.codec.ImageCodec;
+
 import digilib.io.FileOpException;
-import org.marcoschmidt.image.ImageInfo;
+import digilib.io.FileOps;
+import digilib.io.ImageFile;
+import digilib.io.ImageFileset;
 
 /** A DocuImage implementation using Java Advanced Imaging Library. */
 public class JAIDocuImage extends DocuImageImpl {
 
 	protected RenderedImage img;
+
 	protected Interpolation interpol = null;
 
-    /** Check image size and type and store in ImageFile f */
-    public boolean identify(ImageFile imgf) throws IOException {
-        // try parent method first
-        if (super.identify(imgf)) {
-            return true;
-        }
-        // fileset to store the information
-        ImageFileset imgfs = imgf.getParent();
-        File f = imgf.getFile();
-        if (f == null) {
-            throw new IOException("File not found!");
-        }
-        /*
-         * try JAI
-         */
-        logger.debug("identifying (JAI) " + f);
-        try {
-            RenderedOp img = JAI.create("fileload", f.getAbsolutePath());
-            ImageSize d = new ImageSize(img.getWidth(), img.getHeight());
-            imgf.setSize(d);
-            String t = FileOps.mimeForFile(f);
-            imgf.setMimetype(t);
-            //logger.debug("  format:"+t);
-            if (imgfs != null) {
-                imgfs.setAspect(d);
-            }
-            logger.debug("image size: " + imgf.getSize());
-            return true;
-        } catch (Exception e) {
-            throw new FileOpException("ERROR: unknown image file format!");
-        }
-    }
+	/* returns a list of supported image formats */
+	public Iterator getSupportedFormats() {
+		Enumeration codecs = ImageCodec.getCodecs();
+		List formats = new ArrayList(5);
+		for (Object codec = codecs.nextElement(); codecs.hasMoreElements(); codec = codecs
+				.nextElement()) {
+			logger.debug("known format:"+((ImageCodec) codec).getFormatName());
+			formats.add(((ImageCodec) codec).getFormatName());
+		}
+		return formats.iterator();
+	}
 
-    /* Load an image file into the Object. */
+	/** Check image size and type and store in ImageFile f */
+	public boolean identify(ImageFile imgf) throws IOException {
+		// try parent method first
+		if (super.identify(imgf)) {
+			return true;
+		}
+		// fileset to store the information
+		ImageFileset imgfs = imgf.getParent();
+		File f = imgf.getFile();
+		if (f == null) {
+			throw new IOException("File not found!");
+		}
+		/*
+		 * try JAI
+		 */
+		logger.debug("identifying (JAI) " + f);
+		try {
+			RenderedOp img = JAI.create("fileload", f.getAbsolutePath());
+			ImageSize d = new ImageSize(img.getWidth(), img.getHeight());
+			imgf.setSize(d);
+			String t = FileOps.mimeForFile(f);
+			imgf.setMimetype(t);
+			// logger.debug(" format:"+t);
+			if (imgfs != null) {
+				imgfs.setAspect(d);
+			}
+			logger.debug("image size: " + imgf.getSize());
+			return true;
+		} catch (Exception e) {
+			throw new FileOpException("ERROR: unknown image file format!");
+		}
+	}
+
+	/* Load an image file into the Object. */
 	public void loadImage(ImageFile f) throws FileOpException {
 		img = JAI.create("fileload", f.getFile().getAbsolutePath());
 		if (img == null) {
@@ -92,7 +109,7 @@ public class JAIDocuImage extends DocuImageImpl {
 
 	/* Write the current image to an OutputStream. */
 	public void writeImage(String mt, OutputStream ostream)
-		throws FileOpException {
+			throws FileOpException {
 		try {
 			// setup output
 			ParameterBlock pb3 = new ParameterBlock();
@@ -114,8 +131,8 @@ public class JAIDocuImage extends DocuImageImpl {
 		}
 	}
 
-	/* Real setQuality implementation. 
-	 * Creates the correct Interpolation.
+	/*
+	 * Real setQuality implementation. Creates the correct Interpolation.
 	 */
 	public void setQuality(int qual) {
 		quality = qual;
@@ -132,7 +149,9 @@ public class JAIDocuImage extends DocuImageImpl {
 		}
 	}
 
-	/** The width of the curent image in pixel.
+	/**
+	 * The width of the curent image in pixel.
+	 * 
 	 * @return Image width in pixels.
 	 */
 	public int getWidth() {
@@ -142,7 +161,9 @@ public class JAIDocuImage extends DocuImageImpl {
 		return 0;
 	}
 
-	/** The height of the curent image in pixel.
+	/**
+	 * The height of the curent image in pixel.
+	 * 
 	 * @return Image height in pixels.
 	 */
 	public int getHeight() {
@@ -155,9 +176,8 @@ public class JAIDocuImage extends DocuImageImpl {
 	/* scales the current image */
 	public void scale(double scale, double scaleY) throws ImageOpException {
 		logger.debug("scale");
-		if ((scale < 1)
-			&& (img.getColorModel().getPixelSize() == 1)
-			&& (quality > 0)) {
+		if ((scale < 1) && (img.getColorModel().getPixelSize() == 1)
+				&& (quality > 0)) {
 			/*
 			 * "SubsampleBinaryToGray" for downscaling BW
 			 */
@@ -176,14 +196,15 @@ public class JAIDocuImage extends DocuImageImpl {
 			scaleAll((float) scale);
 		}
 
-		//DEBUG
-		logger.debug("SCALE: " + scale + " ->" + img.getWidth() + "x" + img.getHeight());
+		// DEBUG
+		logger.debug("SCALE: " + scale + " ->" + img.getWidth() + "x"
+				+ img.getHeight());
 
 	}
 
 	public void scaleAll(float scale) throws ImageOpException {
 		RenderedImage scaledImg;
-		//DEBUG
+		// DEBUG
 		logger.debug("scaleAll: " + scale);
 		ParameterBlockJAI param = new ParameterBlockJAI("Scale");
 		param.addSource(img);
@@ -191,9 +212,7 @@ public class JAIDocuImage extends DocuImageImpl {
 		param.setParameter("yScale", scale);
 		param.setParameter("interpolation", interpol);
 		// hint with border extender
-		RenderingHints hint =
-			new RenderingHints(
-				JAI.KEY_BORDER_EXTENDER,
+		RenderingHints hint = new RenderingHints(JAI.KEY_BORDER_EXTENDER,
 				BorderExtender.createInstance(BorderExtender.BORDER_COPY));
 		// scale
 		scaledImg = JAI.create("Scale", param, hint);
@@ -206,7 +225,7 @@ public class JAIDocuImage extends DocuImageImpl {
 
 	public void blur(int radius) throws ImageOpException {
 		RenderedImage blurredImg;
-		//DEBUG
+		// DEBUG
 		logger.debug("blur: " + radius);
 		int klen = Math.max(radius, 2);
 		int ksize = klen * klen;
@@ -220,9 +239,7 @@ public class JAIDocuImage extends DocuImageImpl {
 		param.addSource(img);
 		param.setParameter("kernel", blur);
 		// hint with border extender
-		RenderingHints hint =
-			new RenderingHints(
-				JAI.KEY_BORDER_EXTENDER,
+		RenderingHints hint = new RenderingHints(JAI.KEY_BORDER_EXTENDER,
 				BorderExtender.createInstance(BorderExtender.BORDER_COPY));
 		blurredImg = JAI.create("Convolve", param, hint);
 		if (blurredImg == null) {
@@ -233,17 +250,14 @@ public class JAIDocuImage extends DocuImageImpl {
 
 	public void scaleBinary(float scale) throws ImageOpException {
 		RenderedImage scaledImg;
-		//DEBUG
+		// DEBUG
 		logger.debug("scaleBinary: " + scale);
-		ParameterBlockJAI param =
-			new ParameterBlockJAI("SubsampleBinaryToGray");
+		ParameterBlockJAI param = new ParameterBlockJAI("SubsampleBinaryToGray");
 		param.addSource(img);
 		param.setParameter("xScale", scale);
 		param.setParameter("yScale", scale);
 		// hint with border extender
-		RenderingHints hint =
-			new RenderingHints(
-				JAI.KEY_BORDER_EXTENDER,
+		RenderingHints hint = new RenderingHints(JAI.KEY_BORDER_EXTENDER,
 				BorderExtender.createInstance(BorderExtender.BORDER_COPY));
 		// scale
 		scaledImg = JAI.create("SubsampleBinaryToGray", param, hint);
@@ -255,7 +269,7 @@ public class JAIDocuImage extends DocuImageImpl {
 
 	/* crops the current image */
 	public void crop(int x_off, int y_off, int width, int height)
-		throws ImageOpException {
+			throws ImageOpException {
 		// setup Crop
 		ParameterBlock param = new ParameterBlock();
 		param.addSource(img);
@@ -265,19 +279,10 @@ public class JAIDocuImage extends DocuImageImpl {
 		param.add((float) height);
 		RenderedImage croppedImg = JAI.create("crop", param);
 
-		logger.debug("CROP: "
-				+ x_off
-				+ ","
-				+ y_off
-				+ ", "
-				+ width
-				+ ","
-				+ height
-				+ " ->"
-				+ croppedImg.getWidth()
-				+ "x"
+		logger.debug("CROP: " + x_off + "," + y_off + ", " + width + ","
+				+ height + " ->" + croppedImg.getWidth() + "x"
 				+ croppedImg.getHeight());
-		//DEBUG
+		// DEBUG
 
 		if (croppedImg == null) {
 			throw new ImageOpException("Unable to crop");
@@ -329,20 +334,9 @@ public class JAIDocuImage extends DocuImageImpl {
 			rotImg = JAI.create("rotate", param);
 		}
 
-		logger.debug("ROTATE: "
-				+ x
-				+ ","
-				+ y
-				+ ", "
-				+ angle
-				+ " ("
-				+ rangle
-				+ ")"
-				+ " ->"
-				+ rotImg.getWidth()
-				+ "x"
-				+ rotImg.getHeight());
-		//DEBUG
+		logger.debug("ROTATE: " + x + "," + y + ", " + angle + " (" + rangle
+				+ ")" + " ->" + rotImg.getWidth() + "x" + rotImg.getHeight());
+		// DEBUG
 
 		if (rotImg == null) {
 			throw new ImageOpException("Unable to rotate");
@@ -350,8 +344,8 @@ public class JAIDocuImage extends DocuImageImpl {
 		img = rotImg;
 	}
 
-	/* mirrors the current image
-	 * works only horizontal and vertical
+	/*
+	 * mirrors the current image works only horizontal and vertical
 	 */
 	public void mirror(double angle) throws ImageOpException {
 		RenderedImage mirImg;
@@ -397,15 +391,9 @@ public class JAIDocuImage extends DocuImageImpl {
 		param.add(aa);
 		enhImg = JAI.create("rescale", param);
 
-		logger.debug("ENHANCE: *"
-				+ mult
-				+ ", +"
-				+ add
-				+ " ->"
-				+ enhImg.getWidth()
-				+ "x"
-				+ enhImg.getHeight());
-		//DEBUG
+		logger.debug("ENHANCE: *" + mult + ", +" + add + " ->"
+				+ enhImg.getWidth() + "x" + enhImg.getHeight());
+		// DEBUG
 
 		if (enhImg == null) {
 			throw new ImageOpException("Unable to enhance");
@@ -413,11 +401,12 @@ public class JAIDocuImage extends DocuImageImpl {
 		img = enhImg;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see digilib.image.DocuImage#enhanceRGB(float[], float[])
 	 */
-	public void enhanceRGB(float[] rgbm, float[] rgba)
-		throws ImageOpException {
+	public void enhanceRGB(float[] rgbm, float[] rgba) throws ImageOpException {
 		RenderedImage enhImg;
 		int nb = rgbm.length;
 		double[] ma = new double[nb];
@@ -433,15 +422,9 @@ public class JAIDocuImage extends DocuImageImpl {
 		param.add(aa);
 		enhImg = JAI.create("rescale", param);
 
-		logger.debug("ENHANCE_RGB: *"
-				+ rgbm
-				+ ", +"
-				+ rgba
-				+ " ->"
-				+ enhImg.getWidth()
-				+ "x"
-				+ enhImg.getHeight());
-		//DEBUG
+		logger.debug("ENHANCE_RGB: *" + rgbm + ", +" + rgba + " ->"
+				+ enhImg.getWidth() + "x" + enhImg.getHeight());
+		// DEBUG
 
 		if (enhImg == null) {
 			throw new ImageOpException("Unable to enhanceRGB");
@@ -449,7 +432,9 @@ public class JAIDocuImage extends DocuImageImpl {
 		img = enhImg;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see digilib.image.DocuImage#dispose()
 	 */
 	public void dispose() {
