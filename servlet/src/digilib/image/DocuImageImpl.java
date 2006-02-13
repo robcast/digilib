@@ -20,17 +20,19 @@
 
 package digilib.image;
 
-import digilib.io.ImageFileset;
 import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.marcoschmidt.image.ImageInfo;
 
 import digilib.io.FileOpException;
 import digilib.io.ImageFile;
-import org.marcoschmidt.image.ImageInfo;
 
 /** Simple abstract implementation of the <code>DocuImage</code> interface.
  *
@@ -73,7 +75,6 @@ public abstract class DocuImageImpl implements DocuImage {
     /** Check image size and type and store in ImageFile f */
     public boolean identify(ImageFile imgf) throws IOException {
         // fileset to store the information
-        ImageFileset imgfs = imgf.getParent();
         File f = imgf.getFile();
         if (f == null) {
             throw new IOException("File not found!");
@@ -153,6 +154,12 @@ public abstract class DocuImageImpl implements DocuImage {
 	}
 
 	public void dispose() {
+		// emtpy implementation
+	}
+
+	public Iterator getSupportedFormats() {
+		List empty = new LinkedList();
+		return empty.iterator();
 	}
 
 }

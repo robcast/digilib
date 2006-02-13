@@ -19,8 +19,6 @@
 
 package digilib.image;
 
-import digilib.io.FileOps;
-import digilib.io.ImageFileset;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
@@ -34,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import javax.imageio.IIOImage;
@@ -47,8 +46,9 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
 import digilib.io.FileOpException;
+import digilib.io.FileOps;
 import digilib.io.ImageFile;
-import org.marcoschmidt.image.ImageInfo;
+import digilib.io.ImageFileset;
 
 /** Implementation of DocuImage using the ImageLoader API of Java 1.4 and Java2D. */
 public class ImageLoaderDocuImage extends DocuImageImpl {
@@ -115,6 +115,12 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		return w;
 	}
 
+	/* returns a list of supported image formats */
+	public Iterator getSupportedFormats() {
+		String[] formats = ImageIO.getReaderFormatNames();
+		return Arrays.asList(formats).iterator();
+	}
+
     /** Check image size and type and store in ImageFile f */
     public boolean identify(ImageFile imgf) throws IOException {
         // try parent method first
@@ -160,10 +166,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
                 raf.close();
             }
         }
-        return false;
-//        } catch (Exception e) {
-//            throw new FileOpException("ERROR: unknown image file format!");
-//        }
+        throw new FileOpException("ERROR: unknown image file format!");
     }
 
     
