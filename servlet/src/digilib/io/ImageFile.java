@@ -93,6 +93,10 @@ public class ImageFile {
 	 */
 	public void setSize(ImageSize imageSize) {
 		this.pixelSize = imageSize;
+		// pass on to parent
+		if (this.parent != null) {
+			this.parent.setAspect(imageSize);
+		}
 	}
 
 	/**

@@ -23,6 +23,7 @@ package digilib.image;
 import java.awt.Rectangle;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Iterator;
 
 import digilib.io.ImageFile;
 import digilib.io.FileOpException;
@@ -214,5 +215,10 @@ public interface DocuImage {
      * Check image size and type and store in ImageFile f
      */
     public boolean identify(ImageFile imgf) throws IOException;
+
+    /**
+     * Returns a list of supported image formats
+     */
+	public Iterator getSupportedFormats();
 
 }
