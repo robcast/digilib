@@ -20,24 +20,9 @@
  */
 package digilib.image;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.Iterator;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
-import javax.media.jai.JAI;
-import javax.media.jai.RenderedOp;
-
-import org.apache.log4j.Logger;
-import org.marcoschmidt.image.ImageInfo;
-
-import digilib.io.FileOpException;
-import digilib.io.FileOps;
 import digilib.io.ImageFile;
-import digilib.io.ImageFileset;
 
 /**
  * convenience methods for images
@@ -45,8 +30,6 @@ import digilib.io.ImageFileset;
  * @author casties
  */
 public class ImageOps {
-    
-    private static Logger logger = Logger.getLogger(ImageOps.class);
     
     public static final int TYPE_AUTO = 0;
     public static final int TYPE_JPEG = 1;
