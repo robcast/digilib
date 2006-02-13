@@ -133,19 +133,20 @@ digilib.io.DocuDirCache dirCache = (digilib.io.DocuDirCache) dlConfig.getValue("
   </tr>
 </table>
 
-<h2>ImageIO configuration</h2>
+<h2>DocuImage configuration</h2>
 
 <p>Supported image types</p>
 <ul>
 <% 
-	String[] formats = javax.imageio.ImageIO.getReaderFormatNames();
-	for (int i = 0; i < formats.length; i++) {
+  java.util.Iterator dlfs = dlConfig.getDocuImageInstance().getSupportedFormats();
+  for (Object f = dlfs.next(); dlfs.hasNext(); f = dlfs.next()) {
 %>
-	<li><%= formats[i] %></li>
+  <li><%= (String)f %></li>
 <% 
-	}
+  }
 %>
 </ul>
+
 
 </body>
 </html>
