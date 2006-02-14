@@ -46,6 +46,7 @@ import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.ImageFile;
 import digilib.io.ImageFileset;
+import javax.media.jai.TileCache;
 
 /** A DocuImage implementation using Java Advanced Imaging Library. */
 public class JAIDocuImage extends DocuImageImpl {
@@ -54,6 +55,13 @@ public class JAIDocuImage extends DocuImageImpl {
 
 	protected Interpolation interpol = null;
 
+    static {
+        /* we could set our own tile cache size here
+        TileCache tc = JAI.createTileCache(100*1024*1024);
+        JAI.getDefaultInstance().setTileCache(tc);
+         */
+    }
+    
 	/* returns a list of supported image formats */
 	public Iterator getSupportedFormats() {
 		Enumeration codecs = ImageCodec.getCodecs();
@@ -63,6 +71,7 @@ public class JAIDocuImage extends DocuImageImpl {
 			logger.debug("known format:"+((ImageCodec) codec).getFormatName());
 			formats.add(((ImageCodec) codec).getFormatName());
 		}
+        logger.debug("tilecachesize:"+JAI.getDefaultInstance().getTileCache().getMemoryCapacity());
 		return formats.iterator();
 	}
 
@@ -186,8 +195,11 @@ public class JAIDocuImage extends DocuImageImpl {
 			/*
 			 * blur and "Scale" for downscaling color images
 			 */
-			int subsample = (int) Math.floor(1 / scale);
-			blur(subsample);
+            if ((scale <= 0.5) && (quality > 1)) {
+                int bl = (int) Math.floor(1 / scale);
+                // don't blur more than 3
+                blur(Math.min(bl, 3));
+            }
 			scaleAll((float) scale);
 		} else {
 			/*
@@ -225,9 +237,8 @@ public class JAIDocuImage extends DocuImageImpl {
 
 	public void blur(int radius) throws ImageOpException {
 		RenderedImage blurredImg;
-		// DEBUG
-		logger.debug("blur: " + radius);
 		int klen = Math.max(radius, 2);
+		logger.debug("blur: " + klen);
 		int ksize = klen * klen;
 		float f = 1f / ksize;
 		float[] kern = new float[ksize];
