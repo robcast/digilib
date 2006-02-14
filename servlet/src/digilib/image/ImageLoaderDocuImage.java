@@ -278,11 +278,11 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 				if (quality > 1) {
 					// change JPEG compression quality
 					param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-					logger.debug("JPEG qual before: "
-							+ Float.toString(param.getCompressionQuality()));
+					//logger.debug("JPEG qual before: "
+					//		+ Float.toString(param.getCompressionQuality()));
 					param.setCompressionQuality(0.9f);
-					logger.debug("JPEG qual now: "
-							+ Float.toString(param.getCompressionQuality()));
+					//logger.debug("JPEG qual now: "
+					//		+ Float.toString(param.getCompressionQuality()));
 				}
 				writer.setOutput(imgout);
 				// render output
@@ -335,11 +335,11 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		}
 		logger.debug("scaling...");
 		scaledImg = scaleOp.filter(img, scaledImg);
-		logger.debug("destination image type " + scaledImg.getType());
 		if (scaledImg == null) {
 			throw new ImageOpException("Unable to scale");
 		}
 		// DEBUG
+		logger.debug("destination image type " + scaledImg.getType());
 		logger.debug("SCALE: " + scale + " ->" + scaledImg.getWidth() + "x"
 				+ scaledImg.getHeight());
 		img = scaledImg;
@@ -380,14 +380,14 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			throws ImageOpException {
 		// setup Crop
 		BufferedImage croppedImg = img.getSubimage(x_off, y_off, width, height);
-		logger.debug("CROP:" + croppedImg.getWidth() + "x"
-				+ croppedImg.getHeight());
 		// DEBUG
 		// util.dprintln(2, " time
 		// "+(System.currentTimeMillis()-startTime)+"ms");
 		if (croppedImg == null) {
 			throw new ImageOpException("Unable to crop");
 		}
+		logger.debug("CROP:" + croppedImg.getWidth() + "x"
+				+ croppedImg.getHeight());
 		img = croppedImg;
 	}
 

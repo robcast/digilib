@@ -45,7 +45,7 @@ import digilib.io.ImageFile;
 public abstract class DocuImageImpl implements DocuImage {
 
 	/** logger */
-	protected static Logger logger = Logger.getLogger(DocuImage.class);
+	protected static final Logger logger = Logger.getLogger(DocuImage.class);
 	
 	/** Interpolation quality. */
 	protected int quality = 0;
