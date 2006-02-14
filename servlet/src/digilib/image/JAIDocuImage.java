@@ -20,6 +20,7 @@
 
 package digilib.image;
 
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
@@ -46,7 +47,6 @@ import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.ImageFile;
 import digilib.io.ImageFileset;
-import javax.media.jai.TileCache;
 
 /** A DocuImage implementation using Java Advanced Imaging Library. */
 public class JAIDocuImage extends DocuImageImpl {
@@ -55,27 +55,51 @@ public class JAIDocuImage extends DocuImageImpl {
 
 	protected Interpolation interpol = null;
 
-    static {
-        /* we could set our own tile cache size here
-        TileCache tc = JAI.createTileCache(100*1024*1024);
-        JAI.getDefaultInstance().setTileCache(tc);
-         */
-    }
-    
+	/*
+	 * static { // we could set our own tile cache size here TileCache tc =
+	 * JAI.createTileCache(100*1024*1024);
+	 * JAI.getDefaultInstance().setTileCache(tc); }
+	 */
+
+	public boolean isSubimageSupported() {
+		return true;
+	}
+
+	/*
+	 * Real setQuality implementation. Creates the correct Interpolation.
+	 */
+	public void setQuality(int qual) {
+		quality = qual;
+		// setup interpolation quality
+		if (qual > 1) {
+			logger.debug("quality q2");
+			interpol = Interpolation.getInstance(Interpolation.INTERP_BICUBIC);
+		} else if (qual == 1) {
+			logger.debug("quality q1");
+			interpol = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
+		} else {
+			logger.debug("quality q0");
+			interpol = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
+		}
+	}
+
 	/* returns a list of supported image formats */
 	public Iterator getSupportedFormats() {
 		Enumeration codecs = ImageCodec.getCodecs();
 		List formats = new ArrayList(5);
 		for (Object codec = codecs.nextElement(); codecs.hasMoreElements(); codec = codecs
 				.nextElement()) {
-			logger.debug("known format:"+((ImageCodec) codec).getFormatName());
+			logger
+					.debug("known format:"
+							+ ((ImageCodec) codec).getFormatName());
 			formats.add(((ImageCodec) codec).getFormatName());
 		}
-        logger.debug("tilecachesize:"+JAI.getDefaultInstance().getTileCache().getMemoryCapacity());
+		logger.debug("tilecachesize:"
+				+ JAI.getDefaultInstance().getTileCache().getMemoryCapacity());
 		return formats.iterator();
 	}
 
-	/** Check image size and type and store in ImageFile f */
+	/* Check image size and type and store in ImageFile f */
 	public boolean identify(ImageFile imgf) throws IOException {
 		// try parent method first
 		if (super.identify(imgf)) {
@@ -116,6 +140,37 @@ public class JAIDocuImage extends DocuImageImpl {
 		}
 	}
 
+	/* Load an image file into the Object. */
+	public void loadSubimage(ImageFile f, Rectangle region, int subsample)
+			throws FileOpException {
+		logger.debug("loadSubimage");
+		img = JAI.create("fileload", f.getFile().getAbsolutePath());
+		if ((region.width < img.getWidth())
+				|| (region.height < img.getHeight())) {
+			// setup Crop
+			ParameterBlock cp = new ParameterBlock();
+			cp.addSource(img);
+			cp.add((float) region.x);
+			cp.add((float) region.y);
+			cp.add((float) region.width);
+			cp.add((float) region.height);
+			logger.debug("loadSubimage: crop");
+			img = JAI.create("crop", cp);
+		}
+		if (subsample > 1) {
+			float sc = 1f / subsample;
+			ParameterBlockJAI sp = new ParameterBlockJAI("scale");
+			sp.addSource(img);
+			sp.setParameter("xScale", sc);
+			sp.setParameter("yScale", sc);
+			sp.setParameter("interpolation", Interpolation
+					.getInstance(Interpolation.INTERP_NEAREST));
+			// scale
+			logger.debug("loadSubimage: scale");
+			img = JAI.create("scale", sp);
+		}
+	}
+
 	/* Write the current image to an OutputStream. */
 	public void writeImage(String mt, OutputStream ostream)
 			throws FileOpException {
@@ -137,24 +192,6 @@ public class JAIDocuImage extends DocuImageImpl {
 
 		} catch (IOException e) {
 			throw new FileOpException("Error writing image.");
-		}
-	}
-
-	/*
-	 * Real setQuality implementation. Creates the correct Interpolation.
-	 */
-	public void setQuality(int qual) {
-		quality = qual;
-		// setup interpolation quality
-		if (qual > 1) {
-			logger.debug("quality q2");
-			interpol = Interpolation.getInstance(Interpolation.INTERP_BICUBIC);
-		} else if (qual == 1) {
-			logger.debug("quality q1");
-			interpol = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
-		} else {
-			logger.debug("quality q0");
-			interpol = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
 		}
 	}
 
@@ -195,11 +232,11 @@ public class JAIDocuImage extends DocuImageImpl {
 			/*
 			 * blur and "Scale" for downscaling color images
 			 */
-            if ((scale <= 0.5) && (quality > 1)) {
-                int bl = (int) Math.floor(1 / scale);
-                // don't blur more than 3
-                blur(Math.min(bl, 3));
-            }
+			if ((scale <= 0.5) && (quality > 1)) {
+				int bl = (int) Math.floor(1 / scale);
+				// don't blur more than 3
+				blur(Math.min(bl, 3));
+			}
 			scaleAll((float) scale);
 		} else {
 			/*
