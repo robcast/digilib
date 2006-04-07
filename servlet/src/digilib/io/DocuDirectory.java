@@ -30,6 +30,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import org.xml.sax.SAXException;
 
 /**
@@ -175,7 +177,7 @@ public class DocuDirectory extends Directory {
 		// first file extension to try for scaled directories
 		String scalext = null;
 		// read all filenames
-		//logger.debug("reading directory " + dir.getPath());
+		logger.debug("reading directory " + dir.getPath());
 		/*
 		 * using ReadableFileFilter is safer (we won't get directories with file
 		 * extensions) but slower.
@@ -204,7 +206,7 @@ public class DocuDirectory extends Directory {
 			File d = new File(baseDirNames[j], dirName);
 			if (d.isDirectory()) {
 				dirs[j] = new Directory(d);
-				//logger.debug("  reading scaled directory " + d.getPath());
+				logger.debug("  reading scaled directory " + d.getPath());
 				dirs[j].readDir();
 				//logger.debug("    done");
 			}
@@ -224,16 +226,20 @@ public class DocuDirectory extends Directory {
 				// create new list
 				list[fileClass] = new ArrayList(numFiles);
 				// sort the file names alphabetically and iterate the list
-				Arrays.sort(fileList);
+				// Arrays.sort(fileList); // not needed <hertzhaft>
 				Map hints = FileOps.newHints(FileOps.HINT_BASEDIRS, dirs);
 				hints.put(FileOps.HINT_FILEEXT, scalext);
 				for (int i = 0; i < numFiles; i++) {
 					DocuDirent f = FileOps.fileForClass(fileClass, fileList[i],
 							hints);
 					// add the file to our list
+                    // logger.debug(f.getName());
+
 					list[fileClass].add(f);
 					f.setParent(this);
 				}
+                // we need to sort the ArrayList, not the Array, for binarysearch to work
+                Collections.sort(list[fileClass]);
 			}
 		}
 		// clear the scaled directories
@@ -418,11 +424,14 @@ public class DocuDirectory extends Directory {
 		if (fileList == null) {
 			return -1;
 		}
+        
 		// search for exact match
+        // OBS: fileList needs to be sorted first (see )! <hertzhaft>
 		int idx = Collections.binarySearch(fileList, fn);
 		if (idx >= 0) {
 			return idx;
 		} else {
+            logger.debug(fn + " not found by binarysearch");
 			// try closest matches without extension
 			idx = -idx - 1;
 			if ((idx < fileList.size())

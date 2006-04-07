@@ -188,6 +188,8 @@ public class DocuDirCache {
 		int n = in - 1;
 		// first, assume fn is a directory and look in the cache
 		dd = (DocuDirectory) map.get(fn);
+        // logger.debug("fn: " + fn);
+        // logger.debug("dd: " + dd);
 		if (dd == null) {
 			// cache miss
 			misses++;
@@ -196,6 +198,7 @@ public class DocuDirCache {
 			 */
 			File f = new File(baseDirNames[0], fn);
 			if (f.isDirectory()) {
+                // logger.debug(fn + " is a dir");
 				dd = new DocuDirectory(fn, this);
 				if (dd.isValid()) {
 					// add to the cache
@@ -209,12 +212,14 @@ public class DocuDirCache {
 				// cache)
 				String d = FileOps.parent(fn);
 				// try it in the cache
+                // logger.debug(fn + " is a file in dir " + d);
 				dd = (DocuDirectory) map.get(d);
 				if (dd == null) {
 					// try to read from disk
 					dd = new DocuDirectory(d, this);
 					if (dd.isValid()) {
 						// add to the cache
+                        // logger.debug(dd + " is valid");
 						putDir(dd);
 					} else {
 						// invalid path
@@ -226,16 +231,20 @@ public class DocuDirCache {
 				}
 				// get the file's index
 				n = dd.indexOf(f.getName(), fc);
+                // logger.debug(f.getName() + ", index is " + n + ", fc = " + fc);
 			}
 		} else {
 			// cache hit
 			hits++;
 		}
 		dd.refresh();
+        // logger.debug(dd + " refreshed");
 		if (dd.isValid()) {
 			try {
+                // logger.debug(dd + " is valid");
 				return dd.get(n, fc);
 			} catch (IndexOutOfBoundsException e) {
+                logger.debug(fn + ": index out of bounds");
 			}
 		}
 		return null;

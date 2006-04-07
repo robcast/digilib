@@ -109,6 +109,16 @@ public class ImageFileset extends DocuDirent {
 	}
 
 	/**
+	 * Compares to a String (for binarySearch)
+     * or to another ImageFileset (for sort)
+	 */
+	public int compareTo(Object arg0) {
+		return (arg0 instanceof ImageFileset)
+            ? getName().compareTo(((ImageFileset) arg0).getName())
+            : getName().compareTo((String) arg0);
+	}
+
+	/**
 	 * Get the ImageFile at the index.
 	 * 
 	 * 
