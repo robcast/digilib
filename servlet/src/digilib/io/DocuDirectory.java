@@ -238,7 +238,7 @@ public class DocuDirectory extends Directory {
 					list[fileClass].add(f);
 					f.setParent(this);
 				}
-                // we need to sort the ArrayList, not the Array, for binarysearch to work
+                // we sort the ArrayList, not the Array, for binarySearch to work
                 Collections.sort(list[fileClass]);
 			}
 		}
