@@ -244,7 +244,7 @@ public class DocuDirCache {
                 // logger.debug(dd + " is valid");
 				return dd.get(n, fc);
 			} catch (IndexOutOfBoundsException e) {
-                logger.debug(fn + ": index out of bounds");
+                // logger.debug(fn + " not found in directory");
 			}
 		}
 		return null;
