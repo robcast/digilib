@@ -150,11 +150,16 @@ public abstract class DocuDirent implements Comparable {
 	}
 
 	/** Comparator using the file name.
+	 * Compares to a String (for binarySearch)
+     * or to another DocuDirent (for sort)
 	 * 
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	public int compareTo(Object arg0) {
-		return (getName().compareTo((String) arg0));
+		return (arg0 instanceof DocuDirent)
+            ? getName().compareTo(((DocuDirent) arg0).getName())
+            : getName().compareTo((String) arg0);
 	}
+
 	
 }
