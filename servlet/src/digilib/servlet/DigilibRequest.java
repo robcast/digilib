@@ -27,6 +27,8 @@
 package digilib.servlet;
 
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -40,8 +42,8 @@ import org.apache.log4j.Logger;
 import com.hp.hpl.mesa.rdf.jena.mem.ModelMem;
 import com.hp.hpl.mesa.rdf.jena.model.Model;
 import com.hp.hpl.mesa.rdf.jena.model.Property;
-import com.hp.hpl.mesa.rdf.jena.model.Resource;
 import com.hp.hpl.mesa.rdf.jena.model.ResIterator;
+import com.hp.hpl.mesa.rdf.jena.model.Resource;
 import com.hp.hpl.mesa.rdf.jena.model.Statement;
 import com.hp.hpl.mesa.rdf.jena.model.StmtIterator;
 
@@ -68,13 +70,14 @@ import digilib.io.FileOps;
  * ...et alii
  * 
  * @author casties
- *  
+ * 
  */
 public class DigilibRequest extends ParameterMap {
 
 	private static final long serialVersionUID = -4707707539569977901L;
 
 	private final static String ECHO = "http://echo.unibe.ch/digilib/rdf#";
+
 	private final static String DIGILIB = "Digilib";
 
 	private Logger logger = Logger.getLogger(this.getClass());
@@ -131,9 +134,12 @@ public class DigilibRequest extends ParameterMap {
 		newParameter("ddpix", new Float(0), null, 's');
 		// display dpi Y resolution
 		newParameter("ddpiy", new Float(0), null, 's');
+		// scale factor for mo=ascale
+		newParameter("scale", new Float(1), null, 's');
 
 		/*
-		 * Parameters of type 'i' are not exchanged between client and server
+		 * Parameters of type 'i' are not exchanged between client and server,
+		 * but are for the servlets or JSPs internal use.
 		 */
 
 		// url of the page/document (first part, may be empty)
@@ -163,9 +169,9 @@ public class DigilibRequest extends ParameterMap {
 		newParameter("img.pix_y", new Integer(0), null, 'c');
 		// total number of pages
 		newParameter("pt", new Integer(0), null, 'c');
-		//	display level of digilib (0 = just image, 1 = one HTML page
-		//        2 = in frameset, 3 = XUL-'frameset'
-		//        4 = XUL-Sidebar )
+		// display level of digilib (0 = just image, 1 = one HTML page
+		// 2 = in frameset, 3 = XUL-'frameset'
+		// 4 = XUL-Sidebar )
 		newParameter("lv", new Integer(2), null, 'c');
 		// marks
 		newParameter("mk", "", null, 'c');
@@ -186,7 +192,7 @@ public class DigilibRequest extends ParameterMap {
 	/**
 	 * Populate the request object with data from a ServletRequest.
 	 * 
-	 *
+	 * 
 	 * @param request
 	 */
 	public void setWithRequest(ServletRequest request) {
@@ -194,15 +200,26 @@ public class DigilibRequest extends ParameterMap {
 		// decide if it's old-style or new-style
 		String qs = ((HttpServletRequest) request).getQueryString();
 		if (request.getParameter("rdf") != null) {
+			// RDF stuff
 			boolRDF = true;
 			setWithRDF(request);
-		} else if (request.getParameter("fn") != null) {
-			setWithParamRequest(request);
-		} else if ((qs != null) && (qs.indexOf("&") > -1)) {
-			setWithParamRequest(request);
-		} else {
-			setWithOldString(qs);
+		} else if (qs != null) {
+			if (qs.indexOf("&amp;") > -1) {
+				// &amp; separator
+				setWithParamString(qs, "&amp;");
+			} else if (qs.indexOf(";") > -1) {
+				// ; separator
+				setWithParamString(qs, ";");
+			} else if (request.getParameter("fn") != null) {
+				// standard '&' parameters
+				setWithParamRequest(request);
+			} else {
+				setWithOldString(qs);
+			}
 		}
+		setValue("servlet.request", request);
+		// add path from request
+		setValue("request.path", ((HttpServletRequest) request).getPathInfo());
 		// set the baseURL
 		setBaseURL((HttpServletRequest) request);
 	}
@@ -334,7 +351,7 @@ public class DigilibRequest extends ParameterMap {
 		// go through all values
 		for (Iterator i = this.values().iterator(); i.hasNext();) {
 			Parameter p = (Parameter) i.next();
-			if ((type > 0)&&(p.getType() != type)) {
+			if ((type > 0) && (p.getType() != type)) {
 				// skip the wrong types
 				continue;
 			}
@@ -412,8 +429,45 @@ public class DigilibRequest extends ParameterMap {
 	}
 
 	/**
+	 * Set request parameters from query string. Uses the separator string qs to
+	 * get 'fn=foo' style parameters.
 	 * 
-	 *  
+	 * @param qs
+	 *            query string
+	 * @param sep
+	 *            parameter-separator string
+	 */
+	public void setWithParamString(String qs, String sep) {
+		// go through all request parameters
+		String[] qa = qs.split(sep);
+		for (int i = 0; i < qa.length; i++) {
+			// split names and values on "="
+			String[] nv = qa[i].split("=");
+			try {
+				String name = URLDecoder.decode(nv[0], "UTF-8");
+				String val = URLDecoder.decode(nv[1], "UTF-8");
+				// is this a known parameter?
+				if (this.containsKey(name)) {
+					Parameter p = (Parameter) this.get(name);
+					// internal parameters are not set
+					if (p.getType() == 'i') {
+						continue;
+					}
+					p.setValueFromString(val);
+					continue;
+				}
+				// unknown parameters are just added with type 'r'
+				newParameter(name, null, val, 'r');
+			} catch (UnsupportedEncodingException e) {
+				// this shouldn't happen anyway
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * 
+	 * 
 	 */
 	public void setWithRDF(ServletRequest request) {
 		String strRDF;
@@ -447,28 +501,33 @@ public class DigilibRequest extends ParameterMap {
 			model.read(sr, "");
 			// get Property type -> digilib
 			Property property = model.getProperty(DigilibRequest.ECHO, "type");
-			if(property != null) {
-				ResIterator resourceIterator = model.listSubjectsWithProperty(property);
-				while(resourceIterator.hasNext()) {
+			if (property != null) {
+				ResIterator resourceIterator = model
+						.listSubjectsWithProperty(property);
+				while (resourceIterator.hasNext()) {
 					Resource resource = resourceIterator.next();
 					StmtIterator statementIterator = resource.listProperties();
-					String type = resource.getProperty(property).getResource().getURI();
-					if(type == null) {
+					String type = resource.getProperty(property).getResource()
+							.getURI();
+					if (type == null) {
 						continue;
 					}
-					if(type.equals(DigilibRequest.ECHO+DigilibRequest.DIGILIB)) {
-						while(statementIterator.hasNext()) {
+					if (type.equals(DigilibRequest.ECHO
+							+ DigilibRequest.DIGILIB)) {
+						while (statementIterator.hasNext()) {
 							Statement statement = statementIterator.next();
 							Property predicate = statement.getPredicate();
-							if(predicate.getNameSpace().equals(DigilibRequest.ECHO)) {
-								hashParams.put(predicate.getLocalName(),statement.getObject().toString());
+							if (predicate.getNameSpace().equals(
+									DigilibRequest.ECHO)) {
+								hashParams.put(predicate.getLocalName(),
+										statement.getObject().toString());
 							}
 						}
 					}
 				}
 			} else {
 				logger.warn("The type property was null! So the rdf-model"
-						+" sent to Digilib was probably incorrect!");
+						+ " sent to Digilib was probably incorrect!");
 			}
 		} catch (Exception e) {
 			logger.warn("rdf2hash function caused an error: ", e);
