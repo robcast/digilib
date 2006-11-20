@@ -24,13 +24,10 @@ package digilib.io;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.log4j.Logger;
 
 import org.xml.sax.SAXException;
 
