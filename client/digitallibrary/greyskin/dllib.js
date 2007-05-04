@@ -337,6 +337,8 @@ Digilib.prototype.setScalerImage = function() {
 	// this is a local callback function that can use the current scope
 	
     function onImgLoad() {
+        if (! digilib)
+            return;
 		// make sure the image is loaded so we know its size
 		/* this test seems to have problems sometimes :-(
 	    if (defined(digilib.scalerImg.complete) && !digilib.scalerImg.complete) {
