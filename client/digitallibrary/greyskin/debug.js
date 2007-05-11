@@ -1,89 +1,88 @@
-var Debug;
+var Debug = null;
 var _now = {};
 
-function newElement(tagname, content) {
-	// creates a new element, adding node or text content if given
-	var elem = document.createElement(tagname);
-	if (content) elem.appendChild(content.nodeType
-		? content // content is a node
-		: document.createTextNode(content) // content is a string
-		);
-	return elem;
+function element(name, content) {
+	var E = document.createElement(name);
+	if (content) {
+		if (content.nodeType) // it's a node
+			E.appendChild(content)
+		else // it's text
+			E.appendChild(document.createTextNode(content))
+		};
+	return E;
 	}
 	
-function appendNewElement(node, tagname, content) {
-	// appends a new element to "node", adding content if given
-	if (!node.appendChild) {
-		alert("Could not append '" + tagname + "' to " + typeof(node));
-		return null;
-		}
-	return node.appendChild(newElement(tagname, content));
+function appendElement(node, name, content) {
+	if (node == null || ! node.appendChild)
+        return node;
+	return node.appendChild(element(name,content));
 	}
 
 function getDebug() {
 	if (Debug == null) {
 		Debug = document.getElementById('debug');
 		if (Debug == null) {
-			if (!document.body) return null;
-			// its still too early!
-			Debug = appendNewElement(document.body, 'div');
+			Debug = appendElement(document.body, 'div');
+			Debug.setAttribute('class', 'debug');
 			Debug.setAttribute('id', 'debug');
-			Debug.className = 'debug';
-			Debug.innerhtml = '<p class="debug">Debug</p>';
+			Debug.innerhtml = '<h3>Debug</h3>';
 			};
 		};
 	return Debug;
 	}
 
 function debug() {
+	var D = getDebug();
+	// return alertObject(D);
 	var msg = "";
-	for (var i = 0; i<arguments.length; i++)
-		msg += arguments[i] + " ";
-	var D = getDebug();
-	if (!D) {
-		alert("Debug div not present!\n" + msg);
-		return null;
-		}
-	return appendNewElement(D, "p", msg);
+	for (var i = 0; i<arguments.length; i++) msg += arguments[i] + " ";
+	return appendElement(D, "p", msg);
 	}
 
-function debugProps(obj, msg) {
-	var D = getDebug();
-	if (msg) appendNewElement(D, "h1", msg);
-	for (var item in obj) {
-		var typ = typeof(obj[item]);
-		if (typ != "function") appendNewElement(D, "p",
-			item 
-			+ " (" + typ + "): "
-			+ obj[item]
-			);
-		};
-	}
-
-function debugObject(obj, msg) {
-	if (msg) appendNewElement(D, "h1", msg);
-	var D = getDebug();
+function debugObject(obj, exclude) {
+	if (exclude == null)
+	    exclude = '';
+	var noConst = exclude.indexOf('const') > -1;
 	var A = new Array();
-	for (var i in obj) A[i] = typeof(obj[i]); 
-	var T = appendNewElement(D, "table");
-	for (var item in A) {
-		var TR = appendNewElement(T, "tr");
-		appendNewElement(TR, "td", newElement("b", item));
-		appendNewElement(TR, "td", A[item]); 
-		if (A[item] == "function") 
-			appendNewElement(TR, "td", A[item].toSource());
+	for (var prop in obj) A.push(prop); 
+	A.sort();
+	var D = getDebug();
+	var T = appendElement(D, "table");
+	for (var i = 0; i < A.length; i++) {
+		var key = A[i];
+		var value = obj[key];
+		var type = typeof(value);
+		// exclude specified types
+		if (exclude.indexOf(type) > -1)
+			continue;
+		// exclude uppercase-only properties (= constants)
+		if (noConst && key.search(/^[A-Z0-9_]+$/) > -1)
+			continue;
+		var TR = appendElement(T, "tr");
+		appendElement(TR, "td", element("b", key));
+		appendElement(TR, "td", type); 
+		appendElement(TR, "td", value + ""); 
+		if (type == "function") 
+			appendElement(TR, "td", value.toSource());
 		};
 	}
 
 function strObject(obj) {
 	var res = "";
 	var A = new Array();
-	for (var i in obj) A[i] = typeof(obj[i]); 
+	try {
+		for (var i in obj) A[i] = typeof(obj[i]);
+		}
+	catch(e) { typ = "unknown" };
+    var count = 0;
 	for (var item in A) {
-		typ = A[item];
+		count++;
+        typ = A[item];
 		res += item + " (" + typ + "): ";
 		if (typ != "function") res += obj[item];
-		res += "\n";
+		res += "\t";
+        if (count % 4 == 0)
+            res += "\n";
 		}
 	return res;
 	}
@@ -92,6 +91,15 @@ function alertObject(obj) {
 	return alert(strObject(obj));
 	}
 
+function alertHTML(obj) {
+	if (obj)
+        return alert(obj.tagName + ".innerHTML:\n" + obj.innerHTML);
+	}
+
+function serialize(xmlobject) {
+	return (new XMLSerializer()).serializeToString(xmlobject);
+	}
+	
 function startTime(s) {
 	_now[s] = new Date();
 	}
@@ -100,3 +108,4 @@ function elapsedTime(s) {
 	var diff = new Date(new Date - _now[s]);
 	debug(s + ": " + diff.getSeconds() + "." + diff.getMilliseconds() + " sec.");
 	}
+
