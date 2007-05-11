@@ -437,14 +437,14 @@ Digilib.prototype.zoomArea = function() {
     registerEvent("mousedown", this.scalerImg, zoomStart);
     window.focus();
 
-	// our own reference to this for the local function
-	var digilib = this;
+	// our own reference to "this" for the local functions
+	var _this = this;
 	
 	// mousedown handler: start moving
     function zoomStart(evt) {
         pt1 = evtPosition(evt);
         unregisterEvent("mousedown", overlay, zoomStart);
-        unregisterEvent("mousedown", digilib.scalerImg, zoomStart);
+        unregisterEvent("mousedown", _this.scalerImg, zoomStart);
         // setup and show zoom div
         moveElement(zoomdiv, Rectangle(pt1.x, pt1.y, 0, 0));
         showElement(zoomdiv, true);
@@ -460,7 +460,7 @@ Digilib.prototype.zoomArea = function() {
         // assume a click if the area is too small (up to 3 x 3 pixel)
         var clickRect = new Rectangle(pt1, pt2);
         clickRect.normalize();
-        if (clickRect.getArea() <= this.MIN_AREA_SIZE) return stopEvent(evt); 
+        if (clickRect.getArea() <= _this.MIN_AREA_SIZE) return stopEvent(evt);
         // hide zoom div
         showElement(zoomdiv, false);
         showElement(overlay, false);
@@ -469,11 +469,11 @@ Digilib.prototype.zoomArea = function() {
         unregisterEvent("mouseup", document, zoomMove);
         // clip and transform
         clickRect.clipTo(picRect);
-        var area = digilib.trafo.invtransform(clickRect);
-        digilib.setParamFromArea(area);
+        var area = _this.trafo.invtransform(clickRect);
+        _this.setParamFromArea(area);
         // zoomed is always fit
-        digilib.params.set("ws", 1);
-        digilib.display();
+        _this.params.set("ws", 1);
+        _this.display();
         return stopEvent(evt);
     }
     
