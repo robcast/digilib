@@ -210,6 +210,16 @@ public class ImageSize {
 		return (height > 0) ? ((float) width / (float) height) : 0;
 	}
 	
+	/**
+	 * Returns a scaled copy of this image size. 
+	 * 
+	 * @param scale
+	 * @return
+	 */
+	public ImageSize getScaled(float scale) {
+		return new ImageSize((int) (width * scale), (int) (height * scale));
+	}
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
