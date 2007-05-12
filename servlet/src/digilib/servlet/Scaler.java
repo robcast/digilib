@@ -59,7 +59,7 @@ public class Scaler extends HttpServlet {
 	private static final long serialVersionUID = -325080527268912852L;
 
 	/** digilib servlet version (for all components) */
-	public static final String dlVersion = "1.6.0";
+	public static final String dlVersion = "1.6.1";
 
 	/** logger for accounting requests */
 	private static Logger accountlog = Logger.getLogger("account.request");
@@ -285,6 +285,8 @@ void processRequest(HttpServletRequest request, HttpServletResponse response)
 			paramDDPIX = dlRequest.getAsFloat("ddpi");
 			paramDDPIY = paramDDPIX;
 		}
+		// absolute scale factor for mo=ascale (and mo=osize)
+		float paramSCALE = dlRequest.getAsFloat("scale");
 
 		/*
 		 * operation mode: "fit": always fit to page, "clip": send original
@@ -302,7 +304,12 @@ void processRequest(HttpServletRequest request, HttpServletResponse response)
 			scaleToFit = false;
 			absoluteScale = true;
 			hiresOnly = true;
+		} else if (dlRequest.hasOption("mo", "ascale")) {
+			scaleToFit = false;
+			absoluteScale = true;
+			hiresOnly = false;
 		}
+
 		// operation mode: "lores": try to use scaled image, "hires": use
 		// unscaled image
 		// "autores": try best fitting resolution
@@ -382,13 +389,51 @@ void processRequest(HttpServletRequest request, HttpServletResponse response)
 						+ dlRequest.getAsInt("pn") + ") not found.");
 			}
 
+			/* for absolute scale and original size we need the hires size */
+			ImageSize hiresSize = null;
+			if (absoluteScale) {
+				ImageFile hiresFile = fileset.getBiggest();
+				if (!hiresFile.isChecked()) {
+					ImageOps.checkFile(hiresFile);
+				}
+				hiresSize = hiresFile.getSize();
+				
+				/* prepare resolution and scale factor for original size */
+				if (dlRequest.hasOption("mo", "osize")) {
+					// get original resolution from metadata
+					fileset.checkMeta();
+					origResX = fileset.getResX();
+					origResY = fileset.getResY();
+					if ((origResX == 0) || (origResY == 0)) {
+						throw new ImageOpException("Missing image DPI information!");
+					}
+
+					if ((paramDDPIX == 0) || (paramDDPIY == 0)) {
+						throw new ImageOpException(
+								"Missing display DPI information!");
+					}
+					// calculate absolute scale factor
+					float sx = paramDDPIX / origResX;
+					float sy = paramDDPIY / origResY;
+					// currently only same scale :-(
+					paramSCALE = (sx + sy)/2f;
+				}
+				
+			}
+			
+
 			/* calculate expected source image size */
 			ImageSize expectedSourceSize = new ImageSize();
 			if (scaleToFit) {
+				// scale to fit -- calculate minimum source size
 				float scale = (1 / Math.min(paramWW, paramWH)) * paramWS;
 				expectedSourceSize.setSize((int) (paramDW * scale),
 						(int) (paramDH * scale));
+			} else if (absoluteScale && dlRequest.hasOption("mo", "ascale")) {
+				// absolute scale -- apply scale to hires size
+				expectedSourceSize = hiresSize.getScaled(paramSCALE);
 			} else {
+				// clip to fit -- source = destination size
 				expectedSourceSize.setSize((int) (paramDW * paramWS),
 						(int) (paramDH * paramWS));
 			}
@@ -503,24 +548,6 @@ void processRequest(HttpServletRequest request, HttpServletResponse response)
 				paramDH = (int) Math.round(paramDW / imgAspect);
 			}
 
-			/*
-			 * prepare resolution for original size
-			 */
-			if (absoluteScale) {
-				// get original resolution from metadata
-				fileset.checkMeta();
-				origResX = fileset.getResX();
-				origResY = fileset.getResY();
-				if ((origResX == 0) || (origResY == 0)) {
-					throw new ImageOpException("Missing image DPI information!");
-				}
-
-				if ((paramDDPIX == 0) || (paramDDPIY == 0)) {
-					throw new ImageOpException(
-							"Missing display DPI information!");
-				}
-			}
-
 			/* crop and scale the image */
 
 			logger.debug("IMG: " + imgSize.getWidth() + "x"
@@ -557,11 +584,13 @@ void processRequest(HttpServletRequest request, HttpServletResponse response)
 				scaleY = paramDH / areaHeight * paramWS;
 				scaleXY = (scaleX > scaleY) ? scaleY : scaleX;
 			} else if (absoluteScale) {
-				// absolute scale
-				scaleX = paramDDPIX / origResX;
-				scaleY = paramDDPIY / origResY;
-				// currently only same scale :-(
-				scaleXY = scaleX;
+				scaleXY = paramSCALE;
+				// we need to correct the factor if we use a pre-scaled image
+				if (imgSize.getWidth() != hiresSize.getWidth()) {
+					scaleXY *= (float)hiresSize.getWidth() / (float)imgSize.getWidth();
+				}
+				scaleX = scaleXY;
+				scaleY = scaleXY;
 				areaWidth = paramDW / scaleXY * paramWS;
 				areaHeight = paramDH / scaleXY * paramWS;
 				// reset user area size
