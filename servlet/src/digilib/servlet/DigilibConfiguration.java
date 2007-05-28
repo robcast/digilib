@@ -76,7 +76,7 @@ public class DigilibConfiguration extends ParameterMap {
 		// digilib servlet version
 		newParameter(
 			"servlet.version",
-			digilib.servlet.Scaler.dlVersion,
+			digilib.servlet.Scaler.getVersion(),
 			null,
 			's');
 		// configuration file location
