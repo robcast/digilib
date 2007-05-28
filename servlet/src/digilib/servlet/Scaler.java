@@ -742,4 +742,11 @@ void processRequest(HttpServletRequest request, HttpServletResponse response)
 
 	}
 
+	/**
+	 * @return the dlVersion
+	 */
+	public static String getVersion() {
+		return dlVersion;
+	}
+
 } // Scaler class
