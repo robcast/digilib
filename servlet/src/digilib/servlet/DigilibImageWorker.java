@@ -134,7 +134,7 @@ public class DigilibImageWorker extends DigilibWorker {
 	/*
 	 * do the work
 	 */
-	public void work() throws FileOpException, IOException, ImageOpException {
+	public DocuImage render() throws FileOpException, IOException, ImageOpException {
 		;
 		logger.debug("image worker " + this.getName() + " working");
 		startTime = System.currentTimeMillis();
@@ -244,8 +244,12 @@ public class DigilibImageWorker extends DigilibWorker {
 			docuImage.enhance(mult, paramBRGT);
 		}
 
-		logger.debug("time " + (System.currentTimeMillis() - startTime) + "ms");
+		logger.debug("rendered in " + (System.currentTimeMillis() - startTime) + "ms");
 
+		return docuImage;
+	}
+
+	public void write(DocuImage img) throws FileOpException, IOException {
 		/* write the resulting image */
 
 		// setup output -- if output type is forced use that otherwise
@@ -266,12 +270,12 @@ public class DigilibImageWorker extends DigilibWorker {
 		response.setContentType(mimeType);
 
 		// write the image
-		docuImage.writeImage(mimeType, response.getOutputStream());
+		img.writeImage(mimeType, response.getOutputStream());
 		response.flushBuffer();
 
 		logger.info("image worker " + this.getName() + " done in "
 				+ (System.currentTimeMillis() - startTime));
 
-		docuImage.dispose();
+		img.dispose();
 	}
 }
