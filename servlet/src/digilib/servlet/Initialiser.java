@@ -20,7 +20,6 @@
  */
 package digilib.servlet;
 
-import digilib.image.ImageOps;
 import java.io.File;
 
 import javax.servlet.ServletConfig;
@@ -31,10 +30,9 @@ import javax.servlet.http.HttpServlet;
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
 
-import EDU.oswego.cs.dl.util.concurrent.FIFOSemaphore;
-import EDU.oswego.cs.dl.util.concurrent.Semaphore;
 import digilib.auth.AuthOps;
 import digilib.auth.XMLAuthOps;
+import digilib.image.ImageOps;
 import digilib.io.AliasingDocuDirCache;
 import digilib.io.DocuDirCache;
 import digilib.io.FileOps;
@@ -137,8 +135,7 @@ public class Initialiser extends HttpServlet {
                 ImageOps.setDocuImage(dlConfig.getDocuImageInstance());
 				// worker threads
 				int nt = dlConfig.getAsInt("worker-threads");
-				Semaphore lck = new FIFOSemaphore(nt); 
-				DigilibWorker.setLock(lck);
+				DigilibWorker.setSemaphore(nt, true);
 				int mt = dlConfig.getAsInt("max-waiting-threads");
 				DigilibWorker.setMaxWaitingThreads(mt);
 				// set as the servlets main config
