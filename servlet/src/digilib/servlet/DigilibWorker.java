@@ -20,10 +20,11 @@
  */
 package digilib.servlet;
 
+import java.util.concurrent.Semaphore;
+
 import org.apache.log4j.Logger;
 
-import EDU.oswego.cs.dl.util.concurrent.FIFOSemaphore;
-import EDU.oswego.cs.dl.util.concurrent.Semaphore;
+import digilib.image.DocuImage;
 
 /**
  * image operation worker.
@@ -34,53 +35,68 @@ public abstract class DigilibWorker {
 
 	protected static Logger logger = Logger.getLogger(DigilibWorker.class);
 
+	private static int maxRunningThreads = 0;
+
 	private static int runningThreads = 0;
 
 	private static int waitingThreads = 0;
 
 	private static int maxWaitingThreads = 0;
 
-	public static Semaphore lock = new FIFOSemaphore(1);
+	public static Semaphore sem = new Semaphore(2, true);
 
-	protected boolean busy = false;
-
-	protected Exception error;
+	protected Throwable error;
 
 	/**
 	 * @param job
 	 */
 	public DigilibWorker() {
 		super();
-		busy = true;
 		error = null;
 	}
 
-	public abstract void work() throws Exception;
+	public abstract DocuImage render() throws Exception;
+
+	public abstract void write(DocuImage img) throws Exception;
 
 	/**
 	 * Do the work.
 	 */
 	public void run() {
 		logger.debug((++waitingThreads) + " waiting threads");
+		DocuImage img = null;
 		try {
-			lock.acquire();
+			sem.acquire();
 			waitingThreads--;
 		} catch (InterruptedException e) {
 			error = e;
-			busy = false;
 			waitingThreads--;
+			// should we reinterrupt?
 			return;
 		}
 		logger.debug((++runningThreads) + " running threads");
 		try {
-			work();
-		} catch (Exception e) {
+			/* 
+			 * do rendering under the semaphore 
+			 */
+			img = render();
+		} catch (Throwable e) {
 			error = e;
 			logger.error(e);
 		} finally {
-			busy = false;
 			runningThreads--;
-			lock.release();
+			sem.release();
+		}
+		/* 
+		 * write the result without semaphore
+		 */
+		if (!hasError()) {
+			try{
+				write(img);
+			} catch (Throwable e) {
+				error = e;
+				logger.error(e);
+			}
 		}
 	}
 
@@ -98,14 +114,7 @@ public abstract class DigilibWorker {
 	 * @return
 	 */
 	public static boolean canRun() {
-		return ((DigilibWorker.maxWaitingThreads == 0) || (DigilibWorker.waitingThreads <= DigilibWorker.maxWaitingThreads));
-	}
-
-	/**
-	 * @return Returns the busy.
-	 */
-	public boolean isBusy() {
-		return busy;
+		return ((DigilibWorker.maxWaitingThreads == 0) || (DigilibWorker.getNumWaiting() <= DigilibWorker.maxWaitingThreads));
 	}
 
 	/**
@@ -120,23 +129,28 @@ public abstract class DigilibWorker {
 	/**
 	 * @return Returns the error.
 	 */
-	public Exception getError() {
+	public Throwable getError() {
 		return error;
 	}
 
 	/**
-	 * @return Returns the lock.
+	 * @return Returns the semaphore.
 	 */
-	public static Semaphore getLock() {
-		return lock;
+	public static Semaphore getSemaphore() {
+		return sem;
 	}
 
 	/**
-	 * @param lock
-	 *            The lock to set.
+	 * @param sem
+	 *            The semaphore to set.
 	 */
-	public static void setLock(Semaphore lock) {
-		DigilibWorker.lock = lock;
+	public static void setSemaphore(Semaphore sem) {
+		DigilibWorker.sem = sem;
+	}
+
+	public static void setSemaphore(int maxrun, boolean fair) {
+		sem = new Semaphore(maxrun, fair);
+		maxRunningThreads = maxrun;
 	}
 
 	/**
@@ -145,7 +159,7 @@ public abstract class DigilibWorker {
 	 * @return
 	 */
 	public static int getNumRunning() {
-		return runningThreads;
+		return (maxRunningThreads - sem.availablePermits());
 	}
 
 	/**
@@ -154,7 +168,7 @@ public abstract class DigilibWorker {
 	 * @return
 	 */
 	public static int getNumWaiting() {
-		return waitingThreads;
+		return sem.getQueueLength();
 	}
 
 	/**
@@ -169,5 +183,13 @@ public abstract class DigilibWorker {
 	 */
 	public static void setMaxWaitingThreads(int maxWaitingThreads) {
 		DigilibWorker.maxWaitingThreads = maxWaitingThreads;
+	}
+
+	public static int getMaxRunningThreads() {
+		return maxRunningThreads;
+	}
+
+	public static void setMaxRunningThreads(int maxRunningThreads) {
+		DigilibWorker.maxRunningThreads = maxRunningThreads;
 	}
 }
