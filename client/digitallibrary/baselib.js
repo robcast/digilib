@@ -17,13 +17,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
 Authors: 
   Christian Luginbuehl, 01.05.2003 (first version)
   DW 24.03.2004 (Changed for digiLib in Zope)
-  Robert Casties, 2.11.2004
+  Robert Casties, 22.1.2008
 
 */
 
 function base_init() {
     // init function
-    baseScriptVersion = "1.2";
+    baseScriptVersion = "1.2.4";
     dlParams = new Object();
     browserType = getBrowserType();
 }
@@ -376,19 +376,20 @@ function getElementPosition(elem) {
     // returns a Position with the position of the element
     var x = 0;
     var y = 0;
-    if (defined(elem.offsetLeft)) {
+    if (defined(elem.offsetParent)) {
+        // use .offsetLeft for most browsers
         var e = elem;
         while (e) {
-            if (defined(e.clientLeft)) {
-                // special for IE
+            if (browserType.isIE) {
                 if (browserType.isMac) {
+                    // IE for Mac extraspecial
                     if (e.offsetParent.tagName == "BODY") {
-                        // IE for Mac extraspecial
                         x += e.clientLeft;
                         y += e.clientTop;
                         break;
                     }
                 } else {
+                    // special for IE
                     if ((e.tagName != "TABLE") && (e.tagName != "BODY")) {
                         x += e.clientLeft;
                         y += e.clientTop;
@@ -400,9 +401,11 @@ function getElementPosition(elem) {
             e = e.offsetParent;
         }
     } else if (defined(elem.x)) {
+        // use .x for other (which?)
         x = elem.x;
         y = elem.y;
     } else if (defined(elem.pageX)) {
+        // use pageX for N4
         x = elem.pageX;
         y = elem.pageY;
     } else {
@@ -436,8 +439,6 @@ function getElementRect(elem) {
     var size = getElementSize(elem);
     return new Rectangle(pos.x, pos.y, size.width, size.height);
 }
-
-
 
 function moveElement(elem, rect) {
     // moves and sizes the element
@@ -484,6 +485,17 @@ function showElement(elem, show) {
         alert("showelement: no style nor layer property!");
     }
     return true;
+}
+
+function isElementVisible(elem) {
+    // returns of the is shown or hidden
+    if (elem.style) {
+        return (elem.style.visibility == "visible");
+    } else if (defined(elem.visibility)) {
+        return (elem.visibility == "show");
+    } else {
+        alert("iselementvisible: no style nor layer property!");
+    }
 }
 
 function evtPosition(evt) {
@@ -598,14 +610,15 @@ function getWinSize() {
     if (defined(self.innerHeight))  {
         // all except Explorer
         if ((self.innerWidth == 0)||(self.innerHeight == 0)) {
-            // Safari 1.2 bug
+            // Safari 1.2 (and other) bug
             if (parent) {
-                parent.innerHeight;
-                parent.innerWidth;
+                wsize.height = parent.innerHeight;
+                wsize.width = parent.innerWidth;
             }
+        } else {
+            wsize.width = self.innerWidth;
+            wsize.height = self.innerHeight;
         }
-        wsize.width = self.innerWidth;
-        wsize.height = self.innerHeight;
     } else if (document.documentElement && document.documentElement.clientHeight) {
         // Explorer 6 Strict Mode
         wsize.width = document.documentElement.clientWidth;
