@@ -168,8 +168,11 @@ public class PDFCache extends HttpServlet {
 		bis = new BufferedInputStream(fis);
 		int bytes = 0;
 
+		String fn = request.getParameter("fn");
+		String pgs = request.getParameter("pgs");
+		
 		response.setContentType("application/pdf");
-		response.addHeader("Content-Disposition", "attachment; filename="+filename);
+		response.addHeader("Content-Disposition", "attachment; filename="+fn+"_"+pgs+".pdf");
 		response.setContentLength( (int) cached_file.length());
 
 		logger.debug("Sending document "+filename+" to the user.");
