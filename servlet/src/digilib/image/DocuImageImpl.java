@@ -20,6 +20,7 @@
 
 package digilib.image;
 
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
@@ -161,5 +162,6 @@ public abstract class DocuImageImpl implements DocuImage {
 		List empty = new LinkedList();
 		return empty.iterator();
 	}
+	
 
 }

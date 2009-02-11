@@ -19,6 +19,7 @@
 
 package digilib.image;
 
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
@@ -561,4 +562,9 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		img = null;
 	}
 
+	public Image getImage(){
+		return (Image) img;
+	}
+	
+	
 }

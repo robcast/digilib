@@ -1,4 +1,4 @@
-/* DigilibWorker.java -- image operation worker
+	/* DigilibWorker.java -- image operation worker
  * 
  * Digital Image Library servlet components
  * 
