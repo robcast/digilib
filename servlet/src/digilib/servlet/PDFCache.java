@@ -103,6 +103,7 @@ public class PDFCache extends HttpServlet {
 		// ... and if the file already exists, send it ...
 			try {
 				sendFile(request,response);
+
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -122,11 +123,15 @@ public class PDFCache extends HttpServlet {
 		else if (status == STATUS_NONEXISTENT){
 		// ... or else, generate the file and inform the user about the estimated generation-time
 			try {
-				this.createFile(request, response);
+				createFile(request, response);
+				response.sendRedirect(request.getRequestURI()+'?'+request.getQueryString());  // refresh the browser after finishing the file
 			} catch (ServletException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -195,7 +200,7 @@ public class PDFCache extends HttpServlet {
 		}
 	}
 	
-	public void createFile(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
+	public void createFile(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException, InterruptedException{
 		// use MakePDF to generate a new Document and put it into the cache-directory
 
 		// get global instance of MakePDF
@@ -213,6 +218,7 @@ public class PDFCache extends HttpServlet {
 
 		mpdf.doCreate(request,response,filename);  // set the parameters and ... 
 		mpdf.run();                                // ... start generating the pdf
+
 		//new Thread(mpdf,"MakePDF").start();
 	}
 }
