@@ -84,10 +84,13 @@ public class PDFCache extends HttpServlet {
 	
 	public String getDocumentId(HttpServletRequest request){
 		// generate an unambiguous ID from the request (this is used for filenames etc)
-		// at this stage, the request-string is used
 		String id;
+
+		String fn = request.getParameter("fn");
+		String dh = request.getParameter("dh");
+		String pgs = request.getParameter("pgs");
 		
-		id = request.getQueryString() + ".pdf";		
+		id = "fn=" + fn + "&dh=" + dh + "&pgs=" + pgs + ".pdf";		
 
 		return id;
 	}
@@ -112,19 +115,12 @@ public class PDFCache extends HttpServlet {
 		
 		else if (status == STATUS_PENDING){
 		// ... if it is in the works, notify the user about it ...
-			String redir_url = "abc.jsp";
-			try {
-				response.sendRedirect(redir_url);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 		else if (status == STATUS_NONEXISTENT){
 		// ... or else, generate the file and inform the user about the estimated generation-time
 			try {
 				createFile(request, response);
-				response.sendRedirect(request.getRequestURI()+'?'+request.getQueryString());  // refresh the browser after finishing the file
+				response.sendRedirect(request.getRequestURI()+'?'+request.getQueryString()+"&done=true");  // refresh the browser after finishing the file
 			} catch (ServletException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
