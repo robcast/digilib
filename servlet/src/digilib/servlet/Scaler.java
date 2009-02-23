@@ -22,6 +22,7 @@ import digilib.auth.AuthOps;
 import digilib.image.ImageOpException;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirent;
+import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.ImageFile;
 import digilib.io.ImageFileset;
@@ -125,6 +126,8 @@ public class Scaler extends RequestHandler {
 			throw new ServletException("ERROR: No Configuration!");
 		}
 
+		
+		
 		accountlog.debug("request: " + request.getQueryString());
 		logger.debug("request: " + request.getQueryString());
 
@@ -132,16 +135,53 @@ public class Scaler extends RequestHandler {
 
 		// define the job information
 		ImageJobInformation jobdeclaration = new ImageJobInformation();
-
 		jobdeclaration.setWithRequest(request);
 		jobdeclaration.setConfig(dlConfig);
 	
+		ImageFile fileToLoad = null;
+		try {
+			fileToLoad = jobdeclaration.get_fileToLoad();
+		} catch (IOException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+			return;
+		}
 		
 		
+		// if requested, send image as a file
+		if(sendFileAllowed && jobdeclaration.checkSendAsFile()){
+			String mt = null;
+			if (jobdeclaration.hasOption("mo", "rawfile")) {
+				mt = "application/octet-stream";
+			}
+			logger.debug("Sending RAW File as is.");
+			try {
+				ServletOps.sendFile(fileToLoad.getFile(), mt, response);
+			} catch (FileOpException e) {
+				e.printStackTrace();
+			}
+
+			return;
+		}
+
 		
-		// TODO check, if file can be sent without transformations
-	
 		
+		// if possible, send the image without actually having to transform it
+		if(jobdeclaration.noTransformRequired()){
+			logger.debug("Sending File as is.");
+
+			try {
+				ServletOps.sendFile(fileToLoad.getFile(), null, response);
+			} catch (FileOpException e) {
+				e.printStackTrace();
+			}
+
+			//logger.info("Done in "
+			//		+ (System.currentTimeMillis() - startTime) + "ms");
+			return;
+		}
+		
+
 		
 		
 		OutputStream outputstream = null;
@@ -152,6 +192,22 @@ public class Scaler extends RequestHandler {
 			e1.printStackTrace();
 			logger.error(e1.getMessage());
 		}
+
+		
+		
+		
+		if (! DigilibWorker.canRun()) {
+			logger.error("Servlet overloaded!");
+			try {
+				response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return;
+		}
+
+		
+		
 		
 		
 		DigilibWorker job=null;
@@ -211,7 +267,6 @@ public class Scaler extends RequestHandler {
 				outputstream.flush();
 				logger.debug("Job Processing Time: "+ (System.currentTimeMillis()-startTime) + "ms");
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				logger.error(e.getMessage());
 				response.sendError(1);

@@ -48,7 +48,7 @@ public class ImageJobInformation extends ParameterMap {
 	Float scaleXY = null;
 	Rectangle2D userImgArea = null;
 	Rectangle2D outerUserImgArea= null;
-	
+	Boolean imageSendable = null;
 //	Integer paramDW = null;
 //	Integer paramDH 
 	public ImageJobInformation() {
@@ -170,11 +170,30 @@ public class ImageJobInformation extends ParameterMap {
 	 * @throws IOException 
 	 * */
 
-	public String get_mimeType() throws IOException, ImageOpException{
+	public String get_mimeType() {
 		String mimeType = "image/png";
-		ImageFile fileToLoad = get_fileToLoad();
-		if(fileToLoad != null)
-			mimeType = fileToLoad.getMimetype();
+		
+		
+		ImageFile fileToLoad;
+		try {
+
+			fileToLoad = get_fileToLoad();
+			
+			if(!get_fileToLoad().isChecked()){
+				ImageOps.checkFile(fileToLoad);
+			}
+
+				
+			if(fileToLoad != null)
+				mimeType = fileToLoad.getMimetype();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ImageOpException e) {
+			e.printStackTrace();
+		}
+
+		
 		return mimeType;
 	}
 	
@@ -343,7 +362,6 @@ public class ImageJobInformation extends ParameterMap {
 			Rectangle2D userImgArea = imgTrafo.createTransformedShape(
 					relUserArea).getBounds2D();
 	
-			//##########################################################################################################################
 			// calculate scaling factors based on inner user area
 			if (get_scaleToFit()) {
 				areaWidth = (float) userImgArea.getWidth();
@@ -587,7 +605,7 @@ public class ImageJobInformation extends ParameterMap {
 	public float[] get_paramRGBM(){
 		logger.debug("get_paramRGBM()");
 
-		float[] paramRGBM = {0f,0f,0f};
+		float[] paramRGBM = null;//{0f,0f,0f};
 		Parameter p = get("rgbm");
 		if (p.hasValue() && (!p.getAsString().equals("0/0/0"))) {
 			return p.parseAsFloatArray("/");
@@ -598,7 +616,7 @@ public class ImageJobInformation extends ParameterMap {
 	public float[] get_paramRGBA(){
 		logger.debug("get_paramRGBA()");
 
-		float[] paramRGBA =  {0f,0f,0f};
+		float[] paramRGBA =  null;//{0f,0f,0f};
 		Parameter p = get("rgba");
 		if (p.hasValue() && (!p.getAsString().equals("0/0/0"))) {
 			paramRGBA = p.parseAsFloatArray("/");
@@ -616,5 +634,45 @@ public class ImageJobInformation extends ParameterMap {
 		logger.debug("get_vmir()");
 
 		return hasOption("mo","vmir");
+	}
+	
+	public boolean checkSendAsFile(){
+		return hasOption("mo", "file")
+		|| hasOption("mo", "rawfile");
+	}
+	
+	public boolean get_imageSendable(){
+		if(imageSendable==null){
+			String mimeType = get_mimeType();
+			imageSendable = ( (mimeType.equals("image/jpeg")
+				        	|| mimeType.equals("image/png")
+				        	|| mimeType.equals("image/gif") )
+				        	&& 
+				        	!(hasOption("mo", "hmir")
+							|| hasOption("mo", "vmir") 
+							|| (getAsFloat("rot") != 0)
+							|| (get_paramRGBM() != null) 
+							|| (get_paramRGBA() != null)
+							|| (getAsFloat("cont") != 0) 
+							|| (getAsFloat("brgt") != 0)));
+		}
+		
+		return imageSendable;
+	}
+	
+	
+	public boolean noTransformRequired(){
+		try {
+			return get_imageSendable() && ((get_loresOnly() && get_fileToLoad().getSize().isSmallerThan(
+					get_expectedSourceSize())) || (!(get_loresOnly() || get_hiresOnly()) && get_fileToLoad()
+							.getSize().fitsIn(expectedSourceSize)));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ImageOpException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
 	}
 }
