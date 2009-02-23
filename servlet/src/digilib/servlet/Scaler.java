@@ -157,39 +157,42 @@ public class Scaler extends RequestHandler {
 		DigilibWorker job=null;
 		try {
 			
-/*			logger.debug(outputstream.toString());
-			logger.debug(jobdeclaration.get_mimeType().toString());  
-			logger.debug(jobdeclaration.get_scaleQual().toString());
-			logger.debug(jobdeclaration.getAsFloat("rot")); 
-			logger.debug(jobdeclaration.getAsFloat("cont"));
-			logger.debug(jobdeclaration.getAsFloat("brgt"));
-			logger.debug(jobdeclaration.get_paramRGBM().toString());
-			logger.debug(jobdeclaration.get_paramRGBA().toString());
-			logger.debug("fileToLoad " + jobdeclaration.get_fileToLoad().toString());
-			logger.debug("scaleXY " + jobdeclaration.get_scaleXY());
-			logger.debug("get_outerUserImgArea " + jobdeclaration.get_outerUserImgArea().toString()); 
-			logger.debug("get_innerUserImgArea " + jobdeclaration.get_innerUserImgArea().toString()); 
-			logger.debug("minSubsample " + minSubsample);
-			logger.debug("get_wholeRotArea " + jobdeclaration.get_wholeRotArea());
-			logger.debug("get_forceType "+jobdeclaration.get_forceType()); */
-			
-			float scaleXY = jobdeclaration.get_scaleXY();
-			
 			long startTime = System.currentTimeMillis();
+
+			/* check permissions */
+			if (useAuthorization) {
+				// get a list of required roles (empty if no restrictions)
+				List rolesRequired;
+				try {
+					rolesRequired = authOp.rolesForPath(jobdeclaration.getFilePath(), request);
+					if (rolesRequired != null) {
+						authlog.debug("Role required: " + rolesRequired);
+						authlog.debug("User: " + request.getRemoteUser());
+						// is the current request/user authorized?
+						if (!authOp.isRoleAuthorized(rolesRequired, request)) {
+							// send deny answer and abort
+							throw new AuthOpException();
+						}
+					}
+
+				} catch (AuthOpException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 
 			
 			job = new DigilibImageWorker(dlConfig, 
 					outputstream ,
 					jobdeclaration.get_mimeType(), 
 					jobdeclaration.get_scaleQual(), 
-					//jobdeclaration,
 					jobdeclaration.getAsFloat("rot"), 
 					jobdeclaration.getAsFloat("cont"),
 					jobdeclaration.getAsFloat("brgt"), 
 					jobdeclaration.get_paramRGBM(), 
 					jobdeclaration.get_paramRGBA(), 
 					jobdeclaration.get_fileToLoad(), 
-					scaleXY,
+					jobdeclaration.get_scaleXY(),
 					jobdeclaration.get_outerUserImgArea(),
 					jobdeclaration.get_innerUserImgArea(),
 					minSubsample,
