@@ -2,6 +2,7 @@ package digilib.servlet;
 
 import java.io.InputStream;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -23,9 +24,9 @@ public abstract class RequestHandler extends HttpServlet {
 	protected static Logger authlog = Logger.getLogger("digilib.auth");
 
 	
-	public void init(){
+	public void init(ServletConfig config) throws ServletException{
 		try {
-			super.init();
+			super.init(config);
 		} catch (ServletException e) {
 			e.printStackTrace();
 			logger.error(e.getMessage());

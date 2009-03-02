@@ -51,7 +51,7 @@ public class ImageJobInformation extends ParameterMap {
 	Boolean imageSendable = null;
 //	Integer paramDW = null;
 //	Integer paramDH 
-	public ImageJobInformation() {
+	public ImageJobInformation(DigilibConfiguration dlcfg) {
 		super(30);
 		
 		// url of the page/document (second part)
@@ -126,11 +126,13 @@ public class ImageJobInformation extends ParameterMap {
 		// marks
 		newParameter("mk", "", null, 'c');
 */	
-	}
-
-	public void setConfig(DigilibConfiguration dlcfg){
 		dlConfig = dlcfg;
 	}
+
+
+	/*public void setPageNumber(int pn){
+		put("pn",pn);
+	}*/
 	
 	public void setWithRequest(HttpServletRequest request) {
 		for (String param : parameter_list){
@@ -148,7 +150,7 @@ public class ImageJobInformation extends ParameterMap {
 		return parameter_list;
 	}
 	
-
+	
 	public boolean hasOption(String param, String opt) {
 		String s = getAsString(param);
 		if (s != null) {
@@ -464,7 +466,6 @@ public class ImageJobInformation extends ParameterMap {
 
 	
 	public ImageSize get_imgSize() throws IOException, ImageOpException{
-		logger.debug("get_imgSize()");
 
 		ImageSize imgSize = get_fileToLoad().getSize();
 		return imgSize;

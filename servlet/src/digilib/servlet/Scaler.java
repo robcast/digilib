@@ -21,6 +21,7 @@ import digilib.auth.AuthOpException;
 import digilib.auth.AuthOps;
 import digilib.image.ImageOpException;
 import digilib.io.DocuDirCache;
+import digilib.io.DocuDirectory;
 import digilib.io.DocuDirent;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
@@ -78,8 +79,41 @@ public class Scaler extends RequestHandler {
 	/** try to enlarge cropping area for "oblique" angles */
 	boolean wholeRotArea = false;
 
+	
+	protected long getLastModified(HttpServletRequest request) {
+		accountlog.debug("GetLastModified from " + request.getRemoteAddr()
+				+ " for " + request.getQueryString());
+		long mtime = -1;
+		// create new request with defaults
+		DigilibRequest dlReq = new DigilibRequest();
+		// set with request parameters
+		dlReq.setWithRequest(request);
+		// find the requested file
+		DocuDirent f = findFile(dlReq);
+		if (f != null) {
+			DocuDirectory dd = (DocuDirectory) f.getParent();
+			mtime = dd.getDirMTime() / 1000 * 1000;
+		}
+		return mtime;
+	}
+	/**
+	 * Returns the DocuDirent corresponding to the DigilibRequest.
+	 * 
+	 * @param dlRequest
+	 * @return
+	 */
+	public DocuDirent findFile(DigilibRequest dlRequest) {
+		// find the file(set)
+		DocuDirent f = dirCache.getFile(dlRequest.getFilePath(), dlRequest
+				.getAsInt("pn"), FileOps.CLASS_IMAGE);
+		return f;
+	}
+	
+	
+	
 	/**
 	 * Initialisation on first run.
+	 * @throws ServletException 
 	 * 
 	 * @see javax.servlet.Servlet#init(javax.servlet.ServletConfig)
 	 */
@@ -134,9 +168,8 @@ public class Scaler extends RequestHandler {
 		
 
 		// define the job information
-		ImageJobInformation jobdeclaration = new ImageJobInformation();
+		ImageJobInformation jobdeclaration = new ImageJobInformation(dlConfig);
 		jobdeclaration.setWithRequest(request);
-		jobdeclaration.setConfig(dlConfig);
 	
 		ImageFile fileToLoad = null;
 		try {
@@ -238,27 +271,11 @@ public class Scaler extends RequestHandler {
 			}
 
 			
-			job = new DigilibImageWorker(dlConfig, 
-					outputstream ,
-					jobdeclaration.get_mimeType(), 
-					jobdeclaration.get_scaleQual(), 
-					jobdeclaration.getAsFloat("rot"), 
-					jobdeclaration.getAsFloat("cont"),
-					jobdeclaration.getAsFloat("brgt"), 
-					jobdeclaration.get_paramRGBM(), 
-					jobdeclaration.get_paramRGBA(), 
-					jobdeclaration.get_fileToLoad(), 
-					jobdeclaration.get_scaleXY(),
-					jobdeclaration.get_outerUserImgArea(),
-					jobdeclaration.get_innerUserImgArea(),
-					minSubsample,
-					jobdeclaration.get_wholeRotArea(), 
-					jobdeclaration.get_forceType(),
-					jobdeclaration.get_hmir(),
-					jobdeclaration.get_vmir());
+			job = new DigilibImageWorker(dlConfig, outputstream , jobdeclaration);
 
 			job.run();
 
+			
 			if (job.hasError()) {
 				throw new ImageOpException(job.getError().toString());
 			}

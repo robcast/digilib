@@ -24,8 +24,13 @@ package digilib.servlet;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -34,6 +39,7 @@ import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Image;
 import com.lowagie.text.PageSize;
+import com.lowagie.text.pdf.PdfWriter;
 
 import digilib.image.DocuImage;
 import digilib.image.DocuImageImpl;
@@ -45,183 +51,185 @@ import digilib.io.FileOpException;
 import digilib.io.ImageFile;
 
 /**
- * worker for image operations.
+ * worker for pdf operations.
  * 
- * @author casties
+ * @author cmielack
  * 
  */
-public class DigilibPDFWorker extends DigilibImageWorker {
+public class DigilibPDFWorker extends DigilibWorker {
 
-	private DigilibConfiguration dlConfig;
+	private DigilibConfiguration dlConfig = null;
 
+	private Document doc = null;
 
-	long startTime;
-
-	String mimeType;
-
-	int scaleQual;
-
-	DigilibRequest dlRequest;
-
-	float paramROT;
-
-	float paramCONT;
-
-	float paramBRGT;
-
-	float[] paramRGBM;
-
-	float[] paramRGBA;
-
-	ImageFile fileToLoad;
-
-	float areaXoff;
-
-	float areaYoff;
-
-	float areaWidth;
-
-	float areaHeight;
-
-	float scaleXY;
-
-	Rectangle2D outerUserImgArea;
-
-	Rectangle2D innerUserImgArea;
-
-	float minSubsample;
-
-	boolean wholeRotArea;
-
-	int forceType;
+	private String filename = null;
 	
-	Document doc;
+	private PDFJobInformation job_info = null;
 	
-	
-	//public ImageLoaderDocuImage render();// throws Exception;
-
-
-	/**
-	 * @param dlConfig
-	 * @param response
-	 * @param mimeType
-	 * @param scaleQual
-	 * @param dlRequest
-	 * @param paramROT
-	 * @param paramCONT
-	 * @param paramBRGT
-	 * @param paramRGBM
-	 * @param paramRGBA
-	 * @param fileToLoad
-	 * @param areaXoff
-	 * @param outerUserImgArea
-	 * @param innerUserImgArea
-	 * @param minSubsample
-	 * @param wholeRotArea
-	 * @param forceType
-	 */
-	public DigilibPDFWorker(DigilibConfiguration dlConfig,
-			BufferedOutputStream outstream, String mimeType, int scaleQual,
-			DigilibRequest dlRequest, float paramCONT,
-			float paramBRGT, float[] paramRGBM, float[] paramRGBA,
-			ImageFile fileToLoad, float scaleXY, Rectangle2D outerUserImgArea,
-			Rectangle2D innerUserImgArea, float minSubsample,
-			boolean wholeRotArea, int forceType, Document doc) {
-		super(dlConfig,
-				outstream, mimeType, scaleQual,
-				dlRequest, 0.0f , paramCONT,
-				paramBRGT, paramRGBM,paramRGBA,
-				fileToLoad, scaleXY, outerUserImgArea,
-				innerUserImgArea,minSubsample,
-				wholeRotArea, forceType);
-		
+	public DigilibPDFWorker(DigilibConfiguration dlConfig, PDFJobInformation pdfji, String filename) {
+		super();
+		// TODO dlConfig 
 		this.dlConfig = dlConfig;
-		this.outstream = outstream;
-		this.mimeType = mimeType;
-		this.scaleQual = scaleQual;
-		this.dlRequest = dlRequest;
-		//this.paramROT = paramROT;
-		this.paramCONT = paramCONT;
-		this.paramBRGT = paramBRGT;
-		this.paramRGBM = paramRGBM;
-		this.paramRGBA = paramRGBA;
-		this.fileToLoad = fileToLoad;
-		this.scaleXY = scaleXY;
-		this.outerUserImgArea = outerUserImgArea;
-		this.innerUserImgArea = innerUserImgArea;
-		this.minSubsample = minSubsample;
-		this.wholeRotArea = wholeRotArea;
-		this.forceType = forceType;
-		this.doc = doc;
+		this.job_info = pdfji;
+		this.filename = filename;
 	}
 
 	public void run() {
-		//logger.debug((++waitingThreads) + " waiting threads");
-		ImageLoaderDocuImage img = null;
+		// create document object
+		doc = new Document(PageSize.A4, 0,0,0,0);
+		PdfWriter docwriter = null;
+		File output_file = new File(PDFCache.cache_directory + filename);
+		FileOutputStream fos;
+
 		try {
-			sem.acquire();
-			//waitingThreads--;
-		} catch (InterruptedException e) {
-			error = e;
-			//waitingThreads--;
-			// should we reinterrupt?
+			fos = new FileOutputStream(output_file);
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 			return;
 		}
-		//logger.debug((++runningThreads) + " running threads");
+
+		
+		long start_time = System.currentTimeMillis();
+
+		
 		try {
-			/* 
-			 * do rendering under the semaphore 
-			 */
-			img = (ImageLoaderDocuImage) super.render();
-		} catch (Throwable e) {
-			error = e;
-			logger.error(e);
-		} finally {
-		//	runningThreads--;
-			sem.release();
+			docwriter = PdfWriter.getInstance(doc, fos);
+			
+			setPDFProperties();
+
+			doc.open();
+
+			logger.debug("- doc.open()ed ("+(System.currentTimeMillis()-start_time) + "ms)");
+			start_time = System.currentTimeMillis();
+			
+
+			Integer[] pgs = get_pgs();
+
+			for(Integer p: pgs){
+				addImage(p);
+			}
+			
+			
+			
 		}
-		/* 
-		 * write the result without semaphore
-		 */
-		if (!hasError()) {
-			try{
-				write(img);
-			} catch (Throwable e) {
-				error = e;
-				logger.error(e);
+		catch(Exception e) {
+			logger.error(e.getMessage());
+			error = e;
+			return;
+		}
+		
+		finally {
+			if (doc!=null){
+				doc.close();
+				logger.debug("- doc.close() ("+(System.currentTimeMillis()-start_time) + "ms)");
+			}
+			if (docwriter!=null){
+				docwriter.close();
+			}
+		}
+
+		
+		
+		try {
+			fos.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+			error = e;
+		}
+		finally{
+			if(fos!=null){
+				try {
+					fos.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
 
-	public void write(ImageLoaderDocuImage img) throws FileOpException, IOException {
-		/* write the resulting image */
+	public void setPDFProperties(){
+		// TODO get proper Information from dlConfig
+		doc.addAuthor(this.getClass().getName());
+		doc.addCreationDate();
+		doc.addKeywords("digilib");
+		doc.addTitle("digilib PDF");
+		doc.addCreator(this.getClass().getName());
+	}
+	
+	public Integer[] get_pgs(){
+		String pages = job_info.getAsString("pgs");
+		ArrayList<Integer> pgs = new ArrayList<Integer>();
+		Integer[] out = null;
+		
+		String intervals[] = pages.split(",");
+		
+		
+		// convert the page-interval-strings into a list containing every single page
+		for(String interval: intervals){
+			if(interval.indexOf("-") > -1){
+				String nums[] = interval.split("-");
+				
+				for(int i=Integer.valueOf(nums[0]); i <= Integer.valueOf(nums[1]); i++){
+					pgs.add(i);
+				}
+			}
+			else{
+				pgs.add(Integer.valueOf(interval));
+			}
+		}
+		out = new Integer[pgs.size()];
 
-
+		pgs.toArray(out);
+		return out;
+	}
+	
+	public void addImage(int pn) {
+		// create ImageJobInformation
+		ImageJobInformation iji = job_info.getImageJobInformation();
+		iji.setValue("pn", pn);
+		// create image worker
+		DigilibImageWorker image_worker = new DigilibImageWorker(dlConfig, null, iji);
 		try {
-			long timing = System.currentTimeMillis();
+			ImageLoaderDocuImage img = (ImageLoaderDocuImage) image_worker.render();
+
 			Image theimg = Image.getInstance(img.getImage(),null);
 			
-			theimg.scaleToFit(PageSize.A4.getWidth(),PageSize.A4.getHeight());
-			
-			logger.debug(" --- loading and scaling took "+(-timing+System.currentTimeMillis())+"ms");
+			float docW = PageSize.A4.getWidth() - 2*PageSize.A4.getBorder(); 
+			float docH= PageSize.A4.getHeight()- 2*PageSize.A4.getBorder();
 
-			timing = System.currentTimeMillis();
+			
+			theimg.scaleToFit(docW,docH);
+			
 			
 			doc.add(theimg);
-			logger.debug(" --- adding took "+(-timing+System.currentTimeMillis())+"ms");
-
+			
+		} catch (FileOpException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ImageOpException e) {
+			e.printStackTrace();
 		} catch (BadElementException e) {
 			e.printStackTrace();
-			logger.debug("------DigilibPDFWorker write BadElementException");
-
 		} catch (DocumentException e) {
 			e.printStackTrace();
-			logger.debug("------DigilibPDFWorker write DocumentException");
-
 		}
-		
-		logger.info("pdf worker " + this.getName() + " done in "
-				+ (System.currentTimeMillis() - startTime));
-
 	}
+
+
+	
+	
+	
+	// unnecessary 
+	@Override
+	public DocuImage render() throws Exception {
+		return null;
+	}
+
+	@Override
+	public void write(DocuImage img) throws Exception {
+		
+	}
+	
 }

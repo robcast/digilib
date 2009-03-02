@@ -94,62 +94,44 @@ public class DigilibImageWorker extends DigilibWorker {
 	
 	int forceType;
 
-	/**
-	 * @param dlConfig
-	 * @param response
-	 * @param mimeType
-	 * @param scaleQual
-	 * @param dlRequest
-	 * @param paramROT
-	 * @param paramCONT
-	 * @param paramBRGT
-	 * @param paramRGBM
-	 * @param paramRGBA
-	 * @param fileToLoad
-	 * @param areaXoff
-	 * @param outerUserImgArea
-	 * @param innerUserImgArea
-	 * @param minSubsample
-	 * @param wholeRotArea
-	 * @param forceType
-	 */
-	public DigilibImageWorker(DigilibConfiguration dlConfig,
-			OutputStream outstream, String mimeType, int scaleQual,
-			//DigilibRequest dlRequest, 
-			//ImageJobInformation ijd,
-			float paramROT, float paramCONT,
-			float paramBRGT, float[] paramRGBM, float[] paramRGBA,
-			ImageFile fileToLoad, float scaleXY, Rectangle2D outerUserImgArea,
-			Rectangle2D innerUserImgArea, float minSubsample,
-			boolean wholeRotArea, int forceType, boolean hmir, boolean vmir) {
+
+	public DigilibImageWorker(DigilibConfiguration dlConfig, OutputStream outstream, ImageJobInformation jobinfo) {
 		super();
+		
 		this.dlConfig = dlConfig;
 		this.outstream = outstream;
-		this.mimeType = mimeType;
-		this.scaleQual = scaleQual;
-		//this.dlRequest = dlRequest;
-		//this.ijd = ijd;
-		this.paramROT = paramROT;
-		this.paramCONT = paramCONT;
-		this.paramBRGT = paramBRGT;
-		this.paramRGBM = paramRGBM;
-		this.paramRGBA = paramRGBA;
-		this.fileToLoad = fileToLoad;
-		this.scaleXY = scaleXY;
-		this.outerUserImgArea = outerUserImgArea;
-		this.innerUserImgArea = innerUserImgArea;
-		this.minSubsample = minSubsample;
-		this.wholeRotArea = wholeRotArea;
-		this.forceType = forceType;
-		this.hmir = hmir;
-		this.vmir = vmir;
+		this.mimeType = jobinfo.get_mimeType();
+		this.scaleQual = jobinfo.get_scaleQual();
+		this.paramROT = jobinfo.getAsFloat("rot");
+		this.paramCONT = jobinfo.getAsFloat("cont");
+		this.paramBRGT = jobinfo.getAsFloat("brgt");
+		this.paramRGBM = jobinfo.get_paramRGBM();
+		this.paramRGBA = jobinfo.get_paramRGBA();
+		try {
+			this.fileToLoad = jobinfo.get_fileToLoad();
+			this.scaleXY = jobinfo.get_scaleXY();
+			this.outerUserImgArea = jobinfo.get_outerUserImgArea();
+			this.innerUserImgArea = jobinfo.get_innerUserImgArea();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ImageOpException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		this.minSubsample = dlConfig.getAsFloat("subsample-minimum");
+		this.wholeRotArea = jobinfo.get_wholeRotArea();
+		this.forceType = jobinfo.get_forceType();
+		this.hmir = jobinfo.get_hmir();
+		this.vmir = jobinfo.get_vmir();
 	}
 
 	/*
 	 * do the work
 	 */
 	public DocuImage render() throws FileOpException, IOException, ImageOpException {
-		;
+		
 		logger.debug("image worker " + this.getName() + " working");
 		startTime = System.currentTimeMillis();
 

@@ -1,5 +1,9 @@
 package digilib.servlet;
 
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.servlet.http.HttpServletRequest;
 
 
@@ -14,24 +18,29 @@ import javax.servlet.http.HttpServletRequest;
 
 
 
-public class PDFJobDeclaration extends ParameterMap {
+public class PDFJobInformation extends ParameterMap {
 
-	String[] parameter_list = {"fn","pgs","dw","dh"};/*,
+	String[] parameter_list = {"pgs"};//{"fn","pgs","dw","dh"};
+	/*,
 			"wx", "wy", "ww", "wh", "ws", 
 			"mo", "rot", "cont", "brgt", "rgbm", "rbgm", 
 			"ddpi", "ddpix", "ddpiy", "scale"};*/
 	
-	public PDFJobDeclaration() {
+	
+	ImageJobInformation image_info = null;
+	DigilibConfiguration dlConfig = null;
+	
+	public PDFJobInformation(DigilibConfiguration dlcfg) {
 		super(30);
 		
 		// url of the page/document (second part)
-		newParameter("fn", "", null, 's');
+//		newParameter("fn", "", null, 's');
 		// page number
 		newParameter("pgs", "", null, 's');
 		// width of client in pixels
-		newParameter("dw", new Integer(0), null, 's');
+//		newParameter("dw", new Integer(0), null, 's');
 		// height of client in pixels
-		newParameter("dh", new Integer(0), null, 's');
+//		newParameter("dh", new Integer(0), null, 's');
 		// left edge of image (float from 0 to 1)
 /*		newParameter("wx", new Float(0), null, 's');
 		// top edge in image (float from 0 to 1)
@@ -97,16 +106,74 @@ public class PDFJobDeclaration extends ParameterMap {
 		// marks
 		newParameter("mk", "", null, 'c');
 */	
+		dlConfig = dlcfg;
 		
 	}
 
 	public void setWithRequest(HttpServletRequest request) {
+		image_info = new ImageJobInformation(dlConfig);
+		image_info.setWithRequest(request);
+		
 		for (String param : parameter_list){
 			if (request.getParameterMap().containsKey(param)){
-				put(param, request.getAttribute(param));
+				setValueFromString(param, request.getParameter(param));
 			}
 		}
 	}
 	
+	public String getDocumentId(){
+		String id;
+
+		// TODO use complete request information for id generation
+		
+		if(this.image_info!=null){
+			String fn = image_info.getAsString("fn");
+			String dh = image_info.getAsString("dh");
+			String pgs = getAsString("pgs");
+			
+			id = "fn=" + fn + "&dh=" + dh + "&pgs=" + pgs + ".pdf";		
+		}
+		else {
+			id = null;
+		}
+		
+		return id;
+	}
+
+	public ImageJobInformation getImageJobInformation(){
+		ImageJobInformation new_image_info = (ImageJobInformation) image_info.clone();
+		return new_image_info;
+	}
+	
+	public Integer[] getPageNrs() throws Exception{
+		ArrayList<Integer> pgs=new ArrayList<Integer>(); 
+		Integer[] numarray = null;
+
+		String intervals[] = getAsString("pgs").split(",");
+		
+		// convert the page-interval-strings into a list containing every single page
+		for(String interval: intervals){
+			if(interval.indexOf("-") > 1){
+				String nums[] = interval.split("-");
+				
+//				if(nums.length!=2){
+//					throw new Exception("Malformed pageset expression: "+getAsString("pgs"));
+//				}
+				
+				for(int i=Integer.valueOf(nums[0]); i <= Integer.valueOf(nums[1]); i++){
+					pgs.add(i);
+				}
+			}
+			else if (interval.indexOf("-") < 0){
+				pgs.add(Integer.valueOf(interval));
+			}
+//			else{
+//				throw new Exception("Malformed pageset expression: "+getAsString("pgs"));
+//			}
+		}
+
+		pgs.toArray(numarray);
+		return numarray;
+	}
 	
 }
