@@ -78,13 +78,14 @@ public class DigilibPDFWorker extends DigilibWorker {
 		// create document object
 		doc = new Document(PageSize.A4, 0,0,0,0);
 		PdfWriter docwriter = null;
-		File output_file = new File(PDFCache.cache_directory + filename);
+		File output_file = new File(PDFCache.temp_directory + filename);
 		FileOutputStream fos;
-
+		
 		try {
 			fos = new FileOutputStream(output_file);
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
+			logger.error(e1.getMessage());
 			e1.printStackTrace();
 			return;
 		}
@@ -100,16 +101,20 @@ public class DigilibPDFWorker extends DigilibWorker {
 
 			doc.open();
 
-			logger.debug("- doc.open()ed ("+(System.currentTimeMillis()-start_time) + "ms)");
+			logger.debug("- "+filename+" doc.open()ed ("+(System.currentTimeMillis()-start_time) + "ms)");
 			start_time = System.currentTimeMillis();
 			
 
 			Integer[] pgs = get_pgs();
 
 			for(Integer p: pgs){
+				logger.debug(" - adding Image "+p+" to " + filename);
 				addImage(p);
+				logger.debug(" - done adding Image "+p+" to " + filename);
 			}
 			
+			logger.debug(" - done adding all Images to " + filename);
+
 			
 			
 		}
@@ -122,7 +127,7 @@ public class DigilibPDFWorker extends DigilibWorker {
 		finally {
 			if (doc!=null){
 				doc.close();
-				logger.debug("- doc.close() ("+(System.currentTimeMillis()-start_time) + "ms)");
+				logger.debug("- "+filename+" doc.close() ("+(System.currentTimeMillis()-start_time) + "ms)");
 			}
 			if (docwriter!=null){
 				docwriter.close();
@@ -134,6 +139,7 @@ public class DigilibPDFWorker extends DigilibWorker {
 		try {
 			fos.flush();
 		} catch (IOException e) {
+			logger.error(e.getMessage());
 			e.printStackTrace();
 			error = e;
 		}
@@ -142,6 +148,7 @@ public class DigilibPDFWorker extends DigilibWorker {
 				try {
 					fos.close();
 				} catch (IOException e) {
+					logger.error(e.getMessage());
 					e.printStackTrace();
 				}
 			}
@@ -205,14 +212,19 @@ public class DigilibPDFWorker extends DigilibWorker {
 			doc.add(theimg);
 			
 		} catch (FileOpException e) {
+			logger.error(e.getMessage());
 			e.printStackTrace();
 		} catch (IOException e) {
+			logger.error(e.getMessage());
 			e.printStackTrace();
 		} catch (ImageOpException e) {
+			logger.error(e.getMessage());
 			e.printStackTrace();
 		} catch (BadElementException e) {
+			logger.error(e.getMessage());
 			e.printStackTrace();
 		} catch (DocumentException e) {
+			logger.error(e.getMessage());
 			e.printStackTrace();
 		}
 	}

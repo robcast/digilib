@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -18,12 +19,17 @@ public class PDFCache extends RequestHandler {
 
 	private DigilibConfiguration dlConfig = null;
 	
+	
+	
 	public static String cache_directory = "cache/";  // TODO set using dlConfig
 	
-	public static String cache_hash_id = "digilib.servlet.PDFCache";
+	public static String temp_directory = "pdf_temp/";
 	
-	HashMap<String,Integer> cache_hash = null;
 	
+	
+	private static String JSP_WIP = "/pdf/wip.jsp";
+	
+	private static String JSP_ERROR = "/pdf/error.jsp";
 	
 	public static Integer STATUS_DONE = 0;  	// document exists in cache
 
@@ -40,6 +46,7 @@ public class PDFCache extends RequestHandler {
 	// TODO use JSPs for automatically refreshing waiting-pages and download-pages
 	// TODO register the PDFCache instance globally and implement getters for cache_dir 
 	
+	private ServletContext context = null;
 	
 	public void init(ServletConfig config) throws ServletException{
 		
@@ -50,7 +57,7 @@ public class PDFCache extends RequestHandler {
 		logger.info("initialized PDFCache v."+version);
 		
 		// create and register hashtable
-		ServletContext context = config.getServletContext();
+		context = config.getServletContext();
 		
 		dlConfig = (DigilibConfiguration) context.getAttribute("digilib.servlet.configuration");
 		
@@ -59,38 +66,30 @@ public class PDFCache extends RequestHandler {
 			throw new ServletException("No Configuration!");
 		}
 		
-		context.setAttribute(cache_hash_id, new HashMap<String,Integer>());
+		//context.setAttribute(cache_hash_id, new HashMap<String,Integer>());
 		
-		cache_hash = (HashMap<String,Integer>) context.getAttribute(cache_hash_id);
+		//cache_hash = (HashMap<String,Integer>) context.getAttribute(cache_hash_id);
 
-		if (cache_hash==null){
+		/*if (cache_hash==null){
 			cache_hash = new HashMap<String,Integer>();
 			context.setAttribute(cache_hash_id, cache_hash);
-		}
+		}*/
 		
 		// scan the directory
-		scanCacheDirectory();
-		
+		// scanCacheDirectory();
+		emptyTempDirectory();
 	}
 	
 	
-	public void scanCacheDirectory(){
+	public void emptyTempDirectory(){
 		// search the cache-directory for existing files and fill them into the Hashtable as STATUS_DONE
 
-		ServletContext context = this.getServletContext();
-		HashMap<String,Integer> cache_hash = (HashMap<String,Integer>) context.getAttribute(cache_hash_id);
-
-		File cache_dir = new File(cache_directory);
-		String[] cached_files = cache_dir.list();
+		File temp_dir = new File(temp_directory);
+		String[] cached_files = temp_dir.list();
 		
 		
 		for (String file: cached_files){
-			String docid = file.substring(0,file.length()-4);
-			logger.debug("docid = "+docid);
-			if (file.endsWith(".pdf") && !cache_hash.containsKey(docid)){
-				logger.debug("PDFCache reads in "+file);
-				cache_hash.put(file, STATUS_DONE);
-			}
+			new File(temp_directory,file).delete();
 		}
 	}
 	
@@ -107,6 +106,11 @@ public class PDFCache extends RequestHandler {
 		
 		String docid = pdfji.getDocumentId();
 		
+		// if some invalid data has been entered ...
+		if(!pdfji.checkValidity()) {
+			notifyUser(STATUS_ERROR, docid, request, response);
+			return;
+		}
 		
 		int status = getStatus(docid);
 		
@@ -114,7 +118,7 @@ public class PDFCache extends RequestHandler {
 		
 		if(status == STATUS_NONEXISTENT){
 			createNewPdfDocument(pdfji, docid); 
-			informUser(status, docid, response);
+			notifyUser(status, docid, request, response);
 		}
 		else if (status == STATUS_DONE){
 			try {
@@ -125,53 +129,73 @@ public class PDFCache extends RequestHandler {
 			}
 		}
 		else {
-			informUser(status, docid, response);			
+			notifyUser(status, docid, request, response);			
 		}
 	}
 
 
-	public void informUser(int status, String documentid, HttpServletResponse response){
+	public void notifyUser(int status, String documentid, HttpServletRequest request, HttpServletResponse response){
 		// depending on the documents status, redirect the user to an appropriate waiting- or download-site
 		// TODO
+		
+		String jsp=null;
 		
 		if(status == STATUS_NONEXISTENT){
 			// tell the user that the document has to be created before he/she can download it
 			logger.debug("PDFCache: "+documentid+" has STATUS_NONEXISTENT.");
+			jsp = JSP_WIP;
 		}
 		else if(status == STATUS_WIP){
 			logger.debug("PDFCache: "+documentid+" has STATUS_WIP.");
+			jsp = JSP_WIP;
 
 			// estimate remaining work time
 			// tell the user he/she has to wait
 		}
 		else if(status == STATUS_DONE){
 			logger.debug("PDFCache: "+documentid+" has STATUS_DONE.");
-
-		// do nothing or refresh
 		}
 		else {
 			logger.debug("PDFCache: "+documentid+" has STATUS_ERROR.");
-
-			// status == STATUS_ERROR
-			// an error must have occured; show error page
+			jsp = JSP_ERROR;
 		}
-	
+
+		RequestDispatcher dispatch = context.getRequestDispatcher(jsp);
+
+		
+		try {
+			dispatch.forward(request, response);
+		} catch (ServletException e) {
+			logger.debug(e.getMessage());
+			e.printStackTrace();
+		} catch (IOException e) {
+			logger.debug(e.getMessage());
+			e.printStackTrace();
+		}
+		
 	}
 
 	
 	/** check the status of the document corresponding to the documentid */
 	public Integer getStatus(String documentid){
-		// rescan directory?  might be useful if more than one instance uses the same cache directory ;  Problem: wip-files occur in the list
-		if(cache_hash.containsKey(documentid))
-			return cache_hash.get(documentid);
-		else
+		// looks into the cache and temp directory in order to find out the status of the document
+		File cached = new File(cache_directory + documentid);
+		File wip = new File(temp_directory + documentid);
+		if(cached.exists()){
+			return STATUS_DONE;
+		}
+		else if (wip.exists()){
+			return STATUS_WIP;
+		}
+		else {
 			return STATUS_NONEXISTENT;
+		}
 	}
 
 
 	public void createNewPdfDocument(PDFJobInformation pdfji, String filename){
 		// start new worker
-		PDFMaker pdf_maker = new PDFMaker(dlConfig, cache_hash, pdfji,filename);
+		PDFMaker pdf_maker = new PDFMaker(dlConfig, pdfji,filename);
 		new Thread(pdf_maker, "PDFMaker").start();
 	}
 	

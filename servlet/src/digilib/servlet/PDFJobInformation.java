@@ -6,6 +6,8 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.log4j.Logger;
+
 
 /** 
  * A container class for storing a set of instructional parameters 
@@ -29,6 +31,9 @@ public class PDFJobInformation extends ParameterMap {
 	
 	ImageJobInformation image_info = null;
 	DigilibConfiguration dlConfig = null;
+	/** gengeral logger for this class */
+	protected static Logger logger = Logger.getLogger("digilib.servlet");
+
 	
 	public PDFJobInformation(DigilibConfiguration dlcfg) {
 		super(30);
@@ -174,6 +179,42 @@ public class PDFJobInformation extends ParameterMap {
 
 		pgs.toArray(numarray);
 		return numarray;
+	}
+	
+	
+	public boolean checkValidity(){
+		String pgs = getAsString("pgs");
+		try{
+				String[] intervals = null;
+				if(pgs.indexOf(",")>0){
+					intervals = pgs.split(",");
+				}
+				else{
+					intervals = new String[1];
+					intervals[0]=pgs;
+				}
+				for(String interval:intervals){
+					if(interval.indexOf("-")>=0){
+						String[] intrvl = interval.split("-");
+						int a = Integer.valueOf(intrvl[0]);
+						int b = Integer.valueOf(intrvl[1]);
+						if(a<=0 || b<a){
+							return false;
+						}
+					}
+					else {
+						int c = Integer.valueOf(interval);
+						if(c<=0)
+							return false;
+						
+					}
+				}
+		}
+		catch(Exception e){
+			logger.error("invalid pgs-input");
+			return false;
+		}
+		return true;
 	}
 	
 }
