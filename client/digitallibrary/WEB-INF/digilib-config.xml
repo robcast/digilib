@@ -68,7 +68,7 @@
   <parameter name="pdf-cache-dir" value="cache/"/>
 
   <!-- location for PDFs while still in progress -->
-  <parameter name="pdf-logo" value="pdf_temp/" />
+  <parameter name="pdf-logo" value="http://www.mpiwg-berlin.mpg.de/de/images/logo.png" />
 
   
 </digilib-config>
