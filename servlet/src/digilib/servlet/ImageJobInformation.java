@@ -101,7 +101,7 @@ public class ImageJobInformation extends ParameterMap {
 		// url of the page/document (first part, may be empty)
 		newParameter("request.path", "", null, 'i');
 		// base URL (from http:// to below /servlet)
-		newParameter("base.url", null, null, 'i');
+		newParameter("base.url", "", null, 'i');
 
 		/*
 		 * Parameters of type 'c' are for the clients use
@@ -143,7 +143,12 @@ public class ImageJobInformation extends ParameterMap {
 			}
 		}
 	setValueFromString("request.path", ((HttpServletRequest) request).getPathInfo());
-
+	String[] baseurl_parts = ((HttpServletRequest) request).getRequestURL().toString().split("/");
+	String baseurl = "";
+	for(int i=0; i<baseurl_parts.length-2; i++){
+		baseurl += baseurl_parts[i]+"/";
+	}
+	setValueFromString("base.url", baseurl);
 	}
 	
 	public String[] getParameterList(){

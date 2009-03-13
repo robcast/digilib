@@ -15,17 +15,22 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * A class for handling user requests for pdf documents from digilib images.  
+ * 
+ * @author cmielack
+ *
+ */
+
 public class PDFCache extends RequestHandler {
 
 	private DigilibConfiguration dlConfig = null;
 	
+	public static String global_instance = "digilib.servlet.PDFCache";
 	
+	private String cache_directory = "cache/";  
 	
-	public static String cache_directory = "cache/";  // TODO set using dlConfig
-	
-	public static String temp_directory = "pdf_temp/";
-	
-	
+	private String temp_directory = "pdf_temp/";
 	
 	private static String JSP_WIP = "/pdf/wip.jsp";
 	
@@ -41,22 +46,20 @@ public class PDFCache extends RequestHandler {
 	
 	public static String version = "0.2";
 	
+	private ServletContext context = null;
+
+	
 	// TODO functionality for the pre-generation of complete books/chapters using default values
 	// TODO use DLConfig for default values
 	// TODO use JSPs for automatically refreshing waiting-pages and download-pages
 	// TODO register the PDFCache instance globally and implement getters for cache_dir 
 	
-	private ServletContext context = null;
 	
 	public void init(ServletConfig config) throws ServletException{
-		
 		super.init(config);
-		
-		
 		
 		logger.info("initialized PDFCache v."+version);
 		
-		// create and register hashtable
 		context = config.getServletContext();
 		
 		dlConfig = (DigilibConfiguration) context.getAttribute("digilib.servlet.configuration");
@@ -65,28 +68,26 @@ public class PDFCache extends RequestHandler {
 			// no Configuration
 			throw new ServletException("No Configuration!");
 		}
-		
-		//context.setAttribute(cache_hash_id, new HashMap<String,Integer>());
-		
-		//cache_hash = (HashMap<String,Integer>) context.getAttribute(cache_hash_id);
 
-		/*if (cache_hash==null){
-			cache_hash = new HashMap<String,Integer>();
-			context.setAttribute(cache_hash_id, cache_hash);
-		}*/
 		
-		// scan the directory
-		// scanCacheDirectory();
+		
+		
+		temp_directory = dlConfig.getAsString("pdf-temp-dir");
+		cache_directory = dlConfig.getAsString("pdf-cache-dir");
+
+
+		// rid the temporary directory of possible incomplete document files
 		emptyTempDirectory();
+		
+		// register this instance globally
+		context.setAttribute(global_instance, this);
+		
 	}
 	
 	
 	public void emptyTempDirectory(){
-		// search the cache-directory for existing files and fill them into the Hashtable as STATUS_DONE
-
 		File temp_dir = new File(temp_directory);
 		String[] cached_files = temp_dir.list();
-		
 		
 		for (String file: cached_files){
 			new File(temp_directory,file).delete();
@@ -195,7 +196,7 @@ public class PDFCache extends RequestHandler {
 
 	public void createNewPdfDocument(PDFJobInformation pdfji, String filename){
 		// start new worker
-		PDFMaker pdf_maker = new PDFMaker(dlConfig, pdfji,filename);
+		PDFMaker pdf_maker = new PDFMaker(context, pdfji,filename);
 		new Thread(pdf_maker, "PDFMaker").start();
 	}
 	
@@ -253,5 +254,13 @@ public class PDFCache extends RequestHandler {
 					sos.close();
 			}
 
+	}
+	
+	public String getCacheDirectory(){
+		return cache_directory;
+	}
+	
+	public String getTempDirectory(){
+		return temp_directory;
 	}
 }

@@ -13,20 +13,23 @@ import org.apache.log4j.Logger;
 
 public class PDFMaker extends HttpServlet implements Runnable {
 
+	public static String version = "0.1";
+	
 	private PDFJobInformation job_info = null;
 	private String filename = null;
 	private DigilibConfiguration dlConfig = null;
-	
+	private ServletContext context = null;
 
 	/** gengeral logger for this class */
 	protected static Logger logger = Logger.getLogger("digilib.servlet");
 
 	
 	
-	public PDFMaker(DigilibConfiguration dlConfig, PDFJobInformation pdfji, String filename){
+	public PDFMaker(ServletContext context, PDFJobInformation pdfji, String filename){
 		this.job_info = pdfji;
 		this.filename = filename;
-		this.dlConfig = dlConfig;
+		this.dlConfig = pdfji.getDlConfig();
+		this.context = context;
 	}
 	
 
@@ -41,13 +44,15 @@ public class PDFMaker extends HttpServlet implements Runnable {
 			return;
 		}
 
+		PDFCache pdfcache = (PDFCache) context.getAttribute(PDFCache.global_instance);
+		
 		// create PDFWorker
-		DigilibPDFWorker pdf_worker = new DigilibPDFWorker(dlConfig, job_info, filename);
+		DigilibPDFWorker pdf_worker = new DigilibPDFWorker(dlConfig, job_info, pdfcache.getTempDirectory()+filename);
 		
 		// run PDFWorker
 		pdf_worker.run();
 
-		File document = new File(PDFCache.temp_directory + filename);
+		File document = new File(pdfcache.getTempDirectory() + filename);
 
 		if(pdf_worker.hasError()){
 			// raise error, write to logger
@@ -55,8 +60,8 @@ public class PDFMaker extends HttpServlet implements Runnable {
 			document.delete();
 			return;
 		}
-		else{
-			boolean success = document.renameTo(new File(PDFCache.cache_directory, filename));
+		else{ // move the completed file to the cache directory
+			boolean success = document.renameTo(new File(pdfcache.getCacheDirectory(), filename));
 			if(!success){
 				// TODO raise error
 				

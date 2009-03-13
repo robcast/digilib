@@ -217,4 +217,8 @@ public class PDFJobInformation extends ParameterMap {
 		return true;
 	}
 	
+	public DigilibConfiguration getDlConfig(){
+		return dlConfig;
+	}
+	
 }

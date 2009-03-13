@@ -78,7 +78,7 @@ public class DigilibPDFWorker extends DigilibWorker {
 		// create document object
 		doc = new Document(PageSize.A4, 0,0,0,0);
 		PdfWriter docwriter = null;
-		File output_file = new File(PDFCache.temp_directory + filename);
+		File output_file = new File(filename);
 		FileOutputStream fos;
 		
 		try {
@@ -101,6 +101,9 @@ public class DigilibPDFWorker extends DigilibWorker {
 
 			doc.open();
 
+			addTitlePage();
+
+			
 			logger.debug("- "+filename+" doc.open()ed ("+(System.currentTimeMillis()-start_time) + "ms)");
 			start_time = System.currentTimeMillis();
 			
@@ -162,6 +165,13 @@ public class DigilibPDFWorker extends DigilibWorker {
 		doc.addKeywords("digilib");
 		doc.addTitle("digilib PDF");
 		doc.addCreator(this.getClass().getName());
+	}
+	
+	
+	public void addTitlePage() throws DocumentException{
+		PDFTitlePage titlepage = new PDFTitlePage(job_info);
+		doc.add(titlepage.getPageContents());
+		doc.newPage();
 	}
 	
 	public Integer[] get_pgs(){
