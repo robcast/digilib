@@ -67,5 +67,8 @@
   <!-- location for PDF files upon completion -->
   <parameter name="pdf-cache-dir" value="cache/"/>
 
+  <!-- location for PDFs while still in progress -->
+  <parameter name="pdf-logo" value="pdf_temp/" />
+
   
 </digilib-config>
