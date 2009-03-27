@@ -11,6 +11,16 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
+
+
+
+/**
+ * A Runnable that creates the PDFWorker and moves completed files from a temporary location
+ *  (defined in PDFCache) to the cache directory.
+ * 
+ * @author cmielack
+ *
+ */
 public class PDFMaker extends HttpServlet implements Runnable {
 
 	public static String version = "0.1";
@@ -56,7 +66,7 @@ public class PDFMaker extends HttpServlet implements Runnable {
 
 		if(pdf_worker.hasError()){
 			// raise error, write to logger
-			logger.error("@@@@ "+pdf_worker.getError().getMessage());
+			logger.error(pdf_worker.getError().getMessage());
 			document.delete();
 			return;
 		}

@@ -23,6 +23,10 @@ public class PDFTitlePage {
 	protected static Logger logger = Logger.getLogger("digilib.servlet");
 
 	
+	/**
+	 * Initialize a TitlePage
+	 * @param pdfji
+	 */
 	public PDFTitlePage(PDFJobInformation pdfji){
 		job_info = pdfji;
 		dirCache = (DocuDirCache) job_info.getDlConfig().getValue("servlet.dir.cache");
@@ -32,7 +36,11 @@ public class PDFTitlePage {
 		info_reader = new DigilibInfoReader(fn);
 	}
 	
-	
+	/**
+	 * generate iText-PDF-Contents for the title page
+	 * 
+	 * @return
+	 */
 	public Element getPageContents(){
 		Paragraph content = new Paragraph();
 		content.setAlignment(Element.ALIGN_CENTER);
@@ -92,8 +100,13 @@ public class PDFTitlePage {
 		return content;
 	}
 	
+	/**
+	 * return base directory of an image directory
+	 * 
+	 * @param path
+	 * @return
+	 */
 	private String getBase(String path){
-		// return base directory of an image directory
 		if(path.contains("/")){
 			String[] x = path.split("/");
 			String newpath = "";
@@ -106,12 +119,15 @@ public class PDFTitlePage {
 			return "";
 	}
 	
+
+	/**
+	 * Methods for the different attributes.
+	 * 
+	 */
+	
 	
 	private Image getLogo(){
-		
 		try {
-			// loads a local image. 
-			// In order to use a remote image, getInstance needs to be called using a URL object
 			URL url = new URL(job_info.getDlConfig().getAsString("pdf-logo"));
 			if(url!=null && !url.equals("")){
 				Image logo = Image.getInstance(url);
@@ -130,8 +146,6 @@ public class PDFTitlePage {
 		}
 		return null;
 	}
-	
-	
 	private String getTitle(){
 		if(info_reader.hasInfo())
 			return info_reader.getAsString("title");

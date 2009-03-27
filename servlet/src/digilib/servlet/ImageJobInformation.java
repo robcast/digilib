@@ -26,7 +26,9 @@ import digilib.io.ImageFileset;
  * A container class for storing a set of instructional parameters 
  * used for content generating classes like MakePDF.  
  * 
- * TODO aufraeumen, zwischenwerte in der ParameterMap cachen
+ * This contains the functionality formerly found in Scaler, processRequest, only factorized.
+ * 
+ * TODO clean up...
  * 
  * @author cmielack
  *
@@ -130,15 +132,10 @@ public class ImageJobInformation extends ParameterMap {
 	}
 
 
-	/*public void setPageNumber(int pn){
-		put("pn",pn);
-	}*/
 	
 	public void setWithRequest(HttpServletRequest request) {
 		for (String param : parameter_list){
 			if (request.getParameterMap().containsKey(param)){
-				//request.get
-//				put(param, request.getParameter(param));
 				this.setValueFromString(param, request.getParameter(param));
 			}
 		}
@@ -170,13 +167,6 @@ public class ImageJobInformation extends ParameterMap {
 	}
 	
 	
-	/**
-	 * evaluate request data in order to gain the parameters for the image worker
-	 * 
-	 * @throws ImageOpException 
-	 * @throws IOException 
-	 * */
-
 	public String get_mimeType() {
 		String mimeType = "image/png";
 		
@@ -206,7 +196,6 @@ public class ImageJobInformation extends ParameterMap {
 	
 	public ImageFile get_fileToLoad() throws IOException, ImageOpException{
 		
-		//logger.debug("get_fileToLoad()");
 		if(fileToLoad == null){
 			ImageFileset fileset = get_fileset();
 			
@@ -237,7 +226,6 @@ public class ImageJobInformation extends ParameterMap {
 	}
 	
 	public ImageFileset get_fileset() throws FileOpException{
-		//logger.debug("get_fileset()");
 		if(fileset==null){
 			DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 	
@@ -251,7 +239,6 @@ public class ImageJobInformation extends ParameterMap {
 	}
 	
 	public String getFilePath() {
-		//logger.debug("getFilePath()");
 		if(FilePath == null){
 			String s = this.getAsString("request.path");
 			s += this.getAsString("fn");
@@ -261,31 +248,26 @@ public class ImageJobInformation extends ParameterMap {
 	}
 
 	public boolean get_hiresOnly(){
-		//logger.debug("get_hiresOnly()");
 		return hasOption("mo","clip") || hasOption("mo","osize") || hasOption("mo","hires");
 	}
 	
 	public boolean get_loresOnly(){
-		//logger.debug("get_loresOnly()");
 
 		return hasOption("mo","lores");
 	}
 
 	public boolean get_scaleToFit() {
-		//logger.debug("get_scaleToFit()");
 
 		return !(hasOption("mo","clip") || hasOption("mo","osize") || hasOption("mo","ascale"));
 	}
 
 	public boolean get_absoluteScale(){
-		//logger.debug("get_absoluteScale()");
 
 		return hasOption("mo","osize") || hasOption("mo","ascale");
 	}
 	
 	
 	public ImageSize get_expectedSourceSize() throws IOException, ImageOpException{
-		//logger.debug("get_expectedSourceSize()");
 
 		if (expectedSourceSize == null){
 			expectedSourceSize = new ImageSize();

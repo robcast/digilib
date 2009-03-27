@@ -18,6 +18,9 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * A class for handling user requests for pdf documents from digilib images.  
  * 
+ * If a document does not already exist, it will be enqueued for generation; if it does exist, it is sent
+ * to the user.
+ * 
  * @author cmielack
  *
  */
@@ -49,10 +52,7 @@ public class PDFCache extends RequestHandler {
 	private ServletContext context = null;
 
 	
-	// TODO functionality for the pre-generation of complete books/chapters using default values
-	// TODO use DLConfig for default values
-	// TODO use JSPs for automatically refreshing waiting-pages and download-pages
-	// TODO register the PDFCache instance globally and implement getters for cache_dir 
+	// TODO ? functionality for the pre-generation of complete books/chapters using default values
 	
 	
 	public void init(ServletConfig config) throws ServletException{
@@ -84,7 +84,9 @@ public class PDFCache extends RequestHandler {
 		
 	}
 	
-	
+	/** 
+	 * clean up any broken and unfinished files from the temporary directory.
+	 */
 	public void emptyTempDirectory(){
 		File temp_dir = new File(temp_directory);
 		String[] cached_files = temp_dir.list();
@@ -134,10 +136,15 @@ public class PDFCache extends RequestHandler {
 		}
 	}
 
-
+	/**
+	 * depending on the documents status, redirect the user to an appropriate waiting- or download-site
+	 * 
+	 * @param status
+	 * @param documentid
+	 * @param request
+	 * @param response
+	 */
 	public void notifyUser(int status, String documentid, HttpServletRequest request, HttpServletResponse response){
-		// depending on the documents status, redirect the user to an appropriate waiting- or download-site
-		// TODO
 		
 		String jsp=null;
 		
@@ -193,7 +200,12 @@ public class PDFCache extends RequestHandler {
 		}
 	}
 
-
+	/** 
+	 * create new thread for pdf generation.
+	 * 
+	 * @param pdfji
+	 * @param filename
+	 */
 	public void createNewPdfDocument(PDFJobInformation pdfji, String filename){
 		// start new worker
 		PDFMaker pdf_maker = new PDFMaker(context, pdfji,filename);
@@ -201,7 +213,14 @@ public class PDFCache extends RequestHandler {
 	}
 	
 	
+	/**
+	 * generate the filename the user is going to receive the pdf as
+	 * 
+	 * @param pdfji
+	 * @return
+	 */
 	public String downloadFilename(PDFJobInformation pdfji){
+		// filename example: digilib_example_pgs1-3.pdf
 		String filename;
 		filename =  "digilib_";
 		filename += pdfji.getImageJobInformation().getAsString("fn");
@@ -226,17 +245,21 @@ public class PDFCache extends RequestHandler {
 		BufferedInputStream bis = null;
 
 		try {
+			// get file handle
 			cached_file = new File(cache_directory + cachefile);
+			// create necessary streams
 			fis = new FileInputStream(cached_file);
 			sos = response.getOutputStream();
 			bis = new BufferedInputStream(fis);
 
 			int bytes = 0;
 
+			// set http headers
 			response.setContentType("application/pdf");
 			response.addHeader("Content-Disposition", "attachment; filename="+filename);
 			response.setContentLength( (int) cached_file.length());
-			
+
+			// send the bytes
 			while ((bytes = bis.read()) != -1){ 
 				sos.write(bytes);
 			}

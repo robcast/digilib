@@ -27,19 +27,24 @@ public class DigilibInfoReader {
 		filename = fn;
 	}
 
-	
+	/**
+	 * Returns the attribute defined by 'attr' as a String.
+	 * 
+	 * @param attr
+	 * @return
+	 */
 	public String getAsString(String attr){
 		try{
 			SAXBuilder builder = new SAXBuilder();
 			Document doc = builder.build(new File(filename));
 			Element root = doc.getRootElement();
 			List mainElements = root.getChildren();
-			logger.debug("XML mainElements:"+mainElements.toString());
+			// logger.debug("XML mainElements:"+mainElements.toString());
 
 			for(int i=0; i<mainElements.size(); i++){
 				Element elem = (Element) mainElements.get(i);
 				if(elem.getName()==attr){
-					logger.debug(attr+" == "+(String)elem.getTextTrim());
+					// logger.debug(attr+" == "+(String)elem.getTextTrim());
 					return (String)elem.getTextTrim();
 				}
 			}
@@ -51,6 +56,11 @@ public class DigilibInfoReader {
 		return null;
 	}
 	
+	
+	/**
+	 * Find out if the info.xml exists
+	 * @return
+	 */
 	public boolean hasInfo(){
 		try {
 			SAXBuilder builder = new SAXBuilder();

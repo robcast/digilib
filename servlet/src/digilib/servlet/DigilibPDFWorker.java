@@ -51,7 +51,7 @@ import digilib.io.FileOpException;
 import digilib.io.ImageFile;
 
 /**
- * worker for pdf operations.
+ * Worker for pdf generation.
  * 
  * @author cmielack
  * 
@@ -108,7 +108,7 @@ public class DigilibPDFWorker extends DigilibWorker {
 			start_time = System.currentTimeMillis();
 			
 
-			Integer[] pgs = get_pgs();
+			Integer[] pgs = job_info.getPageNrs();//get_pgs();
 
 			for(Integer p: pgs){
 				logger.debug(" - adding Image "+p+" to " + filename);
@@ -158,6 +158,9 @@ public class DigilibPDFWorker extends DigilibWorker {
 		}
 	}
 
+	/**
+	 * Set PDF-Meta-Attributes.
+	 */
 	public void setPDFProperties(){
 		// TODO get proper Information from dlConfig
 		doc.addAuthor(this.getClass().getName());
@@ -167,40 +170,23 @@ public class DigilibPDFWorker extends DigilibWorker {
 		doc.addCreator(this.getClass().getName());
 	}
 	
-	
+	/**
+	 * Create a title page and append it to the document (should, of course, be called first)
+	 * @throws DocumentException
+	 */
 	public void addTitlePage() throws DocumentException{
 		PDFTitlePage titlepage = new PDFTitlePage(job_info);
 		doc.add(titlepage.getPageContents());
 		doc.newPage();
 	}
 	
-	public Integer[] get_pgs(){
-		String pages = job_info.getAsString("pgs");
-		ArrayList<Integer> pgs = new ArrayList<Integer>();
-		Integer[] out = null;
-		
-		String intervals[] = pages.split(",");
-		
-		
-		// convert the page-interval-strings into a list containing every single page
-		for(String interval: intervals){
-			if(interval.indexOf("-") > -1){
-				String nums[] = interval.split("-");
-				
-				for(int i=Integer.valueOf(nums[0]); i <= Integer.valueOf(nums[1]); i++){
-					pgs.add(i);
-				}
-			}
-			else{
-				pgs.add(Integer.valueOf(interval));
-			}
-		}
-		out = new Integer[pgs.size()];
-
-		pgs.toArray(out);
-		return out;
-	}
 	
+	
+	/**
+	 * add the image with page number 'pn' to the document.
+	 * 
+	 * @param pn
+	 */
 	public void addImage(int pn) {
 		// create ImageJobInformation
 		ImageJobInformation iji = job_info.getImageJobInformation();
@@ -243,7 +229,6 @@ public class DigilibPDFWorker extends DigilibWorker {
 	
 	
 	
-	// unnecessary 
 	@Override
 	public DocuImage render() throws Exception {
 		return null;

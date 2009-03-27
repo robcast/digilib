@@ -28,6 +28,9 @@ import digilib.io.FileOps;
 import digilib.io.ImageFile;
 import digilib.io.ImageFileset;
 
+
+// TODO digilibError is not used anymore and may need to get reintegrated
+
 public class Scaler extends RequestHandler {
 
 	/** digilib servlet version (for all components) */
@@ -151,6 +154,9 @@ public class Scaler extends RequestHandler {
 		defaultQuality = dlConfig.getAsInt("default-quality");
 	}
 
+	
+	
+	
 	@Override
 	public void processRequest(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, ImageOpException {
@@ -159,12 +165,9 @@ public class Scaler extends RequestHandler {
 		if (dlConfig == null) {
 			throw new ServletException("ERROR: No Configuration!");
 		}
-
-		
 		
 		accountlog.debug("request: " + request.getQueryString());
 		logger.debug("request: " + request.getQueryString());
-
 		
 
 		// define the job information
@@ -225,9 +228,6 @@ public class Scaler extends RequestHandler {
 			e1.printStackTrace();
 			logger.error(e1.getMessage());
 		}
-
-		
-		
 		
 		if (! DigilibWorker.canRun()) {
 			logger.error("Servlet overloaded!");
@@ -239,9 +239,6 @@ public class Scaler extends RequestHandler {
 			return;
 		}
 
-		
-		
-		
 		
 		DigilibWorker job=null;
 		try {
@@ -291,36 +288,25 @@ public class Scaler extends RequestHandler {
 
 			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			logger.error(e.getClass()+": "+ e.getMessage());
 			//response.sendError(1);
 		} catch (ImageOpException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			logger.error(e.getClass()+": "+ e.getMessage());
 			//response.sendError(1);
 		}
 
 		
-		
-
-		
-		/*boolean errorMsgHtml = false;
+	/*	boolean errorMsgHtml = false;
 		
 		if(jobdeclaration.hasOption("mo","errtxt")){
 			errorMsgHtml = true;
 		} else if (jobdeclaration.hasOption("mo","errimg")) {
 			errorMsgHtml = true;
-		}
-		
-		
-		
-		*/
-				
+		} */
 		
 	}
-
 	
 	
 	/**
