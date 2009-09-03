@@ -19,11 +19,11 @@ Authors:
   DW 24.03.2004 (Changed for digiLib in Zope)
   Robert Casties, 2.11.2004 (almost complete rewrite)
   Martin Raspe, 12.12.2005 (changes for Digilib NG)
-
+  Robert Casties, 3.9.2009
 */
 
 // was: function base_init() {
-baseLibVersion = "2.010";
+baseLibVersion = "2.011";
 browserType = getBrowserType();
 
 sliders = {};
@@ -301,22 +301,34 @@ Transform.prototype.transform = function(rect) {
     var x = this.m00 * rect.x + this.m01 * rect.y + this.m02;
     var y = this.m10 * rect.x + this.m11 * rect.y + this.m12;
     if (rect.width) {
-        var width = this.m00 * rect.width + this.m01 * rect.height;
-        var height = this.m10 * rect.width + this.m11 * rect.height;
+        // transform the other corner points
+        var pt2 = rect.getPt2();
+        var x2 = this.m00 * pt2.x + this.m01 * pt2.y + this.m02;
+        var y2 = this.m10 * pt2.x + this.m11 * pt2.y + this.m12;
+        var width = x2 - x;
+        var height = y2 - y;
         return new Rectangle(x, y, width, height);
     }
     return new Position(x, y);
 }
-Transform.prototype.invtransform = function(pos) {
-    // returns transformed Position pos with the inverse of this Transform applied
+Transform.prototype.invtransform = function(rect) {
+    // returns transformed Rectangle or Position with the inverse of this Transform applied
     var det = this.m00 * this.m11 - this.m01 * this.m10;
-    var x = (this.m11 * pos.x - this.m01 * pos.y - this.m11 * this.m02 + this.m01 * this.m12) / det;
-    var y = (- this.m10 * pos.x + this.m00 * pos.y + this.m10 * this.m02 - this.m00 * this.m12) / det;
-    if (pos.width) {
-        var width = (this.m11 * pos.width - this.m01 * pos.height - this.m11 * this.m02 + this.m01 * this.m12) / det;
-    		var height = (- this.m10 * pos.width + this.m00 * pos.height + this.m10 * this.m02 - this.m00 * this.m12) / det;
-    		return new Rectangle(x, y, width, height);
-    	}
+    var x = (this.m11 * rect.x - this.m01 * rect.y - this.m11 * this.m02 + this.m01 * this.m12) / det;
+    var y = (- this.m10 * rect.x + this.m00 * rect.y + this.m10 * this.m02 - this.m00 * this.m12) / det;
+    if (rect.width) {
+        /* transforming width and height like points seems to be wrong 
+        var width = (this.m11 * rect.width - this.m01 * rect.height - this.m11 * this.m02 + this.m01 * this.m12) / det;
+        var height = (- this.m10 * rect.width + this.m00 * rect.height + this.m10 * this.m02 - this.m00 * this.m12) / det;
+        */
+        // transform the other corner points
+        var pt2 = rect.getPt2();
+        var x2 = (this.m11 * pt2.x - this.m01 * pt2.y - this.m11 * this.m02 + this.m01 * this.m12) / det;
+        var y2 = (- this.m10 * pt2.x + this.m00 * pt2.y + this.m10 * this.m02 - this.m00 * this.m12) / det;
+        var width = x2 - x;
+        var height = y2 - y;
+        return new Rectangle(x, y, width, height);
+    }
     return new Position(x, y);
 }
 function getRotation(angle, pos) {
@@ -552,8 +564,7 @@ function getElementPosition(elem) {
     if (defined(elem.offsetLeft)) {
         var e = elem;
         while (e) {
-            if (defined(e.clientLeft)) {
-                // special for IE
+            if (browserType.isIE) {
                 if (browserType.isMac) {
                     if (e.offsetParent.tagName == "BODY") {
                         // IE for Mac extraspecial
@@ -573,9 +584,11 @@ function getElementPosition(elem) {
             e = e.offsetParent;
         }
     } else if (defined(elem.x)) {
+        // use .x for other (which?)
         x = elem.x;
         y = elem.y;
     } else if (defined(elem.pageX)) {
+        // use pageX for N4
         x = elem.pageX;
         y = elem.pageY;
     } else {
@@ -758,14 +771,15 @@ function getWinSize() {
     if (defined(self.innerHeight))  {
         // all except Explorer
         if ((self.innerWidth == 0)||(self.innerHeight == 0)) {
-            // Safari 1.2 bug
+            // Safari 1.2 (and other) bug
             if (parent) {
-                parent.innerHeight;
-                parent.innerWidth;
+                wsize.height = parent.innerHeight;
+                wsize.width = parent.innerWidth;
             }
+        } else {
+            wsize.width = self.innerWidth;
+            wsize.height = self.innerHeight;
         }
-        wsize.width = self.innerWidth;
-        wsize.height = self.innerHeight;
     } else if (document.documentElement && document.documentElement.clientHeight) {
         // Explorer 6 Strict Mode
         wsize.width = document.documentElement.clientWidth;
