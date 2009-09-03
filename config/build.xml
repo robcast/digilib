@@ -12,6 +12,7 @@
   </path>
 
   <target name="init">
+    <tstamp/>
     <mkdir dir="bin"/>
     <mkdir dir="dist"/>
     <available file="servlet/src" property="has.servlet.src"/>
@@ -67,20 +68,20 @@
 
   <target name="get-all" depends="get-src,get-webapp"/>
 
-  <target name="get-src" unless="has.servlet.src"
+  <target name="get-src" depends="init" unless="has.servlet.src"
           description="download fresh set of sources from CVS">
     <cvs cvsRoot=":pserver:anonymous@cvs.digilib.berlios.de:/cvsroot/digilib"
          package="servlet/src" compression="true"/>
   </target>
 
-  <target name="get-webapp" unless="has.webapp.src"
+  <target name="get-webapp" depends="init" unless="has.webapp.src"
           description="download fresh webapp directory from CVS">
     <cvs cvsRoot=":pserver:anonymous@cvs.digilib.berlios.de:/cvsroot/digilib"
          package="client/digitallibrary" compression="true"/>
   </target>
 
   <!-- CVS update should not be needed, checkout is preferrable -->
-  <target name="update" depends="update-src,update-webapp"/>
+  <target name="update" depends="init,update-src,update-webapp"/>
 
   <target name="update-src" description="update sources from CVS" >
     <cvs dest="servlet/src" command="update" compression="true"/>
