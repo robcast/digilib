@@ -25,7 +25,7 @@ a.arrow {
 	display: block;
 	position: absolute;
 	border: none;
-	z-index: 150;
+	z-index: 50;
 	background-repeat: no-repeat;
 	background-position: center;
 	}
@@ -62,7 +62,7 @@ img.png:hover {
 	
 img#bird-image {
 	border: none;
-	position: absolute;
+	position: fixed;
 	bottom: 10px;
 	right:  10px;
 	visibility: hidden;
@@ -105,9 +105,9 @@ div#scaler {
 	}
 
 div#overlay {
-	position: absolute;
+	position: fixed;
 	background-color: transparent;
-	border: 1px dotted lightcyan;
+	border: 1px solid lightgrey;
 	z-index: 100;
 	visibility: hidden;
 	/* box-sizing: border-box;
@@ -135,7 +135,8 @@ div#dloptions {
 
 div#zoom {
 	position: absolute;
-	border: 2px solid #ffa060;
+	/* border: 2px solid #ffa060; */
+	border: 2px solid #ff0000;
 	visibility: hidden;
 	z-index: 200;
 	/* box-sizing: border-box;
@@ -143,8 +144,9 @@ div#zoom {
 	}
 
 div#bird-area {
-	position: absolute;
-	border: 2px solid #ffa060;
+	position: fixed;
+	/* border: 2px solid #ffa060; */
+	border: 2px solid #ff0000;
 	visibility: hidden;
 	background-color: transparent;
 	/* box-sizing: border-box;

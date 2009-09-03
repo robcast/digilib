@@ -399,11 +399,12 @@ Digilib.prototype.setMark = function() {
     // add a mark where clicked
     window.focus();
     this.moveCenter(false);
+    
     // start event capturing
     registerEvent("mousedown", this.scalerDiv, markEvent);
 
-	// our own reference to this for the local function
-	var digilib = this;
+    // our own reference to this for the local function
+    var digilib = this;
 	
     function markEvent(evt) {
     // event handler adding a new mark
@@ -437,14 +438,14 @@ Digilib.prototype.zoomArea = function() {
     registerEvent("mousedown", this.scalerImg, zoomStart);
     window.focus();
 
-	// our own reference to "this" for the local functions
-	var _this = this;
+    // our own reference to "this" for the local functions
+    var digilib = this;
 	
-	// mousedown handler: start moving
+    // mousedown handler: start moving
     function zoomStart(evt) {
         pt1 = evtPosition(evt);
         unregisterEvent("mousedown", overlay, zoomStart);
-        unregisterEvent("mousedown", _this.scalerImg, zoomStart);
+        unregisterEvent("mousedown", digilib.scalerImg, zoomStart);
         // setup and show zoom div
         moveElement(zoomdiv, Rectangle(pt1.x, pt1.y, 0, 0));
         showElement(zoomdiv, true);
@@ -454,30 +455,30 @@ Digilib.prototype.zoomArea = function() {
         return stopEvent(evt);
     }
     
-	// mouseup handler: end moving
+    // mouseup handler: end moving
     function zoomEnd(evt) {
         pt2 = evtPosition(evt);
         // assume a click if the area is too small (up to 3 x 3 pixel)
         var clickRect = new Rectangle(pt1, pt2);
         clickRect.normalize();
-        if (clickRect.getArea() <= _this.MIN_AREA_SIZE) return stopEvent(evt);
+        if (clickRect.getArea() <= digilib.MIN_AREA_SIZE) return stopEvent(evt);
         // hide zoom div
         showElement(zoomdiv, false);
         showElement(overlay, false);
         // unregister events
         unregisterEvent("mousemove", document, zoomMove);
-        unregisterEvent("mouseup", document, zoomMove);
+        unregisterEvent("mouseup", document, zoomEnd);
         // clip and transform
         clickRect.clipTo(picRect);
-        var area = _this.trafo.invtransform(clickRect);
-        _this.setParamFromArea(area);
+        var area = digilib.trafo.invtransform(clickRect);
+        digilib.setParamFromArea(area);
         // zoomed is always fit
-        _this.params.set("ws", 1);
-        _this.display();
+        digilib.params.set("ws", 1);
+        digilib.display();
         return stopEvent(evt);
     }
     
-	// mouse move handler
+    // mouse move handler
     function zoomMove(evt) {
         pt2 = evtPosition(evt);
         var rect = new Rectangle(pt1, pt2);

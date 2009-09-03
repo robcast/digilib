@@ -34,9 +34,9 @@
 	
 	<link rel="stylesheet" type="text/css" href="diginew.css" />
 	
-	<script type="text/javascript" src="fixed.js"></script>
+<!-- <script type="text/javascript" src="fixed.js"></script> -->
 
-	<script type="text/javascript" src="debug.js"></script>
+<!-- <script type="text/javascript" src="debug.js"></script> -->
 
 	<script type="text/javascript" src="baselib.js"></script>
 	
@@ -44,7 +44,7 @@
 
 	<script language="JavaScript">
 
-	var jspVersion = "diginew.jsp 1.020";
+	var jspVersion = "diginew.jsp 1.021";
 	var cookie = new Cookie();
 	// alert(strObject(cookie));
 
