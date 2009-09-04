@@ -1,4 +1,6 @@
-<%@ page language="java" %><%!
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<%@ page language="java" pageEncoding="UTF-8"%><%!
 	// -- JSP init -------------
 	
 	// create DocumentBean instance for all JSP requests
@@ -28,14 +30,13 @@
 	// store objects for jsp:include
 	pageContext.setAttribute("docBean", docBean, pageContext.REQUEST_SCOPE);
 
-%><html>
+%><html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title>Digital Document Library NG</title>
 	
 	<link rel="stylesheet" type="text/css" href="diginew.css" />
 	
-<!-- <script type="text/javascript" src="fixed.js"></script> -->
-
 <!-- <script type="text/javascript" src="debug.js"></script> -->
 
 	<script type="text/javascript" src="baselib.js"></script>
@@ -44,7 +45,7 @@
 
 	<script language="JavaScript">
 
-	var jspVersion = "diginew.jsp 1.021";
+	var jspVersion = "diginew.jsp 1.022";
 	var cookie = new Cookie();
 	// alert(strObject(cookie));
 
@@ -136,6 +137,7 @@
 
  <!-- sensitive overlay for zoom area etc -->
  <div id="overlay"></div>
+ <div id="bird-overlay"></div>
  
  <!-- the zoom area selection rectangle -->
  <div id="zoom"></div>
@@ -147,10 +149,10 @@
  <div id="bird-area"></div>
 
  <!-- the arrows -->
- <a class="arrow" id="up"    href="javascript:moveBy(0, -0.5)"></a>
- <a class="arrow" id="down"  href="javascript:moveBy(0, 0.5)"></a>
- <a class="arrow" id="left"  href="javascript:moveBy(-0.5, 0)"></a>
- <a class="arrow" id="right" href="javascript:moveBy(0.5, 0)"></a>
+ <a class="arrow" id="up"    href="javascript:moveBy(0, -0.5)"><img style="border: 0px; width: 100%; height: 100%;" src="trans.gif"/></a>
+ <a class="arrow" id="down"  href="javascript:moveBy(0, 0.5)"><img style="border: 0px; width: 100%; height: 100%;" src="trans.gif"/></a>
+ <a class="arrow" id="left"  href="javascript:moveBy(-0.5, 0)"><img style="border: 0px; width: 100%; height: 100%;" src="trans.gif"/></a>
+ <a class="arrow" id="right" href="javascript:moveBy(0.5, 0)"><img style="border: 0px; width: 100%; height: 100%;" src="trans.gif"/></a>
 
  <!-- the about window -->
  <div id="about" class="about" onclick="toggleAboutDiv()">

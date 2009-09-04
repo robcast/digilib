@@ -104,7 +104,7 @@ div#scaler {
 */	/* overflow: auto; */
 	}
 
-div#overlay {
+div#overlay, div#bird-overlay {
 	position: fixed;
 	background-color: transparent;
 	border: 1px solid lightgrey;

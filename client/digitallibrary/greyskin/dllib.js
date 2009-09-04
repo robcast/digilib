@@ -19,12 +19,12 @@ Authors:
   DW 24.03.2004 (Changed for digiLib in Zope)
   Robert Casties, 8.11.2005
   Martin Raspe <hertzhaft@biblhertz.it>, 12.12.2005
-
+  Robert Casties, 4.9.2009
+  
   ! Requires baselib.js !
-
 */
 digilibVersion = "Digilib NG";
-dllibVersion = "2.040";
+dllibVersion = "2.041";
 
 function identify() {
         // used for identifying a digilib instance
@@ -161,24 +161,24 @@ DLParameters.prototype.getAll = function(paDetail, moDetail, digilib) {
  * DLModes -- digilib flags class
  */
 function DLFlags() {
-	// flags for mode sets
-	this.MODE_QUAL = 1;
-	this.MODE_SIZE = 2;
-	this.MODE_MIR = 4;
-	this.MODE_OTHER = 128;
-	this.MODE_ALL = 255;
+    // flags for mode sets
+    this.MODE_QUAL = 1;
+    this.MODE_SIZE = 2;
+    this.MODE_MIR = 4;
+    this.MODE_OTHER = 128;
+    this.MODE_ALL = 255;
     /* mode flags */
     with (this) {
-	    define('q0', MODE_QUAL);
-	    define('q1', MODE_QUAL);
-	    define('q2', MODE_QUAL);
-	    define('fit',   MODE_SIZE);
-	    define('clip',  MODE_SIZE);
-	    define('osize', MODE_SIZE);
-	    define('vmir', MODE_MIR);
-	    define('hmir', MODE_MIR);
-	}
-	return this;
+        define('q0', MODE_QUAL);
+        define('q1', MODE_QUAL);
+        define('q2', MODE_QUAL);
+        define('fit',   MODE_SIZE);
+        define('clip',  MODE_SIZE);
+        define('osize', MODE_SIZE);
+        define('vmir', MODE_MIR);
+        define('hmir', MODE_MIR);
+    }
+    return this;
 }
 // inherits from Flags
 DLFlags.prototype = new Flags();
@@ -191,24 +191,24 @@ function Digilib() {
     if (!baseLibVersion) alert("ERROR: baselib.js not loaded!");
     /* constants */
     this.MAX_AREA = new Rectangle(0.0, 0.0, 1.0, 1.0);
-	// default inset (for scalerImg relativ to scalerDiv 
-	this.INSET = 40; // because of scrollbars of main window and scaler [Firefox bug?]
-	// mouse drag area that counts as one click 
-	this.MIN_AREA_SIZE = 3 * 3 + 1;
-	// standard zoom factor
-	this.ZOOMFACTOR = Math.sqrt(2);
-	// bird's eye view dimensions
-	this.BIRD_MAXX = 100;
-	this.BIRD_MAXY = 100;
-	// witdh of arrow bars
-	this.ARROW_WIDTH = 32;
-	// width of calibration bar
-	this.CALIBRATION_WIDTH = 64;
+    // default inset (for scalerImg relativ to scalerDiv 
+    this.INSET = 40; // because of scrollbars of main window and scaler [Firefox bug?]
+    // mouse drag area that counts as one click 
+    this.MIN_AREA_SIZE = 3 * 3 + 1;
+    // standard zoom factor
+    this.ZOOMFACTOR = Math.sqrt(2);
+    // bird's eye view dimensions
+    this.BIRD_MAXX = 100;
+    this.BIRD_MAXY = 100;
+    // witdh of arrow bars
+    this.ARROW_WIDTH = 32;
+    // width of calibration bar
+    this.CALIBRATION_WIDTH = 64;
     /* variables */
     this.fitOnlyWidth = false;
     this.fitOnlyHeight = false;
     this.trafo = null;
-	// page elements
+    // page elements
     this.scalerDiv = null;
     this.scalerImg = null;
     this.buttons1Div = null;
@@ -223,9 +223,9 @@ function Digilib() {
     this.marks.parse(this.params.get("mk"));
     this.flags = new DLFlags();
     this.flags.parse(this.params.get("mo"));
-	this.opts = new Flags();
-	this.opts.parse(this.params.get("clop"));
-	return this;
+    this.opts = new Flags();
+    this.opts.parse(this.params.get("clop"));
+    return this;
 }
 Digilib.prototype.setDLParam = function(e, s, relative) {
     // sets parameter based on HTML event
@@ -285,15 +285,15 @@ Digilib.prototype.parseTrafo = function(elem) {
 }
 
 Digilib.prototype.onLoad = function() {
-	// initialize digilib; called by body.onload
-	this.scalerDiv = getElement("scaler", true);
+    // initialize digilib; called by body.onload
+    this.scalerDiv = getElement("scaler", true);
     this.scalerImg = getElement("pic", true);
     this.buttons1Div = getElement("buttons", true);
     this.buttons2Div = getElement("options", true);
-    /* if (this.scalerImg == null && this.scalerDiv) {
-        // in N4 pic is in the scaler layer
-        this.scalerImg = this.scalerDiv.document.images[0];
-    } */
+    /*
+     * if (this.scalerImg == null && this.scalerDiv) { // in N4 pic is in the
+     * scaler layer this.scalerImg = this.scalerDiv.document.images[0]; }
+     */
     if ((!this.scalerImg)||(!this.scalerDiv)) {
         alert("Sorry, digilib doesn't work here!");
         return false;
@@ -303,17 +303,17 @@ Digilib.prototype.onLoad = function() {
     var ms2 = getElementSize(this.buttons2Div);
     var maxh = (ms1.height > ms2.height) ? ms1.height : ms2.height;
     var wins = getWinSize();
-    if ((wins.height <= maxh) || browserType.isIE) {
-    		// unlock fixed menus to absolute
-    		this.buttons1Div.style.position = "absolute";
-    		this.buttons2Div.style.position = "absolute";
-    	}
-	this.setScalerImage();	// setzt auch onImgLoad
-	this.setBirdImage();	// l?dt das Bird's Eye Bild
+    if ((wins.height <= maxh) || (browserType.isIE && (browserType.versIE < 7))) {
+        // unlock fixed menus to absolute if window is too small or IE
+        this.buttons1Div.style.position = "absolute";
+        this.buttons2Div.style.position = "absolute";
+    }
+    this.setScalerImage();	// setzt auch onImgLoad
+    this.setBirdImage();	// laedt das Bird's Eye Bild
 }
 
 Digilib.prototype.setScalerImage = function() {
-	// set the scaler image source (needs the browser size)
+    // set the scaler image source (needs the browser size)
     var picsize = bestPicSize(this.scalerDiv);
     var menusize = getElementSize(this.buttons1Div);
     // subtract menu width
@@ -323,61 +323,62 @@ Digilib.prototype.setScalerImage = function() {
     var src = "../servlet/Scaler?" 
         + this.params.getAll(this.params.PARAM_ALL & ~(this.params.PARAM_MARK | this.params.PARAM_PAGES));
     if (this.opts.get('fitwidth')) {
-		src += "&dw=" + picsize.width;
+        src += "&dw=" + picsize.width;
     } else if (this.opts.get('fitheight')) {
-		src += "&dh=" + picsize.height;
-	} else {
-		src += "&dw=" + picsize.width + "&dh=" + picsize.height;
-	}
+        src += "&dh=" + picsize.height;
+    } else {
+        src += "&dw=" + picsize.width + "&dh=" + picsize.height;
+    }
     // debug(src);
     this.scalerImg.onload = onImgLoad;
     this.scalerImg.src = src;
 
-	var digilib = this;
-	// this is a local callback function that can use the current scope
-	
+    var digilib = this;
+    // this is a local callback function that can use the current scope
+
     function onImgLoad() {
         if (! digilib)
             return;
-		// make sure the image is loaded so we know its size
-		/* this test seems to have problems sometimes :-(
+        // make sure the image is loaded so we know its size
+        /* this test seems to have problems sometimes :-(
 	    if (defined(digilib.scalerImg.complete) && !digilib.scalerImg.complete) {
 			alert("ERROR: the image seems not to be complete in onImgLoad!?");
 		} */
-	    digilib.trafo = digilib.parseTrafo(digilib.scalerImg);
-	    // display marks
-	    digilib.renderMarks();
-		digilib.showBirdDiv(isBirdDivVisible);
-		digilib.showArrows();		// show arrow overlays for zoom navigation
-		//digilib.moveCenter(true);	// click to move point to center
-		// new Slider("sizes", 1, 5, 2);
-	    focus();
-	}
+        digilib.trafo = digilib.parseTrafo(digilib.scalerImg);
+        // display marks
+        digilib.renderMarks();
+        digilib.showBirdDiv(isBirdDivVisible);
+        digilib.showArrows();		// show arrow overlays for zoom navigation
+        //digilib.moveCenter(true);	// click to move point to center
+        // new Slider("sizes", 1, 5, 2);
+        focus();
+    }
 }
+
 Digilib.prototype.renderMarks = function() {
     // make sure the image is loaded so we know its size
     if (!this.trafo) {
-    		alert("ERROR: trafo missing, cannot render marks!");
-    		return;
-    	}
+        alert("ERROR: trafo missing, cannot render marks!");
+        return;
+    }
     // debugProps(dlArea, "dlArea");
     for (var i = 0; i < this.marks.length; i++) {
-	    	var div = getElement("mark" + i, true) || createMarkDiv(i);
-	    	var mark = this.marks[i];
-	    	// debugProps(mark, "mark");
-	    	if (this.area.containsPosition(mark)) {
-	        	var mpos = this.trafo.transform(mark);
-	        	// debugProps(mark, "mpos");
-	       	// better not hide the marked spot (MR)
-	       	// suboptimal to place -5 pixels and not half size of mark-image
-	       	// mpos.x = mpos.x -5;
-	       	// mpos.y = mpos.y -5;
-	       	moveElement(div, mpos);
-	        showElement(div, true);
-	    } else {
-	        // hide the other marks
-	        showElement(div, false);
-	    }
+        var div = getElement("mark" + i, true) || createMarkDiv(i);
+        var mark = this.marks[i];
+        // debugProps(mark, "mark");
+        if (this.area.containsPosition(mark)) {
+            var mpos = this.trafo.transform(mark);
+            // debugProps(mark, "mpos");
+            // better not hide the marked spot (MR)
+            // suboptimal to place -5 pixels and not half size of mark-image
+            // mpos.x = mpos.x -5;
+            // mpos.y = mpos.y -5;
+            moveElement(div, mpos);
+            showElement(div, true);
+        } else {
+            // hide the other marks
+            showElement(div, false);
+        }
     }
 }
 
@@ -461,7 +462,9 @@ Digilib.prototype.zoomArea = function() {
         // assume a click if the area is too small (up to 3 x 3 pixel)
         var clickRect = new Rectangle(pt1, pt2);
         clickRect.normalize();
-        if (clickRect.getArea() <= digilib.MIN_AREA_SIZE) return stopEvent(evt);
+        if (clickRect.getArea() <= digilib.MIN_AREA_SIZE) {
+            return stopEvent(evt);
+        }
         // hide zoom div
         showElement(zoomdiv, false);
         showElement(overlay, false);
@@ -722,7 +725,7 @@ Digilib.prototype.showBirdDiv = function(show) {
     var newRect;  // position after drag
     var birdImg = getElement("bird-image");
     var birdArea = getElement("bird-area");
-    var overlay = getElement("overlay");
+    var overlay = getElement("bird-overlay");
     showElement(birdImg, show);
     // dont show selector if area has full size
     if (!show || this.isFullArea()) {
@@ -808,13 +811,13 @@ Digilib.prototype.showBirdDiv = function(show) {
 
 Digilib.prototype.showArrow = function(name, rect, show) {
     var arrow = getElement(name);
-	moveElement(arrow, rect);
-	showElement(arrow, show);
-	}
+    moveElement(arrow, rect);
+    showElement(arrow, show);
+}
 	
 Digilib.prototype.showArrows = function() {
     // show the 4 arrow bars on top of scaler img according to current dlArea
-	var r = getElementRect(this.scalerImg);
+    var r = getElementRect(this.scalerImg);
     this.showArrow('up',
         new Rectangle(r.x, r.y, r.width, this.ARROW_WIDTH), 
         this.canMove(0, -1)
