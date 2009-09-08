@@ -368,6 +368,21 @@
 	<div class="button">
 		<a
 			class="icon"
+			href="javascript:resetImage()"
+			>
+
+			<img
+				class="png"
+				id="help"
+				title="reset image"
+				src="reset.png"
+			>
+		</a>
+	</div>
+
+	<div class="button">
+		<a
+			class="icon"
 			href="javascript:toggleOptionDiv()"
 			>
 

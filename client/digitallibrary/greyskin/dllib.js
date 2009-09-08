@@ -198,8 +198,8 @@ function Digilib() {
     // standard zoom factor
     this.ZOOMFACTOR = Math.sqrt(2);
     // bird's eye view dimensions
-    this.BIRD_MAXX = 100;
-    this.BIRD_MAXY = 100;
+    this.BIRD_MAXX = 200;
+    this.BIRD_MAXY = 200;
     // witdh of arrow bars
     this.ARROW_WIDTH = 32;
     // width of calibration bar
@@ -351,6 +351,10 @@ Digilib.prototype.setScalerImage = function() {
         digilib.showArrows();		// show arrow overlays for zoom navigation
         //digilib.moveCenter(true);	// click to move point to center
         // new Slider("sizes", 1, 5, 2);
+        
+        //Drag Image (6.9.2009, not yet working)
+        //registerEvent("mousedown", digilib.scalerDiv, dragImage);
+
         focus();
     }
 }
@@ -421,6 +425,63 @@ Digilib.prototype.removeMark = function() {
     // remove the last mark
     this.marks.pop();
     this.display();
+}
+
+Digilib.prototype.resetImage = function() {
+    // reset the image to its original state
+    this.display(this.params.PARAM_FILE); // keep only fn/pn
+}
+
+Digilib.prototype.dragImage = function(evt) {
+    // drag the image and load a new detail on mouse up
+    // makes sense only when zoomed
+    if (this.isFullArea())
+        return;
+    var startPos = evtPosition(evt);
+    var picRect = getElementRect(this.scalerImg);
+    var newRect;  // position after drag
+    // start event capturing
+    registerEvent("mousemove", document, moveDragEvent);
+    registerEvent("mouseup", document, moveEndEvent);
+    window.focus();
+    
+	// our own reference to this for the local function
+	var digilib = this;
+
+	function moveDragEvent(evt) {
+    // mousemove handler: drag
+        var pos = evtPosition(evt);
+        var dx = pos.x - startPos.x;
+        var dy = pos.y - startPos.y;
+        // move scalerImg div
+        newRect = new Rectangle(
+            picRect.x + dx,
+            picRect.y + dy,
+            picRect.width,
+            picRect.height);
+        // move scalerImg to new position
+        moveElement(this.scalerImg, newRect);
+        return stopEvent(evt);
+	    }
+
+	function moveEndEvent(evt) {
+    // mouseup handler: reload page
+        unregisterEvent("mousemove", document, moveDragEvent);
+        unregisterEvent("mouseup", document, moveEndEvent);
+        if (newRect == null) { // no movement happened
+            return stopEvent(evt);
+            }
+        var newX = cropFloat(newRect.x - picRect.x);
+        var newY = cropFloat(newRect.y - picRect.y);
+        // if (newX < 0) newX = 0; 
+        // if (newY < 0) newY = 0; 
+        digilib.params.set("wx", newX);
+        digilib.params.set("wy", newY);
+        // zoomed is always fit
+        // digilib.params.set("ws", 1);
+        digilib.display();
+        return stopEvent(evt);
+    }
 }
 
 Digilib.prototype.zoomArea = function() {
@@ -945,6 +1006,8 @@ function setDLParam(e, s, relative) {dl.setDLParam(e, s, relative)};
 function display(detail, moDetail) {dl.display(detail, moDetail)};
 function setMark(reload) {dl.setMark(reload)};
 function removeMark(reload) {dl.removeMark(reload)};
+function resetImage() {dl.resetImage()};
+function dragImage(evt) {dl.dragImage(evt)};
 function zoomArea() {dl.zoomArea()};
 function zoomBy(factor) {dl.zoomBy(factor)};
 function zoomFullpage(a) {dl.zoomFullpage(a)};
