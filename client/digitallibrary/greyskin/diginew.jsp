@@ -45,7 +45,7 @@
 
 	<script language="JavaScript">
 
-	var jspVersion = "diginew.jsp 1.022";
+	var jspVersion = "diginew.jsp 1.023";
 	var cookie = new Cookie();
 	// alert(strObject(cookie));
 
@@ -131,6 +131,9 @@
 
 <body onload="onBodyLoad();" onunload="onBodyUnload();">
  <!-- slot for the scaled image -->
+ 
+ <div id="bg"></div>
+ 
  <div id="scaler">
 	<img id="pic"></img>
  </div>

@@ -24,7 +24,7 @@ Authors:
   ! Requires baselib.js !
 */
 digilibVersion = "Digilib NG";
-dllibVersion = "2.041";
+dllibVersion = "2.042";
 
 function identify() {
         // used for identifying a digilib instance
@@ -44,8 +44,10 @@ function createMarkDiv(index) {
 function bestPicSize(elem, inset) {
     // returns a Size with the best image size for the given element
     if (! defined(inset)) {
-        inset = 25;
-    }
+        inset = 0; 
+        // original value was 25 
+        // digilib seems to use the available space better without inset
+        }
     var ws = getWinSize();
     var es = getElementPosition(elem);
     if (es) {
@@ -352,8 +354,9 @@ Digilib.prototype.setScalerImage = function() {
         //digilib.moveCenter(true);	// click to move point to center
         // new Slider("sizes", 1, 5, 2);
         
-        //Drag Image (6.9.2009, not yet working)
-        //registerEvent("mousedown", digilib.scalerDiv, dragImage);
+        //Drag Image (8.9.2009)
+        if (!digilib.isFullArea())
+            registerEvent("mousedown", digilib.scalerDiv, dragImage);
 
         focus();
     }
@@ -437,50 +440,51 @@ Digilib.prototype.dragImage = function(evt) {
     // makes sense only when zoomed
     if (this.isFullArea())
         return;
+    if(evt.preventDefault) evt.preventDefault(); // no Firefox drag and drop
+	var digilib = this; // our own reference to this for the local function
     var startPos = evtPosition(evt);
-    var picRect = getElementRect(this.scalerImg);
-    var newRect;  // position after drag
+    var pic = this.scalerImg;
+    var picRect = getElementRect(pic);
+     // fit the grey div to the scaler image
+    var div = getElement("bg");
+    var dx = 0;
+    var dy = 0;
+    moveElement(div, picRect);
+    // hide the scaler image, show it as background of div instead
+    showElement(pic, false); 
+    showElement(div, true);
+    div.style.backgroundImage = "url(" + pic.src + ")";
+    div.style.cursor = "move";
     // start event capturing
     registerEvent("mousemove", document, moveDragEvent);
     registerEvent("mouseup", document, moveEndEvent);
     window.focus();
-    
-	// our own reference to this for the local function
-	var digilib = this;
 
 	function moveDragEvent(evt) {
     // mousemove handler: drag
         var pos = evtPosition(evt);
-        var dx = pos.x - startPos.x;
-        var dy = pos.y - startPos.y;
-        // move scalerImg div
-        newRect = new Rectangle(
-            picRect.x + dx,
-            picRect.y + dy,
-            picRect.width,
-            picRect.height);
-        // move scalerImg to new position
-        moveElement(this.scalerImg, newRect);
+        // don't use Firefox Drag and Drop feature 
+        if(evt.preventDefault) evt.preventDefault();
+        dx = pos.x - startPos.x;
+        dy = pos.y - startPos.y;
+        // move the background image to the new position
+        div.style.backgroundPosition = dx + "px " + dy + "px";
         return stopEvent(evt);
 	    }
 
 	function moveEndEvent(evt) {
-    // mouseup handler: reload page
+    // mouseup handler: reload digilib
+        div.style.cursor = "default";
         unregisterEvent("mousemove", document, moveDragEvent);
         unregisterEvent("mouseup", document, moveEndEvent);
-        if (newRect == null) { // no movement happened
-            return stopEvent(evt);
-            }
-        var newX = cropFloat(newRect.x - picRect.x);
-        var newY = cropFloat(newRect.y - picRect.y);
-        // if (newX < 0) newX = 0; 
-        // if (newY < 0) newY = 0; 
-        digilib.params.set("wx", newX);
-        digilib.params.set("wy", newY);
-        // zoomed is always fit
-        // digilib.params.set("ws", 1);
-        digilib.display();
-        return stopEvent(evt);
+        // calculate relative offset
+        var x = -dx / pic.width;
+        var y = -dy / pic.height;
+        stopEvent(evt);
+        if (dx == 0 && dy == 0)
+            return // no movement
+        // reload with scaler image showing the new ausschnitt
+        return digilib.moveBy(x, y);
     }
 }
 

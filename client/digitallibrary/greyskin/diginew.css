@@ -6,6 +6,9 @@ body {
 	background-color: #E0E0E0;
 	color: black;
 	font-size: 8pt;
+	margin: 8px 0px 0px 8px;
+	padding: 0px;
+	overflow: hidden;
 	}
 
 code {
@@ -92,17 +95,30 @@ div.mark {
 	padding-top: 1px;
 	text-align: center;
 	z-index: 10;
+	visibility: hidden;
 	/* filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='mark-bg-16.png') */
 	}
 		
+div#bg {
+	position: absolute;
+	background-color: grey;
+    background-repeat:no-repeat;
+    cursor: move;
+    visibility: hidden;
+}
+	
 div#scaler {
 /*	position: absolute;
 	left: 8px;
 	top: 8px;
-	bottom: 30px;
+	bottom: 8px;
 	right: 44px;
 */	/* overflow: auto; */
 	}
+
+div#scaler img {
+    cursor: default;
+}
 
 div#overlay, div#bird-overlay {
 	position: fixed;
@@ -137,8 +153,8 @@ div#zoom {
 	position: absolute;
 	/* border: 2px solid #ffa060; */
 	border: 2px solid #ff0000;
-	visibility: hidden;
 	z-index: 200;
+	visibility: hidden;
 	/* box-sizing: border-box;
 	-moz-box-sizing: border-box; */
 	}
@@ -147,11 +163,11 @@ div#bird-area {
 	position: fixed;
 	/* border: 2px solid #ffa060; */
 	border: 2px solid #ff0000;
-	visibility: hidden;
 	background-color: transparent;
 	/* box-sizing: border-box;
 	-moz-box-sizing: border-box; */
 	z-index: 10;
+	visibility: hidden;
 	}
 
 div#calibration {
