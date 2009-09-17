@@ -6,9 +6,9 @@ body {
 	background-color: #E0E0E0;
 	color: black;
 	font-size: 8pt;
-	margin: 8px 0px 0px 8px;
+	margin-left: 8px;
+	margin-top: 8px;
 	padding: 0px;
-	overflow: hidden;
 	}
 
 code {
@@ -108,7 +108,8 @@ div#bg {
 }
 	
 div#scaler {
-/*	position: absolute;
+    margin-right: 50px;
+    /*	position: absolute;
 	left: 8px;
 	top: 8px;
 	bottom: 8px;
@@ -123,7 +124,7 @@ div#scaler img {
 div#overlay, div#bird-overlay {
 	position: fixed;
 	background-color: transparent;
-	border: 1px solid lightgrey;
+	border: none;
 	z-index: 100;
 	visibility: hidden;
 	/* box-sizing: border-box;
@@ -173,6 +174,7 @@ div#bird-area {
 div#calibration {
 	background: url('blue.png');
 	position: absolute;
+	top: 0px;
 	width: 400px;
 	padding: 0px;
 	visibility: hidden;
@@ -198,6 +200,7 @@ p.cm {
 
 div.popup-menu {
 	position: absolute;
+	top: 0px;
 	padding: 0px 2px;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	border: 2px solid lightcyan;
