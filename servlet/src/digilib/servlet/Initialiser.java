@@ -48,7 +48,7 @@ public class Initialiser extends HttpServlet {
 	private static final long serialVersionUID = -5126621114382549343L;
 
 	/** servlet version */
-	public static final String iniVersion = "0.1b2";
+	public static final String iniVersion = "0.2";
 
 	/** gengeral logger for this class */
 	private static Logger logger = Logger.getLogger("digilib.init");

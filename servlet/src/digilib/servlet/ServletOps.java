@@ -112,13 +112,22 @@ public class ServletOps {
 	 * @return
 	 */
 	public static File getConfigFile(File f, ServletConfig sc) {
+	    String fn = f.getPath();
 		// is the filename absolute?
-		if (!f.isAbsolute()) {
-			// relative path -> use getRealPath to resolve in WEB-INF
-			String fn = sc.getServletContext().getRealPath(
-					"WEB-INF/" + f.getPath());
-			f = new File(fn);
+		if (f.isAbsolute()) {
+		    // does it exist?
+		    if (f.canRead()) {
+		        // fine
+		        return f;
+		    } else {
+		        // try just the filename as relative
+		        fn = f.getName();
+		    }
 		}
+		// relative path -> use getRealPath to resolve in WEB-INF
+		String newfn = sc.getServletContext().getRealPath(
+		        "WEB-INF/" + fn);
+		f = new File(newfn);
 		return f;
 	}
 

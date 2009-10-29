@@ -140,9 +140,9 @@ public class DigilibConfiguration extends ParameterMap {
 		// use mapping file to translate paths
 		newParameter("use-mapping", Boolean.FALSE, null, 'f');
 		// mapping file location
-		newParameter("mapping-file", new File("digilib-map.xml"), null, 'f');
+		newParameter("mapping-file", new File("WEB-INF/digilib-map.xml"), null, 'f');
 		// log4j config file location
-		newParameter("log-config-file", new File("log4j-config.xml"), null, 'f');
+		newParameter("log-config-file", new File("WEB-INF/log4j-config.xml"), null, 'f');
 		// maximum destination image size (0 means no limit)
 		newParameter("max-image-size", new Integer(0), null, 'f');
 		// use safe (but slower) directory indexing
@@ -168,36 +168,36 @@ public class DigilibConfiguration extends ParameterMap {
 	/**
 	 * read parameter list from the XML file in init parameter "config-file"
 	 */
-	public void readConfig(ServletConfig c) throws Exception {
+	public void readConfig(ServletConfig config) throws Exception {
 
 		/*
 		 * Get config file name. The file name is first looked for as an init
 		 * parameter, then in a fixed location in the webapp.
 		 */
-		if (c == null) {
+		if (config == null) {
 			// no config no file...
 			return;
 		}
-		String fn = c.getInitParameter("config-file");
+		String fn = config.getInitParameter("config-file");
 		if (fn == null) {
-			fn = ServletOps.getConfigFile("digilib-config.xml", c);
+			fn = ServletOps.getFile("WEB-INF/digilib-config.xml", config);
 			if (fn == null) {
 				logger.fatal("readConfig: no param config-file");
 				throw new ServletException("ERROR: no digilib config file!");
 			}
 		}
-		File f = new File(fn);
+		File configFile = new File(fn);
 		// setup config file list reader
 		XMLListLoader lilo =
 			new XMLListLoader("digilib-config", "parameter", "name", "value");
 		// read config file into HashMap
-		Map confTable = lilo.loadURL(f.toURL().toString());
+		Map confTable = lilo.loadURL(configFile.toURL().toString());
 
 		// set config file path parameter
-		setValue("servlet.config.file", f.getCanonicalPath());
+		setValue("servlet.config.file", configFile.getCanonicalPath());
 
 		/*
-		 * read parameters
+		 * process parameters from file
 		 */
 
 		for (Iterator i = confTable.keySet().iterator(); i.hasNext();) {
@@ -229,6 +229,33 @@ public class DigilibConfiguration extends ParameterMap {
 				newParameter(key, null, val, 'f');
 			}
 		}
+		
+		/*
+		 * process all parameters
+		 */
+        for (Iterator i = this.keySet().iterator(); i.hasNext();) {
+            String key = (String) i.next();
+            Parameter para = (Parameter) this.get(key);
+
+            // basedir-list
+            if (key.equals("basedir-list")) {
+                // split list into directories
+                String[] dirs = (String[]) para.getValue();
+                for (int j = 0; j < dirs.length; j++) {
+                    // make relative directory paths be inside the webapp
+                    dirs[j] = ServletOps.getFile(dirs[j], config);
+                }
+                para.setValue(dirs);
+            }
+            
+            // File types
+            if (para.getValue() instanceof File) {
+               File pf = (File) para.getValue();
+               // make relative paths be inside the webapp
+               para.setValue(ServletOps.getFile(pf, config));
+            }
+            
+        }
 
 	}
 
