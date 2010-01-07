@@ -21,34 +21,22 @@
 
 package digilib.servlet;
 
-import java.awt.Rectangle;
-import java.awt.geom.Rectangle2D;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
 
-import javax.servlet.http.HttpServletResponse;
-
-import com.lowagie.text.BadElementException;
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.Image;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.pdf.PdfWriter;
+import com.itextpdf.text.BadElementException;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.pdf.PdfWriter;
 
 import digilib.image.DocuImage;
-import digilib.image.DocuImageImpl;
 import digilib.image.ImageLoaderDocuImage;
 import digilib.image.ImageOpException;
-import digilib.image.ImageOps;
-import digilib.servlet.DigilibImageWorker;
 import digilib.io.FileOpException;
-import digilib.io.ImageFile;
 
 /**
  * Worker for pdf generation.

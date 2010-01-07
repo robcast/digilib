@@ -34,7 +34,7 @@ import digilib.io.ImageFileset;
 public class Scaler extends RequestHandler {
 
 	/** digilib servlet version (for all components) */
-	public static final String dlVersion = "1.7.0b";
+	public static final String dlVersion = "1.8.0a";
 
 	/** general error code */
 	public static final int ERROR_UNKNOWN = 0;
