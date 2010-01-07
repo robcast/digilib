@@ -1,0 +1,155 @@
+<!DOCTYPE web-app 
+    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" 
+    "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+  <!-- General description of your web application -->
+  <display-name>
+        digilib
+  </display-name>
+  <description>
+        This is the web frontend of the Digital Document Library.
+  </description>
+  <!-- The Initaliser servlet -->
+  <servlet>
+        <servlet-name>
+            Initialiser
+        </servlet-name>
+        <description>
+            The inialisation servlet (must run first).
+        </description>
+        <servlet-class>
+            digilib.servlet.Initialiser
+        </servlet-class>
+        <!-- Load this servlet at server startup time -->
+        <load-on-startup>
+            1
+        </load-on-startup>
+  </servlet>
+  <!-- The Scaler servlet -->
+  <servlet>
+        <servlet-name>
+            Scaler
+        </servlet-name>
+        <description>
+            The servlet to scale the digilib images.
+        </description>
+        <servlet-class>
+            digilib.servlet.Scaler
+        </servlet-class>
+        <!-- Load this servlet at server startup time -->
+        <load-on-startup>
+            5
+        </load-on-startup>
+  </servlet>
+  <!-- The Texter servlet -->
+  <servlet>
+        <servlet-name>
+            Texter
+        </servlet-name>
+        <description>
+            The servlet for text.
+        </description>
+        <servlet-class>
+            digilib.servlet.Texter
+        </servlet-class>
+  </servlet>
+  <!-- We want to mess around with the default JSP servlet... -->
+  <servlet>
+        <servlet-name>
+            doc-jsp
+        </servlet-name>
+        <servlet-class>
+            org.apache.jasper.servlet.JspServlet
+        </servlet-class>
+        <!-- parameters to the JSP servlet -->
+        <init-param>
+            <param-name>
+                logVerbosityLevel
+            </param-name>
+            <param-value>
+                WARNING
+            </param-value>
+        </init-param>
+        <load-on-startup>
+            3
+        </load-on-startup>
+  </servlet>
+  <!-- The mapping for the Scaler servlet -->
+  <servlet-mapping>
+        <servlet-name>
+            Scaler
+        </servlet-name>
+        <url-pattern>
+            /servlet/Scaler/*
+        </url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+        <servlet-name>
+            Scaler
+        </servlet-name>
+        <url-pattern>
+            /authenticated/servlet/Scaler/*
+        </url-pattern>
+  </servlet-mapping>
+  <!-- The mapping for the Texter servlet -->
+  <servlet-mapping>
+        <servlet-name>
+            Texter
+        </servlet-name>
+        <url-pattern>
+            /servlet/Texter/*
+        </url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+        <servlet-name>
+            Texter
+        </servlet-name>
+        <url-pattern>
+            /authenticated/servlet/Texter/*
+        </url-pattern>
+  </servlet-mapping>
+  <!-- The mapping for the JSP servlet -->
+  <servlet-mapping>
+        <servlet-name>
+            doc-jsp
+        </servlet-name>
+        <url-pattern>
+            *.jsp
+        </url-pattern>
+  </servlet-mapping>
+  <!-- region for authenticated access -->
+  <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>
+                Authenticated Digilib
+            </web-resource-name>
+            <url-pattern>
+                /authenticated/*
+            </url-pattern>
+        </web-resource-collection>
+        <!-- we need a default user -->
+        <auth-constraint>
+            <role-name>
+                user
+            </role-name>
+        </auth-constraint>
+  </security-constraint>
+  <login-config>
+  <!--
+        <auth-method>BASIC</auth-method>
+        <realm-name>digilib</realm-name> 
+   -->
+        <auth-method>
+            FORM
+        </auth-method>
+        <form-login-config>
+            <form-login-page>
+                /digilib-login.html
+            </form-login-page>
+            <form-error-page>
+                /digilib-fail.html
+            </form-error-page>
+        </form-login-config>
+  </login-config>
+</web-app>
