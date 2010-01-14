@@ -9,9 +9,9 @@ import java.io.File;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.jdom.*;
-import org.jdom.input.*;
-import org.jdom.output.*;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.input.SAXBuilder;
 
 
 
