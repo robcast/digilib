@@ -54,6 +54,18 @@
             digilib.servlet.Texter
         </servlet-class>
   </servlet>
+  <!-- The PDFCache servlet -->
+  <servlet>
+        <servlet-name>
+            PDFCache
+        </servlet-name>
+        <description>
+            The servlet for PDF.
+        </description>
+        <servlet-class>
+            digilib.servlet.PDFCache
+        </servlet-class>
+  </servlet>
   <!-- We want to mess around with the default JSP servlet... -->
   <servlet>
         <servlet-name>
@@ -109,7 +121,24 @@
             /authenticated/servlet/Texter/*
         </url-pattern>
   </servlet-mapping>
-  <!-- The mapping for the JSP servlet -->
+  <!-- The mapping for the Texter servlet -->
+  <servlet-mapping>
+        <servlet-name>
+            PDFCache
+        </servlet-name>
+        <url-pattern>
+            /servlet/PDFCache/*
+        </url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+        <servlet-name>
+            PDFCache
+        </servlet-name>
+        <url-pattern>
+            /authenticated/servlet/PDFCache/*
+        </url-pattern>
+  </servlet-mapping>
+   <!-- The mapping for the JSP servlet -->
   <servlet-mapping>
         <servlet-name>
             doc-jsp
