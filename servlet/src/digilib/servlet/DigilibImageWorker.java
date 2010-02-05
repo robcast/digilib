@@ -23,11 +23,8 @@ package digilib.servlet;
 
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-
-import javax.servlet.http.HttpServletResponse;
 
 import digilib.image.DocuImage;
 import digilib.image.ImageOpException;

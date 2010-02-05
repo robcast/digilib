@@ -1,11 +1,7 @@
 package digilib.servlet;
 
-import java.awt.Image;
-import java.awt.geom.Rectangle2D;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
@@ -14,8 +10,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.log4j.Logger;
 
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthOps;
@@ -26,7 +20,6 @@ import digilib.io.DocuDirent;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.ImageFile;
-import digilib.io.ImageFileset;
 
 
 // TODO digilibError is not used anymore and may need to get reintegrated
@@ -248,7 +241,7 @@ public class Scaler extends RequestHandler {
 			/* check permissions */
 			if (useAuthorization) {
 				// get a list of required roles (empty if no restrictions)
-				List rolesRequired;
+				List<String> rolesRequired;
 				try {
 					rolesRequired = authOp.rolesForPath(jobdeclaration.getFilePath(), request);
 					if (rolesRequired != null) {

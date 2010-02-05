@@ -1,13 +1,9 @@
 package digilib.servlet;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 

@@ -21,7 +21,7 @@ public class DigilibInfoReader {
 	protected static Logger logger = Logger.getLogger("digilib.servlet");
 	
 	private String filename = null;
-	private static String base_element = "info";
+	//private static String base_element = "info";
 	
 	public DigilibInfoReader(String fn){
 		filename = fn;
@@ -33,16 +33,17 @@ public class DigilibInfoReader {
 	 * @param attr
 	 * @return
 	 */
-	public String getAsString(String attr){
+	@SuppressWarnings("unchecked") // Element.getChildren() returns naked List
+    public String getAsString(String attr){
 		try{
 			SAXBuilder builder = new SAXBuilder();
 			Document doc = builder.build(new File(filename));
 			Element root = doc.getRootElement();
-			List mainElements = root.getChildren();
+			List<Element> mainElements = root.getChildren();
 			// logger.debug("XML mainElements:"+mainElements.toString());
 
 			for(int i=0; i<mainElements.size(); i++){
-				Element elem = (Element) mainElements.get(i);
+				Element elem = mainElements.get(i);
 				if(elem.getName()==attr){
 					// logger.debug(attr+" == "+(String)elem.getTextTrim());
 					return (String)elem.getTextTrim();
@@ -64,7 +65,7 @@ public class DigilibInfoReader {
 	public boolean hasInfo(){
 		try {
 			SAXBuilder builder = new SAXBuilder();
-			Document doc = builder.build(new File(filename));
+			builder.build(new File(filename));
 			return true;
 		}
 		catch(Exception e){

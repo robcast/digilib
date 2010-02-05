@@ -21,121 +21,158 @@
 package digilib.io;
 
 // JAXP packages
-import javax.xml.parsers.*;
-import org.xml.sax.*;
-import org.xml.sax.helpers.*;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 
-import java.util.*;
-import java.io.*;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.log4j.Logger;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.helpers.DefaultHandler;
+
+/** Loads a simple XML list into a HashMap.
+ * 
+ * The XML file has an outer <code>list_tag</code>. Every entry is an 
+ * <code>entry_tag</code> with two attributes: the <code>key_att</code>
+ * key and the <code>value_att</code> value.
+ * 
+ * The file is read by the <code>loadURL</code> method, that returns a
+ * HashMap with the key-value pairs.
+ * 
+ * @author casties
+ */
 public class XMLListLoader {
 
-    private String listTag = "list";
-    private String entryTag = "entry";
-    private String keyAtt = "key";
-    private String valueAtt = "value";
+	private Logger logger = Logger.getLogger(this.getClass());
+	private String listTag = "list";
+	private String entryTag = "entry";
+	private String keyAtt = "key";
+	private String valueAtt = "value";
 
-    public XMLListLoader() {
-    }
+	public XMLListLoader() {
+	}
 
-    public XMLListLoader(String list_tag, String entry_tag, String key_att, String value_att) {
-      //System.out.println("xmlListLoader("+list_tag+","+entry_tag+","+key_att+","+value_att+")");
-      listTag = list_tag;
-      entryTag = entry_tag;
-      keyAtt = key_att;
-      valueAtt = value_att;
-    }
+	public XMLListLoader(
+		String list_tag,
+		String entry_tag,
+		String key_att,
+		String value_att) {
+		logger.debug("xmlListLoader("+list_tag+","+entry_tag+","+key_att+","+value_att+")");
+		listTag = list_tag;
+		entryTag = entry_tag;
+		keyAtt = key_att;
+		valueAtt = value_att;
+	}
 
-    /**
-     *  inner class XMLListParser to be called by the parser
-     */
-    private class XMLListParser extends DefaultHandler {
+	/**
+	 *  inner class XMLListParser to be called by the parser
+	 */
+	private class XMLListParser extends DefaultHandler {
 
-      private Hashtable listData;
-      private Stack nameSpace;
+		private Map<String, String> listData;
+		private LinkedList<String> tagSpace;
 
-      public Hashtable getData() {
-        return listData;
-      }
+		public Map<String, String> getData() {
+			return listData;
+		}
 
-      // Parser calls this once at the beginning of a document
-      public void startDocument() throws SAXException {
-          listData = new Hashtable();
-          nameSpace = new Stack();
-      }
+		// Parser calls this once at the beginning of a document
+		public void startDocument() throws SAXException {
+			listData = new HashMap<String, String>();
+			tagSpace = new LinkedList<String>();
+		}
 
-      // Parser calls this for each element in a document
-      public void startElement(String namespaceURI, String localName,
-                               String qName, Attributes atts)
-  	throws SAXException
-      {
-        //System.out.println("<"+qName);
-        // open a new namespace
-        nameSpace.push(qName);
+		// Parser calls this for each element in a document
+		public void startElement(
+			String namespaceURI,
+			String localName,
+			String qName,
+			Attributes atts)
+			throws SAXException {
+			//System.out.println("<"+qName);
+			// open a new namespace
+			tagSpace.addLast(qName);
 
-        // ist it an entry tag?
-        if (qName.equals(entryTag)) {
-          // is it inside a list tag?
-          if ((listTag.length() > 0)&&(nameSpace.search(listTag) < 0)) {
-            System.out.println("BOO: Entry "+entryTag+" not inside list "+listTag);
-            throw new SAXParseException("Entry "+entryTag+" not inside list "+listTag, null);
-          }
-          // get the attributes
-          String key = atts.getValue(keyAtt);
-          String val = atts.getValue(valueAtt);
-          if ((key == null)||(val == null)) {
-            System.out.println("BOO: Entry "+entryTag+" does not have Attributes "+keyAtt+", "+valueAtt);
-            throw new SAXParseException("Entry "+entryTag+" does not have Attributes "+keyAtt+", "+valueAtt, null);
-          }
-          // add the values
-          //System.out.println("DATA: "+key+" = "+val);
-          listData.put(key, val);
-        }
-    }
+			// ist it an entry tag?
+			if (qName.equals(entryTag)) {
+				// is it inside a list tag?
+				if ((listTag.length() > 0) && (!tagSpace.contains(listTag))) {
+					logger.error("BOO: Entry "
+							+ entryTag
+							+ " not inside list "
+							+ listTag);
+					throw new SAXParseException(
+						"Entry " + entryTag + " not inside list " + listTag,
+						null);
+				}
+				// get the attributes
+				String key = atts.getValue(keyAtt);
+				String val = atts.getValue(valueAtt);
+				if ((key == null) || (val == null)) {
+					logger.error("BOO: Entry "
+							+ entryTag
+							+ " does not have Attributes "
+							+ keyAtt
+							+ ", "
+							+ valueAtt);
+					throw new SAXParseException(
+						"Entry "
+							+ entryTag
+							+ " does not have Attributes "
+							+ keyAtt
+							+ ", "
+							+ valueAtt,
+						null);
+				}
+				// add the values
+				//System.out.println("DATA: "+key+" = "+val);
+				listData.put(key, val);
+			}
+		}
 
-    public void endElement(String namespaceURI, String localName,
-                             String qName)
-	throws SAXException
-    {
-      // exit the namespace
-      nameSpace.pop();
-    }
+		public void endElement(
+			String namespaceURI,
+			String localName,
+			String qName)
+			throws SAXException {
+			// exit the namespace
+			tagSpace.removeLast();
+		}
 
-    }
+	}
 
+	/**
+	 *  load and parse a file (as URL)
+	 *    returns HashMap with list data
+	 */
+	public Map<String, String> loadURL(String path) throws SAXException, IOException {
+		//System.out.println("loadurl ("+path+")");
+		// Create a JAXP SAXParserFactory and configure it
+		SAXParserFactory spf = SAXParserFactory.newInstance();
+		spf.setNamespaceAware(true);
 
-    /**
-     *  load and parse a file (as URL)
-     *    returns Hashtable with list data
-     */
-    public Hashtable loadURL(String path) throws SAXException, IOException {
-        //System.out.println("loadurl ("+path+")");
-        // Create a JAXP SAXParserFactory and configure it
-        SAXParserFactory spf = SAXParserFactory.newInstance();
-        //spf.setNamespaceAware(true);
+		SAXParser parser = null;
+		try {
+			// Create a JAXP SAXParser
+			parser = spf.newSAXParser();
 
-        XMLReader xmlReader = null;
-        try {
-          // Create a JAXP SAXParser
-          SAXParser saxParser = spf.newSAXParser();
+		} catch (ParserConfigurationException e) {
+			throw new SAXException(e);
+		}
 
-          // Get the encapsulated SAX XMLReader
-          xmlReader = saxParser.getXMLReader();
-        }
-        catch (ParserConfigurationException e) {
-          throw new SAXException(e);
-        }
+		// create a list parser (keeps the data!)
+		XMLListParser listParser = new XMLListParser();
 
-        // create a list parser (keeps the data!)
-        XMLListParser listParser = new XMLListParser();
+		// Tell the SAXParser to parse the XML document
+		parser.parse(path, listParser);
 
-        // Set the ContentHandler of the XMLReader
-        xmlReader.setContentHandler(listParser);
-
-        // Tell the XMLReader to parse the XML document
-        xmlReader.parse(path);
-
-        return listParser.getData();
-    }
+		return listParser.getData();
+	}
 
 }

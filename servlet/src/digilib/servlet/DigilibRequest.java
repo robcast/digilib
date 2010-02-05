@@ -26,18 +26,13 @@
 
 package digilib.servlet;
 
-import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
 
 import digilib.image.DocuImage;
 import digilib.io.FileOps;
@@ -68,11 +63,7 @@ public class DigilibRequest extends ParameterMap {
 
 	private static final long serialVersionUID = -4707707539569977901L;
 
-	private final static String ECHO = "http://echo.unibe.ch/digilib/rdf#";
-
-	private final static String DIGILIB = "Digilib";
-
-	private Logger logger = Logger.getLogger(this.getClass());
+	//private Logger logger = Logger.getLogger(this.getClass());
 
 	private boolean boolRDF = false; // use RDF Parameters
 
@@ -337,8 +328,7 @@ public class DigilibRequest extends ParameterMap {
 	public String getAsString(int type) {
 		StringBuffer s = new StringBuffer(50);
 		// go through all values
-		for (Iterator i = this.values().iterator(); i.hasNext();) {
-			Parameter p = (Parameter) i.next();
+		for (Parameter p: this.values()) {
 			if ((type > 0) && (p.getType() != type)) {
 				// skip the wrong types
 				continue;
@@ -394,10 +384,11 @@ public class DigilibRequest extends ParameterMap {
 	 * @param request
 	 *            ServletRequest to get parameters from.
 	 */
-	public void setWithParamRequest(ServletRequest request) {
+	@SuppressWarnings("unchecked") // ServletRequest.getParameterNames() returns naked Enumeration
+    public void setWithParamRequest(ServletRequest request) {
 		setValue("servlet.request", request);
 		// go through all request parameters
-		for (Enumeration i = request.getParameterNames(); i.hasMoreElements();) {
+		for (Enumeration<String> i = request.getParameterNames(); i.hasMoreElements();) {
 			String name = (String) i.nextElement();
 			// is this a known parameter?
 			if (this.containsKey(name)) {

@@ -4,8 +4,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
@@ -58,8 +56,12 @@ public class PDFCache extends RequestHandler {
 	public void init(ServletConfig config) throws ServletException{
 		super.init(config);
 		
-		logger.info("initialized PDFCache v."+version);
-		
+        System.out.println("***** Digital Image Library Image PDF-Cache Servlet (version "
+                + version + ") *****");
+// say hello in the log file
+        logger.info("***** Digital Image Library Image PDF-Cache Servlet (version "
+                + version + ") *****");
+
 		context = config.getServletContext();
 		
 		dlConfig = (DigilibConfiguration) context.getAttribute("digilib.servlet.configuration");
@@ -117,23 +119,19 @@ public class PDFCache extends RequestHandler {
 		
 		int status = getStatus(docid);
 		
-		
-		
-		if(status == STATUS_NONEXISTENT){
-			createNewPdfDocument(pdfji, docid); 
-			notifyUser(status, docid, request, response);
-		}
-		else if (status == STATUS_DONE){
-			try {
-				sendFile(docid, downloadFilename(pdfji), response);
-			} catch (IOException e) {
-				e.printStackTrace();
-				logger.error(e.getMessage());
-			}
-		}
-		else {
-			notifyUser(status, docid, request, response);			
-		}
+        if (status == STATUS_NONEXISTENT) {
+            createNewPdfDocument(pdfji, docid);
+            notifyUser(status, docid, request, response);
+        } else if (status == STATUS_DONE) {
+            try {
+                sendFile(docid, downloadFilename(pdfji), response);
+            } catch (IOException e) {
+                e.printStackTrace();
+                logger.error(e.getMessage());
+            }
+        } else {
+            notifyUser(status, docid, request, response);
+        }
 	}
 
 	/**

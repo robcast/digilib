@@ -1,8 +1,8 @@
 package digilib.servlet;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -80,7 +80,14 @@ public class PDFJobInformation extends ParameterMap {
 			String dh = image_info.getAsString("dh");
 			String pgs = getAsString("pgs");
 			
-			id = "fn=" + fn + "&dh=" + dh + "&pgs=" + pgs + ".pdf";		
+			id = "fn=" + fn + "&dh=" + dh + "&pgs=" + pgs + ".pdf";
+			// make safe to use as filename by urlencoding
+			try {
+                id = URLEncoder.encode(id, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
 		}
 		else {
 			id = null;

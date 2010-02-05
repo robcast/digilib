@@ -6,7 +6,6 @@ import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
@@ -15,7 +14,6 @@ import digilib.image.ImageOpException;
 import digilib.image.ImageOps;
 import digilib.image.ImageSize;
 import digilib.io.DocuDirCache;
-import digilib.io.DocuDirent;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.ImageFile;
@@ -319,7 +317,7 @@ public class ImageJobInformation extends ParameterMap {
 				float sx = getAsFloat("ddpix") / origResX;
 				float sy = getAsFloat("ddpiy") / origResY;
 				// currently only same scale :-(
-				put("scale", (sx + sy)/2f);
+				setValue("scale", (sx + sy)/2f);
 			}
 			
 		}

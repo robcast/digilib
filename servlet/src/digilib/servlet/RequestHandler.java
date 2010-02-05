@@ -1,7 +1,5 @@
 package digilib.servlet;
 
-import java.io.InputStream;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
