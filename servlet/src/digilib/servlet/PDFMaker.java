@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
  * @author cmielack
  *
  */
+@SuppressWarnings("serial")
 public class PDFMaker extends HttpServlet implements Runnable {
 
 	public static String version = "0.1";
@@ -27,7 +28,7 @@ public class PDFMaker extends HttpServlet implements Runnable {
 	private ServletContext context = null;
 
 	/** gengeral logger for this class */
-	protected static Logger logger = Logger.getLogger("digilib.servlet");
+	protected static Logger logger = Logger.getLogger("digilib.PDFMaker");
 
 	
 	
@@ -37,45 +38,37 @@ public class PDFMaker extends HttpServlet implements Runnable {
 		this.dlConfig = pdfji.getDlConfig();
 		this.context = context;
 	}
-	
-
-	
-	
+		
 	public void run() {
 
 		if (! DigilibWorker.canRun()) {
 			// TODO include the logger
-			logger.error("Servlet overloaded!");
-			
+			logger.error("Servlet overloaded!");			
 			return;
 		}
 
-		PDFCache pdfcache = (PDFCache) context.getAttribute(PDFCache.global_instance);
+		PDFCache pdfcache = (PDFCache) context.getAttribute(PDFCache.instanceKey);
 		
+		File tempfile = pdfcache.getTempFile(filename);
 		// create PDFWorker
-		DigilibPDFWorker pdf_worker = new DigilibPDFWorker(dlConfig, job_info, pdfcache.getTempDirectory()+filename);
+		DigilibPDFWorker pdf_worker = new DigilibPDFWorker(dlConfig, job_info, tempfile);
 		
 		// run PDFWorker
 		pdf_worker.run();
 
-		File document = new File(pdfcache.getTempDirectory() + filename);
-
 		if(pdf_worker.hasError()){
 			// raise error, write to logger
 			logger.error(pdf_worker.getError().getMessage());
-			document.delete();
+			tempfile.delete();
 			return;
 		}
 		else{ // move the completed file to the cache directory
-			boolean success = document.renameTo(new File(pdfcache.getCacheDirectory(), filename));
+			boolean success = tempfile.renameTo(pdfcache.getCacheFile(filename));
 			if(!success){
 				// TODO raise error
-				
 			}
 		}
 		
 	}
-
-	
 	
 }

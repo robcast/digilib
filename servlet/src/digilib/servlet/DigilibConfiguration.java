@@ -151,6 +151,10 @@ public class DigilibConfiguration extends ParameterMap {
 		newParameter("worker-threads", new Integer(1), null, 'f');
 		// max number of waiting threads
 		newParameter("max-waiting-threads", new Integer(0), null, 'f');
+        // PDF generation temp directory
+        newParameter("pdf-temp-dir", "pdf_temp", null, 'f');
+        // PDF generation cache directory
+        newParameter("pdf-cache-dir", "pdf_cache", null, 'f');
 
 	}
 

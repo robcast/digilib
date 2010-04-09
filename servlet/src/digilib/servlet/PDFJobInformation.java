@@ -10,16 +10,14 @@ import org.apache.log4j.Logger;
 
 
 /** 
- * A container class for storing a set of instructional parameters 
+ * A container class for storing a set of instruction parameters 
  * used for content generator classes like MakePDF.  
  * 
  * 
  * @author cmielack
  *
  */
-
-
-
+@SuppressWarnings("serial")
 public class PDFJobInformation extends ParameterMap {
 
 	String[] parameter_list = {"pgs"}; // all other parameters get passed into an extra ImageJobInformation  
@@ -117,13 +115,14 @@ public class PDFJobInformation extends ParameterMap {
 		
 		String intervals[] = pages.split(",");
 		
-		
 		// convert the page-interval-strings into a list containing every single page
 		for(String interval: intervals){
-			if(interval.indexOf("-") > -1){
+			if(interval.contains("-")){
 				String nums[] = interval.split("-");
-				
-				for(int i=Integer.valueOf(nums[0]); i <= Integer.valueOf(nums[1]); i++){
+				int start = Integer.valueOf(nums[0]);
+				int end = Integer.valueOf(nums[1]);
+				for(int i = start; i <= end; i++){
+					// add all numbers to list
 					pgs.add(i);
 				}
 			}
@@ -147,10 +146,10 @@ public class PDFJobInformation extends ParameterMap {
 	public boolean checkValidity(){
 		String pgs = getAsString("pgs");
 		try{
-				String[] intervals = null;
-				if(pgs.indexOf(",")>0){
-					intervals = pgs.split(",");
-				}
+			String[] intervals = null;
+            if(pgs.indexOf(",")>0){
+                intervals = pgs.split(",");
+			}
 				else{
 					intervals = new String[1];
 					intervals[0]=pgs;

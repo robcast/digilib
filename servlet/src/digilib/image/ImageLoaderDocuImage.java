@@ -562,7 +562,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		img = null;
 	}
 
-	public Image getImage(){
+	public Image getAwtImage(){
 		return (Image) img;
 	}
 	

@@ -34,7 +34,6 @@ import com.itextpdf.text.PageSize;
 import com.itextpdf.text.pdf.PdfWriter;
 
 import digilib.image.DocuImage;
-import digilib.image.ImageLoaderDocuImage;
 import digilib.image.ImageOpException;
 import digilib.io.FileOpException;
 
@@ -50,37 +49,34 @@ public class DigilibPDFWorker extends DigilibWorker {
 
 	private Document doc = null;
 
-	private String filename = null;
+	private File outputfile = null;
 	
 	private PDFJobInformation job_info = null;
 	
-	public DigilibPDFWorker(DigilibConfiguration dlConfig, PDFJobInformation pdfji, String filename) {
+	public DigilibPDFWorker(DigilibConfiguration dlConfig, PDFJobInformation pdfji, File outputfile) {
 		super();
 		// TODO dlConfig 
 		this.dlConfig = dlConfig;
 		this.job_info = pdfji;
-		this.filename = filename;
+		this.outputfile = outputfile;
 	}
 
 	public void run() {
 		// create document object
 		doc = new Document(PageSize.A4, 0,0,0,0);
 		PdfWriter docwriter = null;
-		File output_file = new File(filename);
 		FileOutputStream fos;
 		
 		try {
-			fos = new FileOutputStream(output_file);
+			fos = new FileOutputStream(outputfile);
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
 			logger.error(e1.getMessage());
 			e1.printStackTrace();
 			return;
 		}
-
 		
 		long start_time = System.currentTimeMillis();
-
 		
 		try {
 			docwriter = PdfWriter.getInstance(doc, fos);
@@ -90,51 +86,41 @@ public class DigilibPDFWorker extends DigilibWorker {
 			doc.open();
 
 			addTitlePage();
-
 			
-			logger.debug("- "+filename+" doc.open()ed ("+(System.currentTimeMillis()-start_time) + "ms)");
+			logger.debug("- "+outputfile+" doc.open()ed ("+(System.currentTimeMillis()-start_time) + "ms)");
 			start_time = System.currentTimeMillis();
-			
 
 			Integer[] pgs = job_info.getPageNrs();//get_pgs();
 
 			for(Integer p: pgs){
-				logger.debug(" - adding Image "+p+" to " + filename);
+				logger.debug(" - adding Image "+p+" to " + outputfile);
 				addImage(p);
-				logger.debug(" - done adding Image "+p+" to " + filename);
+				logger.debug(" - done adding Image "+p+" to " + outputfile);
 			}
 			
-			logger.debug(" - done adding all Images to " + filename);
-
+			logger.debug(" - done adding all Images to " + outputfile);
 			
-			
-		}
-		catch(Exception e) {
+		} catch(Exception e) {
 			logger.error(e.getMessage());
 			error = e;
 			return;
-		}
-		
-		finally {
+		} finally {
 			if (doc!=null){
 				doc.close();
-				logger.debug("- "+filename+" doc.close() ("+(System.currentTimeMillis()-start_time) + "ms)");
+				logger.debug("- "+outputfile+" doc.close() ("+(System.currentTimeMillis()-start_time) + "ms)");
 			}
 			if (docwriter!=null){
 				docwriter.close();
 			}
 		}
 
-		
-		
 		try {
 			fos.flush();
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 			e.printStackTrace();
 			error = e;
-		}
-		finally{
+		} finally{
 			if(fos!=null){
 				try {
 					fos.close();
@@ -167,9 +153,7 @@ public class DigilibPDFWorker extends DigilibWorker {
 		doc.add(titlepage.getPageContents());
 		doc.newPage();
 	}
-	
-	
-	
+		
 	/**
 	 * add the image with page number 'pn' to the document.
 	 * 
@@ -182,18 +166,16 @@ public class DigilibPDFWorker extends DigilibWorker {
 		// create image worker
 		DigilibImageWorker image_worker = new DigilibImageWorker(dlConfig, null, iji);
 		try {
-			ImageLoaderDocuImage img = (ImageLoaderDocuImage) image_worker.render();
+			DocuImage img = image_worker.render();
 
-			Image theimg = Image.getInstance(img.getImage(),null);
+			Image pdfimg = Image.getInstance(img.getAwtImage(),null);
 			
-			float docW = PageSize.A4.getWidth() - 2*PageSize.A4.getBorder(); 
-			float docH= PageSize.A4.getHeight()- 2*PageSize.A4.getBorder();
-
+			float docW = PageSize.A4.getWidth() - 2 * PageSize.A4.getBorder(); 
+			float docH = PageSize.A4.getHeight() - 2 * PageSize.A4.getBorder();
 			
-			theimg.scaleToFit(docW,docH);
+			pdfimg.scaleToFit(docW,docH);
 			
-			
-			doc.add(theimg);
+			doc.add(pdfimg);
 			
 		} catch (FileOpException e) {
 			logger.error(e.getMessage());

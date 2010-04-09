@@ -1,0 +1,164 @@
+/**
+ * 
+ */
+package digilib.servlet;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+
+/**
+ * @author casties
+ * 
+ */
+public class NumRange implements Iterable<Integer> {
+
+    private Integer start = 1;
+    private Integer end = Integer.MAX_VALUE;
+    private List<Integer> list = null;
+    private Integer maxnum = null;
+
+    /**
+     * @param start
+     * @param end
+     */
+    public NumRange(Integer start, Integer end) {
+        this.start = start;
+        this.end = end;
+    }
+
+    /**
+     * @param range
+     */
+    public NumRange(String range) {
+        parseString(range);
+    }
+
+    /**
+     * @param range
+     */
+    public NumRange(String range, Integer max) {
+        this.maxnum = max;
+        parseString(range);
+    }
+
+
+    public void parseString(String pages) {
+
+        ArrayList<Integer> pgs = new ArrayList<Integer>();
+
+        String intervals[] = pages.split(",");
+
+        // convert the page-interval-strings into a list containing every single
+        // page
+        for (String interval : intervals) {
+            if (interval.contains("-")) {
+                String nums[] = interval.split("-");
+                int start = Integer.valueOf(nums[0]);
+                if (nums.length > 1) {
+                    // second number is end of range
+                    int end = Integer.valueOf(nums[1]);
+                    for (int i = start; i <= end; i++) {
+                        // add all numbers to list
+                        pgs.add(i);
+                    }
+                } else {
+                    // second number missing: range to infinity
+                    pgs.add(start);
+                    pgs.add(Integer.MAX_VALUE);
+                }
+            } else {
+                // single number
+                pgs.add(Integer.valueOf(interval));
+            }
+        }
+        if (intervals.length > 1) {
+            Collections.sort(pgs);
+        }
+        list = pgs;
+    }
+
+    public int getStart() {
+        if (list == null) {
+            return start;
+        } else {
+            return list.get(0);
+        }
+    }
+
+    public int getEnd() {
+        Integer last;
+        if (list == null) {
+            last = end;
+        } else {
+            last = list.get(list.size() - 1);
+        }
+        if (maxnum == null) {
+            return last;
+        } else {
+            return Math.min(last, maxnum);
+        }
+    }
+
+    @Override
+    public Iterator<Integer> iterator() {
+        if (list == null) {
+            // return count-based iterator
+            return new Iterator<Integer>() {
+                // anonymous inner Iterator class
+                private int num = getStart();
+                private int end = getEnd();
+
+                @Override
+                public boolean hasNext() {
+                    return (num < end);
+                }
+
+                @Override
+                public Integer next() {
+                    return num++;
+                }
+
+                @Override
+                public void remove() {
+                    // don't do this
+                }
+            };
+        } else {
+            // return list-based iterator
+            return new Iterator<Integer>() {
+                // anonymous inner Iterator class
+                private int listidx = 0;
+                private int listend = list.size();
+                private int num = getStart();
+                private int end = getEnd();
+
+                @Override
+                public boolean hasNext() {
+                    return (num < end);
+                }
+
+                @Override
+                public Integer next() {
+                    if (listidx < listend) {
+                        num = list.get(listidx++);
+                        return num;
+                    } else {
+                        return num++;
+                    }
+                }
+
+                @Override
+                public void remove() {
+                    // don't do this
+                }
+            };
+        }
+    }
+
+    public void setMaxnum(Integer maxnum) {
+        this.maxnum = maxnum;
+    }
+
+}

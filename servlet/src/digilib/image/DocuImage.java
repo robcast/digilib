@@ -220,5 +220,11 @@ public interface DocuImage {
      * Returns a list of supported image formats
      */
 	public Iterator<String> getSupportedFormats();
+	
+	/**
+	 * returns the underlying image as java.awt.Image (if possible, or null)
+	 * @return
+	 */
+	public java.awt.Image getAwtImage();
 
 }

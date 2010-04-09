@@ -23,15 +23,16 @@ import javax.servlet.http.HttpServletResponse;
  *
  */
 
+@SuppressWarnings("serial")
 public class PDFCache extends RequestHandler {
 
 	private DigilibConfiguration dlConfig = null;
 	
-	public static String global_instance = "digilib.servlet.PDFCache";
+	public static String instanceKey = "digilib.servlet.PDFCache";
 	
-	private String cache_directory = "cache/";  
+	private File cache_directory = new File("cache");  
 	
-	private String temp_directory = "pdf_temp/";
+	private File temp_directory = new File("pdf_temp");
 	
 	private static String JSP_WIP = "/pdf/wip.jsp";
 	
@@ -63,38 +64,39 @@ public class PDFCache extends RequestHandler {
                 + version + ") *****");
 
 		context = config.getServletContext();
-		
 		dlConfig = (DigilibConfiguration) context.getAttribute("digilib.servlet.configuration");
-		
 		if (dlConfig == null) {
 			// no Configuration
 			throw new ServletException("No Configuration!");
 		}
+	
+		String temp_fn = dlConfig.getAsString("pdf-temp-dir");
+		temp_directory = new File(temp_fn);
+		if (!temp_directory.isDirectory()) {
+		    throw new ServletException("Configuration error: problem with pdf-temp-dir="+temp_fn);
+		}
+        // rid the temporary directory of possible incomplete document files
+        emptyDirectory(temp_directory);
+        
+		String cache_fn = dlConfig.getAsString("pdf-cache-dir");
+       	cache_directory = new File(cache_fn);
+        if (!cache_directory.isDirectory()) {
+            throw new ServletException("Configuration error: problem with pdf-cache-dir="+cache_fn);
+        }
 
-		
-		
-		
-		temp_directory = dlConfig.getAsString("pdf-temp-dir");
-		cache_directory = dlConfig.getAsString("pdf-cache-dir");
-
-
-		// rid the temporary directory of possible incomplete document files
-		emptyTempDirectory();
-		
 		// register this instance globally
-		context.setAttribute(global_instance, this);
+		context.setAttribute(instanceKey, this);
 		
 	}
 	
 	/** 
 	 * clean up any broken and unfinished files from the temporary directory.
 	 */
-	public void emptyTempDirectory(){
-		File temp_dir = new File(temp_directory);
-		String[] cached_files = temp_dir.list();
+	public void emptyDirectory(File temp_dir){
+		File[] temp_files = temp_dir.listFiles();
 		
-		for (String file: cached_files){
-			new File(temp_directory,file).delete();
+		for (File f: temp_files){
+			f.delete();
 		}
 	}
 	
@@ -107,7 +109,6 @@ public class PDFCache extends RequestHandler {
 		// evaluate request ( make a PDFJobDeclaration , get the DocumentId)
 		PDFJobInformation pdfji = new PDFJobInformation(dlConfig); 
 		pdfji.setWithRequest(request);
-		
 		
 		String docid = pdfji.getDocumentId();
 		
@@ -150,24 +151,20 @@ public class PDFCache extends RequestHandler {
 			// tell the user that the document has to be created before he/she can download it
 			logger.debug("PDFCache: "+documentid+" has STATUS_NONEXISTENT.");
 			jsp = JSP_WIP;
-		}
-		else if(status == STATUS_WIP){
+		} else if(status == STATUS_WIP){
 			logger.debug("PDFCache: "+documentid+" has STATUS_WIP.");
 			jsp = JSP_WIP;
 
 			// estimate remaining work time
 			// tell the user he/she has to wait
-		}
-		else if(status == STATUS_DONE){
+		} else if(status == STATUS_DONE){
 			logger.debug("PDFCache: "+documentid+" has STATUS_DONE.");
-		}
-		else {
+		} else {
 			logger.debug("PDFCache: "+documentid+" has STATUS_ERROR.");
 			jsp = JSP_ERROR;
 		}
 
 		RequestDispatcher dispatch = context.getRequestDispatcher(jsp);
-
 		
 		try {
 			dispatch.forward(request, response);
@@ -185,15 +182,13 @@ public class PDFCache extends RequestHandler {
 	/** check the status of the document corresponding to the documentid */
 	public Integer getStatus(String documentid){
 		// looks into the cache and temp directory in order to find out the status of the document
-		File cached = new File(cache_directory + documentid);
-		File wip = new File(temp_directory + documentid);
+		File cached = new File(cache_directory, documentid);
+		File wip = new File(temp_directory, documentid);
 		if(cached.exists()){
 			return STATUS_DONE;
-		}
-		else if (wip.exists()){
+		} else if (wip.exists()){
 			return STATUS_WIP;
-		}
-		else {
+		} else {
 			return STATUS_NONEXISTENT;
 		}
 	}
@@ -244,7 +239,7 @@ public class PDFCache extends RequestHandler {
 
 		try {
 			// get file handle
-			cached_file = new File(cache_directory + cachefile);
+			cached_file = new File(cache_directory, cachefile);
 			// create necessary streams
 			fis = new FileInputStream(cached_file);
 			sos = response.getOutputStream();
@@ -277,11 +272,29 @@ public class PDFCache extends RequestHandler {
 
 	}
 	
-	public String getCacheDirectory(){
+	public File getCacheDirectory(){
 		return cache_directory;
 	}
 	
-	public String getTempDirectory(){
+	public File getTempDirectory(){
 		return temp_directory;
 	}
+	
+	/** 
+	 * returns a File object based on filename in the temp directory.
+	 * @param filename
+	 * @return
+	 */
+	public File getTempFile(String filename) {
+	    return new File(temp_directory, filename);
+	}
+
+	/** 
+     * returns a File object based on filename in the cache directory.
+     * @param filename
+     * @return
+     */
+    public File getCacheFile(String filename) {
+        return new File(cache_directory, filename);
+    }
 }

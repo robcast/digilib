@@ -20,6 +20,7 @@
 
 package digilib.image;
 
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
@@ -166,7 +167,13 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 		}
 	}
 
-	/* (non-Javadoc)
+	@Override
+    public Image getAwtImage() {
+        // TODO Auto-generated method stub
+        return (Image) img;
+    }
+
+    /* (non-Javadoc)
 	 * @see java.lang.Object#finalize()
 	 */
 	protected void finalize() throws Throwable {

@@ -20,6 +20,7 @@
 
 package digilib.image;
 
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
