@@ -1,9 +1,0 @@
-#vertical_bar {
-  list-style-image: url('chrome://alcatraz/skin/images/vertical_bar.png');
-  margin: 5px;
-}
-
-#horizontal_bar {
-  list-style-image: url('chrome://alcatraz/skin/images/horizontal_bar.png');
-  margin: 5px;
-}
