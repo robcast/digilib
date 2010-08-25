@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<relato>
+
+  <frames>
+    <frameset rows="0,33,*,15%" border="0" frameborder="0" framespacing="0">
+      <frame name="navigation" />
+      <frame name="title" />
+      <frameset cols="50%,50%" border="0" frameborder="0" framespacing="0">
+        <frame name="mainFrameLeft" />
+        <frame name="mainFrameRight" />
+      </frameset>
+      <frameset cols="16%,38%,46%" border="0" frameborder="0" framespacing="0">
+        <frame name="motiv" />
+        <frame name="kriterium" />
+        <frame name="krittext" />
+      </frameset>
+      <noframes>
+        In order to use <i>relato</i> you need to have a frame capable browser.
+      </noframes>
+    </frameset>
+  </frames>
+  
+  <functions>
+    <function name="getParameter" quiet="true">
+      <validInFrame name="mainFrameLeft" />
+      <validInFrame name="mainFrameRight" />
+    </function>
+    <function name="listParameters" quiet="true">
+      <validInFrame name="mainFrameLeft" />
+      <validInFrame name="mainFrameRight" />
+    </function>
+    <function name="listParametersAsString" quiet="true">
+      <validInFrame name="mainFrameLeft" />
+      <validInFrame name="mainFrameRight" />
+    </function>
+    <function name="page">
+    </function>
+    <function name="zoomPoint">
+      <validInFrame name="mainFrameLeft" />
+      <validInFrame name="mainFrameRight" />
+    </function>
+    <function name="zoomArea">
+      <validInFrame name="mainFrameLeft" />
+      <validInFrame name="mainFrameRight" />
+    </function>
+    <function name="mark">
+    </function>
+    <function name="ref">
+    </function>
+    <function name="zoomOut">
+      <validInFrame name="mainFrameLeft" />
+      <validInFrame name="mainFrameRight" />
+    </function>
+    <function name="zoomExtends">
+      <validInFrame name="mainFrameLeft" />
+      <validInFrame name="mainFrameRight" />
+    </function>
+    <function name="moveTo">
+    </function>
+    <function name="scale">
+      <validInFrame name="mainFrameLeft" />
+      <validInFrame name="mainFrameRight" />
+    </function>
+    <function name="brightnessContrast">
+    </function>
+    <function name="mirror">
+    </function>
+    <function name="rotation">
+    </function>
+    <function name="colors">
+    </function>
+    <function name="pixelByPixel">
+      <validInFrame name="mainFrameLeft" />
+      <validInFrame name="mainFrameRight" />
+    </function>
+    <function name="originalSize">
+      <validInFrame name="mainFrameLeft" />
+      <validInFrame name="mainFrameRight" />
+    </function>
+  </functions>
+
+  <buttons>
+    <button name="home" command="navigation.home()" />
+    <button name="relation" command="navigation.relation()" />
+    <button name="description" command="navigation.description()" />
+    <!--
+    <button name="new window" command="navigation.newwindow()" />
+    -->
+  </buttons>
+
+  <protected>
+    <frame name="navigation" />
+    <frame name="title" />
+    <frame name="motiv" />
+    <frame name="kriterium" />
+    <frame name="krittext" />
+  </protected>
+
+  <default>
+  </default>
+
+</relato>

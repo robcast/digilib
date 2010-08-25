@@ -1,0 +1,87 @@
+#! /bin/sh
+#
+
+. /etc/rc.config
+
+# Determine the base and follow a runlevel link name.
+base=${0##*/}
+link=${base#*[SK][0-9][0-9]}
+
+# Force execution if not called by a runlevel directory.
+#test $link = $base && START_XNTPD=yes
+#test "$START_XNTPD" = yes || exit 0
+
+#
+# docuservers tomcat (ROC 2.11.01)
+#
+TOMCATLOG=/usr/local/httpd/logs/tomcat-err.log
+TOMCATDIR=/opt/tomcat
+
+TOMCAT_PID="";
+
+function tomcat_runs() {
+# we're looking at java vms executing org.apache.catalina.startup.Bootstrap
+#ALL_TOMS=$( ps xa | grep org.apache.catalina.startup | grep -v grep )
+#ALL_TOM_IDS=$( echo $ALL_TOMS | cut -d " " -f 1 )
+ALL_TOMS=$( pgrep -u wwwrun java )
+TOMCAT_PID=$( echo $ALL_TOMS | head -1 )
+test -n "$TOMCAT_PID"
+}
+
+return="$rc_done"
+
+case "$1" in
+    start)
+	echo -n "Starting Tomcat Servlet server "
+	su - wwwrun -c "$TOMCATDIR/bin/startup.sh" >> $TOMCATLOG 2>&1 || return=$rc_failed
+	echo -e "$return"
+	;;
+    stop)
+	echo -n "Stopping Tomcat Servlet server "
+	if su - wwwrun -c "$TOMCATDIR/bin/shutdown.sh" >> $TOMCATLOG 2>&1
+	then
+	    for i in 1 2 3 4 5
+	    do
+		if tomcat_runs
+		then
+		    return=$rc_failed
+		    echo -n "."
+		    sleep 2
+		else
+		    return=$rc_done
+		    break
+		fi
+	    done
+	    if tomcat_runs
+	    then
+		echo -n " killing."
+		kill $TOMCAT_PID
+		sleep 2
+	    fi
+	    if tomcat_runs
+	    then
+		return=$rc_failed
+	    else
+		return=$rc_done
+	    fi
+	else 
+	    return=$rc_failed
+	fi
+	
+	echo -e "$return"
+	;;
+    reload|restart)
+        $0 stop  &&  $0 start  ||  return=$rc_failed
+        ;;
+    status)
+	echo -n "Checking for service tomcat: "
+	tomcat_runs && echo OK || echo No process
+        ;;
+    *)
+	echo "Usage: $0 {start|stop|status|reload|restart}"
+	exit 1
+esac
+
+# Inform the caller not only verbosely and set an exit status.
+test "$return" = "$rc_done" || exit 1
+exit 0

@@ -1,64 +1,157 @@
-<HTML>
-<HEAD>
-<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-<TITLE>JBuilder Project ScaleServlet2.jpx</TITLE>
-</HEAD>
-<BODY>
-<H1>Scaler</H1>
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Scaler servlet</title>
+</head>
+<body>
+<h1>Scaler</h1>
 
-<p>A Servlet for scaling images.</p>
+<p>A Servlet for scaling images. (Version 1.5.2)</p>
 
-<p>Scaler takes parameters in the http request format:
-<code>Scaler/request_path/?param1=value1&param2=value2&...</code></p>
+<h2>Web API</h2>
 
-<p>Recognised parameters:
+<p>The Scaler servlet takes parameters in the http request format:
+<code>Scaler/request_path/?param1=value1&amp;param2=value2&amp;...</code>
+Unknown parameters will be silently ignored.</p>
+
+<p>Recognised parameters:</p>
 <ul>
-  <li><b>request_path</b> path to file or directory.
+  <li><b>request_path</b> path to file or directory.</li>
 
-  <li><b>fn</b> path to file or directory below <code>/docuserver/images</code>.
+  <li><b>fn</b> path to file or directory below <code>/docuserver/images</code> 
+    (or other configured image directory).
     This path will be added to the <code>request_path</code> behind the servlet name.
-    Either parameter can be empty.
+    Either parameter can be empty.</li>
 
   <li><b>pn</b> page number. Index into the (alphabetically sorted) directory
     given by the path. Starts with 1. Ignored if the path points to a file.
-    Default: 1.
+    Default: 1.</li>
 
-  <li><b>dw</b> destination image width (pixels).
-  <li><b>dh</b> destination image height.
+  <li><b>dw</b> destination image width (pixels). If omitted the image is scaled to fit 
+    dh.</li>
+  
+  <li><b>dh</b> destination image height (pixels). If omitted the image is scaled to fit 
+    dw.</li>
 
   <li><b>wx</b> relative x offset of the image area to be sent (0 &lt;= wx &lt;= 1).
-    Default: 0.
-  <li><b>wy</b> relative y offset of the image area to be sent.
-    Default: 0.
-  <li><b>ww</b> relative width of the image area to be sent.
-    Default: 1.
-  <li><b>wh</b> relative height of the image area to be sent.
-    Default: 1.
+    Default: 0.</li>
+    
+  <li><b>wy</b> relative y offset of the image area to be sent (0 &lt;= wy &lt;= 1).
+    Default: 0.</li>
+    
+  <li><b>ww</b> relative width of the image area to be sent (0 &lt;= ww &lt;= 1).
+    Default: 1.</li>
+    
+  <li><b>wh</b> relative height of the image area to be sent (0 &lt;= wh &lt;= 1).
+    Default: 1.</li>
 
   <li><b>ws</b> additional scaling factor. The resulting image will have the size
-    <code>[ws*dw,ws*dh]</code>. Default: 1.
+    <code>[ws*dw,ws*dh]</code>. Default: 1.</li>
 
-  <li><b>mo</b> flags for the mode of operation separated by "+".
+    <li><b>mo</b> flags for the mode of operation separated by ",".
     <ul>
-      <li><b>fit</b>: always scale the image to fit <code>[dw,dh]</code>.<br>
-        <b>file</b>: send the file as-is (may be very large and all sorts of image types!).<br>
-        If none of these flags is set heuristics is used (send unzoomed GIF as-is).
+      <li><b>fit</b>: always scale the image to fit
+      <code>[dw,dh]</code> (default).<br>
 
+      <b>clip</b>: send the file in its
+      original resolution, cropped to fit <code>[dw,dh]</code>.
+      <br>
+      
+      <b>osize</b>: scale to original size based on the image resolution
+      (from the image metadata) and display resolution (from parameter 
+      <code>ddpi</code>). Fails if either resolution is unknown.
+      </li>
+      
+      <li>
+      <b>file</b>: send the file as-is (may
+      be very large and all sorts of image types!). If configuration
+      doesn't allow sending files
+      (<code>sendfile-allowed=false</code>) revert to
+      <code>clip</code>.<br>
+
+      <b>rawfile</b>: send the file as-is with a mime-type of
+      <code>application/octet-stream</code> so it can be downloaded with
+      the browser.
+      </li>
+      
       <li><b>errtxt</b>: send error response as HTML.<br>
-        <b>errimg</b>: response as image (default).
+      <b>errimg</b>: response as image (default).</li>
 
       <li><b>q0</b>-<b>q2</b>: quality of interpolation in scaling
-        (<code>q0</code>: worst, default).
+      (<code>q0</code>: worst, default).</li>
 
       <li><b>lores</b>: try to use scaled image (default)<br>
-        <b>hires</b>: always use unscaled image.<br>
-        If the image is zoomed (ww, wh &lt; 1) the unscaled image is used in any case.
+      
+      <b>hires</b>: always use unscaled image.<br>
+      
+      If the image is zoomed (ww, wh &lt; 1) the use of the scaled
+      image files depends on the requested resolution.</li>
+      
+      <li><b>vmir</b>: mirror image vertically.<br>
+      
+      <b>hmir</b>: mirror image horizontally.</li>
+
+      <li><b>jpg</b>: the resulting image is always sent as JPEG
+      (otherwise TIFF and PNG images are sent as PNG).
+      </li>
     </ul>
+  </li>
 
+  <li><b>cont</b>: change contrast of the image. Negative value
+  reduces contrast, positive value enhances contrast. Pixel value is
+  multiplied by 2^cont. Default: 0</li>
+
+  <li><b>brgt</b>: change brightness of image. Negative value reduces
+  brightness, positive value enhances brightness. The value brgt is
+  added to the pixel value. Default: 0</li>
+
+  <li><b>rot</b>: rotate image. Rotation angle is given in
+  degrees. Default: 0</li>
+  
+  <li><b>rgbm</b>: modify color by multiplication. The contrast of the
+  red green and blue components of the image can be reduced or
+  enhanced similar to the <code>cont</code> parameter. The factors for
+  red, green and blue are separated by slashes (for example
+  0.86/0/-0.5). Default: 0/0/0</li>
+  
+  <li><b>rgba</b>: modify color by addition. The brightness of the red
+  green and blue components of the image can be reduced or enhanced
+  similar to the <code>brgt</code> parameter. The factors for red,
+  green and blue are separated by slashes (for example
+  100/0/25). Default: 0/0/0</li>
+  
+  <li><b>ddpi</b>: resolution of client display for <code>osize</code> mode. 
+  Either <code>ddpi</code> or <code>ddpix</code> and <code>ddpiy</code> must
+  be set to use <code>osize</code> mode.</li>
+  
+  <li><b>ddpix</b>: resolution of client display in x direction for 
+  <code>osize</code> mode.</li>
+  
+  <li><b>ddpiy</b>: resolution of client display in y direction for 
+  <code>osize</code> mode.</li>
+  
 </ul>
-The image will be scaled equally in horizontal and vertical direction such that
-the resulting image does not exceed the rectangle <code>[ww,wh]</code>.
-</p>
 
-</BODY>
-</HTML>
+  <p>The image to be loaded can be specified by the
+  <code>request_path</code> (deprecated) or the <code>fn</code> 
+   (preferred) parameter and the optional index <code>pn</code></p>
+  <ul>
+      <li> if <code>fn</code> points to a directory then the file with
+      the index <code>pn</code> (in alphabetical order according to
+      ASCII) will be loaded</li>
+
+      <li>if <code>fn</code> points to a file (with or without
+      extension) then this file will be loaded</li>
+  </ul>
+
+  <p>The image will be scaled equally in horizontal and vertical
+  direction such that the resulting image does not exceed the rectangle
+  <code>[dw,dh]</code>. If only either height or width is given the
+  image is scaled to match only the given parameter. The size of the
+  resulting image in the other parameter is determined by the aspect
+  ratio of the image.
+  </p>
+
+</body>
+</html>

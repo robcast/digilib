@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://inkscape.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="48px"
+   height="48px"
+   id="svg2388"
+   sodipodi:version="0.32"
+   inkscape:version="0.43"
+   sodipodi:docbase="C:\src\ECHO\digilib\client\digitallibrary\greyskin"
+   sodipodi:docname="cat.svg"
+   inkscape:export-filename="C:\src\ECHO\digilib\client\digitallibrary\greyskin\cat.png"
+   inkscape:export-xdpi="60.000000"
+   inkscape:export-ydpi="60.000000">
+  <defs
+     id="defs2390">
+    <linearGradient
+       id="linearGradient3124">
+      <stop
+         id="stop7644"
+         offset="0.0000000"
+         style="stop-color:#000000;stop-opacity:0.19587629;" />
+      <stop
+         style="stop-color:#545454;stop-opacity:0.22680412;"
+         offset="0.50000000"
+         id="stop7646" />
+      <stop
+         style="stop-color:#5f5f5f;stop-opacity:1.0000000;"
+         offset="1.0000000"
+         id="stop3128" />
+    </linearGradient>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="11.188034"
+     inkscape:cx="21.038579"
+     inkscape:cy="24.285714"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     inkscape:grid-bbox="true"
+     inkscape:document-units="px"
+     inkscape:window-width="830"
+     inkscape:window-height="540"
+     inkscape:window-x="17"
+     inkscape:window-y="22"
+     showguides="true"
+     inkscape:guide-bbox="true">
+    <sodipodi:guide
+       orientation="vertical"
+       position="11.857143"
+       id="guide2331" />
+    <sodipodi:guide
+       orientation="vertical"
+       position="36.735676"
+       id="guide2333" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata2393">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1"
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer">
+    <path
+       style="fill:#707070;fill-opacity:0.35526314;fill-rule:evenodd;stroke:#000000;stroke-width:0.52918273;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:0.50331128;opacity:1.0000000;stroke-miterlimit:4.0000000;stroke-dasharray:none"
+       d="M 23.0625 3.53125 C 13.169888 4.224269 5.3749998 12.649853 5.375 22.875 C 5.375 33.552802 13.927192 42.218749 24.4375 42.21875 C 34.947807 42.21875 43.468749 33.552802 43.46875 22.875 C 43.46875 12.197198 34.947807 3.53125 24.4375 3.53125 C 24.191165 3.53125 23.931575 3.5218149 23.6875 3.53125 C 23.608048 3.5343213 23.516701 3.5271892 23.4375 3.53125 C 23.358917 3.5352791 23.265829 3.5262514 23.1875 3.53125 C 23.148642 3.5337298 23.101295 3.5285323 23.0625 3.53125 z M 13.34375 10.5 L 22.15625 10.5 L 22.15625 20.90625 L 13.34375 20.90625 L 13.34375 10.5 z M 26.6875 10.5 L 35.5 10.5 L 35.5 20.90625 L 26.6875 20.90625 L 26.6875 10.5 z M 13.46875 24.65625 L 22.3125 24.65625 L 22.3125 35.0625 L 13.46875 35.0625 L 13.46875 24.65625 z M 26.75 24.65625 L 35.5625 24.65625 L 35.5625 35.0625 L 26.75 35.0625 L 26.75 24.65625 z "
+       id="path2396" />
+    <rect
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+       id="rect2338"
+       width="8.8160076"
+       height="10.410372"
+       x="13.144758"
+       y="10.5" />
+    <rect
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+       id="rect2340"
+       width="8.8160076"
+       height="10.410372"
+       x="26.5"
+       y="10.5" />
+    <rect
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+       id="rect2342"
+       width="8.8160076"
+       height="10.410372"
+       x="13.287616"
+       y="24.642857" />
+    <rect
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-opacity:1"
+       id="rect2344"
+       width="8.8160076"
+       height="10.410372"
+       x="26.541136"
+       y="24.642857" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="l2"
+     style="display:none">
+    <path
+       style="fill:none;fill-opacity:0.75000000;fill-rule:evenodd;stroke:#000000;stroke-width:1.5000000;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4.0000000;stroke-dasharray:none;stroke-opacity:1.0000000"
+       d="M 17.000000,13.428571 L 17.000000,33.000000 L 34.000000,23.000000 L 17.000000,13.428571 z "
+       id="path7614" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer3"
+     inkscape:label="l3"
+     style="display:inline" />
+</svg>
