@@ -101,7 +101,6 @@ public class NumRange implements Iterable<Integer> {
         }
     }
 
-    @Override
     public Iterator<Integer> iterator() {
         if (list == null) {
             // return count-based iterator
@@ -110,17 +109,14 @@ public class NumRange implements Iterable<Integer> {
                 private int num = getStart();
                 private int end = getEnd();
 
-                @Override
                 public boolean hasNext() {
                     return (num < end);
                 }
 
-                @Override
                 public Integer next() {
                     return num++;
                 }
 
-                @Override
                 public void remove() {
                     // don't do this
                 }
@@ -134,12 +130,10 @@ public class NumRange implements Iterable<Integer> {
                 private int num = getStart();
                 private int end = getEnd();
 
-                @Override
                 public boolean hasNext() {
                     return (num < end);
                 }
 
-                @Override
                 public Integer next() {
                     if (listidx < listend) {
                         num = list.get(listidx++);
@@ -149,7 +143,6 @@ public class NumRange implements Iterable<Integer> {
                     }
                 }
 
-                @Override
                 public void remove() {
                     // don't do this
                 }

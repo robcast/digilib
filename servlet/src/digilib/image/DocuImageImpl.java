@@ -164,44 +164,37 @@ public abstract class DocuImageImpl implements DocuImage {
 		return empty.iterator();
 	}
 
-    @Override
     public void crop(int xoff, int yoff, int width, int height)
             throws ImageOpException {
         // TODO Auto-generated method stub
         
     }
 
-    @Override
     public Image getAwtImage() {
         // TODO Auto-generated method stub
         return null;
     }
 
-    @Override
     public int getHeight() {
         // TODO Auto-generated method stub
         return 0;
     }
 
-    @Override
     public int getWidth() {
         // TODO Auto-generated method stub
         return 0;
     }
 
-    @Override
     public void loadImage(ImageFile f) throws FileOpException {
         // TODO Auto-generated method stub
         
     }
 
-    @Override
     public void scale(double scaleX, double scaleY) throws ImageOpException {
         // TODO Auto-generated method stub
         
     }
 
-    @Override
     public void writeImage(String mt, OutputStream ostream)
             throws FileOpException {
         // TODO Auto-generated method stub
