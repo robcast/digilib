@@ -59,15 +59,13 @@
   <!-- location of logger config file -->
   <parameter name="log-config-file" value="log4j-config.xml"/>
 
-
-
   <!-- location for PDF files while still in progress -->
-  <parameter name="pdf-temp-dir" value="pdf_temp/" />
+  <parameter name="pdf-temp-dir" value="/tmp/pdf_tmp/" />
   
   <!-- location for PDF files upon completion -->
-  <parameter name="pdf-cache-dir" value="cache/"/>
+  <parameter name="pdf-cache-dir" value="/tmp/pdf_cache/"/>
 
-  <!-- location for PDFs while still in progress -->
+  <!-- logo for PDFs -->
   <parameter name="pdf-logo" value="http://www.mpiwg-berlin.mpg.de/de/images/logo.png" />
 
   
