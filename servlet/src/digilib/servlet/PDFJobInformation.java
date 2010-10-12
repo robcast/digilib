@@ -8,6 +8,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 
+import digilib.io.DocuDirectory;
+import digilib.io.FileOps;
+
 
 /** 
  * A container class for storing a set of instruction parameters 
@@ -26,6 +29,7 @@ public class PDFJobInformation extends ParameterMap {
 	
 	ImageJobInformation image_info = null;
 	DigilibConfiguration dlConfig = null;
+	NumRange pages = null;
 	/** gengeral logger for this class */
 	protected static Logger logger = Logger.getLogger("digilib.servlet");
 
@@ -60,6 +64,15 @@ public class PDFJobInformation extends ParameterMap {
 				setValueFromString(param, request.getParameter(param));
 			}
 		}
+		// process parameters
+		try {
+            pages = new NumRange(getAsString("pgs"));
+            DocuDirectory dir = image_info.getFileDirectory();
+            int dirsize = dir.size(FileOps.CLASS_IMAGE);
+            pages.setMaxnum(dirsize);
+        } catch (Exception e) {
+            logger.warn("Problem with parsing page numbers: "+e.toString());
+        }
 	}
 	
 	
@@ -101,39 +114,8 @@ public class PDFJobInformation extends ParameterMap {
 	}
 	
 	
-	/**
-	 *	Convert the "pgs"-Parameter to an Array of Integers.	
-	 *
-	 * @return
-	 * @throws Exception
-	 */
-	public Integer[] getPageNrs() throws Exception{
-		
-		String pages =	getAsString("pgs");
-		ArrayList<Integer> pgs = new ArrayList<Integer>();
-		Integer[] out = null;
-		
-		String intervals[] = pages.split(",");
-		
-		// convert the page-interval-strings into a list containing every single page
-		for(String interval: intervals){
-			if(interval.contains("-")){
-				String nums[] = interval.split("-");
-				int start = Integer.valueOf(nums[0]);
-				int end = Integer.valueOf(nums[1]);
-				for(int i = start; i <= end; i++){
-					// add all numbers to list
-					pgs.add(i);
-				}
-			}
-			else{
-				pgs.add(Integer.valueOf(interval));
-			}
-		}
-		out = new Integer[pgs.size()];
-
-		pgs.toArray(out);
-		return out;
+	public NumRange getPages() {
+	    return pages;
 	}
 	
 	
@@ -144,39 +126,11 @@ public class PDFJobInformation extends ParameterMap {
 	 * @return
 	 */
 	public boolean checkValidity(){
-		String pgs = getAsString("pgs");
-		try{
-			String[] intervals = null;
-            if(pgs.indexOf(",")>0){
-                intervals = pgs.split(",");
-			}
-				else{
-					intervals = new String[1];
-					intervals[0]=pgs;
-				}
-				for(String interval:intervals){
-					if(interval.indexOf("-")>=0){
-						String[] intrvl = interval.split("-");
-						int a = Integer.valueOf(intrvl[0]);
-						int b = Integer.valueOf(intrvl[1]);
-						if(a<=0 || b<a){
-							return false;
-						}
-					}
-					else {
-						int c = Integer.valueOf(interval);
-						if(c<=0)
-							return false;
-						
-					}
-				}
-		}
-		catch(Exception e){
-			logger.error("invalid pgs-input");
-			return false;
-		}
-		return true;
-	}
+	    if (pages != null) {
+	        return true;
+	    }
+	    return false;
+	} 
 	
 	public DigilibConfiguration getDlConfig(){
 		return dlConfig;

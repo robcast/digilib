@@ -90,7 +90,8 @@ public class DigilibPDFWorker extends DigilibWorker {
 			logger.debug("- "+outputfile+" doc.open()ed ("+(System.currentTimeMillis()-start_time) + "ms)");
 			start_time = System.currentTimeMillis();
 
-			Integer[] pgs = job_info.getPageNrs();//get_pgs();
+			//Integer[] pgs = job_info.getPageNrs();//get_pgs();
+			NumRange pgs = job_info.getPages();
 
 			for(Integer p: pgs){
 				logger.debug(" - adding Image "+p+" to " + outputfile);

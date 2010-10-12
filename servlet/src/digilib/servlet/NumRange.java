@@ -59,6 +59,13 @@ public class NumRange implements Iterable<Integer> {
                 if (nums.length > 1) {
                     // second number is end of range
                     int end = Integer.valueOf(nums[1]);
+                    if (intervals.length == 1) {
+                        // optimized case of just one interval
+                        this.start = start;
+                        this.end = end;
+                        this.list = null;
+                        return;
+                    }
                     for (int i = start; i <= end; i++) {
                         // add all numbers to list
                         pgs.add(i);
@@ -110,7 +117,7 @@ public class NumRange implements Iterable<Integer> {
                 private int end = getEnd();
 
                 public boolean hasNext() {
-                    return (num < end);
+                    return (num <= end);
                 }
 
                 public Integer next() {
@@ -131,13 +138,24 @@ public class NumRange implements Iterable<Integer> {
                 private int end = getEnd();
 
                 public boolean hasNext() {
-                    return (num < end);
+                    return (num <= end);
                 }
 
                 public Integer next() {
-                    if (listidx < listend) {
+                    if (listidx < listend - 1) {
                         num = list.get(listidx++);
                         return num;
+                    } else if (listidx == listend - 1) {
+                        // last element in list
+                        int n = list.get(listidx++);
+                        if (n == Integer.MAX_VALUE) {
+                            // open end -- continue
+                            num++;
+                            return num++;
+                        } else {
+                            num = n;
+                            return num++;
+                        }
                     } else {
                         return num++;
                     }

@@ -14,6 +14,7 @@ import digilib.image.ImageOpException;
 import digilib.image.ImageOps;
 import digilib.image.ImageSize;
 import digilib.io.DocuDirCache;
+import digilib.io.DocuDirectory;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.ImageFile;
@@ -43,7 +44,8 @@ public class ImageJobInformation extends ParameterMap {
 
 	ImageFile fileToLoad = null;
 	ImageFileset fileset=null;
-	String FilePath = null;
+	DocuDirectory fileDir = null;
+	String filePath = null;
 	ImageSize expectedSourceSize = null;
 	Float scaleXY = null;
 	Rectangle2D userImgArea = null;
@@ -223,26 +225,38 @@ public class ImageJobInformation extends ParameterMap {
 
 	}
 	
-	public ImageFileset get_fileset() throws FileOpException{
-		if(fileset==null){
+	public DocuDirectory getFileDirectory() throws FileOpException{
+		if(fileDir==null){
 			DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 	
-			fileset = (ImageFileset) dirCache.getFile(getFilePath(), getAsInt("pn"), FileOps.CLASS_IMAGE);
-			if (fileset == null) {
-				throw new FileOpException("File " + getFilePath() + "("
-						+ getAsInt("pn") + ") not found.");
+			fileDir = dirCache.getDirectory(getFilePath());
+			if (fileDir == null) {
+				throw new FileOpException("Directory " + getFilePath() + " not found.");
 			}
 		}
-		return fileset;
+		return fileDir;
 	}
 	
+    public ImageFileset get_fileset() throws FileOpException{
+        if(fileset==null){
+            DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
+    
+            fileset = (ImageFileset) dirCache.getFile(getFilePath(), getAsInt("pn"), FileOps.CLASS_IMAGE);
+            if (fileset == null) {
+                throw new FileOpException("File " + getFilePath() + "("
+                        + getAsInt("pn") + ") not found.");
+            }
+        }
+        return fileset;
+    }
+    
 	public String getFilePath() {
-		if(FilePath == null){
+		if(filePath == null){
 			String s = this.getAsString("request.path");
 			s += this.getAsString("fn");
-			FilePath = FileOps.normalName(s);
+			filePath = FileOps.normalName(s);
 		}
-		return FilePath;
+		return filePath;
 	}
 
 	public boolean get_hiresOnly(){
