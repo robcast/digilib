@@ -222,7 +222,7 @@ public class Scaler extends RequestHandler {
 			logger.error(e1.getMessage());
 		}
 		
-		if (! DigilibWorker.canRun()) {
+		if (! DigilibWorker1.canRun()) {
 			logger.error("Servlet overloaded!");
 			try {
 				response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
@@ -233,7 +233,7 @@ public class Scaler extends RequestHandler {
 		}
 
 		
-		DigilibWorker job=null;
+		DigilibWorker1 job=null;
 		try {
 			
 			long startTime = System.currentTimeMillis();
@@ -261,7 +261,7 @@ public class Scaler extends RequestHandler {
 			}
 
 			
-			job = new DigilibImageWorker(dlConfig, outputstream , jobdeclaration);
+			job = new DigilibImageWorker1(dlConfig, outputstream , jobdeclaration);
 
 			job.run();
 

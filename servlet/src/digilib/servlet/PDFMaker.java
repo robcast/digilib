@@ -41,7 +41,7 @@ public class PDFMaker extends HttpServlet implements Runnable {
 		
 	public void run() {
 
-		if (! DigilibWorker.canRun()) {
+		if (! DigilibWorker1.canRun()) {
 			// TODO include the logger
 			logger.error("Servlet overloaded!");			
 			return;

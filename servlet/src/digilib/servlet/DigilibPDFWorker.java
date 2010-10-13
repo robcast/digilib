@@ -43,7 +43,7 @@ import digilib.io.FileOpException;
  * @author cmielack
  * 
  */
-public class DigilibPDFWorker extends DigilibWorker {
+public class DigilibPDFWorker extends DigilibWorker1 {
 
 	private DigilibConfiguration dlConfig = null;
 
@@ -165,7 +165,7 @@ public class DigilibPDFWorker extends DigilibWorker {
 		ImageJobInformation iji = job_info.getImageJobInformation();
 		iji.setValue("pn", pn);
 		// create image worker
-		DigilibImageWorker image_worker = new DigilibImageWorker(dlConfig, null, iji);
+		DigilibImageWorker1 image_worker = new DigilibImageWorker1(dlConfig, null, iji);
 		try {
 			DocuImage img = image_worker.render();
 

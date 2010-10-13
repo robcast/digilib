@@ -134,9 +134,9 @@ public class Initialiser extends HttpServlet {
                 ImageOps.setDocuImage(di);
 				// worker threads
 				int nt = dlConfig.getAsInt("worker-threads");
-				DigilibWorker.setSemaphore(nt, true);
+				DigilibWorker1.setSemaphore(nt, true);
 				int mt = dlConfig.getAsInt("max-waiting-threads");
-				DigilibWorker.setMaxWaitingThreads(mt);
+				DigilibWorker1.setMaxWaitingThreads(mt);
 				// set as the servlets main config
 				context.setAttribute("digilib.servlet.configuration", dlConfig);
 

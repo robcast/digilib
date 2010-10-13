@@ -38,7 +38,7 @@ import digilib.io.ImageFile;
  * @author casties
  * 
  */
-public class DigilibImageWorker extends DigilibWorker {
+public class DigilibImageWorker1 extends DigilibWorker1 {
 
 	private DigilibConfiguration dlConfig;
 
@@ -92,7 +92,7 @@ public class DigilibImageWorker extends DigilibWorker {
 	int forceType;
 
 
-	public DigilibImageWorker(DigilibConfiguration dlConfig, OutputStream outstream, ImageJobInformation jobinfo) {
+	public DigilibImageWorker1(DigilibConfiguration dlConfig, OutputStream outstream, ImageJobInformation jobinfo) {
 		super();
 		
 		this.dlConfig = dlConfig;

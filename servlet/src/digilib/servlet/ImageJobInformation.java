@@ -636,6 +636,18 @@ public class ImageJobInformation extends ParameterMap {
 		return hasOption("mo","vmir");
 	}
 	
+    public float getRot(){
+        return getAsFloat("rot");
+    }
+    
+    public float getCont(){
+        return getAsFloat("cont");
+    }
+    
+    public float getBrgt(){
+        return getAsFloat("brgt");
+    }
+    
 	public boolean checkSendAsFile(){
 		return hasOption("mo", "file")
 		|| hasOption("mo", "rawfile");

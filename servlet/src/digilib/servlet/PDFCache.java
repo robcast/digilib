@@ -125,7 +125,7 @@ public class PDFCache extends RequestHandler {
             notifyUser(status, docid, request, response);
         } else if (status == STATUS_DONE) {
             try {
-                sendFile(docid, downloadFilename(pdfji), response);
+                sendFile(docid, getDownloadFilename(pdfji), response);
             } catch (IOException e) {
                 e.printStackTrace();
                 logger.error(e.getMessage());
@@ -212,7 +212,7 @@ public class PDFCache extends RequestHandler {
 	 * @param pdfji
 	 * @return
 	 */
-	public String downloadFilename(PDFJobInformation pdfji){
+	public String getDownloadFilename(PDFJobInformation pdfji){
 		// filename example: digilib_example_pgs1-3.pdf
 		String filename;
 		filename =  "digilib_";

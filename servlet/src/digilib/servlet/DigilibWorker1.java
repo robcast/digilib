@@ -31,9 +31,9 @@ import digilib.image.DocuImage;
  * 
  * @author casties
  */
-public abstract class DigilibWorker {
+public abstract class DigilibWorker1 {
 
-	protected static Logger logger = Logger.getLogger(DigilibWorker.class);
+	protected static Logger logger = Logger.getLogger(DigilibWorker1.class);
 
 	private static int maxRunningThreads = 0;
 
@@ -50,7 +50,7 @@ public abstract class DigilibWorker {
 	/**
 	 * @param job
 	 */
-	public DigilibWorker() {
+	public DigilibWorker1() {
 		super();
 		error = null;
 	}
@@ -114,7 +114,7 @@ public abstract class DigilibWorker {
 	 * @return
 	 */
 	public static boolean canRun() {
-		return ((DigilibWorker.maxWaitingThreads == 0) || (DigilibWorker.getNumWaiting() <= DigilibWorker.maxWaitingThreads));
+		return ((DigilibWorker1.maxWaitingThreads == 0) || (DigilibWorker1.getNumWaiting() <= DigilibWorker1.maxWaitingThreads));
 	}
 
 	/**
@@ -145,7 +145,7 @@ public abstract class DigilibWorker {
 	 *            The semaphore to set.
 	 */
 	public static void setSemaphore(Semaphore sem) {
-		DigilibWorker.sem = sem;
+		DigilibWorker1.sem = sem;
 	}
 
 	public static void setSemaphore(int maxrun, boolean fair) {
@@ -182,7 +182,7 @@ public abstract class DigilibWorker {
 	 * @param maxWaitingThreads The maxWaitingThreads to set.
 	 */
 	public static void setMaxWaitingThreads(int maxWaitingThreads) {
-		DigilibWorker.maxWaitingThreads = maxWaitingThreads;
+		DigilibWorker1.maxWaitingThreads = maxWaitingThreads;
 	}
 
 	public static int getMaxRunningThreads() {
@@ -190,6 +190,6 @@ public abstract class DigilibWorker {
 	}
 
 	public static void setMaxRunningThreads(int maxRunningThreads) {
-		DigilibWorker.maxRunningThreads = maxRunningThreads;
+		DigilibWorker1.maxRunningThreads = maxRunningThreads;
 	}
 }
