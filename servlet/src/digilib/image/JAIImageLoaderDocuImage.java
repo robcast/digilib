@@ -90,6 +90,7 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 		if (img == null) {
 			throw new FileOpException("Unable to load File!");
 		}
+        mimeType = f.getMimetype();
 	}
 
 	/* Get an ImageReader for the image file. */
@@ -140,6 +141,7 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 			throw new FileOpException("Unable to load File!");
 		}
 		imgFile = f.getFile();
+        mimeType = f.getMimetype();
 	}
 
 

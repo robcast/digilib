@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -13,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthOps;
+import digilib.image.DocuImage;
 import digilib.image.ImageOpException;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
@@ -27,7 +31,7 @@ import digilib.io.ImageFile;
 public class Scaler extends RequestHandler {
 
 	/** digilib servlet version (for all components) */
-	public static final String dlVersion = "1.8.0a";
+	public static final String dlVersion = "1.8.1a";
 
 	/** general error code */
 	public static final int ERROR_UNKNOWN = 0;
@@ -43,6 +47,9 @@ public class Scaler extends RequestHandler {
 
 	/** DocuDirCache instance */
 	DocuDirCache dirCache;
+
+    /** Image executor */
+    ExecutorService imageJobCenter;
 
 	/** authentication error image file */
 	File denyImgFile;
@@ -92,6 +99,7 @@ public class Scaler extends RequestHandler {
 		}
 		return mtime;
 	}
+	
 	/**
 	 * Returns the DocuDirent corresponding to the DigilibRequest.
 	 * 
@@ -139,6 +147,10 @@ public class Scaler extends RequestHandler {
 
 		// DocuDirCache instance
 		dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
+		
+		// Executor
+		imageJobCenter = (ExecutorService) dlConfig.get("servlet.worker.imageexecutor");
+		
 		denyImgFile = ServletOps.getFile((File) dlConfig.getValue("denied-image"), config);
 		errorImgFile = ServletOps.getFile((File) dlConfig.getValue("error-image"), config);
 		notfoundImgFile = ServletOps.getFile((File) dlConfig.getValue("notfound-image"), config);
@@ -213,15 +225,6 @@ public class Scaler extends RequestHandler {
 
 		
 		
-		OutputStream outputstream = null;
-		try {
-			outputstream =  response.getOutputStream();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-			logger.error(e1.getMessage());
-		}
-		
 		if (! DigilibWorker1.canRun()) {
 			logger.error("Servlet overloaded!");
 			try {
@@ -233,11 +236,15 @@ public class Scaler extends RequestHandler {
 		}
 
 		
-		DigilibWorker1 job=null;
+		//DigilibWorker1 job=null;
+		ImageWorker job = null;
 		try {
 			
 			long startTime = System.currentTimeMillis();
 
+	        OutputStream outputstream = null;
+	        outputstream =  response.getOutputStream();
+	        
 			/* check permissions */
 			if (useAuthorization) {
 				// get a list of required roles (empty if no restrictions)
@@ -261,44 +268,35 @@ public class Scaler extends RequestHandler {
 			}
 
 			
-			job = new DigilibImageWorker1(dlConfig, outputstream , jobdeclaration);
+			//job = new DigilibImageWorker1(dlConfig, outputstream , jobdeclaration);
+			//job.run();
 
-			job.run();
-
+			// create job
+			job = new ImageWorker(dlConfig, jobdeclaration);
+			// submit job
+            Future<DocuImage> jobResult = imageJobCenter.submit(job);
+            // wait for result
+            DocuImage img = jobResult.get();
+            // send image
+            ServletOps.writeImage(img, null, outputstream);
 			
-			if (job.hasError()) {
-				throw new ImageOpException(job.getError().toString());
-			}
-
-			try {
-				outputstream.flush();
-				logger.debug("Job Processing Time: "+ (System.currentTimeMillis()-startTime) + "ms");
-			} catch (IOException e) {
-				e.printStackTrace();
-				logger.error(e.getMessage());
-				response.sendError(1);
-			}
-
+            logger.debug("Job Processing Time: "+ (System.currentTimeMillis()-startTime) + "ms");
 			
 		} catch (IOException e) {
 			e.printStackTrace();
 			logger.error(e.getClass()+": "+ e.getMessage());
 			//response.sendError(1);
-		} catch (ImageOpException e) {
-			e.printStackTrace();
-			logger.error(e.getClass()+": "+ e.getMessage());
-			//response.sendError(1);
-		}
+		} catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            logger.error(e.getClass()+": "+ e.getMessage());
+        } catch (ExecutionException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            logger.error(e.getClass()+": "+ e.getMessage());
+            logger.error("caused by: "+ e.getCause().getMessage());
+        }
 
-		
-	/*	boolean errorMsgHtml = false;
-		
-		if(jobdeclaration.hasOption("mo","errtxt")){
-			errorMsgHtml = true;
-		} else if (jobdeclaration.hasOption("mo","errimg")) {
-			errorMsgHtml = true;
-		} */
-		
 	}
 	
 	

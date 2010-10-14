@@ -21,6 +21,8 @@
 package digilib.servlet;
 
 import java.io.File;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -134,9 +136,11 @@ public class Initialiser extends HttpServlet {
                 ImageOps.setDocuImage(di);
 				// worker threads
 				int nt = dlConfig.getAsInt("worker-threads");
-				DigilibWorker1.setSemaphore(nt, true);
+				//DigilibWorker1.setSemaphore(nt, true);
+				ExecutorService imageEx = Executors.newFixedThreadPool(nt);
+                dlConfig.setValue("servlet.worker.imageexecutor", imageEx);				
 				int mt = dlConfig.getAsInt("max-waiting-threads");
-				DigilibWorker1.setMaxWaitingThreads(mt);
+				//DigilibWorker1.setMaxWaitingThreads(mt);
 				// set as the servlets main config
 				context.setAttribute("digilib.servlet.configuration", dlConfig);
 

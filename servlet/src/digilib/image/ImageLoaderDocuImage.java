@@ -179,6 +179,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			if (img == null) {
 				throw new FileOpException("Unable to load File!");
 			}
+            mimeType = f.getMimetype();
 		} catch (IOException e) {
 			throw new FileOpException("Error reading image.");
 		}
@@ -236,6 +237,7 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			// read image
 			logger.debug("loading..");
 			img = reader.read(0, readParam);
+			mimeType = f.getMimetype();
 			logger.debug("loaded");
 		} catch (IOException e) {
 			throw new FileOpException("Unable to load File!");

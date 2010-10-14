@@ -138,6 +138,7 @@ public class JAIDocuImage extends DocuImageImpl {
 		if (img == null) {
 			throw new FileOpException("Unable to load File!");
 		}
+        mimeType = f.getMimetype();
 	}
 
 	/* Load an image file into the Object. */
@@ -168,6 +169,7 @@ public class JAIDocuImage extends DocuImageImpl {
 			// scale
 			logger.debug("loadSubimage: scale");
 			img = JAI.create("scale", sp);
+            mimeType = f.getMimetype();
 		}
 	}
 
