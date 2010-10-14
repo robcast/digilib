@@ -21,8 +21,7 @@
 package digilib.servlet;
 
 import java.io.File;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.List;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -41,23 +40,18 @@ import digilib.io.DocuDirCache;
 import digilib.io.FileOps;
 
 /**
- * Initalisation servlet for setup tasks.
+ * Singleton initalisation servlet for setup tasks and resources.
  * 
  * @author casties
  *  
  */
 public class Initialiser extends HttpServlet {
 
-	private static final long serialVersionUID = -5126621114382549343L;
-
 	/** servlet version */
-	public static final String iniVersion = "0.1b2";
+	public static final String iniVersion = "0.2";
 
 	/** gengeral logger for this class */
 	private static Logger logger = Logger.getLogger("digilib.init");
-
-	/** AuthOps instance */
-	AuthOps authOp;
 
 	/** DocuDirCache instance */
 	DocuDirCache dirCache;
@@ -65,9 +59,9 @@ public class Initialiser extends HttpServlet {
 	/** DigilibConfiguration instance */
 	DigilibConfiguration dlConfig;
 
-	/** use authorization database */
-	boolean useAuthentication = false;
-
+	/** Executor for image jobs */
+	DigilibJobCenter imageEx;
+	
 	/**
 	 * Initialisation on first run.
 	 * 
@@ -83,8 +77,7 @@ public class Initialiser extends HttpServlet {
 		// get our ServletContext
 		ServletContext context = config.getServletContext();
 		// see if there is a Configuration instance
-		dlConfig = (DigilibConfiguration) context
-				.getAttribute("digilib.servlet.configuration");
+		dlConfig = (DigilibConfiguration) context.getAttribute("digilib.servlet.configuration");
 		if (dlConfig == null) {
 			// create new Configuration
 			try {
@@ -126,7 +119,7 @@ public class Initialiser extends HttpServlet {
 					// XML version
 					File authConf = ServletOps.getConfigFile((File) dlConfig
 							.getValue("auth-file"), config);
-					authOp = new XMLAuthOps(authConf);
+					AuthOps authOp = new XMLAuthOps(authConf);
 					dlConfig.setValue("servlet.auth.op", authOp);
 					dlConfig.setValue("auth-file", authConf);
 				}
@@ -136,11 +129,9 @@ public class Initialiser extends HttpServlet {
                 ImageOps.setDocuImage(di);
 				// worker threads
 				int nt = dlConfig.getAsInt("worker-threads");
-				//DigilibWorker1.setSemaphore(nt, true);
-				ExecutorService imageEx = Executors.newFixedThreadPool(nt);
+                int mt = dlConfig.getAsInt("max-waiting-threads");
+				imageEx = new DigilibJobCenter(nt, mt, true);
                 dlConfig.setValue("servlet.worker.imageexecutor", imageEx);				
-				int mt = dlConfig.getAsInt("max-waiting-threads");
-				//DigilibWorker1.setMaxWaitingThreads(mt);
 				// set as the servlets main config
 				context.setAttribute("digilib.servlet.configuration", dlConfig);
 
@@ -152,14 +143,28 @@ public class Initialiser extends HttpServlet {
 			logger
 					.info("***** Digital Image Library Initialisation Servlet (version "
 							+ iniVersion + ") *****");
-			logger.warn("Already initialised?");
-			// set our AuthOps
-			useAuthentication = dlConfig.getAsBoolean("use-authorization");
-			// AuthOps instance
-			authOp = (AuthOps) dlConfig.getValue("servlet.auth.op");
-			// DocuDirCache instance
-			dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
+			logger.warn("Already initialised!");
 		}
 	}
+
+    /** clean up local resources
+     * @see javax.servlet.GenericServlet#destroy()
+     */
+    @Override
+    public void destroy() {
+        if (dirCache != null) {
+            // shut down dirCache?
+            dirCache = null;
+        }
+        if (imageEx != null) {
+            // shut down image thread pool
+            List<Runnable> rj = imageEx.shutdownNow();
+            int nrj = rj.size();
+            if (nrj > 0) {
+                logger.error("Still running threads when shutting down image job queue: "+nrj);
+            }
+        }
+        super.destroy();
+    }
 
 }

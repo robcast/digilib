@@ -1,3 +1,4 @@
+<%@page import="digilib.servlet.DigilibJobCenter"%>
 <%@ page language="java" %>
 
 <%!
@@ -26,6 +27,9 @@ digilib.servlet.DigilibRequest dlRequest = new digilib.servlet.DigilibRequest(re
 dlRequest.setValue("pt", docBean.getNumPages(dlRequest));
 // dir cache
 digilib.io.DocuDirCache dirCache = (digilib.io.DocuDirCache) dlConfig.getValue("servlet.dir.cache");
+// image JobCenter
+DigilibJobCenter imageProcessor =  (DigilibJobCenter)dlConfig.getValue("servlet.worker.imageexecutor");        
+
 %>
 
 <html>
@@ -70,11 +74,11 @@ digilib.io.DocuDirCache dirCache = (digilib.io.DocuDirCache) dlConfig.getValue("
 
 <table>
   <tr>
-    <td>currently waiting</td><td><b><%= digilib.servlet.DigilibWorker.getNumWaiting() %></b></td>
+    <td>currently waiting</td><td><b><%= imageProcessor.getWaitingJobs() %></b></td>
     <td></td>
   </tr>
   <tr>
-    <td>currently running</td><td><b><%= digilib.servlet.DigilibWorker.getNumRunning() %></b></td>
+    <td>currently running</td><td><b><%= imageProcessor.getRunningJobs() %></b></td>
     <td></td>
   </tr>
 </table>

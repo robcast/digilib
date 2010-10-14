@@ -91,6 +91,8 @@ public class DigilibConfiguration extends ParameterMap {
 			's');
 		// AuthOps instance for authentication
 		newParameter("servlet.auth.op", null, null, 's');
+        // Executor for image operations
+        newParameter("servlet.worker.imageexecutor", null, null, 's');
 
 		/*
 		 * parameters that can be read from config file have a type 'f'
@@ -123,8 +125,6 @@ public class DigilibConfiguration extends ParameterMap {
 		newParameter("auth-file", new File("digilib-auth.xml"), null, 'f');
 		// sending image files as-is allowed
 		newParameter("sendfile-allowed", Boolean.TRUE, null, 'f');
-		// Debug level
-		newParameter("debug-level", new Integer(5), null, 'f');
 		// Type of DocuImage instance
 		newParameter(
 			"docuimage-class",
@@ -145,12 +145,10 @@ public class DigilibConfiguration extends ParameterMap {
 		newParameter("log-config-file", new File("log4j-config.xml"), null, 'f');
 		// maximum destination image size (0 means no limit)
 		newParameter("max-image-size", new Integer(0), null, 'f');
-		// use safe (but slower) directory indexing
-		newParameter("safe-dir-index", Boolean.FALSE, null, 'f');
 		// number of working threads
 		newParameter("worker-threads", new Integer(1), null, 'f');
 		// max number of waiting threads
-		newParameter("max-waiting-threads", new Integer(0), null, 'f');
+		newParameter("max-waiting-threads", new Integer(20), null, 'f');
         // PDF generation temp directory
         newParameter("pdf-temp-dir", "pdf_temp", null, 'f');
         // PDF generation cache directory

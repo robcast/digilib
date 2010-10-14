@@ -1,0 +1,110 @@
+/** Wrapper around ExecutionService.
+ * 
+ */
+package digilib.servlet;
+
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+
+import org.apache.log4j.Logger;
+
+import digilib.image.DocuImage;
+
+/** Wrapper around ExecutionService.
+ * 
+ * @author casties
+ *
+ */
+public class DigilibJobCenter {
+    /** general logger for this class */
+    private static Logger logger = Logger.getLogger("digilib.jobcenter");
+    /** ExecutorService */
+    private ExecutorService executor;
+    /** max number of running threads */
+    private int maxThreads = 1;
+    /** max number of waiting threads */
+    private int maxQueueLen = 50;
+    
+    /**
+     * @param maxThreads
+     * @param maxQueueLength
+     */
+    public DigilibJobCenter(int maxThreads, int maxQueueLen, boolean prestart) {
+        super();
+        this.maxThreads = maxThreads;
+        this.maxQueueLen = maxQueueLen;
+        executor = Executors.newFixedThreadPool(maxThreads);
+        if (prestart) {
+            // prestart threads so Tomcat's leak protection doesn't complain
+            int st = ((ThreadPoolExecutor)executor).prestartAllCoreThreads();
+            logger.debug("prestarting threads: "+st);
+        }
+    }
+    
+    /** Submit job to execute
+     * 
+     * @param job
+     * @return Future to control the job
+     */
+    public Future<DocuImage> submit(Callable<DocuImage> job) {
+        return executor.submit(job);
+    }
+
+    /** Returns if the service is not overloaded.
+     *  
+     * @return
+     */
+    public boolean canRun() {
+        int jql = getWaitingJobs();
+        int jrl = getRunningJobs();
+        logger.debug("canRun: waiting jobs="+jql+" running jobs="+jrl);
+        return (jql <= maxQueueLen);
+    }
+    
+    /** Returns if the service is overloaded.
+     *  
+     * @return
+     */
+    public boolean isBusy() {
+        int jql = getWaitingJobs();
+        int jrl = getRunningJobs();
+        logger.debug("isBusy: waiting jobs="+jql+" running jobs="+jrl);
+        return (jql > maxQueueLen);
+    }
+    
+    public int getRunningJobs() {
+        return ((ThreadPoolExecutor)executor).getActiveCount();
+    }
+    
+    public int getWaitingJobs() {
+        BlockingQueue<Runnable> jq = ((ThreadPoolExecutor)executor).getQueue();
+        int jql = jq.size();
+        return jql;
+    }
+
+    public void setMaxThreads(int maxThreads) {
+        this.maxThreads = maxThreads;
+    }
+
+    public int getMaxThreads() {
+        return maxThreads;
+    }
+
+    public void setMaxQueueLen(int maxQueueLen) {
+        this.maxQueueLen = maxQueueLen;
+    }
+
+    public int getMaxQueueLen() {
+        return maxQueueLen;
+    }
+
+    public List<Runnable> shutdownNow() {
+        return executor.shutdownNow();
+    }
+
+}

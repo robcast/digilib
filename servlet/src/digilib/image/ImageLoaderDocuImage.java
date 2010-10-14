@@ -176,9 +176,6 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		logger.debug("loadImage " + f.getFile());
 		try {
 			img = ImageIO.read(f.getFile());
-			if (img == null) {
-				throw new FileOpException("Unable to load File!");
-			}
             mimeType = f.getMimetype();
 		} catch (IOException e) {
 			throw new FileOpException("Error reading image.");
@@ -223,7 +220,6 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	public void loadSubimage(ImageFile f, Rectangle region, int prescale)
 			throws FileOpException {
 		logger.debug("loadSubimage");
-		// System.gc();
 		try {
 			if ((reader == null) || (imgFile != f.getFile())) {
 				getReader(f);
@@ -240,9 +236,6 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 			mimeType = f.getMimetype();
 			logger.debug("loaded");
 		} catch (IOException e) {
-			throw new FileOpException("Unable to load File!");
-		}
-		if (img == null) {
 			throw new FileOpException("Unable to load File!");
 		}
 	}
@@ -346,7 +339,6 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		logger.debug("SCALE: " + scale + " ->" + scaledImg.getWidth() + "x"
 				+ scaledImg.getHeight());
 		img = scaledImg;
-		scaledImg = null;
 	}
 
 	public void blur(int radius) throws ImageOpException {
@@ -373,9 +365,6 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 					.getType());
 		}
 		blurredImg = blurOp.filter(img, blurredImg);
-		if (blurredImg == null) {
-			throw new ImageOpException("Unable to scale");
-		}
 		img = blurredImg;
 	}
 
@@ -501,9 +490,6 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		BufferedImage rotImg = rotOp.filter(img, null);
 		// calculate new bounding box
 		// Rectangle2D bounds = rotOp.getBounds2D(img);
-		if (rotImg == null) {
-			throw new ImageOpException("Unable to rotate");
-		}
 		img = rotImg;
 		// crop new image (with self-made rounding)
 		/*
@@ -538,9 +524,6 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 		AffineTransformOp mirOp = new AffineTransformOp(new AffineTransform(mx,
 				0, 0, my, tx, ty), renderHint);
 		BufferedImage mirImg = mirOp.filter(img, null);
-		if (mirImg == null) {
-			throw new ImageOpException("Unable to mirror");
-		}
 		img = mirImg;
 	}
 
