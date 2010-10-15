@@ -58,9 +58,6 @@ public class DocuDirCache {
 	/** number of cache misses */
 	long misses = 0;
 
-	/** use safe (but slow) indexing */
-	boolean safeDirIndex = false;
-
 	/** the root directory element */
 	public static Directory ROOT = null;
 
@@ -75,7 +72,6 @@ public class DocuDirCache {
 		baseDirNames = bd;
 		map = new HashMap<String, DocuDirectory>();
 		this.fileClasses = fileClasses;
-		safeDirIndex = dlConfig.getAsBoolean("safe-dir-index");
 	}
 
 	/**

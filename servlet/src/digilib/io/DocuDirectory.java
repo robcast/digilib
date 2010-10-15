@@ -185,11 +185,8 @@ public class DocuDirectory extends Directory {
 		 * extensions) but slower.
 		 */
 		File[] allFiles = null;
-		if (cache.safeDirIndex) {
-			allFiles = dir.listFiles(new FileOps.ReadableFileFilter());
-		} else {
-			allFiles = dir.listFiles();
-		}
+		//	allFiles = dir.listFiles(new FileOps.ReadableFileFilter());
+		allFiles = dir.listFiles();
 		//logger.debug("  done");
 		if (allFiles == null) {
 			// not a directory
