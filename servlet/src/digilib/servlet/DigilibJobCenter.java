@@ -20,7 +20,7 @@ import digilib.image.DocuImage;
  * @author casties
  *
  */
-public class DigilibJobCenter {
+public class DigilibJobCenter<V> {
     /** general logger for this class */
     private static Logger logger = Logger.getLogger("digilib.jobcenter");
     /** ExecutorService */
@@ -51,7 +51,7 @@ public class DigilibJobCenter {
      * @param job
      * @return Future to control the job
      */
-    public Future<DocuImage> submit(Callable<DocuImage> job) {
+    public Future<V> submit(Callable<V> job) {
         return executor.submit(job);
     }
 

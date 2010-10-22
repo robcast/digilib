@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
@@ -29,6 +30,8 @@ public class PDFCache extends RequestHandler {
 	private DigilibConfiguration dlConfig = null;
 	
 	public static String instanceKey = "digilib.servlet.PDFCache";
+	
+	private DigilibJobCenter<OutputStream> pdfJobCenter = null;
 	
 	private File cache_directory = new File("cache");  
 	
@@ -59,7 +62,7 @@ public class PDFCache extends RequestHandler {
 		
         System.out.println("***** Digital Image Library Image PDF-Cache Servlet (version "
                 + version + ") *****");
-// say hello in the log file
+        // say hello in the log file
         logger.info("***** Digital Image Library Image PDF-Cache Servlet (version "
                 + version + ") *****");
 
@@ -84,6 +87,8 @@ public class PDFCache extends RequestHandler {
             throw new ServletException("Configuration error: problem with pdf-cache-dir="+cache_fn);
         }
 
+        pdfJobCenter = (DigilibJobCenter<OutputStream>) dlConfig.getValue("servlet.worker.pdfexecutor");
+        
 		// register this instance globally
 		context.setAttribute(instanceKey, this);
 		

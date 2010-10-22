@@ -21,6 +21,7 @@
 package digilib.servlet;
 
 import java.io.File;
+import java.io.OutputStream;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
@@ -59,8 +60,14 @@ public class Initialiser extends HttpServlet {
 	/** DigilibConfiguration instance */
 	DigilibConfiguration dlConfig;
 
-	/** Executor for image jobs */
+	/** Executor for digilib image jobs */
 	DigilibJobCenter imageEx;
+	
+	/** Executor for PDF jobs */
+	DigilibJobCenter pdfEx;
+	
+	/** Executor for PDF image jobs */
+	DigilibJobCenter pdfImageEx;
 	
 	/**
 	 * Initialisation on first run.
@@ -127,11 +134,21 @@ public class Initialiser extends HttpServlet {
 				DocuImage di = dlConfig.getDocuImageInstance();
 				dlConfig.setValue("servlet.docuimage.class", di.getClass().getName());
                 ImageOps.setDocuImage(di);
-				// worker threads
+				// digilib worker threads
 				int nt = dlConfig.getAsInt("worker-threads");
                 int mt = dlConfig.getAsInt("max-waiting-threads");
-				imageEx = new DigilibJobCenter(nt, mt, true);
+				imageEx = new DigilibJobCenter<DocuImage>(nt, mt, true);
                 dlConfig.setValue("servlet.worker.imageexecutor", imageEx);				
+				// PDF worker threads
+				int pnt = dlConfig.getAsInt("pdf-worker-threads");
+                int pmt = dlConfig.getAsInt("pdf-max-waiting-threads");
+				pdfEx = new DigilibJobCenter<OutputStream>(pnt, pmt, true);
+                dlConfig.setValue("servlet.worker.pdfexecutor", pdfEx);				
+				// digilib worker threads
+				int pint = dlConfig.getAsInt("pdf-image-worker-threads");
+                int pimt = dlConfig.getAsInt("pdf-image-max-waiting-threads");
+				pdfImageEx = new DigilibJobCenter<DocuImage>(pint, pimt, true);
+                dlConfig.setValue("servlet.worker.pdfimageexecutor", pdfImageEx);				
 				// set as the servlets main config
 				context.setAttribute("digilib.servlet.configuration", dlConfig);
 
