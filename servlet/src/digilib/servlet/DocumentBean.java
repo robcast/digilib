@@ -211,7 +211,7 @@ public class DocumentBean {
 		// get original pixel size
 		ImageFile origfile = fileset.getBiggest();
 		// check image for size if mo=hires
-		if ((! origfile.isChecked())&&dlRequest.hasOption("mo", "hires")) {
+		if ((! origfile.isChecked())&&dlRequest.hasOption("hires")) {
 			logger.debug("pre-checking image!");
 			ImageOps.checkFile(origfile);
 		}

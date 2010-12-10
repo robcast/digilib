@@ -30,22 +30,36 @@ import java.util.HashMap;
  * @author casties
  *
  */
-public class ParameterMap extends HashMap<String, Parameter> {
+public class ParameterMap {
 
-	private static final long serialVersionUID = 1530820988748391313L;
-
+	protected HashMap<String, Parameter> params;
+	
+	protected OptionsSet options;
+	
 	/** Default constructor.
 	 * 
 	 */
 	public ParameterMap() {
-		super();
+		params = new HashMap<String, Parameter>();
+		options = new OptionsSet();
 	}
 
-	/** Construcotr with initial size.
+	/** Constructor with initial size.
 	 * @param arg0
 	 */
 	public ParameterMap(int arg0) {
-		super(arg0);
+		params = new HashMap<String, Parameter>(arg0);
+		options = new OptionsSet();
+	}
+
+	/** Shallow copy constructor.
+	 * Be warned that the maps are only cloned i.e. keys and values are shared!
+	 * @param pm
+	 */
+	@SuppressWarnings("unchecked")
+	public ParameterMap(ParameterMap pm) {
+		params = (HashMap<String, Parameter>) pm.params.clone();
+		options = (OptionsSet) pm.options.clone();
 	}
 
 	/** Get the Parameter with the corresponding key.
@@ -56,7 +70,7 @@ public class ParameterMap extends HashMap<String, Parameter> {
 	 * @return
 	 */
 	public Parameter get(String key) {
-		return super.get(key);
+		return params.get(key);
 	}
 
 	/** Get the Parameter with the corresponding key.
@@ -67,7 +81,7 @@ public class ParameterMap extends HashMap<String, Parameter> {
 	 * @return
 	 */
 	public Object getValue(String key) {
-		Parameter p = super.get(key);
+		Parameter p = params.get(key);
 		return (p != null) ? p.getValue() : null;
 	}
 	
@@ -79,7 +93,7 @@ public class ParameterMap extends HashMap<String, Parameter> {
 	 * @return
 	 */
 	public String getAsString(String key) {
-		Parameter p = super.get(key);
+		Parameter p = params.get(key);
 		return (p != null) ? p.getAsString() : null;
 	}
 
@@ -91,7 +105,7 @@ public class ParameterMap extends HashMap<String, Parameter> {
 	 * @return
 	 */
 	public int getAsInt(String key) {
-		Parameter p = super.get(key);
+		Parameter p = params.get(key);
 		return (p != null) ? p.getAsInt() : 0;
 	}
 
@@ -103,7 +117,7 @@ public class ParameterMap extends HashMap<String, Parameter> {
 	 * @return
 	 */
 	public float getAsFloat(String key) {
-		Parameter p = super.get(key);
+		Parameter p = params.get(key);
 		return (p != null) ? p.getAsFloat() : 0f;
 	}
 
@@ -115,7 +129,7 @@ public class ParameterMap extends HashMap<String, Parameter> {
 	 * @return
 	 */
 	public boolean getAsBoolean(String key) {
-		Parameter p = super.get(key);
+		Parameter p = params.get(key);
 		return (p != null) ? p.getAsBoolean() : false;
 	}
 
@@ -125,7 +139,7 @@ public class ParameterMap extends HashMap<String, Parameter> {
 	 * @return
 	 */
 	public boolean hasValue(String key) {
-		Parameter p = super.get(key);
+		Parameter p = params.get(key);
 		return (p != null) ? p.hasValue() : false;
 	}
 	
@@ -138,7 +152,7 @@ public class ParameterMap extends HashMap<String, Parameter> {
 	 * @return
 	 */
 	public Parameter put(String key, Parameter val) {
-		return super.put(key, val);
+		return params.put(key, val);
 	}
 
 	/** Add the Parameter val to the map, using val's name.
@@ -149,7 +163,7 @@ public class ParameterMap extends HashMap<String, Parameter> {
 	 * @return
 	 */
 	public Parameter put(Parameter val) {
-		return super.put(val.getName(), val);
+		return params.put(val.getName(), val);
 	}
 	
 	/** Add a new Parameter with name, default and value.
@@ -163,7 +177,7 @@ public class ParameterMap extends HashMap<String, Parameter> {
 	 */
 	public Parameter newParameter(String name, Object def, Object val) {
 		Parameter p = new Parameter(name, def, val);
-		return super.put(name, p);
+		return params.put(name, p);
 	}
 
 	/** Add a new Parameter with name, default, value and type.
@@ -178,7 +192,7 @@ public class ParameterMap extends HashMap<String, Parameter> {
 	 */
 	public Parameter newParameter(String name, Object def, Object val, int type) {
 		Parameter p = new Parameter(name, def, val, type);
-		return super.put(name, p);
+		return params.put(name, p);
 	}
 
 	/** Set the value of an existing parameter.
@@ -190,7 +204,7 @@ public class ParameterMap extends HashMap<String, Parameter> {
 	 * @return
 	 */
 	public boolean setValue(String key, Object val) {
-		Parameter p = get(key);
+		Parameter p = params.get(key);
 		if (p != null) {
 			p.setValue(val);
 			return true;
@@ -207,7 +221,7 @@ public class ParameterMap extends HashMap<String, Parameter> {
 	 * @return
 	 */
 	public boolean setValue(String key, int val) {
-		Parameter p = get(key);
+		Parameter p = params.get(key);
 		if (p != null) {
 			p.setValue(val);
 			return true;
@@ -224,7 +238,7 @@ public class ParameterMap extends HashMap<String, Parameter> {
 	 * @return
 	 */
 	public boolean setValue(String key, float val) {
-		Parameter p = get(key);
+		Parameter p = params.get(key);
 		if (p != null) {
 			p.setValue(val);
 			return true;
@@ -241,11 +255,19 @@ public class ParameterMap extends HashMap<String, Parameter> {
 	 * @return
 	 */
 	public boolean setValueFromString(String key, String val) {
-		Parameter p = get(key);
+		Parameter p = params.get(key);
 		if (p != null) {
 			p.setValueFromString(val);
 			return true;
 		}
 		return false;
+	}
+	
+	/** Returns of the option has been set.
+	 * @param opt
+	 * @return
+	 */
+	public boolean hasOption(String opt) {
+		return options.hasOption(opt);
 	}
 }

@@ -24,10 +24,11 @@ import digilib.io.ImageFile;
 
 // TODO digilibError is not used anymore and may need to get reintegrated
 
+@SuppressWarnings("serial")
 public class Scaler extends RequestHandler {
 
     /** digilib servlet version (for all components) */
-    public static final String dlVersion = "1.8.1a";
+    public static final String dlVersion = "1.9.0a";
 
     /** general error code */
     public static final int ERROR_UNKNOWN = 0;
@@ -45,7 +46,7 @@ public class Scaler extends RequestHandler {
     DocuDirCache dirCache;
 
     /** Image executor */
-    DigilibJobCenter imageJobCenter;
+    DigilibJobCenter<DocuImage> imageJobCenter;
 
     /** authentication error image file */
     File denyImgFile;
@@ -67,40 +68,6 @@ public class Scaler extends RequestHandler {
 
     /** AuthOps instance */
     AuthOps authOp;
-
-    // EXPRIMENTAL
-    /** try to enlarge cropping area for "oblique" angles */
-    boolean wholeRotArea = false;
-
-    protected long getLastModified(HttpServletRequest request) {
-        accountlog.debug("GetLastModified from " + request.getRemoteAddr()
-                + " for " + request.getQueryString());
-        long mtime = -1;
-        // create new request with defaults
-        DigilibRequest dlReq = new DigilibRequest();
-        // set with request parameters
-        dlReq.setWithRequest(request);
-        // find the requested file
-        DocuDirent f = findFile(dlReq);
-        if (f != null) {
-            DocuDirectory dd = (DocuDirectory) f.getParent();
-            mtime = dd.getDirMTime() / 1000 * 1000;
-        }
-        return mtime;
-    }
-
-    /**
-     * Returns the DocuDirent corresponding to the DigilibRequest.
-     * 
-     * @param dlRequest
-     * @return
-     */
-    public DocuDirent findFile(DigilibRequest dlRequest) {
-        // find the file(set)
-        DocuDirent f = dirCache.getFile(dlRequest.getFilePath(),
-                dlRequest.getAsInt("pn"), FileOps.CLASS_IMAGE);
-        return f;
-    }
 
     /**
      * Initialisation on first run.
@@ -136,7 +103,7 @@ public class Scaler extends RequestHandler {
         dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 
         // Executor
-        imageJobCenter = (DigilibJobCenter) dlConfig
+        imageJobCenter = (DigilibJobCenter<DocuImage>) dlConfig
                 .getValue("servlet.worker.imageexecutor");
 
         denyImgFile = ServletOps.getFile(
@@ -148,7 +115,28 @@ public class Scaler extends RequestHandler {
         sendFileAllowed = dlConfig.getAsBoolean("sendfile-allowed");
     }
 
-    @Override
+    /** Returns modification time relevant to the request.
+     * 
+     * @see javax.servlet.http.HttpServlet#getLastModified(javax.servlet.http.HttpServletRequest)
+     */
+    protected long getLastModified(HttpServletRequest request) {
+        accountlog.debug("GetLastModified from " + request.getRemoteAddr()
+                + " for " + request.getQueryString());
+        long mtime = -1;
+        // create new request
+        DigilibRequest dlReq = new DigilibRequest(request);
+		// find the file(set)
+		DocuDirent f = dirCache.getFile(dlReq.getFilePath(),
+		        dlReq.getAsInt("pn"), FileOps.CLASS_IMAGE);
+        // find the requested file
+        if (f != null) {
+            DocuDirectory dd = (DocuDirectory) f.getParent();
+            mtime = dd.getDirMTime() / 1000 * 1000;
+        }
+        return mtime;
+    }
+
+
     public void processRequest(HttpServletRequest request,
             HttpServletResponse response) throws ServletException,
             ImageOpException {
@@ -161,21 +149,23 @@ public class Scaler extends RequestHandler {
         logger.debug("request: " + request.getQueryString());
         long startTime = System.currentTimeMillis();
 
-        // define the job information
-        ImageJobInformation jobdeclaration = new ImageJobInformation(dlConfig);
-        jobdeclaration.setWithRequest(request);
+        // parse request
+        DigilibRequest dlRequest = new DigilibRequest(request);
+        // extract the job information
+        ImageJobDescription jobTicket = new ImageJobDescription(dlRequest, dlConfig);
 
-        // DigilibWorker1 job=null;
         ImageWorker job = null;
         try {
+        	/*
+        	 *  check if we can fast-track without scaling
+        	 */
+            ImageFile fileToLoad = jobTicket.getFileToLoad();
 
-            ImageFile fileToLoad = jobdeclaration.get_fileToLoad();
-
-            /* check permissions */
+            // check permissions
             if (useAuthorization) {
                 // get a list of required roles (empty if no restrictions)
                 List<String> rolesRequired = authOp.rolesForPath(
-                        jobdeclaration.getFilePath(), request);
+                        jobTicket.getFilePath(), request);
                 if (rolesRequired != null) {
                     authlog.debug("Role required: " + rolesRequired);
                     authlog.debug("User: " + request.getRemoteUser());
@@ -188,20 +178,19 @@ public class Scaler extends RequestHandler {
             }
 
             // if requested, send image as a file
-            if (sendFileAllowed && jobdeclaration.checkSendAsFile()) {
+            if (sendFileAllowed && jobTicket.getSendAsFile()) {
                 String mt = null;
-                if (jobdeclaration.hasOption("mo", "rawfile")) {
+                if (jobTicket.hasOption("rawfile")) {
                     mt = "application/octet-stream";
                 }
                 logger.debug("Sending RAW File as is.");
-                logger.info("Done in " + (System.currentTimeMillis() - startTime) + "ms");
                 ServletOps.sendFile(fileToLoad.getFile(), mt, response);
+                logger.info("Done in " + (System.currentTimeMillis() - startTime) + "ms");
                 return;
             }
 
-            // if possible, send the image without actually having to transform
-            // it
-            if (jobdeclaration.noTransformRequired()) {
+            // if possible, send the image without actually having to transform it
+            if (! jobTicket.isTransformRequired()) {
                 logger.debug("Sending File as is.");
                 ServletOps.sendFile(fileToLoad.getFile(), null, response);
                 logger.info("Done in " + (System.currentTimeMillis() - startTime) + "ms");
@@ -215,7 +204,7 @@ public class Scaler extends RequestHandler {
                 return;
             }
             // create job
-            job = new ImageWorker(dlConfig, jobdeclaration);
+            job = new ImageWorker(dlConfig, jobTicket);
             // submit job
             Future<DocuImage> jobResult = imageJobCenter.submit(job);
             // wait for result

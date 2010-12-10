@@ -83,7 +83,7 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 		for (int p : pgs) {
 			logger.debug(" - adding Image " + p + " to " + outstream);
 			// create ImageJobInformation
-			ImageJobInformation iji = job_info.getImageJobInformation();
+			ImageJobDescription iji = job_info.getImageJobInformation();
 			iji.setValue("pn", p);
 			addImage(doc, iji);
 			logger.debug(" - done adding Image " + p + " to " + outstream);
@@ -135,7 +135,7 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 	 * @throws IOException
 	 * @throws DocumentException
 	 */
-	public Document addImage(Document doc, ImageJobInformation iji)
+	public Document addImage(Document doc, ImageJobDescription iji)
 			throws InterruptedException, ExecutionException, IOException,
 			DocumentException {
 		// create image worker

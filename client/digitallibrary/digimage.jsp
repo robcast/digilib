@@ -26,7 +26,7 @@ docBean.doAuthentication(response);
 // add number of pages
 dlRequest.setValue("pt", docBean.getNumPages());
 // store objects for jsp:include
-pageContext.setAttribute("docBean", docBean, pageContext.REQUEST_SCOPE);
+pageContext.setAttribute("docBean", docBean, PageContext.REQUEST_SCOPE);
 %><html>
 <head>
     <title>Digital Document Library (L1)</title>

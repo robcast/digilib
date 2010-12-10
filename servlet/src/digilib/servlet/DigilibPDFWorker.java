@@ -162,7 +162,7 @@ public class DigilibPDFWorker extends DigilibWorker1 {
 	 */
 	public void addImage(int pn) {
 		// create ImageJobInformation
-		ImageJobInformation iji = job_info.getImageJobInformation();
+		ImageJobDescription iji = job_info.getImageJobInformation();
 		iji.setValue("pn", pn);
 		// create image worker
 		DigilibImageWorker1 image_worker = new DigilibImageWorker1(dlConfig, null, iji);

@@ -23,9 +23,9 @@ public class ImageWorker implements Callable<DocuImage> {
     
     protected static Logger logger = Logger.getLogger(ImageWorker.class);
     private DigilibConfiguration dlConfig;
-    private ImageJobInformation jobinfo;
+    private ImageJobDescription jobinfo;
 
-    public ImageWorker(DigilibConfiguration dlConfig, ImageJobInformation jobinfo) {
+    public ImageWorker(DigilibConfiguration dlConfig, ImageJobDescription jobinfo) {
         super();
         this.dlConfig = dlConfig;
         this.jobinfo = jobinfo;
@@ -51,8 +51,8 @@ public class ImageWorker implements Callable<DocuImage> {
         // set interpolation quality
         docuImage.setQuality(jobinfo.get_scaleQual());
 
-        Rectangle loadRect = jobinfo.get_outerUserImgArea().getBounds();
-        float scaleXY = jobinfo.get_scaleXY();
+        Rectangle loadRect = jobinfo.getOuterUserImgArea().getBounds();
+        float scaleXY = jobinfo.getScaleXY();
         
         // use subimage loading if possible
         if (docuImage.isSubimageSupported()) {
@@ -72,7 +72,7 @@ public class ImageWorker implements Callable<DocuImage> {
                         + scaleXY);
             }
 
-            docuImage.loadSubimage(jobinfo.get_fileToLoad(), loadRect, (int) subsamp);
+            docuImage.loadSubimage(jobinfo.getFileToLoad(), loadRect, (int) subsamp);
 
             logger.debug("SUBSAMP: " + subsamp + " -> " + docuImage.getWidth()
                     + "x" + docuImage.getHeight());
@@ -81,7 +81,7 @@ public class ImageWorker implements Callable<DocuImage> {
 
         } else {
             // else load and crop the whole file
-            docuImage.loadImage(jobinfo.get_fileToLoad());
+            docuImage.loadImage(jobinfo.getFileToLoad());
             docuImage.crop((int) loadRect.getX(), (int) loadRect.getY(),
                     (int) loadRect.getWidth(), (int) loadRect.getHeight());
 
@@ -91,17 +91,17 @@ public class ImageWorker implements Callable<DocuImage> {
         // mirror image
         // operation mode: "hmir": mirror horizontally, "vmir": mirror
         // vertically
-        if (jobinfo.get_hmir()) {
+        if (jobinfo.hasOption("hmir")) {
             docuImage.mirror(0);
         }
-        if (jobinfo.get_vmir()) {
+        if (jobinfo.hasOption("vmir")) {
             docuImage.mirror(90);
         }
 
         // rotate image
-        if (jobinfo.getRot() != 0d) {
-            docuImage.rotate(jobinfo.getRot());
-            if (jobinfo.get_wholeRotArea()) {
+        if (jobinfo.getAsFloat("rot") != 0d) {
+            docuImage.rotate(jobinfo.getAsFloat("rot"));
+            /* if (jobinfo.get_wholeRotArea()) {
                 // crop to the inner bounding box
                 float xcrop = (float) (docuImage.getWidth() - jobinfo.get_innerUserImgArea().getWidth()
                         * scaleXY);
@@ -116,15 +116,15 @@ public class ImageWorker implements Callable<DocuImage> {
                             (int) (docuImage.getWidth() - xcrop),
                             (int) (docuImage.getHeight() - ycrop));
                 }
-            }
+            } */
 
         }
 
         // color modification
-        float[] paramRGBM = jobinfo.get_paramRGBM();
-        float[] paramRGBA = jobinfo.get_paramRGBA();
+        float[] paramRGBM = jobinfo.getRGBM();
+        float[] paramRGBA = jobinfo.getRGBA();
         if ((paramRGBM != null) || (paramRGBA != null)) {
-            // make shure we actually have two arrays
+            // make sure we actually have two arrays
             if (paramRGBM == null) {
                 paramRGBM = new float[3];
             }
@@ -140,8 +140,8 @@ public class ImageWorker implements Callable<DocuImage> {
         }
 
         // contrast and brightness enhancement
-        float paramCONT = jobinfo.getCont();
-        float paramBRGT = jobinfo.getBrgt();
+        float paramCONT = jobinfo.getAsFloat("cont");
+        float paramBRGT = jobinfo.getAsFloat("brgt");
         if ((paramCONT != 0f) || (paramBRGT != 0f)) {
             float mult = (float) Math.pow(2, paramCONT);
             docuImage.enhance(mult, paramBRGT);

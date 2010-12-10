@@ -61,15 +61,9 @@ import digilib.io.FileOps;
  */
 public class DigilibRequest extends ParameterMap {
 
-	private static final long serialVersionUID = -4707707539569977901L;
+	protected DocuImage image; // internal DocuImage instance for this request
 
-	//private Logger logger = Logger.getLogger(this.getClass());
-
-	private boolean boolRDF = false; // use RDF Parameters
-
-	private DocuImage image; // internal DocuImage instance for this request
-
-	private ServletRequest servletRequest; // internal ServletRequest
+	protected ServletRequest servletRequest; // internal ServletRequest
 
 	/** Creates a new instance of DigilibRequest and sets default values. */
 	public DigilibRequest() {
@@ -100,7 +94,7 @@ public class DigilibRequest extends ParameterMap {
 		// scale factor
 		newParameter("ws", new Float(1), null, 's');
 		// special options like 'fit' for gifs
-		newParameter("mo", "", null, 's');
+		newParameter("mo", this.options, null, 's');
 		// rotation angle (degree)
 		newParameter("rot", new Float(0), null, 's');
 		// contrast enhancement factor
@@ -328,7 +322,7 @@ public class DigilibRequest extends ParameterMap {
 	public String getAsString(int type) {
 		StringBuffer s = new StringBuffer(50);
 		// go through all values
-		for (Parameter p: this.values()) {
+		for (Parameter p: params.values()) {
 			if ((type > 0) && (p.getType() != type)) {
 				// skip the wrong types
 				continue;
@@ -391,7 +385,7 @@ public class DigilibRequest extends ParameterMap {
 		for (Enumeration<String> i = request.getParameterNames(); i.hasMoreElements();) {
 			String name = (String) i.nextElement();
 			// is this a known parameter?
-			if (this.containsKey(name)) {
+			if (params.containsKey(name)) {
 				Parameter p = (Parameter) this.get(name);
 				// internal parameters are not set
 				if (p.getType() == 'i') {
@@ -426,7 +420,7 @@ public class DigilibRequest extends ParameterMap {
 				String name = URLDecoder.decode(nv[0], "UTF-8");
 				String val = URLDecoder.decode(nv[1], "UTF-8");
 				// is this a known parameter?
-				if (this.containsKey(name)) {
+				if (params.containsKey(name)) {
 					Parameter p = (Parameter) this.get(name);
 					// internal parameters are not set
 					if (p.getType() == 'i') {
@@ -447,6 +441,7 @@ public class DigilibRequest extends ParameterMap {
 	/**
 	 * Test if option string <code>opt</code> is set. Checks if the substring
 	 * <code>opt</code> is contained in the options string <code>param</code>.
+	 * Deprecated! use hasOption(String opt) for "mo"-options.
 	 * 
 	 * @param opt
 	 *            Option string to be tested.
@@ -521,10 +516,6 @@ public class DigilibRequest extends ParameterMap {
 	public void setImage(DocuImage image) {
 		this.image = image;
 		setValue("docu.image", image);
-	}
-
-	public boolean isRDF() {
-		return boolRDF;
 	}
 
 	/**

@@ -113,6 +113,11 @@ public class Parameter {
 			this.value = new File(val);
 			return true;
 		}
+		// set Options
+		if (c == OptionsSet.class) {
+			this.value = new OptionsSet(val);
+			return true;
+		}
 		// set Boolean if string == "true"
 		if (c == Boolean.class) {
 			this.value = new Boolean(val.compareToIgnoreCase("true") == 0);

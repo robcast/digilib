@@ -27,7 +27,7 @@ public class PDFJobInformation extends ParameterMap {
 									   // (this should be redesigned later...)
 	
 	
-	ImageJobInformation image_info = null;
+	ImageJobDescription image_info = null;
 	DigilibConfiguration dlConfig = null;
 	NumRange pages = null;
 	/** gengeral logger for this class */
@@ -56,8 +56,8 @@ public class PDFJobInformation extends ParameterMap {
 	 * @param request
 	 */
 	public void setWithRequest(HttpServletRequest request) {
-		image_info = new ImageJobInformation(dlConfig);
-		image_info.setWithRequest(request);
+		image_info = new ImageJobDescription(dlConfig);
+		// FIXME: image_info.setWithRequest(request);
 		
 		for (String param : parameter_list){
 			if (request.getParameterMap().containsKey(param)){
@@ -108,8 +108,8 @@ public class PDFJobInformation extends ParameterMap {
 	}
 
 	
-	public ImageJobInformation getImageJobInformation(){
-		ImageJobInformation new_image_info = (ImageJobInformation) image_info.clone();
+	public ImageJobDescription getImageJobInformation(){
+		ImageJobDescription new_image_info = new ImageJobDescription(image_info, dlConfig);
 		return new_image_info;
 	}
 	
