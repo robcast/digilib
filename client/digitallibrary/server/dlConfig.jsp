@@ -42,7 +42,7 @@ DigilibJobCenter imageProcessor =  (DigilibJobCenter)dlConfig.getValue("servlet.
 
 <table>
 <%
-    Object[] keys = dlConfig.keySet().toArray();
+    Object[] keys = dlConfig.getParams().keySet().toArray();
     java.util.Arrays.sort(keys);
     int l = keys.length;
     for (int i = 0; i < l; i++) {

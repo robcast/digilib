@@ -3,8 +3,11 @@ package digilib.servlet;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.concurrent.Future;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
@@ -13,6 +16,8 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import digilib.image.DocuImage;
 
 /**
  * A class for handling user requests for pdf documents from digilib images.  
@@ -32,6 +37,8 @@ public class PDFCache extends RequestHandler {
 	public static String instanceKey = "digilib.servlet.PDFCache";
 	
 	private DigilibJobCenter<OutputStream> pdfJobCenter = null;
+	
+	private DigilibJobCenter<DocuImage> pdfImageJobCenter = null;
 	
 	private File cache_directory = new File("cache");  
 	
@@ -57,7 +64,7 @@ public class PDFCache extends RequestHandler {
 	// TODO ? functionality for the pre-generation of complete books/chapters using default values
 	
 	
-	public void init(ServletConfig config) throws ServletException{
+	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		
         System.out.println("***** Digital Image Library Image PDF-Cache Servlet (version "
@@ -88,6 +95,7 @@ public class PDFCache extends RequestHandler {
         }
 
         pdfJobCenter = (DigilibJobCenter<OutputStream>) dlConfig.getValue("servlet.worker.pdfexecutor");
+        pdfImageJobCenter = (DigilibJobCenter<DocuImage>) dlConfig.getValue("servlet.worker.pdfimageexecutor");
         
 		// register this instance globally
 		context.setAttribute(instanceKey, this);
@@ -106,14 +114,11 @@ public class PDFCache extends RequestHandler {
 	}
 	
 	
-	
-	@Override
 	public void processRequest(HttpServletRequest request,
 			HttpServletResponse response) {
 
 		// evaluate request ( make a PDFJobDeclaration , get the DocumentId)
-		PDFJobInformation pdfji = new PDFJobInformation(dlConfig); 
-		pdfji.setWithRequest(request);
+		PDFJobDescription pdfji = new PDFJobDescription(request, dlConfig); 
 		
 		String docid = pdfji.getDocumentId();
 		
@@ -126,9 +131,11 @@ public class PDFCache extends RequestHandler {
 		int status = getStatus(docid);
 		
         if (status == STATUS_NONEXISTENT) {
+        	// not there -- start creation
             createNewPdfDocument(pdfji, docid);
             notifyUser(status, docid, request, response);
         } else if (status == STATUS_DONE) {
+        	// pdf created -- send it
             try {
                 sendFile(docid, getDownloadFilename(pdfji), response);
             } catch (IOException e) {
@@ -169,9 +176,9 @@ public class PDFCache extends RequestHandler {
 			jsp = JSP_ERROR;
 		}
 
-		RequestDispatcher dispatch = context.getRequestDispatcher(jsp);
-		
 		try {
+			// forward to the relevant jsp
+			RequestDispatcher dispatch = context.getRequestDispatcher(jsp);
 			dispatch.forward(request, response);
 		} catch (ServletException e) {
 			logger.debug(e.getMessage());
@@ -203,11 +210,20 @@ public class PDFCache extends RequestHandler {
 	 * 
 	 * @param pdfji
 	 * @param filename
+	 * @return 
+	 * @throws FileNotFoundException 
 	 */
-	public void createNewPdfDocument(PDFJobInformation pdfji, String filename){
+	public Future<OutputStream> createNewPdfDocument(PDFJobDescription pdfji, String filename) throws FileNotFoundException{
 		// start new worker
-		PDFMaker pdf_maker = new PDFMaker(context, pdfji,filename);
-		new Thread(pdf_maker, "PDFMaker").start();
+		File of = this.getTempFile(filename);
+		OutputStream os = new FileOutputStream(of);
+		PDFStreamWorker job = new PDFStreamWorker(dlConfig, os, pdfji, pdfImageJobCenter);
+		// start job
+		Future<OutputStream> jobTicket = pdfJobCenter.submit(job);
+		// what do we do with the result?
+		return jobTicket;
+		/* PDFMaker pdf_maker = new PDFMaker(context, pdfji,filename);
+		new Thread(pdf_maker, "PDFMaker").start();*/
 	}
 	
 	
@@ -217,7 +233,7 @@ public class PDFCache extends RequestHandler {
 	 * @param pdfji
 	 * @return
 	 */
-	public String getDownloadFilename(PDFJobInformation pdfji){
+	public String getDownloadFilename(PDFJobDescription pdfji){
 		// filename example: digilib_example_pgs1-3.pdf
 		String filename;
 		filename =  "digilib_";

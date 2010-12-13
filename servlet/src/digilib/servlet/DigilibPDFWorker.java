@@ -51,9 +51,9 @@ public class DigilibPDFWorker extends DigilibWorker1 {
 
 	private File outputfile = null;
 	
-	private PDFJobInformation job_info = null;
+	private PDFJobDescription job_info = null;
 	
-	public DigilibPDFWorker(DigilibConfiguration dlConfig, PDFJobInformation pdfji, File outputfile) {
+	public DigilibPDFWorker(DigilibConfiguration dlConfig, PDFJobDescription pdfji, File outputfile) {
 		super();
 		// TODO dlConfig 
 		this.dlConfig = dlConfig;
@@ -165,7 +165,7 @@ public class DigilibPDFWorker extends DigilibWorker1 {
 		ImageJobDescription iji = job_info.getImageJobInformation();
 		iji.setValue("pn", pn);
 		// create image worker
-		DigilibImageWorker1 image_worker = new DigilibImageWorker1(dlConfig, null, iji);
+		/* FIXME: DigilibImageWorker1 image_worker = new DigilibImageWorker1(dlConfig, null, iji);
 		try {
 			DocuImage img = image_worker.render();
 
@@ -194,6 +194,7 @@ public class DigilibPDFWorker extends DigilibWorker1 {
 			logger.error(e.getMessage());
 			e.printStackTrace();
 		}
+		*/
 	}
 
 

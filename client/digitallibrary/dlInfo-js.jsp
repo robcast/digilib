@@ -19,7 +19,7 @@ docBean.setRequest(dlRequest);
 %>
 // Automatically generated JavaScript snippet with parameters
 <%
-    Object[] keys = dlRequest.keySet().toArray();
+    Object[] keys = dlRequest.getParams().keySet().toArray();
     java.util.Arrays.sort(keys);
     int l = keys.length;
     for (int i = 0; i < l; i++) {

@@ -23,7 +23,7 @@ import digilib.io.DocuDirCache;
  */
 public class PDFTitlePage {
 	
-	private PDFJobInformation job_info = null;
+	private PDFJobDescription job_info = null;
 	private DigilibInfoReader info_reader= null;
 	private DocuDirCache dirCache = null;
 	protected static Logger logger = Logger.getLogger("digilib.servlet");
@@ -33,7 +33,7 @@ public class PDFTitlePage {
 	 * Initialize a TitlePage
 	 * @param pdfji
 	 */
-	public PDFTitlePage(PDFJobInformation pdfji){
+	public PDFTitlePage(PDFJobDescription pdfji){
 		job_info = pdfji;
 		dirCache = (DocuDirCache) job_info.getDlConfig().getValue("servlet.dir.cache");
 

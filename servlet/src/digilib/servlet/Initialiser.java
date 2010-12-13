@@ -46,6 +46,7 @@ import digilib.io.FileOps;
  * @author casties
  *  
  */
+@SuppressWarnings("serial")
 public class Initialiser extends HttpServlet {
 
 	/** servlet version */
@@ -61,13 +62,13 @@ public class Initialiser extends HttpServlet {
 	DigilibConfiguration dlConfig;
 
 	/** Executor for digilib image jobs */
-	DigilibJobCenter imageEx;
+	DigilibJobCenter<DocuImage> imageEx;
 	
 	/** Executor for PDF jobs */
-	DigilibJobCenter pdfEx;
+	DigilibJobCenter<OutputStream> pdfEx;
 	
 	/** Executor for PDF image jobs */
-	DigilibJobCenter pdfImageEx;
+	DigilibJobCenter<DocuImage> pdfImageEx;
 	
 	/**
 	 * Initialisation on first run.
@@ -144,7 +145,7 @@ public class Initialiser extends HttpServlet {
                 int pmt = dlConfig.getAsInt("pdf-max-waiting-threads");
 				pdfEx = new DigilibJobCenter<OutputStream>(pnt, pmt, true);
                 dlConfig.setValue("servlet.worker.pdfexecutor", pdfEx);				
-				// digilib worker threads
+				// PDF image worker threads
 				int pint = dlConfig.getAsInt("pdf-image-worker-threads");
                 int pimt = dlConfig.getAsInt("pdf-image-max-waiting-threads");
 				pdfImageEx = new DigilibJobCenter<DocuImage>(pint, pimt, true);

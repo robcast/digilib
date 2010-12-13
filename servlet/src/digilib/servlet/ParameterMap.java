@@ -270,4 +270,20 @@ public class ParameterMap {
 	public boolean hasOption(String opt) {
 		return options.hasOption(opt);
 	}
+
+	public HashMap<String, Parameter> getParams() {
+		return params;
+	}
+
+	public void setParams(HashMap<String, Parameter> params) {
+		this.params = params;
+	}
+
+	public OptionsSet getOptions() {
+		return options;
+	}
+
+	public void setOptions(OptionsSet options) {
+		this.options = options;
+	}
 }

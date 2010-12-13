@@ -17,11 +17,10 @@ import digilib.io.FileOps;
  * used for content generator classes like MakePDF.  
  * 
  * 
- * @author cmielack
+ * @author cmielack, casties
  *
  */
-@SuppressWarnings("serial")
-public class PDFJobInformation extends ParameterMap {
+public class PDFJobDescription extends ParameterMap {
 
 	String[] parameter_list = {"pgs"}; // all other parameters get passed into an extra ImageJobInformation  
 									   // (this should be redesigned later...)
@@ -40,13 +39,25 @@ public class PDFJobInformation extends ParameterMap {
 	 * @param dlcfg			
 	 * 						The DigilibConfiguration. 
 	 */
-	public PDFJobInformation(DigilibConfiguration dlcfg) {
+	public PDFJobDescription(DigilibConfiguration dlcfg) {
 		super(30);
 
 		// page numbers
 		newParameter("pgs", "", null, 's');
 		dlConfig = dlcfg;
 		
+	}
+
+	/**
+	 * Initialize the PDFJobInformation with a request.
+	 * 
+	 * @param dlcfg		The DigilibConfiguration. 		
+	 * @param request
+	 */
+	public PDFJobDescription(HttpServletRequest request, DigilibConfiguration dlcfg) {
+		super(30);
+		dlConfig = dlcfg;
+		this.setWithRequest(request);
 	}
 
 	

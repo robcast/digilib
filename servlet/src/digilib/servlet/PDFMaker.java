@@ -22,7 +22,7 @@ public class PDFMaker extends HttpServlet implements Runnable {
 
 	public static String version = "0.1";
 	
-	private PDFJobInformation job_info = null;
+	private PDFJobDescription job_info = null;
 	private String filename = null;
 	private DigilibConfiguration dlConfig = null;
 	private ServletContext context = null;
@@ -32,7 +32,7 @@ public class PDFMaker extends HttpServlet implements Runnable {
 
 	
 	
-	public PDFMaker(ServletContext context, PDFJobInformation pdfji, String filename){
+	public PDFMaker(ServletContext context, PDFJobDescription pdfji, String filename){
 		this.job_info = pdfji;
 		this.filename = filename;
 		this.dlConfig = pdfji.getDlConfig();

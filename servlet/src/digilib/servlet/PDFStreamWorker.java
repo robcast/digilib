@@ -18,17 +18,17 @@ import digilib.image.DocuImage;
 
 public class PDFStreamWorker implements Callable<OutputStream> {
 
-	private static Logger logger = Logger.getLogger(PDFStreamWorker.class);
+	protected static Logger logger = Logger.getLogger(PDFStreamWorker.class);
 
-	private DigilibConfiguration dlConfig = null;
+	protected DigilibConfiguration dlConfig = null;
 
-	private Document doc = null;
+	protected Document doc = null;
 
-	private OutputStream outstream = null;
+	protected OutputStream outstream = null;
 
-	private PDFJobInformation job_info = null;
+	protected PDFJobDescription job_info = null;
 
-	private DigilibJobCenter<DocuImage> imageJobCenter = null;
+	protected DigilibJobCenter<DocuImage> imageJobCenter = null;
 
 	/**
 	 * @param dlConfig
@@ -36,7 +36,7 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 	 * @param job_info
 	 */
 	public PDFStreamWorker(DigilibConfiguration dlConfig, OutputStream outputfile,
-			PDFJobInformation job_info,
+			PDFJobDescription job_info,
 			DigilibJobCenter<DocuImage> imageJobCenter) {
 		super();
 		this.dlConfig = dlConfig;
@@ -45,7 +45,6 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 		this.imageJobCenter = imageJobCenter;
 	}
 
-	@Override
 	public OutputStream call() throws Exception {
 		outstream = renderPDF();
 		return outstream;
@@ -77,7 +76,6 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 				+ (System.currentTimeMillis() - start_time) + "ms)");
 		start_time = System.currentTimeMillis();
 
-		// Integer[] pgs = job_info.getPageNrs();//get_pgs();
 		NumRange pgs = job_info.getPages();
 
 		for (int p : pgs) {
@@ -139,16 +137,16 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 			throws InterruptedException, ExecutionException, IOException,
 			DocumentException {
 		// create image worker
-		ImageWorker image_worker = new ImageWorker(dlConfig, iji);
+		ImageWorker job = new ImageWorker(dlConfig, iji);
 		// submit
-		Future<DocuImage> jobTicket = imageJobCenter.submit(image_worker);
+		Future<DocuImage> jobTicket = imageJobCenter.submit(job);
 		// wait for result
 		DocuImage img = jobTicket.get();
 		// scale the image
 		Image pdfimg = Image.getInstance(img.getAwtImage(), null);
 		float docW = PageSize.A4.getWidth() - 2 * PageSize.A4.getBorder();
 		float docH = PageSize.A4.getHeight() - 2 * PageSize.A4.getBorder();
-		// TODO: do we really want to scale this again?
+		// TODO: do we really scale this again?
 		pdfimg.scaleToFit(docW, docH);
 		// add to PDF
 		doc.add(pdfimg);
