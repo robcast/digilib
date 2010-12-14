@@ -57,9 +57,11 @@ public class ParameterMap {
 	 * @param pm
 	 */
 	@SuppressWarnings("unchecked")
-	public ParameterMap(ParameterMap pm) {
-		params = (HashMap<String, Parameter>) pm.params.clone();
-		options = (OptionsSet) pm.options.clone();
+	public static ParameterMap cloneFrom(ParameterMap pm) {
+		ParameterMap newPm = new ParameterMap();
+		newPm.params = (HashMap<String, Parameter>) pm.params.clone();
+		newPm.options = (OptionsSet) pm.options.clone();
+		return newPm;
 	}
 
 	/** Get the Parameter with the corresponding key.

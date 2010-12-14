@@ -22,10 +22,6 @@ import digilib.io.FileOps;
  */
 public class PDFJobDescription extends ParameterMap {
 
-	String[] parameter_list = {"pgs"}; // all other parameters get passed into an extra ImageJobInformation  
-									   // (this should be redesigned later...)
-	
-	
 	ImageJobDescription image_info = null;
 	DigilibConfiguration dlConfig = null;
 	NumRange pages = null;
@@ -41,11 +37,15 @@ public class PDFJobDescription extends ParameterMap {
 	 */
 	public PDFJobDescription(DigilibConfiguration dlcfg) {
 		super(30);
-
+		dlConfig = dlcfg;
 		// page numbers
 		newParameter("pgs", "", null, 's');
-		dlConfig = dlcfg;
-		
+		// url of the page/document (second part)
+		newParameter("fn", "", null, 's');
+		// width of client in pixels
+		newParameter("dw", new Integer(0), null, 's');
+		// height of client in pixels
+		newParameter("dh", new Integer(0), null, 's');
 	}
 
 	/**
