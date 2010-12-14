@@ -132,23 +132,30 @@ public class PDFCache extends RequestHandler {
 		
         if (status == STATUS_NONEXISTENT) {
         	// not there -- start creation
-            createNewPdfDocument(pdfji, docid);
-            notifyUser(status, docid, request, response);
+            try {
+				createNewPdfDocument(pdfji, docid);
+	            notifyUser(status, docid, request, response);
+			} catch (FileNotFoundException e) {
+				// error in pdf creation
+                logger.error(e.getMessage());
+				notifyUser(STATUS_ERROR, docid, request, response);
+			}
         } else if (status == STATUS_DONE) {
         	// pdf created -- send it
             try {
                 sendFile(docid, getDownloadFilename(pdfji), response);
             } catch (IOException e) {
-                e.printStackTrace();
+            	// sending didn't work
                 logger.error(e.getMessage());
             }
         } else {
+        	// should be work in progress
             notifyUser(status, docid, request, response);
         }
 	}
 
 	/**
-	 * depending on the documents status, redirect the user to an appropriate waiting- or download-site
+	 * depending on the documents status, redirect the user to the appropriate waiting or download page.
 	 * 
 	 * @param status
 	 * @param documentid
@@ -167,8 +174,8 @@ public class PDFCache extends RequestHandler {
 			logger.debug("PDFCache: "+documentid+" has STATUS_WIP.");
 			jsp = JSP_WIP;
 
-			// estimate remaining work time
-			// tell the user he/she has to wait
+			// TODO: estimate remaining work time
+			// TODO: tell the user he/she has to wait
 		} else if(status == STATUS_DONE){
 			logger.debug("PDFCache: "+documentid+" has STATUS_DONE.");
 		} else {
