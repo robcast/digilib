@@ -56,10 +56,7 @@ public class PDFCache extends RequestHandler {
 	
 	public static Integer STATUS_ERROR = 3;     // an error occurred while processing the request
 	
-	public static String version = "0.2";
-	
-	private ServletContext context = null;
-
+	public static String version = "0.3a";
 	
 	// TODO ? functionality for the pre-generation of complete books/chapters using default values
 	
@@ -73,7 +70,7 @@ public class PDFCache extends RequestHandler {
         logger.info("***** Digital Image Library Image PDF-Cache Servlet (version "
                 + version + ") *****");
 
-		context = config.getServletContext();
+		ServletContext context = config.getServletContext();
 		dlConfig = (DigilibConfiguration) context.getAttribute("digilib.servlet.configuration");
 		if (dlConfig == null) {
 			// no Configuration
@@ -82,6 +79,10 @@ public class PDFCache extends RequestHandler {
 	
 		String temp_fn = dlConfig.getAsString("pdf-temp-dir");
 		temp_directory = new File(temp_fn);
+		if (!temp_directory.exists()) {
+			// try to create
+			temp_directory.mkdirs();
+		}
 		if (!temp_directory.isDirectory()) {
 		    throw new ServletException("Configuration error: problem with pdf-temp-dir="+temp_fn);
 		}
@@ -90,6 +91,10 @@ public class PDFCache extends RequestHandler {
         
 		String cache_fn = dlConfig.getAsString("pdf-cache-dir");
        	cache_directory = new File(cache_fn);
+		if (!cache_directory.exists()) {
+			// try to create
+			cache_directory.mkdirs();
+		}
         if (!cache_directory.isDirectory()) {
             throw new ServletException("Configuration error: problem with pdf-cache-dir="+cache_fn);
         }
@@ -185,6 +190,7 @@ public class PDFCache extends RequestHandler {
 
 		try {
 			// forward to the relevant jsp
+			ServletContext context = request.getServletContext();
 			RequestDispatcher dispatch = context.getRequestDispatcher(jsp);
 			dispatch.forward(request, response);
 		} catch (ServletException e) {
