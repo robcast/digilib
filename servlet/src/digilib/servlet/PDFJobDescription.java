@@ -22,10 +22,9 @@ import digilib.io.FileOps;
  */
 public class PDFJobDescription extends ParameterMap {
 
-	ImageJobDescription image_info = null;
 	DigilibConfiguration dlConfig = null;
 	NumRange pages = null;
-	/** gengeral logger for this class */
+	/** general logger for this class */
 	protected static Logger logger = Logger.getLogger("digilib.servlet");
 
 	
@@ -38,14 +37,6 @@ public class PDFJobDescription extends ParameterMap {
 	public PDFJobDescription(DigilibConfiguration dlcfg) {
 		super(30);
 		dlConfig = dlcfg;
-		// page numbers
-		newParameter("pgs", "", null, 's');
-		// url of the page/document (second part)
-		newParameter("fn", "", null, 's');
-		// width of client in pixels
-		newParameter("dw", new Integer(0), null, 's');
-		// height of client in pixels
-		newParameter("dh", new Integer(0), null, 's');
 	}
 
 	/**
@@ -61,24 +52,33 @@ public class PDFJobDescription extends ParameterMap {
 	}
 
 	
+	protected void initParams() {
+		// page numbers
+		newParameter("pgs", "", null, 's');
+		// url of the page/document (second part)
+		newParameter("fn", "", null, 's');
+		// width of client in pixels
+		newParameter("dw", new Integer(0), null, 's');
+		// height of client in pixels
+		newParameter("dh", new Integer(0), null, 's');
+	}
+	
 	/**
 	 * Read in the request object.
 	 * 
 	 * @param request
 	 */
 	public void setWithRequest(HttpServletRequest request) {
-		image_info = new ImageJobDescription(dlConfig);
-		// FIXME: image_info.setWithRequest(request);
-		
-		for (String param : parameter_list){
-			if (request.getParameterMap().containsKey(param)){
-				setValueFromString(param, request.getParameter(param));
+		for (String k : params.keySet()) {
+			if (request.getParameterMap().containsKey(k)) {
+				setValueFromString(k, request.getParameter(k));
 			}
 		}
 		// process parameters
 		try {
             pages = new NumRange(getAsString("pgs"));
-            DocuDirectory dir = image_info.getFileDirectory();
+            ImageJobDescription ij = ImageJobDescription.setFrom(this, dlConfig);
+            DocuDirectory dir = ij.getFileDirectory();
             int dirsize = dir.size(FileOps.CLASS_IMAGE);
             pages.setMaxnum(dirsize);
         } catch (Exception e) {
@@ -97,31 +97,24 @@ public class PDFJobDescription extends ParameterMap {
 
 		// TODO use complete request information for id generation
 		
-		if(this.image_info!=null){
-			String fn = image_info.getAsString("fn");
-			String dh = image_info.getAsString("dh");
-			String pgs = getAsString("pgs");
+		String fn = getAsString("fn");
+		String dh = getAsString("dh");
+		String dw = getAsString("dw");
+		String pgs = getAsString("pgs");
 			
-			id = "fn=" + fn + "&dh=" + dh + "&pgs=" + pgs + ".pdf";
-			// make safe to use as filename by urlencoding
-			try {
-                id = URLEncoder.encode(id, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+		id = "fn=" + fn + "&dw=" + dw + "&dh=" + dh + "&pgs=" + pgs + ".pdf";
+		// make safe to use as filename by urlencoding
+		try {
+			id = URLEncoder.encode(id, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			// this shouldn't happen
 		}
-		else {
-			id = null;
-		}
-		
 		return id;
 	}
 
 	
 	public ImageJobDescription getImageJobInformation(){
-		ImageJobDescription new_image_info = new ImageJobDescription(image_info, dlConfig);
-		return new_image_info;
+		return ImageJobDescription.setFrom(this, dlConfig);
 	}
 	
 	

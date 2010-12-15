@@ -65,11 +65,14 @@ public class DigilibRequest extends ParameterMap {
 
 	protected ServletRequest servletRequest; // internal ServletRequest
 
-	/** Creates a new instance of DigilibRequest and sets default values. */
 	public DigilibRequest() {
-		// create HashMap(20)
 		super(30);
+	}
 
+	/** set up parameters.
+	 * 
+	 */
+	protected void initParams() {
 		/*
 		 * Definition of parameters and default values. Parameter of type 's'
 		 * are for the servlet.
@@ -152,7 +155,6 @@ public class DigilibRequest extends ParameterMap {
 		newParameter("lv", new Integer(2), null, 'c');
 		// marks
 		newParameter("mk", "", null, 'c');
-
 	}
 
 	/**
@@ -162,7 +164,7 @@ public class DigilibRequest extends ParameterMap {
 	 * @param request
 	 */
 	public DigilibRequest(ServletRequest request) {
-		this();
+		super(30);
 		setWithRequest(request);
 	}
 

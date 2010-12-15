@@ -152,7 +152,7 @@ public class Scaler extends RequestHandler {
         // parse request
         DigilibRequest dlRequest = new DigilibRequest(request);
         // extract the job information
-        ImageJobDescription jobTicket = new ImageJobDescription(dlRequest, dlConfig);
+        ImageJobDescription jobTicket = ImageJobDescription.setFrom(dlRequest, dlConfig);
 
         ImageWorker job = null;
         try {

@@ -108,9 +108,7 @@ public class Texter extends HttpServlet {
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		// create new request with defaults
-		DigilibRequest dlReq = new DigilibRequest();
-		// set with request parameters
-		dlReq.setWithRequest(request);
+		DigilibRequest dlReq = new DigilibRequest(request);
 		// add DigilibRequest to ServletRequest
 		request.setAttribute("digilib.servlet.request", dlReq);
 		// do the processing
@@ -126,9 +124,7 @@ public class Texter extends HttpServlet {
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		// create new request with defaults
-		DigilibRequest dlReq = new DigilibRequest();
-		// set with request parameters
-		dlReq.setWithRequest(request);
+		DigilibRequest dlReq = new DigilibRequest(request);
 		// add DigilibRequest to ServletRequest
 		request.setAttribute("digilib.servlet.request", dlReq);
 		// do the processing

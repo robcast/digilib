@@ -57,6 +57,14 @@ public class ImageJobDescription extends ParameterMap {
 	public ImageJobDescription(DigilibConfiguration dlcfg) {
 		super(30);
 		dlConfig = dlcfg;
+	}
+
+
+	/** set up Parameters
+	 * @see digilib.servlet.ParameterMap#initParams()
+	 */
+	@Override
+	protected void initParams() {
 		// url of the page/document (second part)
 		newParameter("fn", "", null, 's');
 		// page number
@@ -98,16 +106,31 @@ public class ImageJobDescription extends ParameterMap {
 	}
 
 
-	/** Constructor using another ParameterMap.
-	 * Clones internal Maps only!
-	 * @param otherMap
-	 * @param dlcfg
+	/* (non-Javadoc)
+	 * @see digilib.servlet.ParameterMap#initOptions()
 	 */
-	public ImageJobDescription(ParameterMap otherMap, DigilibConfiguration dlcfg) {
-		super(otherMap);
-		dlConfig = dlcfg;
+	@Override
+	protected void initOptions() {
+		if (options == null) {
+			String s = this.getAsString("mo");
+			options = new OptionsSet(s);
+		}
 	}
-	
+
+
+	/** Creates new ImageJobDescription by merging Parameters from another ParameterMap.
+	 * @param pm
+	 * @param dlcfg
+	 * @return
+	 */
+	public static ImageJobDescription setFrom(ParameterMap pm, DigilibConfiguration dlcfg) {
+		ImageJobDescription newMap = new ImageJobDescription(dlcfg);
+		// add all params to this map
+		newMap.params.putAll(pm.params);
+		newMap.initOptions();
+		return newMap;
+	}
+
 	
 	public String getMimeType() throws IOException {
 		if (mimeType == null) {

@@ -22,6 +22,7 @@
 package digilib.servlet;
 
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 /** HashMap of digilib.servlet.Parameter's.
  * 
@@ -42,14 +43,16 @@ public class ParameterMap {
 	public ParameterMap() {
 		params = new HashMap<String, Parameter>();
 		options = new OptionsSet();
+		initParams();
 	}
 
 	/** Constructor with initial size.
-	 * @param arg0
+	 * @param size
 	 */
-	public ParameterMap(int arg0) {
-		params = new HashMap<String, Parameter>(arg0);
+	public ParameterMap(int size) {
+		params = new HashMap<String, Parameter>(size);
 		options = new OptionsSet();
+		initParams();
 	}
 
 	/** Shallow copy constructor.
@@ -59,11 +62,40 @@ public class ParameterMap {
 	@SuppressWarnings("unchecked")
 	public static ParameterMap cloneFrom(ParameterMap pm) {
 		ParameterMap newPm = new ParameterMap();
+		// clone params to this map
 		newPm.params = (HashMap<String, Parameter>) pm.params.clone();
 		newPm.options = (OptionsSet) pm.options.clone();
 		return newPm;
 	}
 
+	
+	/** Creates new ParameterMap by merging Parameters from another ParameterMap.
+	 * @param pm
+	 * @return
+	 */
+	public static ParameterMap setFrom(ParameterMap pm) {
+		ParameterMap newPm = new ParameterMap();
+		// add all params to this map
+		newPm.params.putAll(pm.params);
+		newPm.initOptions();
+		return newPm;
+		
+	}
+	
+	/** set up parameters
+	 * 
+	 */
+	protected void initParams() {
+		// no default parameters
+	}
+	
+	/** set up options
+	 * 
+	 */
+	protected void initOptions() {
+		// no default options
+	}
+	
 	/** Get the Parameter with the corresponding key.
 	 * 
 	 * Returns null if no element is associated with key.

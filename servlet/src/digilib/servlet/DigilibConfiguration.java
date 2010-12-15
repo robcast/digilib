@@ -50,8 +50,6 @@ import digilib.io.XMLListLoader;
  */
 public class DigilibConfiguration extends ParameterMap {
 
-	private static final long serialVersionUID = -6630487070791637120L;
-
 	/** DocuImage class instance */
 	private Class<DocuImageImpl> docuImageClass = null;
 
@@ -63,11 +61,16 @@ public class DigilibConfiguration extends ParameterMap {
 	 *  
 	 */
 	public DigilibConfiguration() {
-		// create HashMap(20)
 		super(20);
 		// we start with a default logger config
 		BasicConfigurator.configure();
+		initParams();
+	}
 
+	/**
+	 * 
+	 */
+	protected void initParams() {
 		/*
 		 * Definition of parameters and default values. System parameters that
 		 * are not read from config file have a type 's'.
@@ -93,6 +96,10 @@ public class DigilibConfiguration extends ParameterMap {
 		newParameter("servlet.auth.op", null, null, 's');
         // Executor for image operations
         newParameter("servlet.worker.imageexecutor", null, null, 's');
+        // Executor for PDF operations
+        newParameter("servlet.worker.pdfexecutor", null, null, 's');
+        // Executor for PDF-image operations
+        newParameter("servlet.worker.pdfimageexecutor", null, null, 's');
 
 		/*
 		 * parameters that can be read from config file have a type 'f'
@@ -161,7 +168,8 @@ public class DigilibConfiguration extends ParameterMap {
         newParameter("pdf-temp-dir", "pdf_temp", null, 'f');
         // PDF generation cache directory
         newParameter("pdf-cache-dir", "pdf_cache", null, 'f');
-
+        // PDF generation cache directory
+        newParameter("pdf-cache-dir", "pdf_cache", null, 'f');
 	}
 
 	/**

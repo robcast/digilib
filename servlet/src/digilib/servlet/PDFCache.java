@@ -70,7 +70,7 @@ public class PDFCache extends RequestHandler {
         logger.info("***** Digital Image Library Image PDF-Cache Servlet (version "
                 + version + ") *****");
 
-		ServletContext context = config.getServletContext();
+		ServletContext context = getServletContext();
 		dlConfig = (DigilibConfiguration) context.getAttribute("digilib.servlet.configuration");
 		if (dlConfig == null) {
 			// no Configuration
@@ -190,7 +190,7 @@ public class PDFCache extends RequestHandler {
 
 		try {
 			// forward to the relevant jsp
-			ServletContext context = request.getServletContext();
+			ServletContext context = getServletContext();
 			RequestDispatcher dispatch = context.getRequestDispatcher(jsp);
 			dispatch.forward(request, response);
 		} catch (ServletException e) {
@@ -250,7 +250,7 @@ public class PDFCache extends RequestHandler {
 		// filename example: digilib_example_pgs1-3.pdf
 		String filename;
 		filename =  "digilib_";
-		filename += pdfji.getImageJobInformation().getAsString("fn");
+		filename += pdfji.getAsString("fn");
 		filename += "_pgs" + pdfji.getAsString("pgs");
 		filename += ".pdf";
 		
