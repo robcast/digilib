@@ -2,7 +2,6 @@ package digilib.servlet;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 
 import javax.servlet.http.HttpServletRequest;
 
