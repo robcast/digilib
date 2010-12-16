@@ -36,7 +36,7 @@ public class PDFCache extends RequestHandler {
 	
 	public static String instanceKey = "digilib.servlet.PDFCache";
 	
-	private DigilibJobCenter<OutputStream> pdfJobCenter = null;
+	private DigilibJobCenter<File> pdfJobCenter = null;
 	
 	private DigilibJobCenter<DocuImage> pdfImageJobCenter = null;
 	
@@ -99,7 +99,7 @@ public class PDFCache extends RequestHandler {
             throw new ServletException("Configuration error: problem with pdf-cache-dir="+cache_fn);
         }
 
-        pdfJobCenter = (DigilibJobCenter<OutputStream>) dlConfig.getValue("servlet.worker.pdfexecutor");
+        pdfJobCenter = (DigilibJobCenter<File>) dlConfig.getValue("servlet.worker.pdfexecutor");
         pdfImageJobCenter = (DigilibJobCenter<DocuImage>) dlConfig.getValue("servlet.worker.pdfimageexecutor");
         
 		// register this instance globally
@@ -214,8 +214,8 @@ public class PDFCache extends RequestHandler {
 	/** check the status of the document corresponding to the documentid */
 	public Integer getStatus(String documentid){
 		// looks into the cache and temp directory in order to find out the status of the document
-		File cached = new File(cache_directory, documentid);
-		File wip = new File(temp_directory, documentid);
+		File cached = getCacheFile(documentid);
+		File wip = getTempFile(documentid);
 		if(cached.exists()){
 			return STATUS_DONE;
 		} else if (wip.exists()){
@@ -233,17 +233,14 @@ public class PDFCache extends RequestHandler {
 	 * @return 
 	 * @throws FileNotFoundException 
 	 */
-	public Future<OutputStream> createNewPdfDocument(PDFJobDescription pdfji, String filename) throws FileNotFoundException{
+	public Future<File> createNewPdfDocument(PDFJobDescription pdfji, String filename) throws FileNotFoundException{
 		// start new worker
-		File of = this.getTempFile(filename);
-		OutputStream os = new FileOutputStream(of);
-		PDFStreamWorker job = new PDFStreamWorker(dlConfig, os, pdfji, pdfImageJobCenter);
+		File tempf = this.getTempFile(filename);
+		File finalf = this.getCacheFile(filename);
+		PDFFileWorker job = new PDFFileWorker(dlConfig, tempf, finalf, pdfji, pdfImageJobCenter);
 		// start job
-		Future<OutputStream> jobTicket = pdfJobCenter.submit(job);
-		// what do we do with the result?
+		Future<File> jobTicket = pdfJobCenter.submit(job);
 		return jobTicket;
-		/* PDFMaker pdf_maker = new PDFMaker(context, pdfji,filename);
-		new Thread(pdf_maker, "PDFMaker").start();*/
 	}
 	
 	

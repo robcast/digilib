@@ -4,19 +4,50 @@
 package digilib.servlet;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.concurrent.Callable;
+
+import digilib.image.DocuImage;
 
 /**
  * @author casties
  *
  */
 public class PDFFileWorker implements Callable<File> {
+	/** the wrapped PDFStreamWorker */
     protected PDFStreamWorker streamWorker;
+    
+    /** the temporary output file */
+    protected File tempFile;
 
+    /** the final output file */
+    protected File finalFile;
+
+    /** Create new PDFFileWorker.
+     * @param dlConfig
+     * @param tempFile
+     * @param job_info
+     * @param imageJobCenter
+     * @throws FileNotFoundException
+     */
+    public PDFFileWorker(DigilibConfiguration dlConfig, 
+    		File tempFile, File finalFile,
+			PDFJobDescription job_info,
+			DigilibJobCenter<DocuImage> imageJobCenter) throws FileNotFoundException {
+    	OutputStream outstream = new FileOutputStream(tempFile);
+    	this.finalFile = finalFile;
+    	this.streamWorker = new PDFStreamWorker(dlConfig, outstream, job_info, imageJobCenter);
+    }
+    
     @Override
     public File call() throws Exception {
-        // TODO Auto-generated method stub
-        return null;
+    	OutputStream outstream = streamWorker.call();
+    	outstream.flush();
+    	// move temporary to final file
+    	tempFile.renameTo(finalFile);
+        return finalFile;
     }
     
     
