@@ -1,4 +1,4 @@
-package digilib.servlet;
+package digilib.pdf;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -15,7 +15,10 @@ import com.itextpdf.text.Image;
 import com.itextpdf.text.Paragraph;
 
 
+import digilib.io.DigilibInfoReader;
 import digilib.io.DocuDirCache;
+import digilib.servlet.PDFCache;
+import digilib.servlet.PDFRequest;
 
 /** A class for the generation of title pages for the generated pdf documents.
  * 
@@ -23,7 +26,7 @@ import digilib.io.DocuDirCache;
  */
 public class PDFTitlePage {
 	
-	private PDFJobDescription job_info = null;
+	private PDFRequest job_info = null;
 	private DigilibInfoReader info_reader= null;
 	private DocuDirCache dirCache = null;
 	protected static Logger logger = Logger.getLogger("digilib.servlet");
@@ -33,7 +36,7 @@ public class PDFTitlePage {
 	 * Initialize a TitlePage
 	 * @param pdfji
 	 */
-	public PDFTitlePage(PDFJobDescription pdfji){
+	public PDFTitlePage(PDFRequest pdfji){
 		job_info = pdfji;
 		dirCache = (DocuDirCache) job_info.getDlConfig().getValue("servlet.dir.cache");
 
@@ -175,7 +178,7 @@ public class PDFTitlePage {
 	}
 
 	private String getDigilibVersion(){
-		return "Digilib PDFMaker v."+PDFMaker.version;
+		return "Digilib PDFMaker v."+PDFCache.version;
 	}
 	
 }

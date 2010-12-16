@@ -1,4 +1,4 @@
-package digilib.servlet;
+package digilib.image;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
@@ -6,15 +6,16 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
-import digilib.image.ImageOpException;
-import digilib.image.ImageOps;
-import digilib.image.ImageSize;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.ImageFile;
 import digilib.io.ImageFileset;
+import digilib.servlet.DigilibConfiguration;
+import digilib.util.OptionsSet;
+import digilib.util.Parameter;
+import digilib.util.ParameterMap;
 
 
 /** 
@@ -57,7 +58,7 @@ public class ImageJobDescription extends ParameterMap {
 
 
 	/** set up Parameters
-	 * @see digilib.servlet.ParameterMap#initParams()
+	 * @see digilib.util.ParameterMap#initParams()
 	 */
 	@Override
 	protected void initParams() {
@@ -119,10 +120,10 @@ public class ImageJobDescription extends ParameterMap {
 	 * @param dlcfg
 	 * @return
 	 */
-	public static ImageJobDescription setFrom(ParameterMap pm, DigilibConfiguration dlcfg) {
+	public static ImageJobDescription getInstance(ParameterMap pm, DigilibConfiguration dlcfg) {
 		ImageJobDescription newMap = new ImageJobDescription(dlcfg);
 		// add all params to this map
-		newMap.params.putAll(pm.params);
+		newMap.params.putAll(pm.getParams());
 		newMap.initOptions();
 		return newMap;
 	}
@@ -170,7 +171,7 @@ public class ImageJobDescription extends ParameterMap {
 
 	}
 	
-	public DocuDirectory getFileDirectory() throws FileOpException{
+	public DocuDirectory getFileDirectory() throws FileOpException {
 		if(fileDir == null){
 			DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 			String fp = getFilePath();
@@ -182,7 +183,7 @@ public class ImageJobDescription extends ParameterMap {
 		return fileDir;
 	}
 	
-    public ImageFileset getFileset() throws FileOpException{
+    public ImageFileset getFileset() throws FileOpException {
         if(fileset==null){
             DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
     

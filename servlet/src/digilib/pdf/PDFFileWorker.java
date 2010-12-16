@@ -1,7 +1,7 @@
 /**
  * 
  */
-package digilib.servlet;
+package digilib.pdf;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -10,6 +10,9 @@ import java.io.OutputStream;
 import java.util.concurrent.Callable;
 
 import digilib.image.DocuImage;
+import digilib.servlet.DigilibConfiguration;
+import digilib.servlet.PDFRequest;
+import digilib.util.DigilibJobCenter;
 
 /**
  * @author casties
@@ -34,8 +37,9 @@ public class PDFFileWorker implements Callable<File> {
      */
     public PDFFileWorker(DigilibConfiguration dlConfig, 
     		File tempFile, File finalFile,
-			PDFJobDescription job_info,
+			PDFRequest job_info,
 			DigilibJobCenter<DocuImage> imageJobCenter) throws FileNotFoundException {
+        this.tempFile = tempFile; 
     	OutputStream outstream = new FileOutputStream(tempFile);
     	this.finalFile = finalFile;
     	this.streamWorker = new PDFStreamWorker(dlConfig, outstream, job_info, imageJobCenter);

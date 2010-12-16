@@ -1,4 +1,4 @@
-<%@page import="digilib.servlet.DigilibJobCenter"%>
+<%@page import="digilib.util.DigilibJobCenter"%>
 <%@ page language="java" %>
 
 <%!

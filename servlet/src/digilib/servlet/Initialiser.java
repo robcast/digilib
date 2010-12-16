@@ -39,6 +39,7 @@ import digilib.image.ImageOps;
 import digilib.io.AliasingDocuDirCache;
 import digilib.io.DocuDirCache;
 import digilib.io.FileOps;
+import digilib.util.DigilibJobCenter;
 
 /**
  * Singleton initalisation servlet for setup tasks and resources.

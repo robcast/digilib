@@ -1,7 +1,7 @@
 /**
  * 
  */
-package digilib.servlet;
+package digilib.util;
 
 import java.util.HashSet;
 import java.util.StringTokenizer;

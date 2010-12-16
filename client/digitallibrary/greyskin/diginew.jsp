@@ -28,7 +28,7 @@
 	// add number of pages
 	dlRequest.setValue("pt", docBean.getNumPages());
 	// store objects for jsp:include
-	pageContext.setAttribute("docBean", docBean, pageContext.REQUEST_SCOPE);
+	pageContext.setAttribute("docBean", docBean, PageContext.REQUEST_SCOPE);
 
 %><html xmlns="http://www.w3.org/1999/xhtml">
 <head>

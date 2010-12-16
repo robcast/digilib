@@ -1,7 +1,7 @@
 /** Worker (Callable) that renders an image.
  * 
  */
-package digilib.servlet;
+package digilib.image;
 
 import java.awt.Rectangle;
 import java.io.IOException;
@@ -9,9 +9,8 @@ import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 
-import digilib.image.DocuImage;
-import digilib.image.ImageOpException;
 import digilib.io.FileOpException;
+import digilib.servlet.DigilibConfiguration;
 
 /** Worker that renders an image.
  * 

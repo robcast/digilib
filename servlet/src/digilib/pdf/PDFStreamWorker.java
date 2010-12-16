@@ -1,4 +1,4 @@
-package digilib.servlet;
+package digilib.pdf;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -15,6 +15,12 @@ import com.itextpdf.text.PageSize;
 import com.itextpdf.text.pdf.PdfWriter;
 
 import digilib.image.DocuImage;
+import digilib.image.ImageJobDescription;
+import digilib.image.ImageWorker;
+import digilib.servlet.DigilibConfiguration;
+import digilib.servlet.PDFRequest;
+import digilib.util.DigilibJobCenter;
+import digilib.util.NumRange;
 
 public class PDFStreamWorker implements Callable<OutputStream> {
 
@@ -26,7 +32,7 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 
 	protected OutputStream outstream = null;
 
-	protected PDFJobDescription job_info = null;
+	protected PDFRequest job_info = null;
 
 	protected DigilibJobCenter<DocuImage> imageJobCenter = null;
 
@@ -36,7 +42,7 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 	 * @param job_info
 	 */
 	public PDFStreamWorker(DigilibConfiguration dlConfig, OutputStream outputfile,
-			PDFJobDescription job_info,
+			PDFRequest job_info,
 			DigilibJobCenter<DocuImage> imageJobCenter) {
 		super();
 		this.dlConfig = dlConfig;
@@ -81,7 +87,7 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 		for (int p : pgs) {
 			logger.debug(" - adding Image " + p + " to " + outstream);
 			// create ImageJobInformation
-			ImageJobDescription iji = ImageJobDescription.setFrom(job_info, job_info.dlConfig);
+			ImageJobDescription iji = ImageJobDescription.getInstance(job_info, job_info.getDlConfig());
 			iji.setValue("pn", p);
 			addImage(doc, iji);
 			logger.debug(" - done adding Image " + p + " to " + outstream);

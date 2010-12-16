@@ -9,23 +9,26 @@ import java.util.concurrent.Future;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
 
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthOps;
 import digilib.image.DocuImage;
-import digilib.image.ImageOpException;
+import digilib.image.ImageJobDescription;
+import digilib.image.ImageWorker;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
 import digilib.io.DocuDirent;
 import digilib.io.FileOps;
 import digilib.io.ImageFile;
-
-// TODO digilibError is not used anymore and may need to get reintegrated
+import digilib.util.DigilibJobCenter;
 
 @SuppressWarnings("serial")
-public class Scaler extends RequestHandler {
+public class Scaler extends HttpServlet {
 
     /** digilib servlet version (for all components) */
     public static final String dlVersion = "1.9.0a";
@@ -41,6 +44,15 @@ public class Scaler extends RequestHandler {
 
     /** error code for image operation error */
     public static final int ERROR_IMAGE = 3;
+
+    /** logger for accounting requests */
+    protected static Logger accountlog = Logger.getLogger("account.request");
+
+    /** gengeral logger for this class */
+    protected static Logger logger = Logger.getLogger("digilib.servlet");
+
+    /** logger for authentication related */
+    protected static Logger authlog = Logger.getLogger("digilib.auth");
 
     /** DocuDirCache instance */
     DocuDirCache dirCache;
@@ -115,7 +127,7 @@ public class Scaler extends RequestHandler {
         sendFileAllowed = dlConfig.getAsBoolean("sendfile-allowed");
     }
 
-    /** Returns modification time relevant to the request.
+    /** Returns modification time relevant to the request for caching.
      * 
      * @see javax.servlet.http.HttpServlet#getLastModified(javax.servlet.http.HttpServletRequest)
      */
@@ -136,13 +148,35 @@ public class Scaler extends RequestHandler {
         return mtime;
     }
 
+    /* (non-Javadoc)
+     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+     */
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException {
+        accountlog.info("GET from " + request.getRemoteAddr());
+        this.processRequest(request, response);
+    }
 
+
+    /* (non-Javadoc)
+     * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+     */
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException {
+        accountlog.info("POST from " + request.getRemoteAddr());
+        this.processRequest(request, response);
+    }
+    
+
+    /** Service this request using the response.
+     * @param request
+     * @param response
+     * @throws ServletException 
+     */
     public void processRequest(HttpServletRequest request,
-            HttpServletResponse response) throws ServletException,
-            ImageOpException {
+            HttpServletResponse response) throws ServletException {
 
         if (dlConfig == null) {
-            throw new ServletException("ERROR: No Configuration!");
+            logger.error("ERROR: No Configuration!");
+            throw new ServletException("NO VALID digilib CONFIGURATION!");
         }
 
         accountlog.debug("request: " + request.getQueryString());
@@ -152,9 +186,8 @@ public class Scaler extends RequestHandler {
         // parse request
         DigilibRequest dlRequest = new DigilibRequest(request);
         // extract the job information
-        ImageJobDescription jobTicket = ImageJobDescription.setFrom(dlRequest, dlConfig);
+        ImageJobDescription jobTicket = ImageJobDescription.getInstance(dlRequest, dlConfig);
 
-        ImageWorker job = null;
         try {
         	/*
         	 *  check if we can fast-track without scaling
@@ -184,7 +217,7 @@ public class Scaler extends RequestHandler {
                     mt = "application/octet-stream";
                 }
                 logger.debug("Sending RAW File as is.");
-                ServletOps.sendFile(fileToLoad.getFile(), mt, response);
+                ServletOps.sendFile(fileToLoad.getFile(), mt, null, response);
                 logger.info("Done in " + (System.currentTimeMillis() - startTime) + "ms");
                 return;
             }
@@ -192,7 +225,7 @@ public class Scaler extends RequestHandler {
             // if possible, send the image without actually having to transform it
             if (! jobTicket.isTransformRequired()) {
                 logger.debug("Sending File as is.");
-                ServletOps.sendFile(fileToLoad.getFile(), null, response);
+                ServletOps.sendFile(fileToLoad.getFile(), null, null, response);
                 logger.info("Done in " + (System.currentTimeMillis() - startTime) + "ms");
                 return;
             }
@@ -204,7 +237,7 @@ public class Scaler extends RequestHandler {
                 return;
             }
             // create job
-            job = new ImageWorker(dlConfig, jobTicket);
+            ImageWorker job = new ImageWorker(dlConfig, jobTicket);
             // submit job
             Future<DocuImage> jobResult = imageJobCenter.submit(job);
             // wait for result
@@ -216,15 +249,17 @@ public class Scaler extends RequestHandler {
 
         } catch (IOException e) {
             logger.error(e.getClass() + ": " + e.getMessage());
-            // response.sendError(1);
+            digilibError(dlRequest.hasOption("errtxt"), dlRequest.hasOption("errimg"), dlRequest.hasOption("errcode"), ERROR_FILE, null, response);
         } catch (AuthOpException e) {
             logger.error(e.getClass() + ": " + e.getMessage());
-            // response.sendError(1);
+            digilibError(dlRequest.hasOption("errtxt"), dlRequest.hasOption("errimg"), dlRequest.hasOption("errcode"), ERROR_AUTH, null, response);
         } catch (InterruptedException e) {
             logger.error(e.getClass() + ": " + e.getMessage());
         } catch (ExecutionException e) {
             logger.error(e.getClass() + ": " + e.getMessage());
-            logger.error("caused by: " + e.getCause().getMessage());
+            String causeMsg = e.getCause().getMessage();
+            logger.error("caused by: " + causeMsg);
+            digilibError(dlRequest.hasOption("errtxt"), dlRequest.hasOption("errimg"), dlRequest.hasOption("errcode"), ERROR_IMAGE, causeMsg, response);
         }
 
     }
@@ -232,35 +267,42 @@ public class Scaler extends RequestHandler {
     /**
      * Sends an error to the client as text or image.
      * 
-     * @param asHTML
+     * @param asText
      * @param type
      * @param msg
      * @param response
      */
-    public void digilibError(boolean asHTML, int type, String msg,
+    public void digilibError(boolean asText, boolean asImage, boolean asCode, int type, String msg,
             HttpServletResponse response) {
         try {
             File img = null;
+            int status = 0;
             if (type == ERROR_AUTH) {
                 if (msg == null) {
                     msg = "ERROR: Unauthorized access!";
                 }
                 img = denyImgFile;
+                status = HttpServletResponse.SC_FORBIDDEN;
             } else if (type == ERROR_FILE) {
                 if (msg == null) {
                     msg = "ERROR: Image file not found!";
                 }
                 img = notfoundImgFile;
+                status = HttpServletResponse.SC_NOT_FOUND;
             } else {
                 if (msg == null) {
                     msg = "ERROR: Other image error!";
                 }
                 img = this.errorImgFile;
+                status = HttpServletResponse.SC_BAD_REQUEST;
             }
-            if (asHTML && (img != null)) {
+            if (asText) {
                 ServletOps.htmlMessage(msg, response);
-            } else {
-                ServletOps.sendFile(img, null, response);
+            } else if (asCode) {
+                response.sendError(status, msg);
+            } else if (img != null) {
+                // default: image
+                ServletOps.sendFile(img, null, null, response);
             }
         } catch (IOException e) {
             logger.error("Error sending error!", e);

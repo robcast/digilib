@@ -179,18 +179,20 @@ public class ServletOps {
      * The local file is copied to the <code>OutputStream</code> of the
      * <code>ServletResponse</code>. If mt is null then the mime-type is
      * auto-detected with mimeForFile.
-     * 
-     * @param mt
-     *            mime-type of the file.
      * @param f
      *            Image file to be sent.
+     * @param mt
+     *            mime-type of the file.
+     * @param name 
+     *            name of the download file (for application/x)
      * @param res
      *            ServletResponse where the image file will be sent.
+     * 
      * @throws FileOpException
      *             Exception is thrown for a IOException.
      * @throws IOException 
      */
-    public static void sendFile(File f, String mt, HttpServletResponse response)
+    public static void sendFile(File f, String mt, String name, HttpServletResponse response)
             throws FileOpException, IOException {
         logger.debug("sendRawFile(" + mt + ", " + f + ")");
         if (mt == null) {
@@ -202,12 +204,16 @@ public class ServletOps {
         }
         response.setContentType(mt);
         // open file
-        if (mt.equals("application/octet-stream")) {
-            response.addHeader("Content-Disposition", "attachment; filename=\""
-                    + f.getName() + "\"");
+        if (mt.startsWith("application")) {
+            if (name == null) {
+                // no download name -- use filename
+                name = f.getName();
+            }
+            response.addHeader("Content-Disposition", "attachment; filename=\""+name+"\"");
         }
         FileInputStream inFile = new FileInputStream(f);
         OutputStream outStream = response.getOutputStream();
+        response.setContentLength( (int) f.length());
         byte dataBuffer[] = new byte[4096];
         int len;
         while ((len = inFile.read(dataBuffer)) != -1) {
@@ -215,8 +221,8 @@ public class ServletOps {
             outStream.write(dataBuffer, 0, len);
             outStream.flush();
         }
-        inFile.close();
         response.flushBuffer();
+        inFile.close();
     }
 
     /**

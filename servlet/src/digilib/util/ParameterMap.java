@@ -19,10 +19,10 @@
  * Created on 02.09.2003 by casties
  *
  */
-package digilib.servlet;
+package digilib.util;
 
 import java.util.HashMap;
-import java.util.Map.Entry;
+
 
 /** HashMap of digilib.servlet.Parameter's.
  * 
@@ -60,7 +60,7 @@ public class ParameterMap {
 	 * @param pm
 	 */
 	@SuppressWarnings("unchecked")
-	public static ParameterMap cloneFrom(ParameterMap pm) {
+	public static ParameterMap cloneInstance(ParameterMap pm) {
 		ParameterMap newPm = new ParameterMap();
 		// clone params to this map
 		newPm.params = (HashMap<String, Parameter>) pm.params.clone();
@@ -73,13 +73,12 @@ public class ParameterMap {
 	 * @param pm
 	 * @return
 	 */
-	public static ParameterMap setFrom(ParameterMap pm) {
+	public static ParameterMap getInstance(ParameterMap pm) {
 		ParameterMap newPm = new ParameterMap();
 		// add all params to this map
 		newPm.params.putAll(pm.params);
 		newPm.initOptions();
 		return newPm;
-		
 	}
 	
 	/** set up parameters

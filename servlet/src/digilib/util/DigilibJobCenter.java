@@ -1,7 +1,7 @@
 /** Wrapper around ExecutionService.
  * 
  */
-package digilib.servlet;
+package digilib.util;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;

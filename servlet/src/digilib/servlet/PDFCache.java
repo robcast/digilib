@@ -4,9 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.concurrent.Future;
 
 import javax.servlet.RequestDispatcher;
@@ -14,10 +12,15 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
+
 import digilib.image.DocuImage;
+import digilib.pdf.PDFFileWorker;
+import digilib.util.DigilibJobCenter;
 
 /**
  * A class for handling user requests for pdf documents from digilib images.  
@@ -30,7 +33,18 @@ import digilib.image.DocuImage;
  */
 
 @SuppressWarnings("serial")
-public class PDFCache extends RequestHandler {
+public class PDFCache extends HttpServlet {
+
+    public static String version = "0.3a";
+
+    /** logger for accounting requests */
+    protected static Logger accountlog = Logger.getLogger("account.pdf.request");
+
+    /** gengeral logger for this class */
+    protected static Logger logger = Logger.getLogger("digilib.pdfcache");
+
+    /** logger for authentication related */
+    protected static Logger authlog = Logger.getLogger("digilib.pdf.auth");
 
 	private DigilibConfiguration dlConfig = null;
 	
@@ -56,7 +70,6 @@ public class PDFCache extends RequestHandler {
 	
 	public static Integer STATUS_ERROR = 3;     // an error occurred while processing the request
 	
-	public static String version = "0.3a";
 	
 	// TODO ? functionality for the pre-generation of complete books/chapters using default values
 	
@@ -82,12 +95,13 @@ public class PDFCache extends RequestHandler {
 		if (!temp_directory.exists()) {
 			// try to create
 			temp_directory.mkdirs();
+		} else {
+	        // rid the temporary directory of possible incomplete document files
+	        emptyDirectory(temp_directory);
 		}
 		if (!temp_directory.isDirectory()) {
 		    throw new ServletException("Configuration error: problem with pdf-temp-dir="+temp_fn);
 		}
-        // rid the temporary directory of possible incomplete document files
-        emptyDirectory(temp_directory);
         
 		String cache_fn = dlConfig.getAsString("pdf-cache-dir");
        	cache_directory = new File(cache_fn);
@@ -107,12 +121,28 @@ public class PDFCache extends RequestHandler {
 		
 	}
 	
+    /* (non-Javadoc)
+     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+     */
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException {
+        accountlog.info("GET from " + request.getRemoteAddr());
+        this.processRequest(request, response);
+    }
+
+
+    /* (non-Javadoc)
+     * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+     */
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException {
+        accountlog.info("POST from " + request.getRemoteAddr());
+        this.processRequest(request, response);
+    }
+    
 	/** 
 	 * clean up any broken and unfinished files from the temporary directory.
 	 */
-	public void emptyDirectory(File temp_dir){
-		File[] temp_files = temp_dir.listFiles();
-		
+	public void emptyDirectory(File dir){
+		File[] temp_files = dir.listFiles();
 		for (File f: temp_files){
 			f.delete();
 		}
@@ -120,12 +150,17 @@ public class PDFCache extends RequestHandler {
 	
 	
 	public void processRequest(HttpServletRequest request,
-			HttpServletResponse response) {
+			HttpServletResponse response) throws ServletException {
 
-	    String docid = "";
+        if (dlConfig == null) {
+            logger.error("ERROR: No Configuration!");
+            throw new ServletException("NO VALID digilib CONFIGURATION!");
+        }
+
+        String docid = "";
 	    try {
 		// evaluate request ( make a PDFJobDeclaration , get the DocumentId)
-		PDFJobDescription pdfji = new PDFJobDescription(request, dlConfig); 
+		PDFRequest pdfji = new PDFRequest(request, dlConfig); 
 		
 		docid = pdfji.getDocumentId();
 		
@@ -150,7 +185,8 @@ public class PDFCache extends RequestHandler {
         } else if (status == STATUS_DONE) {
         	// pdf created -- send it
             try {
-                sendFile(docid, getDownloadFilename(pdfji), response);
+                ServletOps.sendFile(getCacheFile(docid), "application/pdf", getDownloadFilename(pdfji), response);
+                //sendFile(docid, getDownloadFilename(pdfji), response);
             } catch (IOException e) {
             	// sending didn't work
                 logger.error(e.getMessage());
@@ -233,7 +269,7 @@ public class PDFCache extends RequestHandler {
 	 * @return 
 	 * @throws FileNotFoundException 
 	 */
-	public Future<File> createNewPdfDocument(PDFJobDescription pdfji, String filename) throws FileNotFoundException{
+	public Future<File> createNewPdfDocument(PDFRequest pdfji, String filename) throws FileNotFoundException{
 		// start new worker
 		File tempf = this.getTempFile(filename);
 		File finalf = this.getCacheFile(filename);
@@ -250,7 +286,7 @@ public class PDFCache extends RequestHandler {
 	 * @param pdfji
 	 * @return
 	 */
-	public String getDownloadFilename(PDFJobDescription pdfji){
+	public String getDownloadFilename(PDFRequest pdfji){
 		// filename example: digilib_example_pgs1-3.pdf
 		String filename;
 		filename =  "digilib_";

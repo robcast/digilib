@@ -107,10 +107,6 @@ public class Texter extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		// create new request with defaults
-		DigilibRequest dlReq = new DigilibRequest(request);
-		// add DigilibRequest to ServletRequest
-		request.setAttribute("digilib.servlet.request", dlReq);
 		// do the processing
 		processRequest(request, response);
 	}
@@ -123,10 +119,6 @@ public class Texter extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		// create new request with defaults
-		DigilibRequest dlReq = new DigilibRequest(request);
-		// add DigilibRequest to ServletRequest
-		request.setAttribute("digilib.servlet.request", dlReq);
 		// do the processing
 		processRequest(request, response);
 	}
@@ -137,7 +129,8 @@ public class Texter extends HttpServlet {
 		/*
 		 * request parameters
 		 */
-		DigilibRequest dlRequest = (DigilibRequest) request.getAttribute("digilib.servlet.request");
+        // create new request with defaults
+        DigilibRequest dlRequest = new DigilibRequest(request);
 		try {
 			
 			/*
@@ -145,11 +138,11 @@ public class Texter extends HttpServlet {
 			 */
 			TextFile f = getTextFile(dlRequest, "/txt");
 			if (f != null) {
-				ServletOps.sendFile(f.getFile(), null, response);
+				ServletOps.sendFile(f.getFile(), null, null, response);
 			} else {
 				f = getTextFile(dlRequest, "");
 				if (f != null) {
-					ServletOps.sendFile(f.getFile(),	null, response);
+					ServletOps.sendFile(f.getFile(),	null, null, response);
 				} else {
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, "Text-File not found!");
 					//ServletOps.htmlMessage("No Text-File!", response);

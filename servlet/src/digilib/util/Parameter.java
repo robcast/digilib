@@ -20,10 +20,11 @@
  * Created on 02.09.2003 by casties
  * 
  */
-package digilib.servlet;
+package digilib.util;
 
 import java.io.File;
 import java.io.IOException;
+
 
 /**
  * General digilib parameter class.

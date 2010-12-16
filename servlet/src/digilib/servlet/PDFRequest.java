@@ -7,9 +7,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 
+import digilib.image.ImageJobDescription;
 import digilib.io.DocuDirectory;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
+import digilib.util.NumRange;
+import digilib.util.OptionsSet;
+import digilib.util.ParameterMap;
 
 
 /** 
@@ -20,7 +24,7 @@ import digilib.io.FileOps;
  * @author cmielack, casties
  *
  */
-public class PDFJobDescription extends ParameterMap {
+public class PDFRequest extends ParameterMap {
 
 	DigilibConfiguration dlConfig = null;
 	NumRange pages = null;
@@ -34,7 +38,7 @@ public class PDFJobDescription extends ParameterMap {
 	 * @param dlcfg			
 	 * 						The DigilibConfiguration. 
 	 */
-	public PDFJobDescription(DigilibConfiguration dlcfg) {
+	public PDFRequest(DigilibConfiguration dlcfg) {
 		super(30);
 		dlConfig = dlcfg;
 	}
@@ -46,7 +50,7 @@ public class PDFJobDescription extends ParameterMap {
 	 * @param request
 	 * @throws FileOpException 
 	 */
-	public PDFJobDescription(HttpServletRequest request, DigilibConfiguration dlcfg) throws FileOpException {
+	public PDFRequest(HttpServletRequest request, DigilibConfiguration dlcfg) throws FileOpException {
 		super(30);
 		dlConfig = dlcfg;
 		this.setWithRequest(request);
@@ -64,7 +68,15 @@ public class PDFJobDescription extends ParameterMap {
 		newParameter("dh", new Integer(500), null, 's');
 	}
 	
-	/**
+	/* (non-Javadoc)
+     * @see digilib.servlet.ParameterMap#initOptions()
+     */
+    @Override
+    protected void initOptions() {
+        options = (OptionsSet) getValue("mo");
+    }
+
+    /**
 	 * Read the request object.
 	 * 
 	 * @param request
@@ -79,7 +91,7 @@ public class PDFJobDescription extends ParameterMap {
 		}
 		// process parameters
 		pages = new NumRange(getAsString("pgs"));
-        ImageJobDescription ij = ImageJobDescription.setFrom(this, dlConfig);
+        ImageJobDescription ij = ImageJobDescription.getInstance(this, dlConfig);
         DocuDirectory dir = ij.getFileDirectory();
         int dirsize = dir.size(FileOps.CLASS_IMAGE);
         pages.setMaxnum(dirsize);
@@ -92,16 +104,12 @@ public class PDFJobDescription extends ParameterMap {
 	 * @return
 	 */
 	public String getDocumentId(){
-		String id;
-
-		// TODO use complete request information for id generation
-		
 		String fn = getAsString("fn");
 		String dh = getAsString("dh");
 		String dw = getAsString("dw");
 		String pgs = getAsString("pgs");
 			
-		id = "fn=" + fn + "&dw=" + dw + "&dh=" + dh + "&pgs=" + pgs + ".pdf";
+		String id = "fn=" + fn + "&dw=" + dw + "&dh=" + dh + "&pgs=" + pgs + ".pdf";
 		// make safe to use as filename by urlencoding
 		try {
 			id = URLEncoder.encode(id, "UTF-8");
@@ -113,7 +121,7 @@ public class PDFJobDescription extends ParameterMap {
 
 	
 	public ImageJobDescription getImageJobInformation(){
-		return ImageJobDescription.setFrom(this, dlConfig);
+		return ImageJobDescription.getInstance(this, dlConfig);
 	}
 	
 	

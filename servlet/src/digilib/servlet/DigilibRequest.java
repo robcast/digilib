@@ -36,6 +36,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import digilib.image.DocuImage;
 import digilib.io.FileOps;
+import digilib.util.OptionsSet;
+import digilib.util.Parameter;
+import digilib.util.ParameterMap;
 
 /**
  * Class holding the parameters of a digilib user request. The parameters are
@@ -68,6 +71,18 @@ public class DigilibRequest extends ParameterMap {
 	public DigilibRequest() {
 		super(30);
 	}
+
+    /**
+     * Creates a new instance of DigilibRequest with parameters from a
+     * ServletRequest. All undefined parameters are set to default values.
+     * 
+     * @param request
+     */
+    public DigilibRequest(ServletRequest request) {
+        super(30);
+        setWithRequest(request);
+        initOptions();
+    }
 
 	/** set up parameters.
 	 * 
@@ -157,16 +172,13 @@ public class DigilibRequest extends ParameterMap {
 		newParameter("mk", "", null, 'c');
 	}
 
-	/**
-	 * Creates a new instance of DigilibRequest with parameters from a
-	 * ServletRequest. All undefined parameters are set to default values.
-	 * 
-	 * @param request
-	 */
-	public DigilibRequest(ServletRequest request) {
-		super(30);
-		setWithRequest(request);
-	}
+    /* (non-Javadoc)
+     * @see digilib.servlet.ParameterMap#initOptions()
+     */
+    @Override
+    protected void initOptions() {
+        options = (OptionsSet) getValue("mo");
+    }
 
 	/**
 	 * Populate the request object with data from a ServletRequest.
