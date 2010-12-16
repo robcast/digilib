@@ -33,18 +33,12 @@ public class Scaler extends HttpServlet {
     /** digilib servlet version (for all components) */
     public static final String dlVersion = "1.9.0a";
 
-    /** general error code */
-    public static final int ERROR_UNKNOWN = 0;
-
-    /** error code for authentication error */
-    public static final int ERROR_AUTH = 1;
-
-    /** error code for file operation error */
-    public static final int ERROR_FILE = 2;
-
-    /** error code for image operation error */
-    public static final int ERROR_IMAGE = 3;
-
+    /** servlet error codes */
+    public static enum Error {UNKNOWN, AUTH, FILE, IMAGE};
+    
+    /** type of error message */
+    public static enum ErrMsg {IMAGE, TEXT, CODE};
+    
     /** logger for accounting requests */
     protected static Logger accountlog = Logger.getLogger("account.request");
 
@@ -188,6 +182,14 @@ public class Scaler extends HttpServlet {
         // extract the job information
         ImageJobDescription jobTicket = ImageJobDescription.getInstance(dlRequest, dlConfig);
 
+        // type of error reporting
+        ErrMsg errMsgType = ErrMsg.IMAGE;
+        if (dlRequest.hasOption("errtxt")) {
+        	errMsgType = ErrMsg.TEXT;
+        } else if (dlRequest.hasOption("errcode")) {
+        	errMsgType = ErrMsg.CODE;
+        }
+        
         try {
         	/*
         	 *  check if we can fast-track without scaling
@@ -249,17 +251,17 @@ public class Scaler extends HttpServlet {
 
         } catch (IOException e) {
             logger.error(e.getClass() + ": " + e.getMessage());
-            digilibError(dlRequest.hasOption("errtxt"), dlRequest.hasOption("errimg"), dlRequest.hasOption("errcode"), ERROR_FILE, null, response);
+            digilibError(errMsgType, Error.FILE, null, response);
         } catch (AuthOpException e) {
             logger.error(e.getClass() + ": " + e.getMessage());
-            digilibError(dlRequest.hasOption("errtxt"), dlRequest.hasOption("errimg"), dlRequest.hasOption("errcode"), ERROR_AUTH, null, response);
+            digilibError(errMsgType, Error.AUTH, null, response);
         } catch (InterruptedException e) {
             logger.error(e.getClass() + ": " + e.getMessage());
         } catch (ExecutionException e) {
             logger.error(e.getClass() + ": " + e.getMessage());
             String causeMsg = e.getCause().getMessage();
             logger.error("caused by: " + causeMsg);
-            digilibError(dlRequest.hasOption("errtxt"), dlRequest.hasOption("errimg"), dlRequest.hasOption("errcode"), ERROR_IMAGE, causeMsg, response);
+            digilibError(errMsgType, Error.IMAGE, causeMsg, response);
         }
 
     }
@@ -267,23 +269,23 @@ public class Scaler extends HttpServlet {
     /**
      * Sends an error to the client as text or image.
      * 
-     * @param asText
      * @param type
+     * @param error
      * @param msg
      * @param response
      */
-    public void digilibError(boolean asText, boolean asImage, boolean asCode, int type, String msg,
+    public void digilibError(ErrMsg type, Error error, String msg,
             HttpServletResponse response) {
         try {
             File img = null;
             int status = 0;
-            if (type == ERROR_AUTH) {
+            if (error == Error.AUTH) {
                 if (msg == null) {
                     msg = "ERROR: Unauthorized access!";
                 }
                 img = denyImgFile;
                 status = HttpServletResponse.SC_FORBIDDEN;
-            } else if (type == ERROR_FILE) {
+            } else if (error == Error.FILE) {
                 if (msg == null) {
                     msg = "ERROR: Image file not found!";
                 }
@@ -296,9 +298,9 @@ public class Scaler extends HttpServlet {
                 img = this.errorImgFile;
                 status = HttpServletResponse.SC_BAD_REQUEST;
             }
-            if (asText) {
+            if (type == ErrMsg.TEXT) {
                 ServletOps.htmlMessage(msg, response);
-            } else if (asCode) {
+            } else if (type == ErrMsg.CODE) {
                 response.sendError(status, msg);
             } else if (img != null) {
                 // default: image
