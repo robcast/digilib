@@ -122,10 +122,12 @@ public class PDFCache extends RequestHandler {
 	public void processRequest(HttpServletRequest request,
 			HttpServletResponse response) {
 
+	    String docid = "";
+	    try {
 		// evaluate request ( make a PDFJobDeclaration , get the DocumentId)
 		PDFJobDescription pdfji = new PDFJobDescription(request, dlConfig); 
 		
-		String docid = pdfji.getDocumentId();
+		docid = pdfji.getDocumentId();
 		
 		// if some invalid data has been entered ...
 		if(!pdfji.checkValidity()) {
@@ -157,6 +159,11 @@ public class PDFCache extends RequestHandler {
         	// should be work in progress
             notifyUser(status, docid, request, response);
         }
+	    } catch (Exception e) {
+            // error in pdf creation
+            logger.error(e.getMessage());
+            notifyUser(STATUS_ERROR, docid, request, response);
+	    }
 	}
 
 	/**

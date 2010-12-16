@@ -31,10 +31,6 @@ import digilib.io.ImageFileset;
 
 public class ImageJobDescription extends ParameterMap {
 	
-	String[] parameter_list = {"fn","pn","dw","dh",
-								"wx", "wy", "ww", "wh", "ws", 
-								"mo", "rot", "cont", "brgt", "rgbm", "rbgm", 
-								"ddpi", "ddpix", "ddpiy", "scale"};
 	DigilibConfiguration dlConfig = null;
 	protected static Logger logger = Logger.getLogger("digilib.servlet");
 
@@ -175,10 +171,10 @@ public class ImageJobDescription extends ParameterMap {
 	}
 	
 	public DocuDirectory getFileDirectory() throws FileOpException{
-		if(fileDir==null){
+		if(fileDir == null){
 			DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
-	
-			fileDir = dirCache.getDirectory(getFilePath());
+			String fp = getFilePath();
+			fileDir = dirCache.getDirectory(fp);
 			if (fileDir == null) {
 				throw new FileOpException("Directory " + getFilePath() + " not found.");
 			}

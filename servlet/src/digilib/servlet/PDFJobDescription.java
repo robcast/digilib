@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 
 import digilib.io.DocuDirectory;
+import digilib.io.FileOpException;
 import digilib.io.FileOps;
 
 
@@ -43,8 +44,9 @@ public class PDFJobDescription extends ParameterMap {
 	 * 
 	 * @param dlcfg		The DigilibConfiguration. 		
 	 * @param request
+	 * @throws FileOpException 
 	 */
-	public PDFJobDescription(HttpServletRequest request, DigilibConfiguration dlcfg) {
+	public PDFJobDescription(HttpServletRequest request, DigilibConfiguration dlcfg) throws FileOpException {
 		super(30);
 		dlConfig = dlcfg;
 		this.setWithRequest(request);
@@ -59,35 +61,33 @@ public class PDFJobDescription extends ParameterMap {
 		// width of client in pixels
 		newParameter("dw", new Integer(0), null, 's');
 		// height of client in pixels
-		newParameter("dh", new Integer(0), null, 's');
+		newParameter("dh", new Integer(500), null, 's');
 	}
 	
 	/**
-	 * Read in the request object.
+	 * Read the request object.
 	 * 
 	 * @param request
+	 * @throws FileOpException 
 	 */
-	public void setWithRequest(HttpServletRequest request) {
+	public void setWithRequest(HttpServletRequest request) throws FileOpException {
+	    // read matching request parameters for the parameters in this map 
 		for (String k : params.keySet()) {
 			if (request.getParameterMap().containsKey(k)) {
 				setValueFromString(k, request.getParameter(k));
 			}
 		}
 		// process parameters
-		try {
-            pages = new NumRange(getAsString("pgs"));
-            ImageJobDescription ij = ImageJobDescription.setFrom(this, dlConfig);
-            DocuDirectory dir = ij.getFileDirectory();
-            int dirsize = dir.size(FileOps.CLASS_IMAGE);
-            pages.setMaxnum(dirsize);
-        } catch (Exception e) {
-            logger.warn("Problem with parsing page numbers: "+e.toString());
-        }
+		pages = new NumRange(getAsString("pgs"));
+        ImageJobDescription ij = ImageJobDescription.setFrom(this, dlConfig);
+        DocuDirectory dir = ij.getFileDirectory();
+        int dirsize = dir.size(FileOps.CLASS_IMAGE);
+        pages.setMaxnum(dirsize);
 	}
 	
 	
 	/**
-	 * Generate the filename of the pdf to be created.
+	 * Generate a filename for the pdf to be created.
 	 * 
 	 * @return
 	 */

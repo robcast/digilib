@@ -128,7 +128,7 @@ public class ParameterMap {
 	 */
 	public String getAsString(String key) {
 		Parameter p = params.get(key);
-		return (p != null) ? p.getAsString() : null;
+		return (p != null) ? p.getAsString() : "";
 	}
 
 	/** Get the Parameter with the corresponding key.
