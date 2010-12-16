@@ -97,6 +97,9 @@ public class Parameter {
 	 * @return
 	 */
 	public boolean setValueFromString(String val) {
+		if (val == null) {
+			val = "";
+		}
 		// no default matches all
 		if (defval == null) {
 			this.value = val;
