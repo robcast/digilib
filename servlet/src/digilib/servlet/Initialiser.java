@@ -183,6 +183,22 @@ public class Initialiser extends HttpServlet {
                 logger.error("Still running threads when shutting down image job queue: "+nrj);
             }
         }
+        if (pdfEx != null) {
+            // shut down pdf thread pool
+            List<Runnable> rj = pdfEx.shutdownNow();
+            int nrj = rj.size();
+            if (nrj > 0) {
+                logger.error("Still running threads when shutting down PDF job queue: "+nrj);
+            }
+        }
+        if (pdfImageEx != null) {
+            // shut down pdf image thread pool
+            List<Runnable> rj = pdfImageEx.shutdownNow();
+            int nrj = rj.size();
+            if (nrj > 0) {
+                logger.error("Still running threads when shutting down PDF-image job queue: "+nrj);
+            }
+        }
         super.destroy();
     }
 
