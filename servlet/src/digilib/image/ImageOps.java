@@ -37,7 +37,7 @@ public class ImageOps {
     
     private static DocuImage docuImg;
     
-    public static boolean checkFile(ImageFile imgf) throws IOException {
+    public static ImageFile checkFile(ImageFile imgf) throws IOException {
         return docuImg.identify(imgf);
     }
     

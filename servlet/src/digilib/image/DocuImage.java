@@ -214,7 +214,7 @@ public interface DocuImage {
     /**
      * Check image size and type and store in ImageFile f
      */
-    public boolean identify(ImageFile imgf) throws IOException;
+    public ImageFile identify(ImageFile imgf) throws IOException;
 
     /**
      * Returns a list of supported image formats

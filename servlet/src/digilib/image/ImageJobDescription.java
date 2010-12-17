@@ -2,7 +2,9 @@ package digilib.image;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 import org.apache.log4j.Logger;
 
@@ -133,7 +135,7 @@ public class ImageJobDescription extends ParameterMap {
 		if (mimeType == null) {
 			fileToLoad = getFileToLoad();
 			if(! fileToLoad.isChecked()){
-				ImageOps.checkFile(fileToLoad);
+				dlConfig.docuImageIdentify(fileToLoad);
 			}
 			mimeType = fileToLoad.getMimetype();
 		}
@@ -250,12 +252,11 @@ public class ImageJobDescription extends ParameterMap {
 		if (getAbsoluteScale()) {
 			ImageFile hiresFile = fileset.getBiggest();
 			if (!hiresFile.isChecked()) {
-				ImageOps.checkFile(hiresFile);
+				dlConfig.docuImageIdentify(hiresFile);
 			}
 			hiresSize = hiresFile.getSize();
 		}
 		return hiresSize;
-		
 	}
 	
 	/** Returns image scaling factor.

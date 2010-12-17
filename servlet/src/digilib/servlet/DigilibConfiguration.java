@@ -22,6 +22,7 @@
 package digilib.servlet;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -34,6 +35,7 @@ import org.apache.log4j.Logger;
 import digilib.image.DocuImage;
 import digilib.image.DocuImageImpl;
 import digilib.io.FileOps;
+import digilib.io.ImageFile;
 import digilib.io.XMLListLoader;
 import digilib.util.Parameter;
 import digilib.util.ParameterMap;
@@ -54,6 +56,9 @@ public class DigilibConfiguration extends ParameterMap {
 
 	/** DocuImage class instance */
 	private Class<DocuImageImpl> docuImageClass = null;
+
+	/** DocuImage instance */
+	private DocuImage docuImage = null;
 
 	/** Log4J logger */
 	private Logger logger = Logger.getLogger("digilib.config");
@@ -270,12 +275,20 @@ public class DigilibConfiguration extends ParameterMap {
 		return di;
 	}
 
+	public ImageFile docuImageIdentify(ImageFile imgf) throws IOException {
+		if (docuImage == null) {
+			docuImage = (DocuImageImpl) getDocuImageInstance();
+		}
+		return docuImage.identify(imgf);
+	}
+	
 	/**
 	 * @return Returns the docuImageClass.
 	 */
 	public Class<DocuImageImpl> getDocuImageClass() {
 		return docuImageClass;
 	}
+
 	/**
 	 * @param docuImageClass The docuImageClass to set.
 	 */

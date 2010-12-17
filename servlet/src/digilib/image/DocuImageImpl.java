@@ -39,7 +39,7 @@ import digilib.io.ImageFile;
 /** Simple abstract implementation of the <code>DocuImage</code> interface.
  *
  * This implementation provides basic functionality for the utility methods like
- * <code>SetUtils</code>, and <code>getKnownFileTypes</code>. Image methods like
+ * <code>getKnownFileTypes</code>. Image methods like
  * <code>loadImage</code>, <code>writeImage</code>, <code>getWidth</code>,
  * <code>getHeight</code>, <code>crop</code> and <code>scale</code> must be
  * implemented by derived classes.
@@ -75,11 +75,7 @@ public abstract class DocuImageImpl implements DocuImage {
 	}
 
     /** Check image size and type and store in ImageFile f */
-    public static boolean identifyImg(ImageFile imgf) throws IOException {
-    }
-
-    /** Check image size and type and store in ImageFile f */
-    public boolean identify(ImageFile imgf) throws IOException {
+    public ImageFile identify(ImageFile imgf) throws IOException {
         // fileset to store the information
         File f = imgf.getFile();
         if (f == null) {
@@ -100,9 +96,9 @@ public abstract class DocuImageImpl implements DocuImage {
             //logger.debug("  format:"+iif.getFormatName());
             raf.close();
             logger.debug("image size: " + imgf.getSize());
-            return true;
+            return imgf;
         }
-        return false;
+        return null;
     }
         
     /** Crop and scale the current image.
@@ -122,7 +118,7 @@ public abstract class DocuImageImpl implements DocuImage {
 	public void cropAndScale(
 		int x_off, int y_off, int width, int height, double scale, int qual) 
 		throws ImageOpException {
-
+		// default implementation: first crop, then scale
 		setQuality(qual);
 		crop(x_off, y_off, width, height);
 		scale(scale, scale);
@@ -171,7 +167,6 @@ public abstract class DocuImageImpl implements DocuImage {
     public void crop(int xoff, int yoff, int width, int height)
             throws ImageOpException {
         // TODO Auto-generated method stub
-        
     }
 
     public Image getAwtImage() {
