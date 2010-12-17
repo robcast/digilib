@@ -37,7 +37,6 @@ import digilib.auth.XMLAuthOps;
 import digilib.image.DocuImage;
 import digilib.io.AliasingDocuDirCache;
 import digilib.io.DocuDirCache;
-import digilib.io.FileOps;
 import digilib.io.FileOps.FileClass;
 import digilib.util.DigilibJobCenter;
 
@@ -132,7 +131,7 @@ public class Initialiser extends HttpServlet {
 					dlConfig.setValue("auth-file", authConf);
 				}
 				// DocuImage class
-				DocuImage di = dlConfig.getDocuImageInstance();
+				DocuImage di = DigilibConfiguration.getDocuImageInstance();
 				dlConfig.setValue("servlet.docuimage.class", di.getClass().getName());
 				// digilib worker threads
 				int nt = dlConfig.getAsInt("worker-threads");

@@ -55,10 +55,7 @@ import digilib.util.ParameterMap;
 public class DigilibConfiguration extends ParameterMap {
 
 	/** DocuImage class instance */
-	private Class<DocuImageImpl> docuImageClass = null;
-
-	/** DocuImage instance */
-	private static DocuImage docuImage = null;
+	private static Class<DocuImageImpl> docuImageClass = null;
 
 	/** Log4J logger */
 	private Logger logger = Logger.getLogger("digilib.config");
@@ -194,7 +191,8 @@ public class DigilibConfiguration extends ParameterMap {
 	 * read parameter list from the XML file in init parameter "config-file"
 	 * or file digilib-config.xml
 	 */
-	public void readConfig(ServletConfig c) throws Exception {
+	@SuppressWarnings("unchecked")
+    public void readConfig(ServletConfig c) throws Exception {
 
 		/*
 		 * Get config file name. The file name is first looked for as an init
@@ -252,24 +250,20 @@ public class DigilibConfiguration extends ParameterMap {
 				newParameter(confEntry.getKey(), null, confEntry.getValue(), 'f');
 			}
 		}
-		// initialise static DocuImage instance
-		DigilibConfiguration.docuImage = getDocuImageInstance();
+		// initialise static DocuImage class instance
+		DigilibConfiguration.docuImageClass = (Class<DocuImageImpl>) Class.forName(getAsString("docuimage-class"));
 	}
 
 	/**
 	 * Creates a new DocuImage instance.
 	 * 
-	 * The type of DocuImage is specified by docuImageType.
+	 * The type of DocuImage is specified by docuimage-class.
 	 * 
 	 * @return DocuImage
 	 */
-	@SuppressWarnings("unchecked")
-    public DocuImage getDocuImageInstance() {
+    public static DocuImage getDocuImageInstance() {
 		DocuImageImpl di = null;
 		try {
-			if (docuImageClass == null) {
-				docuImageClass = (Class<DocuImageImpl>) Class.forName(getAsString("docuimage-class"));
-			}
 			di = docuImageClass.newInstance();
 		} catch (Exception e) {
 		}
@@ -284,20 +278,22 @@ public class DigilibConfiguration extends ParameterMap {
 	 * @throws IOException
 	 */
 	public static ImageFile docuImageIdentify(ImageFile imgf) throws IOException {
-		return docuImage.identify(imgf);
+	    // use fresh DocuImage instance
+	    DocuImage di = getDocuImageInstance();
+		return di.identify(imgf);
 	}
 	
 	/**
 	 * @return Returns the docuImageClass.
 	 */
-	public Class<DocuImageImpl> getDocuImageClass() {
+	public static Class<DocuImageImpl> getDocuImageClass() {
 		return docuImageClass;
 	}
 
 	/**
 	 * @param docuImageClass The docuImageClass to set.
 	 */
-	public void setDocuImageClass(Class<DocuImageImpl> docuImageClass) {
-		this.docuImageClass = docuImageClass;
+	public static void setDocuImageClass(Class<DocuImageImpl> dic) {
+		docuImageClass = dic;
 	}
 }

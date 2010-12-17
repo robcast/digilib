@@ -392,7 +392,7 @@ public class DigilibRequest extends ParameterMap {
 	 * @param request
 	 *            ServletRequest to get parameters from.
 	 */
-	@SuppressWarnings("unchecked") // ServletRequest.getParameterNames() returns naked Enumeration
+	//@SuppressWarnings("unchecked") // ServletRequest.getParameterNames() returns naked Enumeration
     public void setWithParamRequest(ServletRequest request) {
 		setValue("servlet.request", request);
 		// go through all request parameters

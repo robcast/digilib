@@ -2,9 +2,7 @@ package digilib.image;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 
 import org.apache.log4j.Logger;
 

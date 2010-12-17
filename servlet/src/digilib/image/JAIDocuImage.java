@@ -49,7 +49,7 @@ import digilib.io.ImageFile;
 import digilib.io.ImageFileset;
 
 /** A DocuImage implementation using Java Advanced Imaging Library. */
-public class JAIDocuImage extends DocuImageImpl {
+public class JAIDocuImage extends ImageInfoDocuImage {
 
 	protected RenderedImage img;
 

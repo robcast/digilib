@@ -36,7 +36,6 @@ import digilib.auth.AuthOps;
 import digilib.image.ImageSize;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
-import digilib.io.FileOps;
 import digilib.io.FileOps.FileClass;
 import digilib.io.ImageFile;
 import digilib.io.ImageFileset;

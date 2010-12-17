@@ -22,16 +22,13 @@ package digilib.image;
 
 import java.awt.Image;
 import java.awt.Rectangle;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.marcoschmidt.image.ImageInfo;
 
 import digilib.io.FileOpException;
 import digilib.io.ImageFile;
@@ -74,34 +71,7 @@ public abstract class DocuImageImpl implements DocuImage {
 		this.quality = quality;
 	}
 
-    /** Check image size and type and store in ImageFile f */
-    public ImageFile identify(ImageFile imgf) throws IOException {
-        // fileset to store the information
-        File f = imgf.getFile();
-        if (f == null) {
-            throw new IOException("File not found!");
-        }
-        RandomAccessFile raf = new RandomAccessFile(f, "r");
-        // set up ImageInfo object
-        ImageInfo iif = new ImageInfo();
-        iif.setInput(raf);
-        iif.setCollectComments(false);
-        iif.setDetermineImageNumber(false);
-        logger.debug("identifying (ImageInfo) " + f);
-        // try with ImageInfo first
-        if (iif.check()) {
-            ImageSize d = new ImageSize(iif.getWidth(), iif.getHeight());
-            imgf.setSize(d);
-            imgf.setMimetype(iif.getMimeType());
-            //logger.debug("  format:"+iif.getFormatName());
-            raf.close();
-            logger.debug("image size: " + imgf.getSize());
-            return imgf;
-        }
-        return null;
-    }
-        
-    /** Crop and scale the current image.
+	/** Crop and scale the current image.
 	 *
 	 * The current image is cropped to a rectangle of width, height at position
 	 * x_off, y_off. The resulting image is scaled by the factor scale using the
@@ -127,6 +97,14 @@ public abstract class DocuImageImpl implements DocuImage {
 	public String getMimetype() {
 		return mimeType;
 	}
+
+    /* (non-Javadoc)
+     * @see digilib.image.DocuImage#identify(digilib.io.ImageFile)
+     */
+    public ImageFile identify(ImageFile imgf) throws IOException {
+        // just a do-nothing implementation
+        return null;
+    }
 
 	public void rotate(double angle) throws ImageOpException {
 		// just a do-nothing implementation

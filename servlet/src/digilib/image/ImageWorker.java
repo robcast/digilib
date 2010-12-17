@@ -42,7 +42,7 @@ public class ImageWorker implements Callable<DocuImage> {
         /* crop and scale image */
 
         // new DocuImage instance
-        DocuImage docuImage = dlConfig.getDocuImageInstance();
+        DocuImage docuImage = DigilibConfiguration.getDocuImageInstance();
         if (docuImage == null) {
             throw new ImageOpException("Unable to load DocuImage class!");
         }
