@@ -12,6 +12,7 @@ import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
+import digilib.io.FileOps.FileClass;
 import digilib.io.ImageFile;
 import digilib.io.ImageFileset;
 import digilib.servlet.DigilibConfiguration;
@@ -135,7 +136,7 @@ public class ImageJobDescription extends ParameterMap {
 		if (mimeType == null) {
 			fileToLoad = getFileToLoad();
 			if(! fileToLoad.isChecked()){
-				dlConfig.docuImageIdentify(fileToLoad);
+				DigilibConfiguration.docuImageIdentify(fileToLoad);
 			}
 			mimeType = fileToLoad.getMimetype();
 		}
@@ -189,7 +190,7 @@ public class ImageJobDescription extends ParameterMap {
         if(fileset==null){
             DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
     
-            fileset = (ImageFileset) dirCache.getFile(getFilePath(), getAsInt("pn"), FileOps.CLASS_IMAGE);
+            fileset = (ImageFileset) dirCache.getFile(getFilePath(), getAsInt("pn"), FileClass.IMAGE);
             if (fileset == null) {
                 throw new FileOpException("File " + getFilePath() + "("
                         + getAsInt("pn") + ") not found.");
@@ -252,7 +253,7 @@ public class ImageJobDescription extends ParameterMap {
 		if (getAbsoluteScale()) {
 			ImageFile hiresFile = fileset.getBiggest();
 			if (!hiresFile.isChecked()) {
-				dlConfig.docuImageIdentify(hiresFile);
+				DigilibConfiguration.docuImageIdentify(hiresFile);
 			}
 			hiresSize = hiresFile.getSize();
 		}
@@ -427,15 +428,6 @@ public class ImageJobDescription extends ParameterMap {
 		return outerUserImgArea;
 	}
 	
-	
-	public int getForceType(){
-		if(hasOption("jpg"))
-			return ImageOps.TYPE_JPEG;
-		if(hasOption("png"))
-			return ImageOps.TYPE_PNG;
-		
-		return ImageOps.TYPE_AUTO;
-	}
 	
 	public float[] getRGBM(){
 		float[] paramRGBM = null;//{0f,0f,0f};

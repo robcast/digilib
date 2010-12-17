@@ -26,8 +26,9 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-import digilib.image.ImageOps;
 import digilib.image.ImageSize;
+import digilib.io.FileOps.FileClass;
+import digilib.servlet.DigilibConfiguration;
 
 /**
  * @author casties
@@ -35,7 +36,7 @@ import digilib.image.ImageSize;
 public class ImageFileset extends DocuDirent {
 
 	/** this is an image file */
-	protected static int fileClass = FileOps.CLASS_IMAGE;
+	protected static FileClass fileClass = FileClass.IMAGE;
 	
 	/** list of files (ImageFile) */
 	private List<ImageFile> list = null;
@@ -137,7 +138,7 @@ public class ImageFileset extends DocuDirent {
 			ImageFile f = i.next();
 			try {
 				if (!f.isChecked()) {
-					ImageOps.checkFile(f);
+					DigilibConfiguration.docuImageIdentify(f);
 				}
 				if (f.getSize().isTotallySmallerThan(size)) {
 					return f;
@@ -165,7 +166,7 @@ public class ImageFileset extends DocuDirent {
 			ImageFile f = i.previous();
 			try {
 				if (!f.isChecked()) {
-					ImageOps.checkFile(f);
+					DigilibConfiguration.docuImageIdentify(f);
 				}
 				if (f.getSize().isBiggerThan(size)) {
 					return f;
@@ -272,7 +273,7 @@ public class ImageFileset extends DocuDirent {
 					continue;
 				}
 			}
-			if (FileOps.classForFilename(dirFiles[fileIdx]) == FileOps.CLASS_IMAGE) {
+			if (FileOps.classForFilename(dirFiles[fileIdx]) == fileClass) {
 				/* logger.debug("adding file " + dirFiles[fileIdx]
 						+ " to Fileset " + this.getName()); */
 				add(new ImageFile(dirFiles[fileIdx], this, dirs[dirIdx]));

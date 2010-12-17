@@ -58,7 +58,7 @@ public class DigilibConfiguration extends ParameterMap {
 	private Class<DocuImageImpl> docuImageClass = null;
 
 	/** DocuImage instance */
-	private DocuImage docuImage = null;
+	private static DocuImage docuImage = null;
 
 	/** Log4J logger */
 	private Logger logger = Logger.getLogger("digilib.config");
@@ -192,6 +192,7 @@ public class DigilibConfiguration extends ParameterMap {
 
 	/**
 	 * read parameter list from the XML file in init parameter "config-file"
+	 * or file digilib-config.xml
 	 */
 	public void readConfig(ServletConfig c) throws Exception {
 
@@ -245,14 +246,14 @@ public class DigilibConfiguration extends ParameterMap {
 							p.setValue(sa);
 						}
 					}
-
 				}
 			} else {
 				// parameter unknown -- just add
 				newParameter(confEntry.getKey(), null, confEntry.getValue(), 'f');
 			}
 		}
-
+		// initialise static DocuImage instance
+		DigilibConfiguration.docuImage = getDocuImageInstance();
 	}
 
 	/**
@@ -275,10 +276,14 @@ public class DigilibConfiguration extends ParameterMap {
 		return di;
 	}
 
-	public ImageFile docuImageIdentify(ImageFile imgf) throws IOException {
-		if (docuImage == null) {
-			docuImage = (DocuImageImpl) getDocuImageInstance();
-		}
+	/**
+     * Check image size and type and store in ImageFile imgf
+     * 
+	 * @param imgf
+	 * @return
+	 * @throws IOException
+	 */
+	public static ImageFile docuImageIdentify(ImageFile imgf) throws IOException {
 		return docuImage.identify(imgf);
 	}
 	

@@ -20,7 +20,6 @@
 
 package digilib.image;
 
-import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
@@ -100,14 +99,15 @@ public class JAIDocuImage extends DocuImageImpl {
     }
 
 	/* Check image size and type and store in ImageFile f */
-	public boolean identify(ImageFile imgf) throws IOException {
-		// try parent method first
-		if (super.identify(imgf)) {
-			return true;
+	public ImageFile identify(ImageFile imageFile) throws IOException {
+        // try parent method first
+	    ImageFile imf = super.identify(imageFile);
+		if (imf != null) {
+			return imf;
 		}
 		// fileset to store the information
-		ImageFileset imgfs = imgf.getParent();
-		File f = imgf.getFile();
+		ImageFileset imgfs = imageFile.getParent();
+		File f = imageFile.getFile();
 		if (f == null) {
 			throw new IOException("File not found!");
 		}
@@ -118,15 +118,15 @@ public class JAIDocuImage extends DocuImageImpl {
 		try {
 			RenderedOp img = JAI.create("fileload", f.getAbsolutePath());
 			ImageSize d = new ImageSize(img.getWidth(), img.getHeight());
-			imgf.setSize(d);
+			imageFile.setSize(d);
 			String t = FileOps.mimeForFile(f);
-			imgf.setMimetype(t);
+			imageFile.setMimetype(t);
 			// logger.debug(" format:"+t);
 			if (imgfs != null) {
 				imgfs.setAspect(d);
 			}
-			logger.debug("image size: " + imgf.getSize());
-			return true;
+			logger.debug("image size: " + imageFile.getSize());
+			return imageFile;
 		} catch (Exception e) {
 			throw new FileOpException("ERROR: unknown image file format!");
 		}
@@ -332,11 +332,6 @@ public class JAIDocuImage extends DocuImageImpl {
 		logger.debug("CROP: " + x_off + "," + y_off + ", " + width + ","
 				+ height + " ->" + croppedImg.getWidth() + "x"
 				+ croppedImg.getHeight());
-		// DEBUG
-
-		if (croppedImg == null) {
-			throw new ImageOpException("Unable to crop");
-		}
 		img = croppedImg;
 	}
 
@@ -386,11 +381,6 @@ public class JAIDocuImage extends DocuImageImpl {
 
 		logger.debug("ROTATE: " + x + "," + y + ", " + angle + " (" + rangle
 				+ ")" + " ->" + rotImg.getWidth() + "x" + rotImg.getHeight());
-		// DEBUG
-
-		if (rotImg == null) {
-			throw new ImageOpException("Unable to rotate");
-		}
 		img = rotImg;
 	}
 
@@ -444,10 +434,6 @@ public class JAIDocuImage extends DocuImageImpl {
 		logger.debug("ENHANCE: *" + mult + ", +" + add + " ->"
 				+ enhImg.getWidth() + "x" + enhImg.getHeight());
 		// DEBUG
-
-		if (enhImg == null) {
-			throw new ImageOpException("Unable to enhance");
-		}
 		img = enhImg;
 	}
 
@@ -474,11 +460,6 @@ public class JAIDocuImage extends DocuImageImpl {
 
 		logger.debug("ENHANCE_RGB: *" + rgbm + ", +" + rgba + " ->"
 				+ enhImg.getWidth() + "x" + enhImg.getHeight());
-		// DEBUG
-
-		if (enhImg == null) {
-			throw new ImageOpException("Unable to enhanceRGB");
-		}
 		img = enhImg;
 	}
 

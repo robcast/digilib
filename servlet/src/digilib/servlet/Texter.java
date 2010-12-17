@@ -31,6 +31,7 @@ import digilib.auth.AuthOps;
 import digilib.io.DocuDirCache;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
+import digilib.io.FileOps.FileClass;
 import digilib.io.TextFile;
 
 /**
@@ -174,6 +175,6 @@ public class Texter extends HttpServlet {
 		String loadPathName = dlRequest.getFilePath() + subDirectory;
 		// find the file(set)
 		return (TextFile) dirCache.getFile(loadPathName, dlRequest
-				.getAsInt("pn"), FileOps.CLASS_TEXT);
+				.getAsInt("pn"), FileClass.TEXT);
 	}
 }

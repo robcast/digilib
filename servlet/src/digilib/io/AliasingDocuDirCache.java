@@ -26,6 +26,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import digilib.io.FileOps.FileClass;
 import digilib.servlet.DigilibConfiguration;
 
 /**
@@ -36,15 +37,15 @@ public class AliasingDocuDirCache extends DocuDirCache {
 
 	/**
 	 * @param baseDirs
-	 * @param fileClasses
+	 * @param fcs
 	 * @param confFileName
 	 * @throws FileOpException
 	 */
-	public AliasingDocuDirCache(String[] baseDirs, int[] fileClasses,
+	public AliasingDocuDirCache(String[] baseDirs, FileClass[] fcs,
 			File confFile, DigilibConfiguration dlConfig)
 			throws FileOpException {
 		// create standard DocuDirCache
-		super(baseDirs, fileClasses, dlConfig);
+		super(baseDirs, fcs, dlConfig);
 		Map<String,String> pathMap = null;
 		// read alias config file
 		try {

@@ -52,15 +52,7 @@ public class FileOps {
 
 	public static List<String> svgExtensions;
 
-	public static final int CLASS_NONE = -1;
-
-	public static final int CLASS_IMAGE = 0;
-
-	public static final int CLASS_TEXT = 1;
-
-	public static final int CLASS_SVG = 2;
-
-	public static final int NUM_CLASSES = 3;
+	public static enum FileClass {NONE, IMAGE, TEXT, SVG}
 
 	public static final Integer HINT_BASEDIRS = new Integer(1);
 
@@ -81,11 +73,11 @@ public class FileOps {
 			String ext = ft[i][0];
 			String mt = ft[i][1];
 			fileTypes.put(ext, mt);
-			if (classForMimetype(mt) == CLASS_IMAGE) {
+			if (classForMimetype(mt) == FileClass.IMAGE) {
 				imageExtensions.add(ext);
-			} else if (classForMimetype(mt) == CLASS_TEXT) {
+			} else if (classForMimetype(mt) == FileClass.TEXT) {
 				textExtensions.add(ext);
-			} else if (classForMimetype(mt) == CLASS_SVG) {
+			} else if (classForMimetype(mt) == FileClass.SVG) {
 				svgExtensions.add(ext);
 			}
 		}
@@ -97,18 +89,18 @@ public class FileOps {
 	 * @param mt
 	 * @return
 	 */
-	public static int classForMimetype(String mt) {
+	public static FileClass classForMimetype(String mt) {
 		if (mt == null) {
-			return CLASS_NONE;
+			return FileClass.NONE;
 		}
 		if (mt.startsWith("image/svg")) {
-			return CLASS_SVG;
+			return FileClass.SVG;
 		} else if (mt.startsWith("image")) {
-			return CLASS_IMAGE;
+			return FileClass.IMAGE;
 		} else if (mt.startsWith("text")) {
-			return CLASS_TEXT;
+			return FileClass.TEXT;
 		}
-		return CLASS_NONE;
+		return FileClass.NONE;
 	}
 
 	/**
@@ -124,7 +116,7 @@ public class FileOps {
 	 * @param fn
 	 * @return
 	 */
-	public static int classForFilename(String fn) {
+	public static FileClass classForFilename(String fn) {
 		String mt = (String) fileTypes.get(extname(fn).toLowerCase());
 		return classForMimetype(mt);
 	}
@@ -290,7 +282,7 @@ public class FileOps {
 	static class ImageFileFilter implements FileFilter {
 
 		public boolean accept(File f) {
-			return (classForFilename(f.getName()) == CLASS_IMAGE);
+			return (classForFilename(f.getName()) == FileClass.IMAGE);
 		}
 	}
 
@@ -300,7 +292,7 @@ public class FileOps {
 	static class TextFileFilter implements FileFilter {
 
 		public boolean accept(File f) {
-			return (classForFilename(f.getName()) == CLASS_TEXT);
+			return (classForFilename(f.getName()) == FileClass.TEXT);
 		}
 	}
 
@@ -311,7 +303,7 @@ public class FileOps {
 	static class SVGFileFilter implements FileFilter {
 
 		public boolean accept(File f) {
-			return (classForFilename(f.getName()) == CLASS_SVG);
+			return (classForFilename(f.getName()) == FileClass.SVG);
 		}
 	}
 
@@ -321,14 +313,14 @@ public class FileOps {
 	 * @param fileClass
 	 * @return
 	 */
-	public static FileFilter filterForClass(int fileClass) {
-		if (fileClass == CLASS_IMAGE) {
+	public static FileFilter filterForClass(FileClass fileClass) {
+		if (fileClass == FileClass.IMAGE) {
 			return new ImageFileFilter();
 		}
-		if (fileClass == CLASS_TEXT) {
+		if (fileClass == FileClass.TEXT) {
 			return new TextFileFilter();
 		}
-		if (fileClass == CLASS_SVG) {
+		if (fileClass == FileClass.SVG) {
 			return new SVGFileFilter();
 		}
 		return null;
@@ -346,15 +338,15 @@ public class FileOps {
 	 *            optional additional parameters
 	 * @return
 	 */
-	public static DocuDirent fileForClass(int fileClass, File file, Map<Integer,Object> hints) {
+	public static DocuDirent fileForClass(FileClass fileClass, File file, Map<Integer,Object> hints) {
 		// what class of file do we have?
-		if (fileClass == CLASS_IMAGE) {
+		if (fileClass == FileClass.IMAGE) {
 			// image file
 			return new ImageFileset(file, hints);
-		} else if (fileClass == CLASS_TEXT) {
+		} else if (fileClass == FileClass.TEXT) {
 			// text file
 			return new TextFile(file);
-		} else if (fileClass == CLASS_SVG) {
+		} else if (fileClass == FileClass.SVG) {
 			// text file
 			return new SVGFile(file);
 		}

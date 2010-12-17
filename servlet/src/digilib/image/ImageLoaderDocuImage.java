@@ -123,14 +123,15 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
 	}
 
     /** Check image size and type and store in ImageFile f */
-    public boolean identify(ImageFile imgf) throws IOException {
+    public ImageFile identify(ImageFile imageFile) throws IOException {
         // try parent method first
-        if (super.identify(imgf)) {
-            return true;
+        ImageFile imf = super.identify(imageFile);
+        if (imf != null) {
+            return imf;
         }
         // fileset to store the information
-        ImageFileset imgfs = imgf.getParent();
-        File f = imgf.getFile();
+        ImageFileset imgfs = imageFile.getParent();
+        File f = imageFile.getFile();
         if (f == null) {
             throw new IOException("File not found!");
         }
@@ -152,15 +153,15 @@ public class ImageLoaderDocuImage extends DocuImageImpl {
             try {
                 reader.setInput(istream);
                 ImageSize d = new ImageSize(reader.getWidth(0), reader.getHeight(0));
-                imgf.setSize(d);
+                imageFile.setSize(d);
                 //String t = reader.getFormatName();
                 String t = FileOps.mimeForFile(f);
-                imgf.setMimetype(t);
+                imageFile.setMimetype(t);
                 //logger.debug("  format:"+t);
                 if (imgfs != null) {
                     imgfs.setAspect(d);
                 }
-                return true;
+                return imageFile;
             } finally {
                 // dispose the reader to free resources
                 reader.dispose();

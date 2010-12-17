@@ -33,11 +33,11 @@ import org.apache.log4j.Logger;
 
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthOps;
-import digilib.image.ImageOps;
 import digilib.image.ImageSize;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
 import digilib.io.FileOps;
+import digilib.io.FileOps.FileClass;
 import digilib.io.ImageFile;
 import digilib.io.ImageFileset;
 
@@ -193,7 +193,7 @@ public class DocumentBean {
 		String fn = dlRequest.getFilePath();
 		// get information about the file
 		ImageFileset fileset = (ImageFileset) dirCache.getFile(fn, dlRequest
-				.getAsInt("pn"), FileOps.CLASS_IMAGE);
+				.getAsInt("pn"), FileClass.IMAGE);
 		if (fileset == null) {
 			return;
 		}
@@ -213,7 +213,7 @@ public class DocumentBean {
 		// check image for size if mo=hires
 		if ((! origfile.isChecked())&&dlRequest.hasOption("hires")) {
 			logger.debug("pre-checking image!");
-			ImageOps.checkFile(origfile);
+			DigilibConfiguration.docuImageIdentify(origfile);
 		}
 		ImageSize pixsize = origfile.getSize();
 		if (pixsize != null) {
@@ -238,15 +238,22 @@ public class DocumentBean {
 		return getNumPages(dlRequest);
 	}
 
+    /**
+     * get the number of image pages/files in the directory
+     */
+    public int getNumPages(DigilibRequest request) throws Exception {
+        return getNumPages(request, FileClass.IMAGE);
+    }
+
 	/**
-	 * get the number of pages/files in the directory
+	 * get the number of pages/files of type fc in the directory
 	 */
-	public int getNumPages(DigilibRequest request) throws Exception {
+	public int getNumPages(DigilibRequest request, FileClass fc) throws Exception {
 		logger.debug("getNumPages");
 		DocuDirectory dd = (dirCache != null) ? dirCache.getDirectory(request
 				.getFilePath()) : null;
 		if (dd != null) {
-			return dd.size();
+			return dd.size(fc);
 		}
 		return 0;
 	}

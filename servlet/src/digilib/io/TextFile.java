@@ -23,6 +23,8 @@ package digilib.io;
 
 import java.io.File;
 
+import digilib.io.FileOps.FileClass;
+
 /** Class for text files.
  * 
  * @author casties
@@ -30,7 +32,7 @@ import java.io.File;
  */
 public class TextFile extends DocuDirent {
 	/** this is a text file */
-	protected static int fileClass = FileOps.CLASS_TEXT;
+	protected static FileClass fileClass = FileClass.TEXT;
 	/** our File instance */
 	protected File file = null;
 	

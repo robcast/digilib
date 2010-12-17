@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 import digilib.image.ImageJobDescription;
 import digilib.io.DocuDirectory;
 import digilib.io.FileOpException;
-import digilib.io.FileOps;
+import digilib.io.FileOps.FileClass;
 import digilib.util.NumRange;
 import digilib.util.OptionsSet;
 import digilib.util.ParameterMap;
@@ -93,7 +93,7 @@ public class PDFRequest extends ParameterMap {
 		pages = new NumRange(getAsString("pgs"));
         ImageJobDescription ij = ImageJobDescription.getInstance(this, dlConfig);
         DocuDirectory dir = ij.getFileDirectory();
-        int dirsize = dir.size(FileOps.CLASS_IMAGE);
+        int dirsize = dir.size(FileClass.IMAGE);
         pages.setMaxnum(dirsize);
 	}
 	

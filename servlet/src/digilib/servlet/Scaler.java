@@ -23,7 +23,7 @@ import digilib.image.ImageWorker;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
 import digilib.io.DocuDirent;
-import digilib.io.FileOps;
+import digilib.io.FileOps.FileClass;
 import digilib.io.ImageFile;
 import digilib.util.DigilibJobCenter;
 
@@ -31,7 +31,7 @@ import digilib.util.DigilibJobCenter;
 public class Scaler extends HttpServlet {
 
     /** digilib servlet version (for all components) */
-    public static final String dlVersion = "1.9.0a";
+    public static final String version = "1.9.0a";
 
     /** servlet error codes */
     public static enum Error {UNKNOWN, AUTH, FILE, IMAGE};
@@ -87,10 +87,10 @@ public class Scaler extends HttpServlet {
 
         System.out
                 .println("***** Digital Image Library Image Scaler Servlet (version "
-                        + dlVersion + ") *****");
+                        + version + ") *****");
         // say hello in the log file
         logger.info("***** Digital Image Library Image Scaler Servlet (version "
-                + dlVersion + ") *****");
+                + version + ") *****");
 
         // get our ServletContext
         ServletContext context = config.getServletContext();
@@ -133,7 +133,7 @@ public class Scaler extends HttpServlet {
         DigilibRequest dlReq = new DigilibRequest(request);
 		// find the file(set)
 		DocuDirent f = dirCache.getFile(dlReq.getFilePath(),
-		        dlReq.getAsInt("pn"), FileOps.CLASS_IMAGE);
+		        dlReq.getAsInt("pn"), FileClass.IMAGE);
         // find the requested file
         if (f != null) {
             DocuDirectory dd = (DocuDirectory) f.getParent();
@@ -313,7 +313,7 @@ public class Scaler extends HttpServlet {
     }
 
     public static String getVersion() {
-        return dlVersion;
+        return version;
     }
 
 }

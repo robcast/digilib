@@ -35,10 +35,10 @@ import org.apache.log4j.xml.DOMConfigurator;
 import digilib.auth.AuthOps;
 import digilib.auth.XMLAuthOps;
 import digilib.image.DocuImage;
-import digilib.image.ImageOps;
 import digilib.io.AliasingDocuDirCache;
 import digilib.io.DocuDirCache;
 import digilib.io.FileOps;
+import digilib.io.FileOps.FileClass;
 import digilib.util.DigilibJobCenter;
 
 /**
@@ -51,7 +51,7 @@ import digilib.util.DigilibJobCenter;
 public class Initialiser extends HttpServlet {
 
 	/** servlet version */
-	public static final String iniVersion = "0.2";
+	public static final String version = "0.2";
 
 	/** gengeral logger for this class */
 	private static Logger logger = Logger.getLogger("digilib.init");
@@ -81,7 +81,7 @@ public class Initialiser extends HttpServlet {
 
 		System.out
 				.println("***** Digital Image Library Initialisation Servlet (version "
-						+ iniVersion + ") *****");
+						+ version + ") *****");
 
 		// get our ServletContext
 		ServletContext context = config.getServletContext();
@@ -104,11 +104,10 @@ public class Initialiser extends HttpServlet {
 				// say hello in the log file
 				logger
 						.info("***** Digital Image Library Initialisation Servlet (version "
-								+ iniVersion + ") *****");
+								+ version + ") *****");
 				// directory cache
 				String[] bd = (String[]) dlConfig.getValue("basedir-list");
-				int[] fcs = { FileOps.CLASS_IMAGE, FileOps.CLASS_TEXT,
-						FileOps.CLASS_SVG };
+				FileClass[] fcs = { FileClass.IMAGE, FileClass.TEXT };
 				if (dlConfig.getAsBoolean("use-mapping")) {
 					// with mapping file
 					File mapConf = ServletOps.getConfigFile((File) dlConfig
@@ -135,21 +134,20 @@ public class Initialiser extends HttpServlet {
 				// DocuImage class
 				DocuImage di = dlConfig.getDocuImageInstance();
 				dlConfig.setValue("servlet.docuimage.class", di.getClass().getName());
-                ImageOps.setDocuImage(di);
 				// digilib worker threads
 				int nt = dlConfig.getAsInt("worker-threads");
                 int mt = dlConfig.getAsInt("max-waiting-threads");
-				imageEx = new DigilibJobCenter<DocuImage>(nt, mt, true);
+				imageEx = new DigilibJobCenter<DocuImage>(nt, mt, true, "servlet.worker.imageexecutor");
                 dlConfig.setValue("servlet.worker.imageexecutor", imageEx);				
 				// PDF worker threads
 				int pnt = dlConfig.getAsInt("pdf-worker-threads");
                 int pmt = dlConfig.getAsInt("pdf-max-waiting-threads");
-				pdfEx = new DigilibJobCenter<OutputStream>(pnt, pmt, true);
+				pdfEx = new DigilibJobCenter<OutputStream>(pnt, pmt, true, "servlet.worker.pdfexecutor");
                 dlConfig.setValue("servlet.worker.pdfexecutor", pdfEx);				
 				// PDF image worker threads
 				int pint = dlConfig.getAsInt("pdf-image-worker-threads");
                 int pimt = dlConfig.getAsInt("pdf-image-max-waiting-threads");
-				pdfImageEx = new DigilibJobCenter<DocuImage>(pint, pimt, true);
+				pdfImageEx = new DigilibJobCenter<DocuImage>(pint, pimt, true, "servlet.worker.pdfimageexecutor");
                 dlConfig.setValue("servlet.worker.pdfimageexecutor", pdfImageEx);				
 				// set as the servlets main config
 				context.setAttribute("digilib.servlet.configuration", dlConfig);
@@ -161,7 +159,7 @@ public class Initialiser extends HttpServlet {
 			// say hello in the log file
 			logger
 					.info("***** Digital Image Library Initialisation Servlet (version "
-							+ iniVersion + ") *****");
+							+ version + ") *****");
 			logger.warn("Already initialised!");
 		}
 	}

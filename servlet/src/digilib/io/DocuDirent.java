@@ -27,6 +27,8 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import digilib.io.FileOps.FileClass;
+
 /**
  * Abstract directory entry in a DocuDirectory.
  * 
@@ -36,7 +38,7 @@ import org.apache.log4j.Logger;
 public abstract class DocuDirent implements Comparable<Object> {
 
 	/** the file class of this file */
-	protected static int fileClass = FileOps.CLASS_NONE;
+	protected static FileClass fileClass = FileClass.NONE;
 	/** HashMap with metadata */
 	protected MetadataMap fileMeta = null;
 	/** Is the Metadata valid */
@@ -145,7 +147,7 @@ public abstract class DocuDirent implements Comparable<Object> {
 	/**
 	 * @return
 	 */
-	public static int getFileClass() {
+	public static FileClass getFileClass() {
 		return fileClass;
 	}
 

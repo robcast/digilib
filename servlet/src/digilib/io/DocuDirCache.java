@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import digilib.io.FileOps.FileClass;
 import digilib.servlet.DigilibConfiguration;
 
 /**
@@ -47,7 +48,7 @@ public class DocuDirCache {
 	String[] baseDirNames = null;
 
 	/** array of allowed file classes (image/text) */
-	private int[] fileClasses = null;
+	private FileClass[] fileClasses = null;
 
 	/** number of files in the whole cache (approximate) */
 	long numFiles = 0;
@@ -67,11 +68,11 @@ public class DocuDirCache {
 	 * @param bd
 	 *            base directory names
 	 */
-	public DocuDirCache(String[] bd, int[] fileClasses,
+	public DocuDirCache(String[] bd, FileClass[] fcs,
 			DigilibConfiguration dlConfig) {
 		baseDirNames = bd;
 		map = new HashMap<String, DocuDirectory>();
-		this.fileClasses = fileClasses;
+		this.fileClasses = fcs;
 	}
 
 	/**
@@ -84,8 +85,7 @@ public class DocuDirCache {
 		baseDirNames = bd;
 		map = new HashMap<String, DocuDirectory>();
 		// default file class is CLASS_IMAGE
-		fileClasses = new int[1];
-		fileClasses[0] = FileOps.CLASS_IMAGE;
+		fileClasses = new FileClass[] { FileClass.IMAGE };
 	}
 
 	/**
@@ -122,7 +122,7 @@ public class DocuDirCache {
 		String parent = FileOps.parent(newDir.getDirName());
 		if (parent != "") {
 			// check the parent in the cache
-			DocuDirectory pd = (DocuDirectory) map.get(parent);
+			DocuDirectory pd = map.get(parent);
 			if (pd == null) {
 				// the parent is unknown
 				pd = new DocuDirectory(parent, this);
@@ -175,12 +175,12 @@ public class DocuDirCache {
 	 *            file class
 	 * @return
 	 */
-	public DocuDirent getFile(String fn, int in, int fc) {
+	public DocuDirent getFile(String fn, int in, FileClass fc) {
 		DocuDirectory dd;
 		// file number is 1-based, vector index is 0-based
 		int n = in - 1;
 		// first, assume fn is a directory and look in the cache
-		dd = (DocuDirectory) map.get(fn);
+		dd = map.get(fn);
         // logger.debug("fn: " + fn);
         // logger.debug("dd: " + dd);
 		if (dd == null) {
@@ -206,7 +206,7 @@ public class DocuDirCache {
 				String d = FileOps.parent(fn);
 				// try it in the cache
                 // logger.debug(fn + " is a file in dir " + d);
-				dd = (DocuDirectory) map.get(d);
+				dd = map.get(d);
 				if (dd == null) {
 					// try to read from disk
 					dd = new DocuDirectory(d, this);
@@ -255,7 +255,7 @@ public class DocuDirCache {
 	public DocuDirectory getDirectory(String fn) {
 		DocuDirectory dd;
 		// first, assume fn is a directory and look in the cache
-		dd = (DocuDirectory) map.get(fn);
+		dd = map.get(fn);
 		if (dd == null) {
 			// cache miss
 			misses++;
@@ -271,7 +271,7 @@ public class DocuDirCache {
 				// maybe it's a file
 				if (f.canRead()) {
 					// try the parent directory in the cache
-					dd = (DocuDirectory) map.get(f.getParent());
+					dd = map.get(f.getParent());
 					if (dd == null) {
 						// try to read from disk
 						dd = new DocuDirectory(f.getParent(), this);
@@ -343,14 +343,14 @@ public class DocuDirCache {
 	/**
 	 * @return
 	 */
-	public int[] getFileClasses() {
+	public FileClass[] getFileClasses() {
 		return fileClasses;
 	}
 
 	/**
 	 * @param fileClasses
 	 */
-	public void setFileClasses(int[] fileClasses) {
+	public void setFileClasses(FileClass[] fileClasses) {
 		this.fileClasses = fileClasses;
 	}
 

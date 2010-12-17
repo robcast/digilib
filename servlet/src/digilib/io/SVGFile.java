@@ -23,6 +23,8 @@ package digilib.io;
 
 import java.io.File;
 
+import digilib.io.FileOps.FileClass;
+
 /** Class for SVG files.
  * 
  * @author casties
@@ -30,7 +32,7 @@ import java.io.File;
  */
 public class SVGFile extends DocuDirent {
 	/** this is a text file */
-	protected static int fileClass = FileOps.CLASS_SVG;
+	protected static FileClass fileClass = FileClass.SVG;
 	/** our File instance */
 	protected File file = null;
 	

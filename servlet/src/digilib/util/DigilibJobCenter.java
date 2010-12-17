@@ -29,20 +29,24 @@ public class DigilibJobCenter<V> {
     private int maxThreads = 1;
     /** max number of waiting threads */
     private int maxQueueLen = 50;
+    /** label for this job center */
+    private String label = "";
     
     /**
      * @param maxThreads
+     * @param label TODO
      * @param maxQueueLength
      */
-    public DigilibJobCenter(int maxThreads, int maxQueueLen, boolean prestart) {
+    public DigilibJobCenter(int maxThreads, int maxQueueLen, boolean prestart, String label) {
         super();
+        this.label = (label != null) ? label : "";
         this.maxThreads = maxThreads;
         this.maxQueueLen = maxQueueLen;
         executor = Executors.newFixedThreadPool(maxThreads);
         if (prestart) {
             // prestart threads so Tomcat's leak protection doesn't complain
             int st = ((ThreadPoolExecutor)executor).prestartAllCoreThreads();
-            logger.debug("prestarting threads: "+st);
+            logger.debug(label+" prestarting threads: "+st);
         }
     }
     
@@ -62,7 +66,7 @@ public class DigilibJobCenter<V> {
     public boolean canRun() {
         int jql = getWaitingJobs();
         int jrl = getRunningJobs();
-        logger.debug("canRun: waiting jobs="+jql+" running jobs="+jrl);
+        logger.debug(label+" canRun: waiting jobs="+jql+" running jobs="+jrl);
         return (jql <= maxQueueLen);
     }
     
@@ -73,7 +77,7 @@ public class DigilibJobCenter<V> {
     public boolean isBusy() {
         int jql = getWaitingJobs();
         int jrl = getRunningJobs();
-        logger.debug("isBusy: waiting jobs="+jql+" running jobs="+jrl);
+        logger.debug(label+" isBusy: waiting jobs="+jql+" running jobs="+jrl);
         return (jql > maxQueueLen);
     }
     

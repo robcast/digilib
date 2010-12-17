@@ -30,6 +30,8 @@ import java.util.Map;
 
 import org.xml.sax.SAXException;
 
+import digilib.io.FileOps.FileClass;
+
 /**
  * @author casties
  */
@@ -88,12 +90,11 @@ public class DocuDirectory extends Directory {
 	 */
 	protected void initDir() {
 		String baseDirName = cache.getBaseDirNames()[0];
-		// clear directory first
-		//list = new ArrayList[FileOps.NUM_CLASSES];
-
-		list = new ArrayList<List<DocuDirent>>(FileOps.NUM_CLASSES);
-		// create empty list
-		for (int i=0; i < FileOps.NUM_CLASSES; ++i) {
+		// clear directory list
+		FileClass[] fcs = FileClass.values();
+		list = new ArrayList<List<DocuDirent>>(fcs.length);
+		// create empty list for all classes
+		for (@SuppressWarnings("unused") FileClass fc: fcs) {
 		    list.add(null);
 		}
 		isValid = false;
@@ -116,12 +117,12 @@ public class DocuDirectory extends Directory {
 	 * @param fc
 	 *            fileClass
 	 */
-	public int size(int fc) {
-		return ((list != null) && (list.get(fc) != null)) ? list.get(fc).size() : 0;
+	public int size(FileClass fc) {
+		return ((list != null) && (list.get(fc.ordinal()) != null)) ? list.get(fc.ordinal()).size() : 0;
 	}
 
 	/**
-	 * Returns the ImageFile at the index.
+	 * Returns the ImageFileSet at the index.
 	 * 
 	 * @param index
 	 * @return
@@ -141,11 +142,11 @@ public class DocuDirectory extends Directory {
 	 *            fileClass
 	 * @return
 	 */
-	public DocuDirent get(int index, int fc) {
-		if ((list == null) || (list.get(fc) == null) || (index >= list.get(fc).size())) {
+	public DocuDirent get(int index, FileClass fc) {
+		if ((list == null) || (list.get(fc.ordinal()) == null) || (index >= list.get(fc.ordinal()).size())) {
 			return null;
 		}
-		return (DocuDirent) list.get(fc).get(index);
+		return (DocuDirent) list.get(fc.ordinal()).get(index);
 	}
 
 	/**
@@ -212,10 +213,9 @@ public class DocuDirectory extends Directory {
 		}
 
 		// go through all file classes
-		for (int classIdx = 0; classIdx < FileOps.NUM_CLASSES; classIdx++) {
-			int fileClass = cache.getFileClasses()[classIdx];
-			//logger.debug("filtering directory "+dir.getPath()+" for class
-			// "+fc);
+        //for (int classIdx = 0; classIdx < FileOps.NUM_CLASSES; classIdx++) {
+		for (FileClass fileClass: cache.getFileClasses()) {
+			//fileClass = cache.getFileClasses()[classIdx];
 			File[] fileList = FileOps.listFiles(allFiles, FileOps
 					.filterForClass(fileClass));
 			//logger.debug(" done");
@@ -223,7 +223,7 @@ public class DocuDirectory extends Directory {
 			int numFiles = fileList.length;
 			if (numFiles > 0) {
 				// create new list
-				list.set(fileClass, new ArrayList<DocuDirent>(numFiles));
+				list.set(fileClass.ordinal(), new ArrayList<DocuDirent>(numFiles));
 				// sort the file names alphabetically and iterate the list
 				// Arrays.sort(fileList); // not needed <hertzhaft>
 				Map<Integer, Object> hints = FileOps.newHints(FileOps.HINT_BASEDIRS, dirs);
@@ -234,12 +234,12 @@ public class DocuDirectory extends Directory {
 					// add the file to our list
                     // logger.debug(f.getName());
 
-					list.get(fileClass).add(f);
+					list.get(fileClass.ordinal()).add(f);
 					f.setParent(this);
 				}
                 // we sort the inner ArrayList (the list of files not the list of file types)
 				// for binarySearch to work (DocuDirent's natural sort order is by filename)
-                Collections.sort(list.get(fileClass));
+                Collections.sort(list.get(fileClass.ordinal()));
 			}
 		}
 		// clear the scaled directories
@@ -344,13 +344,12 @@ public class DocuDirectory extends Directory {
 		}
 		String path = (relPath != null) ? (relPath + "/") : "";
 		// go through all file classes
-		for (int nc = 0; nc < list.size(); nc++) {
-			int fc = cache.getFileClasses()[nc];
-			if (list.get(fc) == null) {
+		for (FileClass fc: FileClass.values()) {
+			if (list.get(fc.ordinal()) == null) {
 				continue;
 			}
 			// iterate through the list of files in this directory
-			for (DocuDirent f: list.get(fc)) {
+			for (DocuDirent f: list.get(fc.ordinal())) {
 				// prepend path to the filename
 				String fn = path + f.getName();
 				// look up meta for this file and remove from dir
@@ -397,7 +396,7 @@ public class DocuDirectory extends Directory {
 	 * @return int index of file <code>fn</code>
 	 */
 	public int indexOf(String fn) {
-		int fc = FileOps.classForFilename(fn);
+		FileClass fc = FileOps.classForFilename(fn);
 		return indexOf(fn, fc);
 	}
 
@@ -411,14 +410,14 @@ public class DocuDirectory extends Directory {
 	 *            filename
 	 * @return int index of file <code>fn</code>
 	 */
-	public int indexOf(String fn, int fc) {
+	public int indexOf(String fn, FileClass fc) {
 		if (!isRead()) {
 			// read directory now
 			if (!readDir()) {
 				return -1;
 			}
 		}
-		List<DocuDirent> fileList = list.get(fc);
+		List<DocuDirent> fileList = list.get(fc.ordinal());
 		// empty directory?
 		if (fileList == null) {
 			return -1;
@@ -434,15 +433,15 @@ public class DocuDirectory extends Directory {
 			// try closest matches without extension
 			idx = -idx - 1;
 			if ((idx < fileList.size())
-					&& isBaseInList(fileList, idx, fn)) {
+					&& isBasenameInList(fileList, idx, fn)) {
 				// idx matches
 				return idx;
 			} else if ((idx > 0)
-					&& isBaseInList(fileList, idx-1, fn)) {
+					&& isBasenameInList(fileList, idx-1, fn)) {
 				// idx-1 matches
 				return idx - 1;
 			} else if ((idx + 1 < fileList.size())
-					&& isBaseInList(fileList, idx+1, fn)) {
+					&& isBasenameInList(fileList, idx+1, fn)) {
 				// idx+1 matches
 				return idx + 1;
 			}
@@ -451,7 +450,7 @@ public class DocuDirectory extends Directory {
 		return -1;
 	}
 
-	private boolean isBaseInList(List<DocuDirent> fl, int idx, String fn) {
+	private boolean isBasenameInList(List<DocuDirent> fl, int idx, String fn) {
 		String dfn = FileOps.basename((fl.get(idx))
 				.getName());
 		return (dfn.equals(fn)||dfn.equals(FileOps.basename(fn))); 
@@ -469,7 +468,7 @@ public class DocuDirectory extends Directory {
 	 * @return DocuDirent
 	 */
 	public DocuDirent find(String fn) {
-		int fc = FileOps.classForFilename(fn);
+		FileClass fc = FileOps.classForFilename(fn);
 		int i = indexOf(fn, fc);
 		if (i >= 0) {
 			return (DocuDirent) list.get(0).get(i);
@@ -488,10 +487,10 @@ public class DocuDirectory extends Directory {
 	 *            filename
 	 * @return DocuDirent
 	 */
-	public DocuDirent find(String fn, int fc) {
+	public DocuDirent find(String fn, FileClass fc) {
 		int i = indexOf(fn, fc);
 		if (i >= 0) {
-			return (DocuDirent) list.get(fc).get(i);
+			return (DocuDirent) list.get(fc.ordinal()).get(i);
 		}
 		return null;
 	}
