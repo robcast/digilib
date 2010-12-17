@@ -75,6 +75,10 @@ public abstract class DocuImageImpl implements DocuImage {
 	}
 
     /** Check image size and type and store in ImageFile f */
+    public static boolean identifyImg(ImageFile imgf) throws IOException {
+    }
+
+    /** Check image size and type and store in ImageFile f */
     public boolean identify(ImageFile imgf) throws IOException {
         // fileset to store the information
         File f = imgf.getFile();
