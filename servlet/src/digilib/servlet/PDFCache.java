@@ -62,17 +62,14 @@ public class PDFCache extends HttpServlet {
 	
 	private static String JSP_ERROR = "/pdf/error.jsp";
 	
-	public static Integer STATUS_DONE = 0;  	// document exists in cache
+	/** document status.
+	 *  DONE: document exists in cache
+	 *  WIP: document is "work in progress"
+	 *  NONEXISTENT: document does not exist in cache and is not in progress
+	 *  ERROR: an error occurred while processing the request
+	 */
+	public static enum PDFStatus {DONE, WIP, NONEXISTENT, ERROR};
 
-	public static Integer STATUS_WIP = 1;  		// document is "work in progress"
-	
-	public static Integer STATUS_NONEXISTENT = 2;  	// document does not exist in cache and is not in progress
-	
-	public static Integer STATUS_ERROR = 3;     // an error occurred while processing the request
-	
-	
-	// TODO ? functionality for the pre-generation of complete books/chapters using default values
-	
 	
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
@@ -166,13 +163,13 @@ public class PDFCache extends HttpServlet {
 		
 		// if some invalid data has been entered ...
 		if(!pdfji.checkValidity()) {
-			notifyUser(STATUS_ERROR, docid, request, response);
+			notifyUser(PDFStatus.ERROR, docid, request, response);
 			return;
 		}
 		
-		int status = getStatus(docid);
+		PDFStatus status = getStatus(docid);
 		
-        if (status == STATUS_NONEXISTENT) {
+        if (status == PDFStatus.NONEXISTENT) {
         	// not there -- start creation
             try {
 				createNewPdfDocument(pdfji, docid);
@@ -180,9 +177,9 @@ public class PDFCache extends HttpServlet {
 			} catch (FileNotFoundException e) {
 				// error in pdf creation
                 logger.error(e.getMessage());
-				notifyUser(STATUS_ERROR, docid, request, response);
+				notifyUser(PDFStatus.ERROR, docid, request, response);
 			}
-        } else if (status == STATUS_DONE) {
+        } else if (status == PDFStatus.DONE) {
         	// pdf created -- send it
             try {
                 ServletOps.sendFile(getCacheFile(docid), "application/pdf", getDownloadFilename(pdfji), response);
@@ -198,7 +195,7 @@ public class PDFCache extends HttpServlet {
 	    } catch (Exception e) {
             // error in pdf creation
             logger.error(e.getMessage());
-            notifyUser(STATUS_ERROR, docid, request, response);
+            notifyUser(PDFStatus.ERROR, docid, request, response);
 	    }
 	}
 
@@ -210,21 +207,21 @@ public class PDFCache extends HttpServlet {
 	 * @param request
 	 * @param response
 	 */
-	public void notifyUser(int status, String documentid, HttpServletRequest request, HttpServletResponse response){
+	public void notifyUser(PDFStatus status, String documentid, HttpServletRequest request, HttpServletResponse response){
 		
 		String jsp=null;
 		
-		if(status == STATUS_NONEXISTENT){
+		if(status == PDFStatus.NONEXISTENT){
 			// tell the user that the document has to be created before he/she can download it
 			logger.debug("PDFCache: "+documentid+" has STATUS_NONEXISTENT.");
 			jsp = JSP_WIP;
-		} else if(status == STATUS_WIP){
+		} else if(status == PDFStatus.WIP){
 			logger.debug("PDFCache: "+documentid+" has STATUS_WIP.");
 			jsp = JSP_WIP;
 
 			// TODO: estimate remaining work time
 			// TODO: tell the user he/she has to wait
-		} else if(status == STATUS_DONE){
+		} else if(status == PDFStatus.DONE){
 			logger.debug("PDFCache: "+documentid+" has STATUS_DONE.");
 		} else {
 			logger.debug("PDFCache: "+documentid+" has STATUS_ERROR.");
@@ -248,16 +245,16 @@ public class PDFCache extends HttpServlet {
 
 	
 	/** check the status of the document corresponding to the documentid */
-	public Integer getStatus(String documentid){
+	public PDFStatus getStatus(String documentid){
 		// looks into the cache and temp directory in order to find out the status of the document
 		File cached = getCacheFile(documentid);
 		File wip = getTempFile(documentid);
 		if(cached.exists()){
-			return STATUS_DONE;
+			return PDFStatus.DONE;
 		} else if (wip.exists()){
-			return STATUS_WIP;
+			return PDFStatus.WIP;
 		} else {
-			return STATUS_NONEXISTENT;
+			return PDFStatus.NONEXISTENT;
 		}
 	}
 
