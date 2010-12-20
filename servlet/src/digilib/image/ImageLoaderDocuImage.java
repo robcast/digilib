@@ -179,13 +179,18 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		}
 		RandomAccessFile rf = new RandomAccessFile(f.getFile(), "r");
 		ImageInputStream istream = new FileImageInputStream(rf);
-		// Iterator readers = ImageIO.getImageReaders(istream);
+		Iterator<ImageReader> readers;
 		String mt = f.getMimetype();
-		logger.debug("File type:" + mt);
-		Iterator<ImageReader> readers = ImageIO.getImageReadersByMIMEType(mt);
+		if (mt == null) {
+			logger.debug("No mime-type. Trying automagic.");
+			readers = ImageIO.getImageReaders(istream);
+		} else {
+			logger.debug("File type:" + mt);
+			readers = ImageIO.getImageReadersByMIMEType(mt);
+		}
 		if (!readers.hasNext()) {
 		    rf.close();
-			throw new FileOpException("Unable to load File!");
+			throw new FileOpException("Can't find Reader to load File!");
 		}
 		reader = readers.next();
 		/* are there more readers? */
@@ -302,15 +307,14 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		AffineTransformOp scaleOp = new AffineTransformOp(AffineTransform
 				.getScaleInstance(scale, scale), renderHint);
 		BufferedImage scaledImg = null;
-		// enforce destination image type (*Java2D BUG*)
+		/* enforce destination image type (*Java2D BUG*)
 		int type = img.getType();
-		// FIXME: which type would be best?
 		if ((quality > 0) && (type != 0)) {
 			logger.debug("creating destination image");
 			Rectangle2D dstBounds = scaleOp.getBounds2D(img);
 			scaledImg = new BufferedImage((int) dstBounds.getWidth(),
 					(int) dstBounds.getHeight(), type);
-		}
+		} */
 		logger.debug("scaling...");
 		scaledImg = scaleOp.filter(img, scaledImg);
 		if (scaledImg == null) {
@@ -340,9 +344,10 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		// blur with convolve operation
 		ConvolveOp blurOp = new ConvolveOp(blur, ConvolveOp.EDGE_NO_OP,
 				renderHint);
-		// blur needs explicit destination image type for color *Java2D BUG*
 		BufferedImage blurredImg = null;
+		// blur needs explicit destination image type for color *Java2D BUG*
 		if (img.getType() == BufferedImage.TYPE_3BYTE_BGR) {
+			logger.debug("blur: fixing destination image type");
 			blurredImg = new BufferedImage(img.getWidth(), img.getHeight(), img
 					.getType());
 		}
@@ -354,9 +359,6 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			throws ImageOpException {
 		// setup Crop
 		BufferedImage croppedImg = img.getSubimage(x_off, y_off, width, height);
-		// DEBUG
-		// util.dprintln(2, " time
-		// "+(System.currentTimeMillis()-startTime)+"ms");
 		if (croppedImg == null) {
 			throw new ImageOpException("Unable to crop");
 		}
@@ -386,12 +388,10 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 	}
 
 	public void enhanceRGB(float[] rgbm, float[] rgba) throws ImageOpException {
-
 		/*
 		 * The number of constants must match the number of bands in the image.
 		 * We do only 3 (RGB) bands.
 		 */
-
 		int ncol = img.getColorModel().getNumColorComponents();
 		if ((ncol != 3) || (rgbm.length != 3) || (rgba.length != 3)) {
 			logger
@@ -464,9 +464,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		double xoff = rotbounds.getX();
 		double yoff = rotbounds.getY();
 		// move image back in line
-		trafo
-				.preConcatenate(AffineTransform.getTranslateInstance(-xoff,
-						-yoff));
+		trafo.preConcatenate(AffineTransform.getTranslateInstance(-xoff, -yoff));
 		// transform image
 		rotOp = new AffineTransformOp(trafo, renderHint);
 		BufferedImage rotImg = rotOp.filter(img, null);

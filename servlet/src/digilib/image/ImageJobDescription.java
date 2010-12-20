@@ -109,10 +109,8 @@ public class ImageJobDescription extends ParameterMap {
 	 */
 	@Override
 	protected void initOptions() {
-		if (options == null) {
-			String s = this.getAsString("mo");
-			options = new OptionsSet(s);
-		}
+		String s = this.getAsString("mo");
+		options = new OptionsSet(s);
 	}
 
 
@@ -376,7 +374,7 @@ public class ImageJobDescription extends ParameterMap {
 		return paramDH;
 	}
 	
-	public Integer get_scaleQual(){
+	public Integer getScaleQual(){
 		logger.debug("get_scaleQual()");
 		Integer qual = dlConfig.getAsInt("default-quality");
 		if(hasOption("q0"))

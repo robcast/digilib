@@ -48,7 +48,7 @@ public class ImageWorker implements Callable<DocuImage> {
         }
 
         // set interpolation quality
-        docuImage.setQuality(jobinfo.get_scaleQual());
+        docuImage.setQuality(jobinfo.getScaleQual());
 
         Rectangle loadRect = jobinfo.getOuterUserImgArea().getBounds();
         float scaleXY = jobinfo.getScaleXY();
@@ -61,7 +61,7 @@ public class ImageWorker implements Callable<DocuImage> {
             if (scaleXY < 1) {
                 subf = 1 / scaleXY;
                 // for higher quality reduce subsample factor by minSubsample
-                if (jobinfo.get_scaleQual() > 0) {
+                if (jobinfo.getScaleQual() > 0) {
                     subsamp = (float) Math.max(Math.floor(subf / dlConfig.getAsFloat("subsample-minimum")), 1d);
                 } else {
                     subsamp = (float) Math.floor(subf);
