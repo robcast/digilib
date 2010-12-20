@@ -22,13 +22,14 @@
 package digilib.io;
 
 import java.io.File;
+import java.io.InputStream;
 
 import digilib.image.ImageSize;
 
 /**
  * @author casties
  */
-public class ImageFile {
+public class ImageFile implements ImageInput {
 	
 	// file name
 	private String filename = null;
@@ -53,6 +54,18 @@ public class ImageFile {
 		this.filename = f.getName();
 	}
 	
+	
+	@Override
+	public boolean hasFile() {
+		// this is File-based
+		return true;
+	}
+
+	@Override
+	public boolean hasStream() {
+		return false;
+	}
+
 	/** Returns the file name (without path).
 	 * 
 	 * @return
@@ -65,6 +78,7 @@ public class ImageFile {
 	/**
 	 * @return File
 	 */
+	@Override
 	public File getFile() {
 		if (dir == null) {
 			return null;
@@ -73,24 +87,26 @@ public class ImageFile {
 		return f;
 	}
 
-	/**
-	 * @return ImageSize
+	/* (non-Javadoc)
+	 * @see digilib.io.ImageInput#getSize()
 	 */
+	@Override
 	public ImageSize getSize() {
 		return pixelSize;
 	}
 
-	/**
-	 * @return String
+	/* (non-Javadoc)
+	 * @see digilib.io.ImageInput#getMimetype()
 	 */
+	@Override
 	public String getMimetype() {
 		return mimetype;
 	}
 
-	/**
-	 * Sets the imageSize.
-	 * @param imageSize The imageSize to set
+	/* (non-Javadoc)
+	 * @see digilib.io.ImageInput#setSize(digilib.image.ImageSize)
 	 */
+	@Override
 	public void setSize(ImageSize imageSize) {
 		this.pixelSize = imageSize;
 		// pass on to parent
@@ -99,10 +115,10 @@ public class ImageFile {
 		}
 	}
 
-	/**
-	 * Sets the mimetype.
-	 * @param mimetype The mimetype to set
+	/* (non-Javadoc)
+	 * @see digilib.io.ImageInput#setMimetype(java.lang.String)
 	 */
+	@Override
 	public void setMimetype(String filetype) {
 		this.mimetype = filetype;
 	}
@@ -122,19 +138,25 @@ public class ImageFile {
 		this.parent = parent;
 	}
 
-	/**
-	 * @return boolean
+	/* (non-Javadoc)
+	 * @see digilib.io.ImageInput#isChecked()
 	 */
+	@Override
 	public boolean isChecked() {
 		return (pixelSize != null);
 	}
 	
-	/** Returns the aspect ratio of the image (width/height).
-	 * 
-	 * @return
+	/* (non-Javadoc)
+	 * @see digilib.io.ImageInput#getAspect()
 	 */
+	@Override
 	public float getAspect() {
 		return (pixelSize != null) ? pixelSize.getAspect() : 0;
+	}
+
+	@Override
+	public InputStream getStream() {
+		return null;
 	}
 
 }

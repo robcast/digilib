@@ -36,6 +36,7 @@ import digilib.image.DocuImage;
 import digilib.image.DocuImageImpl;
 import digilib.io.FileOps;
 import digilib.io.ImageFile;
+import digilib.io.ImageInput;
 import digilib.io.XMLListLoader;
 import digilib.util.Parameter;
 import digilib.util.ParameterMap;
@@ -277,7 +278,7 @@ public class DigilibConfiguration extends ParameterMap {
 	 * @return
 	 * @throws IOException
 	 */
-	public static ImageFile docuImageIdentify(ImageFile imgf) throws IOException {
+	public static ImageInput docuImageIdentify(ImageFile imgf) throws IOException {
 	    // use fresh DocuImage instance
 	    DocuImage di = getDocuImageInstance();
 		return di.identify(imgf);

@@ -47,6 +47,7 @@ import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.ImageFile;
 import digilib.io.ImageFileset;
+import digilib.io.ImageInput;
 
 /** A DocuImage implementation using Java Advanced Imaging Library. */
 public class JAIDocuImage extends ImageInfoDocuImage {
@@ -99,9 +100,9 @@ public class JAIDocuImage extends ImageInfoDocuImage {
     }
 
 	/* Check image size and type and store in ImageFile f */
-	public ImageFile identify(ImageFile imageFile) throws IOException {
+	public ImageInput identify(ImageFile imageFile) throws IOException {
         // try parent method first
-	    ImageFile imf = super.identify(imageFile);
+	    ImageInput imf = super.identify(imageFile);
 		if (imf != null) {
 			return imf;
 		}

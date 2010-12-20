@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 
 import digilib.io.FileOpException;
 import digilib.io.ImageFile;
+import digilib.io.ImageInput;
 
 /** Simple abstract implementation of the <code>DocuImage</code> interface.
  *
@@ -101,7 +102,7 @@ public abstract class DocuImageImpl implements DocuImage {
     /* (non-Javadoc)
      * @see digilib.image.DocuImage#identify(digilib.io.ImageFile)
      */
-    public ImageFile identify(ImageFile imgf) throws IOException {
+    public ImageInput identify(ImageFile imgf) throws IOException {
         // just a do-nothing implementation
         return null;
     }

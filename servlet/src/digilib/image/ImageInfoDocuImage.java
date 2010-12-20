@@ -10,6 +10,7 @@ import java.io.RandomAccessFile;
 import org.marcoschmidt.image.ImageInfo;
 
 import digilib.io.ImageFile;
+import digilib.io.ImageInput;
 
 /** Simple abstract implementation of the <code>DocuImage</code> interface.
  * Implements only the identify method using the ImageInfo class.
@@ -19,7 +20,7 @@ import digilib.io.ImageFile;
 public abstract class ImageInfoDocuImage extends DocuImageImpl {
 
     /** Check image size and type and store in ImageFile f */
-    public ImageFile identify(ImageFile imgf) throws IOException {
+    public ImageInput identify(ImageFile imgf) throws IOException {
         // fileset to store the information
         File f = imgf.getFile();
         if (f == null) {

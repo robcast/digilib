@@ -27,6 +27,7 @@ import java.util.Iterator;
 
 import digilib.io.ImageFile;
 import digilib.io.FileOpException;
+import digilib.io.ImageInput;
 
 /** The basic class for the representation of a digilib image.
  *
@@ -44,7 +45,7 @@ public interface DocuImage {
 	 */
 	public void loadImage(ImageFile f) throws FileOpException;
 
-	/** This DocuImage support the loadSubImage operation.
+	/** This DocuImage supports the loadSubImage operation.
 	 * 
 	 * @return boolean
 	 */
@@ -214,7 +215,7 @@ public interface DocuImage {
     /**
      * Check image size and type and store in ImageFile f
      */
-    public ImageFile identify(ImageFile imgf) throws IOException;
+    public ImageInput identify(ImageFile imgf) throws IOException;
 
     /**
      * Returns a list of supported image formats

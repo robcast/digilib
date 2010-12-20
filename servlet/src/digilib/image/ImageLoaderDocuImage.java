@@ -50,6 +50,7 @@ import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.ImageFile;
 import digilib.io.ImageFileset;
+import digilib.io.ImageInput;
 
 /** Implementation of DocuImage using the ImageLoader API of Java 1.4 and Java2D. */
 public class ImageLoaderDocuImage extends ImageInfoDocuImage {
@@ -123,9 +124,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 	}
 
     /** Check image size and type and store in ImageFile f */
-    public ImageFile identify(ImageFile imageFile) throws IOException {
+    public ImageInput identify(ImageFile imageFile) throws IOException {
         // try parent method first
-        ImageFile imf = super.identify(imageFile);
+        ImageInput imf = super.identify(imageFile);
         if (imf != null) {
             return imf;
         }
