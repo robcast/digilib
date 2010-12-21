@@ -184,7 +184,7 @@ public class PDFCache extends HttpServlet {
             try {
                 ServletOps.sendFile(getCacheFile(docid), "application/pdf", getDownloadFilename(pdfji), response);
                 //sendFile(docid, getDownloadFilename(pdfji), response);
-            } catch (IOException e) {
+            } catch (Exception e) {
             	// sending didn't work
                 logger.error(e.getMessage());
             }

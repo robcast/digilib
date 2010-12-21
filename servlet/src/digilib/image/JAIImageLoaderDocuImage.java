@@ -35,6 +35,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.JAI;
+import javax.servlet.ServletException;
 
 import digilib.io.FileOpException;
 import digilib.io.ImageFile;
@@ -54,33 +55,29 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 		return true;
 	}
 
-	public int getHeight() {
-		int h = 0;
-		try {
-			if (img == null) {
-				h = reader.getHeight(0);
-			} else {
-				h = img.getHeight();
-			}
-		} catch (IOException e) {
-			logger.debug("error in getHeight", e);
-		}
-		return h;
-	}
+    /* returns the size of the current image */
+    public ImageSize getSize() {
+        ImageSize is = null;
+        // TODO: can we cache imageSize?
+        int h = 0;
+        int w = 0;
+        try {
+            if (img == null) {
+                // get size from ImageReader
+                h = reader.getHeight(0);
+                w = reader.getWidth(0);
+            } else {
+                // get size from image
+                h = img.getHeight();
+                w = img.getWidth();
+            }
+            is = new ImageSize(w, h);
+        } catch (IOException e) {
+            logger.debug("error in getSize:", e);
+        }
+        return is;
+    }
 
-	public int getWidth() {
-		int w = 0;
-		try {
-			if (img == null) {
-				w = reader.getWidth(0);
-			} else {
-				w = img.getWidth();
-			}
-		} catch (IOException e) {
-			logger.debug("error in getHeight", e);
-		}
-		return w;
-	}
 
 	/* Load an image file into the Object. */
 	public void loadImage(ImageFile f) throws FileOpException {
@@ -147,7 +144,7 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 
 	/* Write the current image to an OutputStream. */
 	public void writeImage(String mt, OutputStream ostream)
-		throws FileOpException {
+		throws ImageOpException, ServletException {
 		logger.debug("writeImage");
 		try {
 			// setup output
@@ -160,12 +157,12 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 				pb3.add("PNG");
 			} else {
 				// unknown mime type
-				throw new FileOpException("Unknown mime type: " + mt);
+				throw new ImageOpException("Unknown mime type: " + mt);
 			}
 			// render output
 			JAI.create("ImageWrite", pb3);
-		} catch (IOException e) {
-			throw new FileOpException("Error writing image.");
+		} catch (RuntimeException e) {
+			throw new ServletException("Error writing image.");
 		}
 	}
 

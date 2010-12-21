@@ -45,7 +45,6 @@ public class PDFFileWorker implements Callable<File> {
     	this.streamWorker = new PDFStreamWorker(dlConfig, outstream, job_info, imageJobCenter);
     }
     
-    @Override
     public File call() throws Exception {
     	OutputStream outstream = streamWorker.call();
     	outstream.flush();

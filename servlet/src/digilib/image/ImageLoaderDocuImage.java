@@ -45,6 +45,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
+import javax.servlet.ServletException;
 
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
@@ -56,7 +57,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
 	/** image object */
 	protected BufferedImage img;
-
+	
 	/** interpolation type */
 	protected RenderingHints renderHint;
 
@@ -88,33 +89,28 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		}
 	}
 
-	public int getHeight() {
-		int h = 0;
-		try {
-			if (img == null) {
-				h = reader.getHeight(0);
-			} else {
-				h = img.getHeight();
-			}
-		} catch (IOException e) {
-			logger.debug("error in getHeight", e);
-		}
-		return h;
-	}
-
-	public int getWidth() {
-		int w = 0;
-		try {
-			if (img == null) {
-				w = reader.getWidth(0);
-			} else {
-				w = img.getWidth();
-			}
-		} catch (IOException e) {
-			logger.debug("error in getHeight", e);
-		}
-		return w;
-	}
+    /* returns the size of the current image */
+    public ImageSize getSize() {
+        ImageSize is = null;
+        // TODO: do we want to cache imageSize?
+        int h = 0;
+        int w = 0;
+        try {
+            if (img == null) {
+                // get size from ImageReader
+                h = reader.getHeight(0);
+                w = reader.getWidth(0);
+            } else {
+                // get size from image
+                h = img.getHeight();
+                w = img.getWidth();
+            }
+            is = new ImageSize(w, h);
+        } catch (IOException e) {
+            logger.debug("error in getSize:", e);
+        }
+        return is;
+    }
 
 	/* returns a list of supported image formats */
 	public Iterator<String> getSupportedFormats() {
@@ -229,7 +225,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
 	/* write image of type mt to Stream */
 	public void writeImage(String mt, OutputStream ostream)
-			throws FileOpException {
+			throws ImageOpException, ServletException {
 		logger.debug("writeImage");
 		// setup output
 		ImageWriter writer = null;
@@ -255,7 +251,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 				writer = (ImageWriter) ImageIO.getImageWritersByFormatName(
 						"jpeg").next();
 				if (writer == null) {
-					throw new FileOpException("Unable to get JPEG writer");
+					throw new ImageOpException("Unable to get JPEG writer");
 				}
 				ImageWriteParam param = writer.getDefaultWriteParam();
 				if (quality > 1) {
@@ -276,18 +272,19 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 				writer = (ImageWriter) ImageIO.getImageWritersByFormatName(
 						"png").next();
 				if (writer == null) {
-					throw new FileOpException("Unable to get PNG writer");
+					throw new ImageOpException("Unable to get PNG writer");
 				}
 				writer.setOutput(imgout);
 				logger.debug("writing");
 				writer.write(img);
 			} else {
 				// unknown mime type
-				throw new FileOpException("Unknown mime type: " + mt);
+				throw new ImageOpException("Unknown mime type: " + mt);
 			}
 
 		} catch (IOException e) {
-			throw new FileOpException("Error writing image.");
+		    logger.error("Error writing image:", e);
+			throw new ServletException("Error writing image:", e);
 		} finally {
 			// clean up
 			if (writer != null) {

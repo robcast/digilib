@@ -19,6 +19,7 @@ import digilib.auth.AuthOpException;
 import digilib.auth.AuthOps;
 import digilib.image.DocuImage;
 import digilib.image.ImageJobDescription;
+import digilib.image.ImageOpException;
 import digilib.image.ImageWorker;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
@@ -31,7 +32,7 @@ import digilib.util.DigilibJobCenter;
 public class Scaler extends HttpServlet {
 
     /** digilib servlet version (for all components) */
-    public static final String version = "1.9.0a";
+    public static final String version = "1.8.2a";
 
     /** servlet error codes */
     public static enum Error {UNKNOWN, AUTH, FILE, IMAGE};
@@ -249,6 +250,9 @@ public class Scaler extends HttpServlet {
             logger.debug("Job Processing Time: "
                     + (System.currentTimeMillis() - startTime) + "ms");
 
+        } catch (ImageOpException e) {
+            logger.error(e.getClass() + ": " + e.getMessage());
+            digilibError(errMsgType, Error.IMAGE, null, response);
         } catch (IOException e) {
             logger.error(e.getClass() + ": " + e.getMessage());
             digilibError(errMsgType, Error.FILE, null, response);
@@ -306,7 +310,7 @@ public class Scaler extends HttpServlet {
                 // default: image
                 ServletOps.sendFile(img, null, null, response);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("Error sending error!", e);
         }
 

@@ -23,17 +23,20 @@ package digilib.servlet;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
 import digilib.image.DocuImage;
+import digilib.image.ImageOpException;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
 
@@ -187,19 +190,17 @@ public class ServletOps {
      *            name of the download file (for application/x)
      * @param res
      *            ServletResponse where the image file will be sent.
-     * 
-     * @throws FileOpException
-     *             Exception is thrown for a IOException.
-     * @throws IOException 
+     * @throws ImageOpException
+     * @throws ServletException Exception on sending data.
      */
     public static void sendFile(File f, String mt, String name, HttpServletResponse response)
-            throws FileOpException, IOException {
+            throws ImageOpException, ServletException {
         logger.debug("sendRawFile(" + mt + ", " + f + ")");
         if (mt == null) {
             // auto-detect mime-type
             mt = FileOps.mimeForFile(f);
             if (mt == null) {
-                throw new FileOpException("Unknown file type.");
+                throw new ImageOpException("Unknown file type.");
             }
         }
         response.setContentType(mt);
@@ -211,18 +212,23 @@ public class ServletOps {
             }
             response.addHeader("Content-Disposition", "attachment; filename=\""+name+"\"");
         }
-        FileInputStream inFile = new FileInputStream(f);
-        OutputStream outStream = response.getOutputStream();
-        response.setContentLength( (int) f.length());
-        byte dataBuffer[] = new byte[4096];
-        int len;
-        while ((len = inFile.read(dataBuffer)) != -1) {
-            // copy out file
-            outStream.write(dataBuffer, 0, len);
-            outStream.flush();
+        try {
+            FileInputStream inFile = new FileInputStream(f);
+            OutputStream outStream = response.getOutputStream();
+            response.setContentLength( (int) f.length());
+            byte dataBuffer[] = new byte[4096];
+            int len;
+            while ((len = inFile.read(dataBuffer)) != -1) {
+                // copy out file
+                outStream.write(dataBuffer, 0, len);
+                outStream.flush();
+            }
+            response.flushBuffer();
+            inFile.close();
+        } catch (IOException e) {
+            logger.error("Error sending file:", e);
+            throw new ServletException("Error sending file:", e);
         }
-        response.flushBuffer();
-        inFile.close();
     }
 
     /**
@@ -231,28 +237,35 @@ public class ServletOps {
      * @param img
      * @param mimeType
      * @param response
-     * @throws FileOpException
-     * @throws IOException
+     * @throws ImageOpException
+     * @throws ServletException Exception on sending data.
      */
     public static void sendImage(DocuImage img, String mimeType,
-            HttpServletResponse response) throws FileOpException, IOException {
-        OutputStream outstream = response.getOutputStream();
-        // setup output -- if mime type is set use that otherwise
-        // if source is JPG then dest will be JPG else it's PNG
-        if (mimeType == null) {
-            mimeType = img.getMimetype();
+            HttpServletResponse response) throws ImageOpException,
+            ServletException {
+        try {
+            OutputStream outstream = response.getOutputStream();
+            // setup output -- if mime type is set use that otherwise
+            // if source is JPG then dest will be JPG else it's PNG
+            if (mimeType == null) {
+                mimeType = img.getMimetype();
+            }
+            if ((mimeType.equals("image/jpeg") || mimeType.equals("image/jp2") || mimeType
+                    .equals("image/fpx"))) {
+                mimeType = "image/jpeg";
+            } else {
+                mimeType = "image/png";
+            }
+            // write the image
+            response.setContentType(mimeType);
+            img.writeImage(mimeType, outstream);
+            outstream.flush();
+        } catch (IOException e) {
+            logger.error("Error sending image:", e);
+            throw new ServletException("Error sending image:", e);
+        } finally {
+            img.dispose();
         }
-        if ((mimeType.equals("image/jpeg") || mimeType.equals("image/jp2") || mimeType
-                .equals("image/fpx"))) {
-            mimeType = "image/jpeg";
-        } else {
-            mimeType = "image/png";
-        }
-
-        // write the image
-        img.writeImage(mimeType, outstream);
-        outstream.flush();
-        img.dispose();
     }
 
 }

@@ -27,7 +27,7 @@ digilib.io.DocuDirCache dirCache = (digilib.io.DocuDirCache) dlConfig.getValue("
 int pn = dlRequest.getAsInt("pn");
 String fn = dlRequest.getFilePath();
 String ctx = "";
-digilib.io.DocuDirent f = dirCache.getFile(fn, pn, digilib.io.FileOps.CLASS_IMAGE);
+digilib.io.DocuDirent f = dirCache.getFile(fn, pn, digilib.io.FileOps.FileClass.IMAGE);
 if (f != null) {
     //ctx = "hasfile:"+f.getName();
     f.checkMeta();
