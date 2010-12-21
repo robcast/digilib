@@ -29,7 +29,7 @@ import digilib.image.ImageSize;
 /**
  * @author casties
  */
-public class ImageFile implements ImageInput {
+public class ImageFile extends ImageInput {
 	
 	// file name
 	private String filename = null;
@@ -37,10 +37,6 @@ public class ImageFile implements ImageInput {
 	private ImageFileset parent = null;
 	// parent directory
 	private Directory dir = null;
-	// mime file type
-	private String mimetype = null;
-	// image size in pixels
-	private ImageSize pixelSize = null;
 
 	public ImageFile(String fn, ImageFileset parent, Directory dir) {
 		this.filename = fn;
@@ -59,11 +55,6 @@ public class ImageFile implements ImageInput {
 	public boolean hasFile() {
 		// this is File-based
 		return true;
-	}
-
-	@Override
-	public boolean hasStream() {
-		return false;
 	}
 
 	/** Returns the file name (without path).
@@ -87,42 +78,6 @@ public class ImageFile implements ImageInput {
 		return f;
 	}
 
-	/* (non-Javadoc)
-	 * @see digilib.io.ImageInput#getSize()
-	 */
-	@Override
-	public ImageSize getSize() {
-		return pixelSize;
-	}
-
-	/* (non-Javadoc)
-	 * @see digilib.io.ImageInput#getMimetype()
-	 */
-	@Override
-	public String getMimetype() {
-		return mimetype;
-	}
-
-	/* (non-Javadoc)
-	 * @see digilib.io.ImageInput#setSize(digilib.image.ImageSize)
-	 */
-	@Override
-	public void setSize(ImageSize imageSize) {
-		this.pixelSize = imageSize;
-		// pass on to parent
-		if (this.parent != null) {
-			this.parent.setAspect(imageSize);
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see digilib.io.ImageInput#setMimetype(java.lang.String)
-	 */
-	@Override
-	public void setMimetype(String filetype) {
-		this.mimetype = filetype;
-	}
-
 	/**
 	 * @return ImageFileset
 	 */
@@ -139,24 +94,14 @@ public class ImageFile implements ImageInput {
 	}
 
 	/* (non-Javadoc)
-	 * @see digilib.io.ImageInput#isChecked()
+	 * @see digilib.io.ImageInput#setSize(digilib.image.ImageSize)
 	 */
-	@Override
-	public boolean isChecked() {
-		return (pixelSize != null);
-	}
-	
-	/* (non-Javadoc)
-	 * @see digilib.io.ImageInput#getAspect()
-	 */
-	@Override
-	public float getAspect() {
-		return (pixelSize != null) ? pixelSize.getAspect() : 0;
-	}
-
-	@Override
-	public InputStream getStream() {
-		return null;
+	public void setSize(ImageSize imageSize) {
+		this.pixelSize = imageSize;
+		// pass on to parent
+		if (this.parent != null) {
+			this.parent.setAspect(imageSize);
+		}
 	}
 
 }

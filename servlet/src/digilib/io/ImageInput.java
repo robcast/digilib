@@ -26,62 +26,87 @@ import java.io.InputStream;
 
 import digilib.image.ImageSize;
 
-public interface ImageInput {
+public abstract class ImageInput {
 
-	/**
-	 * @return ImageSize
-	 */
-	public abstract ImageSize getSize();
-
-	/**
-	 * @return String
-	 */
-	public abstract String getMimetype();
-
-	/**
-	 * Sets the imageSize.
-	 * @param imageSize The imageSize to set
-	 */
-	public abstract void setSize(ImageSize imageSize);
-
-	/**
-	 * Sets the mimetype.
-	 * @param mimetype The mimetype to set
-	 */
-	public abstract void setMimetype(String filetype);
-
-	/** returns if this image has been checked 
-	 * (i.e. has size and mimetype) 
-	 * @return boolean
-	 */
-	public abstract boolean isChecked();
-
-	/** Returns the aspect ratio of the image (width/height).
-	 * 
-	 * @return
-	 */
-	public abstract float getAspect();
+	// mime file type
+	protected String mimetype = null;
+	// image size in pixels
+	protected ImageSize pixelSize = null;
 
 	/** Returns if this ImageInput is File-based.
 	 * @return
 	 */
-	public abstract boolean hasFile();
+	public boolean hasFile() {
+		return false;
+	}
 	
 	/** Returns the underlying File (if applicable)
 	 * 
 	 * @return
 	 */
-	public abstract File getFile();
+	public File getFile() {
+		return null;
+	}
+
+	/** Returns if this ImageInput is Stream-based.
+	 * @return
+	 */
+	public boolean hasStream() {
+		return false;
+	}
 
 	/** Returns the underlying Stream (if applicable)
 	 * 
 	 * @return
 	 */
-	public abstract InputStream getStream();
+	public InputStream getStream() {
+		return null;
+	}
 
-	/** Returns if this ImageInput is Stream-based.
+	/**
+	 * @return ImageSize
+	 */
+	public ImageSize getSize() {
+		return pixelSize;
+	}
+
+	/**
+	 * Sets the imageSize.
+	 * @param imageSize The imageSize to set
+	 */
+	public void setSize(ImageSize imageSize) {
+		this.pixelSize = imageSize;
+	}
+
+	/**
+	 * @return String
+	 */
+	public String getMimetype() {
+		return mimetype;
+	}
+
+	/**
+	 * Sets the mimetype.
+	 * @param mimetype The mimetype to set
+	 */
+	public void setMimetype(String filetype) {
+		this.mimetype = filetype;
+	}
+
+	/** returns if this image has been checked 
+	 * (i.e. has size and mimetype) 
+	 * @return boolean
+	 */
+	public boolean isChecked() {
+		return (pixelSize != null);
+	}
+	
+	/** Returns the aspect ratio of the image (width/height).
+	 * 
 	 * @return
 	 */
-	public abstract boolean hasStream();
+	public float getAspect() {
+		return (pixelSize != null) ? pixelSize.getAspect() : 0;
+	}
 	
 }
