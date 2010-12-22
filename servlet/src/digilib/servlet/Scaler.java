@@ -44,7 +44,7 @@ public class Scaler extends HttpServlet {
     protected static Logger accountlog = Logger.getLogger("account.request");
 
     /** gengeral logger for this class */
-    protected static Logger logger = Logger.getLogger("digilib.servlet");
+    protected static Logger logger = Logger.getLogger("digilib.scaler");
 
     /** logger for authentication related */
     protected static Logger authlog = Logger.getLogger("digilib.auth");
@@ -220,7 +220,7 @@ public class Scaler extends HttpServlet {
                     mt = "application/octet-stream";
                 }
                 logger.debug("Sending RAW File as is.");
-                ServletOps.sendFile(fileToLoad.getFile(), mt, null, response);
+                ServletOps.sendFile(fileToLoad.getFile(), mt, null, response, logger);
                 logger.info("Done in " + (System.currentTimeMillis() - startTime) + "ms");
                 return;
             }
@@ -228,7 +228,7 @@ public class Scaler extends HttpServlet {
             // if possible, send the image without actually having to transform it
             if (! jobTicket.isTransformRequired()) {
                 logger.debug("Sending File as is.");
-                ServletOps.sendFile(fileToLoad.getFile(), null, null, response);
+                ServletOps.sendFile(fileToLoad.getFile(), null, null, response, logger);
                 logger.info("Done in " + (System.currentTimeMillis() - startTime) + "ms");
                 return;
             }
@@ -246,7 +246,7 @@ public class Scaler extends HttpServlet {
             // wait for result
             DocuImage img = jobResult.get();
             // send image
-            ServletOps.sendImage(img, null, response);
+            ServletOps.sendImage(img, null, response, logger);
             logger.debug("Job Processing Time: "
                     + (System.currentTimeMillis() - startTime) + "ms");
 
@@ -308,7 +308,7 @@ public class Scaler extends HttpServlet {
                 response.sendError(status, msg);
             } else if (img != null) {
                 // default: image
-                ServletOps.sendFile(img, null, null, response);
+                ServletOps.sendFile(img, null, null, response, logger);
             }
         } catch (Exception e) {
             logger.error("Error sending error!", e);

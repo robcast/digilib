@@ -44,8 +44,6 @@ import digilib.io.TextFile;
  */
 public class Texter extends HttpServlet {
 
-	private static final long serialVersionUID = -8539178734033662322L;
-
 	/** Servlet version */
 	public static String tlVersion = "0.1b2";
 
@@ -54,6 +52,9 @@ public class Texter extends HttpServlet {
 
 	/** general logger */
 	Logger logger = Logger.getLogger("digilib.texter");
+
+    /** logger for accounting requests */
+    protected static Logger accountlog = Logger.getLogger("account.texter.request");
 
 	/** FileOps instance */
 	FileOps fileOp;
@@ -109,6 +110,7 @@ public class Texter extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
+        accountlog.info("GET from " + request.getRemoteAddr());
 		// do the processing
 		processRequest(request, response);
 	}
@@ -121,44 +123,43 @@ public class Texter extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
+        accountlog.info("POST from " + request.getRemoteAddr());
 		// do the processing
 		processRequest(request, response);
 	}
 
-	protected void processRequest(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
-		
-		/*
-		 * request parameters
-		 */
+    protected void processRequest(HttpServletRequest request,
+            HttpServletResponse response) throws ServletException, IOException {
+
+        /*
+         * request parameters
+         */
         // create new request with defaults
         DigilibRequest dlRequest = new DigilibRequest(request);
-		try {
-			
-			/*
-			 * find the file to load/send
-			 */
-			TextFile f = getTextFile(dlRequest, "/txt");
-			if (f != null) {
-				ServletOps.sendFile(f.getFile(), null, null, response);
-			} else {
-				f = getTextFile(dlRequest, "");
-				if (f != null) {
-					ServletOps.sendFile(f.getFile(),	null, null, response);
-				} else {
-					response.sendError(HttpServletResponse.SC_NOT_FOUND, "Text-File not found!");
-					//ServletOps.htmlMessage("No Text-File!", response);
-				}
-			}
-			
-		} catch (ImageOpException e) {
-			logger.error("ERROR: File IO Error: ", e);
-			try {
-				ServletOps.htmlMessage("ERROR: File IO Error: " + e, response);
-			} catch (FileOpException ex) {
-			} // so we don't get a loop
-		}
-	}
+        try {
+            /*
+             * find the file to load/send
+             */
+            TextFile f = getTextFile(dlRequest, "/txt");
+            if (f != null) {
+                ServletOps.sendFile(f.getFile(), null, null, response, logger);
+            } else {
+                f = getTextFile(dlRequest, "");
+                if (f != null) {
+                    ServletOps.sendFile(f.getFile(), null, null, response, logger);
+                } else {
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND,
+                            "Text-File not found!");
+                    // ServletOps.htmlMessage("No Text-File!", response);
+                }
+            }
+
+        } catch (ImageOpException e) {
+            // most likely wrong file format...
+            logger.error("ERROR sending text file: ", e);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+        }
+    }
 	
 
 	/**
