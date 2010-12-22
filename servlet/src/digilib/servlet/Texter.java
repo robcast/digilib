@@ -30,7 +30,6 @@ import org.apache.log4j.Logger;
 import digilib.auth.AuthOps;
 import digilib.image.ImageOpException;
 import digilib.io.DocuDirCache;
-import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.FileOps.FileClass;
 import digilib.io.TextFile;

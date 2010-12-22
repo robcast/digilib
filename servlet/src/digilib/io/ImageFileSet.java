@@ -41,7 +41,6 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
     /* (non-Javadoc)
      * @see digilib.io.DocuDirent#getName()
      */
-    @Override
     public String getName() {
         // TODO Auto-generated method stub
         return null;
@@ -50,7 +49,6 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
     /* (non-Javadoc)
      * @see digilib.io.DocuDirent#getParent()
      */
-    @Override
     public Directory getParent() {
         // TODO Auto-generated method stub
         return null;
@@ -59,7 +57,6 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
     /* (non-Javadoc)
      * @see digilib.io.DocuDirent#setParent(digilib.io.Directory)
      */
-    @Override
     public void setParent(Directory parent) {
         // TODO Auto-generated method stub
 
@@ -68,7 +65,6 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
     /* (non-Javadoc)
      * @see digilib.io.DocuDirent#getFileMeta()
      */
-    @Override
     public MetadataMap getFileMeta() {
         // TODO Auto-generated method stub
         return null;
@@ -77,7 +73,6 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
     /* (non-Javadoc)
      * @see digilib.io.DocuDirent#setFileMeta(digilib.io.MetadataMap)
      */
-    @Override
     public void setFileMeta(MetadataMap fileMeta) {
         // TODO Auto-generated method stub
 
@@ -86,7 +81,6 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
     /* (non-Javadoc)
      * @see digilib.io.DocuDirent#isMetaChecked()
      */
-    @Override
     public boolean isMetaChecked() {
         // TODO Auto-generated method stub
         return false;
@@ -95,13 +89,11 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
     /* (non-Javadoc)
      * @see digilib.io.DocuDirent#compareTo(java.lang.Object)
      */
-    @Override
     public int compareTo(Object arg0) {
         // TODO Auto-generated method stub
         return 0;
     }
 
-    @Override
     public File getInput() {
         // TODO Auto-generated method stub
         return null;
@@ -276,7 +268,7 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
     }
 
     public void readMeta() {
-    	// TODO Auto-generated method stub
+    	// FIXME: what to do?
     	
     }
 
