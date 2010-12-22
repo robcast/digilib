@@ -33,7 +33,6 @@ public class ImageWorker implements Callable<DocuImage> {
     /**
      * render and return the image
      */
-    @Override
     public DocuImage call() throws FileOpException, IOException, ImageOpException {
         
         logger.debug("image worker starting");
@@ -73,8 +72,7 @@ public class ImageWorker implements Callable<DocuImage> {
 
             docuImage.loadSubimage(jobinfo.getFileToLoad(), loadRect, (int) subsamp);
 
-            logger.debug("SUBSAMP: " + subsamp + " -> " + docuImage.getWidth()
-                    + "x" + docuImage.getHeight());
+            logger.debug("SUBSAMP: " + subsamp + " -> " + docuImage.getSize());
 
             docuImage.scale(scaleXY, scaleXY);
 

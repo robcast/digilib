@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
 import digilib.auth.AuthOps;
+import digilib.image.ImageOpException;
 import digilib.io.DocuDirCache;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
@@ -150,7 +151,7 @@ public class Texter extends HttpServlet {
 				}
 			}
 			
-		} catch (FileOpException e) {
+		} catch (ImageOpException e) {
 			logger.error("ERROR: File IO Error: ", e);
 			try {
 				ServletOps.htmlMessage("ERROR: File IO Error: " + e, response);

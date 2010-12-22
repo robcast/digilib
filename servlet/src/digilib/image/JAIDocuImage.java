@@ -40,6 +40,7 @@ import javax.media.jai.ParameterBlockJAI;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.TransposeDescriptor;
 import javax.media.jai.operator.TransposeType;
+import javax.servlet.ServletException;
 
 import com.sun.media.jai.codec.ImageCodec;
 
@@ -50,6 +51,10 @@ import digilib.io.ImageFileset;
 import digilib.io.ImageInput;
 
 /** A DocuImage implementation using Java Advanced Imaging Library. */
+/**
+ * @author casties
+ *
+ */
 public class JAIDocuImage extends ImageInfoDocuImage {
 
 	protected RenderedImage img;
@@ -175,8 +180,7 @@ public class JAIDocuImage extends ImageInfoDocuImage {
 	}
 
 	/* Write the current image to an OutputStream. */
-	public void writeImage(String mt, OutputStream ostream)
-			throws FileOpException {
+	public void writeImage(String mt, OutputStream ostream) throws ServletException, ImageOpException {
 		try {
 			// setup output
 			ParameterBlock pb3 = new ParameterBlock();
@@ -188,39 +192,33 @@ public class JAIDocuImage extends ImageInfoDocuImage {
 				pb3.add("PNG");
 			} else {
 				// unknown mime type
-				throw new FileOpException("Unknown mime type: " + mt);
+				throw new ImageOpException("Unknown mime type: " + mt);
 			}
 			// render output
 			JAI.create("encode", pb3);
 
-		} catch (IOException e) {
-			throw new FileOpException("Error writing image.");
+		} catch (RuntimeException e) {
+		    // JAI likes to throw RuntimeExceptions
+			throw new ServletException("Error writing image:", e);
 		}
 	}
 
-	/**
-	 * The width of the curent image in pixel.
-	 * 
-	 * @return Image width in pixels.
-	 */
-	public int getWidth() {
-		if (img != null) {
-			return img.getWidth();
-		}
-		return 0;
-	}
-
-	/**
-	 * The height of the curent image in pixel.
-	 * 
-	 * @return Image height in pixels.
-	 */
-	public int getHeight() {
-		if (img != null) {
-			return img.getHeight();
-		}
-		return 0;
-	}
+    /* returns the current image size
+     * @see digilib.image.DocuImageImpl#getSize()
+     */
+    public ImageSize getSize() {
+        ImageSize is = null;
+        // TODO: do we want to cache imgSize?
+        int h = 0;
+        int w = 0;
+        if (img != null) {
+            // get size from image
+            h = img.getHeight();
+            w = img.getWidth();
+            is = new ImageSize(w, h);
+        }
+        return is;
+    }
 
 	/* scales the current image */
 	public void scale(double scale, double scaleY) throws ImageOpException {

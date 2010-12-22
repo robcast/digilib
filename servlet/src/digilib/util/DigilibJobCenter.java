@@ -13,8 +13,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.log4j.Logger;
 
-import digilib.image.DocuImage;
-
 /** Wrapper around ExecutionService.
  * 
  * @author casties
@@ -32,10 +30,13 @@ public class DigilibJobCenter<V> {
     /** label for this job center */
     private String label = "";
     
-    /**
+    /** Create a DigilibJobcenter with the given number of threads and queue length.
+     * If prestart=true it starts the threads in the thread pool.
+     * 
      * @param maxThreads
-     * @param label TODO
-     * @param maxQueueLength
+     * @param maxQueueLen
+     * @param prestart
+     * @param label
      */
     public DigilibJobCenter(int maxThreads, int maxQueueLen, boolean prestart, String label) {
         super();
@@ -59,17 +60,6 @@ public class DigilibJobCenter<V> {
         return executor.submit(job);
     }
 
-    /** Returns if the service is not overloaded.
-     *  
-     * @return
-     */
-    public boolean canRun() {
-        int jql = getWaitingJobs();
-        int jrl = getRunningJobs();
-        logger.debug(label+" canRun: waiting jobs="+jql+" running jobs="+jrl);
-        return (jql <= maxQueueLen);
-    }
-    
     /** Returns if the service is overloaded.
      *  
      * @return
@@ -81,10 +71,16 @@ public class DigilibJobCenter<V> {
         return (jql > maxQueueLen);
     }
     
+    /** Returns the number of currently running jobs.
+     * @return
+     */
     public int getRunningJobs() {
         return ((ThreadPoolExecutor)executor).getActiveCount();
     }
     
+    /** Returns the number of currently waiting jobs.
+     * @return
+     */
     public int getWaitingJobs() {
         BlockingQueue<Runnable> jq = ((ThreadPoolExecutor)executor).getQueue();
         int jql = jq.size();
@@ -107,6 +103,11 @@ public class DigilibJobCenter<V> {
         return maxQueueLen;
     }
 
+    /** Shuts down the Executor. 
+     * Tries to stop running threads and returns a list of waiting threads.
+     * 
+     * @return
+     */
     public List<Runnable> shutdownNow() {
         return executor.shutdownNow();
     }

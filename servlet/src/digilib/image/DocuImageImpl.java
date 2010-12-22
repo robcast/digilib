@@ -28,6 +28,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.servlet.ServletException;
+
 import org.apache.log4j.Logger;
 
 import digilib.io.FileOpException;
@@ -55,6 +57,9 @@ public abstract class DocuImageImpl implements DocuImage {
 	
 	/** image mime-type */
 	protected String mimeType = null;
+
+	/** image size */
+    protected ImageSize imgSize = null;
 
 	/**
 	 * Returns the quality.
@@ -154,13 +159,23 @@ public abstract class DocuImageImpl implements DocuImage {
     }
 
     public int getHeight() {
-        // TODO Auto-generated method stub
+        ImageSize is = getSize();
+        if (is != null) {
+            return is.getHeight();
+        }
         return 0;
     }
 
     public int getWidth() {
-        // TODO Auto-generated method stub
+        ImageSize is = getSize();
+        if (is != null) {
+            return is.getWidth();
+        }
         return 0;
+    }
+
+    public ImageSize getSize() {
+        return imgSize;
     }
 
     public void loadImage(ImageFile f) throws FileOpException {
@@ -174,7 +189,7 @@ public abstract class DocuImageImpl implements DocuImage {
     }
 
     public void writeImage(String mt, OutputStream ostream)
-            throws FileOpException {
+            throws ServletException, ImageOpException {
         // TODO Auto-generated method stub
     }
 	

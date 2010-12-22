@@ -19,6 +19,7 @@ import digilib.auth.AuthOpException;
 import digilib.auth.AuthOps;
 import digilib.image.DocuImage;
 import digilib.image.ImageJobDescription;
+import digilib.image.ImageOpException;
 import digilib.image.ImageWorker;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
@@ -249,6 +250,9 @@ public class Scaler extends HttpServlet {
             logger.debug("Job Processing Time: "
                     + (System.currentTimeMillis() - startTime) + "ms");
 
+        } catch (ImageOpException e) {
+            logger.error(e.getClass() + ": " + e.getMessage());
+            digilibError(errMsgType, Error.IMAGE, null, response);
         } catch (IOException e) {
             logger.error(e.getClass() + ": " + e.getMessage());
             digilibError(errMsgType, Error.FILE, null, response);
@@ -306,7 +310,7 @@ public class Scaler extends HttpServlet {
                 // default: image
                 ServletOps.sendFile(img, null, null, response);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("Error sending error!", e);
         }
 
