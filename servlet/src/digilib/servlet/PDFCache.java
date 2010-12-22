@@ -182,7 +182,7 @@ public class PDFCache extends HttpServlet {
         } else if (status == PDFStatus.DONE) {
         	// pdf created -- send it
             try {
-                ServletOps.sendFile(getCacheFile(docid), "application/pdf", getDownloadFilename(pdfji), response);
+                ServletOps.sendFile(getCacheFile(docid), "application/pdf", getDownloadFilename(pdfji), response, logger);
                 //sendFile(docid, getDownloadFilename(pdfji), response);
             } catch (Exception e) {
             	// sending didn't work

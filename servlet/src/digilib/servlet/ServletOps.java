@@ -23,7 +23,6 @@ package digilib.servlet;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -37,7 +36,6 @@ import org.apache.log4j.Logger;
 
 import digilib.image.DocuImage;
 import digilib.image.ImageOpException;
-import digilib.io.FileOpException;
 import digilib.io.FileOps;
 
 public class ServletOps {
@@ -182,6 +180,32 @@ public class ServletOps {
      * The local file is copied to the <code>OutputStream</code> of the
      * <code>ServletResponse</code>. If mt is null then the mime-type is
      * auto-detected with mimeForFile.
+     * 
+     * @param f
+     *            Image file to be sent.
+     * @param mt
+     *            mime-type of the file.
+     * @param name
+     *            name of the download file (for application/x)
+     * @param res
+     *            ServletResponse where the image file will be sent.
+     * @throws ImageOpException
+     * @throws ServletException
+     *             Exception on sending data.
+     */
+    public static void sendFile(File f, String mt, String name,
+            HttpServletResponse response) throws ImageOpException,
+            ServletException {
+        // use default logger
+        ServletOps.sendFile(f, mt, name, response, ServletOps.logger);
+    }
+
+    /**
+     * Transfers an image file as-is with the mime type mt.
+     * 
+     * The local file is copied to the <code>OutputStream</code> of the
+     * <code>ServletResponse</code>. If mt is null then the mime-type is
+     * auto-detected with mimeForFile.
      * @param f
      *            Image file to be sent.
      * @param mt
@@ -190,10 +214,12 @@ public class ServletOps {
      *            name of the download file (for application/x)
      * @param res
      *            ServletResponse where the image file will be sent.
+     * @param logger
+     *            Logger to use
      * @throws ImageOpException
      * @throws ServletException Exception on sending data.
      */
-    public static void sendFile(File f, String mt, String name, HttpServletResponse response)
+    public static void sendFile(File f, String mt, String name, HttpServletResponse response, Logger logger)
             throws ImageOpException, ServletException {
         logger.debug("sendRawFile(" + mt + ", " + f + ")");
         if (mt == null) {
@@ -242,6 +268,22 @@ public class ServletOps {
      */
     public static void sendImage(DocuImage img, String mimeType,
             HttpServletResponse response) throws ImageOpException,
+            ServletException {
+        ServletOps.sendImage(img, mimeType, response, ServletOps.logger);
+    }
+
+    /**
+     * Write image img to ServletResponse response.
+     * 
+     * @param img
+     * @param mimeType
+     * @param response
+     * @param logger
+     * @throws ImageOpException
+     * @throws ServletException Exception on sending data.
+     */
+    public static void sendImage(DocuImage img, String mimeType,
+            HttpServletResponse response, Logger logger) throws ImageOpException,
             ServletException {
         try {
             OutputStream outstream = response.getOutputStream();

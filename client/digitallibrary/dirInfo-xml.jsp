@@ -1,3 +1,4 @@
+<%@page import="digilib.io.FileOps"%>
 <%@ page language="java" %><%!
 // create DocumentBean instance for all JSP requests
 digilib.servlet.DocumentBean docBean = new digilib.servlet.DocumentBean();
@@ -22,17 +23,19 @@ digilib.servlet.DigilibRequest dlRequest = new digilib.servlet.DigilibRequest(re
 digilib.io.DocuDirCache dirCache = (digilib.io.DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 // get directory
 digilib.io.DocuDirectory dir = dirCache.getDirectory(dlRequest.getFilePath());
+FileOps.FileClass fc = FileOps.FileClass.IMAGE;
+int dirSize = dir.size();
 
 %><!-- Automatically generated XML snippet with directory info -->
+<huhu/>
 <dir><% if (dir != null) { %>
-  <size><%= dir.size() %></size>
+  <size><%= dirSize %></size>
   <name><%= dir.getDirName() %></name>
   <fsname><%= dir.getDir().getPath() %></fsname> 
 <%
     if (!dlRequest.hasOption("mo", "dir")) {
-      int l = dir.size();
-      for (int i = 0; i < l; i++) {
-        digilib.io.DocuDirent f = dir.get(i);
+      for (int i = 0; i < dirSize; i++) {
+        digilib.io.DocuDirent f = dir.get(i, fc);
         String fn = (f != null) ? f.getName() : "null";
 %>  <file>
     <index><%= i+1 %></index>
