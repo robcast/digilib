@@ -38,7 +38,7 @@ public class ImageSet {
 	protected static FileClass fileClass = FileClass.IMAGE;
 	
 	/** list of files (ImageFile) */
-	private List<ImageInput> list = null;
+	private List<ImageInputImpl> list = null;
 
 	/** aspect ratio (width/height) */
 	private float aspect = 0f;
@@ -62,7 +62,7 @@ public class ImageSet {
 	 * @param initialCapacity
 	 */
 	public ImageSet() {
-		list = new ArrayList<ImageInput>();
+		list = new ArrayList<ImageInputImpl>();
 	}
 
 	/**
@@ -76,7 +76,7 @@ public class ImageSet {
 	public ImageSet(File file, Map<Integer,Object> hints) {
 		Directory[] dirs = (Directory[]) hints.get(FileOps.HINT_BASEDIRS);
 		int nb = dirs.length;
-		list = new ArrayList<ImageInput>(nb);
+		list = new ArrayList<ImageInputImpl>(nb);
 		parent = dirs[0];
 		fill(dirs, file, hints);
 	}
@@ -140,7 +140,7 @@ public class ImageSet {
 	 * @return
 	 */
 	public ImageInput getNextSmaller(ImageSize size) {
-		for (ListIterator<ImageInput> i = getHiresIterator(); i.hasNext();) {
+		for (ListIterator<ImageInputImpl> i = getHiresIterator(); i.hasNext();) {
 			ImageInput f = i.next();
 			try {
 				if (!f.isChecked()) {
@@ -168,7 +168,7 @@ public class ImageSet {
 	 * @return
 	 */
 	public ImageInput getNextBigger(ImageSize size) {
-		for (ListIterator<ImageInput> i = getLoresIterator(); i.hasPrevious();) {
+		for (ListIterator<ImageInputImpl> i = getLoresIterator(); i.hasPrevious();) {
 			ImageInput f = i.previous();
 			try {
 				if (!f.isChecked()) {
@@ -210,7 +210,7 @@ public class ImageSet {
 	 * 
 	 * @return
 	 */
-	public ListIterator<ImageInput> getHiresIterator() {
+	public ListIterator<ImageInputImpl> getHiresIterator() {
 		return list.listIterator();
 	}
 
@@ -224,7 +224,7 @@ public class ImageSet {
 	 * 
 	 * @return
 	 */
-	public ListIterator<ImageInput> getLoresIterator() {
+	public ListIterator<ImageInputImpl> getLoresIterator() {
 		return list.listIterator(list.size());
 	}
 

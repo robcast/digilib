@@ -23,56 +23,58 @@ package digilib.io;
 
 import digilib.image.ImageSize;
 
-public abstract class ImageInput {
+public abstract class ImageInputImpl implements ImageInput {
 
 	// mime file type
 	protected String mimetype = null;
 	// image size in pixels
 	protected ImageSize pixelSize = null;
 
-	/**
-	 * @return ImageSize
-	 */
-	public ImageSize getSize() {
+	/* (non-Javadoc)
+     * @see digilib.io.ImageInput#getSize()
+     */
+	@Override
+    public ImageSize getSize() {
 		return pixelSize;
 	}
 
-	/**
-	 * Sets the imageSize.
-	 * @param imageSize The imageSize to set
-	 */
-	public void setSize(ImageSize imageSize) {
+	/* (non-Javadoc)
+     * @see digilib.io.ImageInput#setSize(digilib.image.ImageSize)
+     */
+	@Override
+    public void setSize(ImageSize imageSize) {
 		this.pixelSize = imageSize;
 	}
 
-	/**
-	 * @return String
-	 */
-	public String getMimetype() {
+	/* (non-Javadoc)
+     * @see digilib.io.ImageInput#getMimetype()
+     */
+	@Override
+    public String getMimetype() {
 		return mimetype;
 	}
 
-	/**
-	 * Sets the mimetype.
-	 * @param mimetype The mimetype to set
-	 */
-	public void setMimetype(String filetype) {
+	/* (non-Javadoc)
+     * @see digilib.io.ImageInput#setMimetype(java.lang.String)
+     */
+	@Override
+    public void setMimetype(String filetype) {
 		this.mimetype = filetype;
 	}
 
-	/** returns if this image has been checked 
-	 * (i.e. has size and mimetype) 
-	 * @return boolean
-	 */
-	public boolean isChecked() {
+	/* (non-Javadoc)
+     * @see digilib.io.ImageInput#isChecked()
+     */
+	@Override
+    public boolean isChecked() {
 		return (pixelSize != null);
 	}
 	
-	/** Returns the aspect ratio of the image (width/height).
-	 * 
-	 * @return
-	 */
-	public float getAspect() {
+	/* (non-Javadoc)
+     * @see digilib.io.ImageInput#getAspect()
+     */
+	@Override
+    public float getAspect() {
 		return (pixelSize != null) ? pixelSize.getAspect() : 0;
 	}
 	

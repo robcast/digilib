@@ -28,7 +28,7 @@ import digilib.image.ImageSize;
 /**
  * @author casties
  */
-public class ImageFile extends ImageInput {
+public class ImageFile extends DocuDirent implements ImageInput {
 	
 	// file name
 	private String filename = null;
@@ -36,6 +36,11 @@ public class ImageFile extends ImageInput {
 	private ImageSet parent = null;
 	// parent directory
 	private Directory dir = null;
+    // mime file type
+    protected String mimetype = null;
+    // image size in pixels
+    protected ImageSize pixelSize = null;
+
 
 	public ImageFile(String fn, ImageSet parent, Directory dir) {
 		this.filename = fn;
@@ -50,12 +55,6 @@ public class ImageFile extends ImageInput {
 	}
 	
 	
-	@Override
-	public boolean hasFile() {
-		// this is File-based
-		return true;
-	}
-
 	/** Returns the file name (without path).
 	 * 
 	 * @return
@@ -68,28 +67,12 @@ public class ImageFile extends ImageInput {
 	/**
 	 * @return File
 	 */
-	@Override
 	public File getFile() {
 		if (dir == null) {
 			return null;
 		}
 		File f = new File(dir.getDir(), filename);
 		return f;
-	}
-
-	/**
-	 * @return ImageSet
-	 */
-	public ImageSet getParent() {
-		return parent;
-	}
-
-	/**
-	 * Sets the parent.
-	 * @param parent The parent to set
-	 */
-	public void setParent(ImageSet parent) {
-		this.parent = parent;
 	}
 
 	/* (non-Javadoc)
@@ -102,5 +85,63 @@ public class ImageFile extends ImageInput {
 			this.parent.setAspect(imageSize);
 		}
 	}
+    /* (non-Javadoc)
+     * @see digilib.io.ImageInput#getSize()
+     */
+    public ImageSize getSize() {
+        return pixelSize;
+    }
+
+    /* (non-Javadoc)
+     * @see digilib.io.ImageInput#getMimetype()
+     */
+    public String getMimetype() {
+        return mimetype;
+    }
+
+    /* (non-Javadoc)
+     * @see digilib.io.ImageInput#setMimetype(java.lang.String)
+     */
+    public void setMimetype(String filetype) {
+        this.mimetype = filetype;
+    }
+
+    /* (non-Javadoc)
+     * @see digilib.io.ImageInput#isChecked()
+     */
+    public boolean isChecked() {
+        return (pixelSize != null);
+    }
+    
+    /* (non-Javadoc)
+     * @see digilib.io.ImageInput#getAspect()
+     */
+    public float getAspect() {
+        return (pixelSize != null) ? pixelSize.getAspect() : 0;
+    }
+
+    @Override
+    public ImageSet getParentSet() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void setParentSet(ImageSet parent) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void checkMeta() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public File getInput() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 }
