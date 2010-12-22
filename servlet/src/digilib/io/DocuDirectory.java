@@ -40,6 +40,9 @@ public class DocuDirectory extends Directory {
 	/** list of files (DocuDirent) */
 	private List<List<DocuDirent>> list = null;
 
+	/** default FileClass for unspecified calls */
+	public static FileClass defaultFileClass = FileClass.IMAGE;
+	
 	/** directory object is valid (exists on disk) */
 	private boolean isValid = false;
 
@@ -108,7 +111,7 @@ public class DocuDirectory extends Directory {
 	 *  
 	 */
 	public int size() {
-		return ((list != null) && (list.get(0) != null)) ? list.get(0).size() : 0;
+	    return size(defaultFileClass);
 	}
 
 	/**
@@ -118,7 +121,13 @@ public class DocuDirectory extends Directory {
 	 *            fileClass
 	 */
 	public int size(FileClass fc) {
-		return ((list != null) && (list.get(fc.ordinal()) != null)) ? list.get(fc.ordinal()).size() : 0;
+        if (list != null) {
+            List<DocuDirent> l = list.get(fc.ordinal());
+            if (l != null) {
+                return l.size();
+            }
+        }
+        return 0;
 	}
 
 	/**
@@ -128,10 +137,7 @@ public class DocuDirectory extends Directory {
 	 * @return
 	 */
 	public ImageFileset get(int index) {
-		if ((list == null) || (list.get(0) == null) || (index >= list.get(0).size())) {
-			return null;
-		}
-		return (ImageFileset) list.get(0).get(index);
+		return (ImageFileset) get(index, defaultFileClass);
 	}
 
 	/**
@@ -468,12 +474,7 @@ public class DocuDirectory extends Directory {
 	 * @return DocuDirent
 	 */
 	public DocuDirent find(String fn) {
-		FileClass fc = FileOps.classForFilename(fn);
-		int i = indexOf(fn, fc);
-		if (i >= 0) {
-			return (DocuDirent) list.get(0).get(i);
-		}
-		return null;
+		return find(fn, defaultFileClass);
 	}
 
 	/**
