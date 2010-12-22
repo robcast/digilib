@@ -50,12 +50,6 @@ public class ImageFile extends ImageInput {
 	}
 	
 	
-	@Override
-	public boolean hasFile() {
-		// this is File-based
-		return true;
-	}
-
 	/** Returns the file name (without path).
 	 * 
 	 * @return
@@ -68,7 +62,6 @@ public class ImageFile extends ImageInput {
 	/**
 	 * @return File
 	 */
-	@Override
 	public File getFile() {
 		if (dir == null) {
 			return null;
@@ -103,4 +96,18 @@ public class ImageFile extends ImageInput {
 		}
 	}
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        // try to use File.toString
+        File f = getFile();
+        if (f != null) {
+            return f.toString();
+        }
+        return super.toString();
+    }
+
+	
 }

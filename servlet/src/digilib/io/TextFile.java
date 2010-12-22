@@ -30,7 +30,7 @@ import digilib.io.FileOps.FileClass;
  * @author casties
  *
  */
-public class TextFile extends DocuDirent {
+public class TextFile extends DocuDirentImpl {
 	/** this is a text file */
 	protected static FileClass fileClass = FileClass.TEXT;
 	/** our File instance */

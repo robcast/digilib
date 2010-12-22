@@ -38,6 +38,7 @@ import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
 import digilib.io.FileOps.FileClass;
 import digilib.io.ImageFile;
+import digilib.io.ImageInput;
 import digilib.io.ImageSet;
 
 public class DocumentBean {
@@ -197,7 +198,7 @@ public class DocumentBean {
 			return;
 		}
 		// add file name
-		dlRequest.setValue("img.fn", fileset.getName());
+		dlRequest.setValue("img.fn", fileset);
 		// add dpi
 		dlRequest.setValue("img.dpix", new Double(fileset.getResX()));
 		dlRequest.setValue("img.dpiy", new Double(fileset.getResY()));
@@ -208,11 +209,11 @@ public class DocumentBean {
 			dlRequest.setValue("pt", dd.size());
 		}
 		// get original pixel size
-		ImageFile origfile = fileset.getBiggest();
+		ImageInput origfile = fileset.getBiggest();
 		// check image for size if mo=hires
 		if ((! origfile.isChecked())&&dlRequest.hasOption("hires")) {
 			logger.debug("pre-checking image!");
-			DigilibConfiguration.docuImageIdentify(origfile);
+			DigilibConfiguration.docuImageIdentify((ImageFile) origfile);
 		}
 		ImageSize pixsize = origfile.getSize();
 		if (pixsize != null) {

@@ -12,6 +12,7 @@ import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.FileOps.FileClass;
 import digilib.io.ImageFile;
+import digilib.io.ImageInput;
 import digilib.io.ImageSet;
 import digilib.servlet.DigilibConfiguration;
 import digilib.util.OptionsSet;
@@ -36,7 +37,7 @@ public class ImageJobDescription extends ParameterMap {
 	DigilibConfiguration dlConfig = null;
 	protected static Logger logger = Logger.getLogger("digilib.servlet");
 
-	ImageFile fileToLoad = null;
+	ImageInput fileToLoad = null;
 	ImageSet fileset = null;
 	DocuDirectory fileDir = null;
 	String filePath = null;
@@ -132,14 +133,14 @@ public class ImageJobDescription extends ParameterMap {
 		if (mimeType == null) {
 			fileToLoad = getFileToLoad();
 			if(! fileToLoad.isChecked()){
-				DigilibConfiguration.docuImageIdentify(fileToLoad);
+				DigilibConfiguration.docuImageIdentify((ImageFile) fileToLoad); //FIXME: cast to file?
 			}
 			mimeType = fileToLoad.getMimetype();
 		}
 		return mimeType;
 	}
 	
-	public ImageFile getFileToLoad() throws IOException {
+	public ImageInput getFileToLoad() throws IOException {
 		
 		if(fileToLoad == null){
 			fileset = getFileset();
@@ -163,7 +164,7 @@ public class ImageJobDescription extends ParameterMap {
 					fileToLoad = fileset.getBiggest();
 				}
 			}
-			logger.info("Planning to load: " + fileToLoad.getFile());
+			logger.info("Planning to load: " + fileToLoad);
 		}
 		
 		return fileToLoad;
@@ -247,9 +248,9 @@ public class ImageJobDescription extends ParameterMap {
 		ImageSize hiresSize = null;
 		ImageSet fileset = getFileset();
 		if (getAbsoluteScale()) {
-			ImageFile hiresFile = fileset.getBiggest();
+			ImageInput hiresFile = fileset.getBiggest();
 			if (!hiresFile.isChecked()) {
-				DigilibConfiguration.docuImageIdentify(hiresFile);
+				DigilibConfiguration.docuImageIdentify((ImageFile) hiresFile); //FIXME: cast to file?
 			}
 			hiresSize = hiresFile.getSize();
 		}

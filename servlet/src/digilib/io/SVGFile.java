@@ -30,7 +30,7 @@ import digilib.io.FileOps.FileClass;
  * @author casties
  *
  */
-public class SVGFile extends DocuDirent {
+public class SVGFile extends DocuDirentImpl {
 	/** this is a text file */
 	protected static FileClass fileClass = FileClass.SVG;
 	/** our File instance */

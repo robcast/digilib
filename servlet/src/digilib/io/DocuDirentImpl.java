@@ -35,7 +35,7 @@ import digilib.io.FileOps.FileClass;
  * @author casties
  *  
  */
-public abstract class DocuDirent implements Comparable<Object> {
+public abstract class DocuDirentImpl implements DocuDirent {
 
 	/** the file class of this file */
 	protected static FileClass fileClass = FileClass.NONE;
@@ -46,23 +46,19 @@ public abstract class DocuDirent implements Comparable<Object> {
 	/** the parent directory */
 	protected Directory parent = null;
 
-	/**
-	 * Checks metadata and does something with it.
-	 *  
-	 */
+	/* (non-Javadoc)
+     * @see digilib.io.DocuDirent#checkMeta()
+     */
 	public abstract void checkMeta();
 
-	/**
-	 * gets the (default) File
-	 * 
-	 * @return
-	 */
+	/* (non-Javadoc)
+     * @see digilib.io.DocuDirent#getInput()
+     */
 	public abstract File getInput();
 
-	/**
-	 * Reads meta-data for this Fileset if there is any.
-	 *  
-	 */
+	/* (non-Javadoc)
+     * @see digilib.io.DocuDirent#readMeta()
+     */
 	public void readMeta() {
 		if ((fileMeta != null) || (getInput() == null)) {
 			// there is already metadata or there is no file
@@ -86,60 +82,45 @@ public abstract class DocuDirent implements Comparable<Object> {
 		}
 	}
 
-	/**
-	 * The name of the file.
-	 * 
-	 * If this is a Fileset, the method returns the name of the default file
-	 * (for image filesets the highest resolution file).
-	 * 
-	 * @return
-	 */
+	/* (non-Javadoc)
+     * @see digilib.io.DocuDirent#getName()
+     */
 	public String getName() {
 		File f = getInput();
 		return (f != null) ? f.getName() : null;
 	} 
 	
-	/**
-	 * Returns the parent Directory.
-	 * 
-	 * @return DocuDirectory
-	 */
+	/* (non-Javadoc)
+     * @see digilib.io.DocuDirent#getParent()
+     */
 	public Directory getParent() {
 		return parent;
 	}
 	
-	/**
-	 * Sets the parent Directory.
-	 * 
-	 * @param parent
-	 *            The parent to set
-	 */
+	/* (non-Javadoc)
+     * @see digilib.io.DocuDirent#setParent(digilib.io.Directory)
+     */
 	public void setParent(Directory parent) {
 		this.parent = parent;
 	} 
 	
-	/**
-	 * Returns the meta-data for this file(set).
-	 * 
-	 * @return HashMap
-	 */
+	/* (non-Javadoc)
+     * @see digilib.io.DocuDirent#getFileMeta()
+     */
 	public MetadataMap getFileMeta() {
 		return fileMeta;
 	} 
 	
-	/**
-	 * Sets the meta-data for this file(set) .
-	 * 
-	 * @param fileMeta
-	 *            The fileMeta to set
-	 */
+	/* (non-Javadoc)
+     * @see digilib.io.DocuDirent#setFileMeta(digilib.io.MetadataMap)
+     */
 	public void setFileMeta(MetadataMap fileMeta) {
 		this.fileMeta = fileMeta;
 	} 
 	
-	/**
-	 * @return
-	 */
+	/* (non-Javadoc)
+     * @see digilib.io.DocuDirent#isMetaChecked()
+     */
 	public boolean isMetaChecked() {
 		return metaChecked;
 	} 
@@ -151,14 +132,11 @@ public abstract class DocuDirent implements Comparable<Object> {
 		return fileClass;
 	}
 
-	/** Comparator using the file name.
-	 * Compares to a String (for binarySearch)
-     * or to another DocuDirent (for sort)
-	 * 
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
+	/* (non-Javadoc)
+     * @see digilib.io.DocuDirent#compareTo(java.lang.Object)
+     */
 	public int compareTo(Object arg0) {
-		if (arg0 instanceof DocuDirent) {
+		if (arg0 instanceof DocuDirentImpl) {
 		    return getName().compareTo(((DocuDirent) arg0).getName());
 		} else {
 		    return getName().compareTo((String) arg0);

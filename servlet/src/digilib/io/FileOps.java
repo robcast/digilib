@@ -342,7 +342,7 @@ public class FileOps {
 		// what class of file do we have?
 		if (fileClass == FileClass.IMAGE) {
 			// image file
-			return new ImageSet(file, hints);
+			return new ImageFileSet(file, hints);
 		} else if (fileClass == FileClass.TEXT) {
 			// text file
 			return new TextFile(file);

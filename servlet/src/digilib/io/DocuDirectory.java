@@ -450,8 +450,8 @@ public class DocuDirectory extends Directory {
 		return -1;
 	}
 
-	private boolean isBasenameInList(List<DocuDirent> fl, int idx, String fn) {
-		String dfn = FileOps.basename((fl.get(idx))
+	private boolean isBasenameInList(List<DocuDirent> fileList, int idx, String fn) {
+		String dfn = FileOps.basename((fileList.get(idx))
 				.getName());
 		return (dfn.equals(fn)||dfn.equals(FileOps.basename(fn))); 
 	}
