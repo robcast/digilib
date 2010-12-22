@@ -50,7 +50,7 @@ import javax.servlet.ServletException;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.ImageFile;
-import digilib.io.ImageFileset;
+import digilib.io.ImageSet;
 import digilib.io.ImageInput;
 
 /** Implementation of DocuImage using the ImageLoader API of Java 1.4 and Java2D. */
@@ -127,7 +127,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             return imf;
         }
         // fileset to store the information
-        ImageFileset imgfs = imageFile.getParent();
+        ImageSet imgfs = imageFile.getParent();
         File f = imageFile.getFile();
         if (f == null) {
             throw new IOException("File not found!");

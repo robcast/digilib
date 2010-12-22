@@ -140,11 +140,11 @@ public class Texter extends HttpServlet {
 			 */
 			TextFile f = getTextFile(dlRequest, "/txt");
 			if (f != null) {
-				ServletOps.sendFile(f.getFile(), null, null, response);
+				ServletOps.sendFile(f.getInput(), null, null, response);
 			} else {
 				f = getTextFile(dlRequest, "");
 				if (f != null) {
-					ServletOps.sendFile(f.getFile(),	null, null, response);
+					ServletOps.sendFile(f.getInput(),	null, null, response);
 				} else {
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, "Text-File not found!");
 					//ServletOps.htmlMessage("No Text-File!", response);

@@ -47,7 +47,7 @@ import com.sun.media.jai.codec.ImageCodec;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.ImageFile;
-import digilib.io.ImageFileset;
+import digilib.io.ImageSet;
 import digilib.io.ImageInput;
 
 /** A DocuImage implementation using Java Advanced Imaging Library. */
@@ -112,7 +112,7 @@ public class JAIDocuImage extends ImageInfoDocuImage {
 			return imf;
 		}
 		// fileset to store the information
-		ImageFileset imgfs = imageFile.getParent();
+		ImageSet imgfs = imageFile.getParent();
 		File f = imageFile.getFile();
 		if (f == null) {
 			throw new IOException("File not found!");

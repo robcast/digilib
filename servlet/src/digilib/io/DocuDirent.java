@@ -57,19 +57,19 @@ public abstract class DocuDirent implements Comparable<Object> {
 	 * 
 	 * @return
 	 */
-	public abstract File getFile();
+	public abstract File getInput();
 
 	/**
 	 * Reads meta-data for this Fileset if there is any.
 	 *  
 	 */
 	public void readMeta() {
-		if ((fileMeta != null) || (getFile() == null)) {
+		if ((fileMeta != null) || (getInput() == null)) {
 			// there is already metadata or there is no file
 			return;
 		}
 		// metadata is in the file {filename}.meta
-		String fn = getFile().getAbsolutePath();
+		String fn = getInput().getAbsolutePath();
 		File mf = new File(fn + ".meta");
 		if (mf.canRead()) {
 			XMLMetaLoader ml = new XMLMetaLoader();
@@ -95,7 +95,7 @@ public abstract class DocuDirent implements Comparable<Object> {
 	 * @return
 	 */
 	public String getName() {
-		File f = getFile();
+		File f = getInput();
 		return (f != null) ? f.getName() : null;
 	} 
 	

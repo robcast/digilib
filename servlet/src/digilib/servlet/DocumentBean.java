@@ -38,7 +38,7 @@ import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
 import digilib.io.FileOps.FileClass;
 import digilib.io.ImageFile;
-import digilib.io.ImageFileset;
+import digilib.io.ImageSet;
 
 public class DocumentBean {
 
@@ -191,7 +191,7 @@ public class DocumentBean {
 		}
 		String fn = dlRequest.getFilePath();
 		// get information about the file
-		ImageFileset fileset = (ImageFileset) dirCache.getFile(fn, dlRequest
+		ImageSet fileset = (ImageSet) dirCache.getFile(fn, dlRequest
 				.getAsInt("pn"), FileClass.IMAGE);
 		if (fileset == null) {
 			return;

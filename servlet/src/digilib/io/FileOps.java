@@ -329,7 +329,7 @@ public class FileOps {
 	/**
 	 * Factory for DocuDirents based on file class.
 	 * 
-	 * Returns an ImageFileset, TextFile or SVGFile. baseDirs and scalext are
+	 * Returns an ImageSet, TextFile or SVGFile. baseDirs and scalext are
 	 * only for ImageFilesets.
 	 * 
 	 * @param fileClass
@@ -342,7 +342,7 @@ public class FileOps {
 		// what class of file do we have?
 		if (fileClass == FileClass.IMAGE) {
 			// image file
-			return new ImageFileset(file, hints);
+			return new ImageSet(file, hints);
 		} else if (fileClass == FileClass.TEXT) {
 			// text file
 			return new TextFile(file);

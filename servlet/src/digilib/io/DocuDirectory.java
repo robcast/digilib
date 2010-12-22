@@ -127,11 +127,11 @@ public class DocuDirectory extends Directory {
 	 * @param index
 	 * @return
 	 */
-	public ImageFileset get(int index) {
+	public ImageSet get(int index) {
 		if ((list == null) || (list.get(0) == null) || (index >= list.get(0).size())) {
 			return null;
 		}
-		return (ImageFileset) list.get(0).get(index);
+		return (ImageSet) list.get(0).get(index);
 	}
 
 	/**

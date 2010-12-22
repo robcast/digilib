@@ -1,4 +1,4 @@
-/* ImageFileset -- digilib image file info class.  
+/* ImageSet -- digilib image file info class.  
  * Digital Image Library servlet components  
  * Copyright (C) 2003 Robert Casties (robcast@mail.berlios.de)  
  * 
@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -33,22 +32,28 @@ import digilib.servlet.DigilibConfiguration;
 /**
  * @author casties
  */
-public class ImageFileset extends DocuDirent {
+public class ImageSet {
 
 	/** this is an image file */
 	protected static FileClass fileClass = FileClass.IMAGE;
 	
 	/** list of files (ImageFile) */
-	private List<ImageFile> list = null;
+	private List<ImageInput> list = null;
 
 	/** aspect ratio (width/height) */
-	private float aspect = 0;
+	private float aspect = 0f;
 
 	/** resolution of the biggest image (DPI) */
-	private float resX = 0;
+	private float resX = 0f;
 
 	/** resolution of the biggest image (DPI) */
-	private float resY = 0;
+	private float resY = 0f;
+
+	private Directory parent;
+
+	private boolean metaChecked;
+
+	private Map fileMeta;
 
 	/**
 	 * Creator for empty fileset.
@@ -56,8 +61,8 @@ public class ImageFileset extends DocuDirent {
 	 * 
 	 * @param initialCapacity
 	 */
-	public ImageFileset() {
-		list = new ArrayList<ImageFile>();
+	public ImageSet() {
+		list = new ArrayList<ImageInput>();
 	}
 
 	/**
@@ -68,10 +73,10 @@ public class ImageFileset extends DocuDirent {
 	 * @param file
 	 * @param hints
 	 */
-	public ImageFileset(File file, Map<Integer,Object> hints) {
+	public ImageSet(File file, Map<Integer,Object> hints) {
 		Directory[] dirs = (Directory[]) hints.get(FileOps.HINT_BASEDIRS);
 		int nb = dirs.length;
-		list = new ArrayList<ImageFile>(nb);
+		list = new ArrayList<ImageInput>(nb);
 		parent = dirs[0];
 		fill(dirs, file, hints);
 	}
@@ -106,8 +111,9 @@ public class ImageFileset extends DocuDirent {
 	 * Gets the default File.
 	 *  
 	 */
-	public File getFile() {
-		return (list != null) ? list.get(0).getFile() : null;
+	public ImageInput getInput() {
+		//return (list != null) ? list.get(0).getFile() : null;
+		return null;
 	}
 
 	/**
@@ -117,7 +123,7 @@ public class ImageFileset extends DocuDirent {
 	 * @param index
 	 * @return
 	 */
-	public ImageFile get(int index) {
+	public ImageInput get(int index) {
 		return list.get(index);
 	}
 
@@ -133,12 +139,12 @@ public class ImageFileset extends DocuDirent {
 	 * @param info
 	 * @return
 	 */
-	public ImageFile getNextSmaller(ImageSize size) {
-		for (Iterator<ImageFile> i = getHiresIterator(); i.hasNext();) {
-			ImageFile f = i.next();
+	public ImageInput getNextSmaller(ImageSize size) {
+		for (ListIterator<ImageInput> i = getHiresIterator(); i.hasNext();) {
+			ImageInput f = i.next();
 			try {
 				if (!f.isChecked()) {
-					DigilibConfiguration.docuImageIdentify(f);
+					DigilibConfiguration.docuImageIdentify((ImageFile) f);
 				}
 				if (f.getSize().isTotallySmallerThan(size)) {
 					return f;
@@ -161,12 +167,12 @@ public class ImageFileset extends DocuDirent {
 	 * @param info
 	 * @return
 	 */
-	public ImageFile getNextBigger(ImageSize size) {
-		for (ListIterator<ImageFile> i = getLoresIterator(); i.hasPrevious();) {
-			ImageFile f = i.previous();
+	public ImageInput getNextBigger(ImageSize size) {
+		for (ListIterator<ImageInput> i = getLoresIterator(); i.hasPrevious();) {
+			ImageInput f = i.previous();
 			try {
 				if (!f.isChecked()) {
-					DigilibConfiguration.docuImageIdentify(f);
+					DigilibConfiguration.docuImageIdentify((ImageFile) f);
 				}
 				if (f.getSize().isBiggerThan(size)) {
 					return f;
@@ -183,7 +189,7 @@ public class ImageFileset extends DocuDirent {
 	 * 
 	 * @return
 	 */
-	public ImageFile getBiggest() {
+	public ImageInput getBiggest() {
 		return this.get(0);
 	}
 
@@ -193,7 +199,7 @@ public class ImageFileset extends DocuDirent {
 	 * 
 	 * @return
 	 */
-	public ImageFile getSmallest() {
+	public ImageInput getSmallest() {
 		return this.get(this.size() - 1);
 	}
 
@@ -204,7 +210,7 @@ public class ImageFileset extends DocuDirent {
 	 * 
 	 * @return
 	 */
-	public ListIterator<ImageFile> getHiresIterator() {
+	public ListIterator<ImageInput> getHiresIterator() {
 		return list.listIterator();
 	}
 
@@ -218,12 +224,12 @@ public class ImageFileset extends DocuDirent {
 	 * 
 	 * @return
 	 */
-	public ListIterator<ImageFile> getLoresIterator() {
+	public ListIterator<ImageInput> getLoresIterator() {
 		return list.listIterator(list.size());
 	}
 
 	/**
-	 * Fill the ImageFileset with files from different base directories.
+	 * Fill the ImageSet with files from different base directories.
 	 * 
 	 * 
 	 * @param dirs
@@ -237,7 +243,7 @@ public class ImageFileset extends DocuDirent {
 		int nb = dirs.length;
 		String fn = fl.getName();
 		String baseFn = FileOps.basename(fn);
-		// add the first ImageFile to the ImageFileset
+		// add the first ImageFile to the ImageSet
 		add(new ImageFile(fn, this, parent));
 		// iterate the remaining base directories
 		for (int dirIdx = 1; dirIdx < nb; dirIdx++) {
@@ -372,6 +378,11 @@ public class ImageFileset extends DocuDirent {
 				return;
 			}
 		}
+	}
+
+	private void readMeta() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	/**

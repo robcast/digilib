@@ -55,7 +55,7 @@ public class TextFile extends DocuDirent {
 	/* (non-Javadoc)
 	 * @see digilib.io.DocuDirent#getFile()
 	 */
-	public File getFile() {
+	public File getInput() {
 		return file;
 	}
 

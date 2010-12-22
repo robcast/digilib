@@ -12,7 +12,7 @@ import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.FileOps.FileClass;
 import digilib.io.ImageFile;
-import digilib.io.ImageFileset;
+import digilib.io.ImageSet;
 import digilib.servlet.DigilibConfiguration;
 import digilib.util.OptionsSet;
 import digilib.util.Parameter;
@@ -37,7 +37,7 @@ public class ImageJobDescription extends ParameterMap {
 	protected static Logger logger = Logger.getLogger("digilib.servlet");
 
 	ImageFile fileToLoad = null;
-	ImageFileset fileset = null;
+	ImageSet fileset = null;
 	DocuDirectory fileDir = null;
 	String filePath = null;
 	ImageSize expectedSourceSize = null;
@@ -182,11 +182,11 @@ public class ImageJobDescription extends ParameterMap {
 		return fileDir;
 	}
 	
-    public ImageFileset getFileset() throws FileOpException {
+    public ImageSet getFileset() throws FileOpException {
         if(fileset==null){
             DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
     
-            fileset = (ImageFileset) dirCache.getFile(getFilePath(), getAsInt("pn"), FileClass.IMAGE);
+            fileset = (ImageSet) dirCache.getFile(getFilePath(), getAsInt("pn"), FileClass.IMAGE);
             if (fileset == null) {
                 throw new FileOpException("File " + getFilePath() + "("
                         + getAsInt("pn") + ") not found.");
@@ -245,7 +245,7 @@ public class ImageJobDescription extends ParameterMap {
 		logger.debug("get_hiresSize()");
 
 		ImageSize hiresSize = null;
-		ImageFileset fileset = getFileset();
+		ImageSet fileset = getFileset();
 		if (getAbsoluteScale()) {
 			ImageFile hiresFile = fileset.getBiggest();
 			if (!hiresFile.isChecked()) {

@@ -21,9 +21,6 @@
 
 package digilib.io;
 
-import java.io.File;
-import java.io.InputStream;
-
 import digilib.image.ImageSize;
 
 public abstract class ImageInput {
@@ -32,36 +29,6 @@ public abstract class ImageInput {
 	protected String mimetype = null;
 	// image size in pixels
 	protected ImageSize pixelSize = null;
-
-	/** Returns if this ImageInput is File-based.
-	 * @return
-	 */
-	public boolean hasFile() {
-		return false;
-	}
-	
-	/** Returns the underlying File (if applicable)
-	 * 
-	 * @return
-	 */
-	public File getFile() {
-		return null;
-	}
-
-	/** Returns if this ImageInput is Stream-based.
-	 * @return
-	 */
-	public boolean hasStream() {
-		return false;
-	}
-
-	/** Returns the underlying Stream (if applicable)
-	 * 
-	 * @return
-	 */
-	public InputStream getStream() {
-		return null;
-	}
 
 	/**
 	 * @return ImageSize

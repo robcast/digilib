@@ -22,7 +22,6 @@
 package digilib.io;
 
 import java.io.File;
-import java.io.InputStream;
 
 import digilib.image.ImageSize;
 
@@ -33,12 +32,12 @@ public class ImageFile extends ImageInput {
 	
 	// file name
 	private String filename = null;
-	// parent ImageFileset
-	private ImageFileset parent = null;
+	// parent ImageSet
+	private ImageSet parent = null;
 	// parent directory
 	private Directory dir = null;
 
-	public ImageFile(String fn, ImageFileset parent, Directory dir) {
+	public ImageFile(String fn, ImageSet parent, Directory dir) {
 		this.filename = fn;
 		this.parent = parent;
 		this.dir = dir;
@@ -79,9 +78,9 @@ public class ImageFile extends ImageInput {
 	}
 
 	/**
-	 * @return ImageFileset
+	 * @return ImageSet
 	 */
-	public ImageFileset getParent() {
+	public ImageSet getParent() {
 		return parent;
 	}
 
@@ -89,7 +88,7 @@ public class ImageFile extends ImageInput {
 	 * Sets the parent.
 	 * @param parent The parent to set
 	 */
-	public void setParent(ImageFileset parent) {
+	public void setParent(ImageSet parent) {
 		this.parent = parent;
 	}
 
