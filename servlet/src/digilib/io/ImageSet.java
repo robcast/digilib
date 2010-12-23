@@ -17,13 +17,11 @@
 
 package digilib.io;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
 import digilib.image.ImageSize;
-import digilib.servlet.DigilibConfiguration;
 
 /**
  * @author casties
@@ -86,8 +84,6 @@ public class ImageSet {
 	 * 
 	 * Returns the ImageFile from the set that has a width and height smaller or
 	 * equal the given size. Returns null if there isn't any smaller image.
-	 * Needs DocuInfo instance to checkFile().
-	 * 
 	 * 
 	 * @param size
 	 * @param info
@@ -96,14 +92,8 @@ public class ImageSet {
 	public ImageInput getNextSmaller(ImageSize size) {
 		for (ListIterator<ImageInput> i = getHiresIterator(); i.hasNext();) {
 			ImageInput f = i.next();
-			try {
-				if (!f.isChecked()) {
-					DigilibConfiguration.docuImageIdentify((ImageFile) f); // FIXME: cast to file?
-				}
-				if (f.getSize().isTotallySmallerThan(size)) {
-					return f;
-				}
-			} catch (IOException e) {
+			if (f.getSize().isTotallySmallerThan(size)) {
+				return f;
 			}
 		}
 		return null;
@@ -113,9 +103,7 @@ public class ImageSet {
 	 * Get the next bigger ImageFile than the given size.
 	 * 
 	 * Returns the ImageFile from the set that has a width or height bigger or
-	 * equal the given size. Returns null if there isn't any bigger image. Needs
-	 * DocuInfo instance to checkFile().
-	 * 
+	 * equal the given size. Returns null if there isn't any bigger image.
 	 * 
 	 * @param size
 	 * @param info
@@ -124,14 +112,8 @@ public class ImageSet {
 	public ImageInput getNextBigger(ImageSize size) {
 		for (ListIterator<ImageInput> i = getLoresIterator(); i.hasPrevious();) {
 			ImageInput f = i.previous();
-			try {
-				if (!f.isChecked()) {
-					DigilibConfiguration.docuImageIdentify((ImageFile) f); // FIXME: cast to file?
-				}
-				if (f.getSize().isBiggerThan(size)) {
-					return f;
-				}
-			} catch (IOException e) {
+			if (f.getSize().isBiggerThan(size)) {
+				return f;
 			}
 		}
 		return null;

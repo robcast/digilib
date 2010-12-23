@@ -61,7 +61,8 @@ public abstract class ImageInput {
 	}
 
 	/** returns if this image has been checked 
-	 * (i.e. has size and mimetype) 
+	 * (i.e. has size and mimetype)
+	 * TODO: deprecated
 	 * @return boolean
 	 */
 	public boolean isChecked() {

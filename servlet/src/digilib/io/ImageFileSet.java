@@ -18,9 +18,14 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
 
     /** this is an image file */
     protected static FileClass fileClass = FileClass.IMAGE;
-    private Directory parent;
-    private boolean metaChecked;
-    private Map fileMeta;
+    /** the file name */
+    protected String filename = null;
+	/** HashMap with metadata */
+	protected MetadataMap fileMeta = null;
+	/** Is the Metadata valid */
+	protected boolean metaChecked = false;
+	/** the parent directory */
+	protected Directory parent = null;
     
     /**
      * Constructor with a file and hints.
