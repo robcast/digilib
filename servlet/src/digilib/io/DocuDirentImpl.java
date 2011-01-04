@@ -54,18 +54,18 @@ public abstract class DocuDirentImpl implements DocuDirent {
 	/* (non-Javadoc)
      * @see digilib.io.DocuDirent#getInput()
      */
-	public abstract File getInput();
+	public abstract File getFile();
 
 	/* (non-Javadoc)
      * @see digilib.io.DocuDirent#readMeta()
      */
 	public void readMeta() {
-		if ((fileMeta != null) || (getInput() == null)) {
+		if ((fileMeta != null) || (getFile() == null)) {
 			// there is already metadata or there is no file
 			return;
 		}
 		// metadata is in the file {filename}.meta
-		String fn = getInput().getAbsolutePath();
+		String fn = getFile().getAbsolutePath();
 		File mf = new File(fn + ".meta");
 		if (mf.canRead()) {
 			XMLMetaLoader ml = new XMLMetaLoader();
@@ -86,7 +86,7 @@ public abstract class DocuDirentImpl implements DocuDirent {
      * @see digilib.io.DocuDirent#getName()
      */
 	public String getName() {
-		File f = getInput();
+		File f = getFile();
 		return (f != null) ? f.getName() : null;
 	} 
 	

@@ -2,7 +2,7 @@ package digilib.io;
 
 import java.io.File;
 
-public interface DocuDirent extends Comparable<Object>{
+public interface DocuDirent extends Comparable<Object> {
 
     /**
      * Checks metadata and does something with it.
@@ -15,7 +15,7 @@ public interface DocuDirent extends Comparable<Object>{
      * 
      * @return
      */
-    public abstract File getInput();
+    public abstract File getFile();
 
     /**
      * Reads meta-data for this Fileset if there is any.

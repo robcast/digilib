@@ -334,15 +334,15 @@ public class FileOps {
 	 * 
 	 * @param fileClass
 	 * @param file
-	 * @param hints
+	 * @param baseDirs
 	 *            optional additional parameters
 	 * @return
 	 */
-	public static DocuDirent fileForClass(FileClass fileClass, File file, Map<Integer,Object> hints) {
+	public static DocuDirent fileForClass(FileClass fileClass, File file, Directory[] baseDirs) {
 		// what class of file do we have?
 		if (fileClass == FileClass.IMAGE) {
 			// image file
-			return new ImageFileSet(file, hints);
+			return new ImageFileSet(file, baseDirs);
 		} else if (fileClass == FileClass.TEXT) {
 			// text file
 			return new TextFile(file);

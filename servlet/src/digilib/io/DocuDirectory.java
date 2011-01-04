@@ -177,8 +177,6 @@ public class DocuDirectory extends Directory {
 		if (!isValid) {
 			return false;
 		}
-		// first file extension to try for scaled directories
-		String scalext = null;
 		// read all filenames
 		logger.debug("reading directory " + dir.getPath());
 		/*
@@ -226,14 +224,10 @@ public class DocuDirectory extends Directory {
 				list.set(fileClass.ordinal(), new ArrayList<DocuDirent>(numFiles));
 				// sort the file names alphabetically and iterate the list
 				// Arrays.sort(fileList); // not needed <hertzhaft>
-				Map<Integer, Object> hints = FileOps.newHints(FileOps.HINT_BASEDIRS, dirs);
-				hints.put(FileOps.HINT_FILEEXT, scalext);
 				for (int i = 0; i < numFiles; i++) {
 					DocuDirent f = FileOps.fileForClass(fileClass, fileList[i],
-							hints);
+							dirs);
 					// add the file to our list
-                    // logger.debug(f.getName());
-
 					list.get(fileClass.ordinal()).add(f);
 					f.setParent(this);
 				}

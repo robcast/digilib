@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import digilib.io.FileOps.FileClass;
 
 /**
@@ -18,8 +20,10 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
 
     /** this is an image file */
     protected static FileClass fileClass = FileClass.IMAGE;
+    /** the (main) file */
+    protected File file = null;
     /** the file name */
-    protected String filename = null;
+    protected String name = null;
 	/** HashMap with metadata */
 	protected MetadataMap fileMeta = null;
 	/** Is the Metadata valid */
@@ -33,75 +37,75 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
      * The hints are expected to contain 'basedirs' and 'scaledfilext' keys.
      * 
      * @param file
-     * @param hints
+     * @param baseDirs
      */
-    public ImageFileSet(File file, Map<Integer,Object> hints) {
-        Directory[] dirs = (Directory[]) hints.get(FileOps.HINT_BASEDIRS);
-        int nb = dirs.length;
+    public ImageFileSet(File file, Directory[] baseDirs) {
+        int nb = baseDirs.length;
         list = new ArrayList<ImageInput>(nb);
-        parent = dirs[0];
-        fill(dirs, file, hints);
+        parent = baseDirs[0]; // TODO: is baseDir really our parent?
+        this.file = file;
+        this.name = file.getName();
+        fill(baseDirs, file);
     }
 
     /* (non-Javadoc)
      * @see digilib.io.DocuDirent#getName()
      */
     public String getName() {
-        // TODO Auto-generated method stub
-        return null;
+    	return this.name;
     }
 
     /* (non-Javadoc)
      * @see digilib.io.DocuDirent#getParent()
      */
     public Directory getParent() {
-        // TODO Auto-generated method stub
-        return null;
+    	return this.parent;
     }
 
     /* (non-Javadoc)
      * @see digilib.io.DocuDirent#setParent(digilib.io.Directory)
      */
     public void setParent(Directory parent) {
-        // TODO Auto-generated method stub
-
+    	this.parent = parent;
     }
 
     /* (non-Javadoc)
      * @see digilib.io.DocuDirent#getFileMeta()
      */
     public MetadataMap getFileMeta() {
-        // TODO Auto-generated method stub
-        return null;
+    	return this.fileMeta;
     }
 
     /* (non-Javadoc)
      * @see digilib.io.DocuDirent#setFileMeta(digilib.io.MetadataMap)
      */
     public void setFileMeta(MetadataMap fileMeta) {
-        // TODO Auto-generated method stub
-
+    	this.fileMeta = fileMeta;
     }
 
     /* (non-Javadoc)
      * @see digilib.io.DocuDirent#isMetaChecked()
      */
     public boolean isMetaChecked() {
-        // TODO Auto-generated method stub
-        return false;
+    	return this.metaChecked;
     }
 
     /* (non-Javadoc)
      * @see digilib.io.DocuDirent#compareTo(java.lang.Object)
      */
     public int compareTo(Object arg0) {
-        // TODO Auto-generated method stub
-        return 0;
+		if (arg0 instanceof DocuDirent) {
+		    return name.compareTo(((DocuDirent) arg0).getName());
+		} else {
+		    return getName().compareTo((String) arg0);
+		}
     }
 
-    public File getInput() {
-        // TODO Auto-generated method stub
-        return null;
+    /* (non-Javadoc)
+     * @see digilib.io.DocuDirent#getFile()
+     */
+    public File getFile() {
+        return file;
     }
 
     /**
@@ -131,7 +135,7 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
      * @param hints
      *  
      */
-    void fill(Directory[] dirs, File fl, Map<Integer,Object> hints) {
+    void fill(Directory[] dirs, File fl) {
     	int nb = dirs.length;
     	String fn = fl.getName();
     	String baseFn = FileOps.basename(fn);
@@ -272,9 +276,31 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
         }
     }
 
-    public void readMeta() {
-    	// FIXME: what to do?
-    	
-    }
+	/* (non-Javadoc)
+     * @see digilib.io.DocuDirent#readMeta()
+     */
+	public void readMeta() {
+		if ((fileMeta != null) || (file == null)) {
+			// there is already metadata or there is no file
+			return;
+		}
+		// metadata is in the file {filename}.meta
+		String fn = file.getAbsolutePath();
+		File mf = new File(fn + ".meta");
+		if (mf.canRead()) {
+			XMLMetaLoader ml = new XMLMetaLoader();
+			try {
+				// read meta file
+				Map<String, MetadataMap> meta = ml.loadURL(mf.getAbsolutePath());
+				if (meta == null) {
+					return;
+				}
+				fileMeta = meta.get(name);
+			} catch (Exception e) {
+				Logger.getLogger(this.getClass()).warn("error reading file .meta", e);
+			}
+		}
+	}
+
 
 }
