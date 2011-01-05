@@ -329,20 +329,20 @@ public class FileOps {
 	/**
 	 * Factory for DocuDirents based on file class.
 	 * 
-	 * Returns an ImageSet, TextFile or SVGFile. baseDirs and scalext are
+	 * Returns an ImageSet, TextFile or SVGFile. scaleDirs are
 	 * only for ImageFilesets.
 	 * 
 	 * @param fileClass
 	 * @param file
-	 * @param baseDirs
+	 * @param scaleDirs
 	 *            optional additional parameters
 	 * @return
 	 */
-	public static DocuDirent fileForClass(FileClass fileClass, File file, Directory[] baseDirs) {
+	public static DocuDirent fileForClass(FileClass fileClass, File file, Directory[] scaleDirs) {
 		// what class of file do we have?
 		if (fileClass == FileClass.IMAGE) {
 			// image file
-			return new ImageFileSet(file, baseDirs);
+			return new ImageFileSet(file, scaleDirs);
 		} else if (fileClass == FileClass.TEXT) {
 			// text file
 			return new TextFile(file);

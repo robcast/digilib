@@ -30,32 +30,46 @@ import digilib.image.ImageSize;
  */
 public class ImageFile extends ImageInput {
 	
+	// file
+	private File file = null;
 	// file name
-	private String filename = null;
+	private String name = null;
 	// parent ImageSet
 	private ImageSet parent = null;
 	// parent directory
 	private Directory dir = null;
 
-	public ImageFile(String fn, ImageSet parent, Directory dir) {
-		this.filename = fn;
+	/** Constructor with File.
+	 * 
+	 * @param f
+	 * @param parent
+	 * @param dir
+	 */
+	public ImageFile(File f, ImageSet parent, Directory dir) {
+		this.file = f;
+		this.name = f.getName();
 		this.parent = parent;
 		this.dir = dir;
 	}
 	
-	public ImageFile(String fn) {
-		File f = new File(fn);
-		this.dir = new Directory(f.getParentFile());
-		this.filename = f.getName();
+	/** Constructor with filename (without path).
+	 * @param fn
+	 * @param parent
+	 * @param dir
+	 */
+	public ImageFile(String fn, ImageSet parent, Directory dir) {
+		this.name = fn;
+		this.dir = dir;
+		this.file = new File(this.dir.getDir(), fn);
+		this.parent = parent;
 	}
-	
 	
 	/** Returns the file name (without path).
 	 * 
 	 * @return
 	 */
 	public String getName() {
-		return filename;
+		return name;
 	}
 
 
@@ -63,11 +77,7 @@ public class ImageFile extends ImageInput {
 	 * @return File
 	 */
 	public File getFile() {
-		if (dir == null) {
-			return null;
-		}
-		File f = new File(dir.getDir(), filename);
-		return f;
+		return file;
 	}
 
 	/**
@@ -102,9 +112,8 @@ public class ImageFile extends ImageInput {
     @Override
     public String toString() {
         // try to use File.toString
-        File f = getFile();
-        if (f != null) {
-            return f.toString();
+        if (file != null) {
+            return file.toString();
         }
         return super.toString();
     }

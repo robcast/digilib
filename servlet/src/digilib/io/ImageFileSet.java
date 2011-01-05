@@ -29,23 +29,22 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
 	/** Is the Metadata valid */
 	protected boolean metaChecked = false;
 	/** the parent directory */
-	protected Directory parent = null;
+	protected Directory parentDir = null;
     
     /**
-     * Constructor with a file and hints.
-     * 
-     * The hints are expected to contain 'basedirs' and 'scaledfilext' keys.
+     * Constructor with a File and Directories.
      * 
      * @param file
-     * @param baseDirs
+     * @param scaleDirs
      */
-    public ImageFileSet(File file, Directory[] baseDirs) {
-        int nb = baseDirs.length;
+    public ImageFileSet(File file, Directory[] scaleDirs) {
+        int nb = scaleDirs.length;
         list = new ArrayList<ImageInput>(nb);
-        parent = baseDirs[0]; // TODO: is baseDir really our parent?
+        // first dir is our parent
+        parentDir = scaleDirs[0];
         this.file = file;
         this.name = file.getName();
-        fill(baseDirs, file);
+        fill(scaleDirs, file);
     }
 
     /* (non-Javadoc)
@@ -59,14 +58,14 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
      * @see digilib.io.DocuDirent#getParent()
      */
     public Directory getParent() {
-    	return this.parent;
+    	return this.parentDir;
     }
 
     /* (non-Javadoc)
      * @see digilib.io.DocuDirent#setParent(digilib.io.Directory)
      */
     public void setParent(Directory parent) {
-    	this.parent = parent;
+    	this.parentDir = parent;
     }
 
     /* (non-Javadoc)
@@ -136,21 +135,20 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
      *  
      */
     void fill(Directory[] dirs, File fl) {
-    	int nb = dirs.length;
     	String fn = fl.getName();
     	String baseFn = FileOps.basename(fn);
     	// add the first ImageFile to the ImageSet
-    	add(new ImageFile(fn, this, parent));
+    	add(new ImageFile(fl, this, parentDir));
     	// iterate the remaining base directories
-    	for (int dirIdx = 1; dirIdx < nb; dirIdx++) {
-    		if (dirs[dirIdx] == null) {
+    	for (Directory dir: dirs) {
+    		if (dir == null) {
     			continue;
     		}
     		// read the directory
-    		if (dirs[dirIdx].getFilenames() == null) {
-    			dirs[dirIdx].readDir();
+    		if (dir.getFilenames() == null) {
+    			dir.readDir();
     		}
-    		String[] dirFiles = dirs[dirIdx].getFilenames();
+    		String[] dirFiles = dir.getFilenames();
     		// try the same filename as the original
     		int fileIdx = Arrays.binarySearch(dirFiles, fn);
     		if (fileIdx < 0) {
@@ -178,7 +176,7 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
     		if (FileOps.classForFilename(dirFiles[fileIdx]) == fileClass) {
     			/* logger.debug("adding file " + dirFiles[fileIdx]
     					+ " to Fileset " + this.getName()); */
-    			add(new ImageFile(dirFiles[fileIdx], this, dirs[dirIdx]));
+    			add(new ImageFile(dirFiles[fileIdx], this, dir));
     		}
     	}
     }
@@ -196,12 +194,12 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
             readMeta();
             if (fileMeta == null) {
                 // try directory metadata
-                ((DocuDirectory) parent).checkMeta();
-                if (((DocuDirectory) parent).getDirMeta() != null) {
-                    fileMeta = ((DocuDirectory) parent).getDirMeta();
+                ((DocuDirectory) parentDir).checkMeta();
+                if (((DocuDirectory) parentDir).getDirMeta() != null) {
+                    fileMeta = ((DocuDirectory) parentDir).getDirMeta();
                 } else {
                     // try parent directory metadata
-                    DocuDirectory gp = (DocuDirectory) parent.getParent();
+                    DocuDirectory gp = (DocuDirectory) parentDir.getParent();
                     if (gp != null) {
                         gp.checkMeta();
                         if (gp.getDirMeta() != null) {
