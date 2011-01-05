@@ -278,7 +278,7 @@ public class DigilibConfiguration extends ParameterMap {
 	 * @return
 	 * @throws IOException
 	 */
-	public static ImageInput docuImageIdentify(ImageFile imgf) throws IOException {
+	public static ImageInput identifyDocuImage(ImageFile imgf) throws IOException {
 	    // use fresh DocuImage instance
 	    DocuImage di = getDocuImageInstance();
 		return di.identify(imgf);

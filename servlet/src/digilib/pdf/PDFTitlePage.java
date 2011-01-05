@@ -15,7 +15,6 @@ import com.itextpdf.text.Image;
 import com.itextpdf.text.Paragraph;
 
 
-import digilib.io.DigilibInfoReader;
 import digilib.io.DocuDirCache;
 import digilib.servlet.PDFCache;
 import digilib.servlet.PDFRequest;

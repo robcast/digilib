@@ -210,11 +210,7 @@ public class DocumentBean {
 		}
 		// get original pixel size
 		ImageInput origfile = fileset.getBiggest();
-		// check image for size if mo=hires
-		if ((! origfile.isChecked())&&dlRequest.hasOption("hires")) {
-			logger.debug("pre-checking image!");
-			DigilibConfiguration.docuImageIdentify((ImageFile) origfile);
-		}
+		// check image for size (TODO: just if mo=hires?)
 		ImageSize pixsize = origfile.getSize();
 		if (pixsize != null) {
 			// add pixel size

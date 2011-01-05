@@ -22,8 +22,10 @@
 package digilib.io;
 
 import java.io.File;
+import java.io.IOException;
 
 import digilib.image.ImageSize;
+import digilib.servlet.DigilibConfiguration;
 
 /**
  * @author casties
@@ -64,14 +66,55 @@ public class ImageFile extends ImageInput {
 		this.parent = parent;
 	}
 	
-	/** Returns the file name (without path).
+	
+	/** Checks the image and sets size and type.
+	 * 
+	 */
+	public void check() {
+	    if (pixelSize == null) {
+	        try {
+	            // use the configured toolkit to identify the image
+                DigilibConfiguration.identifyDocuImage(this);
+            } catch (IOException e) {
+                // nothing much to do...
+            }
+	    }
+	}
+	
+	/* (non-Javadoc)
+     * @see digilib.io.ImageInput#getSize()
+     */
+    @Override
+    public ImageSize getSize() {
+        check();
+        return pixelSize;
+    }
+
+    /* (non-Javadoc)
+     * @see digilib.io.ImageInput#getMimetype()
+     */
+    @Override
+    public String getMimetype() {
+        check();
+        return mimetype;
+    }
+
+    /* (non-Javadoc)
+     * @see digilib.io.ImageInput#getAspect()
+     */
+    @Override
+    public float getAspect() {
+        check();
+        return (pixelSize != null) ? pixelSize.getAspect() : 0f;
+    }
+
+    /** Returns the file name (without path).
 	 * 
 	 * @return
 	 */
 	public String getName() {
 		return name;
 	}
-
 
 	/**
 	 * @return File

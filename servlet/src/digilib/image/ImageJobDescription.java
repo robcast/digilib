@@ -132,9 +132,6 @@ public class ImageJobDescription extends ParameterMap {
 	public String getMimeType() throws IOException {
 		if (mimeType == null) {
 			fileToLoad = getFileToLoad();
-			if(! fileToLoad.isChecked()){
-				DigilibConfiguration.docuImageIdentify((ImageFile) fileToLoad); //FIXME: cast to file?
-			}
 			mimeType = fileToLoad.getMimetype();
 		}
 		return mimeType;
@@ -249,9 +246,6 @@ public class ImageJobDescription extends ParameterMap {
 		ImageSet fileset = getFileset();
 		if (getAbsoluteScale()) {
 			ImageInput hiresFile = fileset.getBiggest();
-			if (!hiresFile.isChecked()) {
-				DigilibConfiguration.docuImageIdentify((ImageFile) hiresFile); //FIXME: cast to file?
-			}
 			hiresSize = hiresFile.getSize();
 		}
 		return hiresSize;

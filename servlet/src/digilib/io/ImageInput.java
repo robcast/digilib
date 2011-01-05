@@ -74,7 +74,7 @@ public abstract class ImageInput {
 	 * @return
 	 */
 	public float getAspect() {
-		return (pixelSize != null) ? pixelSize.getAspect() : 0;
+		return (pixelSize != null) ? pixelSize.getAspect() : 0f;
 	}
 	
 }

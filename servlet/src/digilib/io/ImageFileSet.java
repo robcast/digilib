@@ -140,7 +140,8 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
     	// add the first ImageFile to the ImageSet
     	add(new ImageFile(fl, this, parentDir));
     	// iterate the remaining base directories
-    	for (Directory dir: dirs) {
+    	for (int i = 1; i < dirs.length; ++i) {
+    	    Directory dir = dirs[i];
     		if (dir == null) {
     			continue;
     		}

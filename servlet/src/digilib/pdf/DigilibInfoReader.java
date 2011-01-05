@@ -1,4 +1,4 @@
-package digilib.io;
+package digilib.pdf;
 
 /** DigilibInfoReader 
  * A class for reading the information from info.xml files used in digilib image directories.
