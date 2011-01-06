@@ -68,6 +68,8 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 	/** File that was read */
 	protected File imgFile;
 
+	private ImageInput input;
+
 	/* loadSubimage is supported. */
 	public boolean isSubimageSupported() {
 		return true;
@@ -167,17 +169,31 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 	 * 
 	 * @return
 	 */
-	public ImageReader getReader(ImageFile f) throws IOException {
-		logger.debug("preloadImage " + f.getFile());
-		if (reader != null) {
-			logger.debug("Reader was not null!");
+	public ImageReader getReader(ImageInput input) throws IOException {
+		logger.debug("get ImageReader for " + input);
+		if (this.reader != null) {
+			if (this.input == input) {
+				// it was the same input
+				logger.debug("reusing Reader");
+				return reader;
+			}
 			// clean up old reader
+			logger.debug("cleaning Reader!");
 			dispose();
 		}
-		RandomAccessFile rf = new RandomAccessFile(f.getFile(), "r");
-		ImageInputStream istream = new FileImageInputStream(rf);
+		ImageInputStream istream = null;
+		if (input.hasImageInputStream()) {
+			// stream input
+			istream = input.getImageInputStream();
+		} else if (input.hasFile()) {
+			// file only input
+			RandomAccessFile rf = new RandomAccessFile(input.getFile(), "r");
+			istream = new FileImageInputStream(rf);
+		} else {
+			throw new FileOpException("Unable to get data from ImageInput");
+		}
 		Iterator<ImageReader> readers;
-		String mt = f.getMimetype();
+		String mt = input.getMimetype();
 		if (mt == null) {
 			logger.debug("No mime-type. Trying automagic.");
 			readers = ImageIO.getImageReaders(istream);
@@ -186,7 +202,6 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			readers = ImageIO.getImageReadersByMIMEType(mt);
 		}
 		if (!readers.hasNext()) {
-		    rf.close();
 			throw new FileOpException("Can't find Reader to load File!");
 		}
 		reader = readers.next();
@@ -196,7 +211,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			logger.debug("ImageIO: next reader: " + readers.next().getClass());
 		} */
 		reader.setInput(istream);
-		imgFile = f.getFile();
+		imgFile = input.getFile();
 		return reader;
 	}
 

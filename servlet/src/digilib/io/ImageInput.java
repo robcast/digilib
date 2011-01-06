@@ -21,6 +21,10 @@
 
 package digilib.io;
 
+import java.io.File;
+
+import javax.imageio.stream.ImageInputStream;
+
 import digilib.image.ImageSize;
 
 public abstract class ImageInput {
@@ -76,5 +80,38 @@ public abstract class ImageInput {
 	public float getAspect() {
 		return (pixelSize != null) ? pixelSize.getAspect() : 0f;
 	}
+	
+	/** Returns if the input can be returned as ImageInputStream.
+	 * 
+	 * @return
+	 */
+	public boolean hasImageInputStream() {
+		return false;
+	}
+	
+	/** Returns the input as ImageInputStream (if available)
+	 * 
+	 * @return
+	 */
+	public ImageInputStream getImageInputStream() {
+		return null;
+	}
+	
+	/** Returns if the input can be returned as File.
+	 * 
+	 * @return
+	 */
+	public boolean hasFile() {
+		return false;
+	}
+	
+	/** Returns the input as File (if available)
+	 * 
+	 * @return
+	 */
+	public File getFile() {
+		return null;
+	}
+	
 	
 }
