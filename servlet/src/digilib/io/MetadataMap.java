@@ -9,6 +9,7 @@ import java.util.HashMap;
  * @author casties
  *
  */
+@SuppressWarnings("serial")
 public class MetadataMap extends HashMap<String, String> {
 
 }

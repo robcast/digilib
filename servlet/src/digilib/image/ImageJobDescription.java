@@ -11,7 +11,6 @@ import digilib.io.DocuDirectory;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.FileOps.FileClass;
-import digilib.io.ImageFile;
 import digilib.io.ImageInput;
 import digilib.io.ImageSet;
 import digilib.servlet.DigilibConfiguration;
@@ -25,8 +24,6 @@ import digilib.util.ParameterMap;
  * used for content generating classes like MakePDF.  
  * 
  * This contains the functionality formerly found in Scaler, processRequest, only factorized.
- * 
- * TODO clean up...
  * 
  * @author cmielack, casties
  *
@@ -44,7 +41,7 @@ public class ImageJobDescription extends ParameterMap {
 	ImageSize expectedSourceSize = null;
 	Float scaleXY = null;
 	Rectangle2D userImgArea = null;
-	Rectangle2D outerUserImgArea= null;
+	Rectangle2D outerUserImgArea = null;
 	Boolean imageSendable = null;
 	String mimeType;
 	Integer paramDW;
@@ -138,7 +135,6 @@ public class ImageJobDescription extends ParameterMap {
 	}
 	
 	public ImageInput getFileToLoad() throws IOException {
-		
 		if(fileToLoad == null){
 			fileset = getFileset();
 			

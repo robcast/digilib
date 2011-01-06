@@ -81,9 +81,12 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 
 	/* Load an image file into the Object. */
 	public void loadImage(ImageInput ii) throws FileOpException {
-		logger.debug("loadImage: "+ii.getFile());
-		//System.gc();
-		img = JAI.create("ImageRead", ii.getFile().getAbsolutePath());
+		logger.debug("loadImage: "+ii);
+		if (ii.hasImageInputStream()) {
+			img = JAI.create("ImageRead", ii.getImageInputStream());
+		} else if (ii.hasFile()) {
+			img = JAI.create("ImageRead", ii.getFile().getAbsolutePath());
+		}
 		if (img == null) {
 			throw new FileOpException("Unable to load File!");
 		}
@@ -127,8 +130,8 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
             throw new FileOpException("Can't find Reader to load File!");
         }
         reader = readers.next();
-        /* are there more readers? */
         logger.debug("ImageIO: this reader: " + reader.getClass());
+        /* are there more readers? */
         /* while (readers.hasNext()) {
             logger.debug("ImageIO: next reader: " + readers.next().getClass());
         } */

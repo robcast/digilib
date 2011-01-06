@@ -10,7 +10,6 @@ import java.util.concurrent.Callable;
 import org.apache.log4j.Logger;
 
 import digilib.io.FileOpException;
-import digilib.io.ImageInput;
 import digilib.servlet.DigilibConfiguration;
 
 /** Worker that renders an image.
@@ -70,19 +69,14 @@ public class ImageWorker implements Callable<DocuImage> {
                 logger.debug("Using subsampling: " + subsamp + " rest "
                         + scaleXY);
             }
-
-            docuImage.loadSubimage((ImageInput) jobinfo.getFileToLoad(), loadRect, (int) subsamp); //FIXME: cast to file
-
+            docuImage.loadSubimage(jobinfo.getFileToLoad(), loadRect, (int) subsamp);
             logger.debug("SUBSAMP: " + subsamp + " -> " + docuImage.getSize());
-
             docuImage.scale(scaleXY, scaleXY);
-
         } else {
             // else load and crop the whole file
-            docuImage.loadImage((ImageInput) jobinfo.getFileToLoad()); //FIXME: cast to file
+            docuImage.loadImage(jobinfo.getFileToLoad());
             docuImage.crop((int) loadRect.getX(), (int) loadRect.getY(),
                     (int) loadRect.getWidth(), (int) loadRect.getHeight());
-
             docuImage.scale(scaleXY, scaleXY);
         }
 

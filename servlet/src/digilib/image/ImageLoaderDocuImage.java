@@ -49,7 +49,6 @@ import javax.servlet.ServletException;
 
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
-import digilib.io.ImageSet;
 import digilib.io.ImageInput;
 
 /** Implementation of DocuImage using the ImageLoader API of Java 1.4 and Java2D. */
