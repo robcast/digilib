@@ -58,7 +58,7 @@ function dc_render(doc) {
     var pt = getParameter("pt");
     var pn = parseInt(getParameter("pn"));
     var fn = getParameter("fn");
-    var par_mo = (hasParameter("mo")) ? "mo="+getParameter("mo") : "";
+    var par_mo = (hasParameter("mo")) ? "&mo="+getParameter("mo") : "";
 
     var picWidth = (dw != 0) ? dw : Math.floor((fWidth-30)/cells[0])-2*cells[0]-1;
     var picHeight = (dh != 0) ? dh : picWidth;

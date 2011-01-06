@@ -1,5 +1,4 @@
-<%@page import="digilib.io.FileOps"%>
-<%@ page language="java" %><%!
+<%@page import="digilib.io.FileOps"%><%@ page language="java" %><%!
 // create DocumentBean instance for all JSP requests
 digilib.servlet.DocumentBean docBean = new digilib.servlet.DocumentBean();
 
@@ -27,7 +26,6 @@ FileOps.FileClass fc = FileOps.FileClass.IMAGE;
 int dirSize = dir.size(fc);
 
 %><!-- Automatically generated XML snippet with directory info -->
-<huhu/>
 <dir><% if (dir != null) { %>
   <size><%= dirSize %></size>
   <name><%= dir.getDirName() %></name>
