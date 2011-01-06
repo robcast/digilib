@@ -36,8 +36,6 @@ public class ImageFile extends ImageInput {
 	private File file = null;
 	// file name
 	private String name = null;
-	// parent ImageSet
-	private ImageSet parent = null;
 	// parent directory
 	private Directory dir = null;
 
@@ -121,21 +119,6 @@ public class ImageFile extends ImageInput {
 	 */
 	public File getFile() {
 		return file;
-	}
-
-	/**
-	 * @return ImageSet
-	 */
-	public ImageSet getParent() {
-		return parent;
-	}
-
-	/**
-	 * Sets the parent.
-	 * @param parent The parent to set
-	 */
-	public void setParent(ImageSet parent) {
-		this.parent = parent;
 	}
 
 	/* (non-Javadoc)

@@ -25,7 +25,7 @@ import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
 import digilib.io.DocuDirent;
 import digilib.io.FileOps.FileClass;
-import digilib.io.ImageFile;
+import digilib.io.ImageInput;
 import digilib.util.DigilibJobCenter;
 
 @SuppressWarnings("serial")
@@ -195,7 +195,7 @@ public class Scaler extends HttpServlet {
         	/*
         	 *  check if we can fast-track without scaling
         	 */
-            ImageFile fileToLoad = (ImageFile) jobTicket.getFileToLoad();
+            ImageInput fileToLoad = (ImageInput) jobTicket.getFileToLoad();
 
             // check permissions
             if (useAuthorization) {

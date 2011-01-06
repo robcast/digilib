@@ -9,7 +9,6 @@ import java.io.RandomAccessFile;
 
 import org.marcoschmidt.image.ImageInfo;
 
-import digilib.io.ImageFile;
 import digilib.io.ImageInput;
 
 /** Simple abstract implementation of the <code>DocuImage</code> interface.
@@ -20,9 +19,9 @@ import digilib.io.ImageInput;
 public abstract class ImageInfoDocuImage extends DocuImageImpl {
 
     /** Check image size and type and store in ImageFile f */
-    public ImageInput identify(ImageFile imgf) throws IOException {
+    public ImageInput identify(ImageInput ii) throws IOException {
         // fileset to store the information
-        File f = imgf.getFile();
+        File f = ii.getFile();
         if (f == null) {
             throw new IOException("File not found!");
         }
@@ -36,12 +35,12 @@ public abstract class ImageInfoDocuImage extends DocuImageImpl {
         // try with ImageInfo first
         if (iif.check()) {
             ImageSize d = new ImageSize(iif.getWidth(), iif.getHeight());
-            imgf.setSize(d);
-            imgf.setMimetype(iif.getMimeType());
+            ii.setSize(d);
+            ii.setMimetype(iif.getMimeType());
             //logger.debug("  format:"+iif.getFormatName());
             raf.close();
-            logger.debug("image size: " + imgf.getSize());
-            return imgf;
+            logger.debug("image size: " + ii.getSize());
+            return ii;
         } else {
             raf.close();
         }

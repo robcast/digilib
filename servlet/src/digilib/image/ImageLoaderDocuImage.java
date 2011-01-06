@@ -49,7 +49,6 @@ import javax.servlet.ServletException;
 
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
-import digilib.io.ImageFile;
 import digilib.io.ImageSet;
 import digilib.io.ImageInput;
 
@@ -67,8 +66,6 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
 	/** File that was read */
 	protected File imgFile;
-
-	private ImageInput input;
 
 	/* loadSubimage is supported. */
 	public boolean isSubimageSupported() {
@@ -121,44 +118,45 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		return Arrays.asList(formats).iterator();
 	}
 
-    /** Check image size and type and store in ImageFile f */
-    public ImageInput identify(ImageFile imageFile) throws IOException {
+    /* Check image size and type and store in ImageInput */
+    public ImageInput identify(ImageInput input) throws IOException {
         // try parent method first
-        ImageInput imf = super.identify(imageFile);
-        if (imf != null) {
-            return imf;
+        ImageInput ii = super.identify(input);
+        if (ii != null) {
+            return ii;
         }
-        // fileset to store the information
-        ImageSet imgfs = imageFile.getParent();
-        File f = imageFile.getFile();
-        if (f == null) {
-            throw new IOException("File not found!");
-        }
-        logger.debug("identifying (ImageIO) " + f);
+        logger.debug("identifying (ImageIO) " + input);
         /*
          * try ImageReader
          */
-        if ((reader == null) || (imgFile != imageFile.getFile())) {
-            getReader(imageFile);
-        }
+        reader = getReader(input);
+        // set size
         ImageSize d = new ImageSize(reader.getWidth(0), reader.getHeight(0));
-        imageFile.setSize(d);
-        // String t = reader.getFormatName();
-        String t = FileOps.mimeForFile(f);
-        imageFile.setMimetype(t);
-        // logger.debug("  format:"+t);
-        if (imgfs != null) {
-            imgfs.setAspect(d);
+        input.setSize(d);
+        // set mime type
+        if (input.getMimetype() == null) {
+            if (input.hasFile()) {
+                String t = FileOps.mimeForFile(input.getFile());
+                input.setMimetype(t);
+            } else {
+                // FIXME: is format name a mime type???
+                String t = reader.getFormatName();
+                input.setMimetype(t);
+            }
         }
-        return imageFile;
+        return input;
     }
     
     /* load image file */
-	public void loadImage(ImageFile f) throws FileOpException {
-		logger.debug("loadImage " + f.getFile());
+	public void loadImage(ImageInput ii) throws FileOpException {
+		logger.debug("loadImage: " + ii);
+		this.input = ii;
 		try {
-			img = ImageIO.read(f.getFile());
-            mimeType = f.getMimetype();
+		    if (ii.hasImageInputStream()) {
+                img = ImageIO.read(ii.getImageInputStream());
+		    } else if (ii.hasFile()) {
+		        img = ImageIO.read(ii.getFile());
+		    }
 		} catch (IOException e) {
 			throw new FileOpException("Error reading image.");
 		}
@@ -181,6 +179,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			logger.debug("cleaning Reader!");
 			dispose();
 		}
+		this.input = input;
 		ImageInputStream istream = null;
 		if (input.hasImageInputStream()) {
 			// stream input
@@ -211,17 +210,16 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			logger.debug("ImageIO: next reader: " + readers.next().getClass());
 		} */
 		reader.setInput(istream);
-		imgFile = input.getFile();
 		return reader;
 	}
 
 	/* Load an image file into the Object. */
-	public void loadSubimage(ImageFile f, Rectangle region, int prescale)
+	public void loadSubimage(ImageInput ii, Rectangle region, int prescale)
 			throws FileOpException {
 		logger.debug("loadSubimage");
 		try {
-			if ((reader == null) || (imgFile != f.getFile())) {
-				getReader(f);
+			if ((reader == null) || (imgFile != ii.getFile())) {
+				getReader(ii);
 			}
 			// set up reader parameters
 			ImageReadParam readParam = reader.getDefaultReadParam();
@@ -232,7 +230,6 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			// read image
 			logger.debug("loading..");
 			img = reader.read(0, readParam);
-			mimeType = f.getMimetype();
 			logger.debug("loaded");
 		} catch (IOException e) {
 			throw new FileOpException("Unable to load File!");

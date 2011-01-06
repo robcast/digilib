@@ -22,6 +22,7 @@
 package digilib.io;
 
 import java.io.File;
+import java.io.InputStream;
 
 import javax.imageio.stream.ImageInputStream;
 
@@ -33,6 +34,7 @@ public abstract class ImageInput {
 	protected String mimetype = null;
 	// image size in pixels
 	protected ImageSize pixelSize = null;
+    protected ImageSet parent = null;
 
 	/**
 	 * @return ImageSize
@@ -81,7 +83,22 @@ public abstract class ImageInput {
 		return (pixelSize != null) ? pixelSize.getAspect() : 0f;
 	}
 	
-	/** Returns if the input can be returned as ImageInputStream.
+    /**
+     * @return ImageSet
+     */
+    public ImageSet getParent() {
+        return parent;
+    }
+
+    /**
+     * Sets the parent.
+     * @param parent The parent to set
+     */
+    public void setParent(ImageSet parent) {
+        this.parent = parent;
+    }
+
+    /** Returns if the input can be returned as ImageInputStream.
 	 * 
 	 * @return
 	 */
@@ -97,6 +114,22 @@ public abstract class ImageInput {
 		return null;
 	}
 	
+    /** Returns if the input can be returned as InputStream.
+     * 
+     * @return
+     */
+    public boolean hasInputStream() {
+        return false;
+    }
+    
+    /** Returns the input as InputStream (if available)
+     * 
+     * @return
+     */
+    public InputStream getInputStream() {
+        return null;
+    }
+    
 	/** Returns if the input can be returned as File.
 	 * 
 	 * @return
@@ -112,6 +145,7 @@ public abstract class ImageInput {
 	public File getFile() {
 		return null;
 	}
+
 	
 	
 }

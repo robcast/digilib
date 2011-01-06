@@ -38,7 +38,7 @@ import javax.media.jai.JAI;
 import javax.servlet.ServletException;
 
 import digilib.io.FileOpException;
-import digilib.io.ImageFile;
+import digilib.io.ImageInput;
 
 /** DocuImage implementation using the Java Advanced Imaging API and the ImageLoader
  * API of Java 1.4.
@@ -80,44 +80,70 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 
 
 	/* Load an image file into the Object. */
-	public void loadImage(ImageFile f) throws FileOpException {
-		logger.debug("loadImage: "+f.getFile());
+	public void loadImage(ImageInput ii) throws FileOpException {
+		logger.debug("loadImage: "+ii.getFile());
 		//System.gc();
-		img = JAI.create("ImageRead", f.getFile().getAbsolutePath());
+		img = JAI.create("ImageRead", ii.getFile().getAbsolutePath());
 		if (img == null) {
 			throw new FileOpException("Unable to load File!");
 		}
-        mimeType = f.getMimetype();
 	}
 
 	/* Get an ImageReader for the image file. */
-	public ImageReader getReader(ImageFile f) throws IOException {
-		logger.debug("preloadImage: "+f.getFile());
-		//System.gc();
-		RandomAccessFile rf = new RandomAccessFile(f.getFile(), "r");
-		ImageInputStream istream = new FileImageInputStream(rf);
-		//Iterator readers = ImageIO.getImageReaders(istream);
-		Iterator<ImageReader> readers = ImageIO.getImageReadersByMIMEType(f.getMimetype());
-		if (! readers.hasNext()) {
-			throw new FileOpException("Unable to load File!");
-		}
-		reader = readers.next();
-		logger.debug("JAIImageIO: this reader: " + reader.getClass());
-		while (readers.hasNext()) {
-			logger.debug("  next reader: " + readers.next().getClass());
-		}
-		reader.setInput(istream);
-		return reader;
+	public ImageReader getReader(ImageInput input) throws IOException {
+        logger.debug("get ImageReader for " + input);
+        if (this.reader != null) {
+            if (this.input == input) {
+                // it was the same input
+                logger.debug("reusing Reader");
+                return reader;
+            }
+            // clean up old reader
+            logger.debug("cleaning Reader!");
+            dispose();
+        }
+        this.input = input;
+        ImageInputStream istream = null;
+        if (input.hasImageInputStream()) {
+            // stream input
+            istream = input.getImageInputStream();
+        } else if (input.hasFile()) {
+            // file only input
+            RandomAccessFile rf = new RandomAccessFile(input.getFile(), "r");
+            istream = new FileImageInputStream(rf);
+        } else {
+            throw new FileOpException("Unable to get data from ImageInput");
+        }
+        Iterator<ImageReader> readers;
+        String mt = input.getMimetype();
+        if (mt == null) {
+            logger.debug("No mime-type. Trying automagic.");
+            readers = ImageIO.getImageReaders(istream);
+        } else {
+            logger.debug("File type:" + mt);
+            readers = ImageIO.getImageReadersByMIMEType(mt);
+        }
+        if (!readers.hasNext()) {
+            throw new FileOpException("Can't find Reader to load File!");
+        }
+        reader = readers.next();
+        /* are there more readers? */
+        logger.debug("ImageIO: this reader: " + reader.getClass());
+        /* while (readers.hasNext()) {
+            logger.debug("ImageIO: next reader: " + readers.next().getClass());
+        } */
+        reader.setInput(istream);
+        return reader;
 	}
 
 	/* Load an image file into the Object. */
-	public void loadSubimage(ImageFile f, Rectangle region, int prescale)
+	public void loadSubimage(ImageInput ii, Rectangle region, int prescale)
 		throws FileOpException {
-		logger.debug("loadSubimage: "+f.getFile());
+		logger.debug("loadSubimage: "+ii.getFile());
 		//System.gc();
 		try {
-			if ((reader == null) || (imgFile != f.getFile())) {
-				getReader(f);
+			if ((reader == null) || (imgFile != ii.getFile())) {
+				getReader(ii);
 			}
 			ImageReadParam readParam = reader.getDefaultReadParam();
 			readParam.setSourceRegion(region);
@@ -137,8 +163,7 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 		if (img == null) {
 			throw new FileOpException("Unable to load File!");
 		}
-		imgFile = f.getFile();
-        mimeType = f.getMimetype();
+		imgFile = ii.getFile();
 	}
 
 

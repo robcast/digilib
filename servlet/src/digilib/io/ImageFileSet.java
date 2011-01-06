@@ -118,7 +118,7 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
      *            file to add
      * @return true (always)
      */
-    public boolean add(ImageFile f) {
+    public boolean add(ImageInput f) {
     	f.setParent(this);
     	return list.add(f);
     }
