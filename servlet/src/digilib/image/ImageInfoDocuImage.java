@@ -3,7 +3,6 @@
  */
 package digilib.image;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -18,31 +17,28 @@ import digilib.io.ImageInput;
  */
 public abstract class ImageInfoDocuImage extends DocuImageImpl {
 
-    /** Check image size and type and store in ImageFile f */
+    /* Check image size and type and store in ImageFile f */
     public ImageInput identify(ImageInput ii) throws IOException {
-        // fileset to store the information
-        File f = ii.getFile();
-        if (f == null) {
-            throw new IOException("File not found!");
-        }
-        RandomAccessFile raf = new RandomAccessFile(f, "r");
+        logger.debug("identifying (ImageInfo) " + ii);
         // set up ImageInfo object
         ImageInfo iif = new ImageInfo();
-        iif.setInput(raf);
+        if (ii.hasImageInputStream()) {
+            iif.setInput(ii.getImageInputStream());
+        } else if (ii.hasFile()) {
+            RandomAccessFile raf = new RandomAccessFile(ii.getFile(), "r");
+            iif.setInput(raf);
+        } else {
+            return null;
+        }
         iif.setCollectComments(false);
         iif.setDetermineImageNumber(false);
-        logger.debug("identifying (ImageInfo) " + f);
         // try with ImageInfo first
         if (iif.check()) {
             ImageSize d = new ImageSize(iif.getWidth(), iif.getHeight());
             ii.setSize(d);
             ii.setMimetype(iif.getMimeType());
-            //logger.debug("  format:"+iif.getFormatName());
-            raf.close();
             logger.debug("image size: " + ii.getSize());
             return ii;
-        } else {
-            raf.close();
         }
         return null;
     }

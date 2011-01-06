@@ -18,7 +18,7 @@
 
 */
 
-package digilib.io;
+package digilib.util;
 
 // JAXP packages
 import java.io.IOException;

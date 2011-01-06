@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 
 import digilib.io.FileOps.FileClass;
 import digilib.servlet.DigilibConfiguration;
+import digilib.util.XMLListLoader;
 
 /**
  * @author casties

@@ -28,6 +28,8 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import digilib.io.FileOps.FileClass;
+import digilib.meta.MetadataMap;
+import digilib.meta.XMLMetaLoader;
 
 /**
  * Abstract directory entry in a DocuDirectory.

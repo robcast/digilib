@@ -31,6 +31,8 @@ import java.util.Map;
 import org.xml.sax.SAXException;
 
 import digilib.io.FileOps.FileClass;
+import digilib.meta.MetadataMap;
+import digilib.meta.XMLMetaLoader;
 
 /**
  * @author casties

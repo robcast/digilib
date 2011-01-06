@@ -29,7 +29,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.awt.image.RescaleOp;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
@@ -53,7 +52,7 @@ import digilib.io.ImageInput;
 
 /** Implementation of DocuImage using the ImageLoader API of Java 1.4 and Java2D. */
 public class ImageLoaderDocuImage extends ImageInfoDocuImage {
-
+    
 	/** image object */
 	protected BufferedImage img;
 	
@@ -63,9 +62,14 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 	/** ImageIO image reader */
 	protected ImageReader reader;
 
-	/** File that was read */
-	protected File imgFile;
-
+	protected static Kernel[] convolutionKernels = {
+	        null,
+	        new Kernel(1, 1, new float[] {1f}),
+            new Kernel(2, 2, new float[] {0.25f, 0.25f, 0.25f, 0.25f}),
+            new Kernel(3, 3, new float[] {1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f})
+	};
+	
+	
 	/* loadSubimage is supported. */
 	public boolean isSubimageSupported() {
 		return true;
@@ -128,7 +132,12 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         /*
          * try ImageReader
          */
-        reader = getReader(input);
+        try {
+            reader = getReader(input);
+        } catch (FileOpException e) {
+            // maybe just our class doesn't know what to do
+            return null;
+        }
         // set size
         ImageSize d = new ImageSize(reader.getWidth(0), reader.getHeight(0));
         input.setSize(d);
@@ -174,7 +183,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 				logger.debug("reusing Reader");
 				return reader;
 			}
-			// clean up old reader
+			// clean up old reader (this shouldn't really happen)
 			logger.debug("cleaning Reader!");
 			dispose();
 		}
@@ -217,9 +226,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			throws FileOpException {
 		logger.debug("loadSubimage");
 		try {
-			if ((reader == null) || (imgFile != ii.getFile())) {
-				getReader(ii);
-			}
+			reader = getReader(ii);
 			// set up reader parameters
 			ImageReadParam readParam = reader.getDefaultReadParam();
 			readParam.setSourceRegion(region);
@@ -337,19 +344,23 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 	}
 
 	public void blur(int radius) throws ImageOpException {
-		// DEBUG
 		logger.debug("blur: " + radius);
 		// minimum radius is 2
 		int klen = Math.max(radius, 2);
-		// FIXME: use constant kernels for most common sizes
-		int ksize = klen * klen;
-		// kernel is constant 1/k
-		float f = 1f / ksize;
-		float[] kern = new float[ksize];
-		for (int i = 0; i < ksize; i++) {
-			kern[i] = f;
+		Kernel blur = null;
+		if (klen < convolutionKernels.length) {
+            blur = convolutionKernels[klen];
+		} else {
+            // calculate our own kernel
+            int ksize = klen * klen;
+            // kernel is constant 1/k
+            float f = 1f / ksize;
+            float[] kern = new float[ksize];
+            for (int i = 0; i < ksize; ++i) {
+                kern[i] = f;
+            }
+            blur = new Kernel(klen, klen, kern);
 		}
-		Kernel blur = new Kernel(klen, klen, kern);
 		// blur with convolve operation
 		ConvolveOp blurOp = new ConvolveOp(blur, ConvolveOp.EDGE_NO_OP,
 				renderHint);
@@ -415,7 +426,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
 	/**
 	 * Ensures that the array f is in the right order to map the images RGB
-	 * components. (not shure what happens
+	 * components. (not sure what happens otherwise)
 	 */
 	public float[] rgbOrdered(float[] fa) {
 		/*

@@ -2,6 +2,8 @@ package digilib.io;
 
 import java.io.File;
 
+import digilib.meta.MetadataMap;
+
 public interface DocuDirent extends Comparable<Object> {
 
     /**

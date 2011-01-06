@@ -36,9 +36,9 @@ import digilib.image.DocuImage;
 import digilib.image.DocuImageImpl;
 import digilib.io.FileOps;
 import digilib.io.ImageInput;
-import digilib.io.XMLListLoader;
 import digilib.util.Parameter;
 import digilib.util.ParameterMap;
+import digilib.util.XMLListLoader;
 
 /**
  * Class to hold the digilib servlet configuration parameters. The parameters

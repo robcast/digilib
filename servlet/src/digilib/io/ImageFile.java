@@ -22,7 +22,12 @@
 package digilib.io;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.ImageInputStream;
 
 import digilib.image.ImageSize;
 import digilib.servlet.DigilibConfiguration;
@@ -114,8 +119,39 @@ public class ImageFile extends ImageInput {
 		return name;
 	}
 
-	/**
-	 * @return File
+	
+	/* (non-Javadoc)
+     * @see digilib.io.ImageInput#hasImageInputStream()
+     */
+    @Override
+    public boolean hasImageInputStream() {
+        return true;
+    }
+
+    /* (non-Javadoc)
+     * @see digilib.io.ImageInput#getImageInputStream()
+     */
+    @Override
+    public ImageInputStream getImageInputStream() {
+        try {
+            RandomAccessFile rf = new RandomAccessFile(file, "r");
+            return new FileImageInputStream(rf);
+        } catch (IOException e) {
+            // what now?
+        }
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see digilib.io.ImageInput#hasFile()
+     */
+    @Override
+    public boolean hasFile() {
+        return true;
+    }
+
+    /* (non-Javadoc)
+	 * @see digilib.io.ImageInput#getFile()
 	 */
 	public File getFile() {
 		return file;

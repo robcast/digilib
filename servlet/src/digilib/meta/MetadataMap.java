@@ -1,7 +1,7 @@
 /**
  * 
  */
-package digilib.io;
+package digilib.meta;
 
 import java.util.HashMap;
 
