@@ -1,5 +1,6 @@
 package digilib.pdf;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -14,9 +15,8 @@ import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.Paragraph;
 
-
 import digilib.io.DigilibInfoReader;
-import digilib.io.DocuDirCache;
+import digilib.io.FileOpException;
 import digilib.servlet.PDFCache;
 import digilib.servlet.PDFRequest;
 
@@ -28,7 +28,6 @@ public class PDFTitlePage {
 	
 	private PDFRequest job_info = null;
 	private DigilibInfoReader info_reader= null;
-	private DocuDirCache dirCache = null;
 	protected static Logger logger = Logger.getLogger("digilib.servlet");
 
 	
@@ -38,12 +37,27 @@ public class PDFTitlePage {
 	 */
 	public PDFTitlePage(PDFRequest pdfji){
 		job_info = pdfji;
-		dirCache = (DocuDirCache) job_info.getDlConfig().getValue("servlet.dir.cache");
 
-		String fn = getBase(dirCache.getDirectory(pdfji.getImageJobInformation().getAsString("fn")).getDir().getPath()) + "presentation/info.xml";
-		
-		info_reader = new DigilibInfoReader(fn);
+		// use MPIWG-style info.xml
+        info_reader = getInfoXmlReader(pdfji);
 	}
+
+    /**
+     * @param pdfji
+     * @return 
+     */
+    protected DigilibInfoReader getInfoXmlReader(PDFRequest pdfji) {
+        try {
+            // try to load ../presentation/info.xml
+            File imgDir = pdfji.getImageJobInformation().getFileDirectory().getDir();
+            File docDir = imgDir.getParentFile();
+            File infoFn = new File(new File(docDir, "presentation"), "info.xml");
+            return new DigilibInfoReader(infoFn.getAbsolutePath());
+        } catch (FileOpException e) {
+            logger.warn("info.xml not found");
+        }
+        return null;
+    }
 	
 	/**
 	 * generate iText-PDF-Contents for the title page
@@ -58,7 +72,6 @@ public class PDFTitlePage {
 		for(int i=0; i<8; i++){
 			content.add(Chunk.NEWLINE);
 		}
-		
 		
 		// add logo
 		content.add(getLogo());
@@ -89,9 +102,6 @@ public class PDFTitlePage {
 		content.add(Chunk.NEWLINE);
 		content.add(Chunk.NEWLINE);
 
-		// add credits
-		content.add(new Paragraph("MPIWG Berlin 2009", FontFactory.getFont(FontFactory.HELVETICA,10)));
-
 		// add digilib version
 		content.add(new Paragraph(getDigilibVersion(),FontFactory.getFont(FontFactory.HELVETICA,10)));
 
@@ -109,31 +119,10 @@ public class PDFTitlePage {
 		return content;
 	}
 	
-	/**
-	 * return base directory of an image directory
-	 * 
-	 * @param path
-	 * @return
-	 */
-	private String getBase(String path){
-		if(path.contains("/")){
-			String[] x = path.split("/");
-			String newpath = "";
-			for(int i=0; i<x.length-1; i++){
-				newpath += x[i]+"/";
-			}
-			return newpath;
-		}
-		else
-			return "";
-	}
-	
-
-	/**
+	/*
 	 * Methods for the different attributes.
 	 * 
 	 */
-	
 	
 	private Image getLogo(){
 		try {
@@ -145,34 +134,35 @@ public class PDFTitlePage {
 			}
 		} catch (BadElementException e) {
 			logger.error(e.getMessage());
-			e.printStackTrace();
 		} catch (MalformedURLException e) {
 			logger.error(e.getMessage());
-			e.printStackTrace();
 		} catch (IOException e) {
 			logger.error(e.getMessage());
-			e.printStackTrace();
 		}
 		return null;
 	}
+	
 	private String getTitle(){
 		if(info_reader.hasInfo())
 			return info_reader.getAsString("title");
 		else
 			return job_info.getImageJobInformation().getAsString("fn");
 	}
+	
 	private String getAuthor(){
 		if(info_reader.hasInfo())
 			return info_reader.getAsString("author");
 		else
 			return " ";
 	}
+	
 	private String getDate(){
 		if(info_reader.hasInfo())
 			return info_reader.getAsString("date");
 		else
 			return " ";
 	}
+	
 	private String getPages(){
 		return "Pages "+job_info.getAsString("pgs") + " (scan page numbers)";
 	}

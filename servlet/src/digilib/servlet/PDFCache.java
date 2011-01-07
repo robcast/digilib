@@ -1,8 +1,6 @@
 package digilib.servlet;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.Future;
@@ -11,7 +9,6 @@ import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,7 +20,7 @@ import digilib.pdf.PDFFileWorker;
 import digilib.util.DigilibJobCenter;
 
 /**
- * A class for handling user requests for pdf documents from digilib images.  
+ * A class for handling user requests for pdf documents made from digilib images.  
  * 
  * If a document does not already exist, it will be enqueued for generation; if it does exist, it is sent
  * to the user.
@@ -174,74 +171,82 @@ public class PDFCache extends HttpServlet {
             try {
 				createNewPdfDocument(pdfji, docid);
 	            notifyUser(status, docid, request, response);
+	            return;
 			} catch (FileNotFoundException e) {
 				// error in pdf creation
                 logger.error(e.getMessage());
 				notifyUser(PDFStatus.ERROR, docid, request, response);
+				return;
 			}
         } else if (status == PDFStatus.DONE) {
         	// pdf created -- send it
             try {
                 ServletOps.sendFile(getCacheFile(docid), "application/pdf", getDownloadFilename(pdfji), response, logger);
-                //sendFile(docid, getDownloadFilename(pdfji), response);
+                return;
             } catch (Exception e) {
             	// sending didn't work
                 logger.error(e.getMessage());
+                return;
             }
         } else {
         	// should be work in progress
             notifyUser(status, docid, request, response);
+            return;
         }
 	    } catch (Exception e) {
             // error in pdf creation
             logger.error(e.getMessage());
             notifyUser(PDFStatus.ERROR, docid, request, response);
+            return;
 	    }
 	}
 
-	/**
-	 * depending on the documents status, redirect the user to the appropriate waiting or download page.
-	 * 
-	 * @param status
-	 * @param documentid
-	 * @param request
-	 * @param response
-	 */
-	public void notifyUser(PDFStatus status, String documentid, HttpServletRequest request, HttpServletResponse response){
-		
-		String jsp=null;
-		
-		if(status == PDFStatus.NONEXISTENT){
-			// tell the user that the document has to be created before he/she can download it
-			logger.debug("PDFCache: "+documentid+" has STATUS_NONEXISTENT.");
-			jsp = JSP_WIP;
-		} else if(status == PDFStatus.WIP){
-			logger.debug("PDFCache: "+documentid+" has STATUS_WIP.");
-			jsp = JSP_WIP;
+    /**
+     * depending on the documents status, redirect the user to the appropriate
+     * waiting or download page.
+     * 
+     * @param status
+     * @param documentid
+     * @param request
+     * @param response
+     */
+    public void notifyUser(PDFStatus status, String documentid,
+            HttpServletRequest request, HttpServletResponse response) {
 
-			// TODO: estimate remaining work time
-			// TODO: tell the user he/she has to wait
-		} else if(status == PDFStatus.DONE){
-			logger.debug("PDFCache: "+documentid+" has STATUS_DONE.");
-		} else {
-			logger.debug("PDFCache: "+documentid+" has STATUS_ERROR.");
-			jsp = JSP_ERROR;
-		}
+        String jsp = null;
 
-		try {
-			// forward to the relevant jsp
-			ServletContext context = getServletContext();
-			RequestDispatcher dispatch = context.getRequestDispatcher(jsp);
-			dispatch.forward(request, response);
-		} catch (ServletException e) {
-			logger.debug(e.getMessage());
-			e.printStackTrace();
-		} catch (IOException e) {
-			logger.debug(e.getMessage());
-			e.printStackTrace();
-		}
-		
-	}
+        if (status == PDFStatus.NONEXISTENT) {
+            // tell the user that the document has to be created before he/she
+            // can download it
+            logger.debug("PDFCache: " + documentid + " has STATUS_NONEXISTENT.");
+            jsp = JSP_WIP;
+        } else if (status == PDFStatus.WIP) {
+            logger.debug("PDFCache: " + documentid + " has STATUS_WIP.");
+            jsp = JSP_WIP;
+
+            // TODO: estimate remaining work time
+            // TODO: tell the user he/she has to wait
+        } else if (status == PDFStatus.DONE) {
+            logger.debug("PDFCache: " + documentid + " has STATUS_DONE.");
+        } else {
+            logger.debug("PDFCache: " + documentid + " has STATUS_ERROR.");
+            jsp = JSP_ERROR;
+        }
+
+        try {
+            // forward to the relevant jsp
+            ServletContext context = getServletContext();
+            RequestDispatcher dispatch = context.getRequestDispatcher(jsp);
+            dispatch.forward(request, response);
+        } catch (ServletException e) {
+            logger.debug(e.getMessage());
+            e.printStackTrace();
+        } catch (IOException e) {
+            logger.debug(e.getMessage());
+            e.printStackTrace();
+        }
+
+    }
 
 	
 	/** check the status of the document corresponding to the documentid */
@@ -293,56 +298,7 @@ public class PDFCache extends HttpServlet {
 		
 		return filename;
 	}
-	
-	/**
-	 *  sends a document to the user
-	 * 
-	 * @param cachefile  The filename of the  document in cache.
-	 * @param filename  The filename used for downloading.
-	 * @param response  
-	 * @throws IOException
-	 */
-	public void sendFile(String cachefile, String filename, HttpServletResponse response) throws IOException{
-		File cached_file = null;
-		FileInputStream fis = null;
-		ServletOutputStream sos = null;
-		BufferedInputStream bis = null;
-
-		try {
-			// get file handle
-			cached_file = new File(cache_directory, cachefile);
-			// create necessary streams
-			fis = new FileInputStream(cached_file);
-			sos = response.getOutputStream();
-			bis = new BufferedInputStream(fis);
-
-			int bytes = 0;
-
-			// set http headers
-			response.setContentType("application/pdf");
-			response.addHeader("Content-Disposition", "attachment; filename="+filename);
-			response.setContentLength( (int) cached_file.length());
-
-			// send the bytes
-			while ((bytes = bis.read()) != -1){ 
-				sos.write(bytes);
-			}
-			}
-			catch(Exception e){
-				logger.error(e.getMessage());
-			}
-			finally{
-				// close all streams
-				if (fis != null)
-					fis.close();
-				if (bis != null)
-					bis.close();
-				if (sos != null)
-					sos.close();
-			}
-
-	}
-	
+		
 	public File getCacheDirectory(){
 		return cache_directory;
 	}
