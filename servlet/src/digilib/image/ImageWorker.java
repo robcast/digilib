@@ -69,12 +69,12 @@ public class ImageWorker implements Callable<DocuImage> {
                 logger.debug("Using subsampling: " + subsamp + " rest "
                         + scaleXY);
             }
-            docuImage.loadSubimage(jobinfo.getFileToLoad(), loadRect, (int) subsamp);
+            docuImage.loadSubimage(jobinfo.getInput(), loadRect, (int) subsamp);
             logger.debug("SUBSAMP: " + subsamp + " -> " + docuImage.getSize());
             docuImage.scale(scaleXY, scaleXY);
         } else {
             // else load and crop the whole file
-            docuImage.loadImage(jobinfo.getFileToLoad());
+            docuImage.loadImage(jobinfo.getInput());
             docuImage.crop((int) loadRect.getX(), (int) loadRect.getY(),
                     (int) loadRect.getWidth(), (int) loadRect.getHeight());
             docuImage.scale(scaleXY, scaleXY);
