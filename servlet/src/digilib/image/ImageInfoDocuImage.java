@@ -9,6 +9,7 @@ import java.io.RandomAccessFile;
 import org.marcoschmidt.image.ImageInfo;
 
 import digilib.io.ImageInput;
+import digilib.util.ImageSize;
 
 /** Simple abstract implementation of the <code>DocuImage</code> interface.
  * Implements only the identify method using the ImageInfo class.

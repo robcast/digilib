@@ -22,15 +22,14 @@
 package digilib.io;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 
-import digilib.image.ImageSize;
 import digilib.servlet.DigilibConfiguration;
+import digilib.util.ImageSize;
 
 /**
  * @author casties

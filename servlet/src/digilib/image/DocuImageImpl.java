@@ -34,6 +34,7 @@ import org.apache.log4j.Logger;
 
 import digilib.io.FileOpException;
 import digilib.io.ImageInput;
+import digilib.util.ImageSize;
 
 /** Simple abstract implementation of the <code>DocuImage</code> interface.
  *

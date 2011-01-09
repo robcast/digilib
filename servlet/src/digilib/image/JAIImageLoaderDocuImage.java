@@ -39,6 +39,7 @@ import javax.servlet.ServletException;
 
 import digilib.io.FileOpException;
 import digilib.io.ImageInput;
+import digilib.util.ImageSize;
 
 /** DocuImage implementation using the Java Advanced Imaging API and the ImageLoader
  * API of Java 1.4.

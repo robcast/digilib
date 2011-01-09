@@ -29,6 +29,7 @@ import javax.servlet.ServletException;
 
 import digilib.io.FileOpException;
 import digilib.io.ImageInput;
+import digilib.util.ImageSize;
 
 /** The basic class for the representation of a digilib image.
  *

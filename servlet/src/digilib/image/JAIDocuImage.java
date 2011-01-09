@@ -46,6 +46,7 @@ import com.sun.media.jai.codec.ImageCodec;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.ImageInput;
+import digilib.util.ImageSize;
 
 /** A DocuImage implementation using Java Advanced Imaging Library. */
 /**

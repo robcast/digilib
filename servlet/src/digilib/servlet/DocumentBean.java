@@ -33,13 +33,13 @@ import org.apache.log4j.Logger;
 
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthOps;
-import digilib.image.ImageSize;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
-import digilib.io.FileOps.FileClass;
 import digilib.io.ImageFile;
+import digilib.io.FileOps.FileClass;
 import digilib.io.ImageInput;
 import digilib.io.ImageSet;
+import digilib.util.ImageSize;
 
 public class DocumentBean {
 

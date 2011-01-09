@@ -26,7 +26,7 @@ import java.io.InputStream;
 
 import javax.imageio.stream.ImageInputStream;
 
-import digilib.image.ImageSize;
+import digilib.util.ImageSize;
 
 public abstract class ImageInput {
 

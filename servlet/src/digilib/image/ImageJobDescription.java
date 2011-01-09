@@ -14,6 +14,7 @@ import digilib.io.FileOps.FileClass;
 import digilib.io.ImageInput;
 import digilib.io.ImageSet;
 import digilib.servlet.DigilibConfiguration;
+import digilib.util.ImageSize;
 import digilib.util.OptionsSet;
 import digilib.util.Parameter;
 import digilib.util.ParameterMap;
