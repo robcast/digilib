@@ -78,25 +78,24 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 
 		addTitlePage(doc);
 
-		logger.debug("- " + outstream + " doc.open()ed ("
+		logger.debug("PDF: " + outstream + " doc.open()ed ("
 				+ (System.currentTimeMillis() - start_time) + "ms)");
-		start_time = System.currentTimeMillis();
 
 		NumRange pgs = job_info.getPages();
 
 		for (int p : pgs) {
-			logger.debug(" - adding Image " + p + " to " + outstream);
+			logger.debug("PDF: adding Image " + p + " to " + outstream);
 			// create ImageJobInformation
 			ImageJobDescription iji = ImageJobDescription.getInstance(job_info, job_info.getDlConfig());
 			iji.setValue("pn", p);
 			addImage(doc, iji);
-			logger.debug(" - done adding Image " + p + " to " + outstream);
+			logger.debug("PDF: done adding Image " + p + " to " + outstream);
 		}
 
-		logger.debug(" - done adding all Images to " + outstream);
+		logger.debug("PDF: done adding all Images to " + outstream);
 
 		doc.close();
-		logger.debug("- " + outstream + " doc.close() ("
+		logger.debug("PDF: " + outstream + " doc.close() ("
 				+ (System.currentTimeMillis() - start_time) + "ms)");
 		docwriter.close();
 		return outstream;
