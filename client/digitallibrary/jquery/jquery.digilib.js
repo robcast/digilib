@@ -9,7 +9,7 @@
             /* base URL to Scaler servlet */
             'scalerUrl' : 'http://digilib.mpiwg-berlin.mpg.de/digitallibrary/servlet/Scaler',
             /* digilib image path i.e. fn */
-            'imagePath' : '',
+            'fn' : '',
             /* mode of operation. 
              * fullscreen: takes parameters from page URL, keeps state in page URL
              * embedded: takes parameters from Javascript options, keeps state inside object 
@@ -18,23 +18,32 @@
     };
  
     /* parameters from the query string */
-    var params = {};
+    var queryParams = {};
     
     var methods = {
             init : function(options) {
+                var settings = $.extend({}, defaults, options);
+                var isFullscreen = settings.interactionMode === 'fullscreen'; 
+                if (isFullscreen) {
+                    queryParams = parseQueryParams();
+                    };
                 return this.each(function() {
                     var $elem = $(this);
                     var data = $elem.data('digilib');
+                    var elemSettings;
                     // If the plugin hasn't been initialized yet
                     if (!data) {
                         // settings for this digilib instance are merged from defaults and options
-                        var settings = $.extend({}, defaults, options);
                         // merge query parameters
-                        settings = $.extend(settings, parseParams(settings.interactionMode));
+                        if (isFullscreen) {
+                            elemSettings = $.extend({}, settings, queryParams);
+                        } else {
+                            elemSettings = $.extend({}, settings, parseImgParams($elem));
+                        };
                         // store in data element
                         $elem.data('digilib', {
                             target : $elem,
-                            settings : settings
+                            settings : elemSettings
                         });
                     }
                 });
@@ -52,9 +61,32 @@
     };
 
     // returns object with parameters from the query string or an embedded img-tag (depending on interactionMode)
-    var parseParams = function(interactionMode) {
-        alert("parseParams() not implemented");
-    };
+    var parseQueryParams = function() {
+        return parseQueryString(location.search.slice(1));
+        };
+        
+    var parseImgParams = function($elem) {
+        var src = $elem.children('img').attr('src');
+        var pos = src.indexOf('?');
+        var query = (pos < 0) ? '' : src.substring(pos + 1);
+        var scalerUrl = src.substring(0, pos);
+        var hash = parseQueryString(query);
+        hash.scalerUrl = scalerUrl;
+        // console.log(hash);
+        return hash;
+        };
+
+    var parseQueryString = function(query) {
+        var pairs = query.split("&");
+        var hash = {};
+        for (var i = 0; i < pairs.length; i++) {
+            var pair = pairs[i].split("=");
+            if (pair.length === 2) {
+                hash[pair[0]] = pair[1]
+                };
+            };
+        return hash;
+        };
     
     // hook plugin into jquery
     $.fn.digilib = function(method) {
