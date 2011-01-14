@@ -4,18 +4,156 @@
  */
 
 (function($) {
-
+    var buttons = {
+        reference : {
+            onclick : "javascript:getRefWin()",
+            tooltip : "get a reference URL",
+            img : "reference.png"
+            },
+        zoomin : {
+            onclick : "javascript:dl.zoomBy(1.4)",
+            tooltip : "zoom in",
+            img : "zoom-in.png"
+            },
+        zoomout : {
+            onclick : "javascript:zoomBy(0.7)",
+            tooltip : "zoom out",
+            img : "zoom-out.png"
+            },
+        zoomarea : {
+            onclick : "javascript:zoomArea()",
+            tooltip : "zoom area",
+            img : "zoom-area.png"
+            },
+        zoomfull : {
+            onclick : "javascript:zoomFullpage()",
+            tooltip : "view the whole image",
+            img : "zoom-full.png"
+            },
+        pagewidth : {
+            onclick : "javascript:zoomFullpage('width')",
+            tooltip : "page width",
+            img : "pagewidth.png"
+            },
+        back : {
+            onclick : "javascript:gotoPage('-1')",
+            tooltip : "goto previous image",
+            img : "back.png"
+            },
+        fwd : {
+            onclick : "javascript:gotoPage('+1')",
+            tooltip : "goto next image",
+            img : "fwd.png"
+            },
+        page : {
+            onclick : "javascript:gotoPageWin()",
+            tooltip : "specify image",
+            img : "page.png"
+            },
+        bird : {
+            onclick : "javascript:toggleBirdDiv()",
+            tooltip : "show bird's eye view",
+            img : "birds-eye.png"
+            },
+        help : {
+            onclick : "javascript:toggleAboutDiv()",
+            tooltip : "about Digilib",
+            img : "help.png"
+            },
+        reset : {
+            onclick : "javascript:resetImage()",
+            tooltip : "reset image",
+            img : "reset.png"
+            },
+        mark : {
+            onclick : "javascript:setMark()",
+            tooltip : "set a mark",
+            img : "mark.png"
+            },
+        delmark : {
+            onclick : "javascript:removeMark()",
+            tooltip : "delete the last mark",
+            img : "delmark.png"
+            },
+        hmir : {
+            onclick : "javascript:mirror('h')",
+            tooltip : "mirror horizontally",
+            img : "mirror-horizontal.png"
+            },
+        vmir : {
+            onclick : "javascript:mirror('v')",
+            tooltip : "mirror vertically",
+            img : "mirror-vertical.png"
+            },
+        rot : {
+            onclick : "javascript:setParamWin('rot', 'Rotate (0..360) clockwise')",
+            tooltip : "rotate image",
+            img : "rotate.png"
+            },
+        brgt : {
+            onclick : "javascript:setParamWin('brgt', 'Brightness (-255..255)')",
+            tooltip : "set brightness",
+            img : "brightness.png"
+            },
+        cont : {
+            onclick : "javascript:setParamWin('cont', 'Contrast (0..8)')",
+            tooltip : "set contrast",
+            img : "contrast.png"
+            },
+        rgb : {
+            onclick : "javascript:setParamWin('rgb', '...')",
+            tooltip : "set rgb values",
+            img : "rgb.png"
+            },
+        quality : {
+            onclick : "javascript:setQualityWin('Quality (0..2)')",
+            tooltip : "set image quality",
+            img : "quality.png"
+            },
+        size : {
+            onclick : "javascript:toggleSizeMenu()",
+            tooltip : "set page size",
+            img : "size.png"
+            },
+        calibrationx : {
+            onclick : "javascript:calibrate('x')",
+            tooltip : "calibrate screen x-ratio",
+            img : "calibration-x.png"
+            },
+        scale : {
+            onclick : "javascript:toggleScaleMenu()",
+            tooltip : "change image scale",
+            img : "original-size.png"
+            },
+        options : {
+            onclick : "javascript:toggleOptionDiv()",
+            tooltip : "hide options",
+            img : "options.png"
+            },
+        SEP : {
+            img : "sep.png"
+            }
+        };
+        
     var defaults = {
-            // base URL to Scaler servlet
-            'scalerBaseUrl' : 'http://digilib.mpiwg-berlin.mpg.de/digitallibrary/servlet/Scaler',
-            // list of Scaler parameters
+        // base URL to Scaler servlet
+        'scalerBaseUrl' : 'http://digilib.mpiwg-berlin.mpg.de/digitallibrary/servlet/Scaler',
+        // list of Scaler parameters
             'scalerParamNames' : ['fn','pn','dw','dh','ww','wh','wx','wy','ws','mo',
                                   'rot','cont','brgt','rgbm','rgba','ddpi','ddpix','ddpiy'],
-            // mode of operation. 
-            // fullscreen: takes parameters from page URL, keeps state in page URL
-            // embedded: takes parameters from Javascript options, keeps state inside object 
-            'interactionMode' : 'fullscreen'
-    };
+        // mode of operation. 
+        // fullscreen: takes parameters from page URL, keeps state in page URL
+        // embedded: takes parameters from Javascript options, keeps state inside object 
+        'interactionMode' : 'fullscreen',
+        // buttons
+        'buttons' : buttons,
+        // path to button images
+        'buttonsImagePath' : 'img/buttons/', 
+        // button groups
+        'buttonsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
+        'buttonsSpecial' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
+        'buttonsCustom' : [],
+        };
  
     // parameters from the query string
     var queryParams = {};
@@ -151,6 +289,30 @@
         }
     };
         
+    // creates HTML structure for buttons in elem
+    var setupButtons = function ($elem, settings, buttonGroup) {
+        var $buttonDiv;
+        if (settings.interactionMode === 'fullscreen') {
+            // fullscreen -- create new
+            $buttonDiv = $elem.append('<div class="buttons"/>');
+            var buttonNames = settings[buttonGroup];
+            for (var i = 0; i < buttonNames.length; i++) {
+                var buttonName = buttonNames[i];
+                var buttonConfig = settings.buttons[buttonName];
+                var $button = buttondiv.append('<div class="button"/>');
+                $button
+                    .attr('id', 'digilib-button-' + buttonName)
+                    .bind('click', function(){ buttonConfig.onclick })
+                    .append('<a/>')
+                    .attr('title', buttonConfig.toolTip )
+                    .append('<img class="button"/>')
+                    .attr('src', settings.buttonsImagePath + buttonConfig.img);
+                };
+            }
+        return $buttonDiv;
+        }
+    };
+    
     // hook plugin into jquery
     $.fn.digilib = function(method) {
         if (methods[method]) {
