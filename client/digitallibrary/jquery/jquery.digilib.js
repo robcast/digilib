@@ -6,22 +6,28 @@
 (function($) {
 
     var defaults = {
-            /* base URL to Scaler servlet */
-            'scalerUrl' : 'http://digilib.mpiwg-berlin.mpg.de/digitallibrary/servlet/Scaler',
-            /* digilib image path i.e. fn */
+            // base URL to Scaler servlet
+            'scalerBaseUrl' : 'http://digilib.mpiwg-berlin.mpg.de/digitallibrary/servlet/Scaler',
+            // list of Scaler parameters
+            'scalerParamNames' : ['fn','pn','dw','dh','ww','wh','wx','wy','ws','mo'],
+            // digilib image path
             'fn' : '',
-            /* mode of operation. 
-             * fullscreen: takes parameters from page URL, keeps state in page URL
-             * embedded: takes parameters from Javascript options, keeps state inside object 
-             */
+            // mode of operation. 
+            // fullscreen: takes parameters from page URL, keeps state in page URL
+            // embedded: takes parameters from Javascript options, keeps state inside object 
             'interactionMode' : 'fullscreen'
     };
  
-    /* parameters from the query string */
+    // parameters from the query string
     var queryParams = {};
+
+    // affine geometry classes
+    var geom = dlGeometry();
     
     var methods = {
+            // digilib initialization
             init : function(options) {
+                // settings for this digilib instance are merged from defaults and options
                 var settings = $.extend({}, defaults, options);
                 var isFullscreen = settings.interactionMode === 'fullscreen'; 
                 if (isFullscreen) {
@@ -31,9 +37,8 @@
                     var $elem = $(this);
                     var data = $elem.data('digilib');
                     var elemSettings;
-                    // If the plugin hasn't been initialized yet
+                    // if the plugin hasn't been initialized yet
                     if (!data) {
-                        // settings for this digilib instance are merged from defaults and options
                         // merge query parameters
                         if (isFullscreen) {
                             elemSettings = $.extend({}, settings, queryParams);
@@ -46,8 +51,12 @@
                             settings : elemSettings
                         });
                     }
+                    // create HTML structure
+                    setupScalerDiv($elem, elemSettings);
                 });
             },
+
+            // clean up digilib
             destroy : function() {
                 return this.each(function(){
                     var $this = $(this);
@@ -60,11 +69,12 @@
             }
     };
 
-    // returns object with parameters from the query string or an embedded img-tag (depending on interactionMode)
+    // returns parameters from page url
     var parseQueryParams = function() {
         return parseQueryString(location.search.slice(1));
         };
         
+    // returns parameters taken from embedded img-element
     var parseImgParams = function($elem) {
         var src = $elem.children('img').attr('src');
         var pos = src.indexOf('?');
@@ -76,18 +86,36 @@
         return hash;
         };
 
+    // parses query parameter string into parameter object
     var parseQueryString = function(query) {
         var pairs = query.split("&");
         var hash = {};
         for (var i = 0; i < pairs.length; i++) {
             var pair = pairs[i].split("=");
             if (pair.length === 2) {
-                hash[pair[0]] = pair[1]
+                hash[pair[0]] = pair[1];
                 };
             };
         return hash;
         };
     
+    // returns URL and query string for Scaler
+    var getScalerString = function (settings) {
+        var url = settings.scalerUrl;
+        
+    };
+    
+    // creates HTML structure for digilib in elem
+    var setupScalerDiv = function ($elem, settings) {
+        if (settings.interactionMode === 'fullscreen') {
+            // fullscreen -- create new
+            $elem.empty(); // TODO: should we keep stuff for customization?
+            var scalerHTML = '<div class="scaler"><img class="pic"/></div>'; 
+            $elem.add(scalerHTML);
+            
+        }
+    };
+        
     // hook plugin into jquery
     $.fn.digilib = function(method) {
         if (methods[method]) {
