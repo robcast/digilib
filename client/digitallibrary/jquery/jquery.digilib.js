@@ -152,7 +152,7 @@
         // button groups
         'buttonsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
         'buttonsSpecial' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
-        'buttonsCustom' : [],
+        'buttonsCustom' : []
         };
  
     // parameters from the query string
@@ -190,6 +190,7 @@
                     }
                     // create HTML structure
                     setupScalerDiv($elem, elemSettings);
+                    setupButtons($elem, elemSettings, 'buttonsStandard');
                 });
             },
 
@@ -299,18 +300,16 @@
             for (var i = 0; i < buttonNames.length; i++) {
                 var buttonName = buttonNames[i];
                 var buttonConfig = settings.buttons[buttonName];
-                var $button = buttondiv.append('<div class="button"/>');
-                $button
-                    .attr('id', 'digilib-button-' + buttonName)
-                    .bind('click', function(){ buttonConfig.onclick })
-                    .append('<a/>')
-                    .attr('title', buttonConfig.toolTip )
-                    .append('<img class="button"/>')
-                    .attr('src', settings.buttonsImagePath + buttonConfig.img);
-                };
-            }
-        return $buttonDiv;
+                var $button = $buttonDiv.append('<div class="button"/>');
+                $button.addClass('digilib-button-' + buttonName);
+                var $link = $button.append('<a/>');
+                $link.bind('click', buttonConfig.onclick)
+                    .attr('title', buttonConfig.toolTip );
+                var $img = $link.append('<img class="button"/>');
+                $img.attr('src', settings.buttonsImagePath + buttonConfig.img);
+            };
         }
+        return $buttonDiv;
     };
     
     // hook plugin into jquery
