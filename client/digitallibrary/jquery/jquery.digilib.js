@@ -9,9 +9,8 @@
             // base URL to Scaler servlet
             'scalerBaseUrl' : 'http://digilib.mpiwg-berlin.mpg.de/digitallibrary/servlet/Scaler',
             // list of Scaler parameters
-            'scalerParamNames' : ['fn','pn','dw','dh','ww','wh','wx','wy','ws','mo'],
-            // digilib image path
-            'fn' : '',
+            'scalerParamNames' : ['fn','pn','dw','dh','ww','wh','wx','wy','ws','mo',
+                                  'rot','cont','brgt','rgbm','rgba','ddpi','ddpix','ddpiy'],
             // mode of operation. 
             // fullscreen: takes parameters from page URL, keeps state in page URL
             // embedded: takes parameters from Javascript options, keeps state inside object 
@@ -81,7 +80,7 @@
         var query = (pos < 0) ? '' : src.substring(pos + 1);
         var scalerUrl = src.substring(0, pos);
         var hash = parseQueryString(query);
-        hash.scalerUrl = scalerUrl;
+        hash.scalerBaseUrl = scalerUrl;
         // console.log(hash);
         return hash;
         };
@@ -101,18 +100,54 @@
     
     // returns URL and query string for Scaler
     var getScalerString = function (settings) {
-        var url = settings.scalerUrl;
-        
+        var url = settings.scalerBaseUrl + '?';
+        var i, parm, latter;
+        // go through param names and get values from settings
+        for (i = 0; i < settings.scalerParamNames.length; ++i) {
+            parm = settings.scalerParamNames[i];
+            if (settings[parm]) {
+                // first parm gets no '&'
+                url += latter ? '&' : '';
+                latter = 1;
+                // add parm=val
+                url += parm + '=' + settings[parm];
+            }
+        }
+        return url;
+    };
+    
+    // returns maximum size for scaler img in fullscreen mode
+    var getFullscreenImgSize = function($elem) {
+        var winH = $(window).height();
+        var winW = $(window).width();
+        // TODO: account for borders?
+        return geom.size(winW, winH);
     };
     
     // creates HTML structure for digilib in elem
     var setupScalerDiv = function ($elem, settings) {
         if (settings.interactionMode === 'fullscreen') {
-            // fullscreen -- create new
+            // fullscreen
+            var imgSize = getFullscreenImgSize($elem);
+            settings.dw = imgSize.width;
+            settings.dh = imgSize.height;
+            // create new html
             $elem.empty(); // TODO: should we keep stuff for customization?
+            var scalerUrl = getScalerString(settings);
             var scalerHTML = '<div class="scaler"><img class="pic"/></div>'; 
-            $elem.add(scalerHTML);
-            
+            $elem.append(scalerHTML);
+            var $img = $elem.find("img.pic");
+            $img.attr('src', scalerUrl);
+            //$img.load(scalerImgLoaded);
+        } else {
+            // embedded mode -- keep inner img
+            var $img = $elem.detach('img');
+            $elem.empty(); // TODO: should we keep stuff for customization?
+            $img.addClass('pic');
+            var $scaler = $('<div class="scaler"/>');
+            $scaler.append($img);
+            $elem.append($scaler);
+            //$img.load(scalerImgLoaded);
         }
     };
         
