@@ -147,8 +147,8 @@
         'interactionMode' : 'fullscreen',
         // buttons
         'buttons' : buttons,
-        // path to button images
-        'buttonsImagePath' : 'img/buttons/', 
+        // path to button images (must end with a slash)
+        'buttonsImagePath' : '../greyskin/', 
         // button groups
         'buttonsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
         'buttonsSpecial' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
@@ -292,24 +292,40 @@
         
     // creates HTML structure for buttons in elem
     var setupButtons = function ($elem, settings, buttonGroup) {
-        var $buttonDiv;
         if (settings.interactionMode === 'fullscreen') {
             // fullscreen -- create new
-            $buttonDiv = $elem.append('<div class="buttons"/>');
+            var $buttonsDiv = $('<div class="buttons"></div>');
+            $elem.append($buttonsDiv);
             var buttonNames = settings[buttonGroup];
             for (var i = 0; i < buttonNames.length; i++) {
                 var buttonName = buttonNames[i];
-                var buttonConfig = settings.buttons[buttonName];
-                var $button = $buttonDiv.append('<div class="button"/>');
-                $button.addClass('digilib-button-' + buttonName);
-                var $link = $button.append('<a/>');
-                $link.bind('click', buttonConfig.onclick)
-                    .attr('title', buttonConfig.toolTip );
-                var $img = $link.append('<img class="button"/>');
-                $img.attr('src', settings.buttonsImagePath + buttonConfig.img);
+                var buttonSettings = settings.buttons[buttonName];
+                // construct the button html
+                var $button = $('<div class="button"></div>');
+                var $a = $('<a/>');
+                var $img = $('<img/>');
+                $buttonsDiv.append($button);
+                $button.append($a);
+                $a.append($img);
+                // add attributes and bindings
+                $button.attr('title', buttonSettings.tooltip);
+                $button.addClass('button-' + buttonName);
+                // let the clicked <a> element know about the digilib context 
+                $a.data('digilib', { 'name' : buttonName, 'settings' : settings } );
+                $a.bind('click', function(){
+                    // get the context settings
+                    var data = $(this).data('digilib');
+                    // find the action for the clicked element
+                    console.log(data.settings.buttons[data.name].onclick);
+                    });
+                // binding mit closure
+                //(function(){ var action = buttonSettings.onclick;
+                //    $a.bind('click', function(){ console.log( action )} );
+                //})();
+                $img.attr('src', settings.buttonsImagePath + buttonSettings.img);
             };
         }
-        return $buttonDiv;
+        return $buttonsDiv;
     };
     
     // hook plugin into jquery
