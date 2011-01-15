@@ -214,7 +214,10 @@
         
     // returns parameters taken from embedded img-element
     var parseImgParams = function($elem) {
-        var src = $elem.children('img').attr('src');
+        var src = $elem.find('img').first().attr('src');
+        if (!src) {
+            return null;
+        }
         var pos = src.indexOf('?');
         var query = (pos < 0) ? '' : src.substring(pos + 1);
         var scalerUrl = src.substring(0, pos);
@@ -265,29 +268,36 @@
     
     // creates HTML structure for digilib in elem
     var setupScalerDiv = function ($elem, settings) {
+        var rewrite;
         if (settings.interactionMode === 'fullscreen') {
             // fullscreen
             var imgSize = getFullscreenImgSize($elem);
             settings.dw = imgSize.width;
             settings.dh = imgSize.height;
-            // create new html
-            $elem.empty(); // TODO: should we keep stuff for customization?
+            $img = $('<img/>');
             var scalerUrl = getScalerString(settings);
-            var scalerHTML = '<div class="scaler"><img class="pic"/></div>'; 
-            $elem.append(scalerHTML);
-            var $img = $elem.find("img.pic");
             $img.attr('src', scalerUrl);
-            //$img.load(scalerImgLoaded);
-        } else {
-            // embedded mode -- keep inner img
-            var $img = $elem.detach('img');
-            $elem.empty(); // TODO: should we keep stuff for customization?
             $img.addClass('pic');
-            var $scaler = $('<div class="scaler"/>');
-            $scaler.append($img);
-            $elem.append($scaler);
-            //$img.load(scalerImgLoaded);
+        } else {
+            // embedded mode -- try to keep img tag
+            var $img = $elem.find('img');
+            if ($img.length > 0) {
+                console.debug("img detach:",$img);
+                $img.detach();
+                $img.addClass('picsi');
+            } else {
+                $img = $('<img/>');
+                var scalerUrl = getScalerString(settings);
+                $img.attr('src', scalerUrl);
+                $img.addClass('pic');
+            }
         }
+        // create new html
+        $elem.empty(); // TODO: should we keep stuff for customization?
+        var $scaler = $('<div class="scaler"/>');
+        $elem.append($scaler);
+        $scaler.append($img);
+        $img.load(scalerImgLoadedFn(settings));
     };
         
     // creates HTML structure for buttons in elem
@@ -312,7 +322,7 @@
                 $button.addClass('button-' + buttonName);
                 // let the clicked <a> element know about the digilib context 
                 $a.data('digilib', { 'name' : buttonName, 'settings' : settings } );
-                $a.bind('click', function(){
+                $a.bind('click', function() {
                     // get the context settings
                     var data = $(this).data('digilib');
                     // find the action for the clicked element
@@ -328,6 +338,12 @@
         return $buttonsDiv;
     };
     
+    // returns function for load event of scaler img
+    var scalerImgLoadedFn = function(settings) {
+        return function() {
+            console.debug("img loaded! settings=", settings);
+        };
+    };
     // hook plugin into jquery
     $.fn.digilib = function(method) {
         if (methods[method]) {
