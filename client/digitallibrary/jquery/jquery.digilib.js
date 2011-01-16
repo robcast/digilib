@@ -4,7 +4,7 @@
  */
 
 (function($) {
-    var buttons = {
+    var actions = {
         reference : {
             onclick : "javascript:getRefWin()",
             tooltip : "get a reference URL",
@@ -56,7 +56,7 @@
             img : "birds-eye.png"
             },
         help : {
-            onclick : "toggleAboutDiv",
+            onclick : ["toggleAboutDiv", 0.2],
             tooltip : "about Digilib",
             img : "help.png"
             },
@@ -153,14 +153,14 @@
         // fullscreen: takes parameters from page URL, keeps state in page URL
         // embedded: takes parameters from Javascript options, keeps state inside object 
         'interactionMode' : 'fullscreen',
-        // buttons
-        'buttons' : buttons,
+        // actions
+        'actions' : actions,
         // path to button images (must end with a slash)
         'buttonsImagePath' : '../greyskin/', 
-        // button groups
-        'buttonsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
-        'buttonsSpecial' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
-        'buttonsCustom' : [],
+        // actions groups
+        'actionsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
+        'actionsSpecial' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
+        'actionsCustom' : [],
         // is birdView shown?
         'isBirdDivVisible' : false,
         // dimensions of bird's eye window
@@ -208,7 +208,7 @@
                     }
                     // create HTML structure
                     setupScalerDiv($elem, elemSettings);
-                    setupButtons($elem, elemSettings, 'buttonsStandard');
+                    setupButtons($elem, elemSettings, 'actionsStandard');
                     // bird's eye view creation - could be deferred?
                     setupBirdviewDiv($elem, elemSettings);
                     // about window creation - could be deferred? restrict to only one item?
@@ -361,15 +361,15 @@
     };
 
     // creates HTML structure for buttons in elem
-    var setupButtons = function ($elem, settings, buttonGroup) {
+    var setupButtons = function ($elem, settings, actionGroup) {
         if (settings.interactionMode === 'fullscreen') {
             // fullscreen -- create new
             var $buttonsDiv = $('<div class="buttons"></div>');
             $elem.append($buttonsDiv);
-            var buttonNames = settings[buttonGroup];
-            for (var i = 0; i < buttonNames.length; i++) {
-                var buttonName = buttonNames[i];
-                var buttonSettings = settings.buttons[buttonName];
+            var actionNames = settings[actionGroup];
+            for (var i = 0; i < actionNames.length; i++) {
+                var actionName = actionNames[i];
+                var actionSettings = settings.actions[actionName];
                 // construct the button html
                 var $button = $('<div class="button"></div>');
                 var $a = $('<a/>');
@@ -378,26 +378,30 @@
                 $button.append($a);
                 $a.append($img);
                 // add attributes and bindings
-                $button.attr('title', buttonSettings.tooltip);
-                $button.addClass('button-' + buttonName);
+                $button.attr('title', actionSettings.tooltip);
+                $button.addClass('button-' + actionName);
                 // let the clicked <a> element know about the digilib context 
-                $a.data('digilib', { 'name' : buttonName, 'settings' : settings } );
+                $a.data('digilib', { 'action' : actionName, 'settings' : settings } );
                 $a.bind('click', function() {
                     // get the context settings
                     var data = $(this).data('digilib');
                     // find the action for the clicked element
-                    var method = data.settings.buttons[data.name].onclick; 
+                    var method = data.settings.actions[data.action].onclick; 
                     // find the digilib object with methods
                     var $root = data.settings.digilibRoot; 
                     // execute as a method
-                    $a.digilib(method);
-                    console.log(onclick);
+                    console.log(method);
+                    if ($.isArray(method)) {
+                        $a.digilib.apply(this, method);
+                    } else {
+                        $a.digilib(method);
+                        };
                     });
                 // binding mit closure
                 //(function(){ var action = buttonSettings.onclick;
                 //    $a.bind('click', function(){ console.log( action )} );
                 //})();
-                $img.attr('src', settings.buttonsImagePath + buttonSettings.img);
+                $img.attr('src', settings.buttonsImagePath + actionSettings.img);
             };
         }
         return $buttonsDiv;
