@@ -152,7 +152,10 @@
         // button groups
         'buttonsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
         'buttonsSpecial' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
-        'buttonsCustom' : []
+        'buttonsCustom' : [],
+        // dimensions of bird's eye window
+        'birdMaxX' : 200,
+        'birdMaxY' : 200
         };
  
     // parameters from the query string
@@ -191,6 +194,7 @@
                     // create HTML structure
                     setupScalerDiv($elem, elemSettings);
                     setupButtons($elem, elemSettings, 'buttonsStandard');
+                    setupBirdviewDiv($elem, elemSettings);
                 });
             },
 
@@ -240,24 +244,31 @@
         return hash;
         };
     
+    // returns a query string from key names from a parameter hash
+    var makeParamString = function (settings, keys) {
+        var paramString = '';
+        var latter = false;
+        for (i = 0; i < keys.length; ++i) {
+            var key = keys[i];
+            if (settings[key]) {
+                // first param gets no '&'
+                paramString += latter ? '&' : '';
+                latter = true;
+                // add parm=val
+                paramString += key + '=' + settings[key];
+                };
+        }
+        return paramString;
+        };
+
     // returns URL and query string for Scaler
     var getScalerString = function (settings) {
-        var url = settings.scalerBaseUrl + '?';
-        var i, parm, latter;
-        // go through param names and get values from settings
-        for (i = 0; i < settings.scalerParamNames.length; ++i) {
-            parm = settings.scalerParamNames[i];
-            if (settings[parm]) {
-                // first parm gets no '&'
-                url += latter ? '&' : '';
-                latter = 1;
-                // add parm=val
-                url += parm + '=' + settings[parm];
-            }
-        }
+        var keys = settings.scalerParamNames;
+        var queryString = makeParamString(settings, keys);
+        var url = settings.scalerBaseUrl + '?' + queryString;
         return url;
     };
-    
+
     // returns maximum size for scaler img in fullscreen mode
     var getFullscreenImgSize = function($elem) {
         var winH = $(window).height();
@@ -299,7 +310,7 @@
         $scaler.append($img);
         $img.load(scalerImgLoadedFn(settings));
     };
-        
+
     // creates HTML structure for buttons in elem
     var setupButtons = function ($elem, settings, buttonGroup) {
         if (settings.interactionMode === 'fullscreen') {
@@ -337,7 +348,29 @@
         }
         return $buttonsDiv;
     };
-    
+
+    // creates HTML structure for the bird's eye view in elem
+    var setupBirdviewDiv = function ($elem, settings) {
+        // use only the relevant parameters
+        var keys = ['fn','pn','dw','dh'];
+        var birdDimensions = {
+            'dw' : settings.birdMaxX,
+            'dh' : settings.birdMaxY
+            };
+        var birdSettings = $.extend({}, settings, birdDimensions);
+        var birdUrl = settings.scalerBaseUrl + '?' + makeParamString(birdSettings, keys);
+        // the bird's eye div
+        var $birdviewDiv = $('<div class="birdview"/>');
+        // the detail indicator frame
+        var $birdzoomDiv = $('<div class="birdzoom"/>');
+        // the small image
+        var $birdImg = $('<img class="birdimg"/>');
+        $elem.append($birdviewDiv);
+        $birdviewDiv.append($birdzoomDiv);
+        $birdviewDiv.append($birdImg);
+        $birdImg.attr('src', birdUrl);
+        };
+
     // returns function for load event of scaler img
     var scalerImgLoadedFn = function(settings) {
         return function() {
