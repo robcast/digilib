@@ -136,6 +136,12 @@
         };
         
     var defaults = {
+        // version of this script
+        'version' : 'jquery.digilib.js 1.0',
+        // logo url
+        'logoUrl' : '../img/digilib-logo-text1.png',
+        // repository url
+        'reposUrl' : 'http://digilib.berlios.de',
         // base URL to Scaler servlet
         'scalerBaseUrl' : 'http://digilib.mpiwg-berlin.mpg.de/digitallibrary/servlet/Scaler',
         // list of Scaler parameters
@@ -153,9 +159,14 @@
         'buttonsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
         'buttonsSpecial' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
         'buttonsCustom' : [],
+        // is birdView shown?
+        'isBirdDivVisible' : false,
         // dimensions of bird's eye window
         'birdMaxX' : 200,
-        'birdMaxY' : 200
+        'birdMaxY' : 200,
+        // is the "about" window shown?
+        'isAboutDivVisible' : false
+
         };
  
     // parameters from the query string
@@ -195,6 +206,7 @@
                     setupScalerDiv($elem, elemSettings);
                     setupButtons($elem, elemSettings, 'buttonsStandard');
                     setupBirdviewDiv($elem, elemSettings);
+                    setupAboutDiv($elem, elemSettings);
                 });
             },
 
@@ -369,6 +381,23 @@
         $birdviewDiv.append($birdzoomDiv);
         $birdviewDiv.append($birdImg);
         $birdImg.attr('src', birdUrl);
+        };
+
+    // creates HTML structure for the bird's eye view in elem
+    var setupAboutDiv = function ($elem, settings) {
+        var $aboutDiv = $('<div class="about"/>');
+        var $header = $('<p>Digilib Graphic Viewer</p>');
+        var $link = $('<a/>');
+        var $logo = $('<img class="logo" title="digilib"/>');
+        var $content = $('<p/>');
+        $elem.append($aboutDiv);
+        $aboutDiv.append($header);
+        $aboutDiv.append($link);
+        $aboutDiv.append($content);
+        $link.append($logo);
+        $logo.attr('src', settings.logoUrl);
+        $link.attr('href', settings.reposUrl);
+        $content.text('Version: ' + settings.version);
         };
 
     // returns function for load event of scaler img
