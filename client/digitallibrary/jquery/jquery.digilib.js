@@ -383,22 +383,20 @@
                 // let the clicked <a> element know about the digilib context 
                 $a.data('digilib', { 'action' : actionName, 'settings' : settings } );
                 $a.bind('click', function() {
-                    // get the context settings
-                    var data = $(this).data('digilib');
+                    var $elem = $(this);
+                    // get the context data
+                    var data = $elem.data('digilib');
                     // find the action for the clicked element
                     var method = data.settings.actions[data.action].onclick; 
-                    // find the digilib object with methods
-                    var $root = data.settings.digilibRoot; 
-                    // execute as a method
-                    console.log(method);
                     if ($.isArray(method)) {
-                        $a.digilib.apply(this, method);
+                        $elem.digilib.apply(this, method);
                     } else {
-                        $a.digilib(method);
+                        $elem.digilib(method);
                         };
+                    console.log(method);
                     });
                 // binding mit closure
-                //(function(){ var action = buttonSettings.onclick;
+                //(function(){ var action = actionSettings.onclick;
                 //    $a.bind('click', function(){ console.log( action )} );
                 //})();
                 $img.attr('src', settings.buttonsImagePath + actionSettings.img);
@@ -444,6 +442,12 @@
         $logo.attr('src', settings.logoUrl);
         $link.attr('href', settings.reposUrl);
         $content.text('Version: ' + settings.version);
+        // let the element know about the digilib context 
+        $aboutDiv.data('digilib', { 'settings' : settings } );
+        $aboutDiv.bind('click', function() {
+            console.log($(this));
+            $(this).digilib('toggleAboutDiv');
+            });
         };
 
     // returns function for load event of scaler img
