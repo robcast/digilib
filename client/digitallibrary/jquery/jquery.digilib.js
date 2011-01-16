@@ -51,12 +51,12 @@
             img : "page.png"
             },
         bird : {
-            onclick : "javascript:toggleBirdDiv()",
+            onclick : "toggleBirdDiv",
             tooltip : "show bird's eye view",
             img : "birds-eye.png"
             },
         help : {
-            onclick : "javascript:toggleAboutDiv()",
+            onclick : "toggleAboutDiv",
             tooltip : "about Digilib",
             img : "help.png"
             },
@@ -134,8 +134,10 @@
             img : "sep.png"
             }
         };
-        
+
     var defaults = {
+        // the root digilib element, for easy retrieval
+        'digilibRoot' : null,
         // version of this script
         'version' : 'jquery.digilib.js 1.0',
         // logo url
@@ -196,6 +198,8 @@
                         } else {
                             elemSettings = $.extend({}, settings, parseImgParams($elem));
                         };
+                        // store $(this) element in the settings
+                        elemSettings.digilibRoot = $elem;
                         // store in data element
                         $elem.data('digilib', {
                             target : $elem,
@@ -205,7 +209,9 @@
                     // create HTML structure
                     setupScalerDiv($elem, elemSettings);
                     setupButtons($elem, elemSettings, 'buttonsStandard');
+                    // bird's eye view creation - could be deferred?
                     setupBirdviewDiv($elem, elemSettings);
+                    // about window creation - could be deferred? restrict to only one item?
                     setupAboutDiv($elem, elemSettings);
                 });
             },
@@ -220,6 +226,37 @@
                     data.digilib.remove();
                     $this.removeData('digilib');
                 });
+            },
+
+            // event handler: toggles the visibility of the 'about' window 
+            toggleAboutDiv : function () {
+                var $elem = $(this); // the clicked button
+                var settings = $elem.data('digilib').settings;
+                var $root = settings.digilibRoot;
+                var $about = $root.find('div.about');
+                settings.isAboutDivVisible = !settings.isAboutDivVisible;
+                if (settings.isAboutDivVisible) {
+                    $about.fadeIn();
+                } else {
+                    $about.fadeOut();
+                    };
+                return false;
+            },
+
+            // event handler: toggles the visibility of the bird's eye window 
+            toggleBirdDiv : function () {
+                // xxx: red frame functionality still to be done!
+                var $elem = $(this); // the clicked button
+                var settings = $elem.data('digilib').settings;
+                var $root = settings.digilibRoot;
+                var $bird = $root.find('div.birdview');
+                settings.isBirdDivVisible = !settings.isBirdDivVisible;
+                if (settings.isBirdDivVisible) {
+                    $bird.fadeIn();
+                } else {
+                    $bird.fadeOut();
+                    };
+                return false;
             }
     };
 
@@ -349,7 +386,12 @@
                     // get the context settings
                     var data = $(this).data('digilib');
                     // find the action for the clicked element
-                    console.log(data.settings.buttons[data.name].onclick);
+                    var method = data.settings.buttons[data.name].onclick; 
+                    // find the digilib object with methods
+                    var $root = data.settings.digilibRoot; 
+                    // execute as a method
+                    $a.digilib(method);
+                    console.log(onclick);
                     });
                 // binding mit closure
                 //(function(){ var action = buttonSettings.onclick;
