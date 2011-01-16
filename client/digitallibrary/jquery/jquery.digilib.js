@@ -313,7 +313,7 @@
                 // construct the button html
                 var $button = $('<div class="button"></div>');
                 var $a = $('<a/>');
-                var $img = $('<img/>');
+                var $img = $('<img class="button"/>');
                 $buttonsDiv.append($button);
                 $button.append($a);
                 $a.append($img);
