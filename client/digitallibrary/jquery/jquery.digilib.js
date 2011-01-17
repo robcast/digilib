@@ -36,12 +36,12 @@
             img : "pagewidth.png"
             },
         back : {
-            onclick : "javascript:gotoPage('-1')",
+            onclick : ["gotoPage", "-1"],
             tooltip : "goto previous image",
             img : "back.png"
             },
         fwd : {
-            onclick : "javascript:gotoPage('+1')",
+            onclick : ["gotoPage", "+1"],
             tooltip : "goto next image",
             img : "fwd.png"
             },
@@ -56,7 +56,7 @@
             img : "birds-eye.png"
             },
         help : {
-            onclick : ["toggleAboutDiv", 0.2],
+            onclick : "toggleAboutDiv",
             tooltip : "about Digilib",
             img : "help.png"
             },
@@ -245,7 +245,7 @@
 
             // event handler: toggles the visibility of the bird's eye window 
             toggleBirdDiv : function () {
-                // xxx: red frame functionality still to be done!
+                // TODO: red frame functionality
                 var $elem = $(this); // the clicked button
                 var settings = $elem.data('digilib').settings;
                 var $root = settings.digilibRoot;
@@ -257,9 +257,48 @@
                     $bird.fadeOut();
                     };
                 return false;
+            },
+            
+            // goto given page nr (+/-: relative)
+            gotoPage : function(pageNr, keepMarks) {
+                var $elem = $(this); // the clicked button
+                var settings = $elem.data('digilib').settings;
+                var oldpn = settings.pn;
+                var pn = setNumValue(settings, "pn", pageNr);
+                if (pn == null) return false; // nothing happened
+                if (pn < 1) {
+                    alert("no such page (page number too low)");
+                    settings.pn = oldpn;
+                    return false;
+                    };
+                if (settings.pt) {
+                    if (pn > settings.pt) {
+                        alert("no such page (page number too high)");
+                        settings.pn = oldpn;
+                        return false;
+                        }
+                    };
+                // TODO: keepMarks
+                var $root = settings.digilibRoot;
+                var $img = $root.find('img.pic');
+                display($img, settings);
+                return false;
             }
     };
 
+    // sets a key to a value (relative values with +/- if relative=true)
+    var setNumValue = function(settings, key, value) {
+        // TODO: type and error checking
+        if (settings[key] == null) return null;
+        var sign = value.substring(0,1);
+        if (sign === '+' || sign === '-') {
+  		    settings[key] = parseFloat(settings[key]) + parseFloat(value);
+        } else {
+    		settings[key] = value;
+    	   }
+    	return settings[key];
+        };
+    	
     // returns parameters from page url
     var parseQueryParams = function() {
         return parseQueryString(location.search.slice(1));
@@ -326,30 +365,33 @@
         return geom.size(winW, winH);
     };
     
+    // (re)load the img from a new scaler URL
+    var display = function ($img, settings) {
+        // TODO: update location.href (browser URL) in fullscreen mode
+        var scalerUrl = getScalerString(settings);
+        $img.attr('src', scalerUrl);
+        // TODO: update bird view?
+    };
+
     // creates HTML structure for digilib in elem
     var setupScalerDiv = function ($elem, settings) {
-        var rewrite;
+        var $img;
         if (settings.interactionMode === 'fullscreen') {
             // fullscreen
             var imgSize = getFullscreenImgSize($elem);
             settings.dw = imgSize.width;
             settings.dh = imgSize.height;
             $img = $('<img/>');
-            var scalerUrl = getScalerString(settings);
-            $img.attr('src', scalerUrl);
-            $img.addClass('pic');
+            display($img, settings);
         } else {
             // embedded mode -- try to keep img tag
-            var $img = $elem.find('img');
+            $img = $elem.find('img');
             if ($img.length > 0) {
                 console.debug("img detach:",$img);
                 $img.detach();
-                $img.addClass('picsi');
             } else {
                 $img = $('<img/>');
-                var scalerUrl = getScalerString(settings);
-                $img.attr('src', scalerUrl);
-                $img.addClass('pic');
+                display($img, settings);
             }
         }
         // create new html
@@ -357,6 +399,7 @@
         var $scaler = $('<div class="scaler"/>');
         $elem.append($scaler);
         $scaler.append($img);
+        $img.addClass('pic');
         $img.load(scalerImgLoadedFn(settings));
     };
 
