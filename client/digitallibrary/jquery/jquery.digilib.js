@@ -264,10 +264,8 @@
                 var $elem = $(this); // the clicked button
                 var settings = $elem.data('digilib').settings;
                 var oldpn = settings.pn;
-                // set with relative=true uses the sign
-                setNumValue(settings, "pn", pageNr);
-                // now check the outcome
-                var pn = settings.pn;
+                var pn = setNumValue(settings, "pn", pageNr);
+                if (pn == null) return false; // nothing happened
                 if (pn < 1) {
                     alert("no such page (page number too low)");
                     settings.pn = oldpn;
@@ -284,6 +282,7 @@
                 var $root = settings.digilibRoot;
                 var $img = $root.find('img.pic');
                 display($img, settings);
+                return false;
             }
     };
 
