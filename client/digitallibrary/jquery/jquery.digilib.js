@@ -326,6 +326,13 @@
         return geom.size(winW, winH);
     };
     
+    // (re)load the img from a new scaler URL
+    var display = function ($img, settings) {
+        var scalerUrl = getScalerString(settings);
+        $img.attr('src', scalerUrl);
+        $img.load(scalerImgLoadedFn(settings));
+    };
+
     // creates HTML structure for digilib in elem
     var setupScalerDiv = function ($elem, settings) {
         var rewrite;
@@ -335,21 +342,16 @@
             settings.dw = imgSize.width;
             settings.dh = imgSize.height;
             $img = $('<img/>');
-            var scalerUrl = getScalerString(settings);
-            $img.attr('src', scalerUrl);
-            $img.addClass('pic');
+            display($img, settings);
         } else {
             // embedded mode -- try to keep img tag
             var $img = $elem.find('img');
             if ($img.length > 0) {
                 console.debug("img detach:",$img);
                 $img.detach();
-                $img.addClass('pic');
             } else {
                 $img = $('<img/>');
-                var scalerUrl = getScalerString(settings);
-                $img.attr('src', scalerUrl);
-                $img.addClass('pic');
+                display($img, settings);
             }
         }
         // create new html
@@ -357,7 +359,7 @@
         var $scaler = $('<div class="scaler"/>');
         $elem.append($scaler);
         $scaler.append($img);
-        $img.load(scalerImgLoadedFn(settings));
+        $img.addClass('pic');
     };
 
     // creates HTML structure for buttons in elem
