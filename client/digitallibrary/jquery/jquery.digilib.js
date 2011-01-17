@@ -284,7 +284,7 @@
             if ($img.length > 0) {
                 console.debug("img detach:",$img);
                 $img.detach();
-                $img.addClass('picsi');
+                $img.addClass('pic');
             } else {
                 $img = $('<img/>');
                 var scalerUrl = getScalerString(settings);
