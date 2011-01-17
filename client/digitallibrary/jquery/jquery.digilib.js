@@ -416,7 +416,7 @@
         var birdSettings = $.extend({}, settings, birdDimensions);
         var birdUrl = settings.scalerBaseUrl + '?' + makeParamString(birdSettings, keys);
         // the bird's eye div
-        var $birdviewDiv = $('<div class="birdview"/>');
+        var $birdviewDiv = $('<div class="birdview" style="display:none"/>');
         // the detail indicator frame
         var $birdzoomDiv = $('<div class="birdzoom"/>');
         // the small image
@@ -427,9 +427,9 @@
         $birdImg.attr('src', birdUrl);
         };
 
-    // creates HTML structure for the bird's eye view in elem
+    // creates HTML structure for the about view in elem
     var setupAboutDiv = function ($elem, settings) {
-        var $aboutDiv = $('<div class="about"/>');
+        var $aboutDiv = $('<div class="about" style="display:none"/>');
         var $header = $('<p>Digilib Graphic Viewer</p>');
         var $link = $('<a/>');
         var $logo = $('<img class="logo" title="digilib"/>');
