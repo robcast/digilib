@@ -197,17 +197,17 @@ var dlGeometry = function() {
  * defines a class of affine transformations
  */
         var transform = function (spec) {
-            var that = {
-                    m00 : spec.m00 || 1.0,
-                    m01 : spec.m01 || 0.0,
-                    m02 : spec.m02 || 0.0,
-                    m10 : spec.m10 || 0.0,
-                    m11 : spec.m11 || 1.0,
-                    m12 : spec.m12 || 0.0,
-                    m20 : spec.m20 || 0.0,
-                    m21 : spec.m21 || 0.0,
-                    m22 : spec.m22 || 1.0
-            };
+            var that = jQuery.extend({
+                    m00 : 1.0,
+                    m01 : 0.0,
+                    m02 : 0.0,
+                    m10 : 0.0,
+                    m11 : 1.0,
+                    m20 : 0.0,
+                    m12 : 0.0,
+                    m21 : 0.0,
+                    m22 : 1.0
+            }, spec);
             that.concat = function(traf) {
                 // add Transform traf to this Transform
                 for (var i = 0; i < 3; i++) {
@@ -252,9 +252,9 @@ var dlGeometry = function() {
                 }
                 return position(x, y);
             };
-            that.getRotation = getRotation;
-            that.getTranslation = getTranslation;
-            that.getScale = getScale;
+            that.getRotation = transform.getRotation;
+            that.getTranslation = transform.getTranslation;
+            that.getScale = transform.getScale;
             
             return that;
         };

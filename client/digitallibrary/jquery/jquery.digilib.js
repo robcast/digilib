@@ -147,8 +147,14 @@
         // base URL to Scaler servlet
         'scalerBaseUrl' : 'http://digilib.mpiwg-berlin.mpg.de/digitallibrary/servlet/Scaler',
         // list of Scaler parameters
-            'scalerParamNames' : ['fn','pn','dw','dh','ww','wh','wx','wy','ws','mo',
-                                  'rot','cont','brgt','rgbm','rgba','ddpi','ddpix','ddpiy'],
+        'scalerParamNames' : ['fn','pn','dw','dh','ww','wh','wx','wy','ws','mo',
+                              'rot','cont','brgt','rgbm','rgba','ddpi','ddpix','ddpiy'],
+        // Scaler parameter defaults
+        'ww' : 1.0,
+        'wh' : 1.0,
+        'wx' : 0.0,
+        'wy' : 0.0,
+        'ws' : 1.0,
         // mode of operation. 
         // fullscreen: takes parameters from page URL, keeps state in page URL
         // embedded: takes parameters from Javascript options, keeps state inside object 
@@ -200,18 +206,19 @@
                         };
                         // store $(this) element in the settings
                         elemSettings.digilibRoot = $elem;
+                        data =  {
+                                target : $elem,
+                                settings : elemSettings
+                        };
                         // store in data element
-                        $elem.data('digilib', {
-                            target : $elem,
-                            settings : elemSettings
-                        });
+                        $elem.data('digilib', data);
                     }
                     // create HTML structure
-                    setupScalerDiv($elem, elemSettings);
+                    setupScalerDiv(data);
                     setupButtons($elem, elemSettings, 'actionsStandard');
-                    // bird's eye view creation - could be deferred?
+                    // bird's eye view creation - TODO: could be deferred?
                     setupBirdviewDiv($elem, elemSettings);
-                    // about window creation - could be deferred? restrict to only one item?
+                    // about window creation - TODO: could be deferred? restrict to only one item?
                     setupAboutDiv($elem, elemSettings);
                 });
             },
@@ -313,23 +320,23 @@
         var pos = src.indexOf('?');
         var query = (pos < 0) ? '' : src.substring(pos + 1);
         var scalerUrl = src.substring(0, pos);
-        var hash = parseQueryString(query);
-        hash.scalerBaseUrl = scalerUrl;
+        var params = parseQueryString(query);
+        params.scalerBaseUrl = scalerUrl;
         // console.log(hash);
-        return hash;
+        return params;
         };
 
     // parses query parameter string into parameter object
     var parseQueryString = function(query) {
         var pairs = query.split("&");
-        var hash = {};
+        var params = {};
         for (var i = 0; i < pairs.length; i++) {
             var pair = pairs[i].split("=");
             if (pair.length === 2) {
-                hash[pair[0]] = pair[1];
+                params[pair[0]] = pair[1];
                 };
             };
-        return hash;
+        return params;
         };
     
     // returns a query string from key names from a parameter hash
@@ -374,7 +381,9 @@
     };
 
     // creates HTML structure for digilib in elem
-    var setupScalerDiv = function ($elem, settings) {
+    var setupScalerDiv = function (data) {
+        var settings = data.settings;
+        var $elem = data.target;
         var $img;
         if (settings.interactionMode === 'fullscreen') {
             // fullscreen
@@ -400,7 +409,8 @@
         $elem.append($scaler);
         $scaler.append($img);
         $img.addClass('pic');
-        $img.load(scalerImgLoadedFn(settings));
+        data.img = $img;
+        $img.load(scalerImgLoadedFn(data));
     };
 
     // creates HTML structure for buttons in elem
@@ -494,9 +504,31 @@
         };
 
     // returns function for load event of scaler img
-    var scalerImgLoadedFn = function(settings) {
+    var scalerImgLoadedFn = function(data) {
+        var settings = data.settings;
+        var $elem = data.target;
+        var $img = data.img;
+        
         return function() {
-            console.debug("img loaded! settings=", settings);
+            console.debug("img loaded! this=", this, " data=", data);
+            var area = geom.rectangle(settings.wx, settings.wy, settings.ww, settings.wh);
+            settings.zoomArea = area;
+            // create Transform from current area and picsize
+            var picpos = $img.offset();
+            var picrect = geom.rectangle(picpos.left, picpos.top, $img.width(), $img.height());
+            var trafo = geom.transform();
+            // subtract area offset and size
+            trafo.concat(trafo.getTranslation(geom.position(area.x, area.y)));
+            trafo.concat(trafo.getScale(geom.size(1/area.width, 1/area.height)));
+            // scale to screen size
+            trafo.concat(trafo.getScale(picrect));
+            trafo.concat(trafo.getTranslation(picrect));
+            data.imgTrafo = trafo;
+            // display marks
+            //digilib.renderMarks();
+            //digilib.showBirdDiv(isBirdDivVisible);
+            //digilib.showArrows(); // show arrow overlays for zoom navigation
+
         };
     };
     // hook plugin into jquery
