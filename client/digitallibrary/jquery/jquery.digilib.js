@@ -4,7 +4,7 @@
  */
 
 (function($) {
-    var buttons = {
+    var actions = {
         reference : {
             onclick : "javascript:getRefWin()",
             tooltip : "get a reference URL",
@@ -51,12 +51,12 @@
             img : "page.png"
             },
         bird : {
-            onclick : "javascript:toggleBirdDiv()",
+            onclick : "toggleBirdDiv",
             tooltip : "show bird's eye view",
             img : "birds-eye.png"
             },
         help : {
-            onclick : "javascript:toggleAboutDiv()",
+            onclick : ["toggleAboutDiv", 0.2],
             tooltip : "about Digilib",
             img : "help.png"
             },
@@ -134,8 +134,16 @@
             img : "sep.png"
             }
         };
-        
+
     var defaults = {
+        // the root digilib element, for easy retrieval
+        'digilibRoot' : null,
+        // version of this script
+        'version' : 'jquery.digilib.js 1.0',
+        // logo url
+        'logoUrl' : '../img/digilib-logo-text1.png',
+        // repository url
+        'reposUrl' : 'http://digilib.berlios.de',
         // base URL to Scaler servlet
         'scalerBaseUrl' : 'http://digilib.mpiwg-berlin.mpg.de/digitallibrary/servlet/Scaler',
         // list of Scaler parameters
@@ -145,14 +153,22 @@
         // fullscreen: takes parameters from page URL, keeps state in page URL
         // embedded: takes parameters from Javascript options, keeps state inside object 
         'interactionMode' : 'fullscreen',
-        // buttons
-        'buttons' : buttons,
+        // actions
+        'actions' : actions,
         // path to button images (must end with a slash)
         'buttonsImagePath' : '../greyskin/', 
-        // button groups
-        'buttonsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
-        'buttonsSpecial' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
-        'buttonsCustom' : []
+        // actions groups
+        'actionsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
+        'actionsSpecial' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
+        'actionsCustom' : [],
+        // is birdView shown?
+        'isBirdDivVisible' : false,
+        // dimensions of bird's eye window
+        'birdMaxX' : 200,
+        'birdMaxY' : 200,
+        // is the "about" window shown?
+        'isAboutDivVisible' : false
+
         };
  
     // parameters from the query string
@@ -182,6 +198,8 @@
                         } else {
                             elemSettings = $.extend({}, settings, parseImgParams($elem));
                         };
+                        // store $(this) element in the settings
+                        elemSettings.digilibRoot = $elem;
                         // store in data element
                         $elem.data('digilib', {
                             target : $elem,
@@ -190,7 +208,11 @@
                     }
                     // create HTML structure
                     setupScalerDiv($elem, elemSettings);
-                    setupButtons($elem, elemSettings, 'buttonsStandard');
+                    setupButtons($elem, elemSettings, 'actionsStandard');
+                    // bird's eye view creation - could be deferred?
+                    setupBirdviewDiv($elem, elemSettings);
+                    // about window creation - could be deferred? restrict to only one item?
+                    setupAboutDiv($elem, elemSettings);
                 });
             },
 
@@ -204,6 +226,37 @@
                     data.digilib.remove();
                     $this.removeData('digilib');
                 });
+            },
+
+            // event handler: toggles the visibility of the 'about' window 
+            toggleAboutDiv : function () {
+                var $elem = $(this); // the clicked button
+                var settings = $elem.data('digilib').settings;
+                var $root = settings.digilibRoot;
+                var $about = $root.find('div.about');
+                settings.isAboutDivVisible = !settings.isAboutDivVisible;
+                if (settings.isAboutDivVisible) {
+                    $about.fadeIn();
+                } else {
+                    $about.fadeOut();
+                    };
+                return false;
+            },
+
+            // event handler: toggles the visibility of the bird's eye window 
+            toggleBirdDiv : function () {
+                // xxx: red frame functionality still to be done!
+                var $elem = $(this); // the clicked button
+                var settings = $elem.data('digilib').settings;
+                var $root = settings.digilibRoot;
+                var $bird = $root.find('div.birdview');
+                settings.isBirdDivVisible = !settings.isBirdDivVisible;
+                if (settings.isBirdDivVisible) {
+                    $bird.fadeIn();
+                } else {
+                    $bird.fadeOut();
+                    };
+                return false;
             }
     };
 
@@ -240,24 +293,31 @@
         return hash;
         };
     
+    // returns a query string from key names from a parameter hash
+    var makeParamString = function (settings, keys) {
+        var paramString = '';
+        var latter = false;
+        for (i = 0; i < keys.length; ++i) {
+            var key = keys[i];
+            if (settings[key]) {
+                // first param gets no '&'
+                paramString += latter ? '&' : '';
+                latter = true;
+                // add parm=val
+                paramString += key + '=' + settings[key];
+                };
+        }
+        return paramString;
+        };
+
     // returns URL and query string for Scaler
     var getScalerString = function (settings) {
-        var url = settings.scalerBaseUrl + '?';
-        var i, parm, latter;
-        // go through param names and get values from settings
-        for (i = 0; i < settings.scalerParamNames.length; ++i) {
-            parm = settings.scalerParamNames[i];
-            if (settings[parm]) {
-                // first parm gets no '&'
-                url += latter ? '&' : '';
-                latter = 1;
-                // add parm=val
-                url += parm + '=' + settings[parm];
-            }
-        }
+        var keys = settings.scalerParamNames;
+        var queryString = makeParamString(settings, keys);
+        var url = settings.scalerBaseUrl + '?' + queryString;
         return url;
     };
-    
+
     // returns maximum size for scaler img in fullscreen mode
     var getFullscreenImgSize = function($elem) {
         var winH = $(window).height();
@@ -299,45 +359,97 @@
         $scaler.append($img);
         $img.load(scalerImgLoadedFn(settings));
     };
-        
+
     // creates HTML structure for buttons in elem
-    var setupButtons = function ($elem, settings, buttonGroup) {
+    var setupButtons = function ($elem, settings, actionGroup) {
         if (settings.interactionMode === 'fullscreen') {
             // fullscreen -- create new
             var $buttonsDiv = $('<div class="buttons"></div>');
             $elem.append($buttonsDiv);
-            var buttonNames = settings[buttonGroup];
-            for (var i = 0; i < buttonNames.length; i++) {
-                var buttonName = buttonNames[i];
-                var buttonSettings = settings.buttons[buttonName];
+            var actionNames = settings[actionGroup];
+            for (var i = 0; i < actionNames.length; i++) {
+                var actionName = actionNames[i];
+                var actionSettings = settings.actions[actionName];
                 // construct the button html
                 var $button = $('<div class="button"></div>');
                 var $a = $('<a/>');
-                var $img = $('<img/>');
+                var $img = $('<img class="button"/>');
                 $buttonsDiv.append($button);
                 $button.append($a);
                 $a.append($img);
                 // add attributes and bindings
-                $button.attr('title', buttonSettings.tooltip);
-                $button.addClass('button-' + buttonName);
+                $button.attr('title', actionSettings.tooltip);
+                $button.addClass('button-' + actionName);
                 // let the clicked <a> element know about the digilib context 
-                $a.data('digilib', { 'name' : buttonName, 'settings' : settings } );
+                $a.data('digilib', { 'action' : actionName, 'settings' : settings } );
                 $a.bind('click', function() {
-                    // get the context settings
-                    var data = $(this).data('digilib');
+                    var $elem = $(this);
+                    // get the context data
+                    var data = $elem.data('digilib');
                     // find the action for the clicked element
-                    console.log(data.settings.buttons[data.name].onclick);
+                    var method = data.settings.actions[data.action].onclick; 
+                    if ($.isArray(method)) {
+                        $elem.digilib.apply(this, method);
+                    } else {
+                        $elem.digilib(method);
+                        };
+                    console.log(method);
                     });
                 // binding mit closure
-                //(function(){ var action = buttonSettings.onclick;
+                //(function(){ var action = actionSettings.onclick;
                 //    $a.bind('click', function(){ console.log( action )} );
                 //})();
-                $img.attr('src', settings.buttonsImagePath + buttonSettings.img);
+                $img.attr('src', settings.buttonsImagePath + actionSettings.img);
             };
         }
         return $buttonsDiv;
     };
-    
+
+    // creates HTML structure for the bird's eye view in elem
+    var setupBirdviewDiv = function ($elem, settings) {
+        // use only the relevant parameters
+        var keys = ['fn','pn','dw','dh'];
+        var birdDimensions = {
+            'dw' : settings.birdMaxX,
+            'dh' : settings.birdMaxY
+            };
+        var birdSettings = $.extend({}, settings, birdDimensions);
+        var birdUrl = settings.scalerBaseUrl + '?' + makeParamString(birdSettings, keys);
+        // the bird's eye div
+        var $birdviewDiv = $('<div class="birdview"/>');
+        // the detail indicator frame
+        var $birdzoomDiv = $('<div class="birdzoom"/>');
+        // the small image
+        var $birdImg = $('<img class="birdimg"/>');
+        $elem.append($birdviewDiv);
+        $birdviewDiv.append($birdzoomDiv);
+        $birdviewDiv.append($birdImg);
+        $birdImg.attr('src', birdUrl);
+        };
+
+    // creates HTML structure for the bird's eye view in elem
+    var setupAboutDiv = function ($elem, settings) {
+        var $aboutDiv = $('<div class="about"/>');
+        var $header = $('<p>Digilib Graphic Viewer</p>');
+        var $link = $('<a/>');
+        var $logo = $('<img class="logo" title="digilib"/>');
+        var $content = $('<p/>');
+        $elem.append($aboutDiv);
+        $aboutDiv.append($header);
+        $aboutDiv.append($link);
+        $aboutDiv.append($content);
+        $link.append($logo);
+        $logo.attr('src', settings.logoUrl);
+        $link.attr('href', settings.reposUrl);
+        $content.text('Version: ' + settings.version);
+        // let the element know about the digilib context 
+        $aboutDiv.data('digilib', { 'settings' : settings } );
+        $aboutDiv.bind('click', function() {
+            console.log($(this));
+            $(this).digilib('toggleAboutDiv');
+            });
+        };
+
     // returns function for load event of scaler img
     var scalerImgLoadedFn = function(settings) {
         return function() {

@@ -3,52 +3,79 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <title>Digilib jQuery Test HTML</title>
-        
+
         <style type="text/css">
             body {
                  background: silver;
             }
-            
+
             div.digilib {
                 float: left;
                 padding: 10px;
             }
-            
+
             div.buttons {
                 position: fixed;
                 right: 5px;
                 top: 5px;
                 padding: 3px;
-                background-color: silver;	 
-  }
+                background-color: silver;
+            }
 
+            img.button:hover {
+                background-image: url('../greyskin/corona.png');
+            }
 
-            
+            div.birdview {
+                border: 1px solid white;
+                position: fixed;
+                bottom: 8px;
+                right:  48px;
+                display: none;
+                z-index: 1;
+                }
+
+            div.about {
+                position: absolute;
+                width: 200px;
+                top: 100px;
+                left: 350px;
+                height: 200px;
+                padding: 0px 2px;
+                font-family: Verdana, Arial, Helvetica, sans-serif;
+                border: 2px solid lightcyan;
+                background-color: lightgrey;
+                text-align: center;
+                display: none;
+                z-index: 1000;
+                }
+
         </style>
-    
+
         <script type="text/javascript" src="jquery-1.4.4.js"></script>
         <script type="text/javascript" src="dlGeometry.js"></script>
         <script type="text/javascript" src="jquery.digilib.js"></script>
-        
+
 
         <script type="text/javascript">
             $(document).ready(function(){
-                var opts = {interactionMode : 'fullscreen', 
-                        scalerBaseUrl : 'http://localhost:18080/digitallibrary/servlet/Scaler'};
+                var opts = {interactionMode : 'fullscreen',
+                        scalerBaseUrl : 'http://digilib.biblhertz.it/digilib04/servlet/Scaler'};
                  $('div.digilib').digilib(opts);
 
                  $('div.digilib').each(function(){
                          console.log($(this).data('digilib').settings);
                     });
+                 $('div.digilib').digilib('toggleAboutDiv');
             });
 
         </script>
     </head>
 
     <body>
-    
+
         <div id="digilib-1" class="digilib single">
-            <img src="http://digilinx:18080/digitallibrary/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/FransHals-WillemVanHeythuysen" />
+            <img src="http://digilib.biblhertz.it/digilib04/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/FransHals-WillemVanHeythuysen" />
         </div>
     </body>
 </html>
