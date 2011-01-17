@@ -215,11 +215,11 @@
                     }
                     // create HTML structure
                     setupScalerDiv(data);
-                    setupButtons($elem, elemSettings, 'actionsStandard');
+                    setupButtons(data, 'actionsStandard');
                     // bird's eye view creation - TODO: could be deferred?
-                    setupBirdviewDiv($elem, elemSettings);
+                    setupBirdviewDiv(data);
                     // about window creation - TODO: could be deferred? restrict to only one item?
-                    setupAboutDiv($elem, elemSettings);
+                    setupAboutDiv(data);
                 });
             },
 
@@ -340,7 +340,7 @@
         };
     
     // returns a query string from key names from a parameter hash
-    var makeParamString = function (settings, keys) {
+    var getParamString = function (settings, keys) {
         var paramString = '';
         var latter = false;
         for (i = 0; i < keys.length; ++i) {
@@ -359,7 +359,7 @@
     // returns URL and query string for Scaler
     var getScalerString = function (settings) {
         var keys = settings.scalerParamNames;
-        var queryString = makeParamString(settings, keys);
+        var queryString = getParamString(settings, keys);
         var url = settings.scalerBaseUrl + '?' + queryString;
         return url;
     };
@@ -414,7 +414,9 @@
     };
 
     // creates HTML structure for buttons in elem
-    var setupButtons = function ($elem, settings, actionGroup) {
+    var setupButtons = function (data, actionGroup) {
+        var $elem = data.target;
+        var settings = data.settings;
         if (settings.interactionMode === 'fullscreen') {
             // fullscreen -- create new
             var $buttonsDiv = $('<div class="buttons"></div>');
@@ -459,7 +461,9 @@
     };
 
     // creates HTML structure for the bird's eye view in elem
-    var setupBirdviewDiv = function ($elem, settings) {
+    var setupBirdviewDiv = function (data) {
+        var $elem = data.target;
+        var settings = data.settings;
         // use only the relevant parameters
         var keys = ['fn','pn','dw','dh'];
         var birdDimensions = {
@@ -467,7 +471,7 @@
             'dh' : settings.birdMaxY
             };
         var birdSettings = $.extend({}, settings, birdDimensions);
-        var birdUrl = settings.scalerBaseUrl + '?' + makeParamString(birdSettings, keys);
+        var birdUrl = settings.scalerBaseUrl + '?' + getParamString(birdSettings, keys);
         // the bird's eye div
         var $birdviewDiv = $('<div class="birdview" style="display:none"/>');
         // the detail indicator frame
@@ -481,7 +485,9 @@
         };
 
     // creates HTML structure for the about view in elem
-    var setupAboutDiv = function ($elem, settings) {
+    var setupAboutDiv = function (data) {
+        var $elem = data.target;
+        var settings = data.settings;
         var $aboutDiv = $('<div class="about" style="display:none"/>');
         var $header = $('<p>Digilib Graphic Viewer</p>');
         var $link = $('<a/>');
