@@ -2,6 +2,15 @@
  * digilib jQuery plugin
  *
  */
+    
+// fallback for console.log calls
+if (typeof(console) === 'undefined') {
+    var console = {
+            log : function(){},
+            debug : function(){},
+            error : function(){}
+    };
+}
 
 (function($) {
     var actions = {
@@ -177,9 +186,6 @@
 
         };
  
-    // parameters from the query string
-    var queryParams = {};
-
     // affine geometry classes
     var geom = dlGeometry();
     
@@ -188,10 +194,11 @@
             init : function(options) {
                 // settings for this digilib instance are merged from defaults and options
                 var settings = $.extend({}, defaults, options);
-                var isFullscreen = settings.interactionMode === 'fullscreen'; 
+                var isFullscreen = settings.interactionMode === 'fullscreen';
+                var queryParams = {};
                 if (isFullscreen) {
                     queryParams = parseQueryParams();
-                    }
+                }
                 return this.each(function() {
                     var $elem = $(this);
                     var data = $elem.data('digilib');
@@ -208,7 +215,8 @@
                         elemSettings.digilibRoot = $elem;
                         data =  {
                                 target : $elem,
-                                settings : elemSettings
+                                settings : elemSettings,
+                                queryParams : queryParams
                         };
                         // store in data element
                         $elem.data('digilib', data);
@@ -227,33 +235,34 @@
             // clean up digilib
             destroy : function() {
                 return this.each(function(){
-                    var $this = $(this);
-                    var data = $this.data('digilib');
+                    var $elem = $(this);
+                    var data = $elem.data('digilib');
                     // Namespacing FTW
                     $(window).unbind('.digilib'); // unbinds all digilibs(?)
                     data.digilib.remove();
-                    $this.removeData('digilib');
+                    $elem.removeData('digilib');
                 });
             },
 
             // show or hide the 'about' window
             showAboutDiv : function(show) {
-                var $this = $(this);
-                var data = $this.data('digilib');
+                var $elem = $(this);
+                var data = $elem.data('digilib');
                 data.settings.isAboutDivVisible = showDiv(data.settings.isAboutDivVisible, data.$aboutDiv, show);
             },
 
             // event handler: toggles the visibility of the bird's eye window 
             showBirdDiv : function (show) {
-                var $this = $(this);
-                var data = $this.data('digilib');
+                var $elem = $(this);
+                var data = $elem.data('digilib');
                 data.settings.isBirdDivVisible = showDiv(data.settings.isBirdDivVisible, data.$birdDiv, show);
             },
             
             // goto given page nr (+/-: relative)
-            gotoPage : function(pageNr, keepMarks) {
+            gotoPage : function (pageNr) {
                 var $elem = $(this); // the clicked button
-                var settings = $elem.data('digilib').settings;
+                var data = $elem.data('digilib');
+                var settings = data.settings;
                 var oldpn = settings.pn;
                 var pn = setNumValue(settings, "pn", pageNr);
                 if (pn == null) return false; // nothing happened
@@ -269,11 +278,11 @@
                         return false;
                         }
                     }
-                // TODO: keepMarks
-                var $root = settings.digilibRoot;
-                var $img = $root.find('img.pic');
-                display($img, settings);
-                return false;
+                // add pn to param list and remove mk and others(?)
+                data.queryParams.pn = pn;
+                delete data.queryParams.mk;
+                // then reload
+                redisplay(data);
             }
     };
 
@@ -292,10 +301,10 @@
     	
     // returns parameters from page url
     var parseQueryParams = function() {
-        return parseQueryString(location.search.slice(1));
-        };
+        return parseQueryString(window.location.search.slice(1));
+    };
         
-    // returns parameters taken from embedded img-element
+    // returns parameters from embedded img-element
     var parseImgParams = function($elem) {
         var src = $elem.find('img').first().attr('src');
         if (!src) {
@@ -306,22 +315,23 @@
         var scalerUrl = src.substring(0, pos);
         var params = parseQueryString(query);
         params.scalerBaseUrl = scalerUrl;
-        // console.log(hash);
         return params;
-        };
+    };
 
     // parses query parameter string into parameter object
     var parseQueryString = function(query) {
         var pairs = query.split("&");
         var params = {};
+        //var keys = [];
         for (var i = 0; i < pairs.length; i++) {
             var pair = pairs[i].split("=");
             if (pair.length === 2) {
                 params[pair[0]] = pair[1];
-                }
+                //keys.push(pair[0]);
             }
+        }
         return params;
-        };
+    };
     
     // returns a query string from key names from a parameter hash
     var getParamString = function (settings, keys) {
@@ -340,14 +350,38 @@
         return paramString;
     };
 
+    // returns URL and query string for Scaler
+    var getScalerUrl = function (data) {
+        var settings = data.settings;
+        var keys = settings.scalerParamNames;
+        var queryString = getParamString(settings, keys);
+        var url = settings.scalerBaseUrl + '?' + queryString;
+        return url;
+    };
+
+    // returns URL and query string for current digilib
+    var getDigilibUrl = function (data) {
+        var settings = data.settings;
+        // make list from queryParams keys
+        var keys = [];
+        for (var k in data.queryParams) {
+            keys.push(k);
+        }
+        var queryString = getParamString(settings, keys);
+        var url = window.location.toString();
+        var pos = url.indexOf('?');
+        var baseUrl = url.substring(0, pos);
+        var newurl = baseUrl + '?' + queryString;
+        return newurl;
+    };
+
     // processes some parameters into objects and stuff     
     var unpackParams = function (data) {
         var settings = data.settings;
-        // read zoom area
+        // zoom area
         var zoomArea = geom.rectangle(settings.wx, settings.wy, settings.ww, settings.wh);
         settings.zoomArea = zoomArea;
-
-        // read marks
+        // marks
         var marks = [];
         var mk = settings.mk || '';
         if (mk.indexOf(";") >= 0) {
@@ -367,12 +401,14 @@
     // put objects back into parameters
     var packParams = function (data) {
         var settings = data.settings;
+        // zoom area
         if (settings.zoomArea) {
             settings.wx = settings.zoomArea.x;
             settings.wy = settings.zoomArea.y;
             settings.ww = settings.zoomArea.width;
             settings.wh = settings.zoomArea.height;
         }
+        // marks
         if (settings.marks) {
             var ma = [];
             for (var i = 0; i < settings.marks.length; i++) {
@@ -382,14 +418,6 @@
         }
     };
     
-    // returns URL and query string for Scaler
-    var getScalerString = function (settings) {
-        var keys = settings.scalerParamNames;
-        var queryString = getParamString(settings, keys);
-        var url = settings.scalerBaseUrl + '?' + queryString;
-        return url;
-    };
-
     // returns maximum size for scaler img in fullscreen mode
     var getFullscreenImgSize = function($elem) {
         var winH = $(window).height();
@@ -399,11 +427,21 @@
     };
     
     // (re)load the img from a new scaler URL
-    var display = function ($img, settings) {
-        // TODO: update location.href (browser URL) in fullscreen mode
-        var scalerUrl = getScalerString(settings);
-        $img.attr('src', scalerUrl);
-        // TODO: update bird view?
+    var redisplay = function (data) {
+        var settings = data.settings; 
+        if (settings.interactionMode === 'fullscreen') {
+            // update location.href (browser URL) in fullscreen mode
+            var url = getDigilibUrl(data);
+            var history = window.history;
+            if (typeof(history.pushState) === 'function') {
+                console.debug("we could modify history, but we don't...");
+            }
+            window.location = url;
+        } else {
+            // embedded mode -- just change img src
+            var url = getScalerUrl(data);
+            data.$img.attr('src', url);
+        }
     };
 
     // creates HTML structure for digilib in elem
@@ -417,7 +455,8 @@
             settings.dw = imgSize.width;
             settings.dh = imgSize.height;
             $img = $('<img/>');
-            display($img, settings); // TODO: is display the right thing here?
+            var scalerUrl = getScalerUrl(data);
+            $img.attr('src', scalerUrl);
         } else {
             // embedded mode -- try to keep img tag
             $img = $elem.find('img');
@@ -426,7 +465,8 @@
                 $img.detach();
             } else {
                 $img = $('<img/>');
-                display($img, settings); // dito
+                var scalerUrl = getScalerUrl(data);
+                $img.attr('src', scalerUrl);
             }
         }
         // create new html
@@ -435,8 +475,8 @@
         $elem.append($scaler);
         $scaler.append($img);
         $img.addClass('pic');
-        data.img = $img;
-        $img.load(scalerImgLoadedFn(data));
+        data.$img = $img;
+        $img.load(scalerImgLoadedHandler(data));
     };
 
     // creates HTML structure for buttons in elem
@@ -550,10 +590,10 @@
     };
 
     // returns function for load event of scaler img
-    var scalerImgLoadedFn = function (data) {
+    var scalerImgLoadedHandler = function (data) {
         var settings = data.settings;
         var $elem = data.target;
-        var $img = data.img;
+        var $img = data.$img;
         
         return function () {
             console.debug("img loaded! this=", this, " data=", data);
@@ -600,7 +640,7 @@
     var cropFloat = function (x) {
         return parseInt(10000 * x) / 10000;
     };
-
+    
     // hook plugin into jquery
     $.fn.digilib = function(method) {
         if (methods[method]) {
