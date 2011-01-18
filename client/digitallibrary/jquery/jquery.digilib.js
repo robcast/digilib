@@ -51,12 +51,12 @@
             img : "page.png"
             },
         bird : {
-            onclick : "toggleBirdDiv",
+            onclick : "showBirdDiv",
             tooltip : "show bird's eye view",
             img : "birds-eye.png"
             },
         help : {
-            onclick : "toggleAboutDiv",
+            onclick : "showAboutDiv",
             tooltip : "about Digilib",
             img : "help.png"
             },
@@ -139,11 +139,11 @@
         // the root digilib element, for easy retrieval
         'digilibRoot' : null,
         // version of this script
-        'version' : 'jquery.digilib.js 1.0',
+        'version' : 'jquery.digilib.js 0.9',
         // logo url
         'logoUrl' : '../img/digilib-logo-text1.png',
-        // repository url
-        'reposUrl' : 'http://digilib.berlios.de',
+        // homepage url (behind logo)
+        'homeUrl' : 'http://digilib.berlios.de',
         // base URL to Scaler servlet
         'scalerBaseUrl' : 'http://digilib.mpiwg-berlin.mpg.de/digitallibrary/servlet/Scaler',
         // list of Scaler parameters
@@ -236,27 +236,18 @@
                 });
             },
 
-            // event handler: toggles the visibility of the 'about' window 
-            toggleAboutDiv : function() {
+            // show or hide the 'about' window
+            showAboutDiv : function(show) {
                 var $this = $(this);
                 var data = $this.data('digilib');
-                showAboutDivFn(data)();
+                data.settings.isAboutDivVisible = showDiv(data.settings.isAboutDivVisible, data.$aboutDiv, show);
             },
 
             // event handler: toggles the visibility of the bird's eye window 
-            toggleBirdDiv : function () {
-                // TODO: red frame functionality
-                var $elem = $(this); // the clicked button
-                var settings = $elem.data('digilib').settings;
-                var $root = settings.digilibRoot;
-                var $bird = $root.find('div.birdview');
-                settings.isBirdDivVisible = !settings.isBirdDivVisible;
-                if (settings.isBirdDivVisible) {
-                    $bird.fadeIn();
-                } else {
-                    $bird.fadeOut();
-                    };
-                return false;
+            showBirdDiv : function (show) {
+                var $this = $(this);
+                var data = $this.data('digilib');
+                data.settings.isBirdDivVisible = showDiv(data.settings.isBirdDivVisible, data.$birdDiv, show);
             },
             
             // goto given page nr (+/-: relative)
@@ -470,25 +461,24 @@
                 // add attributes and bindings
                 $button.attr('title', actionSettings.tooltip);
                 $button.addClass('button-' + actionName);
-                // let the clicked <a> element know about the digilib context 
-                $a.data('digilib', { 'action' : actionName, 'settings' : settings } );
-                $a.bind('click', function() {
-                    var $elem = $(this);
-                    // get the context data
-                    var data = $elem.data('digilib');
-                    // find the action for the clicked element
-                    var method = data.settings.actions[data.action].onclick; 
+                // create handler for the buttons
+                $a.bind('click', (function () {
+                    // we create a new closure to capture the value of method
+                    var method = actionSettings.onclick;
                     if ($.isArray(method)) {
-                        $elem.digilib.apply(this, method);
-                    } else {
-                        $elem.digilib(method);
+                        // the handler function calls digilib with method and parameters
+                        return function () {
+                            console.debug('click method=', method);
+                            $elem.digilib.apply($elem, method);
                         };
-                    console.log(method);
-                    });
-                // binding mit closure
-                //(function(){ var action = actionSettings.onclick;
-                //    $a.bind('click', function(){ console.log( action )} );
-                //})();
+                    } else {
+                        // the handler function calls digilib with method
+                        return function () {
+                            console.debug('click method=', method);
+                            $elem.digilib(method);
+                        };
+                    }
+                })());
                 $img.attr('src', settings.buttonsImagePath + actionSettings.img);
             };
         }
@@ -517,6 +507,7 @@
         $birdviewDiv.append($birdzoomDiv);
         $birdviewDiv.append($birdImg);
         $birdImg.attr('src', birdUrl);
+        data.$birdDiv = $birdviewDiv;
         };
 
     // creates HTML structure for the about view in elem
@@ -534,33 +525,28 @@
         $aboutDiv.append($content);
         $link.append($logo);
         $logo.attr('src', settings.logoUrl);
-        $link.attr('href', settings.reposUrl);
+        $link.attr('href', settings.homeUrl);
         $content.text('Version: ' + settings.version);
-        // let the element know about the digilib context 
-        $aboutDiv.data('digilib', { 'settings' : settings } );
-        $aboutDiv.bind('click', showAboutDivFn(data, 0));
+        // click hides
+        $aboutDiv.bind('click', function () { showDiv(settings.isAboutDivVisible, $aboutDiv, 0); });
+        data.$aboutDiv = $aboutDiv;
     };
 
-    // returns handler for showing the 'about' window (toggle visibility if show is null)
-    var showAboutDivFn = function (data, show) {
-        var $elem = data.target;
-        var settings = data.settings;
-        // event handler: toggles the visibility of the 'about' window 
-        return function () {
-            var $about = $elem.find('div.about');
-            if (typeof(show) !== 'number') {
-                // toggle visibility
-                settings.isAboutDivVisible = !settings.isAboutDivVisible;
-            } else {
-                // set visibility
-                settings.isAboutDivVisible = show;
-            }
-            if (settings.isAboutDivVisible) {
-                $about.fadeIn();
-            } else {
-                $about.fadeOut();
-            }
-        };
+    // shows some window e.g. 'about' (toggle visibility if show is null)
+    var showDiv = function (isVisible, $div, show) {
+        if (typeof(show) !== 'number') {
+            // toggle visibility
+            isVisible = !isVisible;
+        } else {
+            // set visibility
+            isVisible = show;
+        }
+        if (isVisible) {
+            $div.fadeIn();
+        } else {
+            $div.fadeOut();
+        }
+        return isVisible;
     };
 
     // returns function for load event of scaler img
@@ -585,10 +571,11 @@
             data.imgTrafo = trafo;
             // display marks
             renderMarks(data);
-            //digilib.showBirdDiv(isBirdDivVisible);
+            // show birds eye view
+            //showDiv(settings.isBirdDivVisible);
             //digilib.showArrows(); // show arrow overlays for zoom navigation
             // done -- hide about div
-            showAboutDivFn(data, 0)();
+            settings.isAboutDivVisible = showDiv(null, data.$aboutDiv, 0);
         };
     };
 
