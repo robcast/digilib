@@ -37,6 +37,9 @@
   <!-- number of working threads -->
   <parameter name="worker-threads" value="2" />
 
+  <!-- number of waiting requests in queue -->
+  <parameter name="max-waiting-threads" value="20" />
+
   <!-- Restrict access to authorized users.
        User authentication and roles are provided by the servlet container 
        (see tomcat-users.xml).
@@ -60,13 +63,25 @@
   <parameter name="log-config-file" value="log4j-config.xml"/>
 
   <!-- location for PDF files while still in progress -->
-  <parameter name="pdf-temp-dir" value="/tmp/pdf_tmp/" />
+  <parameter name="pdf-temp-dir" value="/tmp/pdf_tmp" />
   
   <!-- location for PDF files upon completion -->
-  <parameter name="pdf-cache-dir" value="/tmp/pdf_cache/"/>
+  <parameter name="pdf-cache-dir" value="/tmp/pdf_cache"/>
+
+  <!-- number of PDF generation threads -->
+  <parameter name="pdf-worker-threads" value="1" />
+
+  <!-- number of waiting PDF requests in queue -->
+  <parameter name="pdf-max-waiting-threads" value="20" />
+
+  <!-- number of image generation threads for PDF -->
+  <parameter name="pdf-image-worker-threads" value="1" />
+
+  <!-- number of waiting image requests for PDF in queue -->
+  <parameter name="pdf-image-max-waiting-threads" value="10" />
 
   <!-- logo for PDFs -->
-  <parameter name="pdf-logo" value="http://www.mpiwg-berlin.mpg.de/de/images/logo.png" />
+  <parameter name="pdf-logo" value="http://digilib.berlios.de/images/digilib-logo-big.png" />
 
   
 </digilib-config>

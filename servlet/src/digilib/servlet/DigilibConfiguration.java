@@ -172,8 +172,6 @@ public class DigilibConfiguration extends ParameterMap {
         newParameter("pdf-temp-dir", "pdf_temp", null, 'f');
         // PDF generation cache directory
         newParameter("pdf-cache-dir", "pdf_cache", null, 'f');
-        // PDF generation cache directory
-        newParameter("pdf-cache-dir", "pdf_cache", null, 'f');
 	}
 
 	/**
