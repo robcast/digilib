@@ -164,6 +164,7 @@ if (typeof(console) === 'undefined') {
         'wx' : 0.0,
         'wy' : 0.0,
         'ws' : 1.0,
+        'pn' : 1,
         // mode of operation. 
         // fullscreen: takes parameters from page URL, keeps state in page URL
         // embedded: takes parameters from Javascript options, keeps state inside object 
@@ -288,16 +289,18 @@ if (typeof(console) === 'undefined') {
 
     // sets a key to a value (relative values with +/- if relative=true)
     var setNumValue = function(settings, key, value) {
-        // TODO: type and error checking
-        if (settings[key] == null) return null;
         var sign = value.substring(0,1);
         if (sign === '+' || sign === '-') {
-  		    settings[key] = parseFloat(settings[key]) + parseFloat(value);
+            if (settings[key] == null) {
+                // this doesn't make much sense but still...
+                settings[key] = 0;
+            }
+            settings[key] = parseFloat(settings[key]) + parseFloat(value);
         } else {
     		settings[key] = value;
-    	   }
+        }
     	return settings[key];
-        };
+    };
     	
     // returns parameters from page url
     var parseQueryParams = function() {
@@ -520,7 +523,7 @@ if (typeof(console) === 'undefined') {
                     }
                 })());
                 $img.attr('src', settings.buttonsImagePath + actionSettings.img);
-            };
+            }
         }
         return $buttonsDiv;
     };
@@ -638,7 +641,7 @@ if (typeof(console) === 'undefined') {
     
     // auxiliary function to crop senseless precision
     var cropFloat = function (x) {
-        return parseInt(10000 * x) / 10000;
+        return parseInt(10000 * x, 10) / 10000;
     };
     
     // hook plugin into jquery
