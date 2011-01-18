@@ -213,6 +213,7 @@
                         // store in data element
                         $elem.data('digilib', data);
                     }
+                    unpackParams(data);
                     // create HTML structure
                     setupScalerDiv(data);
                     setupButtons(data, 'actionsStandard');
@@ -365,14 +366,17 @@
 
         // read marks
         var marks = [];
-        if (query.indexOf(";") >= 0) {
-            var pa = query.split(";");    // old format with ";"
+        var mk = settings.mk || '';
+        if (mk.indexOf(";") >= 0) {
+            var pa = mk.split(";");    // old format with ";"
         } else {
-            var pa = query.split(",");    // new format
+            var pa = mk.split(",");    // new format
         }
         for (var i = 0; i < pa.length ; i++) {
             var pos = pa[i].split("/");
-            if (pos.length > 1) marks.push(geom.position(pos[0], pos[1]));
+            if (pos.length > 1) {
+                marks.push(geom.position(pos[0], pos[1]));
+            }
         }
         settings.marks = marks;
     };    
@@ -549,12 +553,12 @@
         };
 
     // returns function for load event of scaler img
-    var scalerImgLoadedFn = function(data) {
+    var scalerImgLoadedFn = function (data) {
         var settings = data.settings;
         var $elem = data.target;
         var $img = data.img;
         
-        return function() {
+        return function () {
             console.debug("img loaded! this=", this, " data=", data);
             var area = settings.zoomArea;
             // create Transform from current area and picsize
@@ -569,11 +573,28 @@
             trafo.concat(trafo.getTranslation(picrect));
             data.imgTrafo = trafo;
             // display marks
-            //digilib.renderMarks();
+            renderMarks(data);
             //digilib.showBirdDiv(isBirdDivVisible);
             //digilib.showArrows(); // show arrow overlays for zoom navigation
 
         };
+    };
+
+    // place marks on the image
+    var renderMarks = function (data) {
+        var $elem = data.target;
+        var marks = data.settings.marks;
+        for (var i = 0; i < marks.length; i++) {
+            var mark = marks[i];
+            if (data.settings.zoomArea.containsPosition(mark)) {
+                var mpos = data.imgTrafo.transform(mark);
+                // create mark
+                var html = '<div class="mark">'+(i+1)+'</div>';
+                var $mark = $(html);
+                $elem.append($mark);
+                $mark.offset({ left : mpos.x, top : mpos.y});
+            }
+        }
     };
     
     // auxiliary function to crop senseless precision
