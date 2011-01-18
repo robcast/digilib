@@ -191,7 +191,7 @@
                 var isFullscreen = settings.interactionMode === 'fullscreen'; 
                 if (isFullscreen) {
                     queryParams = parseQueryParams();
-                    };
+                    }
                 return this.each(function() {
                     var $elem = $(this);
                     var data = $elem.data('digilib');
@@ -203,7 +203,7 @@
                             elemSettings = $.extend({}, settings, queryParams);
                         } else {
                             elemSettings = $.extend({}, settings, parseImgParams($elem));
-                        };
+                        }
                         // store $(this) element in the settings
                         elemSettings.digilibRoot = $elem;
                         data =  {
@@ -237,18 +237,10 @@
             },
 
             // event handler: toggles the visibility of the 'about' window 
-            toggleAboutDiv : function () {
-                var $elem = $(this); // the clicked button
-                var settings = $elem.data('digilib').settings;
-                var $root = settings.digilibRoot;
-                var $about = $root.find('div.about');
-                settings.isAboutDivVisible = !settings.isAboutDivVisible;
-                if (settings.isAboutDivVisible) {
-                    $about.fadeIn();
-                } else {
-                    $about.fadeOut();
-                    };
-                return false;
+            toggleAboutDiv : function() {
+                var $this = $(this);
+                var data = $this.data('digilib');
+                showAboutDivFn(data)();
             },
 
             // event handler: toggles the visibility of the bird's eye window 
@@ -278,14 +270,14 @@
                     alert("no such page (page number too low)");
                     settings.pn = oldpn;
                     return false;
-                    };
+                    }
                 if (settings.pt) {
                     if (pn > settings.pt) {
                         alert("no such page (page number too high)");
                         settings.pn = oldpn;
                         return false;
                         }
-                    };
+                    }
                 // TODO: keepMarks
                 var $root = settings.digilibRoot;
                 var $img = $root.find('img.pic');
@@ -335,8 +327,8 @@
             var pair = pairs[i].split("=");
             if (pair.length === 2) {
                 params[pair[0]] = pair[1];
-                };
-            };
+                }
+            }
         return params;
         };
     
@@ -352,7 +344,7 @@
                 latter = true;
                 // add parm=val
                 paramString += key + '=' + settings[key];
-                };
+                }
         }
         return paramString;
     };
@@ -546,11 +538,30 @@
         $content.text('Version: ' + settings.version);
         // let the element know about the digilib context 
         $aboutDiv.data('digilib', { 'settings' : settings } );
-        $aboutDiv.bind('click', function() {
-            console.log($(this));
-            $(this).digilib('toggleAboutDiv');
-            });
+        $aboutDiv.bind('click', showAboutDivFn(data, 0));
+    };
+
+    // returns handler for showing the 'about' window (toggle visibility if show is null)
+    var showAboutDivFn = function (data, show) {
+        var $elem = data.target;
+        var settings = data.settings;
+        // event handler: toggles the visibility of the 'about' window 
+        return function () {
+            var $about = $elem.find('div.about');
+            if (typeof(show) !== 'number') {
+                // toggle visibility
+                settings.isAboutDivVisible = !settings.isAboutDivVisible;
+            } else {
+                // set visibility
+                settings.isAboutDivVisible = show;
+            }
+            if (settings.isAboutDivVisible) {
+                $about.fadeIn();
+            } else {
+                $about.fadeOut();
+            }
         };
+    };
 
     // returns function for load event of scaler img
     var scalerImgLoadedFn = function (data) {
@@ -576,7 +587,8 @@
             renderMarks(data);
             //digilib.showBirdDiv(isBirdDivVisible);
             //digilib.showArrows(); // show arrow overlays for zoom navigation
-
+            // done -- hide about div
+            showAboutDivFn(data, 0)();
         };
     };
 
@@ -605,11 +617,13 @@
     // hook plugin into jquery
     $.fn.digilib = function(method) {
         if (methods[method]) {
+            // call method on this with the remaining arguments
             return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
         } else if (typeof(method) === 'object' || !method) {
+            // call init on this
             return methods.init.apply(this, arguments);
         } else {
-            $.error( 'Method ' +  method + ' does not exist on jQuery.digilib' );
+            $.error( 'Method ' + method + ' does not exist on jQuery.digilib' );
         }
     };
     
