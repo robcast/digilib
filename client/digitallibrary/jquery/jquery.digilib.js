@@ -354,8 +354,47 @@
                 };
         }
         return paramString;
-        };
+    };
 
+    // processes some parameters into objects and stuff     
+    var unpackParams = function (data) {
+        var settings = data.settings;
+        // read zoom area
+        var zoomArea = geom.rectangle(settings.wx, settings.wy, settings.ww, settings.wh);
+        settings.zoomArea = zoomArea;
+
+        // read marks
+        var marks = [];
+        if (query.indexOf(";") >= 0) {
+            var pa = query.split(";");    // old format with ";"
+        } else {
+            var pa = query.split(",");    // new format
+        }
+        for (var i = 0; i < pa.length ; i++) {
+            var pos = pa[i].split("/");
+            if (pos.length > 1) marks.push(geom.position(pos[0], pos[1]));
+        }
+        settings.marks = marks;
+    };    
+         
+    // put objects back into parameters
+    var packParams = function (data) {
+        var settings = data.settings;
+        if (settings.zoomArea) {
+            settings.wx = settings.zoomArea.x;
+            settings.wy = settings.zoomArea.y;
+            settings.ww = settings.zoomArea.width;
+            settings.wh = settings.zoomArea.height;
+        }
+        if (settings.marks) {
+            var ma = [];
+            for (var i = 0; i < settings.marks.length; i++) {
+                ma.push(cropFloat(settings.marks[i].x) + "/" + cropFloat(settings.marks[i].y));
+            }
+            settings.mk = ma.join(",");
+        }
+    };
+    
     // returns URL and query string for Scaler
     var getScalerString = function (settings) {
         var keys = settings.scalerParamNames;
@@ -517,8 +556,7 @@
         
         return function() {
             console.debug("img loaded! this=", this, " data=", data);
-            var area = geom.rectangle(settings.wx, settings.wy, settings.ww, settings.wh);
-            settings.zoomArea = area;
+            var area = settings.zoomArea;
             // create Transform from current area and picsize
             var picpos = $img.offset();
             var picrect = geom.rectangle(picpos.left, picpos.top, $img.width(), $img.height());
@@ -537,6 +575,12 @@
 
         };
     };
+    
+    // auxiliary function to crop senseless precision
+    var cropFloat = function (x) {
+        return parseInt(10000 * x) / 10000;
+    };
+
     // hook plugin into jquery
     $.fn.digilib = function(method) {
         if (methods[method]) {
