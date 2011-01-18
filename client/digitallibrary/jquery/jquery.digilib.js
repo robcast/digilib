@@ -391,7 +391,7 @@
             settings.dw = imgSize.width;
             settings.dh = imgSize.height;
             $img = $('<img/>');
-            display($img, settings);
+            display($img, settings); // TODO: is display the right thing here?
         } else {
             // embedded mode -- try to keep img tag
             $img = $elem.find('img');
@@ -400,7 +400,7 @@
                 $img.detach();
             } else {
                 $img = $('<img/>');
-                display($img, settings);
+                display($img, settings); // dito
             }
         }
         // create new html
