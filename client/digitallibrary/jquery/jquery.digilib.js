@@ -20,12 +20,12 @@ if (typeof(console) === 'undefined') {
             img : "reference.png"
             },
         zoomin : {
-            onclick : "javascript:dl.zoomBy(1.4)",
+            onclick : ["zoomBy", 1.4],
             tooltip : "zoom in",
             img : "zoom-in.png"
             },
         zoomout : {
-            onclick : "javascript:zoomBy(0.7)",
+            onclick : ["zoomBy", 0.7],
             tooltip : "zoom out",
             img : "zoom-out.png"
             },
@@ -159,15 +159,26 @@ if (typeof(console) === 'undefined') {
         'scalerParamNames' : ['fn','pn','dw','dh','ww','wh','wx','wy','ws','mo',
                               'rot','cont','brgt','rgbm','rgba','ddpi','ddpix','ddpiy'],
         // Scaler parameter defaults
+        'pn' : 1,
         'ww' : 1.0,
         'wh' : 1.0,
         'wx' : 0.0,
         'wy' : 0.0,
         'ws' : 1.0,
-        'pn' : 1,
-        // mode of operation. 
-        // fullscreen: takes parameters from page URL, keeps state in page URL
-        // embedded: takes parameters from Javascript options, keeps state inside object 
+        'mo' : '',
+        'rot' : 0,
+        'cont' : 0,
+        'brgt' : 0,
+        'rgbm' : '0/0/0',
+        'rgba' : '0/0/0',
+        'ddpi' : null,
+        'ddpix' : null,
+        'ddpiy' : null,
+        // digilib defaults
+        'mk' : '',
+        // mode of operation: 
+        // fullscreen = take parameters from page URL, keep state in page URL
+        // embedded = take parameters from Javascript options, keep state inside object 
         'interactionMode' : 'fullscreen',
         // actions
         'actions' : actions,
@@ -188,6 +199,8 @@ if (typeof(console) === 'undefined') {
  
     // affine geometry classes
     var geom = dlGeometry();
+    
+    var MAX_ZOOMAREA = geom.rectangle(0, 0, 1, 1);
     
     var methods = {
             // digilib initialization
@@ -266,7 +279,7 @@ if (typeof(console) === 'undefined') {
             
             // goto given page nr (+/-: relative)
             gotoPage : function (pageNr) {
-                var $elem = $(this); // the clicked button
+                var $elem = $(this);
                 var data = $elem.data('digilib');
                 var settings = data.settings;
                 var oldpn = settings.pn;
@@ -284,11 +297,18 @@ if (typeof(console) === 'undefined') {
                         return false;
                         }
                     }
-                // add pn to param list and remove mk and others(?)
-                data.queryParams.pn = pn;
-                delete data.queryParams.mk;
+                // add pn to param list and reset mk and others(?)
+                data.marks = [];
+                data.zoomArea = MAX_ZOOMAREA;
                 // then reload
-                redisplay(data);
+                redisplay(data, ['pn']);
+            },
+            
+            // zoom by a given factor
+            zoomBy : function (factor) {
+                var $elem = $(this);
+                var data = $elem.data('digilib');
+                zoomBy(data, factor);
             }
     };
 
@@ -342,19 +362,19 @@ if (typeof(console) === 'undefined') {
         return params;
     };
     
-    // returns a query string from key names from a parameter hash
-    var getParamString = function (settings, keys) {
+    // returns a query string from key names from a parameter hash (ignoring if the same value is in defaults)
+    var getParamString = function (settings, keys, defaults) {
         var paramString = '';
         var latter = false;
         for (i = 0; i < keys.length; ++i) {
             var key = keys[i];
-            if (settings[key]) {
+            if ((settings[key] != null) && ((defaults == null) || (settings[key] !== defaults[key]))) {
                 // first param gets no '&'
                 paramString += latter ? '&' : '';
                 latter = true;
                 // add parm=val
                 paramString += key + '=' + settings[key];
-                }
+            }
         }
         return paramString;
     };
@@ -363,20 +383,32 @@ if (typeof(console) === 'undefined') {
     var getScalerUrl = function (data) {
         var settings = data.settings;
         var keys = settings.scalerParamNames;
-        var queryString = getParamString(settings, keys);
+        var queryString = getParamString(settings, keys, defaults);
         var url = settings.scalerBaseUrl + '?' + queryString;
         return url;
     };
 
     // returns URL and query string for current digilib
-    var getDigilibUrl = function (data) {
+    var getDigilibUrl = function (data, changedParams) {
+        packParams(data);
         var settings = data.settings;
+        var queryParams = data.queryParams;
+        // add changedParams
+        if (changedParams != null) {
+            for (var i=0; i < changedParams.length; ++i) {
+                var k = changedParams[i];
+                if (queryParams[k] == null) {
+                    // add param (value doesn't matter)
+                    queryParams[k] = k;
+                }
+            }
+        }
         // make list from queryParams keys
         var keys = [];
         for (var k in data.queryParams) {
             keys.push(k);
         }
-        var queryString = getParamString(settings, keys);
+        var queryString = getParamString(settings, keys, defaults);
         var url = window.location.toString();
         var pos = url.indexOf('?');
         var baseUrl = url.substring(0, pos);
@@ -389,7 +421,7 @@ if (typeof(console) === 'undefined') {
         var settings = data.settings;
         // zoom area
         var zoomArea = geom.rectangle(settings.wx, settings.wy, settings.ww, settings.wh);
-        settings.zoomArea = zoomArea;
+        data.zoomArea = zoomArea;
         // marks
         var marks = [];
         var mk = settings.mk || '';
@@ -404,24 +436,24 @@ if (typeof(console) === 'undefined') {
                 marks.push(geom.position(pos[0], pos[1]));
             }
         }
-        settings.marks = marks;
+        data.marks = marks;
     };    
          
     // put objects back into parameters
     var packParams = function (data) {
         var settings = data.settings;
         // zoom area
-        if (settings.zoomArea) {
-            settings.wx = settings.zoomArea.x;
-            settings.wy = settings.zoomArea.y;
-            settings.ww = settings.zoomArea.width;
-            settings.wh = settings.zoomArea.height;
+        if (data.zoomArea) {
+            settings.wx = data.zoomArea.x;
+            settings.wy = data.zoomArea.y;
+            settings.ww = data.zoomArea.width;
+            settings.wh = data.zoomArea.height;
         }
         // marks
-        if (settings.marks) {
+        if (data.marks) {
             var ma = [];
-            for (var i = 0; i < settings.marks.length; i++) {
-                ma.push(cropFloat(settings.marks[i].x) + "/" + cropFloat(settings.marks[i].y));
+            for (var i = 0; i < data.marks.length; i++) {
+                ma.push(cropFloat(data.marks[i].x) + "/" + cropFloat(data.marks[i].y));
             }
             settings.mk = ma.join(",");
         }
@@ -436,11 +468,11 @@ if (typeof(console) === 'undefined') {
     };
     
     // (re)load the img from a new scaler URL
-    var redisplay = function (data) {
+    var redisplay = function (data, changedParams) {
         var settings = data.settings; 
         if (settings.interactionMode === 'fullscreen') {
             // update location.href (browser URL) in fullscreen mode
-            var url = getDigilibUrl(data);
+            var url = getDigilibUrl(data, changedParams);
             var history = window.history;
             if (typeof(history.pushState) === 'function') {
                 console.debug("we could modify history, but we don't...");
@@ -605,7 +637,7 @@ if (typeof(console) === 'undefined') {
         
         return function () {
             console.debug("img loaded! this=", this, " data=", data);
-            var area = settings.zoomArea;
+            var area = data.zoomArea;
             // create Transform from current area and picsize
             var picpos = $img.offset();
             var picrect = geom.rectangle(picpos.left, picpos.top, $img.width(), $img.height());
@@ -619,8 +651,6 @@ if (typeof(console) === 'undefined') {
             data.imgTrafo = trafo;
             // display marks
             renderMarks(data);
-            // show birds eye view
-            //showDiv(settings.isBirdDivVisible);
             //digilib.showArrows(); // show arrow overlays for zoom navigation
             // done -- hide about div --- 
             // --- why? This only leads to suprise effects when displayed programmatically
@@ -631,10 +661,10 @@ if (typeof(console) === 'undefined') {
     // place marks on the image
     var renderMarks = function (data) {
         var $elem = data.target;
-        var marks = data.settings.marks;
+        var marks = data.marks;
         for (var i = 0; i < marks.length; i++) {
             var mark = marks[i];
-            if (data.settings.zoomArea.containsPosition(mark)) {
+            if (data.zoomArea.containsPosition(mark)) {
                 var mpos = data.imgTrafo.transform(mark);
                 // create mark
                 var html = '<div class="mark">'+(i+1)+'</div>';
@@ -645,6 +675,21 @@ if (typeof(console) === 'undefined') {
         }
     };
     
+    var zoomBy = function(data, factor) {
+        // zooms by the given factor
+        var area = data.zoomArea;
+        var newarea = area.copy();
+        // scale
+        newarea.width /= factor;
+        newarea.height /= factor;
+        // and recenter
+        newarea.x -= 0.5 * (newarea.width - area.width);
+        newarea.y -= 0.5 * (newarea.height - area.height);
+        newarea = MAX_ZOOMAREA.fit(newarea);
+        data.zoomArea = newarea;
+        redisplay(data, ['wx', 'wy', 'ww', 'wh']);
+    };
+
     // auxiliary function (from Douglas Crockford, A.10)
     var isNumber = function isNumber(value) {
             return typeof value === 'number' && isFinite(value);
