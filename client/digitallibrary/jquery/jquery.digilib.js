@@ -551,8 +551,11 @@ if (typeof(console) === 'undefined') {
         $birdviewDiv.append($birdzoomDiv);
         $birdviewDiv.append($birdImg);
         $birdImg.attr('src', birdUrl);
+        if (data.settings.isBirdDivVisible) {
+            $birdviewDiv.fadeIn();
+        }
         data.$birdDiv = $birdviewDiv;
-        };
+    };
 
     // creates HTML structure for the about view in elem
     var setupAboutDiv = function (data) {
