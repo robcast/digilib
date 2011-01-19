@@ -226,8 +226,6 @@ if (typeof(console) === 'undefined') {
                     // create HTML structure
                     setupScalerDiv(data);
                     setupButtons(data, 'actionsStandard');
-                    // bird's eye view creation - TODO: could be deferred?
-                    setupBirdviewDiv(data);
                     // about window creation - TODO: could be deferred? restrict to only one item?
                     setupAboutDiv(data);
                 });
@@ -256,6 +254,10 @@ if (typeof(console) === 'undefined') {
             showBirdDiv : function (show) {
                 var $elem = $(this);
                 var data = $elem.data('digilib');
+                if (data.$birdDiv == null) {
+                    // no bird div -> create
+                    setupBirdDiv(data);
+                }
                 data.settings.isBirdDivVisible = showDiv(data.settings.isBirdDivVisible, data.$birdDiv, show);
             },
             
@@ -529,7 +531,7 @@ if (typeof(console) === 'undefined') {
     };
 
     // creates HTML structure for the bird's eye view in elem
-    var setupBirdviewDiv = function (data) {
+    var setupBirdDiv = function (data) {
         var $elem = data.target;
         var settings = data.settings;
         // use only the relevant parameters
