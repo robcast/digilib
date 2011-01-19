@@ -180,8 +180,7 @@ if (typeof(console) === 'undefined') {
         // is birdView shown?
         'isBirdDivVisible' : false,
         // dimensions of bird's eye window
-        'birdMaxX' : 200,
-        'birdMaxY' : 200,
+        'birdDivOptions' : {'dw' : 200, 'dh' : 200},
         // is the "about" window shown?
         'isAboutDivVisible' : false
 
@@ -226,6 +225,10 @@ if (typeof(console) === 'undefined') {
                     // create HTML structure
                     setupScalerDiv(data);
                     setupButtons(data, 'actionsStandard');
+                    // bird's eye view creation
+                    if (settings.isBirdDivVisible) {
+                        setupBirdDiv(data);                        
+                    }
                     // about window creation - TODO: could be deferred? restrict to only one item?
                     setupAboutDiv(data);
                 });
@@ -536,11 +539,7 @@ if (typeof(console) === 'undefined') {
         var settings = data.settings;
         // use only the relevant parameters
         var keys = ['fn','pn','dw','dh'];
-        var birdDimensions = {
-            'dw' : settings.birdMaxX,
-            'dh' : settings.birdMaxY
-            };
-        var birdSettings = $.extend({}, settings, birdDimensions);
+        var birdSettings = $.extend({}, settings, settings.birdDivOptions);
         var birdUrl = settings.scalerBaseUrl + '?' + getParamString(birdSettings, keys);
         // the bird's eye div
         var $birdviewDiv = $('<div class="birdview" style="display:none"/>');
