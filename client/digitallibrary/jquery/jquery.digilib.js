@@ -595,7 +595,9 @@ if (typeof(console) === 'undefined') {
         $link.attr('href', settings.homeUrl);
         $content.text('Version: ' + settings.version);
         // click hides
-        $aboutDiv.bind('click', function () { showDiv(settings.isAboutDivVisible, $aboutDiv, 0); });
+        $aboutDiv.bind('click', function () { 
+            settings.isAboutDivVisible = showDiv(settings.isAboutDivVisible, $aboutDiv, 0);
+            });
         data.$aboutDiv = $aboutDiv;
     };
 
