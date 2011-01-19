@@ -429,7 +429,10 @@ public class ImageJobDescription extends ParameterMap {
 		float[] paramRGBM = null;//{0f,0f,0f};
 		Parameter p = params.get("rgbm");
 		if (p.hasValue() && (!p.getAsString().equals("0/0/0"))) {
-			return p.parseAsFloatArray("/");
+			paramRGBM = p.parseAsFloatArray("/");
+			if ((paramRGBM == null) || (paramRGBM.length != 3)) {
+			    return null;
+			}
 		}	
 		return paramRGBM;
 	}
@@ -439,6 +442,9 @@ public class ImageJobDescription extends ParameterMap {
 		Parameter p = params.get("rgba");
 		if (p.hasValue() && (!p.getAsString().equals("0/0/0"))) {
 			paramRGBA = p.parseAsFloatArray("/");
+            if ((paramRGBA == null) || (paramRGBA.length != 3)) {
+                return null;
+            }
 		}
 		return paramRGBA;
 	}
