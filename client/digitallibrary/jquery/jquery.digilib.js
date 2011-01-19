@@ -227,7 +227,7 @@ if (typeof(console) === 'undefined') {
                     setupButtons(data, 'actionsStandard');
                     // bird's eye view creation
                     if (settings.isBirdDivVisible) {
-                        setupBirdDiv(data);                        
+                        setupBirdDiv(data);
                     }
                     // about window creation - TODO: could be deferred? restrict to only one item?
                     setupAboutDiv(data);
@@ -294,6 +294,7 @@ if (typeof(console) === 'undefined') {
 
     // sets a key to a value (relative values with +/- if relative=true)
     var setNumValue = function(settings, key, value) {
+        if (isNumber(value)) return settings[key] = value; 
         var sign = value.substring(0,1);
         if (sign === '+' || sign === '-') {
             if (settings[key] == null) {
@@ -621,8 +622,9 @@ if (typeof(console) === 'undefined') {
             // show birds eye view
             //showDiv(settings.isBirdDivVisible);
             //digilib.showArrows(); // show arrow overlays for zoom navigation
-            // done -- hide about div
-            settings.isAboutDivVisible = showDiv(null, data.$aboutDiv, 0);
+            // done -- hide about div --- 
+            // --- why? This only leads to suprise effects when displayed programmatically
+            // settings.isAboutDivVisible = showDiv(null, data.$aboutDiv, 0);
         };
     };
 
@@ -641,6 +643,11 @@ if (typeof(console) === 'undefined') {
                 $mark.offset({ left : mpos.x, top : mpos.y});
             }
         }
+    };
+    
+    // auxiliary function (from Douglas Crockford, A.10)
+    var isNumber = function isNumber(value) {
+            return typeof value === 'number' && isFinite(value);
     };
     
     // auxiliary function to crop senseless precision
