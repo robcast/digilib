@@ -601,7 +601,7 @@ if (typeof(console) === 'undefined') {
 
     // shows some window e.g. 'about' (toggle visibility if show is null)
     var showDiv = function (isVisible, $div, show) {
-        if (typeof(show) !== 'number') {
+        if (show == null) {
             // toggle visibility
             isVisible = !isVisible;
         } else {
