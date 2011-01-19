@@ -174,7 +174,10 @@ if (typeof(console) === 'undefined') {
         'ddpi' : null,
         'ddpix' : null,
         'ddpiy' : null,
-        // digilib defaults
+        // list of digilib parameters
+        'digilibParamNames' : ['fn','pn','ww','wh','wx','wy','ws','mo','rot','cont','brgt','rgbm','rgba',
+                               'mk'],
+        // digilib parameter defaults
         'mk' : '',
         // mode of operation: 
         // fullscreen = take parameters from page URL, keep state in page URL
@@ -297,11 +300,11 @@ if (typeof(console) === 'undefined') {
                         return false;
                         }
                     }
-                // add pn to param list and reset mk and others(?)
+                // reset mk and others(?)
                 data.marks = [];
                 data.zoomArea = MAX_ZOOMAREA;
                 // then reload
-                redisplay(data, ['pn']);
+                redisplay(data);
             },
             
             // zoom by a given factor
@@ -389,26 +392,10 @@ if (typeof(console) === 'undefined') {
     };
 
     // returns URL and query string for current digilib
-    var getDigilibUrl = function (data, changedParams) {
+    var getDigilibUrl = function (data) {
         packParams(data);
         var settings = data.settings;
-        var queryParams = data.queryParams;
-        // add changedParams
-        if (changedParams != null) {
-            for (var i=0; i < changedParams.length; ++i) {
-                var k = changedParams[i];
-                if (queryParams[k] == null) {
-                    // add param (value doesn't matter)
-                    queryParams[k] = k;
-                }
-            }
-        }
-        // make list from queryParams keys
-        var keys = [];
-        for (var k in data.queryParams) {
-            keys.push(k);
-        }
-        var queryString = getParamString(settings, keys, defaults);
+        var queryString = getParamString(settings, settings.digilibParamNames, defaults);
         var url = window.location.toString();
         var pos = url.indexOf('?');
         var baseUrl = url.substring(0, pos);
@@ -468,11 +455,11 @@ if (typeof(console) === 'undefined') {
     };
     
     // (re)load the img from a new scaler URL
-    var redisplay = function (data, changedParams) {
+    var redisplay = function (data) {
         var settings = data.settings; 
         if (settings.interactionMode === 'fullscreen') {
             // update location.href (browser URL) in fullscreen mode
-            var url = getDigilibUrl(data, changedParams);
+            var url = getDigilibUrl(data);
             var history = window.history;
             if (typeof(history.pushState) === 'function') {
                 console.debug("we could modify history, but we don't...");
@@ -687,7 +674,7 @@ if (typeof(console) === 'undefined') {
         newarea.y -= 0.5 * (newarea.height - area.height);
         newarea = MAX_ZOOMAREA.fit(newarea);
         data.zoomArea = newarea;
-        redisplay(data, ['wx', 'wy', 'ww', 'wh']);
+        redisplay(data);
     };
 
     // auxiliary function (from Douglas Crockford, A.10)
