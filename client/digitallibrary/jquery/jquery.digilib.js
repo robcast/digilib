@@ -524,6 +524,7 @@ if (typeof(console) === 'undefined') {
         $elem.append($scaler);
         $scaler.append($img);
         $img.addClass('pic');
+        data.$scaler = $scaler;
         data.$img = $img;
         $img.load(scalerImgLoadedHandler(data));
     };
@@ -551,20 +552,22 @@ if (typeof(console) === 'undefined') {
                 $button.attr('title', actionSettings.tooltip);
                 $button.addClass('button-' + actionName);
                 // create handler for the buttons
-                $a.bind('click', (function () {
+                $a.bind('click.digilib', (function () {
                     // we create a new closure to capture the value of method
                     var method = actionSettings.onclick;
                     if ($.isArray(method)) {
                         // the handler function calls digilib with method and parameters
-                        return function () {
-                            console.debug('click method=', method);
+                        return function (evt) {
+                            console.debug('click method=', method, ' evt=', evt);
                             $elem.digilib.apply($elem, method);
+                            return false;
                         };
                     } else {
                         // the handler function calls digilib with method
-                        return function () {
-                            console.debug('click method=', method);
+                        return function (evt) {
+                            console.debug('click method=', method, ' evt=', evt);
                             $elem.digilib(method);
+                            return false;
                         };
                     }
                 })());
@@ -616,9 +619,10 @@ if (typeof(console) === 'undefined') {
         $link.attr('href', settings.homeUrl);
         $content.text('Version: ' + settings.version);
         // click hides
-        $aboutDiv.bind('click', function () { 
+        $aboutDiv.bind('click.digilib', function () { 
             settings.isAboutDivVisible = showDiv(settings.isAboutDivVisible, $aboutDiv, 0);
-            });
+            return false;
+        });
         data.$aboutDiv = $aboutDiv;
     };
 
@@ -672,6 +676,7 @@ if (typeof(console) === 'undefined') {
     var renderMarks = function (data) {
         var $elem = data.$elem;
         var marks = data.marks;
+        // TODO: clear marks first(?)
         for (var i = 0; i < marks.length; i++) {
             var mark = marks[i];
             if (data.zoomArea.containsPosition(mark)) {
@@ -702,18 +707,17 @@ if (typeof(console) === 'undefined') {
 
     // add a mark where clicked
     var setMark = function (data) {
-        var $div = data.$elem;
-        var $img = data.$img;
+        var $scaler = data.$scaler;
         console.debug("setmark");
         // start event capturing
-        $img.one('click.digilib', function (evt) {
+        $scaler.one('click.digilib', function (evt) {
             // event handler adding a new mark
             console.debug("setmark.click evt=",evt);
             var mpos = geom.position(evt.pageX, evt.pageY);
             var pos = data.imgTrafo.invtransform(mpos);
             data.marks.push(pos);
             redisplay(data);
-            //return stopEvent(evt);
+            return false; // do we even get here?
         });
     };
 
