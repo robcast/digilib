@@ -30,7 +30,7 @@ if (typeof(console) === 'undefined') {
             img : "zoom-out.png"
             },
         zoomarea : {
-            onclick : "javascript:zoomArea()",
+            onclick : "zoomArea",
             tooltip : "zoom area",
             img : "zoom-area.png"
             },
@@ -205,7 +205,7 @@ if (typeof(console) === 'undefined') {
     var MAX_ZOOMAREA = geom.rectangle(0, 0, 1, 1);
 
     var actions = {
-            // digilib initialization
+            // init: digilib initialization
             init : function(options) {
                 // settings for this digilib instance are merged from defaults and options
                 var settings = $.extend({}, defaults, options);
@@ -261,12 +261,11 @@ if (typeof(console) === 'undefined') {
                 });
             },
 
-            // clean up digilib
+            // destroy: clean up digilib
             destroy : function(data) {
                 return this.each(function(){
                     var $elem = $(this);
-                    // Namespacing FTW
-                    $(window).unbind('.digilib'); // unbinds all digilibs(?)
+                    $(window).unbind('.digilib'); // unbind all digilibs(?)
                     data.digilib.remove();
                     $elem.removeData('digilib');
                 });
@@ -316,6 +315,11 @@ if (typeof(console) === 'undefined') {
             // zoom by a given factor
             zoomBy : function (data, factor) {
                 zoomBy(data, factor);
+            },
+
+            // zoom interactively
+            zoomArea : function (data) {
+                zoomArea(data);
             },
 
             // zoom out to full page
@@ -736,8 +740,7 @@ if (typeof(console) === 'undefined') {
             console.debug("img loaded! this=", this, " data=", data);
             var area = data.zoomArea;
             // create Transform from current area and picsize
-            var picpos = $img.offset();
-            var picrect = geom.rectangle(picpos.left, picpos.top, $img.width(), $img.height());
+            var picrect = geom.rectangle($img);
             var trafo = geom.transform();
             // subtract area offset and size
             trafo.concat(trafo.getTranslation(geom.position(- area.x, - area.y)));
@@ -769,7 +772,7 @@ if (typeof(console) === 'undefined') {
                 var html = '<div class="mark">'+(i+1)+'</div>';
                 var $mark = $(html);
                 $elem.append($mark);
-                $mark.offset({ left : mpos.x, top : mpos.y});
+                $mark.offset({left : mpos.x, top : mpos.y});
             }
         }
     };
@@ -803,6 +806,77 @@ if (typeof(console) === 'undefined') {
             redisplay(data);
             return false; // do we even get here?
         });
+    };
+    
+    var zoomArea = function(data) {
+        $elem = data.$elem;
+        $scaler = data.$scaler;
+        var pt1, pt2;
+        var $zoomDiv = $('<div class="zoomrect" style="display:none"/>');
+        $elem.append($zoomDiv);
+        //var overlay = getElement("overlay");
+        // use overlay div to avoid <img> mousemove problems
+        var picRect = geom.rectangle($scaler);
+        // FIX ME: is there a way to query the border width from CSS info?
+        // rect.x -= 2; // account for overlay borders
+        // rect.y -= 2;
+        //moveElement(overlay, picRect);
+        //showElement(overlay, true);
+        // start event capturing
+        //registerEvent("mousedown", overlay, zoomStart);
+        //registerEvent("mousedown", this.scalerImg, zoomStart);
+
+        var zoomStart = function (evt) {
+            pt1 = geom.position(evt);
+            // setup and show zoom div
+            //moveElement(zoomdiv, Rectangle(pt1.x, pt1.y, 0, 0));
+            $zoomDiv.offset({left : pt1.x, top : pt1.y});
+            $zoomDiv.show();
+            // register events
+            $elem.bind("mousemove.digilib", zoomMove);
+            $elem.bind("mouseup.digilib", zoomEnd);
+            return false;
+        };
+        
+        // mouseup handler: end moving
+        var zoomEnd = function (evt) {
+            pt2 = geom.position(evt);
+            // assume a click and continue if the area is too small
+            var clickRect = geom.rectangle(pt1, pt2);
+            clickRect.normalize();
+            console.debug("clickRect.getArea()=",clickRect.getArea());
+            if (clickRect.getArea() <= 5) {
+                return false;
+            }
+            // hide zoom div
+            $zoomDiv.remove();
+            // unregister events
+            $elem.unbind("mousemove.digilib", zoomMove);
+            $elem.unbind("mouseup.digilib", zoomEnd);
+            // clip and transform
+            clickRect.clipTo(picRect);
+            var area = data.imgTrafo.invtransform(clickRect);
+            data.zoomArea = area;
+            // zoomed is always fit
+            data.settings.ws = 1;
+            redisplay(data);
+            return false;
+        };
+        
+        // mouse move handler
+        var zoomMove = function (evt) {
+            pt2 = geom.position(evt);
+            var rect = geom.rectangle(pt1, pt2);
+            rect.normalize();
+            rect.clipTo(picRect);
+            // update zoom div
+            $zoomDiv.offset({left : rect.x, top : rect.y});
+            $zoomDiv.width(rect.width).height(rect.height);
+            return false;
+        };
+        
+        // bind start zoom handler
+        $scaler.one('mousedown.digilib', zoomStart);
     };
 
     // sets a key to a value (relative values with +/- if relative=true)

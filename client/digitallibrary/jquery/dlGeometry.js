@@ -24,10 +24,27 @@ var dlGeometry = function() {
  * Position class
  */
         var position = function (x, y) {
-            var that = {
-                    x : parseFloat(x),
-                    y : parseFloat(y)
-            };
+            if (typeof x === "object") {
+                if (x instanceof jQuery) {
+                    // jQuery object
+                    var pos = x.offset();
+                    var that = {
+                            x : pos.left,
+                            y : pos.top
+                    };
+                } else {
+                    // event object(?)
+                    var that = {
+                            x : x.pageX,
+                            y : x.pageY
+                    };
+                }
+            } else {
+                var that = {
+                        x : parseFloat(x),
+                        y : parseFloat(y)
+                };
+            }
             that.equals = function(other) {
                 return (this.x === other.x  &&  this.y === other.y);
             };
@@ -42,13 +59,24 @@ var dlGeometry = function() {
         var rectangle = function (x, y, w, h) {
             var that = {}; 
             if (typeof x === "object") {
-                // assume x and y are Position
-                that = {
-                        x : x.x,
-                        y : x.y,
-                        width : y.x - x.x,
-                        height : y.y - x.y
-                };
+                if (x instanceof jQuery) {
+                    // jQuery object
+                    var pos = x.offset();
+                    that = {
+                            x : pos.left,
+                            y : pos.top,
+                            width : x.width(),
+                            height : x.height()
+                    };
+                } else {
+                    // assume x and y are Position
+                    that = {
+                            x : x.x,
+                            y : x.y,
+                            width : y.x - x.x,
+                            height : y.y - x.y
+                    };
+                }
             } else {
                 that = {
                         x : parseFloat(x),
@@ -119,7 +147,7 @@ var dlGeometry = function() {
             that.containsPosition = function(pos) {
                 // returns if Position "pos" lies inside of this rectangle
                 var ct = ((pos.x >= this.x) && (pos.y >= this.y) && 
-                        (pos.x <= this.x + this.width) && (pos.y <= this.y + this.width));
+                        (pos.x <= this.x + this.width) && (pos.y <= this.y + this.height));
                 return ct;
             };
             that.containsRect = function(rect) {
