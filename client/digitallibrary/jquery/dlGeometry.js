@@ -255,7 +255,7 @@ var dlGeometry = function() {
             that.getRotation = transform.getRotation;
             that.getTranslation = transform.getTranslation;
             that.getScale = transform.getScale;
-            
+
             return that;
         };
 

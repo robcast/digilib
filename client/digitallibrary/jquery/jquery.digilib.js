@@ -2,7 +2,7 @@
  * digilib jQuery plugin
  *
  */
-    
+
 // fallback for console.log calls
 if (typeof(console) === 'undefined') {
     var console = {
@@ -198,12 +198,12 @@ if (typeof(console) === 'undefined') {
         'isAboutDivVisible' : false
 
         };
- 
+
     // affine geometry classes
     var geom = dlGeometry();
-    
+
     var MAX_ZOOMAREA = geom.rectangle(0, 0, 1, 1);
-    
+
     var actions = {
             // digilib initialization
             init : function(options) {
@@ -283,9 +283,11 @@ if (typeof(console) === 'undefined') {
                     // no bird div -> create
                     setupBirdDiv(data);
                 }
+                // TODO: keep bird view visible after reload (parameter, cookie?)
                 data.settings.isBirdDivVisible = showDiv(data.settings.isBirdDivVisible, data.$birdDiv, show);
+                showBirdIndicator(data);
             },
-            
+
             // goto given page nr (+/-: relative)
             gotoPage : function (data, pageNr) {
                 var settings = data.settings;
@@ -310,7 +312,7 @@ if (typeof(console) === 'undefined') {
                 // then reload
                 redisplay(data);
             },
-            
+
             // zoom by a given factor
             zoomBy : function (data, factor) {
                 zoomBy(data, factor);
@@ -356,7 +358,7 @@ if (typeof(console) === 'undefined') {
     var parseQueryParams = function() {
         return parseQueryString(window.location.search.slice(1));
     };
-        
+
     // returns parameters from embedded img-element
     var parseImgParams = function($elem) {
         var src = $elem.find('img').first().attr('src');
@@ -430,7 +432,7 @@ if (typeof(console) === 'undefined') {
         return newurl;
     };
 
-    // processes some parameters into objects and stuff     
+    // processes some parameters into objects and stuff
     var unpackParams = function (data) {
         var settings = data.settings;
         // zoom area
@@ -471,8 +473,8 @@ if (typeof(console) === 'undefined') {
             }
         }
         data.dlOpts = opts;
-    };    
-         
+    };
+
     // put objects back into parameters
     var packParams = function (data) {
         var settings = data.settings;
@@ -516,7 +518,7 @@ if (typeof(console) === 'undefined') {
             settings.clop = clop;
         }
     };
-    
+
     // returns maximum size for scaler img in fullscreen mode
     var getFullscreenImgSize = function($elem) {
         var winH = $(window).height();
@@ -524,7 +526,7 @@ if (typeof(console) === 'undefined') {
         // TODO: account for borders?
         return geom.size(winW, winH);
     };
-    
+
     // (re)load the img from a new scaler URL
     var redisplay = function (data) {
         var settings = data.settings; 
@@ -643,7 +645,7 @@ if (typeof(console) === 'undefined') {
         // the bird's eye div
         var $birdviewDiv = $('<div class="birdview" style="display:none"/>');
         // the detail indicator frame
-        var $birdzoomDiv = $('<div class="birdzoom"/>');
+        var $birdzoomDiv = $('<div class="birdzoom" style="position: absolute; background-color: transparent;"/>');
         // the small image
         var $birdImg = $('<img class="birdimg"/>');
         $elem.append($birdviewDiv);
@@ -698,12 +700,38 @@ if (typeof(console) === 'undefined') {
         return isVisible;
     };
 
+    // shows bird view indicator
+    var showBirdIndicator = function (data) {
+        if (!data.settings.isBirdDivVisible || isFullArea(data)) return;
+        // TODO: more conditions: original size, pixel by pixel?
+        var $birdDiv = data.$birdDiv;
+        var $birdImg = $birdDiv.find('img.birdimg');
+        var pos = $birdImg.offset();
+        var birdRect = geom.rectangle(pos.left, pos.top, $birdImg.width(), $birdImg.height());
+        var area = data.zoomArea;
+        // TODO: couldn't we do a trafo here? :-)
+  		var indRect = geom.rectangle(
+  		    birdRect.x + birdRect.width  * area.x,
+	        birdRect.y + birdRect.height * area.y,
+	        birdRect.width  * area.width,
+	        birdRect.height * area.height
+	        );
+        var $ind = $birdDiv.find('div.birdzoom');
+        // TODO: set the coordinates all in one call?
+        $ind.width(indRect.width);
+        $ind.height(indRect.height);
+        $ind.offset({ left : indRect.x, top : indRect.y });
+        // TODO: how to override this style with a CSS stylesheet?
+        if (!$ind.css('border')) $ind.css('border', '2px solid #ff0000');
+        return;
+    };
+
     // returns function for load event of scaler img
     var scalerImgLoadedHandler = function (data) {
         var settings = data.settings;
         var $elem = data.$elem;
         var $img = data.$img;
-        
+
         return function () {
             console.debug("img loaded! this=", this, " data=", data);
             var area = data.zoomArea;
@@ -724,6 +752,7 @@ if (typeof(console) === 'undefined') {
             // done -- hide about div --- 
             // --- why? This only leads to suprise effects when displayed programmatically
             // settings.isAboutDivVisible = showDiv(null, data.$aboutDiv, 0);
+            showBirdIndicator(data);
         };
     };
 
@@ -744,7 +773,7 @@ if (typeof(console) === 'undefined') {
             }
         }
     };
-    
+
     // zooms by the given factor
     var zoomBy = function(data, factor) {
         var area = data.zoomArea;
@@ -791,17 +820,23 @@ if (typeof(console) === 'undefined') {
         }
         return settings[key];
     };
-        
+
+    // auxiliary function (from old dllib.js)
+    isFullArea = function(data) {
+        var area = data.zoomArea;
+        return (area.width == 1.0) && (area.height == 1.0);
+    };
+
     // auxiliary function (from Douglas Crockford, A.10)
     var isNumber = function isNumber(value) {
             return typeof value === 'number' && isFinite(value);
     };
-    
+
     // auxiliary function to crop senseless precision
     var cropFloat = function (x) {
         return parseInt(10000 * x, 10) / 10000;
     };
-    
+
     // hook plugin into jquery
     $.fn.digilib = function(action) {
         if (actions[action]) {
