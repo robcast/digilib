@@ -35,12 +35,12 @@ if (typeof(console) === 'undefined') {
             img : "zoom-area.png"
             },
         zoomfull : {
-            onclick : "zoomFullpage",
+            onclick : "zoomFull",
             tooltip : "view the whole image",
             img : "zoom-full.png"
             },
         pagewidth : {
-            onclick : "javascript:zoomFullpage('width')",
+            onclick : ["zoomFull", "width"],
             tooltip : "page width",
             img : "pagewidth.png"
             },
@@ -80,7 +80,7 @@ if (typeof(console) === 'undefined') {
             img : "mark.png"
             },
         delmark : {
-            onclick : "javascript:removeMark()",
+            onclick : "removeMark",
             tooltip : "delete the last mark",
             img : "delmark.png"
             },
@@ -175,10 +175,10 @@ if (typeof(console) === 'undefined') {
         'ddpix' : null,
         'ddpiy' : null,
         // list of digilib parameters
-        'digilibParamNames' : ['fn','pn','ww','wh','wx','wy','ws','mo','rot','cont','brgt','rgbm','rgba',
-                               'mk'],
+        'digilibParamNames' : ['fn','pn','ww','wh','wx','wy','ws','mo','rot','cont','brgt','rgbm','rgba','mk','clop'],
         // digilib parameter defaults
         'mk' : '',
+        'clop' : '',
         // mode of operation: 
         // fullscreen = take parameters from page URL, keep state in page URL
         // embedded = take parameters from Javascript options, keep state inside object 
@@ -188,7 +188,8 @@ if (typeof(console) === 'undefined') {
         // path to button images (must end with a slash)
         'buttonsImagePath' : '../greyskin/', 
         // actions groups
-        'actionsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","mark","back","fwd","page","bird","SEP","help","reset","options"],
+        //'actionsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
+        'actionsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","mark","delmark","back","fwd","page","bird","SEP","help","reset","options"],
         'actionsSpecial' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
         'actionsCustom' : [],
         // is birdView shown?
@@ -314,10 +315,20 @@ if (typeof(console) === 'undefined') {
             },
 
             // zoom out to full page
-            zoomFullpage : function () {
+            zoomFull : function (mode) {
                 var $elem = $(this);
                 var data = $elem.data('digilib');
                 data.zoomArea = MAX_ZOOMAREA;
+                if (mode === 'width') {
+                    data.dlOpts.fitwidth = 1;
+                    delete data.dlOpts.fitheight;
+                } else if (mode === 'height') {
+                    data.dlOpts.fitheight = 1;
+                    delete data.dlOpts.fitwidth;
+                } else {
+                    delete data.dlOpts.fitwidth;
+                    delete data.dlOpts.fitheight;
+                }
                 redisplay(data);
             },
 
@@ -333,25 +344,18 @@ if (typeof(console) === 'undefined') {
                     data.marks.push(pos);
                     redisplay(data);
                 }
+            },
+
+            // remove the last mark
+            removeMark : function () {
+                var $elem = $(this);
+                var data = $elem.data('digilib');
+                data.marks.pop();
+                redisplay(data);
             }
+
     };
 
-    // sets a key to a value (relative values with +/- if relative=true)
-    var setNumValue = function(settings, key, value) {
-        if (isNumber(value)) return settings[key] = value; 
-        var sign = value.substring(0,1);
-        if (sign === '+' || sign === '-') {
-            if (settings[key] == null) {
-                // this doesn't make much sense but still...
-                settings[key] = 0;
-            }
-            settings[key] = parseFloat(settings[key]) + parseFloat(value);
-        } else {
-    		settings[key] = value;
-        }
-    	return settings[key];
-    };
-    	
     // returns parameters from page url
     var parseQueryParams = function() {
         return parseQueryString(window.location.search.slice(1));
@@ -389,13 +393,16 @@ if (typeof(console) === 'undefined') {
     // returns a query string from key names from a parameter hash (ignoring if the same value is in defaults)
     var getParamString = function (settings, keys, defaults) {
         var paramString = '';
-        var latter = false;
+        var nx = false;
         for (i = 0; i < keys.length; ++i) {
             var key = keys[i];
             if ((settings[key] != null) && ((defaults == null) || (settings[key] !== defaults[key]))) {
                 // first param gets no '&'
-                paramString += latter ? '&' : '';
-                latter = true;
+                if (nx) {
+                    paramString += '&';
+                } else {
+                    nx = true;
+                }
                 // add parm=val
                 paramString += key + '=' + settings[key];
             }
@@ -432,19 +439,39 @@ if (typeof(console) === 'undefined') {
         data.zoomArea = zoomArea;
         // marks
         var marks = [];
-        var mk = settings.mk || '';
-        if (mk.indexOf(";") >= 0) {
-            var pa = mk.split(";");    // old format with ";"
-        } else {
-            var pa = mk.split(",");    // new format
-        }
-        for (var i = 0; i < pa.length ; i++) {
-            var pos = pa[i].split("/");
-            if (pos.length > 1) {
-                marks.push(geom.position(pos[0], pos[1]));
+        if (settings.mk) {
+            var mk = settings.mk;
+            if (mk.indexOf(";") >= 0) {
+                var pa = mk.split(";");    // old format with ";"
+            } else {
+                var pa = mk.split(",");    // new format
+            }
+            for (var i = 0; i < pa.length ; i++) {
+                var pos = pa[i].split("/");
+                if (pos.length > 1) {
+                    marks.push(geom.position(pos[0], pos[1]));
+                }
             }
         }
         data.marks = marks;
+        // mo (Scaler flags)
+        var flags = {};
+        if (settings.mo) {
+            var pa = settings.mo.split(",");
+            for (var i = 0; i < pa.length ; i++) {
+                flags[pa[i]] = pa[i];
+            }
+        }
+        data.scalerFlags = flags;
+        // clop (digilib options)
+        var opts = {};
+        if (settings.clop) {
+            var pa = settings.clop.split(",");
+            for (var i = 0; i < pa.length ; i++) {
+                opts[pa[i]] = pa[i];
+            }
+        }
+        data.dlOpts = opts;
     };    
          
     // put objects back into parameters
@@ -459,11 +486,35 @@ if (typeof(console) === 'undefined') {
         }
         // marks
         if (data.marks) {
-            var ma = [];
+            settings.mk = '';
             for (var i = 0; i < data.marks.length; i++) {
-                ma.push(cropFloat(data.marks[i].x) + "/" + cropFloat(data.marks[i].y));
+                if (i) {
+                    settings.mk += ',';
+                }
+                settings.mk += cropFloat(data.marks[i].x).toString() + '/' + cropFloat(data.marks[i].y).toString();
             }
-            settings.mk = ma.join(",");
+        }
+        // Scaler flags
+        if (data.scalerFlags) {
+            var mo = '';
+            for (var f in data.scalerFlags) {
+                if (mo) {
+                    mo += ',';
+                }
+                mo += f;
+            }
+            settings.mo = mo;
+        }
+        // digilib options
+        if (data.dlOpts) {
+            var clop = '';
+            for (var o in data.dlOpts) {
+                if (clop) {
+                    clop += ',';
+                }
+                clop += o;
+            }
+            settings.clop = clop;
         }
     };
     
@@ -501,8 +552,13 @@ if (typeof(console) === 'undefined') {
         if (settings.interactionMode === 'fullscreen') {
             // fullscreen
             var imgSize = getFullscreenImgSize($elem);
-            settings.dw = imgSize.width;
-            settings.dh = imgSize.height;
+            // fitwidth/height omits destination height/width
+            if (data.dlOpts['fitheight'] == null) {
+                settings.dw = imgSize.width;
+            }
+            if (data.dlOpts['fitwidth'] == null) {
+                settings.dh = imgSize.height;
+            }
             $img = $('<img/>');
             var scalerUrl = getScalerUrl(data);
             $img.attr('src', scalerUrl);
@@ -721,6 +777,22 @@ if (typeof(console) === 'undefined') {
         });
     };
 
+    // sets a key to a value (relative values with +/- if relative=true)
+    var setNumValue = function(settings, key, value) {
+        if (isNumber(value)) return settings[key] = value; 
+        var sign = value.substring(0,1);
+        if (sign === '+' || sign === '-') {
+            if (settings[key] == null) {
+                // this doesn't make much sense but still...
+                settings[key] = 0;
+            }
+            settings[key] = parseFloat(settings[key]) + parseFloat(value);
+        } else {
+            settings[key] = value;
+        }
+        return settings[key];
+    };
+        
     // auxiliary function (from Douglas Crockford, A.10)
     var isNumber = function isNumber(value) {
             return typeof value === 'number' && isFinite(value);
