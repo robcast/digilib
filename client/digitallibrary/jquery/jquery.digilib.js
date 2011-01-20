@@ -145,8 +145,6 @@ if (typeof(console) === 'undefined') {
         };
 
     var defaults = {
-        // the root digilib element, for easy retrieval
-        'digilibRoot' : null,
         // version of this script
         'version' : 'jquery.digilib.js 0.9',
         // logo url
@@ -154,7 +152,7 @@ if (typeof(console) === 'undefined') {
         // homepage url (behind logo)
         'homeUrl' : 'http://digilib.berlios.de',
         // base URL to Scaler servlet
-        'scalerBaseUrl' : 'http://digilib.mpiwg-berlin.mpg.de/digitallibrary/servlet/Scaler',
+        'scalerBaseUrl' : null,
         // list of Scaler parameters
         'scalerParamNames' : ['fn','pn','dw','dh','ww','wh','wx','wy','ws','mo',
                               'rot','cont','brgt','rgbm','rgba','ddpi','ddpix','ddpiy'],
@@ -187,7 +185,7 @@ if (typeof(console) === 'undefined') {
         'buttons' : buttons,
         // path to button images (must end with a slash)
         'buttonsImagePath' : '../greyskin/', 
-        // buttons groups
+        // button groups
         //'buttonsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
         'buttonsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","mark","delmark","back","fwd","page","bird","SEP","help","reset","options"],
         'buttonsSpecial' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
@@ -215,6 +213,19 @@ if (typeof(console) === 'undefined') {
                 var queryParams = {};
                 if (isFullscreen) {
                     queryParams = parseQueryParams();
+                    // check scalerBaseUrl
+                    if (settings.scalerBaseUrl == null) {
+                        // try the host this came from
+                        var h = window.location.host;
+                        if (window.location.host) {
+                            var url = window.location.href;
+                            // assume the page lives in [webapp]/jquery/
+                            var pos = url.indexOf('jquery/');
+                            if (pos > 0) {
+                                settings.scalerBaseUrl = url.substring(0, pos) + 'servlet/Scaler';
+                            }
+                        }
+                    }
                 }
                 return this.each(function() {
                     var $elem = $(this);
@@ -397,6 +408,9 @@ if (typeof(console) === 'undefined') {
 
     // returns URL and query string for Scaler
     var getScalerUrl = function (data) {
+        if (settings.scalerBaseUrl == null) {
+            alert("ERROR: URL of digilib Scaler servlet missing!");
+        }
         var settings = data.settings;
         var keys = settings.scalerParamNames;
         var queryString = getParamString(settings, keys, defaults);
