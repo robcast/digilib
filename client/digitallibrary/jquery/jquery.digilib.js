@@ -35,7 +35,7 @@ if (typeof(console) === 'undefined') {
             img : "zoom-area.png"
             },
         zoomfull : {
-            onclick : "javascript:zoomFullpage()",
+            onclick : "zoomFullpage",
             tooltip : "view the whole image",
             img : "zoom-full.png"
             },
@@ -75,7 +75,7 @@ if (typeof(console) === 'undefined') {
             img : "reset.png"
             },
         mark : {
-            onclick : "javascript:setMark()",
+            onclick : "setMark",
             tooltip : "set a mark",
             img : "mark.png"
             },
@@ -188,7 +188,7 @@ if (typeof(console) === 'undefined') {
         // path to button images (must end with a slash)
         'buttonsImagePath' : '../greyskin/', 
         // actions groups
-        'actionsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
+        'actionsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","mark","back","fwd","page","bird","SEP","help","reset","options"],
         'actionsSpecial' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
         'actionsCustom' : [],
         // is birdView shown?
@@ -228,9 +228,8 @@ if (typeof(console) === 'undefined') {
                             elemSettings = $.extend({}, settings, parseImgParams($elem));
                         }
                         // store $(this) element in the settings
-                        elemSettings.digilibRoot = $elem;
                         data =  {
-                                target : $elem,
+                                $elem : $elem,
                                 settings : elemSettings,
                                 queryParams : queryParams
                         };
@@ -312,6 +311,28 @@ if (typeof(console) === 'undefined') {
                 var $elem = $(this);
                 var data = $elem.data('digilib');
                 zoomBy(data, factor);
+            },
+
+            // zoom out to full page
+            zoomFullpage : function () {
+                var $elem = $(this);
+                var data = $elem.data('digilib');
+                data.zoomArea = MAX_ZOOMAREA;
+                redisplay(data);
+            },
+
+            // set a mark by clicking (or giving a position)
+            setMark : function (mpos) {
+                var $elem = $(this);
+                var data = $elem.data('digilib');
+                if (mpos == null) {
+                    // interactive
+                    setMark(data);
+                } else {
+                    // use position
+                    data.marks.push(pos);
+                    redisplay(data);
+                }
             }
     };
 
@@ -431,10 +452,10 @@ if (typeof(console) === 'undefined') {
         var settings = data.settings;
         // zoom area
         if (data.zoomArea) {
-            settings.wx = data.zoomArea.x;
-            settings.wy = data.zoomArea.y;
-            settings.ww = data.zoomArea.width;
-            settings.wh = data.zoomArea.height;
+            settings.wx = cropFloat(data.zoomArea.x);
+            settings.wy = cropFloat(data.zoomArea.y);
+            settings.ww = cropFloat(data.zoomArea.width);
+            settings.wh = cropFloat(data.zoomArea.height);
         }
         // marks
         if (data.marks) {
@@ -475,7 +496,7 @@ if (typeof(console) === 'undefined') {
     // creates HTML structure for digilib in elem
     var setupScalerDiv = function (data) {
         var settings = data.settings;
-        var $elem = data.target;
+        var $elem = data.$elem;
         var $img;
         if (settings.interactionMode === 'fullscreen') {
             // fullscreen
@@ -509,7 +530,7 @@ if (typeof(console) === 'undefined') {
 
     // creates HTML structure for buttons in elem
     var setupButtons = function (data, actionGroup) {
-        var $elem = data.target;
+        var $elem = data.$elem;
         var settings = data.settings;
         if (settings.interactionMode === 'fullscreen') {
             // fullscreen -- create new
@@ -555,7 +576,7 @@ if (typeof(console) === 'undefined') {
 
     // creates HTML structure for the bird's eye view in elem
     var setupBirdDiv = function (data) {
-        var $elem = data.target;
+        var $elem = data.$elem;
         var settings = data.settings;
         // use only the relevant parameters
         var keys = ['fn','pn','dw','dh'];
@@ -579,7 +600,7 @@ if (typeof(console) === 'undefined') {
 
     // creates HTML structure for the about view in elem
     var setupAboutDiv = function (data) {
-        var $elem = data.target;
+        var $elem = data.$elem;
         var settings = data.settings;
         var $aboutDiv = $('<div class="about" style="display:none"/>');
         var $header = $('<p>Digilib Graphic Viewer</p>');
@@ -619,7 +640,7 @@ if (typeof(console) === 'undefined') {
     // returns function for load event of scaler img
     var scalerImgLoadedHandler = function (data) {
         var settings = data.settings;
-        var $elem = data.target;
+        var $elem = data.$elem;
         var $img = data.$img;
         
         return function () {
@@ -630,7 +651,7 @@ if (typeof(console) === 'undefined') {
             var picrect = geom.rectangle(picpos.left, picpos.top, $img.width(), $img.height());
             var trafo = geom.transform();
             // subtract area offset and size
-            trafo.concat(trafo.getTranslation(geom.position(area.x, area.y)));
+            trafo.concat(trafo.getTranslation(geom.position(- area.x, - area.y)));
             trafo.concat(trafo.getScale(geom.size(1/area.width, 1/area.height)));
             // scale to screen size
             trafo.concat(trafo.getScale(picrect));
@@ -647,7 +668,7 @@ if (typeof(console) === 'undefined') {
 
     // place marks on the image
     var renderMarks = function (data) {
-        var $elem = data.target;
+        var $elem = data.$elem;
         var marks = data.marks;
         for (var i = 0; i < marks.length; i++) {
             var mark = marks[i];
@@ -662,8 +683,8 @@ if (typeof(console) === 'undefined') {
         }
     };
     
+    // zooms by the given factor
     var zoomBy = function(data, factor) {
-        // zooms by the given factor
         var area = data.zoomArea;
         var newarea = area.copy();
         // scale
@@ -675,6 +696,23 @@ if (typeof(console) === 'undefined') {
         newarea = MAX_ZOOMAREA.fit(newarea);
         data.zoomArea = newarea;
         redisplay(data);
+    };
+
+    // add a mark where clicked
+    var setMark = function (data) {
+        var $div = data.$elem;
+        var $img = data.$img;
+        console.debug("setmark");
+        // start event capturing
+        $img.one('click.digilib', function (evt) {
+            // event handler adding a new mark
+            console.debug("setmark.click evt=",evt);
+            var mpos = geom.position(evt.pageX, evt.pageY);
+            var pos = data.imgTrafo.invtransform(mpos);
+            data.marks.push(pos);
+            redisplay(data);
+            //return stopEvent(evt);
+        });
     };
 
     // auxiliary function (from Douglas Crockford, A.10)
