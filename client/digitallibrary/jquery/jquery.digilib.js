@@ -13,7 +13,7 @@ if (typeof(console) === 'undefined') {
 }
 
 (function($) {
-    var actions = {
+    var buttons = {
         reference : {
             onclick : "javascript:getRefWin()",
             tooltip : "get a reference URL",
@@ -183,15 +183,15 @@ if (typeof(console) === 'undefined') {
         // fullscreen = take parameters from page URL, keep state in page URL
         // embedded = take parameters from Javascript options, keep state inside object 
         'interactionMode' : 'fullscreen',
-        // actions
-        'actions' : actions,
+        // buttons
+        'buttons' : buttons,
         // path to button images (must end with a slash)
         'buttonsImagePath' : '../greyskin/', 
-        // actions groups
-        //'actionsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
-        'actionsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","mark","delmark","back","fwd","page","bird","SEP","help","reset","options"],
-        'actionsSpecial' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
-        'actionsCustom' : [],
+        // buttons groups
+        //'buttonsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
+        'buttonsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","mark","delmark","back","fwd","page","bird","SEP","help","reset","options"],
+        'buttonsSpecial' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
+        'buttonsCustom' : [],
         // is birdView shown?
         'isBirdDivVisible' : false,
         // dimensions of bird's eye window
@@ -206,7 +206,7 @@ if (typeof(console) === 'undefined') {
     
     var MAX_ZOOMAREA = geom.rectangle(0, 0, 1, 1);
     
-    var methods = {
+    var actions = {
             // digilib initialization
             init : function(options) {
                 // settings for this digilib instance are merged from defaults and options
@@ -240,7 +240,7 @@ if (typeof(console) === 'undefined') {
                     unpackParams(data);
                     // create HTML structure
                     setupScalerDiv(data);
-                    setupButtons(data, 'actionsStandard');
+                    setupButtons(data, 'buttonsStandard');
                     // bird's eye view creation
                     if (settings.isBirdDivVisible) {
                         setupBirdDiv(data);
@@ -251,10 +251,9 @@ if (typeof(console) === 'undefined') {
             },
 
             // clean up digilib
-            destroy : function() {
+            destroy : function(data) {
                 return this.each(function(){
                     var $elem = $(this);
-                    var data = $elem.data('digilib');
                     // Namespacing FTW
                     $(window).unbind('.digilib'); // unbinds all digilibs(?)
                     data.digilib.remove();
@@ -263,16 +262,12 @@ if (typeof(console) === 'undefined') {
             },
 
             // show or hide the 'about' window
-            showAboutDiv : function(show) {
-                var $elem = $(this);
-                var data = $elem.data('digilib');
+            showAboutDiv : function(data, show) {
                 data.settings.isAboutDivVisible = showDiv(data.settings.isAboutDivVisible, data.$aboutDiv, show);
             },
 
             // event handler: toggles the visibility of the bird's eye window 
-            showBirdDiv : function (show) {
-                var $elem = $(this);
-                var data = $elem.data('digilib');
+            showBirdDiv : function (data, show) {
                 if (data.$birdDiv == null) {
                     // no bird div -> create
                     setupBirdDiv(data);
@@ -281,9 +276,7 @@ if (typeof(console) === 'undefined') {
             },
             
             // goto given page nr (+/-: relative)
-            gotoPage : function (pageNr) {
-                var $elem = $(this);
-                var data = $elem.data('digilib');
+            gotoPage : function (data, pageNr) {
                 var settings = data.settings;
                 var oldpn = settings.pn;
                 var pn = setNumValue(settings, "pn", pageNr);
@@ -308,16 +301,12 @@ if (typeof(console) === 'undefined') {
             },
             
             // zoom by a given factor
-            zoomBy : function (factor) {
-                var $elem = $(this);
-                var data = $elem.data('digilib');
+            zoomBy : function (data, factor) {
                 zoomBy(data, factor);
             },
 
             // zoom out to full page
-            zoomFull : function (mode) {
-                var $elem = $(this);
-                var data = $elem.data('digilib');
+            zoomFull : function (data, mode) {
                 data.zoomArea = MAX_ZOOMAREA;
                 if (mode === 'width') {
                     data.dlOpts.fitwidth = 1;
@@ -333,9 +322,7 @@ if (typeof(console) === 'undefined') {
             },
 
             // set a mark by clicking (or giving a position)
-            setMark : function (mpos) {
-                var $elem = $(this);
-                var data = $elem.data('digilib');
+            setMark : function (data, mpos) {
                 if (mpos == null) {
                     // interactive
                     setMark(data);
@@ -347,9 +334,7 @@ if (typeof(console) === 'undefined') {
             },
 
             // remove the last mark
-            removeMark : function () {
-                var $elem = $(this);
-                var data = $elem.data('digilib');
+            removeMark : function (data) {
                 data.marks.pop();
                 redisplay(data);
             }
@@ -596,7 +581,7 @@ if (typeof(console) === 'undefined') {
             var actionNames = settings[actionGroup];
             for (var i = 0; i < actionNames.length; i++) {
                 var actionName = actionNames[i];
-                var actionSettings = settings.actions[actionName];
+                var buttonSettings = settings.buttons[actionName];
                 // construct the button html
                 var $button = $('<div class="button"></div>');
                 var $a = $('<a/>');
@@ -605,29 +590,29 @@ if (typeof(console) === 'undefined') {
                 $button.append($a);
                 $a.append($img);
                 // add attributes and bindings
-                $button.attr('title', actionSettings.tooltip);
+                $button.attr('title', buttonSettings.tooltip);
                 $button.addClass('button-' + actionName);
                 // create handler for the buttons
                 $a.bind('click.digilib', (function () {
-                    // we create a new closure to capture the value of method
-                    var method = actionSettings.onclick;
-                    if ($.isArray(method)) {
-                        // the handler function calls digilib with method and parameters
+                    // we create a new closure to capture the value of action
+                    var action = buttonSettings.onclick;
+                    if ($.isArray(action)) {
+                        // the handler function calls digilib with action and parameters
                         return function (evt) {
-                            console.debug('click method=', method, ' evt=', evt);
-                            $elem.digilib.apply($elem, method);
+                            console.debug('click action=', action, ' evt=', evt);
+                            $elem.digilib.apply($elem, action);
                             return false;
                         };
                     } else {
-                        // the handler function calls digilib with method
+                        // the handler function calls digilib with action
                         return function (evt) {
-                            console.debug('click method=', method, ' evt=', evt);
-                            $elem.digilib(method);
+                            console.debug('click action=', action, ' evt=', evt);
+                            $elem.digilib(action);
                             return false;
                         };
                     }
                 })());
-                $img.attr('src', settings.buttonsImagePath + actionSettings.img);
+                $img.attr('src', settings.buttonsImagePath + buttonSettings.img);
             }
         }
         return $buttonsDiv;
@@ -783,7 +768,7 @@ if (typeof(console) === 'undefined') {
         var sign = value.substring(0,1);
         if (sign === '+' || sign === '-') {
             if (settings[key] == null) {
-                // this doesn't make much sense but still...
+                // this isn't perfect but still...
                 settings[key] = 0;
             }
             settings[key] = parseFloat(settings[key]) + parseFloat(value);
@@ -804,15 +789,19 @@ if (typeof(console) === 'undefined') {
     };
     
     // hook plugin into jquery
-    $.fn.digilib = function(method) {
-        if (methods[method]) {
-            // call method on this with the remaining arguments
-            return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
-        } else if (typeof(method) === 'object' || !method) {
+    $.fn.digilib = function(action) {
+        if (actions[action]) {
+            // call action on this with the remaining arguments (inserting data as first argument)
+            var $elem = $(this);
+            var data = $elem.data('digilib');
+            var args = Array.prototype.slice.call(arguments, 1);
+            args.unshift(data);
+            return actions[action].apply(this, args);
+        } else if (typeof(action) === 'object' || !action) {
             // call init on this
-            return methods.init.apply(this, arguments);
+            return actions.init.apply(this, arguments);
         } else {
-            $.error( 'Method ' + method + ' does not exist on jQuery.digilib' );
+            $.error( 'action ' + action + ' does not exist on jQuery.digilib' );
         }
     };
     
