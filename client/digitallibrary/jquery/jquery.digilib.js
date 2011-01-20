@@ -408,10 +408,10 @@ if (typeof(console) === 'undefined') {
 
     // returns URL and query string for Scaler
     var getScalerUrl = function (data) {
+        var settings = data.settings;
         if (settings.scalerBaseUrl == null) {
             alert("ERROR: URL of digilib Scaler servlet missing!");
         }
-        var settings = data.settings;
         var keys = settings.scalerParamNames;
         var queryString = getParamString(settings, keys, defaults);
         var url = settings.scalerBaseUrl + '?' + queryString;
