@@ -647,19 +647,21 @@ if (typeof(console) === 'undefined') {
         var birdSettings = $.extend({}, settings, settings.birdDivOptions);
         var birdUrl = settings.scalerBaseUrl + '?' + getParamString(birdSettings, keys);
         // the bird's eye div
-        var $birdviewDiv = $('<div class="birdview" style="display:none"/>');
+        var $birdDiv = $('<div class="birdview" style="display:none"/>');
         // the detail indicator frame
         var $birdzoomDiv = $('<div class="birdzoom" style="position: absolute; background-color: transparent;"/>');
         // the small image
         var $birdImg = $('<img class="birdimg"/>');
-        $elem.append($birdviewDiv);
-        $birdviewDiv.append($birdzoomDiv);
-        $birdviewDiv.append($birdImg);
+        $elem.append($birdDiv);
+        $birdDiv.append($birdzoomDiv);
+        $birdDiv.append($birdImg);
+        data.$birdDiv = $birdDiv;
+        data.$birdImg = $birdImg;
+        $birdImg.load(birdImgLoadedHandler(data));
         $birdImg.attr('src', birdUrl);
         if (data.settings.isBirdDivVisible) {
-            $birdviewDiv.fadeIn();
+            $birdDiv.fadeIn();
         }
-        data.$birdDiv = $birdviewDiv;
     };
 
     // creates HTML structure for the about view in elem
@@ -704,58 +706,41 @@ if (typeof(console) === 'undefined') {
         return isVisible;
     };
 
-    // shows bird view indicator
-    var showBirdIndicator = function (data) {
-        if (!data.settings.isBirdDivVisible || isFullArea(data)) return;
-        // TODO: more conditions: original size, pixel by pixel?
-        var $birdDiv = data.$birdDiv;
-        var $birdImg = $birdDiv.find('img.birdimg');
-        var pos = $birdImg.offset();
-        var birdRect = geom.rectangle(pos.left, pos.top, $birdImg.width(), $birdImg.height());
-        var area = data.zoomArea;
-        // TODO: couldn't we do a trafo here? :-)
-  		var indRect = geom.rectangle(
-  		    birdRect.x + birdRect.width  * area.x,
-	        birdRect.y + birdRect.height * area.y,
-	        birdRect.width  * area.width,
-	        birdRect.height * area.height
-	        );
-        var $ind = $birdDiv.find('div.birdzoom');
-        // TODO: set the coordinates all in one call?
-        $ind.width(indRect.width);
-        $ind.height(indRect.height);
-        $ind.offset({ left : indRect.x, top : indRect.y });
-        // TODO: how to override this style with a CSS stylesheet?
-        if (!$ind.css('border')) $ind.css('border', '2px solid #ff0000');
-        return;
+    // create Transform from area and $img
+    var getImgTrafo = function ($img, area) {
+        var picrect = geom.rectangle($img);
+        var trafo = geom.transform();
+        // subtract area offset and size
+        trafo.concat(trafo.getTranslation(geom.position(-area.x, -area.y)));
+        trafo.concat(trafo.getScale(geom.size(1/area.width, 1/area.height)));
+        // scale to screen size
+        trafo.concat(trafo.getScale(picrect));
+        trafo.concat(trafo.getTranslation(picrect));
+        return trafo;
     };
-
+    
     // returns function for load event of scaler img
     var scalerImgLoadedHandler = function (data) {
-        var settings = data.settings;
-        var $elem = data.$elem;
         var $img = data.$img;
-
         return function () {
             console.debug("img loaded! this=", this, " data=", data);
-            var area = data.zoomArea;
             // create Transform from current area and picsize
-            var picrect = geom.rectangle($img);
-            var trafo = geom.transform();
-            // subtract area offset and size
-            trafo.concat(trafo.getTranslation(geom.position(- area.x, - area.y)));
-            trafo.concat(trafo.getScale(geom.size(1/area.width, 1/area.height)));
-            // scale to screen size
-            trafo.concat(trafo.getScale(picrect));
-            trafo.concat(trafo.getTranslation(picrect));
-            data.imgTrafo = trafo;
+            data.imgTrafo = getImgTrafo($img, data.zoomArea);
             // display marks
             renderMarks(data);
             //digilib.showArrows(); // show arrow overlays for zoom navigation
-            // done -- hide about div --- 
-            // --- why? This only leads to suprise effects when displayed programmatically
-            // settings.isAboutDivVisible = showDiv(null, data.$aboutDiv, 0);
-            showBirdIndicator(data);
+        };
+    };
+
+    // returns function for load event of bird's eye view img
+    var birdImgLoadedHandler = function (data) {
+        var $img = data.$birdImg;
+        return function () {
+            console.debug("birdimg loaded! this=", this, " data=", data);
+            // create Transform from current area and picsize
+            data.birdTrafo = getImgTrafo($img, MAX_ZOOMAREA);
+            // display marks
+            renderBirdArea(data);
         };
     };
 
@@ -777,6 +762,17 @@ if (typeof(console) === 'undefined') {
         }
     };
 
+    var renderBirdArea = function (data) {
+        var $ind = data.$birdDiv.find('div.birdzoom');
+        var indRect = data.birdTrafo.transform(data.zoomArea);
+        // TODO: set the coordinates all in one call?
+        $ind.width(indRect.width);
+        $ind.height(indRect.height);
+        $ind.offset({ left : indRect.x, top : indRect.y });
+        // TODO: how to override this style with a CSS stylesheet?
+        if (!$ind.css('border')) $ind.css('border', '2px solid #ff0000');
+    }
+    
     // zooms by the given factor
     var zoomBy = function(data, factor) {
         var area = data.zoomArea;
