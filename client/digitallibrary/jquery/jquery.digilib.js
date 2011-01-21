@@ -767,7 +767,7 @@ if (typeof(console) === 'undefined') {
         var $ind = data.$birdDiv.find('div.birdzoom');
         var zoomArea = data.zoomArea;
         var indRect = data.birdTrafo.transform(zoomArea);
-        //if (isFullArea(zoomArea)) return $ind.hide(); 
+        if (isFullArea(zoomArea)) return $ind.hide(); 
         // TODO: set the coordinates all in one call?
         $ind.width(indRect.width);
         $ind.height(indRect.height);
