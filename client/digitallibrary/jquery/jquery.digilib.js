@@ -194,6 +194,8 @@ if (typeof(console) === 'undefined') {
         'isBirdDivVisible' : false,
         // dimensions of bird's eye window
         'birdDivOptions' : {'dw' : 200, 'dh' : 200},
+        // style of bird's eye window
+        'birdIndicatorStyle' : {'border' : '2px solid #ff0000' },
         // is the "about" window shown?
         'isAboutDivVisible' : false
 
@@ -284,7 +286,6 @@ if (typeof(console) === 'undefined') {
                 }
                 // TODO: keep bird view visible after reload (parameter, cookie?)
                 data.settings.isBirdDivVisible = showDiv(data.settings.isBirdDivVisible, data.$birdDiv, show);
-                showBirdIndicator(data);
             },
 
             // goto given page nr (+/-: relative)
@@ -764,15 +765,17 @@ if (typeof(console) === 'undefined') {
 
     var renderBirdArea = function (data) {
         var $ind = data.$birdDiv.find('div.birdzoom');
-        var indRect = data.birdTrafo.transform(data.zoomArea);
+        var zoomArea = data.zoomArea;
+        var indRect = data.birdTrafo.transform(zoomArea);
+        //if (isFullArea(zoomArea)) return $ind.hide(); 
         // TODO: set the coordinates all in one call?
         $ind.width(indRect.width);
         $ind.height(indRect.height);
-        $ind.offset({ left : indRect.x, top : indRect.y });
-        // TODO: how to override this style with a CSS stylesheet?
-        if (!$ind.css('border')) $ind.css('border', '2px solid #ff0000');
+        // offset minus frame width
+        $ind.offset({ left : indRect.x-2, top : indRect.y-2 });
+        $ind.css(data.settings.birdIndicatorStyle);
     }
-    
+
     // zooms by the given factor
     var zoomBy = function(data, factor) {
         var area = data.zoomArea;
@@ -892,9 +895,8 @@ if (typeof(console) === 'undefined') {
     };
 
     // auxiliary function (from old dllib.js)
-    isFullArea = function(data) {
-        var area = data.zoomArea;
-        return (area.width == 1.0) && (area.height == 1.0);
+    isFullArea = function(area) {
+        return (area.width === 1.0) && (area.height === 1.0);
     };
 
     // auxiliary function (from Douglas Crockford, A.10)
