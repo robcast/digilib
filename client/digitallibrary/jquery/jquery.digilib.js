@@ -85,12 +85,12 @@ if (typeof(console) === 'undefined') {
             img : "delmark.png"
             },
         hmir : {
-            onclick : "javascript:mirror('h')",
+            onclick : ["mirror", "h"],
             tooltip : "mirror horizontally",
             img : "mirror-horizontal.png"
             },
         vmir : {
-            onclick : "javascript:mirror('v')",
+            onclick : ["mirror", "v"],
             tooltip : "mirror vertically",
             img : "mirror-vertical.png"
             },
@@ -187,7 +187,7 @@ if (typeof(console) === 'undefined') {
         'buttonsImagePath' : '../greyskin/', 
         // button groups
         //'buttonsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
-        'buttonsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","mark","delmark","back","fwd","page","bird","SEP","help","reset","options"],
+        'buttonsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","mark","delmark","hmir","vmir","back","fwd","page","bird","help","options"],
         'buttonsSpecial' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
         'buttonsCustom' : [],
         // is birdView shown?
@@ -255,7 +255,7 @@ if (typeof(console) === 'undefined') {
                     setupScalerDiv(data);
                     setupButtons(data, 'buttonsStandard');
                     // bird's eye view creation
-                    if (settings.isBirdDivVisible) {
+                    if (elemSettings.isBirdDivVisible) {
                         setupBirdDiv(data);
                     }
                     // about window creation - TODO: could be deferred? restrict to only one item?
@@ -355,6 +355,25 @@ if (typeof(console) === 'undefined') {
             removeMark : function (data) {
                 data.marks.pop();
                 redisplay(data);
+            },
+            
+            // mirror the image
+            mirror : function (data, mode) {
+                var flags = data.scalerFlags;
+            	if (mode === 'h') {
+            	    if (flags.hmir) {
+                        delete flags.hmir;
+            	    } else {
+                        flags.hmir = 1;
+            	    }
+            	} else {
+                    if (flags.vmir) {
+                        delete flags.vmir;
+                    } else {
+                        flags.vmir = 1;
+                    }
+                }
+            	redisplay(data);
             }
 
     };
@@ -478,6 +497,10 @@ if (typeof(console) === 'undefined') {
             }
         }
         data.dlOpts = opts;
+        // birdview option
+        if (opts.birdview) {
+            settings.isBirdDivVisible = 1; 
+        }
     };
 
     // put objects back into parameters
@@ -510,6 +533,10 @@ if (typeof(console) === 'undefined') {
                 mo += f;
             }
             settings.mo = mo;
+        }
+        // digilib option birdview
+        if (settings.isBirdDivVisible) {
+            data.dlOpts.birdview = 1;
         }
         // digilib options
         if (data.dlOpts) {
