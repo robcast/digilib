@@ -187,7 +187,7 @@ if (typeof(console) === 'undefined') {
         'buttonsImagePath' : '../greyskin/', 
         // button groups
         //'buttonsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
-        'buttonsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","mark","delmark","hmir","vmir","back","fwd","page","bird","help","options"],
+        'buttonsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","mark","delmark","hmir","vmir","back","fwd","page","rot","brgt","cont","rgb","quality","size","calibrationx","scale","bird","help","options"],
         'buttonsSpecial' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
         'buttonsCustom' : [],
         // is birdView shown?
@@ -537,6 +537,8 @@ if (typeof(console) === 'undefined') {
         // digilib option birdview
         if (settings.isBirdDivVisible) {
             data.dlOpts.birdview = 1;
+        } else {
+            delete data.dlOpts.birdview;
         }
         // digilib options
         if (data.dlOpts) {
@@ -549,14 +551,6 @@ if (typeof(console) === 'undefined') {
             }
             settings.clop = clop;
         }
-    };
-
-    // returns maximum size for scaler img in fullscreen mode
-    var getFullscreenImgSize = function($elem) {
-        var winH = $(window).height();
-        var winW = $(window).width();
-        // TODO: account for borders?
-        return geom.size(winW, winH);
     };
 
     // (re)load the img from a new scaler URL
@@ -575,6 +569,15 @@ if (typeof(console) === 'undefined') {
             var url = getScalerUrl(data);
             data.$img.attr('src', url);
         }
+    };
+
+    // returns maximum size for scaler img in fullscreen mode
+    var getFullscreenImgSize = function($elem) {
+        var $win = $(window);
+        var winH = $win.height();
+        var winW = $win.width();
+        // TODO: account for borders?
+        return geom.size(winW, winH);
     };
 
     // creates HTML structure for digilib in elem
@@ -662,6 +665,10 @@ if (typeof(console) === 'undefined') {
                 })());
                 $img.attr('src', settings.buttonsImagePath + buttonSettings.img);
             }
+        }
+        // make buttons div scroll if too large for window
+        if ($buttonsDiv.height() > $(window).height() - 10) {
+            $buttonsDiv.css('position', 'absolute');
         }
         return $buttonsDiv;
     };
