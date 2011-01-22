@@ -95,17 +95,17 @@ if (typeof(console) === 'undefined') {
             img : "mirror-vertical.png"
             },
         rot : {
-            onclick : "javascript:setParamWin('rot', 'Rotate (0..360) clockwise')",
+            onclick : "rotate",
             tooltip : "rotate image",
             img : "rotate.png"
             },
         brgt : {
-            onclick : "javascript:setParamWin('brgt', 'Brightness (-255..255)')",
+            onclick : "brightness",
             tooltip : "set brightness",
             img : "brightness.png"
             },
         cont : {
-            onclick : "javascript:setParamWin('cont', 'Contrast (0..8)')",
+            onclick : "contrast",
             tooltip : "set contrast",
             img : "contrast.png"
             },
@@ -374,7 +374,40 @@ if (typeof(console) === 'undefined') {
                     }
                 }
             	redisplay(data);
+            },
+            
+            // rotate the image
+            rotate : function (data, angle) {
+                var rot = data.settings.rot;
+                if (angle == null) {
+                    angle = window.prompt("Rotation angle:", rot);
+                }
+                data.settings.rot = angle;
+                redisplay(data);
+            },
+            
+            // change brightness
+            brightness : function (data, factor) {
+                var brgt = data.settings.brgt;
+                if (factor == null) {
+                    factor = window.prompt("Brightness (-255..255)", brgt);
+                }
+                data.settings.brgt = factor;
+                redisplay(data);
+            },
+            
+            // change contrast
+            contrast : function (data, factor) {
+                var cont = data.settings.cont;
+                if (factor == null) {
+                    factor = window.prompt("Contrast (-8, 8)", cont);
+                }
+                data.settings.cont = factor;
+                redisplay(data);
             }
+            
+            
+            
 
     };
 
@@ -418,7 +451,7 @@ if (typeof(console) === 'undefined') {
         var nx = false;
         for (i = 0; i < keys.length; ++i) {
             var key = keys[i];
-            if ((settings[key] != null) && ((defaults == null) || (settings[key] !== defaults[key]))) {
+            if ((settings[key] != null) && ((defaults == null) || (settings[key] != defaults[key]))) {
                 // first param gets no '&'
                 if (nx) {
                     paramString += '&';
