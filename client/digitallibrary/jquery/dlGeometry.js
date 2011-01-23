@@ -225,26 +225,29 @@ var dlGeometry = function() {
  * defines a class of affine transformations
  */
         var transform = function (spec) {
-            var that = jQuery.extend({
+            var that = {
                     m00 : 1.0,
                     m01 : 0.0,
                     m02 : 0.0,
                     m10 : 0.0,
                     m11 : 1.0,
-                    m20 : 0.0,
                     m12 : 0.0,
+                    m20 : 0.0,
                     m21 : 0.0,
                     m22 : 1.0
-            }, spec);
+            };
+            if (spec) {
+                jQuery.extend(that, spec);
+            };
             that.concat = function(traf) {
                 // add Transform traf to this Transform
                 for (var i = 0; i < 3; i++) {
                     for (var j = 0; j < 3; j++) {
                         var c = 0.0;
                         for (var k = 0; k < 3; k++) {
-                            c += traf["m"+i+k] * this["m"+k+j];
+                            c += traf["m"+i.toString()+k.toString()] * this["m"+k.toString()+j.toString()];
                         }
-                        this["m"+i+j] = c;
+                        this["m"+i.toString()+j.toString()] = c;
                     }
                 }
                 return this;
@@ -280,24 +283,42 @@ var dlGeometry = function() {
                 }
                 return position(x, y);
             };
+            that.toString = function (pretty) {
+                var s = '[';
+                if (pretty) s += '\n';
+                for (var i = 0; i < 3; ++i) {
+                    s += '[';
+                    for (var j = 0; j < 3; ++j) {
+                        if (j) s += ',';
+                        s += this['m'+i+j];
+                    }
+                    s += ']';
+                    if (pretty) s += '\n';
+                }
+                s += ']';
+                if (pretty) s += '\n';
+                return s;
+            };
+            // add class methods to instance
             that.getRotation = transform.getRotation;
+            that.getRotationAround = transform.getRotationAround;
             that.getTranslation = transform.getTranslation;
             that.getScale = transform.getScale;
 
             return that;
         };
 
-        transform.getRotation = function (angle, pos) {
-           // returns a Transform that is a rotation by angle degrees around [pos.x, pos.y]
+        transform.getRotation = function (angle) {
+           // returns a Transform that is a rotation by angle degrees around [0,0]
            if (angle !== 0) {
-               var t = 2.0 * Math.PI * parseFloat(angle) / 360.0;
+               var t = Math.PI * parseFloat(angle) / 180.0;
+               var cost = Math.cos(t);
+               var sint = Math.sin(t);
                var traf = {
-                       m00 : Math.cos(t),
-                       m01 : - Math.sin(t),
-                       m10 : Math.sin(t),
-                       m11 : Math.cos(t),
-                       m02 : pos.x - pos.x * Math.cos(t) + pos.y * Math.sin(t),
-                       m12 : pos.y - pos.x * Math.sin(t) - pos.y * Math.cos(t)
+                       m00 : cost,
+                       m01 : -sint,
+                       m10 : sint,
+                       m11 : cost
                };
                return transform(traf);
            }
@@ -313,6 +334,14 @@ var dlGeometry = function() {
            return transform(traf);
        };
 
+       transform.getRotationAround = function (angle, pos) {
+           // returns a Transform that is a rotation by angle degrees around pos
+           var traf = transform.getTranslation({x : -pos.x, y : -pos.y});
+           traf.concat(transform.getRotation(angle));
+           traf.concat(transform.getTranslation(pos));
+           return traf;
+       };
+       
        transform.getScale = function (size) {
            // returns a Transform that is a scale by [size.width, size.height]
            var traf = {

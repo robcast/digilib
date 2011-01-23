@@ -406,8 +406,6 @@ if (typeof(console) === 'undefined') {
                 redisplay(data);
             }
             
-            
-            
 
     };
 
@@ -775,15 +773,32 @@ if (typeof(console) === 'undefined') {
     };
 
     // create Transform from area and $img
-    var getImgTrafo = function ($img, area) {
+    var getImgTrafo = function ($img, area, data) {
         var picrect = geom.rectangle($img);
         var trafo = geom.transform();
-        // subtract area offset and size
+        // zoom area offset
         trafo.concat(trafo.getTranslation(geom.position(-area.x, -area.y)));
+        // zoom area size
         trafo.concat(trafo.getScale(geom.size(1/area.width, 1/area.height)));
-        // scale to screen size
+        // rotate
+        if (data) {
+            var rot = trafo.getRotationAround(-parseFloat(data.settings.rot), 
+                    geom.position(0.5 * area.width + area.x, 0.5 * area.height + area.y));
+            trafo.concat(rot);
+        }
+        // scale to screen position and size
         trafo.concat(trafo.getScale(picrect));
         trafo.concat(trafo.getTranslation(picrect));
+        /* if (data && data.settings.rot) {
+            var rot = trafo.getRotationAround(-data.settings.rot, 
+                    geom.position(0.5 * picrect.width + picrect.x, 0.5 * picrect.height + picrect.y));
+            //var trans1 = trafo.getTranslation(geom.position(-0.5*picrect.width, -0.5*picrect.height));
+            //var rot = trafo.getRotation(data.settings.rot);
+            //var trans2 = trafo.getTranslation(geom.position(0.5*picrect.width, 0.5*pirect.height));
+            //trafo.concat(trans1);
+            trafo.concat(rot);
+            //trafo.concat(trans2);
+        } */
         return trafo;
     };
     
@@ -793,7 +808,7 @@ if (typeof(console) === 'undefined') {
         return function () {
             console.debug("img loaded! this=", this, " data=", data);
             // create Transform from current area and picsize
-            data.imgTrafo = getImgTrafo($img, data.zoomArea);
+            data.imgTrafo = getImgTrafo($img, data.zoomArea, data);
             // display marks
             renderMarks(data);
             //digilib.showArrows(); // show arrow overlays for zoom navigation
@@ -821,6 +836,7 @@ if (typeof(console) === 'undefined') {
             var mark = marks[i];
             if (data.zoomArea.containsPosition(mark)) {
                 var mpos = data.imgTrafo.transform(mark);
+                console.debug("renderMarks: mpos=",mpos);
                 // create mark
                 var html = '<div class="mark">'+(i+1)+'</div>';
                 var $mark = $(html);
@@ -841,7 +857,7 @@ if (typeof(console) === 'undefined') {
         // offset minus frame width
         $ind.offset({ left : indRect.x-2, top : indRect.y-2 });
         $ind.css(data.settings.birdIndicatorStyle);
-    }
+    };
 
     // zooms by the given factor
     var zoomBy = function(data, factor) {
