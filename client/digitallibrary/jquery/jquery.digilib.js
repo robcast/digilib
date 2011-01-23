@@ -183,13 +183,23 @@ if (typeof(console) === 'undefined') {
         'interactionMode' : 'fullscreen',
         // buttons
         'buttons' : buttons,
+        'buttonSettings' : {
         // path to button images (must end with a slash)
-        'buttonsImagePath' : '../greyskin/', 
+            'fullscreen' : {
+                'imagePath' : 'img/fullscreen/',
+                //'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","mark","delmark","hmir","vmir","back","fwd","page","rot","brgt","cont","rgb","quality","size","calibrationx","scale","bird","help","options"],
+                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
+                'customSet' : []
+                },
+            'embedded' : {
+                'imagePath' : 'img/embedded/16/',
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","hmir","vmir","back","fwd","page","rot","brgt","cont","rgb","quality","size","scale","bird","help","options"],
+                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
+                'customSet' : []
+                }
+            },
         // button groups
-        //'buttonsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
-        'buttonsStandard' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","mark","delmark","hmir","vmir","back","fwd","page","rot","brgt","cont","rgb","quality","size","calibrationx","scale","bird","help","options"],
-        'buttonsSpecial' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
-        'buttonsCustom' : [],
         // is birdView shown?
         'isBirdDivVisible' : false,
         // dimensions of bird's eye window
@@ -253,7 +263,7 @@ if (typeof(console) === 'undefined') {
                     unpackParams(data);
                     // create HTML structure
                     setupScalerDiv(data);
-                    setupButtons(data, 'buttonsStandard');
+                    setupButtons(data, 'standardSet');
                     // bird's eye view creation
                     if (elemSettings.isBirdDivVisible) {
                         setupBirdDiv(data);
@@ -469,6 +479,7 @@ if (typeof(console) === 'undefined') {
         if (settings.scalerBaseUrl == null) {
             alert("ERROR: URL of digilib Scaler servlet missing!");
         }
+        packParams(data);
         var keys = settings.scalerParamNames;
         var queryString = getParamString(settings, keys, defaults);
         var url = settings.scalerBaseUrl + '?' + queryString;
@@ -656,47 +667,47 @@ if (typeof(console) === 'undefined') {
     var setupButtons = function (data, actionGroup) {
         var $elem = data.$elem;
         var settings = data.settings;
-        if (settings.interactionMode === 'fullscreen') {
-            // fullscreen -- create new
-            var $buttonsDiv = $('<div class="buttons"></div>');
-            $elem.append($buttonsDiv);
-            var actionNames = settings[actionGroup];
-            for (var i = 0; i < actionNames.length; i++) {
-                var actionName = actionNames[i];
-                var buttonSettings = settings.buttons[actionName];
-                // construct the button html
-                var $button = $('<div class="button"></div>');
-                var $a = $('<a/>');
-                var $img = $('<img class="button"/>');
-                $buttonsDiv.append($button);
-                $button.append($a);
-                $a.append($img);
-                // add attributes and bindings
-                $button.attr('title', buttonSettings.tooltip);
-                $button.addClass('button-' + actionName);
-                // create handler for the buttons
-                $a.bind('click.digilib', (function () {
-                    // we create a new closure to capture the value of action
-                    var action = buttonSettings.onclick;
-                    if ($.isArray(action)) {
-                        // the handler function calls digilib with action and parameters
-                        return function (evt) {
-                            console.debug('click action=', action, ' evt=', evt);
-                            $elem.digilib.apply($elem, action);
-                            return false;
-                        };
-                    } else {
-                        // the handler function calls digilib with action
-                        return function (evt) {
-                            console.debug('click action=', action, ' evt=', evt);
-                            $elem.digilib(action);
-                            return false;
-                        };
-                    }
-                })());
-                $img.attr('src', settings.buttonsImagePath + buttonSettings.img);
+        // if (settings.interactionMode === 'fullscreen') {
+        var $buttonsDiv = $('<div class="buttons"></div>');
+        $elem.append($buttonsDiv);
+        var mode = settings.interactionMode;
+        var buttonSettings = settings.buttonSettings[mode]
+        var actionNames = buttonSettings[actionGroup];
+        for (var i = 0; i < actionNames.length; i++) {
+            var actionName = actionNames[i];
+            var buttonConfig = settings.buttons[actionName];
+            // construct the button html
+            var $button = $('<div class="button"></div>');
+            var $a = $('<a/>');
+            var $img = $('<img class="button"/>');
+            $buttonsDiv.append($button);
+            $button.append($a);
+            $a.append($img);
+            // add attributes and bindings
+            $button.attr('title', buttonConfig.tooltip);
+            $button.addClass('button-' + actionName);
+            // create handler for the buttons
+            $a.bind('click.digilib', (function () {
+                // we create a new closure to capture the value of action
+                var action = buttonConfig.onclick;
+                if ($.isArray(action)) {
+                    // the handler function calls digilib with action and parameters
+                    return function (evt) {
+                        console.debug('click action=', action, ' evt=', evt);
+                        $elem.digilib.apply($elem, action);
+                        return false;
+                    };
+                } else {
+                    // the handler function calls digilib with action
+                    return function (evt) {
+                        console.debug('click action=', action, ' evt=', evt);
+                        $elem.digilib(action);
+                        return false;
+                    };
+                }
+            })());
+            $img.attr('src', buttonSettings.imagePath + buttonConfig.img);
             }
-        }
         // make buttons div scroll if too large for window
         if ($buttonsDiv.height() > $(window).height() - 10) {
             $buttonsDiv.css('position', 'absolute');
