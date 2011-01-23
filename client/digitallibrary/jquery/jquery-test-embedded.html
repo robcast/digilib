@@ -2,23 +2,33 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <title>Digilib jQuery Test HTML</title>
-        
+
         <style type="text/css">
             body {
                  background: silver;
             }
-            
+
             div.digilib {
                 float: left;
                 padding: 10px;
             }
-            
+
+            div.scaler, div.buttons {
+                float: left;
+            }
+            div.button {
+            }
+
+            div.button:hover {
+                background-color: darkred;
+            }
+
         </style>
-    
+
         <script type="text/javascript" src="jquery-1.4.4.js"></script>
         <script type="text/javascript" src="dlGeometry.js"></script>
         <script type="text/javascript" src="jquery.digilib.js"></script>
-        
+
 
         <script type="text/javascript">
             $(document).ready(function(){
@@ -27,25 +37,25 @@
                  $('div.digilib').each(function(){
                          console.log($(this).data('digilib').settings);
                     });
-              
+
             });
 
         </script>
     </head>
 
     <body>
-    
+
         <div id="digilib-1" class="digilib single">
-            <img src="http://digilinx:18080/digitallibrary/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/FransHals-WillemVanHeythuysen" />
+            <img src="http://digilib.biblhertz.it/digilib04/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/&amp;pn=1" />
         </div>
         <div id="digilib-2" class="digilib">
-            <img src="http://digilinx:18080/digitallibrary/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/ferrara" />
+            <img src="http://digilib.biblhertz.it/digilib04/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/ferrara" />
         </div>
         <div id="digilib-3" class="digilib">
-            <img src="http://digilinx:18080/digitallibrary/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/weide" />
+            <img src="http://digilib.biblhertz.it/digilib04/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/weide" />
         </div>
         <div id="digilib-4" class="digilib">
-            <img src="http://digilinx:18080/digitallibrary/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/HansHolbein-NikolausKratzer" />
+            <img src="http://digilib.biblhertz.it/digilib04/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/HansHolbein-NikolausKratzer" />
         </div>
     </body>
 </html>
