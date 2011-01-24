@@ -611,7 +611,6 @@ if (typeof(console) === 'undefined') {
             // embedded mode -- just change img src
             var url = getScalerUrl(data);
             data.$img.attr('src', url);
-            // TODO: doesn't work yet
             var $birdImg = data.$birdImg;
             if ($birdImg) {
                 $birdImg.triggerHandler('load');
