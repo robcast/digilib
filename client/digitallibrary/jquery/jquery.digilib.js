@@ -183,9 +183,10 @@ if (typeof(console) === 'undefined') {
         'interactionMode' : 'fullscreen',
         // buttons
         'buttons' : buttons,
+        // defaults for digilib buttons
         'buttonSettings' : {
-        // path to button images (must end with a slash)
             'fullscreen' : {
+                // path to button images (must end with a slash)
                 'imagePath' : 'img/fullscreen/',
                 //'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
                 'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","mark","delmark","hmir","vmir","back","fwd","page","rot","brgt","cont","rgb","quality","size","calibrationx","scale","bird","help","options"],
@@ -202,10 +203,12 @@ if (typeof(console) === 'undefined') {
         // button groups
         // is birdView shown?
         'isBirdDivVisible' : false,
-        // dimensions of bird's eye window
+        // dimensions of bird's eye div
         'birdDivOptions' : {'dw' : 200, 'dh' : 200},
-        // style of bird's eye window
+        // style of the zoom area indicator in the bird's eye div 
         'birdIndicatorStyle' : {'border' : '2px solid #ff0000' },
+        // style of zoom area "rubber band"
+        'zoomrectStyle' : {'border' : '2px solid #ff0000' },
         // is the "about" window shown?
         'isAboutDivVisible' : false
 
@@ -217,206 +220,204 @@ if (typeof(console) === 'undefined') {
     var MAX_ZOOMAREA = geom.rectangle(0, 0, 1, 1);
 
     var actions = {
-            // init: digilib initialization
-            init : function(options) {
-                // settings for this digilib instance are merged from defaults and options
-                var settings = $.extend({}, defaults, options);
-                var isFullscreen = settings.interactionMode === 'fullscreen';
-                var queryParams = {};
-                if (isFullscreen) {
-                    queryParams = parseQueryParams();
-                    // check scalerBaseUrl
-                    if (settings.scalerBaseUrl == null) {
-                        // try the host this came from
-                        var h = window.location.host;
-                        if (window.location.host) {
-                            var url = window.location.href;
-                            // assume the page lives in [webapp]/jquery/
-                            var pos = url.indexOf('jquery/');
-                            if (pos > 0) {
-                                settings.scalerBaseUrl = url.substring(0, pos) + 'servlet/Scaler';
-                            }
+        // init: digilib initialization
+        init : function(options) {
+            // settings for this digilib instance are merged from defaults and options
+            var settings = $.extend({}, defaults, options);
+            var isFullscreen = settings.interactionMode === 'fullscreen';
+            var queryParams = {};
+            if (isFullscreen) {
+                queryParams = parseQueryParams();
+                // check scalerBaseUrl
+                if (settings.scalerBaseUrl == null) {
+                    // try the host this came from
+                    var h = window.location.host;
+                    if (window.location.host) {
+                        var url = window.location.href;
+                        // assume the page lives in [webapp]/jquery/
+                        var pos = url.indexOf('jquery/');
+                        if (pos > 0) {
+                            settings.scalerBaseUrl = url.substring(0, pos) + 'servlet/Scaler';
                         }
                     }
                 }
-                return this.each(function() {
-                    var $elem = $(this);
-                    var data = $elem.data('digilib');
-                    var elemSettings;
-                    // if the plugin hasn't been initialized yet
-                    if (!data) {
-                        // merge query parameters
-                        if (isFullscreen) {
-                            elemSettings = $.extend({}, settings, queryParams);
-                        } else {
-                            elemSettings = $.extend({}, settings, parseImgParams($elem));
-                        }
-                        // store $(this) element in the settings
-                        data =  {
-                                $elem : $elem,
-                                settings : elemSettings,
-                                queryParams : queryParams
-                        };
-                        // store in data element
-                        $elem.data('digilib', data);
+            }
+            return this.each(function() {
+                var $elem = $(this);
+                var data = $elem.data('digilib');
+                var elemSettings;
+                // if the plugin hasn't been initialized yet
+                if (!data) {
+                    // merge query parameters
+                    if (isFullscreen) {
+                        elemSettings = $.extend({}, settings, queryParams);
+                    } else {
+                        elemSettings = $.extend({}, settings, parseImgParams($elem));
                     }
-                    unpackParams(data);
-                    // create HTML structure
-                    setupScalerDiv(data);
-                    setupButtons(data, 'standardSet');
-                    // bird's eye view creation
-                    if (elemSettings.isBirdDivVisible) {
-                        setupBirdDiv(data);
-                    }
-                    // about window creation - TODO: could be deferred? restrict to only one item?
-                    setupAboutDiv(data);
-                });
-            },
-
-            // destroy: clean up digilib
-            destroy : function(data) {
-                return this.each(function(){
-                    var $elem = $(this);
-                    $(window).unbind('.digilib'); // unbind all digilibs(?)
-                    data.digilib.remove();
-                    $elem.removeData('digilib');
-                });
-            },
-
-            // show or hide the 'about' window
-            showAboutDiv : function(data, show) {
-                data.settings.isAboutDivVisible = showDiv(data.settings.isAboutDivVisible, data.$aboutDiv, show);
-            },
-
-            // event handler: toggles the visibility of the bird's eye window 
-            showBirdDiv : function (data, show) {
-                if (data.$birdDiv == null) {
-                    // no bird div -> create
+                    // store $(this) element in the settings
+                    data =  {
+                            $elem : $elem,
+                            settings : elemSettings,
+                            queryParams : queryParams
+                    };
+                    // store in data element
+                    $elem.data('digilib', data);
+                }
+                unpackParams(data);
+                // create HTML structure
+                setupScalerDiv(data);
+                setupButtons(data, 'standardSet');
+                // bird's eye view creation
+                if (elemSettings.isBirdDivVisible) {
                     setupBirdDiv(data);
                 }
-                // TODO: keep bird view visible after reload (parameter, cookie?)
-                data.settings.isBirdDivVisible = showDiv(data.settings.isBirdDivVisible, data.$birdDiv, show);
-            },
+                // about window creation - TODO: could be deferred? restrict to only one item?
+                setupAboutDiv(data);
+            });
+        },
 
-            // goto given page nr (+/-: relative)
-            gotoPage : function (data, pageNr) {
-                var settings = data.settings;
-                var oldpn = settings.pn;
-                var pn = setNumValue(settings, "pn", pageNr);
-                if (pn == null) return false; // nothing happened
-                if (pn < 1) {
-                    alert("no such page (page number too low)");
+        // destroy: clean up digilib
+        destroy : function(data) {
+            return this.each(function(){
+                var $elem = $(this);
+                $(window).unbind('.digilib'); // unbind all digilibs(?)
+                data.digilib.remove();
+                $elem.removeData('digilib');
+            });
+        },
+
+        // show or hide the 'about' window
+        showAboutDiv : function(data, show) {
+            data.settings.isAboutDivVisible = showDiv(data.settings.isAboutDivVisible, data.$aboutDiv, show);
+        },
+
+        // event handler: toggles the visibility of the bird's eye window 
+        showBirdDiv : function (data, show) {
+            if (data.$birdDiv == null) {
+                // no bird div -> create
+                setupBirdDiv(data);
+            }
+            // TODO: keep bird view visible after reload (parameter, cookie?)
+            data.settings.isBirdDivVisible = showDiv(data.settings.isBirdDivVisible, data.$birdDiv, show);
+        },
+
+        // goto given page nr (+/-: relative)
+        gotoPage : function (data, pageNr) {
+            var settings = data.settings;
+            var oldpn = settings.pn;
+            var pn = setNumValue(settings, "pn", pageNr);
+            if (pn == null) return false; // nothing happened
+            if (pn < 1) {
+                alert("no such page (page number too low)");
+                settings.pn = oldpn;
+                return false;
+                }
+            if (settings.pt) {
+                if (pn > settings.pt) {
+                    alert("no such page (page number too high)");
                     settings.pn = oldpn;
                     return false;
                     }
-                if (settings.pt) {
-                    if (pn > settings.pt) {
-                        alert("no such page (page number too high)");
-                        settings.pn = oldpn;
-                        return false;
-                        }
-                    }
-                // reset mk and others(?)
-                data.marks = [];
-                data.zoomArea = MAX_ZOOMAREA;
-                // then reload
-                redisplay(data);
-            },
+                }
+            // reset mk and others(?)
+            data.marks = [];
+            data.zoomArea = MAX_ZOOMAREA;
+            // then reload
+            redisplay(data);
+        },
 
-            // zoom by a given factor
-            zoomBy : function (data, factor) {
-                zoomBy(data, factor);
-            },
+        // zoom by a given factor
+        zoomBy : function (data, factor) {
+            zoomBy(data, factor);
+        },
 
-            // zoom interactively
-            zoomArea : function (data) {
-                zoomArea(data);
-            },
+        // zoom interactively
+        zoomArea : function (data) {
+            zoomArea(data);
+        },
 
-            // zoom out to full page
-            zoomFull : function (data, mode) {
-                data.zoomArea = MAX_ZOOMAREA;
-                if (mode === 'width') {
-                    data.dlOpts.fitwidth = 1;
-                    delete data.dlOpts.fitheight;
-                } else if (mode === 'height') {
-                    data.dlOpts.fitheight = 1;
-                    delete data.dlOpts.fitwidth;
-                } else {
-                    delete data.dlOpts.fitwidth;
-                    delete data.dlOpts.fitheight;
-                }
-                redisplay(data);
-            },
+        // zoom out to full page
+        zoomFull : function (data, mode) {
+            data.zoomArea = MAX_ZOOMAREA;
+            if (mode === 'width') {
+                data.dlOpts.fitwidth = 1;
+                delete data.dlOpts.fitheight;
+            } else if (mode === 'height') {
+                data.dlOpts.fitheight = 1;
+                delete data.dlOpts.fitwidth;
+            } else {
+                delete data.dlOpts.fitwidth;
+                delete data.dlOpts.fitheight;
+            }
+            redisplay(data);
+        },
 
-            // set a mark by clicking (or giving a position)
-            setMark : function (data, mpos) {
-                if (mpos == null) {
-                    // interactive
-                    setMark(data);
-                } else {
-                    // use position
-                    data.marks.push(pos);
-                    redisplay(data);
-                }
-            },
-
-            // remove the last mark
-            removeMark : function (data) {
-                data.marks.pop();
-                redisplay(data);
-            },
-            
-            // mirror the image
-            mirror : function (data, mode) {
-                var flags = data.scalerFlags;
-            	if (mode === 'h') {
-            	    if (flags.hmir) {
-                        delete flags.hmir;
-            	    } else {
-                        flags.hmir = 1;
-            	    }
-            	} else {
-                    if (flags.vmir) {
-                        delete flags.vmir;
-                    } else {
-                        flags.vmir = 1;
-                    }
-                }
-            	redisplay(data);
-            },
-            
-            // rotate the image
-            rotate : function (data, angle) {
-                var rot = data.settings.rot;
-                if (angle == null) {
-                    angle = window.prompt("Rotation angle:", rot);
-                }
-                data.settings.rot = angle;
-                redisplay(data);
-            },
-            
-            // change brightness
-            brightness : function (data, factor) {
-                var brgt = data.settings.brgt;
-                if (factor == null) {
-                    factor = window.prompt("Brightness (-255..255)", brgt);
-                }
-                data.settings.brgt = factor;
-                redisplay(data);
-            },
-            
-            // change contrast
-            contrast : function (data, factor) {
-                var cont = data.settings.cont;
-                if (factor == null) {
-                    factor = window.prompt("Contrast (-8, 8)", cont);
-                }
-                data.settings.cont = factor;
+        // set a mark by clicking (or giving a position)
+        setMark : function (data, mpos) {
+            if (mpos == null) {
+                // interactive
+                setMark(data);
+            } else {
+                // use position
+                data.marks.push(pos);
                 redisplay(data);
             }
-            
+        },
 
+        // remove the last mark
+        removeMark : function (data) {
+            data.marks.pop();
+            redisplay(data);
+        },
+
+        // mirror the image
+        mirror : function (data, mode) {
+            var flags = data.scalerFlags;
+            if (mode === 'h') {
+                if (flags.hmir) {
+                    delete flags.hmir;
+                } else {
+                    flags.hmir = 1;
+                }
+            } else {
+                if (flags.vmir) {
+                    delete flags.vmir;
+                } else {
+                    flags.vmir = 1;
+                }
+            }
+            redisplay(data);
+        },
+
+        // rotate the image
+        rotate : function (data, angle) {
+            var rot = data.settings.rot;
+            if (angle == null) {
+                angle = window.prompt("Rotation angle:", rot);
+            }
+            data.settings.rot = angle;
+            redisplay(data);
+        },
+
+        // change brightness
+        brightness : function (data, factor) {
+            var brgt = data.settings.brgt;
+            if (factor == null) {
+                factor = window.prompt("Brightness (-255..255)", brgt);
+            }
+            data.settings.brgt = factor;
+            redisplay(data);
+        },
+
+        // change contrast
+        contrast : function (data, factor) {
+            var cont = data.settings.cont;
+            if (factor == null) {
+                factor = window.prompt("Contrast (-8, 8)", cont);
+            }
+            data.settings.cont = factor;
+            redisplay(data);
+        }
     };
 
     // returns parameters from page url
@@ -452,7 +453,7 @@ if (typeof(console) === 'undefined') {
         }
         return params;
     };
-    
+
     // returns a query string from key names from a parameter hash (ignoring if the same value is in defaults)
     var getParamString = function (settings, keys, defaults) {
         var paramString = '';
@@ -610,6 +611,11 @@ if (typeof(console) === 'undefined') {
             // embedded mode -- just change img src
             var url = getScalerUrl(data);
             data.$img.attr('src', url);
+            // TODO: doesn't work yet
+            var $birdImg = data.$birdImg;
+            if ($birdImg) {
+                $birdImg.triggerHandler('load');
+                };
         }
     };
 
@@ -830,10 +836,11 @@ if (typeof(console) === 'undefined') {
     var birdImgLoadedHandler = function (data) {
         var $img = data.$birdImg;
         return function () {
+            if (!$img) return;
             console.debug("birdimg loaded! this=", this, " data=", data);
             // create Transform from current area and picsize
             data.birdTrafo = getImgTrafo($img, MAX_ZOOMAREA);
-            // display marks
+            // display red indicator around zoomarea
             renderBirdArea(data);
         };
     };
@@ -900,13 +907,14 @@ if (typeof(console) === 'undefined') {
             return false; // do we even get here?
         });
     };
-    
+
     var zoomArea = function(data) {
         $elem = data.$elem;
         $scaler = data.$scaler;
         var pt1, pt2;
         var $zoomDiv = $('<div class="zoomrect" style="display:none"/>');
         $elem.append($zoomDiv);
+        $zoomDiv.css(data.settings.zoomrectStyle);
         //var overlay = getElement("overlay");
         // use overlay div to avoid <img> mousemove problems
         var picRect = geom.rectangle($scaler);
@@ -924,13 +932,14 @@ if (typeof(console) === 'undefined') {
             // setup and show zoom div
             //moveElement(zoomdiv, Rectangle(pt1.x, pt1.y, 0, 0));
             $zoomDiv.offset({left : pt1.x, top : pt1.y});
+            $zoomDiv.width(0).height(0);
             $zoomDiv.show();
             // register events
             $elem.bind("mousemove.digilib", zoomMove);
             $elem.bind("mouseup.digilib", zoomEnd);
             return false;
         };
-        
+
         // mouseup handler: end moving
         var zoomEnd = function (evt) {
             pt2 = geom.position(evt);
@@ -955,7 +964,7 @@ if (typeof(console) === 'undefined') {
             redisplay(data);
             return false;
         };
-        
+
         // mouse move handler
         var zoomMove = function (evt) {
             pt2 = geom.position(evt);
@@ -967,7 +976,7 @@ if (typeof(console) === 'undefined') {
             $zoomDiv.width(rect.width).height(rect.height);
             return false;
         };
-        
+
         // bind start zoom handler
         $scaler.one('mousedown.digilib', zoomStart);
     };
