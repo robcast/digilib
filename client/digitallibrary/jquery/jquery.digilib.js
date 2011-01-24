@@ -611,11 +611,7 @@ if (typeof(console) === 'undefined') {
             // embedded mode -- just change img src
             var url = getScalerUrl(data);
             data.$img.attr('src', url);
-            var $birdImg = data.$birdImg;
-            if ($birdImg) {
-                $birdImg.triggerHandler('load');
-                };
-        }
+            };
     };
 
     // returns maximum size for scaler img in fullscreen mode
@@ -731,12 +727,16 @@ if (typeof(console) === 'undefined') {
         // the bird's eye div
         var $birdDiv = $('<div class="birdview" style="display:none"/>');
         // the detail indicator frame
-        var $birdzoomDiv = $('<div class="birdzoom" style="position: absolute; background-color: transparent;"/>');
+        var $birdzoomDiv = $('<div class="birdzoom" style="display:none; position:absolute; background-color:transparent;"/>');
         // the small image
         var $birdImg = $('<img class="birdimg"/>');
         $elem.append($birdDiv);
         $birdDiv.append($birdzoomDiv);
         $birdDiv.append($birdImg);
+        $birdzoomDiv.css(data.settings.birdIndicatorStyle);
+        // $birdzoomDiv.offset($birdDiv.offset());
+        // $birdzoomDiv.width($birdDiv.width());
+        // $birdzoomDiv.height($birdDiv.height());
         data.$birdDiv = $birdDiv;
         data.$birdImg = $birdImg;
         $birdImg.load(birdImgLoadedHandler(data));
@@ -828,6 +828,10 @@ if (typeof(console) === 'undefined') {
             // display marks
             renderMarks(data);
             //digilib.showArrows(); // show arrow overlays for zoom navigation
+            var $birdImg = data.$birdImg;
+            if ($birdImg) {
+                $birdImg.triggerHandler('load');
+                };
         };
     };
 
@@ -836,7 +840,7 @@ if (typeof(console) === 'undefined') {
         var $img = data.$birdImg;
         return function () {
             if (!$img) return;
-            console.debug("birdimg loaded! this=", this, " data=", data);
+            // console.debug("birdimg loaded! this=", this, " data=", data);
             // create Transform from current area and picsize
             data.birdTrafo = getImgTrafo($img, MAX_ZOOMAREA);
             // display red indicator around zoomarea
@@ -867,13 +871,32 @@ if (typeof(console) === 'undefined') {
         var $ind = data.$birdDiv.find('div.birdzoom');
         var zoomArea = data.zoomArea;
         var indRect = data.birdTrafo.transform(zoomArea);
-        if (isFullArea(zoomArea)) return $ind.hide(); 
-        // TODO: set the coordinates all in one call?
-        $ind.width(indRect.width);
-        $ind.height(indRect.height);
-        // offset minus frame width
-        $ind.offset({ left : indRect.x-2, top : indRect.y-2 });
-        $ind.css(data.settings.birdIndicatorStyle);
+        var coords = {
+            left : indRect.x-2, // acount for frame width
+            top : indRect.y-2,
+            width : indRect.width,
+            height: indRect.height
+            };
+        var normalSize = isFullArea(zoomArea);
+        if (data.settings.interactionMode === 'fullscreen') {
+            // no animation for fullscreen
+            if (normalSize) return $ind.hide(); 
+            $ind.width(coords.width);
+            $ind.height(coords.height);
+            $ind.offset(coords);
+            $ind.show();
+            return;
+            };
+        // nice animation for embedded mode :-)
+        var makeCompleteFunction = function($ind, normalSize) {
+            return function() { 
+                if (normalSize) $ind.hide(); }
+            };
+        var opts = {
+            'complete' : makeCompleteFunction($ind, normalSize)
+            };
+        if (!normalSize && $ind.css('display') === 'none') $ind.show();
+        $ind.animate(coords, opts);
     };
 
     // zooms by the given factor
