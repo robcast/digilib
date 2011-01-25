@@ -672,7 +672,7 @@ if (typeof(console) === 'undefined') {
         var $buttonsDiv = $('<div class="buttons"></div>');
         $elem.append($buttonsDiv);
         var mode = settings.interactionMode;
-        var buttonSettings = settings.buttonSettings[mode]
+        var buttonSettings = settings.buttonSettings[mode];
         var actionNames = buttonSettings[actionGroup];
         for (var i = 0; i < actionNames.length; i++) {
             var actionName = actionNames[i];
@@ -734,9 +734,6 @@ if (typeof(console) === 'undefined') {
         $birdDiv.append($birdzoomDiv);
         $birdDiv.append($birdImg);
         $birdzoomDiv.css(data.settings.birdIndicatorStyle);
-        // $birdzoomDiv.offset($birdDiv.offset());
-        // $birdzoomDiv.width($birdDiv.width());
-        // $birdzoomDiv.height($birdDiv.height());
         data.$birdDiv = $birdDiv;
         data.$birdImg = $birdImg;
         $birdImg.load(birdImgLoadedHandler(data));
@@ -800,26 +797,13 @@ if (typeof(console) === 'undefined') {
         if (data) {
             /* var rot = trafo.getRotationAround(parseFloat(data.settings.rot), 
                     geom.position(0.5 * area.width + area.x, 0.5 * area.height + area.y)); */
-            var rot = trafo.getRotation(parseFloat(data.settings.rot));
-            var trans1 = trafo.getTranslation(geom.position(-0.5 * area.width + area.x, -0.5 * area.height + area.y));
-            var trans2 = trafo.getTranslation(geom.position(0.5 * area.width + area.x, 0.5 * area.height + area.y));
-            trafo.concat(trans1);
+            var rot = trafo.getRotationAround(parseFloat(data.settings.rot), 
+                    geom.position(0.5, 0.5));
             trafo.concat(rot);
-            trafo.concat(trans2);
         }
         // scale to screen position and size
         trafo.concat(trafo.getScale(picrect));
         trafo.concat(trafo.getTranslation(picrect));
-        /* if (data && data.settings.rot) {
-            var rot = trafo.getRotationAround(-data.settings.rot, 
-                    geom.position(0.5 * picrect.width + picrect.x, 0.5 * picrect.height + picrect.y));
-            //var trans1 = trafo.getTranslation(geom.position(-0.5*picrect.width, -0.5*picrect.height));
-            //var rot = trafo.getRotation(data.settings.rot);
-            //var trans2 = trafo.getTranslation(geom.position(0.5*picrect.width, 0.5*pirect.height));
-            //trafo.concat(trans1);
-            trafo.concat(rot);
-            //trafo.concat(trans2);
-        } */
         return trafo;
     };
     
@@ -895,7 +879,8 @@ if (typeof(console) === 'undefined') {
         // nice animation for embedded mode :-)
         var makeCompleteFunction = function($ind, normalSize) {
             return function() { 
-                if (normalSize) $ind.hide(); }
+                if (normalSize) $ind.hide(); 
+                };
             };
         var opts = {
             'complete' : makeCompleteFunction($ind, normalSize)
@@ -922,12 +907,10 @@ if (typeof(console) === 'undefined') {
     // add a mark where clicked
     var setMark = function (data) {
         var $scaler = data.$scaler;
-        console.debug("setmark");
         // start event capturing
         $scaler.one('click.digilib', function (evt) {
             // event handler adding a new mark
-            console.debug("setmark.click evt=",evt);
-            var mpos = geom.position(evt.pageX, evt.pageY);
+            var mpos = geom.position(evt);
             var pos = data.imgTrafo.invtransform(mpos);
             data.marks.push(pos);
             redisplay(data);
@@ -942,17 +925,10 @@ if (typeof(console) === 'undefined') {
         var $zoomDiv = $('<div class="zoomrect" style="display:none"/>');
         $elem.append($zoomDiv);
         $zoomDiv.css(data.settings.zoomrectStyle);
-        //var overlay = getElement("overlay");
-        // use overlay div to avoid <img> mousemove problems
         var picRect = geom.rectangle($scaler);
         // FIX ME: is there a way to query the border width from CSS info?
         // rect.x -= 2; // account for overlay borders
         // rect.y -= 2;
-        //moveElement(overlay, picRect);
-        //showElement(overlay, true);
-        // start event capturing
-        //registerEvent("mousedown", overlay, zoomStart);
-        //registerEvent("mousedown", this.scalerImg, zoomStart);
 
         var zoomStart = function (evt) {
             pt1 = geom.position(evt);
@@ -972,8 +948,6 @@ if (typeof(console) === 'undefined') {
             pt2 = geom.position(evt);
             // assume a click and continue if the area is too small
             var clickRect = geom.rectangle(pt1, pt2);
-            clickRect.normalize();
-            console.debug("clickRect.getArea()=",clickRect.getArea());
             if (clickRect.getArea() <= 5) {
                 return false;
             }
@@ -996,11 +970,9 @@ if (typeof(console) === 'undefined') {
         var zoomMove = function (evt) {
             pt2 = geom.position(evt);
             var rect = geom.rectangle(pt1, pt2);
-            rect.normalize();
             rect.clipTo(picRect);
             // update zoom div
-            $zoomDiv.offset({left : rect.x, top : rect.y});
-            $zoomDiv.width(rect.width).height(rect.height);
+            rect.adjustDiv($zoomDiv);
             return false;
         };
 

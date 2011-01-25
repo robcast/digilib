@@ -71,10 +71,10 @@ var dlGeometry = function() {
                 } else {
                     // assume x and y are Position
                     that = {
-                            x : x.x,
-                            y : x.y,
-                            width : y.x - x.x,
-                            height : y.y - x.y
+                            x : Math.min(x.x, y.x),
+                            y : Math.min(x.y, y.y),
+                            width : Math.abs(y.x - x.x),
+                            height : Math.abs(y.y - x.y)
                     };
                 }
             } else {
@@ -213,6 +213,11 @@ var dlGeometry = function() {
                 }
                 return sec.intersect(this);
             };
+            // adjusts position and size of $elem to this rectangle
+            that.adjustDiv = function ($elem) {
+                $elem.offset({left : this.x, top : this.y});
+                $elem.width(this.width).height(this.height);
+            };
             that.toString = function() {
                 return this.width+"x"+this.height+"@"+this.x+","+this.y;
             };
@@ -239,50 +244,45 @@ var dlGeometry = function() {
             if (spec) {
                 jQuery.extend(that, spec);
             };
-            that.concat = function(traf) {
-                // add Transform traf to this Transform
+            that.concat = function(trafA) {
+                // add Transform trafA to this Transform (i.e. this = trafC = trafA * this)
+                var trafC = {};
                 for (var i = 0; i < 3; i++) {
                     for (var j = 0; j < 3; j++) {
                         var c = 0.0;
                         for (var k = 0; k < 3; k++) {
-                            c += traf["m"+i+k] * this["m"+k+j];
-                            //c += this["m"+i.toString()+k.toString()] * traf["m"+k.toString()+j.toString()];
+                            c += trafA["m"+i+k] * this["m"+k+j];
                         }
-                        this["m"+i+j] = c;
+                        trafC["m"+i+j] = c;
                     }
                 }
+                jQuery.extend(this, trafC);
                 return this;
             };
             that.transform = function(rect) {
                 // returns transformed Rectangle or Position with this Transform applied
                 var x = this.m00 * rect.x + this.m01 * rect.y + this.m02;
                 var y = this.m10 * rect.x + this.m11 * rect.y + this.m12;
+                var pt = position(x, y);
                 if (rect.width) {
-                    // transform the other corner points
-                    var pt2 = rect.getPt2();
-                    var x2 = this.m00 * pt2.x + this.m01 * pt2.y + this.m02;
-                    var y2 = this.m10 * pt2.x + this.m11 * pt2.y + this.m12;
-                    var width = x2 - x;
-                    var height = y2 - y;
-                    return rectangle(x, y, width, height);
+                    // transform the other corner point
+                    var pt2 = this.transform(rect.getPt2());
+                    return rectangle(pt, pt2);
                 }
-                return position(x, y);
+                return pt;
             };
             that.invtransform = function(rect) {
                 // returns transformed Rectangle or Position with the inverse of this Transform applied
                 var det = this.m00 * this.m11 - this.m01 * this.m10;
                 var x = (this.m11 * rect.x - this.m01 * rect.y - this.m11 * this.m02 + this.m01 * this.m12) / det;
-                var y = (- this.m10 * rect.x + this.m00 * rect.y + this.m10 * this.m02 - this.m00 * this.m12) / det;
+                var y = (-this.m10 * rect.x + this.m00 * rect.y + this.m10 * this.m02 - this.m00 * this.m12) / det;
+                var pt = position(x, y);
                 if (rect.width) {
-                    // transform the other corner points
-                    var pt2 = rect.getPt2();
-                    var x2 = (this.m11 * pt2.x - this.m01 * pt2.y - this.m11 * this.m02 + this.m01 * this.m12) / det;
-                    var y2 = (- this.m10 * pt2.x + this.m00 * pt2.y + this.m10 * this.m02 - this.m00 * this.m12) / det;
-                    var width = x2 - x;
-                    var height = y2 - y;
-                    return rectangle(x, y, width, height);
+                    // transform the other corner point
+                    var pt2 = this.invtransform(rect.getPt2());
+                    return rectangle(pt, pt2);
                 }
-                return position(x, y);
+                return pt;
             };
             that.toString = function (pretty) {
                 var s = '[';
