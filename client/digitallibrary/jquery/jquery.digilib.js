@@ -204,7 +204,8 @@ if (typeof(console) === 'undefined') {
         // is birdView shown?
         'isBirdDivVisible' : false,
         // dimensions of bird's eye div
-        'birdDivOptions' : {'dw' : 200, 'dh' : 200},
+        'birdDivWidth' : 200, 
+        'birdDivHeight' : 200,
         // style of the zoom area indicator in the bird's eye div 
         'birdIndicatorStyle' : {'border' : '2px solid #ff0000' },
         // style of zoom area "rubber band"
@@ -722,7 +723,11 @@ if (typeof(console) === 'undefined') {
         var settings = data.settings;
         // use only the relevant parameters
         var keys = ['fn','pn','dw','dh'];
-        var birdSettings = $.extend({}, settings, settings.birdDivOptions);
+        var birdDivOptions = {
+            dw : settings.birdDivWidth,
+            dh : settings.birdDivHeight
+            };
+        var birdSettings = $.extend({}, settings, birdDivOptions);
         var birdUrl = settings.scalerBaseUrl + '?' + getParamString(birdSettings, keys);
         // the bird's eye div
         var $birdDiv = $('<div class="birdview" style="display:none"/>');
@@ -855,7 +860,7 @@ if (typeof(console) === 'undefined') {
     };
 
     var renderBirdArea = function (data) {
-        var $ind = data.$birdDiv.find('div.birdzoom');
+        var $birdzoom = data.$birdDiv.find('div.birdzoom');
         var zoomArea = data.zoomArea;
         var indRect = data.birdTrafo.transform(zoomArea);
         var coords = {
@@ -867,24 +872,24 @@ if (typeof(console) === 'undefined') {
         var normalSize = isFullArea(zoomArea);
         if (data.settings.interactionMode === 'fullscreen') {
             // no animation for fullscreen
-            if (normalSize) return $ind.hide(); 
-            $ind.width(coords.width);
-            $ind.height(coords.height);
-            $ind.offset(coords);
-            $ind.show();
+            if (normalSize) return $birdzoom.hide(); 
+            $birdzoom.width(coords.width);
+            $birdzoom.height(coords.height);
+            $birdzoom.offset(coords);
+            $birdzoom.show();
             return;
             };
         // nice animation for embedded mode :-)
-        var makeCompleteFunction = function($ind, normalSize) {
+        var makeCompleteFunction = function($birdzoom, normalSize) {
             return function() { 
-                if (normalSize) $ind.hide(); 
+                if (normalSize) $birdzoom.hide(); 
                 };
             };
         var opts = {
-            'complete' : makeCompleteFunction($ind, normalSize)
+            'complete' : makeCompleteFunction($birdzoom, normalSize)
             };
-        if (!normalSize && $ind.css('display') === 'none') $ind.show();
-        $ind.animate(coords, opts);
+        if (!normalSize && $birdzoom.css('display') === 'none') $birdzoom.show();
+        $birdzoom.animate(coords, opts);
     };
 
     // zooms by the given factor
