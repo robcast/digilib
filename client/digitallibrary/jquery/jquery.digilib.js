@@ -786,18 +786,31 @@ if (typeof(console) === 'undefined') {
     };
 
     // create Transform from area and $img
-    var getImgTrafo = function ($img, area, data) {
+    var getImgTrafo = function ($img, area, rot, hmir, vmir) {
         var picrect = geom.rectangle($img);
         var trafo = geom.transform();
-        // zoom area offset
+        // move zoom area offset to center
         trafo.concat(trafo.getTranslation(geom.position(-area.x, -area.y)));
-        // zoom area size
+        // scale zoom area size to [1,1]
         trafo.concat(trafo.getScale(geom.size(1/area.width, 1/area.height)));
-        // rotate (around transformed image center i.e. [0.5,0.5])
-        if (data) {
-            var rot = trafo.getRotationAround(parseFloat(data.settings.rot), 
-                    geom.position(0.5, 0.5));
-            trafo.concat(rot);
+        // rotate and mirror (around transformed image center i.e. [0.5,0.5])
+        if (rot || hmir || vmir) {
+            // move [0.5,0.5] to center
+            trafo.concat(trafo.getTranslation(geom.position(-0.5, -0.5)));
+            if (hmir) {
+                // mirror about center
+                trafo.concat(trafo.getMirror('y'));
+            }
+            if (vmir) {
+                // mirror about center
+                trafo.concat(trafo.getMirror('x'));
+            }
+            if (rot) {
+                // rotate around center
+                trafo.concat(trafo.getRotation(parseFloat(rot)));
+            }
+            // move back
+            trafo.concat(trafo.getTranslation(geom.position(0.5, 0.5)));
         }
         // scale to screen position and size
         trafo.concat(trafo.getScale(picrect));
@@ -811,7 +824,8 @@ if (typeof(console) === 'undefined') {
         return function () {
             console.debug("img loaded! this=", this, " data=", data);
             // create Transform from current area and picsize
-            data.imgTrafo = getImgTrafo($img, data.zoomArea, data);
+            data.imgTrafo = getImgTrafo($img, data.zoomArea,
+                    data.settings.rot, data.scalerFlags.hmir, data.scalerFlags.vmir);
             // display marks
             renderMarks(data);
             //digilib.showArrows(); // show arrow overlays for zoom navigation

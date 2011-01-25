@@ -304,6 +304,7 @@ var dlGeometry = function() {
             that.getRotation = transform.getRotation;
             that.getRotationAround = transform.getRotationAround;
             that.getTranslation = transform.getTranslation;
+            that.getMirror = transform.getMirror;
             that.getScale = transform.getScale;
 
             return that;
@@ -326,6 +327,14 @@ var dlGeometry = function() {
            return transform();
        };
 
+       transform.getRotationAround = function (angle, pos) {
+           // returns a Transform that is a rotation by angle degrees around pos
+           var traf = transform.getTranslation({x : -pos.x, y : -pos.y});
+           traf.concat(transform.getRotation(angle));
+           traf.concat(transform.getTranslation(pos));
+           return traf;
+       };
+       
        transform.getTranslation = function (pos) {
            // returns a Transform that is a translation by [pos.x, pos,y]
            var traf = {
@@ -335,14 +344,22 @@ var dlGeometry = function() {
            return transform(traf);
        };
 
-       transform.getRotationAround = function (angle, pos) {
-           // returns a Transform that is a rotation by angle degrees around pos
-           var traf = transform.getTranslation({x : -pos.x, y : -pos.y});
-           traf.concat(transform.getRotation(angle));
-           traf.concat(transform.getTranslation(pos));
-           return traf;
+       transform.getMirror = function (type) {
+           // returns a Transform that is a mirror about the axis type
+           if (type === 'x') {
+               var traf = {
+                       m00 : 1,
+                       m11 : -1
+               };
+           } else {
+               var traf = {
+                       m00 : -1,
+                       m11 : 1
+               };
+           }
+           return transform(traf);
        };
-       
+
        transform.getScale = function (size) {
            // returns a Transform that is a scale by [size.width, size.height]
            var traf = {
