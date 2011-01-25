@@ -793,10 +793,8 @@ if (typeof(console) === 'undefined') {
         trafo.concat(trafo.getTranslation(geom.position(-area.x, -area.y)));
         // zoom area size
         trafo.concat(trafo.getScale(geom.size(1/area.width, 1/area.height)));
-        // rotate
+        // rotate (around transformed image center i.e. [0.5,0.5])
         if (data) {
-            /* var rot = trafo.getRotationAround(parseFloat(data.settings.rot), 
-                    geom.position(0.5 * area.width + area.x, 0.5 * area.height + area.y)); */
             var rot = trafo.getRotationAround(parseFloat(data.settings.rot), 
                     geom.position(0.5, 0.5));
             trafo.concat(rot);
