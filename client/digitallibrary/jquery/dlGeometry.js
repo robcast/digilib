@@ -245,9 +245,10 @@ var dlGeometry = function() {
                     for (var j = 0; j < 3; j++) {
                         var c = 0.0;
                         for (var k = 0; k < 3; k++) {
-                            c += traf["m"+i.toString()+k.toString()] * this["m"+k.toString()+j.toString()];
+                            c += traf["m"+i+k] * this["m"+k+j];
+                            //c += this["m"+i.toString()+k.toString()] * traf["m"+k.toString()+j.toString()];
                         }
-                        this["m"+i.toString()+j.toString()] = c;
+                        this["m"+i+j] = c;
                     }
                 }
                 return this;

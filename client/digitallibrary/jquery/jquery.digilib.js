@@ -798,9 +798,14 @@ if (typeof(console) === 'undefined') {
         trafo.concat(trafo.getScale(geom.size(1/area.width, 1/area.height)));
         // rotate
         if (data) {
-            var rot = trafo.getRotationAround(-parseFloat(data.settings.rot), 
-                    geom.position(0.5 * area.width + area.x, 0.5 * area.height + area.y));
+            /* var rot = trafo.getRotationAround(parseFloat(data.settings.rot), 
+                    geom.position(0.5 * area.width + area.x, 0.5 * area.height + area.y)); */
+            var rot = trafo.getRotation(parseFloat(data.settings.rot));
+            var trans1 = trafo.getTranslation(geom.position(-0.5 * area.width + area.x, -0.5 * area.height + area.y));
+            var trans2 = trafo.getTranslation(geom.position(0.5 * area.width + area.x, 0.5 * area.height + area.y));
+            trafo.concat(trans1);
             trafo.concat(rot);
+            trafo.concat(trans2);
         }
         // scale to screen position and size
         trafo.concat(trafo.getScale(picrect));
