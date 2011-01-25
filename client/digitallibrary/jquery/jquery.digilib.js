@@ -612,7 +612,11 @@ if (typeof(console) === 'undefined') {
             // embedded mode -- just change img src
             var url = getScalerUrl(data);
             data.$img.attr('src', url);
-            };
+            // and update bird's eye view
+            if (settings.isBirdDivVisible) {
+                renderBirdArea(data);
+            }
+        };
     };
 
     // returns maximum size for scaler img in fullscreen mode
@@ -741,6 +745,7 @@ if (typeof(console) === 'undefined') {
         $birdzoomDiv.css(data.settings.birdIndicatorStyle);
         data.$birdDiv = $birdDiv;
         data.$birdImg = $birdImg;
+        data.$birdZoom = $birdzoomDiv;
         $birdImg.load(birdImgLoadedHandler(data));
         $birdImg.attr('src', birdUrl);
         if (data.settings.isBirdDivVisible) {
@@ -834,10 +839,10 @@ if (typeof(console) === 'undefined') {
             // display marks
             renderMarks(data);
             //digilib.showArrows(); // show arrow overlays for zoom navigation
-            var $birdImg = data.$birdImg;
+            /* var $birdImg = data.$birdImg;
             if ($birdImg) {
                 $birdImg.triggerHandler('load');
-                };
+                }; */
         };
     };
 
@@ -845,8 +850,7 @@ if (typeof(console) === 'undefined') {
     var birdImgLoadedHandler = function (data) {
         var $img = data.$birdImg;
         return function () {
-            if (!$img) return;
-            // console.debug("birdimg loaded! this=", this, " data=", data);
+            console.debug("birdimg loaded! this=", this, " data=", data);
             // create Transform from current area and picsize
             data.birdTrafo = getImgTrafo($img, MAX_ZOOMAREA);
             // display red indicator around zoomarea
@@ -873,8 +877,9 @@ if (typeof(console) === 'undefined') {
         }
     };
 
+    // show zoom area indicator on bird's eye view
     var renderBirdArea = function (data) {
-        var $birdzoom = data.$birdDiv.find('div.birdzoom');
+        var $birdzoom = data.$birdZoom;
         var zoomArea = data.zoomArea;
         var indRect = data.birdTrafo.transform(zoomArea);
         var coords = {
