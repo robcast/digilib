@@ -1038,8 +1038,11 @@ if (typeof(console) === 'undefined') {
                 birdZoomMove(evt); // set center to click position
                 };
             if (data.zoomArea) {
-                settings.wx = cropFloat((newRect.x - birdImgRect.x) / birdImgRect.width);
-                settings.wy = cropFloat((newRect.y - birdImgRect.y) / birdImgRect.height);
+                // should always be true
+                var x = cropFloat((newRect.x - birdImgRect.x + 2) / birdImgRect.width);
+                var y = cropFloat((newRect.y - birdImgRect.y + 2) / birdImgRect.height);
+                data.zoomArea.x = x;
+                data.zoomArea.y = y;
                 };
             settings.ws = 1; // zoomed is always fit
             redisplay(data);
