@@ -89,7 +89,7 @@ if (typeof(console) === 'undefined') {
             img : "help.png"
             },
         reset : {
-            onclick : "javascript:resetImage()",
+            onclick : "reset",
             tooltip : "reset image",
             img : "reset.png"
             },
@@ -208,14 +208,14 @@ if (typeof(console) === 'undefined') {
                 // path to button images (must end with a slash)
                 'imagePath' : 'img/fullscreen/',
                 //'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
-                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","mark","delmark","hmir","vmir","back","fwd","page","rot","brgt","cont","rgb","quality","size","calibrationx","scale","bird","help","options"],
-                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","mark","delmark","hmir","vmir","back","fwd","page","rot","brgt","cont","rgb","quality","size","calibrationx","scale","bird","help","reset","options"],
+                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","options"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 },
             'embedded' : {
                 'imagePath' : 'img/embedded/16/',
-                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","hmir","vmir","back","fwd","page","rot","brgt","cont","rgb","quality","size","scale","bird","help","options"],
-                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","hmir","vmir","back","fwd","page","rot","brgt","cont","rgb","quality","size","scale","bird","help","reset","options"],
+                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","options"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 }
             },
@@ -265,20 +265,21 @@ if (typeof(console) === 'undefined') {
             return this.each(function() {
                 var $elem = $(this);
                 var data = $elem.data('digilib');
-                var elemSettings;
+                var params, elemSettings;
                 // if the plugin hasn't been initialized yet
                 if (!data) {
                     // merge query parameters
                     if (isFullscreen) {
-                        elemSettings = $.extend({}, settings, queryParams);
+                        params = queryParams;
                     } else {
-                        elemSettings = $.extend({}, settings, parseImgParams($elem));
-                    }
+                        params = parseImgParams($elem);
+                    };
                     // store $(this) element in the settings
+                    elemSettings = $.extend({}, settings, params);
                     data =  {
                             $elem : $elem,
                             settings : elemSettings,
-                            queryParams : queryParams
+                            queryParams : params
                     };
                     // store in data element
                     $elem.data('digilib', data);
@@ -438,6 +439,27 @@ if (typeof(console) === 'undefined') {
                 factor = window.prompt("Contrast (-8, 8)", cont);
             }
             data.settings.cont = factor;
+            redisplay(data);
+        },
+
+        reset : function (data) {
+            var settings = data.settings;
+            var paramNames = settings.digilibParamNames;
+            var params = data.queryParams;
+            resetData(data);
+            // delete all digilib parameters
+            for (var i = 0; i < paramNames.length; i++) {
+                var paramName = paramNames[i];
+                delete settings[paramName];
+                };
+            // fullscreen: restore only fn/pn parameters 
+            if (settings.interactionMode === 'fullscreen') {
+                settings['fn'] = params.fn;
+                settings['pn'] = params.pn;
+            // embedded: restore original parameters 
+            } else {
+                $.extend(settings, params);
+                };
             redisplay(data);
         }
     };
@@ -599,12 +621,13 @@ if (typeof(console) === 'undefined') {
             }
             settings.mo = mo;
         }
-        // digilib option birdview
-        if (settings.isBirdDivVisible) {
-            data.dlOpts.birdview = 1;
-        } else {
-            delete data.dlOpts.birdview;
-        }
+        // digilib option birdview TODO: replace with cookie
+        //if (settings.isBirdDivVisible) {
+        //    data.dlOpts.birdview = 1;
+        //} else {
+        //    delete data.dlOpts.birdview;
+        //}
+
         // digilib options
         if (data.dlOpts) {
             var clop = '';
@@ -616,6 +639,14 @@ if (typeof(console) === 'undefined') {
             }
             settings.clop = clop;
         }
+    };
+
+    // clear digilib data for reset
+    var resetData = function (data) {
+        if (data.zoomArea) delete data.zoomArea;
+        if (data.marks) delete data.marks;
+        if (data.scalerFlags) delete data.scalerFlags;
+        if (data.dlOpts) delete data.dlOpts;
     };
 
     // (re)load the img from a new scaler URL
@@ -1142,5 +1173,5 @@ if (typeof(console) === 'undefined') {
             $.error( 'action ' + action + ' does not exist on jQuery.digilib' );
         }
     };
-    
+
 })(jQuery);
