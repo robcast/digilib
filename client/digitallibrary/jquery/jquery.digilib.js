@@ -191,13 +191,13 @@ if (typeof(console) === 'undefined') {
                 //'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
                 'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","mark","delmark","hmir","vmir","back","fwd","page","rot","brgt","cont","rgb","quality","size","calibrationx","scale","bird","help","options"],
                 'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
-                'customSet' : []
+                'buttonSets' : ['standardSet', 'specialSet']
                 },
             'embedded' : {
                 'imagePath' : 'img/embedded/16/',
                 'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","hmir","vmir","back","fwd","page","rot","brgt","cont","rgb","quality","size","scale","bird","help","options"],
                 'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
-                'customSet' : []
+                'buttonSets' : ['standardSet', 'specialSet']
                 }
             },
         // button groups
@@ -265,9 +265,10 @@ if (typeof(console) === 'undefined') {
                     $elem.data('digilib', data);
                 }
                 unpackParams(data);
-                // create HTML structure
+                // create HTML structure for scaler
                 setupScalerDiv(data);
-                setupButtons(data, 'standardSet');
+                // HTML for buttons (default is first button set)
+                setupButtons(data, 0);
                 // bird's eye view creation
                 if (elemSettings.isBirdDivVisible) {
                     setupBirdDiv(data);
@@ -671,18 +672,18 @@ if (typeof(console) === 'undefined') {
     };
 
     // creates HTML structure for buttons in elem
-    var setupButtons = function (data, actionGroup) {
+    var setupButtons = function (data, buttonSetIdx) {
         var $elem = data.$elem;
         var settings = data.settings;
-        // if (settings.interactionMode === 'fullscreen') {
         var $buttonsDiv = $('<div class="buttons"></div>');
         $elem.append($buttonsDiv);
         var mode = settings.interactionMode;
         var buttonSettings = settings.buttonSettings[mode];
-        var actionNames = buttonSettings[actionGroup];
-        for (var i = 0; i < actionNames.length; i++) {
-            var actionName = actionNames[i];
-            var buttonConfig = settings.buttons[actionName];
+        var buttonGroup = buttonSettings.buttonSets[buttonSetIdx];
+        var buttonNames = buttonSettings[buttonGroup];
+        for (var i = 0; i < buttonNames.length; i++) {
+            var buttonName = buttonNames[i];
+            var buttonConfig = settings.buttons[buttonName];
             // construct the button html
             var $button = $('<div class="button"></div>');
             var $a = $('<a/>');
@@ -692,7 +693,7 @@ if (typeof(console) === 'undefined') {
             $a.append($img);
             // add attributes and bindings
             $button.attr('title', buttonConfig.tooltip);
-            $button.addClass('button-' + actionName);
+            $button.addClass('button-' + buttonName);
             // create handler for the buttons
             $a.bind('click.digilib', (function () {
                 // we create a new closure to capture the value of action
@@ -718,6 +719,12 @@ if (typeof(console) === 'undefined') {
         // make buttons div scroll if too large for window
         if ($buttonsDiv.height() > $(window).height() - 10) {
             $buttonsDiv.css('position', 'absolute');
+        }
+        if (data.$buttonSets == null) {
+            data.$buttonSets = [$buttonsDiv];
+            data.visibleButtonSets = 1;
+        } else {
+            data.$buttonSets[buttonSetIdx] = $buttonsDiv;
         }
         return $buttonsDiv;
     };
