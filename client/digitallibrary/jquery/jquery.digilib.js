@@ -678,9 +678,6 @@ if (typeof(console) === 'undefined') {
                 scalerUrl = getScalerUrl(data);
             };
         }
-        // setup image load handler before setting the src attribute (IE bug)
-        $img.load(scalerImgLoadedHandler(data));
-        $img.attr('src', scalerUrl);
         // create new html
         $elem.empty(); // TODO: should we keep stuff for customization?
         var $scaler = $('<div class="scaler"/>');
@@ -689,6 +686,9 @@ if (typeof(console) === 'undefined') {
         $img.addClass('pic');
         data.$scaler = $scaler;
         data.$img = $img;
+        // setup image load handler before setting the src attribute (IE bug)
+        $img.load(scalerImgLoadedHandler(data));
+        $img.attr('src', scalerUrl);
     };
 
     // creates HTML structure for buttons in elem
@@ -777,7 +777,7 @@ if (typeof(console) === 'undefined') {
         $birdImg.load(birdImgLoadedHandler(data));
         $birdImg.attr('src', birdUrl);
         if (data.settings.isBirdDivVisible) {
-            $birdDiv.fadeIn();
+            $birdDiv.show();
             };
         birdZoom(data);
     };
