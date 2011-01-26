@@ -9,7 +9,6 @@
             }
 
             div.digilib {
-                float: left;
                 padding: 10px;
                 width: 220px;
             }
@@ -47,7 +46,32 @@
                 display: none;
                 z-index: 1000;
                 }
+                
+            td {
+                vertical-align: top;
+                }
+                
+            #debug {
+                background-color: beige;
+                position: absolute;
+                top: 400px;
+                padding: 0px 10px;
+                font-family: Arial;
+                font-size: 9pt;
+                }
+               
+            div._log {
+                color: grey;
+                }
 
+            div._debug {
+                color: darkgreen;
+                }
+                
+            div._error {
+                color: red;
+                }
+                
         </style>
 
         <script type="text/javascript" src="jquery-1.4.4.js"></script>
@@ -73,19 +97,34 @@
     </head>
 
     <body>
-
-        <div id="digilib-1" class="digilib single">
-            <img src="http://digilib.biblhertz.it/digilib04/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/&amp;pn=1" />
-        </div>
-        <div id="digilib-2" class="digilib">
-            <img src="http://digilib.biblhertz.it/digilib04/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/ferrara" />
-        </div>
-        <div id="digilib-3" class="digilib">
-            <img src="http://digilib.biblhertz.it/digilib04/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/weide" />
-        </div>
-        <div id="digilib-4" class="digilib">
-            <img src="http://digilib.biblhertz.it/digilib04/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/HansHolbein-NikolausKratzer" />
-        </div>
+        <table>
+            <tr>
+                <td>
+                    <div id="digilib-1" class="digilib single">
+                        <img src="http://digilib.biblhertz.it/digilib04/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/&amp;pn=1" />
+                    </div>
+                </td>
+            
+                <td>
+                    <div id="digilib-2" class="digilib">
+                        <img src="http://digilib.biblhertz.it/digilib04/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/ferrara" />
+                    </div>
+                </td>
+            
+                <td>
+                    <div id="digilib-3" class="digilib">
+                        <img src="http://digilib.biblhertz.it/digilib04/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/weide" />
+                    </div>
+                </td>
+            
+                <td>
+                    <div id="digilib-4" class="digilib">
+                        <img src="http://digilib.biblhertz.it/digilib04/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/HansHolbein-NikolausKratzer" />
+                    </div>
+                </td>
+            </tr>
+        </table>
+        <div id="debug">DEBUG</div>
     </body>
 </html>
 

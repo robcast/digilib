@@ -6,9 +6,28 @@
 // fallback for console.log calls
 if (typeof(console) === 'undefined') {
     var console = {
-            log : function(){},
-            debug : function(){},
-            error : function(){}
+        log : function(){
+            var $debug = $('#debug');
+            if (!$debug) return;
+            var args = Array.prototype.slice.call(arguments);
+            var argstr = args.join(' ');
+            $debug.append('<div class="_log">' + argstr + '</div>');
+            },
+        debug : function(){
+            // debug for MSIE etc
+            var $debug = $('#debug');
+            if (!$debug) return;
+            var args = Array.prototype.slice.call(arguments);
+            var argstr = args.join(' ');
+            $debug.append('<div class="_debug">' + argstr + '</div>');
+            },
+        error : function(){
+            var $debug = $('#debug');
+            if (!$debug) return;
+            var args = Array.prototype.slice.call(arguments);
+            var argstr = args.join(' ');
+            $debug.append('<div class="_error">' + argstr + '</div>');
+            }
     };
 }
 
@@ -634,32 +653,34 @@ if (typeof(console) === 'undefined') {
     var setupScalerDiv = function (data) {
         var settings = data.settings;
         var $elem = data.$elem;
-        var $img;
+        var $img, scalerUrl;
+        // fullscreen
         if (settings.interactionMode === 'fullscreen') {
-            // fullscreen
             var imgSize = getFullscreenImgSize($elem);
             // fitwidth/height omits destination height/width
             if (data.dlOpts['fitheight'] == null) {
                 settings.dw = imgSize.width;
-            }
+            };
             if (data.dlOpts['fitwidth'] == null) {
                 settings.dh = imgSize.height;
-            }
+            };
             $img = $('<img/>');
-            var scalerUrl = getScalerUrl(data);
-            $img.attr('src', scalerUrl);
+            scalerUrl = getScalerUrl(data);
+        // embedded mode -- try to keep img tag
         } else {
-            // embedded mode -- try to keep img tag
             $img = $elem.find('img');
             if ($img.length > 0) {
-                console.debug("img detach:",$img);
+                console.debug("img detach:", $img);
+                scalerUrl = $img.attr('src');
                 $img.detach();
             } else {
                 $img = $('<img/>');
-                var scalerUrl = getScalerUrl(data);
-                $img.attr('src', scalerUrl);
-            }
+                scalerUrl = getScalerUrl(data);
+            };
         }
+        // setup image load handler before setting the src attribute (IE bug)
+        $img.load(scalerImgLoadedHandler(data));
+        $img.attr('src', scalerUrl);
         // create new html
         $elem.empty(); // TODO: should we keep stuff for customization?
         var $scaler = $('<div class="scaler"/>');
@@ -668,7 +689,6 @@ if (typeof(console) === 'undefined') {
         $img.addClass('pic');
         data.$scaler = $scaler;
         data.$img = $img;
-        $img.load(scalerImgLoadedHandler(data));
     };
 
     // creates HTML structure for buttons in elem
@@ -845,6 +865,7 @@ if (typeof(console) === 'undefined') {
             // create Transform from current area and picsize
             data.imgTrafo = getImgTrafo($img, data.zoomArea,
                     data.settings.rot, data.scalerFlags.hmir, data.scalerFlags.vmir);
+            console.debug("imgTrafo=", data.imgTrafo);
             // display marks
             renderMarks(data);
             //digilib.showArrows(); // show arrow overlays for zoom navigation
