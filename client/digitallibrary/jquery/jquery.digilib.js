@@ -34,7 +34,7 @@ if (typeof(console) === 'undefined') {
 (function($) {
     var buttons = {
         reference : {
-            onclick : "javascript:getRefWin()",
+            onclick : "reference",
             tooltip : "get a reference URL",
             img : "reference.png"
             },
@@ -461,6 +461,17 @@ if (typeof(console) === 'undefined') {
                 $.extend(settings, params);
                 };
             redisplay(data);
+        },
+
+        reference : function (data) {
+            var settings = data.settings;
+            var url;
+            if (settings.interactionMode === 'fullscreen') {
+                url = getDigilibUrl(data);
+            } else {
+                url = getScalerUrl(data);
+                };
+            window.prompt("URL reference to the current view", url);
         }
     };
 
