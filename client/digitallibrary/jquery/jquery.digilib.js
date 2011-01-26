@@ -300,6 +300,7 @@ if (typeof(console) === 'undefined') {
             }
             // TODO: keep bird view visible after reload (parameter, cookie?)
             data.settings.isBirdDivVisible = showDiv(data.settings.isBirdDivVisible, data.$birdDiv, show);
+            data.$birdImg.triggerHandler('load');
         },
 
         // goto given page nr (+/-: relative)
@@ -613,9 +614,9 @@ if (typeof(console) === 'undefined') {
             var url = getScalerUrl(data);
             data.$img.attr('src', url);
             // and update bird's eye view
-            if (settings.isBirdDivVisible) {
-                renderBirdArea(data);
-            }
+            //if (settings.isBirdDivVisible) {
+            //    renderBirdZoom(data);
+            //}
         };
     };
 
@@ -736,21 +737,22 @@ if (typeof(console) === 'undefined') {
         // the bird's eye div
         var $birdDiv = $('<div class="birdview" style="display:none"/>');
         // the detail indicator frame
-        var $birdzoomDiv = $('<div class="birdzoom" style="display:none; position:absolute; background-color:transparent;"/>');
+        var $birdZoom = $('<div class="birdZoom" style="display:none; position:absolute; background-color:transparent;"/>');
         // the small image
         var $birdImg = $('<img class="birdimg"/>');
         $elem.append($birdDiv);
-        $birdDiv.append($birdzoomDiv);
+        $birdDiv.append($birdZoom);
         $birdDiv.append($birdImg);
-        $birdzoomDiv.css(data.settings.birdIndicatorStyle);
+        $birdZoom.css(data.settings.birdIndicatorStyle);
         data.$birdDiv = $birdDiv;
+        data.$birdZoom = $birdZoom;
         data.$birdImg = $birdImg;
-        data.$birdZoom = $birdzoomDiv;
         $birdImg.load(birdImgLoadedHandler(data));
         $birdImg.attr('src', birdUrl);
         if (data.settings.isBirdDivVisible) {
             $birdDiv.fadeIn();
-        }
+            };
+        birdZoom(data);
     };
 
     // creates HTML structure for the about view in elem
@@ -827,7 +829,7 @@ if (typeof(console) === 'undefined') {
         trafo.concat(trafo.getTranslation(picrect));
         return trafo;
     };
-    
+
     // returns function for load event of scaler img
     var scalerImgLoadedHandler = function (data) {
         var $img = data.$img;
@@ -839,10 +841,10 @@ if (typeof(console) === 'undefined') {
             // display marks
             renderMarks(data);
             //digilib.showArrows(); // show arrow overlays for zoom navigation
-            /* var $birdImg = data.$birdImg;
+            var $birdImg = data.$birdImg;
             if ($birdImg) {
                 $birdImg.triggerHandler('load');
-                }; */
+                };
         };
     };
 
@@ -854,7 +856,7 @@ if (typeof(console) === 'undefined') {
             // create Transform from current area and picsize
             data.birdTrafo = getImgTrafo($img, MAX_ZOOMAREA);
             // display red indicator around zoomarea
-            renderBirdArea(data);
+            renderbirdZoom(data);
         };
     };
 
@@ -878,8 +880,8 @@ if (typeof(console) === 'undefined') {
     };
 
     // show zoom area indicator on bird's eye view
-    var renderBirdArea = function (data) {
-        var $birdzoom = data.$birdZoom;
+    var renderbirdZoom = function (data) {
+        var $birdZoom = data.$birdZoom;
         var zoomArea = data.zoomArea;
         var indRect = data.birdTrafo.transform(zoomArea);
         var coords = {
@@ -891,24 +893,24 @@ if (typeof(console) === 'undefined') {
         var normalSize = isFullArea(zoomArea);
         if (data.settings.interactionMode === 'fullscreen') {
             // no animation for fullscreen
-            if (normalSize) return $birdzoom.hide(); 
-            $birdzoom.width(coords.width);
-            $birdzoom.height(coords.height);
-            $birdzoom.offset(coords);
-            $birdzoom.show();
+            if (normalSize) return $birdZoom.hide(); 
+            $birdZoom.width(coords.width);
+            $birdZoom.height(coords.height);
+            $birdZoom.offset(coords);
+            $birdZoom.show();
             return;
             };
         // nice animation for embedded mode :-)
-        var makeCompleteFunction = function($birdzoom, normalSize) {
+        var makeCompleteFunction = function($birdZoom, normalSize) {
             return function() { 
-                if (normalSize) $birdzoom.hide(); 
+                if (normalSize) $birdZoom.hide(); 
                 };
             };
         var opts = {
-            'complete' : makeCompleteFunction($birdzoom, normalSize)
+            'complete' : makeCompleteFunction($birdZoom, normalSize)
             };
-        if (!normalSize && $birdzoom.css('display') === 'none') $birdzoom.show();
-        $birdzoom.animate(coords, opts);
+        if (!normalSize && $birdZoom.css('display') === 'none') $birdZoom.show();
+        $birdZoom.animate(coords, opts);
     };
 
     // zooms by the given factor
@@ -1000,6 +1002,62 @@ if (typeof(console) === 'undefined') {
 
         // bind start zoom handler
         $scaler.one('mousedown.digilib', zoomStart);
+    };
+
+    var birdZoom = function(data) {
+        var $birdImg = data.$birdImg;
+        var $birdZoom = data.$birdZoom;
+        var startPos, newRect, birdImgRect, birdZoomRect;
+
+        var birdZoomMove = function(evt) {
+            // mousemove handler: drag
+            var pos = geom.position(evt);
+            var dx = pos.x - startPos.x;
+            var dy = pos.y - startPos.y;
+            // move birdZoom div, keeping size
+            newRect = geom.rectangle(
+                birdZoomRect.x + dx,
+                birdZoomRect.y + dy,
+                birdZoomRect.width,
+                birdZoomRect.height
+                );
+            // stay within birdimage
+            newRect.stayInside(birdImgRect);
+            $birdZoom.offset({left : newRect.x, top : newRect.y});
+            // $birdZoom.show();
+            return false;
+        };
+
+        var birdZoomEndDrag = function(evt) {
+            // mouseup handler: reload page
+            var settings = data.settings;
+            $birdImg.unbind("mousemove.digilib", birdZoomMove);
+            $birdImg.unbind("mouseup.digilib", birdZoomEndDrag);
+            if (newRect == null) { // no movement happened
+                startPos = birdZoomRect.getCenter();
+                birdZoomMove(evt); // set center to click position
+                };
+            if (data.zoomArea) {
+                settings.wx = cropFloat((newRect.x - birdImgRect.x) / birdImgRect.width);
+                settings.wy = cropFloat((newRect.y - birdImgRect.y) / birdImgRect.height);
+                };
+            settings.ws = 1; // zoomed is always fit
+            redisplay(data);
+            return false;
+        };
+
+        var birdZoomStartDrag = function(evt) {
+            // mousedown handler: start dragging bird zoom to a new position
+            startPos = geom.position(evt);
+            birdImgRect = geom.rectangle($birdImg);
+            birdZoomRect = geom.rectangle($birdZoom);
+            $birdImg.bind("mousemove.digilib", birdZoomMove);
+            $birdImg.bind("mouseup.digilib", birdZoomEndDrag);
+            return false;
+        };
+
+        $birdImg.one("mousedown.digilib", birdZoomStartDrag);
+        // $birdZoom.one("mousedown.digilib", birdZoomStartDrag);
     };
 
     // sets a key to a value (relative values with +/- if relative=true)
