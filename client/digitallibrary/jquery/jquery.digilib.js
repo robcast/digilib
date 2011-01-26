@@ -1031,8 +1031,10 @@ if (typeof(console) === 'undefined') {
         var birdZoomEndDrag = function(evt) {
             // mouseup handler: reload page
             var settings = data.settings;
-            $birdImg.unbind("mousemove.digilib", birdZoomMove);
-            $birdImg.unbind("mouseup.digilib", birdZoomEndDrag);
+            $(document).unbind("mousemove.digilib", birdZoomMove);
+            $(document).unbind("mouseup.digilib", birdZoomEndDrag);
+            $birdZoom.unbind("mousemove.digilib", birdZoomMove);
+            $birdZoom.unbind("mouseup.digilib", birdZoomEndDrag);
             if (newRect == null) { // no movement happened
                 startPos = birdZoomRect.getCenter();
                 birdZoomMove(evt); // set center to click position
@@ -1054,13 +1056,15 @@ if (typeof(console) === 'undefined') {
             startPos = geom.position(evt);
             birdImgRect = geom.rectangle($birdImg);
             birdZoomRect = geom.rectangle($birdZoom);
-            $birdImg.bind("mousemove.digilib", birdZoomMove);
-            $birdImg.bind("mouseup.digilib", birdZoomEndDrag);
+            $(document).bind("mousemove.digilib", birdZoomMove);
+            $(document).bind("mouseup.digilib", birdZoomEndDrag);
+            $birdZoom.bind("mousemove.digilib", birdZoomMove);
+            $birdZoom.bind("mouseup.digilib", birdZoomEndDrag);
             return false;
         };
 
         $birdImg.one("mousedown.digilib", birdZoomStartDrag);
-        // $birdZoom.one("mousedown.digilib", birdZoomStartDrag);
+        $birdZoom.one("mousedown.digilib", birdZoomStartDrag);
     };
 
     // sets a key to a value (relative values with +/- if relative=true)
