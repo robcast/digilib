@@ -1063,8 +1063,8 @@ if (typeof(console) === 'undefined') {
             return false;
         };
 
-        $birdImg.one("mousedown.digilib", birdZoomStartDrag);
-        $birdZoom.one("mousedown.digilib", birdZoomStartDrag);
+        $birdImg.bind("mousedown.digilib", birdZoomStartDrag);
+        $birdZoom.bind("mousedown.digilib", birdZoomStartDrag);
     };
 
     // sets a key to a value (relative values with +/- if relative=true)
