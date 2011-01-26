@@ -200,8 +200,8 @@ if (typeof(console) === 'undefined') {
                 },
             'embedded' : {
                 'imagePath' : 'img/embedded/16/',
-                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","hmir","vmir","back","fwd","page","rot","brgt","cont","rgb","quality","size","scale","bird","help","reset","options"],
-                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","options"],
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","back","fwd","page","bird","SEP","help","reset","moreoptions"],
+                'specialSet' : ["hmir","vmir","rot","brgt","cont","rgb","quality","size","SEP","lessoptions"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 }
             },
