@@ -6,30 +6,12 @@
 // fallback for console.log calls
 if (typeof(console) === 'undefined') {
     var console = {
-        log : function(){
-            var $debug = $('#debug');
-            if (!$debug) return;
-            var args = Array.prototype.slice.call(arguments);
-            var argstr = args.join(' ');
-            $debug.append('<div class="_log">' + argstr + '</div>');
-            },
-        debug : function(){
-            // debug for MSIE etc
-            var $debug = $('#debug');
-            if (!$debug) return;
-            var args = Array.prototype.slice.call(arguments);
-            var argstr = args.join(' ');
-            $debug.append('<div class="_debug">' + argstr + '</div>');
-            },
-        error : function(){
-            var $debug = $('#debug');
-            if (!$debug) return;
-            var args = Array.prototype.slice.call(arguments);
-            var argstr = args.join(' ');
-            $debug.append('<div class="_error">' + argstr + '</div>');
-            }
-    };
-}
+        log : function(){}, 
+        debug : function(){}, 
+        error : function(){}
+        };
+    var customConsole = true;
+};
 
 (function($) {
     var buttons = {
@@ -1214,6 +1196,25 @@ if (typeof(console) === 'undefined') {
         return parseInt(10000 * x, 10) / 10000;
     };
 
+    // fallback for console.log calls
+    if (customConsole) {
+        var logFunction = function(type) {
+            return function(){
+                var $debug = $('#debug'); // debug div
+                if (!$debug) return;
+                var args = Array.prototype.slice.call(arguments);
+                var argtext = args.join(' ');
+                var $logDiv = $('<div/>');
+                $logDiv.addClass(type);
+                $logDiv.text(argtext);
+                $debug.append($logDiv);
+                };
+            };
+        console.log = logFunction('_log'); 
+        console.debug = logFunction('_debug'); 
+        console.error = logFunction('_error');
+        };
+
     // hook plugin into jquery
     $.fn.digilib = function(action) {
         if (actions[action]) {
@@ -1230,5 +1231,5 @@ if (typeof(console) === 'undefined') {
             $.error( 'action ' + action + ' does not exist on jQuery.digilib' );
         }
     };
-    
+
 })(jQuery);
