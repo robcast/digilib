@@ -153,9 +153,14 @@ if (typeof(console) === 'undefined') {
             tooltip : "change image scale",
             img : "original-size.png"
             },
-        options : {
-            onclick : "javascript:toggleOptionDiv()",
-            tooltip : "hide options",
+        moreoptions : {
+            onclick : ["morebuttons", "+1"],
+            tooltip : "more options",
+            img : "options.png"
+            },
+        lessoptions : {
+            onclick : ["morebuttons", "-1"],
+            tooltip : "less options",
             img : "options.png"
             },
         SEP : {
@@ -207,9 +212,9 @@ if (typeof(console) === 'undefined') {
             'fullscreen' : {
                 // path to button images (must end with a slash)
                 'imagePath' : 'img/fullscreen/',
-                //'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","options"],
-                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","mark","delmark","hmir","vmir","back","fwd","page","rot","brgt","cont","rgb","quality","size","calibrationx","scale","bird","help","options"],
-                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","options"],
+                //'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","mark","delmark","hmir","vmir","back","fwd","page","rot","brgt","cont","rgb","quality","size","calibrationx","scale","bird","help","options"],
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","moreoptions"],
+                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","lessoptions"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 },
             'embedded' : {
@@ -439,6 +444,40 @@ if (typeof(console) === 'undefined') {
             }
             data.settings.cont = factor;
             redisplay(data);
+        },
+        
+        // display more (or less) button sets
+        morebuttons : function (data, more) {
+            if (more === '-1') {
+                // remove set
+                var setIdx = data.visibleButtonSets - 1;
+                var $lastSet = data.$buttonSets[setIdx];
+                if ($lastSet == null) return;
+                var btnWidth = $lastSet.width();
+                // hide last set
+                $lastSet.hide();
+                // take remaining sets and move right
+                var $otherSets = data.$elem.find('div.buttons:visible');
+                $otherSets.animate({left : '+='+btnWidth+'px'});
+                data.visibleButtonSets -= 1;
+            } else {
+                // add set
+                var $oldSets = data.$elem.find('div.buttons:visible');
+                var setIdx = data.visibleButtonSets;
+                var $newSet;
+                if (data.$buttonSets[setIdx]) {
+                    // set exists
+                    $newSet = data.$buttonSets[setIdx];
+                } else {
+                    $newSet = setupButtons(data, setIdx);
+                }
+                if ($newSet == null) return;
+                var btnWidth = $newSet.width();
+                // move remaining sets left and show new set
+                $oldSets.animate({left : '-='+btnWidth+'px'},
+                        function () {$newSet.show();});
+                data.visibleButtonSets += 1;
+            }
         }
     };
 
@@ -695,11 +734,14 @@ if (typeof(console) === 'undefined') {
     var setupButtons = function (data, buttonSetIdx) {
         var $elem = data.$elem;
         var settings = data.settings;
-        var $buttonsDiv = $('<div class="buttons"></div>');
-        $elem.append($buttonsDiv);
         var mode = settings.interactionMode;
         var buttonSettings = settings.buttonSettings[mode];
         var buttonGroup = buttonSettings.buttonSets[buttonSetIdx];
+        if (buttonGroup == null) {
+            // no buttons here
+            return;
+        }
+        var $buttonsDiv = $('<div class="buttons"/>');
         var buttonNames = buttonSettings[buttonGroup];
         for (var i = 0; i < buttonNames.length; i++) {
             var buttonName = buttonNames[i];
@@ -735,15 +777,20 @@ if (typeof(console) === 'undefined') {
                 }
             })());
             $img.attr('src', buttonSettings.imagePath + buttonConfig.img);
-            }
+        }
         // make buttons div scroll if too large for window
         if ($buttonsDiv.height() > $(window).height() - 10) {
             $buttonsDiv.css('position', 'absolute');
         }
         if (data.$buttonSets == null) {
+            // show first button set
+            $elem.append($buttonsDiv);
             data.$buttonSets = [$buttonsDiv];
             data.visibleButtonSets = 1;
         } else {
+            // hide later button sets
+            $buttonsDiv.hide();
+            $elem.append($buttonsDiv);
             data.$buttonSets[buttonSetIdx] = $buttonsDiv;
         }
         return $buttonsDiv;
