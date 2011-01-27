@@ -431,7 +431,10 @@ if (typeof(console) === 'undefined') {
         
         // display more (or less) button sets
         morebuttons : function (data, more) {
-            if (more === '-1') {
+            var settings = data.settings;
+            // toggle if all buffersets are shown
+            totalButtonSets = settings.buttonSettings[settings.interactionMode].buttonSets.length;
+            if (more === '-1' || data.visibleButtonSets === totalButtonSets) {
                 // remove set
                 var setIdx = data.visibleButtonSets - 1;
                 var $lastSet = data.$buttonSets[setIdx];
