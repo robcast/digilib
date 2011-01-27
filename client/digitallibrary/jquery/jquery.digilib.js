@@ -204,8 +204,9 @@ if (typeof(console) === 'undefined') {
                 'specialSet' : ["hmir","vmir","rot","brgt","cont","rgb","quality","size","SEP","lessoptions"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 }
-            },
-        // button groups
+        },
+        // number of visible button groups
+        'visibleButtonSets' : 1,    
         // is birdView shown?
         'isBirdDivVisible' : false,
         // dimensions of bird's eye div
@@ -262,7 +263,7 @@ if (typeof(console) === 'undefined') {
                     };
                     // store $(this) element in the settings
                     elemSettings = $.extend({}, settings, params);
-                    data =  {
+                    data = {
                             $elem : $elem,
                             settings : elemSettings,
                             queryParams : params
@@ -273,8 +274,10 @@ if (typeof(console) === 'undefined') {
                 unpackParams(data);
                 // create HTML structure for scaler
                 setupScalerDiv(data);
-                // HTML for buttons (default is first button set)
-                setupButtons(data, 0);
+                // add buttons
+                for (var i = 0; i < elemSettings.visibleButtonSets; ++i) {
+                    showButtons(data, true, i);
+                }
                 // bird's eye view creation
                 if (elemSettings.isBirdDivVisible) {
                     setupBirdDiv(data);
@@ -431,35 +434,19 @@ if (typeof(console) === 'undefined') {
         
         // display more (or less) button sets
         morebuttons : function (data, more) {
+            var settings = data.settings;
             if (more === '-1') {
                 // remove set
-                var setIdx = data.visibleButtonSets - 1;
-                var $lastSet = data.$buttonSets[setIdx];
-                if ($lastSet == null) return;
-                var btnWidth = $lastSet.width();
-                // hide last set
-                $lastSet.hide();
-                // take remaining sets and move right
-                var $otherSets = data.$elem.find('div.buttons:visible');
-                $otherSets.animate({left : '+='+btnWidth+'px'});
-                data.visibleButtonSets -= 1;
+                var setIdx = settings.visibleButtonSets - 1;
+                if (showButtons(data, false, setIdx, true)) {
+                    settings.visibleButtonSets--;
+                }
             } else {
                 // add set
-                var $oldSets = data.$elem.find('div.buttons:visible');
-                var setIdx = data.visibleButtonSets;
-                var $newSet;
-                if (data.$buttonSets[setIdx]) {
-                    // set exists
-                    $newSet = data.$buttonSets[setIdx];
-                } else {
-                    $newSet = setupButtons(data, setIdx);
+                var setIdx = settings.visibleButtonSets;
+                if (showButtons(data, true, setIdx, true)) {
+                    settings.visibleButtonSets++;
                 }
-                if ($newSet == null) return;
-                var btnWidth = $newSet.width();
-                // move remaining sets left and show new set
-                $oldSets.animate({left : '-='+btnWidth+'px'},
-                        function () {$newSet.show();});
-                data.visibleButtonSets += 1;
             }
         },
 
@@ -762,7 +749,7 @@ if (typeof(console) === 'undefined') {
     };
 
     // creates HTML structure for buttons in elem
-    var setupButtons = function (data, buttonSetIdx) {
+    var createButtons = function (data, buttonSetIdx) {
         var $elem = data.$elem;
         var settings = data.settings;
         var mode = settings.interactionMode;
@@ -813,14 +800,13 @@ if (typeof(console) === 'undefined') {
         if ($buttonsDiv.height() > $(window).height() - 10) {
             $buttonsDiv.css('position', 'absolute');
         }
+        // buttons hidden at first
+        $buttonsDiv.hide();
+        $elem.append($buttonsDiv);
         if (data.$buttonSets == null) {
-            // show first button set
-            $elem.append($buttonsDiv);
+            // first button set
             data.$buttonSets = [$buttonsDiv];
-            data.visibleButtonSets = 1;
         } else {
-            // hide later button sets
-            $buttonsDiv.hide();
             $elem.append($buttonsDiv);
             data.$buttonSets[buttonSetIdx] = $buttonsDiv;
         }
@@ -900,6 +886,46 @@ if (typeof(console) === 'undefined') {
             $div.fadeOut();
         }
         return isVisible;
+    };
+
+    // display more (or less) button sets
+    var showButtons = function (data, more, setIdx, animated) {
+        if (more) {
+            // add set
+            var $otherSets = data.$elem.find('div.buttons:visible');
+            var $set;
+            if (data.$buttonSets && data.$buttonSets[setIdx]) {
+                // set exists
+                $set = data.$buttonSets[setIdx];
+            } else {
+                $set = createButtons(data, setIdx);
+            }
+            if ($set == null) return false;
+            var btnWidth = $set.width();
+            // move remaining sets left and show new set
+            if (animated) {
+                $otherSets.animate({left : '-='+btnWidth+'px'}, 'fast',
+                        function () {$set.show();});
+            } else {
+                $otherSets.css({left : '-='+btnWidth+'px'});
+                $set.show();
+            }
+        } else {
+            // remove set
+            var $set = data.$buttonSets[setIdx];
+            if ($set == null) return false;
+            var btnWidth = $set.width();
+            // hide last set
+            $set.hide();
+            // take remaining sets and move right
+            var $otherSets = data.$elem.find('div.buttons:visible');
+            if (animated) {
+                $otherSets.animate({left : '+='+btnWidth+'px'}, 'fast');
+            } else {
+                $otherSets.css({left : '+='+btnWidth+'px'});
+            }
+        }
+        return true;
     };
 
     // create Transform from area and $img
