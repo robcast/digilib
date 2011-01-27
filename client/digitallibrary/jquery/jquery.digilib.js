@@ -135,6 +135,11 @@ if (typeof(console) === 'undefined') {
             tooltip : "change image scale",
             img : "original-size.png"
             },
+        toggleoptions : {
+            onclick : "morebuttons",
+            tooltip : "more options",
+            img : "options.png"
+            },
         moreoptions : {
             onclick : ["morebuttons", "+1"],
             tooltip : "more options",
@@ -194,14 +199,14 @@ if (typeof(console) === 'undefined') {
             'fullscreen' : {
                 // path to button images (must end with a slash)
                 'imagePath' : 'img/fullscreen/',
-                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","moreoptions"],
-                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","lessoptions"],
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","toggleoptions"],
+                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","toggleoptions"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 },
             'embedded' : {
                 'imagePath' : 'img/embedded/16/',
-                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","back","fwd","page","bird","SEP","help","reset","moreoptions"],
-                'specialSet' : ["hmir","vmir","rot","brgt","cont","rgb","quality","size","SEP","lessoptions"],
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","back","fwd","page","bird","SEP","help","reset","toggleoptions"],
+                'specialSet' : ["hmir","vmir","rot","brgt","cont","rgb","quality","size","SEP","toggleoptions"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 }
         },
@@ -435,6 +440,15 @@ if (typeof(console) === 'undefined') {
         // display more (or less) button sets
         morebuttons : function (data, more) {
             var settings = data.settings;
+            if (more == null) {
+                // toggle more or less
+                var maxbtns = settings.buttonSettings[settings.interactionMode].buttonSets.length;
+                if (settings.visibleButtonSets >= maxbtns) {
+                    more = '-1';
+                } else {
+                    more = '+1';
+                }
+            }
             if (more === '-1') {
                 // remove set
                 var setIdx = settings.visibleButtonSets - 1;
