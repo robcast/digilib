@@ -307,6 +307,7 @@ if (typeof(console) === 'undefined') {
             }
             // TODO: keep bird view visible after reload (parameter, cookie?)
             data.settings.isBirdDivVisible = showDiv(data.settings.isBirdDivVisible, data.$birdDiv, show);
+            cookie(data, 'birdview', data.settings.isBirdDivVisible ? "1" : "0");
             data.$birdImg.triggerHandler('load');
         },
 
@@ -549,6 +550,17 @@ if (typeof(console) === 'undefined') {
         return paramString;
     };
 
+    // set/get cookie for current image
+    var cookie = function (data, key, value) {
+        var settings = data.settings;
+        var fn = settings.fn;
+        var pn = settings.pn;
+        var name = key + ":fn=" + fn + ":pn=" + pn;
+        var result = (typeof value === 'undefined') ? $.cookie(name) : $.cookie(name, value, 7);
+        console.log("cookie=", name, " value=", $.cookie(name));
+        return result;
+        };
+
     // returns URL and query string for Scaler
     var getScalerUrl = function (data) {
         var settings = data.settings;
@@ -616,9 +628,9 @@ if (typeof(console) === 'undefined') {
         }
         data.dlOpts = opts;
         // birdview option
-        if (opts.birdview) {
+        if (cookie(data, 'birdview') === '1') {
             settings.isBirdDivVisible = 1; 
-        }
+            }
     };
 
     // put objects back into parameters
@@ -652,12 +664,8 @@ if (typeof(console) === 'undefined') {
             }
             settings.mo = mo;
         }
-        // digilib option birdview TODO: replace with cookie
-        //if (settings.isBirdDivVisible) {
-        //    data.dlOpts.birdview = 1;
-        //} else {
-        //    delete data.dlOpts.birdview;
-        //}
+        // digilib option birdview
+        // cookie(data, 'birdview', settings.isBirdDivVisible ? "1" : "0");
 
         // digilib options
         if (data.dlOpts) {
@@ -938,7 +946,8 @@ if (typeof(console) === 'undefined') {
             console.debug("imgTrafo=", data.imgTrafo);
             // display marks
             renderMarks(data);
-            //digilib.showArrows(); // show arrow overlays for zoom navigation
+            // TODO: digilib.showArrows(); // show arrow overlays for zoom navigation
+            // TODO: the birdview should adapt to mirror or rotation? 
             var $birdImg = data.$birdImg;
             if ($birdImg) {
                 $birdImg.triggerHandler('load');
