@@ -556,7 +556,7 @@ if (typeof(console) === 'undefined') {
         var settings = data.settings;
         var fn = settings.fn;
         var pn = settings.pn;
-        var name = key + ":fn=" + fn + ":pn=" + pn;
+        var name = key + ":fn:" + fn + ":pn:" + pn;
         var result = (typeof value === 'undefined') ? $.cookie(name) : $.cookie(name, value, 7);
         console.log("cookie=", name, " value=", $.cookie(name));
         return result;
