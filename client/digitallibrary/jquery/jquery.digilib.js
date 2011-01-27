@@ -313,9 +313,7 @@ if (typeof(console) === 'undefined') {
                 // no bird div -> create
                 setupBirdDiv(data);
             }
-            // TODO: keep bird view visible after reload (parameter, cookie?)
             data.settings.isBirdDivVisible = showDiv(data.settings.isBirdDivVisible, data.$birdDiv, show);
-            cookie(data, 'birdview', data.settings.isBirdDivVisible ? "1" : "0");
             data.$birdImg.triggerHandler('load');
         },
 
@@ -518,8 +516,9 @@ if (typeof(console) === 'undefined') {
 
     // parses query parameter string into parameter object
     var parseQueryString = function(query) {
-        var pairs = query.split("&");
         var params = {};
+        if (query == null) return params;
+        var pairs = query.split("&");
         //var keys = [];
         for (var i = 0; i < pairs.length; i++) {
             var pair = pairs[i].split("=");
@@ -550,17 +549,6 @@ if (typeof(console) === 'undefined') {
         }
         return paramString;
     };
-
-    // set/get cookie for current image
-    var cookie = function (data, key, value) {
-        var settings = data.settings;
-        var fn = settings.fn;
-        var pn = settings.pn;
-        var name = key + ":fn:" + fn + ":pn:" + pn;
-        var result = (typeof value === 'undefined') ? $.cookie(name) : $.cookie(name, value, 7);
-        console.log("cookie=", name, " value=", $.cookie(name));
-        return result;
-        };
 
     // returns URL and query string for Scaler
     var getScalerUrl = function (data) {
@@ -621,17 +609,30 @@ if (typeof(console) === 'undefined') {
         data.scalerFlags = flags;
         // clop (digilib options)
         var opts = {};
-        if (settings.clop) {
+        if (jQuery.cookie) {
+            // read from cookie
+            var ck = "digilib:fn:" + escape(settings.fn) + ":pn:" + settings.pn;
+            var cp = jQuery.cookie(ck);
+            console.debug("get cookie=", ck, " value=", cp);
+            // in query string format
+            opts = parseQueryString(cp);
+        }
+        /* read from parameter clop
+         * if (settings.clop) {
             var pa = settings.clop.split(",");
             for (var i = 0; i < pa.length ; i++) {
                 opts[pa[i]] = pa[i];
             }
-        }
+        } */
         data.dlOpts = opts;
         // birdview option
-        if (cookie(data, 'birdview') === '1') {
-            settings.isBirdDivVisible = 1; 
-            }
+        if (opts.birdview != null) {
+            settings.isBirdDivVisible = opts.birdview;
+        }
+        // visible button sets
+        if (opts.buttons != null) {
+            settings.visibleButtonSets = opts.buttons;
+        }
     };
 
     // put objects back into parameters
@@ -665,11 +666,25 @@ if (typeof(console) === 'undefined') {
             }
             settings.mo = mo;
         }
-        // digilib option birdview
-        // cookie(data, 'birdview', settings.isBirdDivVisible ? "1" : "0");
+        // save digilib settings in options
+        data.dlOpts.birdview = settings.isBirdDivVisible ? 1 : 0;
+        data.dlOpts.buttons = settings.visibleButtonSets;
 
-        // digilib options
+        // save digilib options in cookie
         if (data.dlOpts) {
+            var clop = '';
+            for (var o in data.dlOpts) {
+                if (clop) {
+                    clop += '&';
+                }
+                clop += o + '=' + data.dlOpts[o];
+            }
+            var ck = "digilib:fn:" + escape(settings.fn) + ":pn:" + settings.pn;
+            console.debug("set cookie=", ck, " value=", clop);
+            jQuery.cookie(ck, clop);
+        };
+        /* store in parameter clop
+         * if (data.dlOpts) {
             var clop = '';
             for (var o in data.dlOpts) {
                 if (clop) {
@@ -678,7 +693,7 @@ if (typeof(console) === 'undefined') {
                 clop += o;
             }
             settings.clop = clop;
-        }
+        } */
     };
 
     // clear digilib data for reset
@@ -921,7 +936,10 @@ if (typeof(console) === 'undefined') {
                 $otherSets.animate({left : '-='+btnWidth+'px'}, 'fast',
                         function () {$set.show();});
             } else {
-                $otherSets.css({left : '-='+btnWidth+'px'});
+                var oldpos = $otherSets.position();
+                if (oldpos) {
+                    $otherSets.css({left : oldpos.left-btnWidth+'px'});
+                }
                 $set.show();
             }
         } else {
