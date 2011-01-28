@@ -1262,7 +1262,7 @@ if (typeof(console) === 'undefined') {
         var $elem = data.$elem;
         var $scaler = data.$scaler;
         var $img = data.$img;
-        var $bg = $('<div class="bgDrag" style="display:none"/>');
+        var $bg = $('<div class="bgDrag" style="display:none; position:absolute"/>');
         $scaler.before($bg); // set as background
         
         var dragStart = function (evt) {
@@ -1277,6 +1277,7 @@ if (typeof(console) === 'undefined') {
             $bg.css({
                 'background-image' : 'url(' + $img.attr('src') + ')',
                 'background-repeat' : 'no-repeat',
+                'background-position' : 'top left',
                 'cursor' : 'move'
                 });
             $img.hide(); 
@@ -1312,6 +1313,8 @@ if (typeof(console) === 'undefined') {
             if (dx == 0 && dy == 0)
                 return false // no movement
             // reload with scaler image showing the new ausschnitt
+            $bg.hide(); 
+            $img.show();
             // digilib.moveBy(x, y);
             return false;
             };
@@ -1324,7 +1327,7 @@ if (typeof(console) === 'undefined') {
         var flags = data.scalerFlags;
         var q = flags.q2 || flags.q1 || 'q0'; // assume q0 as default
         return parseInt(q[1], 10);
-        };
+    };
 
     // set image quality as a number (0..2)
     var setQuality = function (data, qual) {
@@ -1334,7 +1337,7 @@ if (typeof(console) === 'undefined') {
             delete flags['q'+i];
         }
         flags['q'+qual] = 'q'+qual;
-        };
+    };
     
     // sets a key to a value (relative values with +/- if relative=true)
     var setNumValue = function(settings, key, value) {
