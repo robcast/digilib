@@ -289,6 +289,8 @@ if (typeof(console) === 'undefined') {
                 }
                 // about window creation - TODO: could be deferred? restrict to only one item?
                 setupAboutDiv(data);
+                // TODO: the actual moving code    
+                setupZoomDrag(data);
             });
         },
 
@@ -689,6 +691,7 @@ if (typeof(console) === 'undefined') {
         data.dlOpts.buttons = settings.visibleButtonSets;
 
         // save digilib options in cookie
+        // TODO: in embedded mode this is not called 
         if (data.dlOpts) {
             var clop = '';
             for (var o in data.dlOpts) {
@@ -1028,10 +1031,6 @@ if (typeof(console) === 'undefined') {
             if ($birdImg) {
                 $birdImg.triggerHandler('load');
                 };
-                // TODO: the actual moving code    
-            if (!isFullArea(data.zoomArea)) {
-                setupZoomDrag(data);
-                };
         };
     };
 
@@ -1262,8 +1261,11 @@ if (typeof(console) === 'undefined') {
         var $elem = data.$elem;
         var $scaler = data.$scaler;
         var $img = data.$img;
-        var $bg = $('<div class="bgDrag" style="display:none; position:absolute"/>');
-        $scaler.before($bg); // set as background
+        var $bg = $elem.has('div.bgDrag');
+        if ($bg.length === 0) {
+            $bg = $('<div class="bgDrag" style="display:none; position:absolute"/>');
+            $scaler.before($bg); // set as background
+            };
         
         var dragStart = function (evt) {
         // drag the image and load a new detail on mouse up
