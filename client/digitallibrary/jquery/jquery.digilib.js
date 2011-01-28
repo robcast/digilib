@@ -116,7 +116,7 @@ if (typeof(console) === 'undefined') {
             img : "rgb.png"
             },
         quality : {
-            onclick : "javascript:setQualityWin('Quality (0..2)')",
+            onclick : "setquality",
             tooltip : "set image quality",
             img : "quality.png"
             },
@@ -439,7 +439,7 @@ if (typeof(console) === 'undefined') {
         morebuttons : function (data, more) {
             var settings = data.settings;
             if (more == null) {
-                // toggle more or less
+                // toggle more or less (only works for 2 sets)
                 var maxbtns = settings.buttonSettings[settings.interactionMode].buttonSets.length;
                 if (settings.visibleButtonSets >= maxbtns) {
                     more = '-1';
@@ -462,6 +462,7 @@ if (typeof(console) === 'undefined') {
             }
         },
 
+        // reset image parameters to defaults
         reset : function (data) {
             var settings = data.settings;
             var paramNames = settings.digilibParamNames;
@@ -483,7 +484,8 @@ if (typeof(console) === 'undefined') {
             redisplay(data);
         },
 
-        reference : function (data) {
+        // presents a reference url (returns value if noprompt)
+        reference : function (data, noprompt) {
             var settings = data.settings;
             var url;
             if (settings.interactionMode === 'fullscreen') {
@@ -491,7 +493,23 @@ if (typeof(console) === 'undefined') {
             } else {
                 url = getScalerUrl(data);
                 };
-            window.prompt("URL reference to the current view", url);
+            if (noprompt == null) {
+                window.prompt("URL reference to the current view", url);
+            }
+            return url;
+        },
+        
+        // set image quality
+        setquality : function (data, qual) {
+            var oldq = getQuality(data);
+            if (qual == null) {
+                qual = window.prompt("Image quality (0..2)", oldq);
+            }
+            qual = parseInt(qual, 10);
+            if (qual >= 0 && qual <= 2) {
+                setQuality(data, qual);
+                redisplay(data);
+            }
         }
     };
 
@@ -1232,6 +1250,23 @@ if (typeof(console) === 'undefined') {
         $birdZoom.bind("mousedown.digilib", birdZoomStartDrag);
     };
 
+    // get image quality as a number (0..2)
+    var getQuality = function (data) {
+        var flags = data.scalerFlags;
+        var q = flags.q2 || flags.q1 || 'q0'; // assume q0 as default
+        return parseInt(q[1], 10);
+    };
+
+    // set image quality as a number (0..2)
+    var setQuality = function (data, qual) {
+        var flags = data.scalerFlags;
+        // clear flags
+        for (var i = 0; i < 3; ++i) {
+            delete flags['q'+i];
+        }
+        flags['q'+qual] = 'q'+qual;
+    };
+    
     // sets a key to a value (relative values with +/- if relative=true)
     var setNumValue = function(settings, key, value) {
         if (isNumber(value)) return settings[key] = value; 
