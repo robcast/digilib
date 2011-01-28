@@ -1023,10 +1023,14 @@ if (typeof(console) === 'undefined') {
             // display marks
             renderMarks(data);
             // TODO: digilib.showArrows(); // show arrow overlays for zoom navigation
-            // TODO: the birdview should adapt to mirror or rotation? 
             var $birdImg = data.$birdImg;
+            // should the birdview adapt to mirror or rotation? decision: No. :-) 
             if ($birdImg) {
                 $birdImg.triggerHandler('load');
+                };
+                // TODO: the actual moving code    
+            if (!isFullArea(data.zoomArea)) {
+                setupZoomDrag(data);
                 };
         };
     };
@@ -1250,12 +1254,77 @@ if (typeof(console) === 'undefined') {
         $birdZoom.bind("mousedown.digilib", birdZoomStartDrag);
     };
 
+    var setupZoomDrag = function(data) {
+    // setup handlers for dragging the zoomed image
+        var pt1, pt2;
+        var dx = 0;
+        var dy = 0;
+        var $elem = data.$elem;
+        var $scaler = data.$scaler;
+        var $img = data.$img;
+        var $bg = $('<div class="bgDrag" style="display:none"/>');
+        $scaler.before($bg); // set as background
+        
+        var dragStart = function (evt) {
+        // drag the image and load a new detail on mouse up
+            // useless if not zoomed
+            if (isFullArea(data.zoomArea)) return false;
+            if(evt.preventDefault) evt.preventDefault(); // no Firefox drag and drop (NEEDED?)
+            pt1 = geom.position(evt);
+            $imgRect = geom.rectangle($img);
+            $imgRect.adjustDiv($bg); // set background size
+            // hide the scaler image, show it as background of div instead
+            $bg.css({
+                'background-image' : 'url(' + $img.attr('src') + ')',
+                'background-repeat' : 'no-repeat',
+                'cursor' : 'move'
+                });
+            $img.hide(); 
+            $bg.show();
+            $(document).bind("mousemove.digilib", dragMove);
+            $(document).bind("mouseup.digilib", dragEnd);
+            window.focus();
+            };
+    
+        var dragMove = function (evt) {
+        // mousemove handler: drag
+            var pos = geom.position(evt);
+            if(evt.preventDefault) evt.preventDefault(); // no Firefox drag and drop (NEEDED?)
+            dx = pos.x - pt1.x;
+            dy = pos.y - pt1.y;
+            // move the background image to the new position
+            $bg.css({
+                'background-position' : dx + "px " + dy + "px"
+                });
+            return false;
+            };
+    
+        var dragEnd = function (evt) {
+        // mouseup handler: reload digilib
+            $bg.css({
+                'cursor' : 'default'
+                });
+            $(document).unbind("mousemove.digilib", dragMove);
+            $(document).unbind("mouseup.digilib", dragEnd);
+            // calculate relative offset
+            var x = -dx / $img.width();
+            var y = -dy / $img.height();
+            if (dx == 0 && dy == 0)
+                return false // no movement
+            // reload with scaler image showing the new ausschnitt
+            // digilib.moveBy(x, y);
+            return false;
+            };
+
+        $scaler.bind("mousedown.digilib", dragStart);
+    };
+
     // get image quality as a number (0..2)
     var getQuality = function (data) {
         var flags = data.scalerFlags;
         var q = flags.q2 || flags.q1 || 'q0'; // assume q0 as default
         return parseInt(q[1], 10);
-    };
+        };
 
     // set image quality as a number (0..2)
     var setQuality = function (data, qual) {
@@ -1265,7 +1334,7 @@ if (typeof(console) === 'undefined') {
             delete flags['q'+i];
         }
         flags['q'+qual] = 'q'+qual;
-    };
+        };
     
     // sets a key to a value (relative values with +/- if relative=true)
     var setNumValue = function(settings, key, value) {
