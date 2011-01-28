@@ -538,7 +538,8 @@
      inkscape:groupmode="layer"
      id="layer20"
      inkscape:label="reset"
-     style="display:none">
+     style="display:none"
+     sodipodi:insensitive="true">
     <rect
        style="color:#000000;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0;marker:none;visibility:visible;display:inline;overflow:visible"
        id="rect143"
