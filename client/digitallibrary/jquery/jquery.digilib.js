@@ -1310,14 +1310,16 @@ if (typeof(console) === 'undefined') {
             $(document).unbind("mousemove.digilib", dragMove);
             $(document).unbind("mouseup.digilib", dragEnd);
             // calculate relative offset
-            var x = -dx / $img.width();
-            var y = -dy / $img.height();
             if (dx == 0 && dy == 0)
                 return false // no movement
             // reload with scaler image showing the new ausschnitt
-            $bg.hide(); 
-            $img.show();
             // digilib.moveBy(x, y);
+            var pos = geom.position(-dx, -dy);
+            var newPos = data.imgTrafo.invtransform(pos);
+            var newArea = data.zoomArea.setPt1(newPos);
+            data.zoomArea = MAX_ZOOMAREA.fit(newArea);
+            $bg.hide(); 
+            redisplay(data);
             return false;
             };
 
