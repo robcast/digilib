@@ -282,14 +282,14 @@ if (typeof(console) === 'undefined') {
                 // add buttons
                 for (var i = 0; i < elemSettings.visibleButtonSets; ++i) {
                     showButtons(data, true, i);
-                }
+                    };
                 // bird's eye view creation
-                if (elemSettings.isBirdDivVisible ) {
+                if (elemSettings.isBirdDivVisible) {
                     setupBirdDiv(data);
-                }
+                    };
                 // about window creation - TODO: could be deferred? restrict to only one item?
                 setupAboutDiv(data);
-                // TODO: the actual moving code    
+                // TODO: the actual moving code
                 setupZoomDrag(data);
             });
         },
@@ -436,7 +436,7 @@ if (typeof(console) === 'undefined') {
             data.settings.cont = factor;
             redisplay(data);
         },
-        
+
         // display more (or less) button sets
         morebuttons : function (data, more) {
             var settings = data.settings;
@@ -504,7 +504,7 @@ if (typeof(console) === 'undefined') {
             }
             return url;
         },
-        
+
         // set image quality
         setquality : function (data, qual) {
             var oldq = getQuality(data);
@@ -527,9 +527,7 @@ if (typeof(console) === 'undefined') {
     // returns parameters from embedded img-element
     var parseImgParams = function($elem) {
         var src = $elem.find('img').first().attr('src');
-        if (!src) {
-            return null;
-        }
+        if (!src) return null;
         var pos = src.indexOf('?');
         var query = (pos < 0) ? '' : src.substring(pos + 1);
         var scalerUrl = src.substring(0, pos);
@@ -579,7 +577,7 @@ if (typeof(console) === 'undefined') {
         var settings = data.settings;
         if (settings.scalerBaseUrl == null) {
             alert("ERROR: URL of digilib Scaler servlet missing!");
-        }
+            };
         packParams(data);
         var keys = settings.scalerParamNames;
         var queryString = getParamString(settings, keys, defaults);
@@ -613,14 +611,14 @@ if (typeof(console) === 'undefined') {
                 var pa = mk.split(";");    // old format with ";"
             } else {
                 var pa = mk.split(",");    // new format
-            }
+            };
             for (var i = 0; i < pa.length ; i++) {
                 var pos = pa[i].split("/");
                 if (pos.length > 1) {
                     marks.push(geom.position(pos[0], pos[1]));
-                }
-            }
-        }
+                    };
+                };
+            };
         data.marks = marks;
         // mo (Scaler flags)
         var flags = {};
@@ -628,8 +626,8 @@ if (typeof(console) === 'undefined') {
             var pa = settings.mo.split(",");
             for (var i = 0; i < pa.length ; i++) {
                 flags[pa[i]] = pa[i];
-            }
-        }
+                };
+            };
         data.scalerFlags = flags;
         retrieveOptionsCookie(data);
     };
@@ -643,17 +641,19 @@ if (typeof(console) === 'undefined') {
             settings.wy = cropFloat(data.zoomArea.y);
             settings.ww = cropFloat(data.zoomArea.width);
             settings.wh = cropFloat(data.zoomArea.height);
-        }
+            };
         // marks
         if (data.marks) {
             settings.mk = '';
             for (var i = 0; i < data.marks.length; i++) {
                 if (i) {
                     settings.mk += ',';
-                }
-                settings.mk += cropFloat(data.marks[i].x).toString() + '/' + cropFloat(data.marks[i].y).toString();
-            }
-        }
+                    };
+                settings.mk
+                    += cropFloat(data.marks[i].x).toString() + '/' 
+                    + cropFloat(data.marks[i].y).toString();
+                };
+            };
         // Scaler flags
         if (data.scalerFlags) {
             var mo = '';
@@ -665,6 +665,7 @@ if (typeof(console) === 'undefined') {
             }
             settings.mo = mo;
         }
+        // user interface options
         storeOptionsCookie(data);
     };
 
@@ -691,9 +692,9 @@ if (typeof(console) === 'undefined') {
             for (var o in data.dlOpts) {
                 if (clop) {
                     clop += '&';
-                }
+                    };
                 clop += o + '=' + data.dlOpts[o];
-            }
+                };
             if (jQuery.cookie) {
                 var ck = "digilib:fn:" + escape(settings.fn) + ":pn:" + settings.pn;
                 console.debug("set cookie=", ck, " value=", clop);
@@ -748,17 +749,13 @@ if (typeof(console) === 'undefined') {
             var history = window.history;
             if (typeof(history.pushState) === 'function') {
                 console.debug("we could modify history, but we don't...");
-            }
+                };
             window.location = url;
         } else {
             // embedded mode -- just change img src
             var url = getScalerUrl(data);
             data.$img.attr('src', url);
-            // and update bird's eye view
-            //if (settings.isBirdDivVisible) {
-            //    renderBirdZoom(data);
-            //}
-        };
+            };
     };
 
     // returns maximum size for scaler img in fullscreen mode
@@ -931,7 +928,7 @@ if (typeof(console) === 'undefined') {
         $aboutDiv.bind('click.digilib', function () { 
             settings.isAboutDivVisible = showDiv(settings.isAboutDivVisible, $aboutDiv, 0);
             return false;
-        });
+            });
         data.$aboutDiv = $aboutDiv;
     };
 
@@ -943,12 +940,12 @@ if (typeof(console) === 'undefined') {
         } else {
             // set visibility
             isVisible = show;
-        }
+            };
         if (isVisible) {
             $div.fadeIn();
         } else {
             $div.fadeOut();
-        }
+            };
         return isVisible;
     };
 
@@ -963,7 +960,7 @@ if (typeof(console) === 'undefined') {
                 $set = data.$buttonSets[setIdx];
             } else {
                 $set = createButtons(data, setIdx);
-            }
+                };
             if ($set == null) return false;
             var btnWidth = $set.width();
             // move remaining sets left and show new set
@@ -974,9 +971,9 @@ if (typeof(console) === 'undefined') {
                 var oldpos = $otherSets.position();
                 if (oldpos) {
                     $otherSets.css({left : oldpos.left-btnWidth+'px'});
-                }
+                    };
                 $set.show();
-            }
+                };
         } else {
             // remove set
             var $set = data.$buttonSets[setIdx];
@@ -990,8 +987,8 @@ if (typeof(console) === 'undefined') {
                 $otherSets.animate({left : '+='+btnWidth+'px'}, 'fast');
             } else {
                 $otherSets.css({left : '+='+btnWidth+'px'});
-            }
-        }
+                };
+            };
         return true;
     };
 
@@ -1010,18 +1007,18 @@ if (typeof(console) === 'undefined') {
             if (hmir) {
                 // mirror about center
                 trafo.concat(trafo.getMirror('y'));
-            }
+                };
             if (vmir) {
                 // mirror about center
                 trafo.concat(trafo.getMirror('x'));
-            }
+                };
             if (rot) {
                 // rotate around center
                 trafo.concat(trafo.getRotation(parseFloat(rot)));
-            }
+                };
             // move back
             trafo.concat(trafo.getTranslation(geom.position(0.5, 0.5)));
-        }
+            };
         // scale to screen position and size
         trafo.concat(trafo.getScale(picrect));
         trafo.concat(trafo.getTranslation(picrect));
@@ -1075,8 +1072,8 @@ if (typeof(console) === 'undefined') {
                 var $mark = $(html);
                 $elem.append($mark);
                 $mark.offset({left : mpos.x, top : mpos.y});
-            }
-        }
+                };
+            };
     };
 
     // show zoom area indicator on bird's eye view
@@ -1172,9 +1169,7 @@ if (typeof(console) === 'undefined') {
             pt2 = geom.position(evt);
             // assume a click and continue if the area is too small
             var clickRect = geom.rectangle(pt1, pt2);
-            if (clickRect.getArea() <= 5) {
-                return false;
-            }
+            if (clickRect.getArea() <= 5) return false;
             // hide zoom div
             $zoomDiv.remove();
             // unregister events
@@ -1280,7 +1275,7 @@ if (typeof(console) === 'undefined') {
             $bg = $('<div class="bgDrag" style="display:none; position:absolute"/>');
             $scaler.before($bg); // set as background
             };
-        
+
         var dragStart = function (evt) {
         // drag the image and load a new detail on mouse up
             // useless if not zoomed
@@ -1302,7 +1297,7 @@ if (typeof(console) === 'undefined') {
             $(document).bind("mouseup.digilib", dragEnd);
             window.focus();
             };
-    
+
         var dragMove = function (evt) {
         // mousemove handler: drag
             var pos = geom.position(evt);
@@ -1315,7 +1310,7 @@ if (typeof(console) === 'undefined') {
                 });
             return false;
             };
-    
+
         var dragEnd = function (evt) {
         // mouseup handler: reload digilib
             $bg.css({
@@ -1324,8 +1319,7 @@ if (typeof(console) === 'undefined') {
             $(document).unbind("mousemove.digilib", dragMove);
             $(document).unbind("mouseup.digilib", dragEnd);
             // calculate relative offset
-            if (dx == 0 && dy == 0)
-                return false // no movement
+            if (dx == 0 && dy == 0) return false // no movement
             // reload with scaler image showing the new ausschnitt
             // digilib.moveBy(x, y);
             var pos = geom.position(-dx, -dy);
@@ -1353,10 +1347,10 @@ if (typeof(console) === 'undefined') {
         // clear flags
         for (var i = 0; i < 3; ++i) {
             delete flags['q'+i];
-        }
+            };
         flags['q'+qual] = 'q'+qual;
     };
-    
+
     // sets a key to a value (relative values with +/- if relative=true)
     var setNumValue = function(settings, key, value) {
         if (isNumber(value)) return settings[key] = value; 
@@ -1365,11 +1359,11 @@ if (typeof(console) === 'undefined') {
             if (settings[key] == null) {
                 // this isn't perfect but still...
                 settings[key] = 0;
-            }
+                };
             settings[key] = parseFloat(settings[key]) + parseFloat(value);
         } else {
             settings[key] = value;
-        }
+            };
         return settings[key];
     };
 
@@ -1380,7 +1374,7 @@ if (typeof(console) === 'undefined') {
 
     // auxiliary function (from Douglas Crockford, A.10)
     var isNumber = function isNumber(value) {
-            return typeof value === 'number' && isFinite(value);
+        return typeof value === 'number' && isFinite(value);
     };
 
     // auxiliary function to crop senseless precision
@@ -1421,7 +1415,7 @@ if (typeof(console) === 'undefined') {
             return actions.init.apply(this, arguments);
         } else {
             $.error( 'action ' + action + ' does not exist on jQuery.digilib' );
-        }
+            };
     };
 
 })(jQuery);
