@@ -284,7 +284,7 @@ if (typeof(console) === 'undefined') {
                     showButtons(data, true, i);
                 }
                 // bird's eye view creation
-                if (elemSettings.isBirdDivVisible) {
+                if (elemSettings.isBirdDivVisible ) {
                     setupBirdDiv(data);
                 }
                 // about window creation - TODO: could be deferred? restrict to only one item?
@@ -469,6 +469,7 @@ if (typeof(console) === 'undefined') {
             var settings = data.settings;
             var paramNames = settings.digilibParamNames;
             var params = data.queryParams;
+            // resets zoomArea, marks, scalerflags
             resetData(data);
             // delete all digilib parameters
             for (var i = 0; i < paramNames.length; i++) {
@@ -477,12 +478,15 @@ if (typeof(console) === 'undefined') {
                 };
             // fullscreen: restore only fn/pn parameters 
             if (settings.interactionMode === 'fullscreen') {
-                settings['fn'] = params.fn;
-                settings['pn'] = params.pn;
+                settings['fn'] = params.fn || ''; // no default defined
+                settings['pn'] = params.pn || defaults.pn;
             // embedded: restore original parameters 
             } else {
                 $.extend(settings, params);
                 };
+            // TODO: should we really reset all user preferences here?
+            settings.isBirdDivVisible = false;
+            settings.visibleButtonSets = 1;
             redisplay(data);
         },
 
@@ -627,32 +631,7 @@ if (typeof(console) === 'undefined') {
             }
         }
         data.scalerFlags = flags;
-        // clop (digilib options)
-        var opts = {};
-        if (jQuery.cookie) {
-            // read from cookie
-            var ck = "digilib:fn:" + escape(settings.fn) + ":pn:" + settings.pn;
-            var cp = jQuery.cookie(ck);
-            console.debug("get cookie=", ck, " value=", cp);
-            // in query string format
-            opts = parseQueryString(cp);
-        }
-        /* read from parameter clop
-         * if (settings.clop) {
-            var pa = settings.clop.split(",");
-            for (var i = 0; i < pa.length ; i++) {
-                opts[pa[i]] = pa[i];
-            }
-        } */
-        data.dlOpts = opts;
-        // birdview option
-        if (opts.birdview != null) {
-            settings.isBirdDivVisible = opts.birdview;
-        }
-        // visible button sets
-        if (opts.buttons != null) {
-            settings.visibleButtonSets = opts.buttons;
-        }
+        retrieveOptionsCookie(data);
     };
 
     // put objects back into parameters
@@ -686,24 +665,12 @@ if (typeof(console) === 'undefined') {
             }
             settings.mo = mo;
         }
-        // save digilib settings in options
-        data.dlOpts.birdview = settings.isBirdDivVisible ? 1 : 0;
-        data.dlOpts.buttons = settings.visibleButtonSets;
+        storeOptionsCookie(data);
+    };
 
+    var storeOptionsCookie = function (data) {
         // save digilib options in cookie
-        // TODO: in embedded mode this is not called 
-        if (data.dlOpts) {
-            var clop = '';
-            for (var o in data.dlOpts) {
-                if (clop) {
-                    clop += '&';
-                }
-                clop += o + '=' + data.dlOpts[o];
-            }
-            var ck = "digilib:fn:" + escape(settings.fn) + ":pn:" + settings.pn;
-            console.debug("set cookie=", ck, " value=", clop);
-            jQuery.cookie(ck, clop);
-        };
+        // TODO: in embedded mode this is not called
         /* store in parameter clop
          * if (data.dlOpts) {
             var clop = '';
@@ -715,14 +682,61 @@ if (typeof(console) === 'undefined') {
             }
             settings.clop = clop;
         } */
+        var settings = data.settings;
+        if (data.dlOpts) {
+            // save digilib settings in options
+            data.dlOpts.birdview = settings.isBirdDivVisible ? 1 : 0;
+            data.dlOpts.buttons = settings.visibleButtonSets;
+            var clop = '';
+            for (var o in data.dlOpts) {
+                if (clop) {
+                    clop += '&';
+                }
+                clop += o + '=' + data.dlOpts[o];
+            }
+            if (jQuery.cookie) {
+                var ck = "digilib:fn:" + escape(settings.fn) + ":pn:" + settings.pn;
+                console.debug("set cookie=", ck, " value=", clop);
+                jQuery.cookie(ck, clop);
+                };
+        };
     };
+
+    var retrieveOptionsCookie = function (data) {
+        // clop (digilib options)
+        var opts = {};
+        var settings = data.settings;
+        if (jQuery.cookie) {
+            /* read from parameter clop
+             * if (settings.clop) {
+                var pa = settings.clop.split(",");
+                for (var i = 0; i < pa.length ; i++) {
+                    opts[pa[i]] = pa[i];
+                }
+            } */
+            // read from cookie
+            var ck = "digilib:fn:" + escape(settings.fn) + ":pn:" + settings.pn;
+            var cp = jQuery.cookie(ck);
+            console.debug("get cookie=", ck, " value=", cp);
+            // in query string format
+            opts = parseQueryString(cp);
+            };
+        data.dlOpts = opts;
+        // birdview option
+        if (opts.birdview != null) {
+            settings.isBirdDivVisible = opts.birdview === '1';
+            };
+        // visible button sets
+        if (opts.buttons != null) {
+            settings.visibleButtonSets = opts.buttons;
+            };
+    }
 
     // clear digilib data for reset
     var resetData = function (data) {
         if (data.zoomArea) delete data.zoomArea;
         if (data.marks) delete data.marks;
         if (data.scalerFlags) delete data.scalerFlags;
-        if (data.dlOpts) delete data.dlOpts;
     };
 
     // (re)load the img from a new scaler URL
