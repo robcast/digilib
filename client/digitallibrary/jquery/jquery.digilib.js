@@ -362,6 +362,7 @@ if (typeof(console) === 'undefined') {
                     }
                 }
             // reset mk and others(?)
+            // TODO: adjust bird div
             data.marks = [];
             data.zoomArea = MAX_ZOOMAREA;
             // then reload
@@ -781,6 +782,9 @@ if (typeof(console) === 'undefined') {
             // embedded mode -- just change img src
             var url = getScalerUrl(data);
             data.$img.attr('src', url);
+            // set scaler div size explicitly in case $img is hidden (for zoomDrag)
+            $imgRect = geom.rectangle(data.$img);
+            $imgRect.adjustDiv(data.$scaler); 
             }
     };
 
