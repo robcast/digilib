@@ -731,7 +731,7 @@ if (typeof(console) === 'undefined') {
         if (opts.buttons != null) {
             settings.visibleButtonSets = opts.buttons;
             };
-    }
+    };
 
     // clear digilib data for reset
     var resetData = function (data) {
@@ -951,6 +951,7 @@ if (typeof(console) === 'undefined') {
 
     // display more (or less) button sets
     var showButtons = function (data, more, setIdx, animated) {
+        var atime = animated ? 'fast': 0;
         if (more) {
             // add set
             var $otherSets = data.$elem.find('div.buttons:visible');
@@ -964,16 +965,12 @@ if (typeof(console) === 'undefined') {
             if ($set == null) return false;
             var btnWidth = $set.width();
             // move remaining sets left and show new set
-            if (animated) {
-                $otherSets.animate({left : '-='+btnWidth+'px'}, 'fast',
-                        function () {$set.show();});
+            if ($otherSets.length > 0) {
+                    $otherSets.animate({right : '+='+btnWidth+'px'}, atime,
+                            function () {$set.show();});
             } else {
-                var oldpos = $otherSets.position();
-                if (oldpos) {
-                    $otherSets.css({left : oldpos.left-btnWidth+'px'});
-                    };
                 $set.show();
-                };
+            }
         } else {
             // remove set
             var $set = data.$buttonSets[setIdx];
@@ -983,12 +980,8 @@ if (typeof(console) === 'undefined') {
             $set.hide();
             // take remaining sets and move right
             var $otherSets = data.$elem.find('div.buttons:visible');
-            if (animated) {
-                $otherSets.animate({left : '+='+btnWidth+'px'}, 'fast');
-            } else {
-                $otherSets.css({left : '+='+btnWidth+'px'});
-                };
-            };
+            $otherSets.animate({right : '-='+btnWidth+'px'}, atime);
+        }
         return true;
     };
 
@@ -1319,7 +1312,7 @@ if (typeof(console) === 'undefined') {
             $(document).unbind("mousemove.digilib", dragMove);
             $(document).unbind("mouseup.digilib", dragEnd);
             // calculate relative offset
-            if (dx == 0 && dy == 0) return false // no movement
+            if (dx == 0 && dy == 0) return false; // no movement
             // reload with scaler image showing the new ausschnitt
             // digilib.moveBy(x, y);
             var pos = geom.position(-dx, -dy);
