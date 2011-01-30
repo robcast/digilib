@@ -799,10 +799,12 @@ if (typeof(console) === 'undefined') {
         if (settings.interactionMode === 'fullscreen') {
             var imgSize = getFullscreenImgSize($elem);
             // fitwidth/height omits destination height/width
-            if (data.dlOpts.fitheight !== '1') {
+            // if (data.dlOpts['fitheight'] !== '1') {
+            if (data.dlOpts['fitheight'] == null) {
                 settings.dw = imgSize.width;
             }
-            if (data.dlOpts.fitwidth !== '1') {
+            // if (data.dlOpts['fitwidth'] !== '1') {
+            if (data.dlOpts['fitwidth'] == null) {
                 settings.dh = imgSize.height;
             }
             $img = $('<img/>');
@@ -830,6 +832,9 @@ if (typeof(console) === 'undefined') {
         // setup image load handler before setting the src attribute (IE bug)
         $img.load(scalerImgLoadedHandler(data));
         $img.attr('src', scalerUrl);
+        // set scaler div size explicitly in case $img is hidden (for zoomDrag)
+        $imgRect = geom.rectangle($img);
+        $imgRect.adjustDiv(data.$scaler); 
     };
 
     // creates HTML structure for buttons in elem
@@ -1043,13 +1048,15 @@ if (typeof(console) === 'undefined') {
 
     // returns function for load event of scaler img
     var scalerImgLoadedHandler = function (data) {
-        var $img = data.$img;
         return function () {
             console.debug("img loaded! this=", this, " data=", data);
             // create Transform from current area and picsize
             data.imgTrafo = getImgTrafo($img, data.zoomArea,
                     data.settings.rot, data.scalerFlags.hmir, data.scalerFlags.vmir);
             console.debug("imgTrafo=", data.imgTrafo);
+            var $img = data.$img;
+            // show image in case it was hidden (for example in zoomDrag)
+            $img.show();
             // display marks
             renderMarks(data);
             // TODO: digilib.showArrows(); // show arrow overlays for zoom navigation
@@ -1285,11 +1292,6 @@ if (typeof(console) === 'undefined') {
         var $elem = data.$elem;
         var $scaler = data.$scaler;
         var $img = data.$img;
-        var $bg = $elem.has('div.bgDrag');
-        if ($bg.length === 0) {
-            $bg = $('<div class="bgDrag" style="display:none; position:absolute"/>');
-            $scaler.before($bg); // set as background
-            }
 
         var dragStart = function (evt) {
         // drag the image and load a new detail on mouse up
@@ -1297,36 +1299,36 @@ if (typeof(console) === 'undefined') {
             if (isFullArea(data.zoomArea)) return false;
             pt1 = geom.position(evt);
             $imgRect = geom.rectangle($img);
-            $imgRect.adjustDiv($bg); // set background size
+            // keep scaler div size while $img is hidden (for embedded mode)
+            $imgRect.adjustDiv($scaler); 
             // hide the scaler image, show it as background of div instead
-            $bg.css({
+            $scaler.css({
                 'background-image' : 'url(' + $img.attr('src') + ')',
                 'background-repeat' : 'no-repeat',
                 'background-position' : 'top left',
                 'cursor' : 'move'
                 });
             $img.hide(); 
-            $bg.show();
             $(document).bind("mousemove.digilib", dragMove);
             $(document).bind("mouseup.digilib", dragEnd);
             return false;
             };
 
         var dragMove = function (evt) {
-        // mousemove handler: drag
+        // mousemove handler: drag zoomed image
             var pos = geom.position(evt);
             dx = pos.x - pt1.x;
             dy = pos.y - pt1.y;
             // move the background image to the new position
-            $bg.css({
+            $scaler.css({
                 'background-position' : dx + "px " + dy + "px"
                 });
             return false;
             };
 
         var dragEnd = function (evt) {
-        // mouseup handler: reload digilib
-            $bg.css({
+        // mouseup handler: reload zoomed image in new position
+            $scaler.css({
                 'cursor' : 'default'
                 });
             $(document).unbind("mousemove.digilib", dragMove);
@@ -1339,7 +1341,6 @@ if (typeof(console) === 'undefined') {
             var newPos = data.imgTrafo.invtransform(pos);
             var newArea = data.zoomArea.setPt1(newPos);
             data.zoomArea = MAX_ZOOMAREA.fit(newArea);
-            $bg.hide(); 
             redisplay(data);
             return false;
             };
