@@ -1051,13 +1051,13 @@ if (typeof(console) === 'undefined') {
 
     // returns function for load event of scaler img
     var scalerImgLoadedHandler = function (data) {
+        var $img = data.$img;
         return function () {
             console.debug("img loaded! this=", this, " data=", data);
             // create Transform from current area and picsize
             data.imgTrafo = getImgTrafo($img, data.zoomArea,
                     data.settings.rot, data.scalerFlags.hmir, data.scalerFlags.vmir);
             console.debug("imgTrafo=", data.imgTrafo);
-            var $img = data.$img;
             // show image in case it was hidden (for example in zoomDrag)
             $img.show();
             // display marks
