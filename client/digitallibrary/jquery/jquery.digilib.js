@@ -77,8 +77,8 @@ if (typeof(console) === 'undefined') {
             img : "fwd.png"
             },
         page : {
-            onclick : "javascript:gotoPageWin()",
-            tooltip : "specify image",
+            onclick : "gotoPage",
+            tooltip : "goto image number",
             img : "page.png"
             },
         bird : {
@@ -344,6 +344,9 @@ if (typeof(console) === 'undefined') {
         gotoPage : function (data, pageNr) {
             var settings = data.settings;
             var oldpn = settings.pn;
+            if (pageNr == null) {
+                pageNr = window.prompt("Goto page number", oldpn);
+            }
             var pn = setNumValue(settings, "pn", pageNr);
             if (pn == null) return false; // nothing happened
             if (pn < 1) {
@@ -1367,6 +1370,7 @@ if (typeof(console) === 'undefined') {
 
     // sets a key to a value (relative values with +/- if relative=true)
     var setNumValue = function(settings, key, value) {
+        if (value == null) return null;
         if (isNumber(value)) {
             settings[key] = value;
             return value;
