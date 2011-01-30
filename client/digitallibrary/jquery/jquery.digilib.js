@@ -508,6 +508,8 @@ if (typeof(console) === 'undefined') {
             // TODO: should we really reset all user preferences here?
             settings.isBirdDivVisible = false;
             settings.visibleButtonSets = 1;
+            delete data.dlOpts.fitwidth;
+            delete data.dlOpts.fitheight;
             redisplay(data);
         },
 
@@ -797,10 +799,10 @@ if (typeof(console) === 'undefined') {
         if (settings.interactionMode === 'fullscreen') {
             var imgSize = getFullscreenImgSize($elem);
             // fitwidth/height omits destination height/width
-            if (data.dlOpts.fitheight == null) {
+            if (data.dlOpts.fitheight !== '1') {
                 settings.dw = imgSize.width;
             }
-            if (data.dlOpts.fitwidth == null) {
+            if (data.dlOpts.fitwidth !== '1') {
                 settings.dh = imgSize.height;
             }
             $img = $('<img/>');
