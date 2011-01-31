@@ -220,14 +220,14 @@ if (typeof(console) === 'undefined') {
             'fullscreen' : {
                 // path to button images (must end with a slash)
                 'imagePath' : 'img/fullscreen/',
-                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","toggleoptions"],
-                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","toggleoptions"],
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","help","reset","toggleoptions"],
+                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","toggleoptions"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 },
             'embedded' : {
                 'imagePath' : 'img/embedded/16/',
-                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","back","fwd","page","bird","SEP","help","reset","toggleoptions"],
-                'specialSet' : ["hmir","vmir","rot","brgt","cont","rgb","quality","size","SEP","toggleoptions"],
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","back","fwd","page","bird","help","reset","toggleoptions"],
+                'specialSet' : ["hmir","vmir","rot","brgt","cont","rgb","quality","size","toggleoptions"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 }
         },
