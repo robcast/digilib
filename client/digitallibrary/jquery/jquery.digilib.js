@@ -220,14 +220,14 @@ if (typeof(console) === 'undefined') {
             'fullscreen' : {
                 // path to button images (must end with a slash)
                 'imagePath' : 'img/fullscreen/',
-                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","SEP","help","reset","toggleoptions"],
-                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","SEP","toggleoptions"],
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","help","reset","toggleoptions"],
+                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","toggleoptions"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 },
             'embedded' : {
                 'imagePath' : 'img/embedded/16/',
-                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","back","fwd","page","bird","SEP","help","reset","toggleoptions"],
-                'specialSet' : ["hmir","vmir","rot","brgt","cont","rgb","quality","size","SEP","toggleoptions"],
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","back","fwd","page","bird","help","reset","toggleoptions"],
+                'specialSet' : ["hmir","vmir","rot","brgt","cont","rgb","quality","size","toggleoptions"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 }
         },
@@ -788,9 +788,6 @@ if (typeof(console) === 'undefined') {
             // embedded mode -- just change img src
             var url = getScalerUrl(data);
             data.$img.attr('src', url);
-            // set scaler div size explicitly in case $img is hidden (for zoomDrag)
-            $imgRect = geom.rectangle(data.$img);
-            $imgRect.adjustDiv(data.$scaler);
             // load new bird img (in case the scalerUrl has changed, like in gotopage)
             //showBirdDiv(data); //TODO: change url explicitly
             }
@@ -847,9 +844,6 @@ if (typeof(console) === 'undefined') {
         // setup image load handler before setting the src attribute (IE bug)
         $img.load(scalerImgLoadedHandler(data));
         $img.attr('src', scalerUrl);
-        // set scaler div size explicitly in case $img is hidden (for zoomDrag)
-        $imgRect = geom.rectangle($img);
-        $imgRect.adjustDiv(data.$scaler); 
     };
 
     // creates HTML structure for buttons in elem
@@ -937,7 +931,7 @@ if (typeof(console) === 'undefined') {
         // the bird's eye div
         var $birdDiv = $('<div class="birdview" style="display:none"/>');
         // the detail indicator frame
-        var $birdZoom = $('<div class="birdZoom" style="display:none; background-color:transparent;"/>');
+        var $birdZoom = $('<div class="birdZoom" style="display:none; position:absolute; background-color:transparent;"/>');
         // the small image
         var $birdImg = $('<img class="birdimg"/>');
         data.$birdDiv = $birdDiv;
@@ -1087,6 +1081,10 @@ if (typeof(console) === 'undefined') {
             data.imgTrafo = getImgTrafo($img, data.zoomArea,
                     data.settings.rot, data.scalerFlags.hmir, data.scalerFlags.vmir);
             console.debug("imgTrafo=", data.imgTrafo);
+            // set scaler div size explicitly in case $img is hidden (for zoomDrag)
+            var $imgRect = geom.rectangle(data.$img);
+            console.debug("imgrect=", $imgRect);
+            $imgRect.adjustDiv(data.$scaler);
             // show image in case it was hidden (for example in zoomDrag)
             $img.show();
             // display marks
@@ -1354,6 +1352,7 @@ if (typeof(console) === 'undefined') {
         var dragEnd = function (evt) {
         // mouseup handler: reload zoomed image in new position
             $scaler.css({
+                'background-image' : 'none',
                 'cursor' : 'default'
                 });
             $(document).unbind("mousemove.digilib", dragMove);
