@@ -806,9 +806,11 @@ if (typeof(console) === 'undefined') {
     var setupScalerDiv = function (data) {
         var settings = data.settings;
         var $elem = data.$elem;
+        $elem.addClass('digilib');
         var $img, scalerUrl;
         // fullscreen
         if (settings.interactionMode === 'fullscreen') {
+            $elem.addClass('dl_fullscreen');
             var imgSize = getFullscreenImgSize($elem);
             // fitwidth/height omits destination height/width
             // if (data.dlOpts['fitheight'] !== '1') {
@@ -823,6 +825,7 @@ if (typeof(console) === 'undefined') {
             scalerUrl = getScalerUrl(data);
         // embedded mode -- try to keep img tag
         } else {
+            $elem.addClass('dl_embedded');
             $img = $elem.find('img');
             if ($img.length > 0) {
                 console.debug("img detach:", $img);
@@ -1151,7 +1154,7 @@ if (typeof(console) === 'undefined') {
             $birdZoom.offset(coords);
         } else {
             // nice animation for embedded mode :-)
-            $birdZoom.animate(coords, opts);
+            $birdZoom.animate(coords);
         }
     };
 
