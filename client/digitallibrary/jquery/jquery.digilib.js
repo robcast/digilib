@@ -784,9 +784,6 @@ if (typeof(console) === 'undefined') {
             // embedded mode -- just change img src
             var url = getScalerUrl(data);
             data.$img.attr('src', url);
-            // set scaler div size explicitly in case $img is hidden (for zoomDrag)
-            $imgRect = geom.rectangle(data.$img);
-            $imgRect.adjustDiv(data.$scaler);
             // load new bird img (in case the scalerUrl has changed, like in gotopage)
             showBirdDiv(data);
             }
@@ -1075,6 +1072,10 @@ if (typeof(console) === 'undefined') {
             data.imgTrafo = getImgTrafo($img, data.zoomArea,
                     data.settings.rot, data.scalerFlags.hmir, data.scalerFlags.vmir);
             console.debug("imgTrafo=", data.imgTrafo);
+            // set scaler div size explicitly in case $img is hidden (for zoomDrag)
+            var $imgRect = geom.rectangle(data.$img);
+            console.debug("imgrect=", $imgRect);
+            $imgRect.adjustDiv(data.$scaler);
             // show image in case it was hidden (for example in zoomDrag)
             $img.show();
             // display marks
