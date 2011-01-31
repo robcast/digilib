@@ -335,11 +335,13 @@ if (typeof(console) === 'undefined') {
 
         // event handler: toggles the visibility of the bird's eye window 
         showBirdDiv : function (data, show) {
+            var settings = data.settings;
             if (data.$birdDiv == null) {
                 // no bird div -> create
                 setupBirdDiv(data);
             }
-            data.settings.isBirdDivVisible = showDiv(data.settings.isBirdDivVisible, data.$birdDiv, show);
+            settings.isBirdDivVisible = showDiv(settings.isBirdDivVisible, data.$birdDiv, show);
+            updateBirdDiv(data);
             storeOptions(data);
             // data.$birdImg.triggerHandler('load'); // TODO: we shouldn't do that
         },
@@ -788,8 +790,8 @@ if (typeof(console) === 'undefined') {
             // embedded mode -- just change img src
             var url = getScalerUrl(data);
             data.$img.attr('src', url);
-            // load new bird img (in case the scalerUrl has changed, like in gotopage)
-            //showBirdDiv(data); //TODO: change url explicitly
+            // redisplay bird img
+            updateBirdDiv(data);
             }
     };
 
@@ -934,7 +936,7 @@ if (typeof(console) === 'undefined') {
         // the bird's eye div
         var $birdDiv = $('<div class="birdview" style="display:none"/>');
         // the detail indicator frame
-        var $birdZoom = $('<div class="birdZoom" style="display:none; position:absolute; background-color:transparent;"/>');
+        var $birdZoom = $('<div class="birdzoom" style="display:none; background-color:transparent;"/>');
         // the small image
         var $birdImg = $('<img class="birdimg"/>');
         data.$birdDiv = $birdDiv;
@@ -1154,6 +1156,10 @@ if (typeof(console) === 'undefined') {
             $birdZoom.offset(coords);
         } else {
             // nice animation for embedded mode :-)
+            var ppos = $birdZoom.offsetParent().offset();
+            // correct offsetParent because animate is relative
+            coords.left = (coords.left - ppos.left) + 'px' ;
+            coords.top = (coords.top - ppos.top) + 'px';
             $birdZoom.animate(coords);
         }
     };
