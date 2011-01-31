@@ -238,6 +238,8 @@ if (typeof(console) === 'undefined') {
         // dimensions of bird's eye div
         'birdDivWidth' : 200, 
         'birdDivHeight' : 200,
+        // parameters used by bird's eye div
+        'birdDivParams' : ['fn','pn','dw','dh'],
         // style of the zoom area indicator in the bird's eye div 
         'birdIndicatorStyle' : {'border' : '2px solid #ff0000' },
         // style of zoom area "rubber band"
@@ -784,7 +786,9 @@ if (typeof(console) === 'undefined') {
             data.$img.attr('src', url);
             // set scaler div size explicitly in case $img is hidden (for zoomDrag)
             $imgRect = geom.rectangle(data.$img);
-            $imgRect.adjustDiv(data.$scaler); 
+            $imgRect.adjustDiv(data.$scaler);
+            // load new bird img (in case the scalerUrl has changed, like in gotopage)
+            showBirdDiv(data);
             }
     };
 
@@ -912,15 +916,6 @@ if (typeof(console) === 'undefined') {
     // creates HTML structure for the bird's eye view in elem
     var setupBirdDiv = function (data) {
         var $elem = data.$elem;
-        var settings = data.settings;
-        // use only the relevant parameters
-        var keys = ['fn','pn','dw','dh'];
-        var birdDivOptions = {
-            dw : settings.birdDivWidth,
-            dh : settings.birdDivHeight
-            };
-        var birdSettings = $.extend({}, settings, birdDivOptions);
-        var birdUrl = settings.scalerBaseUrl + '?' + getParamString(birdSettings, keys);
         // the bird's eye div
         var $birdDiv = $('<div class="birdview" style="display:none"/>');
         // the detail indicator frame
@@ -935,12 +930,30 @@ if (typeof(console) === 'undefined') {
         data.$birdZoom = $birdZoom;
         data.$birdImg = $birdImg;
         $birdImg.load(birdImgLoadedHandler(data));
-        $birdImg.attr('src', birdUrl);
-        if (data.settings.isBirdDivVisible) {
-            $birdDiv.show();
-            }
+        showBirdDiv(data);
         birdZoom(data);
     };
+    
+    // puts correct img into bird div
+    var showBirdDiv = function (data) {
+        var settings = data.settings;
+        var $birdImg = data.$birdImg;
+        var $birdDiv = data.$birdDiv;
+        var birdDivOptions = {
+            dw : settings.birdDivWidth,
+            dh : settings.birdDivHeight
+            };
+        var birdSettings = $.extend({}, settings, birdDivOptions);
+        // use only the relevant parameters
+        var birdUrl = settings.scalerBaseUrl + '?' 
+            + getParamString(birdSettings, settings.birdDivParams);
+        // the bird's eye div
+        $birdImg.attr('src', birdUrl);
+        if (settings.isBirdDivVisible) {
+            $birdDiv.show();
+            }
+    };
+    
 
     // creates HTML structure for the about view in elem
     var setupAboutDiv = function (data) {
