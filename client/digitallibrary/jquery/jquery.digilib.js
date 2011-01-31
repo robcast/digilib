@@ -785,7 +785,7 @@ if (typeof(console) === 'undefined') {
             var url = getScalerUrl(data);
             data.$img.attr('src', url);
             // load new bird img (in case the scalerUrl has changed, like in gotopage)
-            showBirdDiv(data);
+            showBirdImage(data);
             }
     };
 
@@ -840,9 +840,6 @@ if (typeof(console) === 'undefined') {
         // setup image load handler before setting the src attribute (IE bug)
         $img.load(scalerImgLoadedHandler(data));
         $img.attr('src', scalerUrl);
-        // set scaler div size explicitly in case $img is hidden (for zoomDrag)
-        $imgRect = geom.rectangle($img);
-        $imgRect.adjustDiv(data.$scaler); 
     };
 
     // creates HTML structure for buttons in elem
@@ -927,15 +924,16 @@ if (typeof(console) === 'undefined') {
         data.$birdZoom = $birdZoom;
         data.$birdImg = $birdImg;
         $birdImg.load(birdImgLoadedHandler(data));
-        showBirdDiv(data);
+        showBirdImage(data);
         birdZoom(data);
     };
     
     // puts correct img into bird div
-    var showBirdDiv = function (data) {
+    var showBirdImage = function (data) {
+        var $birdDiv = data.$birdDiv;
+        if ($birdDiv == null) return null;
         var settings = data.settings;
         var $birdImg = data.$birdImg;
-        var $birdDiv = data.$birdDiv;
         var birdDivOptions = {
             dw : settings.birdDivWidth,
             dh : settings.birdDivHeight
@@ -1350,6 +1348,7 @@ if (typeof(console) === 'undefined') {
         var dragEnd = function (evt) {
         // mouseup handler: reload zoomed image in new position
             $scaler.css({
+                'background-image' : 'none',
                 'cursor' : 'default'
                 });
             $(document).unbind("mousemove.digilib", dragMove);
