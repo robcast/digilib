@@ -288,6 +288,19 @@ if (typeof(console) === 'undefined') {
                         params = queryParams;
                     } else {
                         params = parseImgParams($elem);
+                        if (jQuery.cookie) {
+                            // retrieve params from cookie
+                            var ck = "digilib-embed:fn:" + escape(params.fn) + ":pn:" + (params.pn || '1');
+                            var cs = jQuery.cookie(ck);
+                            console.debug("get cookie=", ck, " value=", cs);
+                            if (cs) {
+                                var cp = parseQueryString(cs);
+                                // ignore fn and pn from cookie
+                                cp.fn = params.fn;
+                                cp.pn = params.pn;
+                                params = cp;
+                            }
+                        }
                     }
                     // store $(this) element in the settings
                     elemSettings = $.extend({}, settings, params);
@@ -734,6 +747,13 @@ if (typeof(console) === 'undefined') {
                 console.debug("set cookie=", ck, " value=", clop);
                 jQuery.cookie(ck, clop);
                 }
+        }
+        if (settings.interactionMode !== 'fullscreen' && jQuery.cookie) {
+            // store normal parameters in cookie for embedded mode
+            var qs = getParamString(settings, settings.digilibParamNames, defaults);
+            var ck = "digilib-embed:fn:" + escape(settings.fn) + ":pn:" + settings.pn;
+            console.debug("set cookie=", ck, " value=", qs);
+            jQuery.cookie(ck, qs);
         }
     };
 
