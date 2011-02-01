@@ -1381,7 +1381,6 @@ if (typeof(console) === 'undefined') {
         // mouseup handler: reload zoomed image in new position
         var dragEnd = function (evt) {
             $scaler.css({
-                'background-image' : 'none',
                 'cursor' : 'default'
                 });
             $document.unbind("mousemove.dlZoomDrag", dragMove);
