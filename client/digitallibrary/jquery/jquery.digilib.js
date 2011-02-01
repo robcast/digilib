@@ -1324,6 +1324,7 @@ if (typeof(console) === 'undefined') {
 
         var birdZoomStartDrag = function(evt) {
             // mousedown handler: start dragging bird zoom to a new position
+            if (isFullArea(data.zoomArea)) return false;
             startPos = geom.position(evt);
             birdImgRect = geom.rectangle($birdImg);
             birdZoomRect = geom.rectangle($birdZoom);
