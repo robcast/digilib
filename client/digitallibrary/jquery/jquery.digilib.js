@@ -986,7 +986,7 @@ if (typeof(console) === 'undefined') {
             // re-render
             renderBirdArea(data);
             // enable click and drag
-            birdMoveArea(data);
+            setupBirdDrag(data);
         }
     };
     
@@ -1132,7 +1132,7 @@ if (typeof(console) === 'undefined') {
             // display red indicator around zoomarea
             renderBirdArea(data);
             // enable click and drag
-            birdMoveArea(data);
+            setupBirdDrag(data);
         };
     };
 
@@ -1280,7 +1280,7 @@ if (typeof(console) === 'undefined') {
     };
 
     // bird's eye view zoom area click and drag handler
-    var birdMoveArea = function(data) {
+    var setupBirdDrag = function(data) {
         var $birdImg = data.$birdImg;
         var $birdZoom = data.$birdZoom;
         var $document = $(document);
@@ -1335,9 +1335,11 @@ if (typeof(console) === 'undefined') {
         $document.unbind(".dlBirdMove");
         $birdImg.unbind(".dlBirdMove");
         $birdZoom.unbind(".dlBirdMove");
-        // set new handler
-        $birdImg.bind("mousedown.dlBirdMove", birdZoomStartDrag);
-        $birdZoom.bind("mousedown.dlBirdMove", birdZoomStartDrag);
+        if (! isFullArea(data.zoomArea)) {
+            // set new handler
+            $birdImg.bind("mousedown.dlBirdMove", birdZoomStartDrag);
+            $birdZoom.bind("mousedown.dlBirdMove", birdZoomStartDrag);
+        }
     };
 
     var setupZoomDrag = function(data) {
@@ -1443,7 +1445,7 @@ if (typeof(console) === 'undefined') {
     };
 
     // auxiliary function (from old dllib.js)
-    isFullArea = function(area) {
+    var isFullArea = function(area) {
         return (area.width === 1.0) && (area.height === 1.0);
     };
 
