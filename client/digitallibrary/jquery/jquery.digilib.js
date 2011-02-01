@@ -295,15 +295,15 @@ if (typeof(console) === 'undefined') {
                             console.debug("get cookie=", ck, " value=", cs);
                             if (cs) {
                                 var cp = parseQueryString(cs);
-                                // ignore fn and pn from cookie
-                                cp.fn = params.fn;
-                                cp.pn = params.pn;
-                                params = cp;
+                                // ignore fn and pn from cookie TODO: should we keep pn?
+                                delete cp.fn;
+                                delete cp.pn;
+                                jQuery.extend(params, cp);
                             }
                         }
                     }
                     // store $(this) element in the settings
-                    elemSettings = $.extend({}, settings, params);
+                    elemSettings = jQuery.extend({}, settings, params);
                     data = {
                             $elem : $elem,
                             settings : elemSettings,
@@ -381,7 +381,6 @@ if (typeof(console) === 'undefined') {
                     }
                 }
             // reset mk and others(?)
-            // TODO: adjust bird div
             data.marks = [];
             data.zoomArea = MAX_ZOOMAREA;
             // then reload
@@ -829,33 +828,36 @@ if (typeof(console) === 'undefined') {
         var settings = data.settings;
         var $elem = data.$elem;
         $elem.addClass('digilib');
-        var $img, scalerUrl;
-        // fullscreen
+        var $img;
+        var scalerUrl;
         if (settings.interactionMode === 'fullscreen') {
+            // fullscreen
             $elem.addClass('dl_fullscreen');
             var imgSize = getFullscreenImgSize($elem);
             // fitwidth/height omits destination height/width
-            // if (data.dlOpts['fitheight'] !== '1') {
-            if (data.dlOpts['fitheight'] == null) {
+            if (data.dlOpts.fitheight == null) {
                 settings.dw = imgSize.width;
             }
-            // if (data.dlOpts['fitwidth'] !== '1') {
-            if (data.dlOpts['fitwidth'] == null) {
+            if (data.dlOpts.fitwidth == null) {
                 settings.dh = imgSize.height;
             }
-            $img = $('<img/>');
             scalerUrl = getScalerUrl(data);
-        // embedded mode -- try to keep img tag
+            $img = $('<img/>');
         } else {
+            // embedded mode -- try to keep img tag
             $elem.addClass('dl_embedded');
+            scalerUrl = getScalerUrl(data);
             $img = $elem.find('img');
             if ($img.length > 0) {
-                console.debug("img detach:", $img);
-                scalerUrl = $img.attr('src');
-                $img.detach();
+                oldUrl = $img.attr('src');
+                if (oldUrl === scalerUrl) {
+                    console.debug("img detach:", $img);
+                    $img.detach();
+                } else {
+                    $img = $('<img/>');
+                }
             } else {
                 $img = $('<img/>');
-                scalerUrl = getScalerUrl(data);
             }
         }
         // create new html
