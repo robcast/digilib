@@ -48,6 +48,12 @@ var dlGeometry = function() {
             that.equals = function (other) {
                 return (this.x === other.x  &&  this.y === other.y);
             };
+            // add position other to this
+            that.add = function (other) {
+                this.x += other.x;
+                this.y += other.y;
+                return this;
+            };
             // returns new position that is the difference between this and other
             that.delta = function (other) {
                 return position(other.x - this.x, other.y - this.y);
@@ -55,6 +61,15 @@ var dlGeometry = function() {
             // adjusts position $elem to this position
             that.adjustDiv = function ($elem) {
                 $elem.offset({left : this.x, top : this.y});
+            };
+            // returns distance of this position to pos (length if pos == null)
+            that.distance = function (pos) {
+                if (pos == null) {
+                    pos = {x : 0, y : 0};
+                }
+                var dx = pos.x - this.x;
+                var dy = pos.y - this.y;
+                return Math.sqrt(dx * dx + dy * dy);
             };
             that.toString = function() {
                 return (this.x + "," + this.y);
@@ -107,14 +122,15 @@ var dlGeometry = function() {
             that.getPt2 = function() {
                 return position(this.x + this.width, this.y + this.height);
             };
-            // sets the upper left corner to position pos
-            that.setPt1 = function(pos) {
+            // sets the upper left corner position to pos
+            that.setPosition = function(pos) {
                 this.x = pos.x;
                 this.y = pos.y;
                 return this;
             };
-            // adds pos to the upper left corner
-            that.addPt1 = function(pos) {
+            that.setPt1 = that.setPosition; // TODO: not really the same
+            // adds pos to the position
+            that.addPosition = function(pos) {
                 this.x += pos.x;
                 this.y += pos.y;
                 return this;

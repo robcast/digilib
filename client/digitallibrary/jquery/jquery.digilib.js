@@ -1110,12 +1110,12 @@ if (typeof(console) === 'undefined') {
             data.imgTrafo = getImgTrafo($img, data.zoomArea,
                     data.settings.rot, data.scalerFlags.hmir, data.scalerFlags.vmir);
             console.debug("imgTrafo=", data.imgTrafo);
-            // set scaler div size explicitly in case $img is hidden (for zoomDrag)
-            var $imgRect = geom.rectangle(data.$img);
-            console.debug("imgrect=", $imgRect);
-            $imgRect.adjustDiv(data.$scaler);
+            // adjust scaler div size
+            var imgRect = geom.rectangle(data.$img);
+            console.debug("imgrect=", imgRect);
+            imgRect.adjustDiv(data.$scaler);
             // show image in case it was hidden (for example in zoomDrag)
-            $img.show();
+            $img.css('visibility', 'visible');
             // display marks
             renderMarks(data);
             // TODO: digilib.showArrows(); // show arrow overlays for zoom navigation
@@ -1286,21 +1286,21 @@ if (typeof(console) === 'undefined') {
         var $document = $(document);
         var startPos, newRect, birdImgRect, birdZoomRect;
 
+        // mousemove handler: drag
         var birdZoomMove = function(evt) {
-            // mousemove handler: drag
             var pos = geom.position(evt);
             var delta = startPos.delta(pos);
             // move birdZoom div, keeping size
             newRect = birdZoomRect.copy();
-            newRect.addPt1(delta);
+            newRect.addPosition(delta);
             // stay within birdimage
             newRect.stayInside(birdImgRect);
             newRect.adjustDiv($birdZoom);
             return false;
         };
 
+        // mouseup handler: reload page
         var birdZoomEndDrag = function(evt) {
-            // mouseup handler: reload page
             var settings = data.settings;
             $document.unbind("mousemove.dlBirdMove", birdZoomMove);
             $document.unbind("mouseup.dlBirdMove", birdZoomEndDrag);
@@ -1317,8 +1317,8 @@ if (typeof(console) === 'undefined') {
             return false;
         };
 
+        // mousedown handler: start dragging bird zoom to a new position
         var birdZoomStartDrag = function(evt) {
-            // mousedown handler: start dragging bird zoom to a new position
             startPos = geom.position(evt);
             // position may have changed
             data.birdTrafo = getImgTrafo($birdImg, MAX_ZOOMAREA);
@@ -1343,22 +1343,17 @@ if (typeof(console) === 'undefined') {
     };
 
     var setupZoomDrag = function(data) {
-    // setup handlers for dragging the zoomed image
-        var pt1, pt2;
-        var dx = 0;
-        var dy = 0;
+        // setup handlers for dragging the zoomed image
+        var startPos, delta;
+        var $document = $(document);
         var $elem = data.$elem;
         var $scaler = data.$scaler;
         var $img = data.$img;
 
-        var dragStart = function (evt) {
         // drag the image and load a new detail on mouse up
-            // useless if not zoomed
-            if (isFullArea(data.zoomArea)) return false;
-            pt1 = geom.position(evt);
+        var dragStart = function (evt) {
+            startPos = geom.position(evt);
             $imgRect = geom.rectangle($img);
-            // keep scaler div size while $img is hidden (for embedded mode)
-            $imgRect.adjustDiv($scaler); 
             // hide the scaler image, show it as background of div instead
             $scaler.css({
                 'background-image' : 'url(' + $img.attr('src') + ')',
@@ -1367,44 +1362,53 @@ if (typeof(console) === 'undefined') {
                 'cursor' : 'move'
                 });
             $img.css('visibility', 'hidden');
-            $(document).bind("mousemove.digilib", dragMove);
-            $(document).bind("mouseup.digilib", dragEnd);
+            $document.bind("mousemove.dlZoomDrag", dragMove);
+            $document.bind("mouseup.dlZoomDrag", dragEnd);
             return false;
             };
 
-        var dragMove = function (evt) {
         // mousemove handler: drag zoomed image
+        var dragMove = function (evt) {
             var pos = geom.position(evt);
-            dx = pos.x - pt1.x;
-            dy = pos.y - pt1.y;
+            delta = pos.delta(startPos);
             // move the background image to the new position
             $scaler.css({
-                'background-position' : dx + "px " + dy + "px"
+                'background-position' : (-delta.x) + "px " + (-delta.y) + "px"
                 });
             return false;
             };
 
-        var dragEnd = function (evt) {
         // mouseup handler: reload zoomed image in new position
+        var dragEnd = function (evt) {
             $scaler.css({
                 'background-image' : 'none',
                 'cursor' : 'default'
                 });
-            $(document).unbind("mousemove.digilib", dragMove);
-            $(document).unbind("mouseup.digilib", dragEnd);
-            // calculate relative offset
-            if (dx === 0 && dy === 0) return false; // no movement
-            // reload with scaler image showing the new ausschnitt
-            // digilib.moveBy(x, y);
-            var pos = geom.position(-dx, -dy);
-            var newPos = data.imgTrafo.invtransform(pos);
-            var newArea = data.zoomArea.setPt1(newPos);
+            $document.unbind("mousemove.dlZoomDrag", dragMove);
+            $document.unbind("mouseup.dlZoomDrag", dragEnd);
+            if (delta == null || delta.distance() < 2) {
+                // no movement
+                $img.css('visibility', 'visible');
+                return false; 
+            }
+            // get old zoom area (screen coordinates)
+            var za = data.imgTrafo.transform(data.zoomArea);
+            // move
+            za.addPosition(delta);
+            // transform back
+            var newArea = data.imgTrafo.invtransform(za);
             data.zoomArea = MAX_ZOOMAREA.fit(newArea);
             redisplay(data);
             return false;
             };
-
-        $scaler.bind("mousedown.digilib", dragStart);
+            
+        // clear old handler
+        $document.unbind(".dlZoomDrag");
+        $scaler.unbind(".dlBirdMove");
+        if (! isFullArea(data.zoomArea)) {
+            // set new handler
+            $scaler.bind("mousedown.dlZoomDrag", dragStart);
+        }
     };
 
     // get image quality as a number (0..2)
