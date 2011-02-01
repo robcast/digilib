@@ -45,8 +45,16 @@ var dlGeometry = function() {
                         y : parseFloat(y)
                 };
             }
-            that.equals = function(other) {
+            that.equals = function (other) {
                 return (this.x === other.x  &&  this.y === other.y);
+            };
+            // returns new position that is the difference between this and other
+            that.delta = function (other) {
+                return position(other.x - this.x, other.y - this.y);
+            };
+            // adjusts position $elem to this position
+            that.adjustDiv = function ($elem) {
+                $elem.offset({left : this.x, top : this.y});
             };
             that.toString = function() {
                 return (this.x + "," + this.y);
@@ -105,24 +113,30 @@ var dlGeometry = function() {
                 this.y = pos.y;
                 return this;
             };
+            // adds pos to the upper left corner
+            that.addPt1 = function(pos) {
+                this.x += pos.x;
+                this.y += pos.y;
+                return this;
+            };
+            // sets the lower right corner to position pos
             that.setPt2 = function(pos) {
-                // sets the lower right corner to position pos
                 this.width = pos.x - this.x;
                 this.height = pos.y - this.y;
                 return this;
             };
+            // returns the center position of this Rectangle
             that.getCenter = function() {
-                // returns the center position of this Rectangle
                 return position(this.x + this.width / 2, this.y + this.height / 2);
             };
+            // moves this Rectangle's center to position pos
             that.setCenter = function(pos) {
-                // moves this Rectangle's center to position pos
                 this.x = pos.x - this.width / 2;
                 this.y = pos.y - this.height / 2;
                 return this;
             };
+            // returns the size of this Rectangle
             that.getSize = function() {
-                // returns the size of this Rectangle
                 return size(this.width, this.height);
             };
             that.equals = function(other) {
@@ -131,12 +145,12 @@ var dlGeometry = function() {
                         this.width === other.width);
                 return eq;
             };
+            // returns the area of this Rectangle
             that.getArea = function() {
-                // returns the area of this Rectangle
                 return (this.width * this.height);
             };
+            // eliminates negative width and height
             that.normalize = function() {
-                // eliminates negative width and height
                 var p = this.getPt2();
                 this.x = Math.min(this.x, p.x);
                 this.y = Math.min(this.y, p.y);
@@ -144,19 +158,19 @@ var dlGeometry = function() {
                 this.height = Math.abs(this.height);
                 return this;
             };
+            // returns if Position "pos" lies inside of this rectangle
             that.containsPosition = function(pos) {
-                // returns if Position "pos" lies inside of this rectangle
                 var ct = ((pos.x >= this.x) && (pos.y >= this.y) && 
                         (pos.x <= this.x + this.width) && (pos.y <= this.y + this.height));
                 return ct;
             };
+            // returns if rectangle "rect" is contained in this rectangle
             that.containsRect = function(rect) {
-                // returns if rectangle "rect" is contained in this rectangle
                 return (this.containsPosition(rect.getPt1()) && this.containsPosition(rect.getPt2()));
             };
+            // changes this rectangle's x/y values so it stays inside of rectangle rect
+            // keeping the proportions
             that.stayInside = function(rect) {
-                // changes this rectangle's x/y values so it stays inside of rectangle rect
-                // keeping the proportions
                 if (this.x < rect.x) {
                     this.x = rect.x;
                 }
@@ -171,8 +185,8 @@ var dlGeometry = function() {
                 }
                 return this;
             };
+            // clips this rectangle so it stays inside of rectangle rect
             that.clipTo = function(rect) {
-                // clips this rectangle so it stays inside of rectangle rect
                 var p1 = rect.getPt1();
                 var p2 = rect.getPt2();
                 var this2 = this.getPt2();
@@ -180,8 +194,8 @@ var dlGeometry = function() {
                 this.setPt2(position(Math.min(this2.x, p2.x), Math.min(this2.y, p2.y)));
                 return this;
             };
+            // returns the intersection of the given Rectangle and this one
             that.intersect = function(rect) {
-                // returns the intersection of the given Rectangle and this one
                 // FIX ME: not really, it should return null if there is no overlap 
                 var sec = rect.copy();
                 if (sec.x < this.x) {
@@ -200,8 +214,8 @@ var dlGeometry = function() {
                 }
                 return sec;
             };
+            // returns a Rectangle that fits into this one (by moving first)
             that.fit = function(rect) {
-                // returns a Rectangle that fits into this one (by moving first)
                 var sec = rect.copy();
                 sec.x = Math.max(sec.x, this.x);
                 sec.y = Math.max(sec.y, this.x);

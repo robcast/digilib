@@ -985,6 +985,8 @@ if (typeof(console) === 'undefined') {
         } else {
             // re-render
             renderBirdArea(data);
+            // enable click and drag
+            birdMoveArea(data);
         }
     };
     
@@ -1164,6 +1166,8 @@ if (typeof(console) === 'undefined') {
         } else {
             $birdZoom.show();
         }
+        // position may have changed
+        data.birdTrafo = getImgTrafo(data.$birdImg, MAX_ZOOMAREA);
         var indRect = data.birdTrafo.transform(zoomArea);
         var coords = {
             left : indRect.x-2, // acount for frame width
@@ -1279,45 +1283,36 @@ if (typeof(console) === 'undefined') {
     var birdMoveArea = function(data) {
         var $birdImg = data.$birdImg;
         var $birdZoom = data.$birdZoom;
+        var $document = $(document);
         var startPos, newRect, birdImgRect, birdZoomRect;
 
         var birdZoomMove = function(evt) {
             // mousemove handler: drag
             var pos = geom.position(evt);
-            var dx = pos.x - startPos.x;
-            var dy = pos.y - startPos.y;
+            var delta = startPos.delta(pos);
             // move birdZoom div, keeping size
-            newRect = geom.rectangle(
-                birdZoomRect.x + dx,
-                birdZoomRect.y + dy,
-                birdZoomRect.width,
-                birdZoomRect.height);
+            newRect = birdZoomRect.copy();
+            newRect.addPt1(delta);
             // stay within birdimage
             newRect.stayInside(birdImgRect);
-            $birdZoom.offset({left : newRect.x, top : newRect.y});
-            // $birdZoom.show();
+            newRect.adjustDiv($birdZoom);
             return false;
         };
 
         var birdZoomEndDrag = function(evt) {
             // mouseup handler: reload page
             var settings = data.settings;
-            $(document).unbind("mousemove.digilib", birdZoomMove);
-            $(document).unbind("mouseup.digilib", birdZoomEndDrag);
-            $birdZoom.unbind("mousemove.digilib", birdZoomMove);
-            $birdZoom.unbind("mouseup.digilib", birdZoomEndDrag);
-            if (newRect == null) { // no movement happened
+            $document.unbind("mousemove.dlBirdMove", birdZoomMove);
+            $document.unbind("mouseup.dlBirdMove", birdZoomEndDrag);
+            $birdZoom.unbind("mousemove.dlBirdMove", birdZoomMove);
+            $birdZoom.unbind("mouseup.dlBirdMove", birdZoomEndDrag);
+            if (newRect == null) { 
+                // no movement happened - set center to click position
                 startPos = birdZoomRect.getCenter();
-                birdZoomMove(evt); // set center to click position
+                birdZoomMove(evt); 
                 }
-            if (data.zoomArea) {
-                // should always be true
-                var x = cropFloat((newRect.x - birdImgRect.x + 2) / birdImgRect.width);
-                var y = cropFloat((newRect.y - birdImgRect.y + 2) / birdImgRect.height);
-                data.zoomArea.x = x;
-                data.zoomArea.y = y;
-                }
-            settings.ws = 1; // zoomed is always fit
+            var newArea = data.birdTrafo.invtransform(newRect);
+            data.zoomArea = newArea;
             redisplay(data);
             return false;
         };
@@ -1325,17 +1320,24 @@ if (typeof(console) === 'undefined') {
         var birdZoomStartDrag = function(evt) {
             // mousedown handler: start dragging bird zoom to a new position
             startPos = geom.position(evt);
+            // position may have changed
+            data.birdTrafo = getImgTrafo($birdImg, MAX_ZOOMAREA);
             birdImgRect = geom.rectangle($birdImg);
             birdZoomRect = geom.rectangle($birdZoom);
-            $(document).bind("mousemove.digilib", birdZoomMove);
-            $(document).bind("mouseup.digilib", birdZoomEndDrag);
-            $birdZoom.bind("mousemove.digilib", birdZoomMove);
-            $birdZoom.bind("mouseup.digilib", birdZoomEndDrag);
+            $document.bind("mousemove.dlBirdMove", birdZoomMove);
+            $document.bind("mouseup.dlBirdMove", birdZoomEndDrag);
+            $birdZoom.bind("mousemove.dlBirdMove", birdZoomMove);
+            $birdZoom.bind("mouseup.dlBirdMove", birdZoomEndDrag);
             return false;
         };
-
-        $birdImg.bind("mousedown.digilib", birdZoomStartDrag);
-        $birdZoom.bind("mousedown.digilib", birdZoomStartDrag);
+        
+        // clear old handler
+        $document.unbind(".dlBirdMove");
+        $birdImg.unbind(".dlBirdMove");
+        $birdZoom.unbind(".dlBirdMove");
+        // set new handler
+        $birdImg.bind("mousedown.dlBirdMove", birdZoomStartDrag);
+        $birdZoom.bind("mousedown.dlBirdMove", birdZoomStartDrag);
     };
 
     var setupZoomDrag = function(data) {
@@ -1362,7 +1364,7 @@ if (typeof(console) === 'undefined') {
                 'background-position' : 'top left',
                 'cursor' : 'move'
                 });
-            $img.hide(); 
+            $img.css('visibility', 'hidden');
             $(document).bind("mousemove.digilib", dragMove);
             $(document).bind("mouseup.digilib", dragEnd);
             return false;
