@@ -232,7 +232,7 @@ if (typeof(console) === 'undefined') {
                 }
         },
         // number of visible button groups
-        'visibleButtonSets' : 1,    
+        'visibleButtonSets' : 1,
         // is birdView shown?
         'isBirdDivVisible' : false,
         // dimensions of bird's eye div
@@ -252,7 +252,7 @@ if (typeof(console) === 'undefined') {
     // affine geometry classes
     var geom = dlGeometry();
 
-    var MAX_ZOOMAREA = geom.rectangle(0, 0, 1, 1);
+    var FULL_AREA = geom.rectangle(0, 0, 1, 1);
 
     var actions = {
         // init: digilib initialization
@@ -326,7 +326,7 @@ if (typeof(console) === 'undefined') {
                     }
                 // about window creation - TODO: could be deferred? restrict to only one item?
                 setupAboutDiv(data);
-                // TODO: the actual moving code
+                // drag zoom area around in scaler div 
                 setupZoomDrag(data);
             });
         },
@@ -382,7 +382,7 @@ if (typeof(console) === 'undefined') {
                 }
             // reset mk and others(?)
             data.marks = [];
-            data.zoomArea = MAX_ZOOMAREA;
+            data.zoomArea = FULL_AREA;
             // then reload
             redisplay(data);
         },
@@ -399,7 +399,7 @@ if (typeof(console) === 'undefined') {
 
         // zoom out to full page
         zoomFull : function (data, mode) {
-            data.zoomArea = MAX_ZOOMAREA;
+            data.zoomArea = FULL_AREA;
             if (mode === 'width') {
                 data.dlOpts.fitwidth = 1;
                 delete data.dlOpts.fitheight;
@@ -514,24 +514,21 @@ if (typeof(console) === 'undefined') {
             var settings = data.settings;
             var paramNames = settings.digilibParamNames;
             var params = data.queryParams;
-            // resets zoomArea, marks, scalerflags
-            resetData(data);
             // delete all digilib parameters
             for (var i = 0; i < paramNames.length; i++) {
                 var paramName = paramNames[i];
                 delete settings[paramName];
                 }
-            // fullscreen: restore only fn/pn parameters 
-            if (settings.interactionMode === 'fullscreen') {
-                settings.fn = params.fn || ''; // no default defined
-                settings.pn = params.pn || defaults.pn;
-            // embedded: restore original parameters 
-            } else {
-                $.extend(settings, params);
-                }
-            // TODO: should we really reset all user preferences here?
+            settings.fn = params.fn || ''; // no default defined
+            settings.pn = params.pn || defaults.pn;
+            settings.dw = params.dw;
+            settings.dh = params.dh;
             settings.isBirdDivVisible = false;
             settings.visibleButtonSets = 1;
+            // resets zoomArea, marks, scalerflags
+            data.zoomArea = FULL_AREA;
+            data.marks = [];
+            data.scalerFlags = {};
             delete data.dlOpts.fitwidth;
             delete data.dlOpts.fitheight;
             redisplay(data);
@@ -784,14 +781,6 @@ if (typeof(console) === 'undefined') {
         if (opts.buttons != null) {
             settings.visibleButtonSets = opts.buttons;
             }
-    };
-
-    // clear digilib data for reset
-    var resetData = function (data) {
-        // TODO: we should reset instead of delete
-        if (data.zoomArea) delete data.zoomArea;
-        if (data.marks) delete data.marks;
-        if (data.scalerFlags) delete data.scalerFlags;
     };
 
     // (re)load the img from a new scaler URL
@@ -1128,7 +1117,7 @@ if (typeof(console) === 'undefined') {
             var $img = $(this);
             console.debug("birdimg loaded! this=", this, " data=", data);
             // create Transform from current area and picsize
-            data.birdTrafo = getImgTrafo($img, MAX_ZOOMAREA);
+            data.birdTrafo = getImgTrafo($img, FULL_AREA);
             // display red indicator around zoomarea
             renderBirdArea(data);
             // enable click and drag
@@ -1167,7 +1156,7 @@ if (typeof(console) === 'undefined') {
             $birdZoom.show();
         }
         // position may have changed
-        data.birdTrafo = getImgTrafo(data.$birdImg, MAX_ZOOMAREA);
+        data.birdTrafo = getImgTrafo(data.$birdImg, FULL_AREA);
         var indRect = data.birdTrafo.transform(zoomArea);
         var coords = {
             left : indRect.x-2, // acount for frame width
@@ -1200,7 +1189,7 @@ if (typeof(console) === 'undefined') {
         // and recenter
         newarea.x -= 0.5 * (newarea.width - area.width);
         newarea.y -= 0.5 * (newarea.height - area.height);
-        newarea = MAX_ZOOMAREA.fit(newarea);
+        newarea = FULL_AREA.fit(newarea);
         data.zoomArea = newarea;
         redisplay(data);
     };
@@ -1321,7 +1310,7 @@ if (typeof(console) === 'undefined') {
         var birdZoomStartDrag = function(evt) {
             startPos = geom.position(evt);
             // position may have changed
-            data.birdTrafo = getImgTrafo($birdImg, MAX_ZOOMAREA);
+            data.birdTrafo = getImgTrafo($birdImg, FULL_AREA);
             birdImgRect = geom.rectangle($birdImg);
             birdZoomRect = geom.rectangle($birdZoom);
             $document.bind("mousemove.dlBirdMove", birdZoomMove);
@@ -1330,7 +1319,7 @@ if (typeof(console) === 'undefined') {
             $birdZoom.bind("mouseup.dlBirdMove", birdZoomEndDrag);
             return false;
         };
-        
+
         // clear old handler
         $document.unbind(".dlBirdMove");
         $birdImg.unbind(".dlBirdMove");
@@ -1397,11 +1386,11 @@ if (typeof(console) === 'undefined') {
             za.addPosition(delta);
             // transform back
             var newArea = data.imgTrafo.invtransform(za);
-            data.zoomArea = MAX_ZOOMAREA.fit(newArea);
+            data.zoomArea = FULL_AREA.fit(newArea);
             redisplay(data);
             return false;
             };
-            
+
         // clear old handler
         $document.unbind(".dlZoomDrag");
         $scaler.unbind(".dlBirdMove");
