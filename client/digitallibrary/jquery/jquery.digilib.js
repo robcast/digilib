@@ -1341,6 +1341,8 @@ if (typeof(console) === 'undefined') {
 
         // drag the image and load a new detail on mouse up
         var dragStart = function (evt) {
+            // don't start dragging if not zoomed
+            if (isFullArea(data.zoomArea)) return false;
             startPos = geom.position(evt);
             $imgRect = geom.rectangle($img);
             // hide the scaler image, show it as background of div instead
@@ -1393,10 +1395,7 @@ if (typeof(console) === 'undefined') {
         // clear old handler
         $document.unbind(".dlZoomDrag");
         $scaler.unbind(".dlBirdMove");
-        if (! isFullArea(data.zoomArea)) {
-            // set new handler
-            $scaler.bind("mousedown.dlZoomDrag", dragStart);
-        }
+        $scaler.bind("mousedown.dlZoomDrag", dragStart);
     };
 
     // get image quality as a number (0..2)
