@@ -248,6 +248,11 @@ var dlGeometry = function() {
                 $elem.offset({left : this.x, top : this.y});
                 $elem.width(this.width).height(this.height);
             };
+            // returns size and position in css-compatible format
+            that.getAsCss = function () {
+                return {left : this.x, top : this.y, 
+                    width : this.width, height : this.height};
+            };
             that.toString = function() {
                 return this.width+"x"+this.height+"@"+this.x+","+this.y;
             };

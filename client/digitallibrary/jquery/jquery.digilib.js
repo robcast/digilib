@@ -859,6 +859,7 @@ if (typeof(console) === 'undefined') {
         data.$img = $img;
         // setup image load handler before setting the src attribute (IE bug)
         $img.load(scalerImgLoadedHandler(data));
+        $scaler.css('cursor', 'wait');
         $img.attr('src', scalerUrl);
     };
 
@@ -1094,17 +1095,19 @@ if (typeof(console) === 'undefined') {
     var scalerImgLoadedHandler = function (data) {
         return function () {
             var $img = $(this);
+            var $scaler = data.$scaler;
             console.debug("img loaded! this=", this, " data=", data);
             // create Transform from current area and picsize
             data.imgTrafo = getImgTrafo($img, data.zoomArea,
                     data.settings.rot, data.scalerFlags.hmir, data.scalerFlags.vmir);
             console.debug("imgTrafo=", data.imgTrafo);
             // adjust scaler div size
-            var imgRect = geom.rectangle(data.$img);
+            var imgRect = geom.rectangle($img);
             console.debug("imgrect=", imgRect);
-            imgRect.adjustDiv(data.$scaler);
+            imgRect.adjustDiv($scaler);
             // show image in case it was hidden (for example in zoomDrag)
             $img.css('visibility', 'visible');
+            $scaler.css('cursor', 'auto');
             // display marks
             renderMarks(data);
             // TODO: digilib.showArrows(); // show arrow overlays for zoom navigation
@@ -1157,25 +1160,21 @@ if (typeof(console) === 'undefined') {
         }
         // position may have changed
         data.birdTrafo = getImgTrafo(data.$birdImg, FULL_AREA);
-        var indRect = data.birdTrafo.transform(zoomArea);
-        var coords = {
-            left : indRect.x-2, // acount for frame width
-            top : indRect.y-2,
-            width : indRect.width,
-            height: indRect.height
-            };
+        var zoomRect = data.birdTrafo.transform(zoomArea);
+        // TODO: acount for frame width
         if (data.settings.interactionMode === 'fullscreen') {
             // no animation for fullscreen
-            $birdZoom.width(coords.width);
-            $birdZoom.height(coords.height);
-            $birdZoom.offset(coords);
+            zoomRect.adjustDiv($birdZoom);
         } else {
             // nice animation for embedded mode :-)
-            var ppos = $birdZoom.offsetParent().offset();
             // correct offsetParent because animate is relative
-            coords.left = (coords.left - ppos.left) + 'px' ;
-            coords.top = (coords.top - ppos.top) + 'px';
-            $birdZoom.animate(coords);
+            var ppos = $birdZoom.offsetParent().offset();
+            var dest = {
+                    left : (zoomRect.x - ppos.left) + 'px',
+                    top : (zoomRect.y - ppos.top) + 'px',
+                    width : zoomRect.width,
+                    height : zoomRect.height};
+            $birdZoom.animate(dest);
         }
     };
 
@@ -1208,6 +1207,7 @@ if (typeof(console) === 'undefined') {
         });
     };
 
+    // zoom to area around two clicked points
     var zoomArea = function(data) {
         $elem = data.$elem;
         $scaler = data.$scaler;
@@ -1223,13 +1223,12 @@ if (typeof(console) === 'undefined') {
         var zoomStart = function (evt) {
             pt1 = geom.position(evt);
             // setup and show zoom div
-            //moveElement(zoomdiv, Rectangle(pt1.x, pt1.y, 0, 0));
-            $zoomDiv.offset({left : pt1.x, top : pt1.y});
+            pt1.adjustDiv($zoomDiv);
             $zoomDiv.width(0).height(0);
             $zoomDiv.show();
             // register events
-            $elem.bind("mousemove.digilib", zoomMove);
-            $elem.bind("mouseup.digilib", zoomEnd);
+            $elem.bind("mousemove.dlZoomArea", zoomMove);
+            $elem.bind("mouseup.dlZoomArea", zoomEnd);
             return false;
         };
 
@@ -1242,14 +1241,16 @@ if (typeof(console) === 'undefined') {
             // hide zoom div
             $zoomDiv.remove();
             // unregister events
-            $elem.unbind("mousemove.digilib", zoomMove);
-            $elem.unbind("mouseup.digilib", zoomEnd);
+            $elem.unbind("mousemove.dlZoomArea", zoomMove);
+            $elem.unbind("mouseup.dlZoomArea", zoomEnd);
             // clip and transform
             clickRect.clipTo(picRect);
             var area = data.imgTrafo.invtransform(clickRect);
             data.zoomArea = area;
             // zoomed is always fit
             data.settings.ws = 1;
+            delete data.dlOpts.fitwidth;
+            delete data.dlOpts.fitheight;
             redisplay(data);
             return false;
         };
@@ -1263,9 +1264,12 @@ if (typeof(console) === 'undefined') {
             rect.adjustDiv($zoomDiv);
             return false;
         };
-
+        
+        // clear old handler
+        $scaler.unbind('.dlZoomArea');
+        $elem.unbind('.dlZoomArea');
         // bind start zoom handler
-        $scaler.one('mousedown.digilib', zoomStart);
+        $scaler.one('mousedown.dlZoomArea', zoomStart);
     };
 
     // bird's eye view zoom area click and drag handler
@@ -1331,8 +1335,8 @@ if (typeof(console) === 'undefined') {
         }
     };
 
+    // setup handlers for dragging the zoomed image
     var setupZoomDrag = function(data) {
-        // setup handlers for dragging the zoomed image
         var startPos, delta;
         var $document = $(document);
         var $elem = data.$elem;
@@ -1372,7 +1376,7 @@ if (typeof(console) === 'undefined') {
         // mouseup handler: reload zoomed image in new position
         var dragEnd = function (evt) {
             $scaler.css({
-                'cursor' : 'default'
+                'cursor' : 'auto'
                 });
             $document.unbind("mousemove.dlZoomDrag", dragMove);
             $document.unbind("mouseup.dlZoomDrag", dragEnd);
