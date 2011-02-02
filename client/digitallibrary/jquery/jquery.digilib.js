@@ -245,7 +245,9 @@ if (typeof(console) === 'undefined') {
         // style of zoom area "rubber band"
         'zoomrectStyle' : {'border' : '2px solid #ff0000' },
         // is the "about" window shown?
-        'isAboutDivVisible' : false
+        'isAboutDivVisible' : false,
+        // maximum width of background image for drag-scroll
+        'maxBgSize' : 10000
 
         };
 
@@ -313,6 +315,14 @@ if (typeof(console) === 'undefined') {
                     $elem.data('digilib', data);
                 }
                 unpackParams(data);
+                // check if browser knows background-size
+                for (var bs in {'':1, '-moz-':1, '-webkit-':1, '-o-':1}) {
+                    if ($elem.css(bs+'background-size')) {
+                        data.hasBgSize = true;
+                        data.bgSizeName = bs+'background-size';
+                        break;
+                    }
+                }
                 // create HTML structure for scaler
                 setupScalerDiv(data);
                 // add buttons
@@ -618,17 +628,31 @@ if (typeof(console) === 'undefined') {
 
     // returns URL and query string for Scaler
     var getScalerUrl = function (data) {
+        packParams(data);
         var settings = data.settings;
         if (settings.scalerBaseUrl == null) {
             alert("ERROR: URL of digilib Scaler servlet missing!");
             }
-        packParams(data);
         var keys = settings.scalerParamNames;
         var queryString = getParamString(settings, keys, defaults);
         var url = settings.scalerBaseUrl + '?' + queryString;
         return url;
     };
 
+    // returns URL for bird's eye view image
+    var getBirdImgUrl = function (data) {
+        var settings = data.settings;
+        var birdDivOptions = {
+                dw : settings.birdDivWidth,
+                dh : settings.birdDivHeight
+        };
+        var birdSettings = $.extend({}, settings, birdDivOptions);
+        // use only the relevant parameters
+        var url = settings.scalerBaseUrl + '?' +
+            getParamString(birdSettings, settings.birdDivParams);
+        return url;
+    };
+    
     // returns URL and query string for current digilib
     var getDigilibUrl = function (data) {
         packParams(data);
@@ -927,20 +951,6 @@ if (typeof(console) === 'undefined') {
         return $buttonsDiv;
     };
 
-    // returns URL for bird's eye view image
-    var getBirdImgUrl = function (data) {
-        var settings = data.settings;
-        var birdDivOptions = {
-                dw : settings.birdDivWidth,
-                dh : settings.birdDivHeight
-        };
-        var birdSettings = $.extend({}, settings, birdDivOptions);
-        // use only the relevant parameters
-        var birdUrl = settings.scalerBaseUrl + '?' +
-            getParamString(birdSettings, settings.birdDivParams);
-        return birdUrl;
-    };
-    
     // creates HTML structure for the bird's eye view in elem
     var setupBirdDiv = function (data) {
         var $elem = data.$elem;
@@ -1105,7 +1115,7 @@ if (typeof(console) === 'undefined') {
             imgRect.adjustDiv($scaler);
             // show image in case it was hidden (for example in zoomDrag)
             $img.css('visibility', 'visible');
-            $scaler.css('opacity', '1');
+            $scaler.css({'opacity' : '1', 'background-image' : 'none'});
             // display marks
             renderMarks(data);
             // TODO: digilib.showArrows(); // show arrow overlays for zoom navigation
@@ -1159,13 +1169,14 @@ if (typeof(console) === 'undefined') {
         // position may have changed
         data.birdTrafo = getImgTrafo(data.$birdImg, FULL_AREA);
         var zoomRect = data.birdTrafo.transform(zoomArea);
-        // TODO: acount for frame width
+        // acount for border width
+        zoomRect.addPosition({x : -2, y : -2});
         if (data.settings.interactionMode === 'fullscreen') {
             // no animation for fullscreen
             zoomRect.adjustDiv($birdZoom);
         } else {
             // nice animation for embedded mode :-)
-            // correct offsetParent because animate is relative
+            // correct offsetParent because animate doesn't use offset
             var ppos = $birdZoom.offsetParent().offset();
             var dest = {
                     left : (zoomRect.x - ppos.left) + 'px',
@@ -1230,6 +1241,16 @@ if (typeof(console) === 'undefined') {
             return false;
         };
 
+        // mouse move handler
+        var zoomMove = function (evt) {
+            pt2 = geom.position(evt);
+            var rect = geom.rectangle(pt1, pt2);
+            rect.clipTo(picRect);
+            // update zoom div
+            rect.adjustDiv($zoomDiv);
+            return false;
+        };
+        
         // mouseup handler: end moving
         var zoomEnd = function (evt) {
             pt2 = geom.position(evt);
@@ -1253,16 +1274,6 @@ if (typeof(console) === 'undefined') {
             return false;
         };
 
-        // mouse move handler
-        var zoomMove = function (evt) {
-            pt2 = geom.position(evt);
-            var rect = geom.rectangle(pt1, pt2);
-            rect.clipTo(picRect);
-            // update zoom div
-            rect.adjustDiv($zoomDiv);
-            return false;
-        };
-        
         // clear old handler
         $scaler.unbind('.dlZoomArea');
         $elem.unbind('.dlZoomArea');
@@ -1276,6 +1287,21 @@ if (typeof(console) === 'undefined') {
         var $birdZoom = data.$birdZoom;
         var $document = $(document);
         var startPos, newRect, birdImgRect, birdZoomRect;
+
+        // mousedown handler: start dragging bird zoom to a new position
+        var birdZoomStartDrag = function(evt) {
+            startPos = geom.position(evt);
+            // position may have changed
+            data.birdTrafo = getImgTrafo($birdImg, FULL_AREA);
+            birdImgRect = geom.rectangle($birdImg);
+            birdZoomRect = geom.rectangle($birdZoom);
+            newRect = null;
+            $document.bind("mousemove.dlBirdMove", birdZoomMove);
+            $document.bind("mouseup.dlBirdMove", birdZoomEndDrag);
+            $birdZoom.bind("mousemove.dlBirdMove", birdZoomMove);
+            $birdZoom.bind("mouseup.dlBirdMove", birdZoomEndDrag);
+            return false;
+        };
 
         // mousemove handler: drag
         var birdZoomMove = function(evt) {
@@ -1308,20 +1334,6 @@ if (typeof(console) === 'undefined') {
             return false;
         };
 
-        // mousedown handler: start dragging bird zoom to a new position
-        var birdZoomStartDrag = function(evt) {
-            startPos = geom.position(evt);
-            // position may have changed
-            data.birdTrafo = getImgTrafo($birdImg, FULL_AREA);
-            birdImgRect = geom.rectangle($birdImg);
-            birdZoomRect = geom.rectangle($birdZoom);
-            $document.bind("mousemove.dlBirdMove", birdZoomMove);
-            $document.bind("mouseup.dlBirdMove", birdZoomEndDrag);
-            $birdZoom.bind("mousemove.dlBirdMove", birdZoomMove);
-            $birdZoom.bind("mouseup.dlBirdMove", birdZoomEndDrag);
-            return false;
-        };
-
         // clear old handler
         $document.unbind(".dlBirdMove");
         $birdImg.unbind(".dlBirdMove");
@@ -1335,7 +1347,7 @@ if (typeof(console) === 'undefined') {
 
     // setup handlers for dragging the zoomed image
     var setupZoomDrag = function(data) {
-        var startPos, delta;
+        var startPos, delta, fullRect;
         var $document = $(document);
         var $elem = data.$elem;
         var $scaler = data.$scaler;
@@ -1346,16 +1358,33 @@ if (typeof(console) === 'undefined') {
             // don't start dragging if not zoomed
             if (isFullArea(data.zoomArea)) return false;
             startPos = geom.position(evt);
-            $imgRect = geom.rectangle($img);
-            // hide the scaler img, show it as background of div instead
+            fullRect = null;
+            delta = null;
+            // hide the scaler img, show background of div instead
             $img.css('visibility', 'hidden');
-            $scaler.css({
-                'background-image' : 'url(' + $img.attr('src') + ')',
-                'background-repeat' : 'no-repeat',
-                'background-position' : 'top left',
-                'opacity' : '0.5',
-                'cursor' : 'move'
-                });
+            var scalerCss = {
+                    'background-image' : 'url(' + $img.attr('src') + ')',
+                    'background-repeat' : 'no-repeat',
+                    'background-position' : 'left top',
+                    'opacity' : '0.5',
+                    'cursor' : 'move'
+                    };
+            if (data.hasBgSize) {
+                // full-size background using CSS3-background-size
+                fullRect = data.imgTrafo.transform(FULL_AREA);
+                if (fullRect.height < data.settings.maxBgSize && fullRect.width < data.settings.maxBgSize) {
+                    // correct offset because background is relative
+                    var scalePos = geom.position($scaler);
+                    fullRect.addPosition(scalePos.neg());
+                    scalerCss['background-image'] = 'url(' + getBirdImgUrl(data) + ')';
+                    scalerCss[data.bgSizeName] = fullRect.width + 'px ' + fullRect.height + 'px';
+                    scalerCss['background-position'] = fullRect.x + 'px '+ fullRect.y + 'px';
+                } else {
+                    // too big
+                    fullRect = null;
+                }
+            }
+            $scaler.css(scalerCss);
             $document.bind("mousemove.dlZoomDrag", dragMove);
             $document.bind("mouseup.dlZoomDrag", dragEnd);
             return false;
@@ -1364,10 +1393,15 @@ if (typeof(console) === 'undefined') {
         // mousemove handler: drag zoomed image
         var dragMove = function (evt) {
             var pos = geom.position(evt);
-            delta = pos.delta(startPos);
+            delta = startPos.delta(pos);
+            if (fullRect) {
+                var bgPos = fullRect.getPosition().add(delta);
+            } else {
+                var bgPos = delta;
+            }
             // move the background image to the new position
             $scaler.css({
-                'background-position' : (-delta.x) + "px " + (-delta.y) + "px"
+                'background-position' : bgPos.x + "px " + bgPos.y + "px"
                 });
             return false;
             };
@@ -1380,12 +1414,13 @@ if (typeof(console) === 'undefined') {
             if (delta == null || delta.distance() < 2) {
                 // no movement
                 $img.css('visibility', 'visible');
+                $scaler.css({'opacity' : '1', 'background-image' : 'none'});
                 return false; 
             }
             // get old zoom area (screen coordinates)
-            var za = data.imgTrafo.transform(data.zoomArea);
+            var za = geom.rectangle($img);
             // move
-            za.addPosition(delta);
+            za.addPosition(delta.neg());
             // transform back
             var newArea = data.imgTrafo.invtransform(za);
             data.zoomArea = FULL_AREA.fit(newArea);
@@ -1395,7 +1430,8 @@ if (typeof(console) === 'undefined') {
 
         // clear old handler
         $document.unbind(".dlZoomDrag");
-        $scaler.unbind(".dlBirdMove");
+        $scaler.unbind(".dlZoomDrag");
+        // set handler
         $scaler.bind("mousedown.dlZoomDrag", dragStart);
     };
 
