@@ -640,16 +640,21 @@ if (typeof(console) === 'undefined') {
     };
 
     // returns URL for bird's eye view image
-    var getBirdImgUrl = function (data) {
+    var getBirdImgUrl = function (data, moreParams) {
         var settings = data.settings;
         var birdDivOptions = {
                 dw : settings.birdDivWidth,
                 dh : settings.birdDivHeight
         };
-        var birdSettings = $.extend({}, settings, birdDivOptions);
+        var birdSettings = jQuery.extend({}, settings, birdDivOptions);
         // use only the relevant parameters
-        var url = settings.scalerBaseUrl + '?' +
-            getParamString(birdSettings, settings.birdDivParams);
+        if (moreParams == null) {
+            var params = getParamString(birdSettings, settings.birdDivParams, defaults);
+        } else {
+            var params = getParamString(birdSettings, 
+                    settings.birdDivParams.concat(moreParams), defaults);
+        }
+        var url = settings.scalerBaseUrl + '?' + params;
         return url;
     };
     
@@ -1377,7 +1382,8 @@ if (typeof(console) === 'undefined') {
                         // correct offset because background is relative
                         var scalePos = geom.position($scaler);
                         fullRect.addPosition(scalePos.neg());
-                        scalerCss['background-image'] = 'url(' + getBirdImgUrl(data) + ')';
+                        var url = getBirdImgUrl(data, ['rot', 'mo']);
+                        scalerCss['background-image'] = 'url(' + url + ')';
                         scalerCss[data.bgSizeName] = fullRect.width + 'px ' + fullRect.height + 'px';
                         scalerCss['background-position'] = fullRect.x + 'px '+ fullRect.y + 'px';
                     } else {
