@@ -1105,6 +1105,7 @@ if (typeof(console) === 'undefined') {
             imgRect.adjustDiv($scaler);
             // show image in case it was hidden (for example in zoomDrag)
             $img.css('visibility', 'visible');
+            $scaler.css('opacity', '1');
             // display marks
             renderMarks(data);
             // TODO: digilib.showArrows(); // show arrow overlays for zoom navigation
@@ -1346,14 +1347,15 @@ if (typeof(console) === 'undefined') {
             if (isFullArea(data.zoomArea)) return false;
             startPos = geom.position(evt);
             $imgRect = geom.rectangle($img);
-            // hide the scaler image, show it as background of div instead
+            // hide the scaler img, show it as background of div instead
+            $img.css('visibility', 'hidden');
             $scaler.css({
                 'background-image' : 'url(' + $img.attr('src') + ')',
                 'background-repeat' : 'no-repeat',
                 'background-position' : 'top left',
+                'opacity' : '0.5',
                 'cursor' : 'move'
                 });
-            $img.css('visibility', 'hidden');
             $document.bind("mousemove.dlZoomDrag", dragMove);
             $document.bind("mouseup.dlZoomDrag", dragEnd);
             return false;
