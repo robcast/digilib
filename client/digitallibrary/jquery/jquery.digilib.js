@@ -859,7 +859,6 @@ if (typeof(console) === 'undefined') {
         data.$img = $img;
         // setup image load handler before setting the src attribute (IE bug)
         $img.load(scalerImgLoadedHandler(data));
-        $scaler.css('cursor', 'wait');
         $img.attr('src', scalerUrl);
     };
 
@@ -1096,7 +1095,6 @@ if (typeof(console) === 'undefined') {
         return function () {
             var $img = $(this);
             var $scaler = data.$scaler;
-            console.debug("img loaded! this=", this, " data=", data);
             // create Transform from current area and picsize
             data.imgTrafo = getImgTrafo($img, data.zoomArea,
                     data.settings.rot, data.scalerFlags.hmir, data.scalerFlags.vmir);
@@ -1107,7 +1105,6 @@ if (typeof(console) === 'undefined') {
             imgRect.adjustDiv($scaler);
             // show image in case it was hidden (for example in zoomDrag)
             $img.css('visibility', 'visible');
-            $scaler.css('cursor', 'auto');
             // display marks
             renderMarks(data);
             // TODO: digilib.showArrows(); // show arrow overlays for zoom navigation
@@ -1375,9 +1372,7 @@ if (typeof(console) === 'undefined') {
 
         // mouseup handler: reload zoomed image in new position
         var dragEnd = function (evt) {
-            $scaler.css({
-                'cursor' : 'auto'
-                });
+            $scaler.css('cursor', 'auto');
             $document.unbind("mousemove.dlZoomDrag", dragMove);
             $document.unbind("mouseup.dlZoomDrag", dragEnd);
             if (delta == null || delta.distance() < 2) {
