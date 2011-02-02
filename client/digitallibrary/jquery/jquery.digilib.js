@@ -226,8 +226,8 @@ if (typeof(console) === 'undefined') {
                 },
             'embedded' : {
                 'imagePath' : 'img/embedded/16/',
-                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","back","fwd","page","bird","help","reset","toggleoptions"],
-                'specialSet' : ["hmir","vmir","rot","brgt","cont","rgb","quality","size","toggleoptions"],
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","bird","help","reset","toggleoptions"],
+                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","toggleoptions"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 }
         },
@@ -738,18 +738,6 @@ if (typeof(console) === 'undefined') {
 
     var storeOptions = function (data) {
         // save digilib options in cookie
-        // TODO: in embedded mode this is not called
-        /* store in parameter clop
-         * if (data.dlOpts) {
-            var clop = '';
-            for (var o in data.dlOpts) {
-                if (clop) {
-                    clop += ',';
-                }
-                clop += o;
-            }
-            settings.clop = clop;
-        } */
         var settings = data.settings;
         if (data.dlOpts) {
             // save digilib settings in options
@@ -782,13 +770,6 @@ if (typeof(console) === 'undefined') {
         var opts = {};
         var settings = data.settings;
         if (jQuery.cookie) {
-            /* read from parameter clop
-             * if (settings.clop) {
-                var pa = settings.clop.split(",");
-                for (var i = 0; i < pa.length ; i++) {
-                    opts[pa[i]] = pa[i];
-                }
-            } */
             // read from cookie
             var ck = "digilib:fn:" + escape(settings.fn) + ":pn:" + settings.pn;
             var cp = jQuery.cookie(ck);
@@ -1118,6 +1099,8 @@ if (typeof(console) === 'undefined') {
             $scaler.css({'opacity' : '1', 'background-image' : 'none'});
             // display marks
             renderMarks(data);
+            // enable drag-to-scroll
+            setupZoomDrag(data);
             // TODO: digilib.showArrows(); // show arrow overlays for zoom navigation
         };
     };
@@ -1140,7 +1123,8 @@ if (typeof(console) === 'undefined') {
     var renderMarks = function (data) {
         var $elem = data.$elem;
         var marks = data.marks;
-        // TODO: clear marks first(?)
+        // clear marks
+        $elem.find('div.mark').remove();
         for (var i = 0; i < marks.length; i++) {
             var mark = marks[i];
             if (data.zoomArea.containsPosition(mark)) {
@@ -1150,7 +1134,7 @@ if (typeof(console) === 'undefined') {
                 var html = '<div class="mark">'+(i+1)+'</div>';
                 var $mark = $(html);
                 $elem.append($mark);
-                $mark.offset({left : mpos.x, top : mpos.y});
+                mpos.adjustDiv($mark);
                 }
             }
     };
@@ -1205,18 +1189,21 @@ if (typeof(console) === 'undefined') {
     // add a mark where clicked
     var setMark = function (data) {
         var $scaler = data.$scaler;
+        // unbind other handler
+        $scaler.unbind(".dlZoomDrag");
         // start event capturing
-        $scaler.one('click.digilib', function (evt) {
+        $scaler.one('mousedown.dlSetMark', function (evt) {
             // event handler adding a new mark
+            console.log("setmark at=", evt);
             var mpos = geom.position(evt);
             var pos = data.imgTrafo.invtransform(mpos);
             data.marks.push(pos);
             redisplay(data);
-            return false; // do we even get here?
+            return false;
         });
     };
 
-    // zoom to area around two clicked points
+    // zoom to the area around two clicked points
     var zoomArea = function(data) {
         $elem = data.$elem;
         $scaler = data.$scaler;
@@ -1274,8 +1261,9 @@ if (typeof(console) === 'undefined') {
             return false;
         };
 
-        // clear old handler
+        // clear old handler (also ZoomDrag)
         $scaler.unbind('.dlZoomArea');
+        $scaler.unbind(".dlZoomDrag");
         $elem.unbind('.dlZoomArea');
         // bind start zoom handler
         $scaler.one('mousedown.dlZoomArea', zoomStart);
@@ -1347,7 +1335,7 @@ if (typeof(console) === 'undefined') {
 
     // setup handlers for dragging the zoomed image
     var setupZoomDrag = function(data) {
-        var startPos, delta, fullRect;
+        var startPos, delta, fullRect, isBgReady;
         var $document = $(document);
         var $elem = data.$elem;
         var $scaler = data.$scaler;
@@ -1355,45 +1343,51 @@ if (typeof(console) === 'undefined') {
 
         // drag the image and load a new detail on mouse up
         var dragStart = function (evt) {
+            console.debug("dragstart at=",evt);
             // don't start dragging if not zoomed
             if (isFullArea(data.zoomArea)) return false;
             startPos = geom.position(evt);
             fullRect = null;
             delta = null;
-            // hide the scaler img, show background of div instead
-            $img.css('visibility', 'hidden');
-            var scalerCss = {
-                    'background-image' : 'url(' + $img.attr('src') + ')',
-                    'background-repeat' : 'no-repeat',
-                    'background-position' : 'left top',
-                    'opacity' : '0.5',
-                    'cursor' : 'move'
-                    };
-            if (data.hasBgSize) {
-                // full-size background using CSS3-background-size
-                fullRect = data.imgTrafo.transform(FULL_AREA);
-                if (fullRect.height < data.settings.maxBgSize && fullRect.width < data.settings.maxBgSize) {
-                    // correct offset because background is relative
-                    var scalePos = geom.position($scaler);
-                    fullRect.addPosition(scalePos.neg());
-                    scalerCss['background-image'] = 'url(' + getBirdImgUrl(data) + ')';
-                    scalerCss[data.bgSizeName] = fullRect.width + 'px ' + fullRect.height + 'px';
-                    scalerCss['background-position'] = fullRect.x + 'px '+ fullRect.y + 'px';
-                } else {
-                    // too big
-                    fullRect = null;
-                }
-            }
-            $scaler.css(scalerCss);
+            isBgReady = false;
             $document.bind("mousemove.dlZoomDrag", dragMove);
             $document.bind("mouseup.dlZoomDrag", dragEnd);
             return false;
             };
-
+            
+        
         // mousemove handler: drag zoomed image
         var dragMove = function (evt) {
             var pos = geom.position(evt);
             delta = startPos.delta(pos);
+            if (!isBgReady) {
+                // hide the scaler img, show background of div instead
+                $img.css('visibility', 'hidden');
+                var scalerCss = {
+                        'background-image' : 'url(' + $img.attr('src') + ')',
+                        'background-repeat' : 'no-repeat',
+                        'background-position' : 'left top',
+                        'opacity' : '0.5',
+                        'cursor' : 'move'
+                        };
+                if (data.hasBgSize) {
+                    // full-size background using CSS3-background-size
+                    fullRect = data.imgTrafo.transform(FULL_AREA);
+                    if (fullRect.height < data.settings.maxBgSize && fullRect.width < data.settings.maxBgSize) {
+                        // correct offset because background is relative
+                        var scalePos = geom.position($scaler);
+                        fullRect.addPosition(scalePos.neg());
+                        scalerCss['background-image'] = 'url(' + getBirdImgUrl(data) + ')';
+                        scalerCss[data.bgSizeName] = fullRect.width + 'px ' + fullRect.height + 'px';
+                        scalerCss['background-position'] = fullRect.x + 'px '+ fullRect.y + 'px';
+                    } else {
+                        // too big
+                        fullRect = null;
+                    }
+                }
+                $scaler.css(scalerCss);
+                isBgReady = true;
+            }
             if (fullRect) {
                 var bgPos = fullRect.getPosition().add(delta);
             } else {
@@ -1431,8 +1425,10 @@ if (typeof(console) === 'undefined') {
         // clear old handler
         $document.unbind(".dlZoomDrag");
         $scaler.unbind(".dlZoomDrag");
-        // set handler
-        $scaler.bind("mousedown.dlZoomDrag", dragStart);
+        if (! isFullArea(data.zoomArea)) {
+            // set handler
+            $scaler.bind("mousedown.dlZoomDrag", dragStart);
+        }
     };
 
     // get image quality as a number (0..2)
