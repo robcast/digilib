@@ -183,6 +183,8 @@ if (typeof(console) === 'undefined') {
         'logoUrl' : '../img/digilib-logo-text1.png',
         // homepage url (behind logo)
         'homeUrl' : 'http://digilib.berlios.de',
+        // base URL to digilib viewer (for reference URLs)
+        'digilibBaseUrl' : null,
         // base URL to Scaler servlet
         'scalerBaseUrl' : null,
         // list of Scaler parameters
@@ -315,12 +317,28 @@ if (typeof(console) === 'undefined') {
                     $elem.data('digilib', data);
                 }
                 unpackParams(data);
-                // check if browser knows background-size
+                // check if browser knows *background-size
                 for (var bs in {'':1, '-moz-':1, '-webkit-':1, '-o-':1}) {
                     if ($elem.css(bs+'background-size')) {
                         data.hasBgSize = true;
                         data.bgSizeName = bs+'background-size';
                         break;
+                    }
+                }
+                // check digilib base URL
+                if (elemSettings.digilibBaseUrl == null) {
+                    if (isFullscreen) {
+                        // take current host
+                        var url = window.location.toString();
+                        var pos = url.indexOf('?');
+                        elemSettings.digilibBaseUrl = url.substring(0, pos);
+                    } else {
+                        var url = elemSettings.scalerBaseUrl;
+                        if (url) {
+                            // build it from scaler URL
+                            var bp = url.indexOf('/servlet/Scaler');
+                            elemSettings.digilibBaseUrl = url.substring(0, bp) + '/digilib.jsp';                        
+                        }
                     }
                 }
                 // create HTML structure for scaler
@@ -547,12 +565,7 @@ if (typeof(console) === 'undefined') {
         // presents a reference url (returns value if noprompt)
         reference : function (data, noprompt) {
             var settings = data.settings;
-            var url;
-            if (settings.interactionMode === 'fullscreen') {
-                url = getDigilibUrl(data);
-            } else {
-                url = getScalerUrl(data);
-                }
+            var url = getDigilibUrl(data);
             if (noprompt == null) {
                 window.prompt("URL reference to the current view", url);
             }
@@ -663,11 +676,7 @@ if (typeof(console) === 'undefined') {
         packParams(data);
         var settings = data.settings;
         var queryString = getParamString(settings, settings.digilibParamNames, defaults);
-        var url = window.location.toString();
-        var pos = url.indexOf('?');
-        var baseUrl = url.substring(0, pos);
-        var newurl = baseUrl + '?' + queryString;
-        return newurl;
+        return settings.digilibBaseUrl + '?' + queryString;
     };
 
     // processes some parameters into objects and stuff
