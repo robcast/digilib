@@ -19,10 +19,11 @@ Authors:
 
 /**
  * digilib jQuery plugin
- * 
- */
+**/ 
 
-/*jslint browser: true, debug: true, forin: true */
+
+/* jslint browser: true, debug: true, forin: true
+*/
 
 // fallback for console.log calls
 if (typeof(console) === 'undefined') {
@@ -670,7 +671,7 @@ if (typeof(console) === 'undefined') {
         var url = settings.scalerBaseUrl + '?' + params;
         return url;
     };
-    
+
     // returns URL and query string for current digilib
     var getDigilibUrl = function (data) {
         packParams(data);
@@ -983,7 +984,7 @@ if (typeof(console) === 'undefined') {
             setupBirdDrag(data);
         }
     };
-    
+
     // creates HTML structure for the about view in elem
     var setupAboutDiv = function (data) {
         var $elem = data.$elem;
@@ -1251,7 +1252,7 @@ if (typeof(console) === 'undefined') {
             rect.adjustDiv($zoomDiv);
             return false;
         };
-        
+
         // mouseup handler: end moving
         var zoomEnd = function (evt) {
             pt2 = geom.position(evt);
@@ -1347,6 +1348,17 @@ if (typeof(console) === 'undefined') {
         }
     };
 
+    // set bird zoom indicator to img rect
+    var setBirdZoom = function(data, rect) {
+        var part = data.imgTrafo.invtransform(rect);
+        // area = FULL_AREA.fit(part);
+        birdTrafo = getImgTrafo(data.$birdImg, FULL_AREA);
+        var birdRect = birdTrafo.transform(part);
+        // acount for border width
+        birdRect.addPosition({x : -2, y : -2});
+        birdRect.adjustDiv(data.$birdZoom);
+    };
+
     // setup handlers for dragging the zoomed image
     var setupZoomDrag = function(data) {
         var startPos, delta, fullRect, isBgReady;
@@ -1368,8 +1380,7 @@ if (typeof(console) === 'undefined') {
             $document.bind("mouseup.dlZoomDrag", dragEnd);
             return false;
             };
-            
-        
+
         // mousemove handler: drag zoomed image
         var dragMove = function (evt) {
             var pos = geom.position(evt);
@@ -1412,6 +1423,11 @@ if (typeof(console) === 'undefined') {
             $scaler.css({
                 'background-position' : bgPos.x + "px " + bgPos.y + "px"
                 });
+            // get old zoom area (screen coordinates)
+            var za = geom.rectangle($img);
+            // move
+            za.addPosition(delta.neg());
+            setBirdZoom(data, za);
             return false;
             };
 
