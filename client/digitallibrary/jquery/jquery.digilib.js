@@ -1289,7 +1289,7 @@ if (typeof(console) === 'undefined') {
         var $birdImg = data.$birdImg;
         var $birdZoom = data.$birdZoom;
         var $document = $(document);
-        var startPos, newRect, birdImgRect, birdZoomRect;
+        var startPos, newRect, birdImgRect, birdZoomRect, fullRect;
 
         // mousedown handler: start dragging bird zoom to a new position
         var birdZoomStartDrag = function(evt) {
@@ -1299,10 +1299,11 @@ if (typeof(console) === 'undefined') {
             birdImgRect = geom.rectangle($birdImg);
             birdZoomRect = geom.rectangle($birdZoom);
             newRect = null;
+            fullRect = setZoomBG(data); // setup zoom background image
             $document.bind("mousemove.dlBirdMove", birdZoomMove);
             $document.bind("mouseup.dlBirdMove", birdZoomEndDrag);
-            $birdZoom.bind("mousemove.dlBirdMove", birdZoomMove);
-            $birdZoom.bind("mouseup.dlBirdMove", birdZoomEndDrag);
+            // $birdZoom.bind("mousemove.dlBirdMove", birdZoomMove);
+            // $birdZoom.bind("mouseup.dlBirdMove", birdZoomEndDrag);
             return false;
         };
 
@@ -1316,6 +1317,20 @@ if (typeof(console) === 'undefined') {
             // stay within birdimage
             newRect.stayInside(birdImgRect);
             newRect.adjustDiv($birdZoom);
+            // reflect birdview zoom position in scaler image
+            // TODO: account for scaler position in embedded mode?
+            var area = data.birdTrafo.invtransform(newRect);
+            var imgArea = data.imgTrafo.transform(area);
+            var offset = imgArea.getPosition().neg();
+            if (fullRect) {
+                var bgPos = fullRect.getPosition().add(offset);
+            } else {
+                var bgPos = offset;
+            }
+            // move the background image to the new position
+            data.$scaler.css({
+                'background-position' : bgPos.x + "px " + bgPos.y + "px"
+                });
             return false;
         };
 
@@ -1324,8 +1339,8 @@ if (typeof(console) === 'undefined') {
             var settings = data.settings;
             $document.unbind("mousemove.dlBirdMove", birdZoomMove);
             $document.unbind("mouseup.dlBirdMove", birdZoomEndDrag);
-            $birdZoom.unbind("mousemove.dlBirdMove", birdZoomMove);
-            $birdZoom.unbind("mouseup.dlBirdMove", birdZoomEndDrag);
+            // $birdZoom.unbind("mousemove.dlBirdMove", birdZoomMove);
+            // $birdZoom.unbind("mouseup.dlBirdMove", birdZoomEndDrag);
             if (newRect == null) { 
                 // no movement happened - set center to click position
                 startPos = birdZoomRect.getCenter();
@@ -1348,10 +1363,10 @@ if (typeof(console) === 'undefined') {
         }
     };
 
-    // set bird zoom indicator to img rect
+    // move bird zoom indicator to reflect zoomed detail area
     var setBirdZoom = function(data, rect) {
         var part = data.imgTrafo.invtransform(rect);
-        // area = FULL_AREA.fit(part);
+        // area = FULL_AREA.fit(part); // we want to see where we transcend the borders
         birdTrafo = getImgTrafo(data.$birdImg, FULL_AREA);
         var birdRect = birdTrafo.transform(part);
         // acount for border width
@@ -1359,9 +1374,44 @@ if (typeof(console) === 'undefined') {
         birdRect.adjustDiv(data.$birdZoom);
     };
 
+    // set zoom background
+    var setZoomBG = function(data) {
+        var $scaler = data.$scaler;
+        var $img = data.$img;
+        var fullRect = null;
+        // hide the scaler img, show background of div instead
+        $img.css('visibility', 'hidden');
+        var scalerCss = {
+            'background-image' : 'url(' + $img.attr('src') + ')',
+            'background-repeat' : 'no-repeat',
+            'background-position' : 'left top',
+            'opacity' : '0.5',
+            'cursor' : 'move'
+            };
+        if (data.hasBgSize) {
+            // full-size background using CSS3-background-size
+            fullRect = data.imgTrafo.transform(FULL_AREA);
+            if (fullRect.height < data.settings.maxBgSize && fullRect.width < data.settings.maxBgSize) {
+                // correct offset because background is relative
+                var scalePos = geom.position($scaler);
+                fullRect.addPosition(scalePos.neg());
+                var url = getBirdImgUrl(data, ['rot', 'mo']);
+                scalerCss['background-image'] = 'url(' + url + ')';
+                scalerCss[data.bgSizeName] = fullRect.width + 'px ' + fullRect.height + 'px';
+                scalerCss['background-position'] = fullRect.x + 'px '+ fullRect.y + 'px';
+            } else {
+                // too big
+                fullRect = null;
+                }
+            }
+            $scaler.css(scalerCss);
+            // isBgReady = true;
+        return fullRect;
+    };
+
     // setup handlers for dragging the zoomed image
     var setupZoomDrag = function(data) {
-        var startPos, delta, fullRect, isBgReady;
+        var startPos, delta, fullRect;
         var $document = $(document);
         var $elem = data.$elem;
         var $scaler = data.$scaler;
@@ -1373,9 +1423,9 @@ if (typeof(console) === 'undefined') {
             // don't start dragging if not zoomed
             if (isFullArea(data.zoomArea)) return false;
             startPos = geom.position(evt);
-            fullRect = null;
             delta = null;
-            isBgReady = false;
+            // set low res background immediately on mousedown
+            fullRect = setZoomBG(data);
             $document.bind("mousemove.dlZoomDrag", dragMove);
             $document.bind("mouseup.dlZoomDrag", dragEnd);
             return false;
@@ -1385,35 +1435,6 @@ if (typeof(console) === 'undefined') {
         var dragMove = function (evt) {
             var pos = geom.position(evt);
             delta = startPos.delta(pos);
-            if (!isBgReady) {
-                // hide the scaler img, show background of div instead
-                $img.css('visibility', 'hidden');
-                var scalerCss = {
-                        'background-image' : 'url(' + $img.attr('src') + ')',
-                        'background-repeat' : 'no-repeat',
-                        'background-position' : 'left top',
-                        'opacity' : '0.5',
-                        'cursor' : 'move'
-                        };
-                if (data.hasBgSize) {
-                    // full-size background using CSS3-background-size
-                    fullRect = data.imgTrafo.transform(FULL_AREA);
-                    if (fullRect.height < data.settings.maxBgSize && fullRect.width < data.settings.maxBgSize) {
-                        // correct offset because background is relative
-                        var scalePos = geom.position($scaler);
-                        fullRect.addPosition(scalePos.neg());
-                        var url = getBirdImgUrl(data, ['rot', 'mo']);
-                        scalerCss['background-image'] = 'url(' + url + ')';
-                        scalerCss[data.bgSizeName] = fullRect.width + 'px ' + fullRect.height + 'px';
-                        scalerCss['background-position'] = fullRect.x + 'px '+ fullRect.y + 'px';
-                    } else {
-                        // too big
-                        fullRect = null;
-                    }
-                }
-                $scaler.css(scalerCss);
-                isBgReady = true;
-            }
             if (fullRect) {
                 var bgPos = fullRect.getPosition().add(delta);
             } else {
@@ -1423,9 +1444,9 @@ if (typeof(console) === 'undefined') {
             $scaler.css({
                 'background-position' : bgPos.x + "px " + bgPos.y + "px"
                 });
-            // get old zoom area (screen coordinates)
+            // set birdview indicator to reflect new zoom position
+            // TODO: get rid of indicator wobble
             var za = geom.rectangle($img);
-            // move
             za.addPosition(delta.neg());
             setBirdZoom(data, za);
             return false;

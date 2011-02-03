@@ -6,6 +6,8 @@
 div.digilib div.scaler {
 	background-color: grey;
 	z-index: 0;
+	width: 0px;
+	height: 0px;
 }
 
 div.digilib div.birdview {
