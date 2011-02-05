@@ -23,8 +23,6 @@ import digilib.image.ImageOpException;
 import digilib.image.ImageWorker;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
-import digilib.io.DocuDirent;
-import digilib.io.FileOps.FileClass;
 import digilib.io.ImageFile;
 import digilib.util.DigilibJobCenter;
 
@@ -132,12 +130,8 @@ public class Scaler extends HttpServlet {
         long mtime = -1;
         // create new request
         DigilibRequest dlReq = new DigilibRequest(request);
-		// find the file(set)
-		DocuDirent f = dirCache.getFile(dlReq.getFilePath(),
-		        dlReq.getAsInt("pn"), FileClass.IMAGE);
-        // find the requested file
-        if (f != null) {
-            DocuDirectory dd = (DocuDirectory) f.getParent();
+        DocuDirectory dd = dirCache.getDirectory(dlReq.getFilePath());
+        if (dd != null) {
             mtime = dd.getDirMTime() / 1000 * 1000;
         }
         logger.debug("  returns "+mtime);
