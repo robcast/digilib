@@ -138,7 +138,7 @@ if (typeof(console) === 'undefined') {
             img : "rgb.png"
             },
         quality : {
-            onclick : "setquality",
+            onclick : "setQuality",
             tooltip : "set image quality",
             img : "quality.png"
             },
@@ -158,17 +158,17 @@ if (typeof(console) === 'undefined') {
             img : "original-size.png"
             },
         toggleoptions : {
-            onclick : "morebuttons",
+            onclick : "moreButtons",
             tooltip : "more options",
             img : "options.png"
             },
         moreoptions : {
-            onclick : ["morebuttons", "+1"],
+            onclick : ["moreButtons", "+1"],
             tooltip : "more options",
             img : "options.png"
             },
         lessoptions : {
-            onclick : ["morebuttons", "-1"],
+            onclick : ["moreButtons", "-1"],
             tooltip : "less options",
             img : "options.png"
             },
@@ -510,7 +510,7 @@ if (typeof(console) === 'undefined') {
         },
 
         // display more (or less) button sets
-        morebuttons : function (data, more) {
+        moreButtons : function (data, more) {
             var settings = data.settings;
             if (more == null) {
                 // toggle more or less (only works for 2 sets)
@@ -574,7 +574,7 @@ if (typeof(console) === 'undefined') {
         },
 
         // set image quality
-        setquality : function (data, qual) {
+        setQuality : function (data, qual) {
             var oldq = getQuality(data);
             if (qual == null) {
                 qual = window.prompt("Image quality (0..2)", oldq);
