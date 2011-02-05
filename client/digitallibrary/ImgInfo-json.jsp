@@ -25,8 +25,7 @@ digilib.io.DocuDirCache dirCache = (digilib.io.DocuDirCache) dlConfig.getValue("
 FileOps.FileClass fc = FileOps.FileClass.IMAGE;
 ImageFileset imgFile = (ImageFileset) dirCache.getFile(dlRequest.getFilePath(), dlRequest.getAsInt("pn"), fc);
 
-%>// JSON format metadata about an image
-{ <% 
+%>{ <% 
     if (imgFile != null) {
 		ImageFile img = imgFile.getBiggest();
 		if (!img.isChecked()) {

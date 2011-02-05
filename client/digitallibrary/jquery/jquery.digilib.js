@@ -148,8 +148,8 @@ if (typeof(console) === 'undefined') {
             img : "size.png"
             },
         calibrationx : {
-            onclick : "javascript:calibrate('x')",
-            tooltip : "calibrate screen x-ratio",
+            onclick : "calibrate",
+            tooltip : "calibrate screen resolution",
             img : "calibration-x.png"
             },
         scale : {
@@ -584,6 +584,11 @@ if (typeof(console) === 'undefined') {
                 setQuality(data, qual);
                 redisplay(data);
             }
+        },
+        
+        // calibrate (only faking)
+        calibrate : function (data) {
+            getImageInfo(data);
         }
     };
 
@@ -680,6 +685,21 @@ if (typeof(console) === 'undefined') {
         return settings.digilibBaseUrl + '?' + queryString;
     };
 
+    // gets image information from digilib server via HTTP and calls complete
+    var getImageInfo = function (data, complete) {
+        var settings = data.settings;
+        var p = settings.scalerBaseUrl.indexOf('/servlet/Scaler');
+        var url = settings.scalerBaseUrl.substring(0, p) + '/ImgInfo-json.jsp';
+        url += '?' + getParamString(settings, ['fn', 'pn'], defaults);
+        jQuery.getJSON(url, function (json) {
+            console.debug("got json data=", json);
+            data.imgInfo = json;
+            if (complete != null) {
+                complete.call(this, data, json);
+            }
+        });
+    };
+    
     // processes some parameters into objects and stuff
     var unpackParams = function (data) {
         var settings = data.settings;
