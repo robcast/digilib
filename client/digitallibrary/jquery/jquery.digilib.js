@@ -1289,7 +1289,8 @@ if (typeof(console) === 'undefined') {
         var $birdImg = data.$birdImg;
         var $birdZoom = data.$birdZoom;
         var $document = $(document);
-        var startPos, newRect, birdImgRect, birdZoomRect, fullRect;
+        var $scaler = data.$scaler;
+        var startPos, newRect, birdImgRect, birdZoomRect, fullRect, scalerPos;
 
         // mousedown handler: start dragging bird zoom to a new position
         var birdZoomStartDrag = function(evt) {
@@ -1298,6 +1299,7 @@ if (typeof(console) === 'undefined') {
             data.birdTrafo = getImgTrafo($birdImg, FULL_AREA);
             birdImgRect = geom.rectangle($birdImg);
             birdZoomRect = geom.rectangle($birdZoom);
+            scalerPos = geom.position($scaler);
             newRect = null;
             fullRect = setZoomBG(data); // setup zoom background image
             $document.bind("mousemove.dlBirdMove", birdZoomMove);
@@ -1313,14 +1315,12 @@ if (typeof(console) === 'undefined') {
             newRect = birdZoomRect.copy();
             newRect.addPosition(delta);
             newRect.stayInside(birdImgRect);
-            // acount for border width
-            newRect.addPosition({x : -2, y : -2});
-            newRect.adjustDiv($birdZoom);
             // reflect birdview zoom position in scaler image
-            // TODO: account for scaler position in embedded mode?
             var area = data.birdTrafo.invtransform(newRect);
             var imgArea = data.imgTrafo.transform(area);
             var offset = imgArea.getPosition().neg();
+            offset.add(scalerPos);
+            console.log('offset', offset);
             if (fullRect) {
                 var bgPos = fullRect.getPosition().add(offset);
             } else {
@@ -1330,6 +1330,9 @@ if (typeof(console) === 'undefined') {
             data.$scaler.css({
                 'background-position' : bgPos.x + "px " + bgPos.y + "px"
                 });
+            // acount for border width
+            newRect.addPosition({x : -2, y : -2});
+            newRect.adjustDiv($birdZoom);
             return false;
         };
 
@@ -1392,8 +1395,8 @@ if (typeof(console) === 'undefined') {
             fullRect = data.imgTrafo.transform(FULL_AREA);
             if (fullRect.height < data.settings.maxBgSize && fullRect.width < data.settings.maxBgSize) {
                 // correct offset because background is relative
-                var scalePos = geom.position($scaler);
-                fullRect.addPosition(scalePos.neg());
+                var scalerPos = geom.position($scaler);
+                fullRect.addPosition(scalerPos.neg());
                 var url = getBirdImgUrl(data, ['rot', 'mo']);
                 scalerCss['background-image'] = 'url(' + url + ')';
                 scalerCss[data.bgSizeName] = fullRect.width + 'px ' + fullRect.height + 'px';
@@ -1444,7 +1447,6 @@ if (typeof(console) === 'undefined') {
                 'background-position' : bgPos.x + "px " + bgPos.y + "px"
                 });
             // set birdview indicator to reflect new zoom position
-            // TODO: get rid of indicator wobble
             var za = geom.rectangle($img);
             za.addPosition(delta.neg());
             setBirdZoom(data, za);
