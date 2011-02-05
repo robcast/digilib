@@ -1302,8 +1302,6 @@ if (typeof(console) === 'undefined') {
             fullRect = setZoomBG(data); // setup zoom background image
             $document.bind("mousemove.dlBirdMove", birdZoomMove);
             $document.bind("mouseup.dlBirdMove", birdZoomEndDrag);
-            // $birdZoom.bind("mousemove.dlBirdMove", birdZoomMove);
-            // $birdZoom.bind("mouseup.dlBirdMove", birdZoomEndDrag);
             return false;
         };
 
@@ -1314,8 +1312,9 @@ if (typeof(console) === 'undefined') {
             // move birdZoom div, keeping size
             newRect = birdZoomRect.copy();
             newRect.addPosition(delta);
-            // stay within birdimage
             newRect.stayInside(birdImgRect);
+            // acount for border width
+            newRect.addPosition({x : -2, y : -2});
             newRect.adjustDiv($birdZoom);
             // reflect birdview zoom position in scaler image
             // TODO: account for scaler position in embedded mode?
@@ -1339,13 +1338,13 @@ if (typeof(console) === 'undefined') {
             var settings = data.settings;
             $document.unbind("mousemove.dlBirdMove", birdZoomMove);
             $document.unbind("mouseup.dlBirdMove", birdZoomEndDrag);
-            // $birdZoom.unbind("mousemove.dlBirdMove", birdZoomMove);
-            // $birdZoom.unbind("mouseup.dlBirdMove", birdZoomEndDrag);
             if (newRect == null) { 
                 // no movement happened - set center to click position
                 startPos = birdZoomRect.getCenter();
                 birdZoomMove(evt); 
                 }
+            // ugly, but needed to prevent double border width compensation
+            newRect.addPosition({x : +2, y : +2});
             var newArea = data.birdTrafo.invtransform(newRect);
             data.zoomArea = newArea;
             redisplay(data);
@@ -1366,7 +1365,7 @@ if (typeof(console) === 'undefined') {
     // move bird zoom indicator to reflect zoomed detail area
     var setBirdZoom = function(data, rect) {
         var part = data.imgTrafo.invtransform(rect);
-        // area = FULL_AREA.fit(part); // we want to see where we transcend the borders
+        // area = FULL_AREA.fit(part); // no, we want to see where we transcend the borders
         birdTrafo = getImgTrafo(data.$birdImg, FULL_AREA);
         var birdRect = birdTrafo.transform(part);
         // acount for border width
