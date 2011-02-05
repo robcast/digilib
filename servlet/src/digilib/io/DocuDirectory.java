@@ -177,7 +177,7 @@ public class DocuDirectory extends Directory {
 	 * 
 	 * @return boolean the directory exists
 	 */
-	public synchronized boolean readDir() {
+	public boolean readDir() {
 		// check directory first
 		checkDir();
 		if (!isValid) {

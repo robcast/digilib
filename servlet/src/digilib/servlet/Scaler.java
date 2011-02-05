@@ -32,7 +32,7 @@ import digilib.util.DigilibJobCenter;
 public class Scaler extends HttpServlet {
 
     /** digilib servlet version (for all components) */
-    public static final String version = "1.8.3b";
+    public static final String version = "1.8.4a";
 
     /** servlet error codes */
     public static enum Error {UNKNOWN, AUTH, FILE, IMAGE};
@@ -126,7 +126,7 @@ public class Scaler extends HttpServlet {
      * 
      * @see javax.servlet.http.HttpServlet#getLastModified(javax.servlet.http.HttpServletRequest)
      */
-    protected long getLastModified(HttpServletRequest request) {
+    public long getLastModified(HttpServletRequest request) {
         accountlog.debug("GetLastModified from " + request.getRemoteAddr()
                 + " for " + request.getQueryString());
         long mtime = -1;
@@ -140,6 +140,7 @@ public class Scaler extends HttpServlet {
             DocuDirectory dd = (DocuDirectory) f.getParent();
             mtime = dd.getDirMTime() / 1000 * 1000;
         }
+        logger.debug("  returns "+mtime);
         return mtime;
     }
 
@@ -161,7 +162,19 @@ public class Scaler extends HttpServlet {
     }
     
 
-    /** Service this request using the response.
+	protected void doHead(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		logger.debug("HEAD from "+req.getRemoteAddr());
+		super.doHead(req, resp);
+	}
+
+	protected void doOptions(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		logger.debug("OPTIONS from "+req.getRemoteAddr());
+		super.doOptions(req, resp);
+	}
+
+	/** Service this request using the response.
      * @param request
      * @param response
      * @throws ServletException 
