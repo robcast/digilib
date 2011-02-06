@@ -356,7 +356,7 @@ if (typeof(console) === 'undefined') {
                 // about window creation - TODO: could be deferred? restrict to only one item?
                 setupAboutDiv(data);
                 // drag zoom area around in scaler div 
-                setupZoomDrag(data);
+                // setupZoomDrag(data); // is done in scalerImgLoadedHandler()
             });
         },
 
@@ -1143,10 +1143,13 @@ if (typeof(console) === 'undefined') {
     // returns function for load event of bird's eye view img
     var birdImgLoadedHandler = function (data) {
         return function () {
-            var $img = $(this);
-            console.debug("birdimg loaded! this=", this, " data=", data);
-            // create Transform from current area and picsize
-            data.birdTrafo = getImgTrafo($img, FULL_AREA);
+            var $birdImg = $(this);
+            var birdRect = geom.rectangle($birdImg);
+            console.debug("birdImg loaded!", $birdImg, "rect=", birdRect, "data=", data);
+            if (birdRect.width === 0) {
+                // malheureusement IE7 calls load handler when there is no size info yet 
+                setTimeout(function () { $birdImg.triggerHandler('load') }, 200);
+                }
             // display red indicator around zoomarea
             renderBirdArea(data);
             // enable click and drag
@@ -1185,9 +1188,10 @@ if (typeof(console) === 'undefined') {
         } else {
             $birdZoom.show();
         }
-        // position may have changed
+        // create Transform from current area and picsize
         data.birdTrafo = getImgTrafo(data.$birdImg, FULL_AREA);
         var zoomRect = data.birdTrafo.transform(zoomArea);
+        console.debug("renderBirdArea:", zoomRect, "zoomArea:", zoomArea, "$birdTrafo:", data.birdTrafo);
         // acount for border width
         zoomRect.addPosition({x : -2, y : -2});
         if (data.settings.interactionMode === 'fullscreen') {
@@ -1198,10 +1202,11 @@ if (typeof(console) === 'undefined') {
             // correct offsetParent because animate doesn't use offset
             var ppos = $birdZoom.offsetParent().offset();
             var dest = {
-                    left : (zoomRect.x - ppos.left) + 'px',
-                    top : (zoomRect.y - ppos.top) + 'px',
-                    width : zoomRect.width,
-                    height : zoomRect.height};
+                left : (zoomRect.x - ppos.left) + 'px',
+                top : (zoomRect.y - ppos.top) + 'px',
+                width : zoomRect.width,
+                height : zoomRect.height
+                };
             $birdZoom.animate(dest);
         }
     };
@@ -1340,7 +1345,6 @@ if (typeof(console) === 'undefined') {
             var imgArea = data.imgTrafo.transform(area);
             var offset = imgArea.getPosition().neg();
             offset.add(scalerPos);
-            console.log('offset', offset);
             if (fullRect) {
                 var bgPos = fullRect.getPosition().add(offset);
             } else {
