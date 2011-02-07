@@ -66,27 +66,6 @@
             digilib.servlet.PDFCache
         </servlet-class>
   </servlet>
-  <!-- We want to mess around with the default JSP servlet... -->
-  <servlet>
-        <servlet-name>
-            doc-jsp
-        </servlet-name>
-        <servlet-class>
-            org.apache.jasper.servlet.JspServlet
-        </servlet-class>
-        <!-- parameters to the JSP servlet -->
-        <init-param>
-            <param-name>
-                logVerbosityLevel
-            </param-name>
-            <param-value>
-                WARNING
-            </param-value>
-        </init-param>
-        <load-on-startup>
-            3
-        </load-on-startup>
-  </servlet>
   <!-- The mapping for the Scaler servlet -->
   <servlet-mapping>
         <servlet-name>
@@ -138,15 +117,6 @@
             /authenticated/servlet/PDFCache/*
         </url-pattern>
   </servlet-mapping>
-   <!-- The mapping for the JSP servlet -->
-  <servlet-mapping>
-        <servlet-name>
-            doc-jsp
-        </servlet-name>
-        <url-pattern>
-            *.jsp
-        </url-pattern>
-  </servlet-mapping>
   <!-- region for authenticated access -->
   <security-constraint>
         <web-resource-collection>
@@ -158,11 +128,11 @@
             </url-pattern>
         </web-resource-collection>
         <!-- we need a default user -->
-        <auth-constraint>
+<!--         <auth-constraint>
             <role-name>
                 user
             </role-name>
-        </auth-constraint>
+        </auth-constraint>  -->
   </security-constraint>
   <login-config>
   <!--

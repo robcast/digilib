@@ -104,6 +104,7 @@ public class DocuDirCache {
 	 */
 	public void put(DocuDirectory newdir) {
 		String s = newdir.getDirName();
+		logger.debug("DocuDirCache.put for "+s+" in "+this);
 		if (map.containsKey(s)) {
 			logger.warn("Duplicate key in DocuDirCache.put -- ignoring!");
 		} else {
@@ -117,7 +118,7 @@ public class DocuDirCache {
 	 * 
 	 * @param newDir
 	 */
-	public synchronized void putDir(DocuDirectory newDir) {
+	public void putDir(DocuDirectory newDir) {
 		put(newDir);
 		String parent = FileOps.parent(newDir.getDirName());
 		if (parent != "") {

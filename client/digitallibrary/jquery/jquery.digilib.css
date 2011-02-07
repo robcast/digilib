@@ -1,0 +1,102 @@
+/* 
+ * CSS style file for jQuery digilib
+ *
+ * Martin Raspe, Robert Casties, 11.1.2011
+ */
+div.digilib div.scaler {
+	background-color: grey;
+	z-index: 0;
+	width: 0px;
+	height: 0px;
+}
+
+div.digilib div.birdview {
+	border: 1px solid white;
+	z-index: 10;
+}
+
+div.digilib div.zoomrect {
+	position: absolute;
+	border: 2px solid #ff0000;
+	z-index: 100;
+}
+
+div.digilib div.birdzoom {
+    position: absolute;
+    border: 2px solid #ff0000;
+    z-index: 100;
+}
+
+div.digilib div.mark {
+	position: absolute;
+	color: white;
+	background: url('../greyskin/mark-bg-16.png');
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	font-size: 11px;
+	height: 15px;
+	width: 16px;
+	padding-top: 1px;
+	text-align: center;
+	z-index: 10;
+}
+
+div.digilib div.about {
+	position: absolute;
+	width: 200px;
+	top: 100px;
+	left: 350px;
+	height: 200px;
+	padding: 0px 2px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	border: 2px solid lightcyan;
+	background-color: lightgrey;
+	text-align: center;
+	display: none;
+	z-index: 1000;
+}
+
+/* special definitions for fullscreen */
+div.digilib.dl_fullscreen div.buttons {
+	position: fixed;
+	right: 0px;
+	top: 0px;
+	padding: 2px;
+	background-color: transparent;
+	z-index: 100;
+}
+
+div.digilib.dl_fullscreen div.button:hover {
+	background-image: url('../greyskin/corona.png');
+}
+
+div.digilib.dl_fullscreen div.birdview {
+	position: fixed;
+	bottom: 8px;
+	right: 48px;
+}
+
+/* special definitions for embedded */
+div.digilib.dl_embedded {
+	position: relative;
+}
+
+div.digilib.dl_embedded div.buttons {
+	position: absolute;
+	right: 0px;
+	top: 0px;
+	padding: 1px;
+	background-color: grey;
+	opacity: 0.4;
+	z-index: 100;
+}
+
+div.digilib.dl_embedded div.button:hover {
+	background-color: darkred;
+}
+
+div.digilib.dl_embedded div.birdview {
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+}

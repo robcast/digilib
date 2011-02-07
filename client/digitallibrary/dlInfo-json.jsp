@@ -17,7 +17,8 @@ public void jspInit() {
 digilib.servlet.DigilibRequest dlRequest = new digilib.servlet.DigilibRequest(request);
 docBean.setRequest(dlRequest);
 %>
-// Automatically generated JavaScript snippet with parameters
+// JSON format metadata about request and image
+{
 <%
     Object[] keys = dlRequest.getParams().keySet().toArray();
     java.util.Arrays.sort(keys);
@@ -28,7 +29,8 @@ docBean.setRequest(dlRequest);
 	if (val.length() == 0) {
 	    val = "";
 	}
-	%>var dl_<%= key %> = "<%= val %>";
+	%>"<%= key %>" : "<%= val %>",
 <%
        }
 %>
+}

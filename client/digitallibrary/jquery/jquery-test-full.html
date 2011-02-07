@@ -1,0 +1,53 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Digilib jQuery Test: fullscreen</title>
+
+        <style type="text/css">
+            body {
+                 background: silver;
+            }
+
+            #debug {
+                background-color: beige;
+                position: absolute;
+                opacity: 50%;
+                top: 4px;
+                left: 300px;
+                width: 500px;
+                padding: 0px 5px;
+                font-family: Arial;
+                font-size: 9px;
+                }
+
+        </style>
+
+        <script type="text/javascript" src="jquery-1.4.4.js"></script>
+        <script type="text/javascript" src="dlGeometry.js"></script>
+        <script type="text/javascript" src="jquery.cookie.js"></script>
+        <script type="text/javascript" src="jquery.digilib.js"></script>
+        <link rel="stylesheet" type="text/css" href="jquery.digilib.css" />
+
+
+        <script type="text/javascript">
+            $(document).ready(function(){
+                var opts = {
+                    interactionMode : 'fullscreen',
+                    scalerBaseUrl : 'http://digilib.biblhertz.it/digilib04/servlet/Scaler'
+                    };
+                 $('div.digilib').digilib(opts);
+            });
+
+        </script>
+    </head>
+
+    <body>
+
+        <div id="digilib-1" class="digilib">
+            <img src="http://digilib.biblhertz.it/digilib04/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/FransHals-WillemVanHeythuysen" />
+        </div>
+        <div id="debug">DEBUG</div>
+    </body>
+</html>
+
