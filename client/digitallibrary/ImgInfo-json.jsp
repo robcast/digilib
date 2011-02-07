@@ -1,6 +1,6 @@
 <%@page language="java" 
-	import="digilib.io.FileOps, digilib.io.ImageFileset, digilib.io.ImageFile, 
-	digilib.image.ImageSize, digilib.servlet.DigilibConfiguration"
+	import="digilib.io.FileOps, digilib.io.ImageFileSet, digilib.io.ImageFile, 
+	digilib.util.ImageSize, digilib.servlet.DigilibConfiguration"
 	contentType="application/json"%><%!
 // create DocumentBean instance for all JSP requests
 digilib.servlet.DocumentBean docBean = new digilib.servlet.DocumentBean();
@@ -23,14 +23,11 @@ digilib.servlet.DigilibConfiguration dlConfig = docBean.getDlConfig();
 digilib.io.DocuDirCache dirCache = (digilib.io.DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 // get file
 FileOps.FileClass fc = FileOps.FileClass.IMAGE;
-ImageFileset imgFile = (ImageFileset) dirCache.getFile(dlRequest.getFilePath(), dlRequest.getAsInt("pn"), fc);
+ImageFileSet imgFile = (ImageFileSet) dirCache.getFile(dlRequest.getFilePath(), dlRequest.getAsInt("pn"), fc);
 
 %>{ <% 
     if (imgFile != null) {
-		ImageFile img = imgFile.getBiggest();
-		if (!img.isChecked()) {
-			DigilibConfiguration.docuImageIdentify(img);
-		}
+		ImageFile img = (ImageFile) imgFile.getBiggest();
 		ImageSize imgSize = img.getSize(); 
 		%>
   "filename" : "<%= imgFile.getName() %>",

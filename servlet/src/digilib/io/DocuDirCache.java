@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
@@ -42,7 +43,7 @@ public class DocuDirCache {
 	Logger logger = Logger.getLogger(this.getClass());
 
 	/** HashMap of directories */
-	Map<String, DocuDirectory> map = null;
+	Map<String, DocuDirectory> map = new ConcurrentHashMap<String, DocuDirectory>();
 
 	/** names of base directories */
 	String[] baseDirNames = null;
@@ -71,7 +72,6 @@ public class DocuDirCache {
 	public DocuDirCache(String[] bd, FileClass[] fcs,
 			DigilibConfiguration dlConfig) {
 		baseDirNames = bd;
-		map = new HashMap<String, DocuDirectory>();
 		this.fileClasses = fcs;
 	}
 
@@ -83,7 +83,6 @@ public class DocuDirCache {
 	 */
 	public DocuDirCache(String[] bd) {
 		baseDirNames = bd;
-		map = new HashMap<String, DocuDirectory>();
 		// default file class is CLASS_IMAGE
 		fileClasses = new FileClass[] { FileClass.IMAGE };
 	}
