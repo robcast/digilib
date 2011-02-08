@@ -23,11 +23,10 @@
 package digilib.io;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.log4j.Logger;
 
@@ -43,7 +42,7 @@ public class DocuDirCache {
 	Logger logger = Logger.getLogger(this.getClass());
 
 	/** HashMap of directories */
-	Map<String, DocuDirectory> map = new ConcurrentHashMap<String, DocuDirectory>();
+	ConcurrentMap<String, DocuDirectory> map = new ConcurrentHashMap<String, DocuDirectory>();
 
 	/** names of base directories */
 	String[] baseDirNames = null;
@@ -98,38 +97,49 @@ public class DocuDirCache {
 
 	/**
 	 * Add a DocuDirectory to the cache.
+	 * Always returns the correct Object from the cache, 
+	 * either newdir one or another one.
 	 * 
 	 * @param newdir
+	 * @return dir
 	 */
-	public void put(DocuDirectory newdir) {
+	public DocuDirectory put(DocuDirectory newdir) {
 		String s = newdir.getDirName();
 		logger.debug("DocuDirCache.put for "+s+" in "+this);
-		if (map.containsKey(s)) {
+		DocuDirectory olddir = map.putIfAbsent(s, newdir);
+		if (olddir != null) {
 			logger.warn("Duplicate key in DocuDirCache.put -- ignoring!");
-		} else {
-			map.put(s, newdir);
-			numFiles += newdir.size();
+			return olddir;
 		}
+		numFiles += newdir.size();
+		return newdir;
 	}
 
 	/**
 	 * Add a directory to the cache and check its parents.
-	 * 
+	 * Always returns the correct Object from the cache, 
+	 * either newDir one or another one.
+	 *
 	 * @param newDir
+	 * @return dir
 	 */
-	public void putDir(DocuDirectory newDir) {
-		put(newDir);
-		String parent = FileOps.parent(newDir.getDirName());
-		if (parent != "") {
-			// check the parent in the cache
-			DocuDirectory pd = map.get(parent);
-			if (pd == null) {
-				// the parent is unknown
-				pd = new DocuDirectory(parent, this);
-				putDir(pd);
+	public DocuDirectory putDir(DocuDirectory newDir) {
+		DocuDirectory dd = put(newDir);
+		if (dd.getParent() == null) {
+			// no parent link yet
+			String parent = FileOps.parent(newDir.getDirName());
+			if (parent != "") {
+				// check the parent in the cache
+				DocuDirectory pd = map.get(parent);
+				if (pd == null) {
+					// the parent is unknown
+					pd = new DocuDirectory(parent, this);
+					pd = putDir(pd);
+				}
+				newDir.setParent(pd);
 			}
-			newDir.setParent(pd);
 		}
+		return dd;
 	}
 
 	/**
@@ -181,8 +191,6 @@ public class DocuDirCache {
 		int n = in - 1;
 		// first, assume fn is a directory and look in the cache
 		dd = map.get(fn);
-        // logger.debug("fn: " + fn);
-        // logger.debug("dd: " + dd);
 		if (dd == null) {
 			// cache miss
 			misses++;
@@ -195,7 +203,7 @@ public class DocuDirCache {
 				dd = new DocuDirectory(fn, this);
 				if (dd.isValid()) {
 					// add to the cache
-					putDir(dd);
+					dd = putDir(dd);
 				}
 			} else {
 				/*
@@ -213,7 +221,7 @@ public class DocuDirCache {
 					if (dd.isValid()) {
 						// add to the cache
                         // logger.debug(dd + " is valid");
-						putDir(dd);
+						dd = putDir(dd);
 					} else {
 						// invalid path
 						return null;
@@ -224,17 +232,14 @@ public class DocuDirCache {
 				}
 				// get the file's index
 				n = dd.indexOf(f.getName(), fc);
-                // logger.debug(f.getName() + ", index is " + n + ", fc = " + fc);
 			}
 		} else {
 			// cache hit
 			hits++;
 		}
 		dd.refresh();
-        // logger.debug(dd + " refreshed");
 		if (dd.isValid()) {
 			try {
-                // logger.debug(dd + " is valid");
 				return dd.get(n, fc);
 			} catch (IndexOutOfBoundsException e) {
                 // logger.debug(fn + " not found in directory");
@@ -265,7 +270,7 @@ public class DocuDirCache {
 				dd = new DocuDirectory(fn, this);
 				if (dd.isValid()) {
 					// add to the cache
-					putDir(dd);
+					dd = putDir(dd);
 				}
 			} else {
 				// maybe it's a file
@@ -277,7 +282,7 @@ public class DocuDirCache {
 						dd = new DocuDirectory(f.getParent(), this);
 						if (dd.isValid()) {
 							// add to the cache
-							putDir(dd);
+							dd = putDir(dd);
 						} else {
 							// invalid path
 							return null;

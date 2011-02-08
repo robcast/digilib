@@ -85,15 +85,6 @@ public class DocuDirectory extends Directory {
 	public DocuDirectory(String path, DocuDirCache cache) {
 		this.dirName = path;
 		this.cache = cache;
-		initDir();
-		checkDir();
-	}
-
-	/**
-	 * Sets and checks the dir object.
-	 *  
-	 */
-	protected void initDir() {
 		String baseDirName = cache.getBaseDirNames()[0];
 		// clear directory list
 		FileClass[] fcs = FileClass.values();
@@ -102,10 +93,10 @@ public class DocuDirectory extends Directory {
 		for (@SuppressWarnings("unused") FileClass fc: fcs) {
 		    list.add(null);
 		}
-		isValid = false;
 		dirMTime = 0;
 		// the first directory has to exist
-		dir = new File(baseDirName, dirName);
+		dir = new File(baseDirName, path);
+		isValid = dir.isDirectory();
 	}
 
 	/**
@@ -155,35 +146,23 @@ public class DocuDirectory extends Directory {
 	}
 
 	/**
-	 * Checks if the directory exists on the filesystem.
-	 * 
-	 * Sets isValid.
-	 * 
-	 * @return
-	 */
-	public boolean checkDir() {
-		if (dir == null) {
-			initDir();
-		}
-		isValid = dir.isDirectory();
-		return isValid;
-	}
-
-	/**
 	 * Read the filesystem directory and fill this object.
 	 * 
 	 * Clears the List and (re)reads all files.
 	 * 
 	 * @return boolean the directory exists
 	 */
-	public boolean readDir() {
+	public synchronized boolean readDir() {
 		// check directory first
-		checkDir();
 		if (!isValid) {
 			return false;
 		}
+		// re-check modification time because the thread may have slept
+		if (dir.lastModified() <= dirMTime) {
+			return true;
+		}
 		// read all filenames
-		logger.debug("reading directory " + dir.getPath());
+		logger.debug("reading directory "+this+" = "+dir.getPath());
 		File[] allFiles = null;
 		/*
 		 * using ReadableFileFilter is safer (we won't get directories with file
