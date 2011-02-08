@@ -36,7 +36,17 @@
                     interactionMode : 'fullscreen',
                     scalerBaseUrl : 'http://digilib.biblhertz.it/digilib04/servlet/Scaler'
                     };
-                 $('div.digilib').digilib(opts);
+                var $div = $('div.digilib');
+                $div.digilib(opts);
+                var obj = {
+                    'initExtension' : function() {
+                        var settings = $(this).data('digilib').settings;
+                        console.debug('initExtension:', this, 'settings:', settings);
+                        },
+                    'options' : { 'test' : 'content of option "test"' },
+                    };
+                $div.digilib('extendPlugin', obj);
+                $div.digilib('initExtension');
             });
 
         </script>

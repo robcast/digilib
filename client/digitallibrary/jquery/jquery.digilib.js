@@ -585,11 +585,12 @@ if (typeof(console) === 'undefined') {
                 redisplay(data);
             }
         },
-        
+
         // calibrate (only faking)
         calibrate : function (data) {
             getImageInfo(data);
-        }
+        },
+
     };
 
     // returns parameters from page url
@@ -1121,13 +1122,13 @@ if (typeof(console) === 'undefined') {
         return function () {
             var $img = $(this);
             var $scaler = data.$scaler;
-            // create Transform from current area and picsize
+            // create Transform from current zoomArea and image size
             data.imgTrafo = getImgTrafo($img, data.zoomArea,
                     data.settings.rot, data.scalerFlags.hmir, data.scalerFlags.vmir);
-            console.debug("imgTrafo=", data.imgTrafo);
-            // adjust scaler div size
+            // console.debug("imgTrafo=", data.imgTrafo);
             var imgRect = geom.rectangle($img);
-            console.debug("imgrect=", imgRect);
+            // console.debug("imgrect=", imgRect);
+            // adjust scaler div size
             imgRect.adjustDiv($scaler);
             // show image in case it was hidden (for example in zoomDrag)
             $img.css('visibility', 'visible');
@@ -1580,8 +1581,28 @@ if (typeof(console) === 'undefined') {
         }
 
     // hook plugin into jquery
-    $.fn.digilib = function(action) {
-        if (actions[action]) {
+    $.fn.digilib = function(action, obj) {
+        // plugin extension mechanism
+        if (action === 'extendPlugin') {
+            // for each digilib $elem extend data.settings with obj.options
+            if (obj.options) {
+                this.each(function() {
+                    var $elem = $(this);
+                    // console.debug('extending:', $elem);
+                    var data = $elem.data('digilib');
+                    if (!data) {
+                        return console.log('cannot extend digilib plugin, element not initialised!');
+                        }
+                    var settings = data.settings;
+                    $.extend(settings, obj.options);
+                    // console.log('settings:', settings);
+                    });
+                }
+            delete(obj.options);
+            // extend the plugin actions (to make this useful, 
+            // maybe we need to expose some more internal functions)
+            $.extend(actions, obj);
+        } else if (actions[action]) {
             // call action on this with the remaining arguments (inserting data as first argument)
             var $elem = $(this);
             var data = $elem.data('digilib');
