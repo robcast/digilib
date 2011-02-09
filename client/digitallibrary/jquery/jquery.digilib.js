@@ -153,7 +153,7 @@ if (typeof(console) === 'undefined') {
             img : "calibration-x.png"
             },
         scale : {
-            onclick : "javascript:toggleScaleMenu()",
+            onclick : "setScaleMode",
             tooltip : "change image scale",
             img : "original-size.png"
             },
@@ -590,6 +590,18 @@ if (typeof(console) === 'undefined') {
         calibrate : function (data) {
             getImageInfo(data);
         },
+        
+        // set image scale mode
+        setScaleMode : function (data, mode) {
+            var oldM = getScaleMode(data);
+            if (mode == null) {
+                mode = window.prompt("Image scale mode (screen, pixel, size)", oldM);
+            }
+            if (mode != null) {
+                setScaleMode(data, mode);
+                redisplay(data);
+            }
+        }
 
     };
 
@@ -1149,7 +1161,7 @@ if (typeof(console) === 'undefined') {
             console.debug("birdImg loaded!", $birdImg, "rect=", birdRect, "data=", data);
             if (birdRect.width === 0) {
                 // malheureusement IE7 calls load handler when there is no size info yet 
-                setTimeout(function () { $birdImg.triggerHandler('load') }, 200);
+                setTimeout(function () { $birdImg.triggerHandler('load'); }, 200);
                 }
             // display red indicator around zoomarea
             renderBirdArea(data);
@@ -1526,7 +1538,31 @@ if (typeof(console) === 'undefined') {
         flags['q'+qual] = 'q'+qual;
     };
 
-    // sets a key to a value (relative values with +/- if relative=true)
+    // get image scale mode (screen, pixel, size)
+    var getScaleMode = function (data) {
+        if (data.scalerFlags.clip != null) {
+            return 'pixel';
+        } else if (data.scalerFlags.osize != null) {
+            return 'size';
+        }
+        // mo=fit is default
+        return 'screen';
+    };
+    
+    // set image scale mode (screen, pixel, size)
+    var setScaleMode = function (data, mode) {
+        delete data.scalerFlags.fit;
+        delete data.scalerFlags.clip;
+        delete data.scalerFlags.osize;
+        if (mode === 'pixel') {
+            data.scalerFlags.clip = 'clip';
+        } else if (mode === 'size') {
+            data.scalerFlags.osize = 'osize';
+        }
+        // mo=fit is default
+    };
+    
+     // sets a key to a value (relative values with +/- if relative=true)
     var setNumValue = function(settings, key, value) {
         if (value == null) return null;
         if (isNumber(value)) {
