@@ -67,11 +67,11 @@ div.digilib.dl_fullscreen div.buttons {
 }
 
 div.digilib.dl_fullscreen div.button:hover {
-	background-image: url('../greyskin/corona.png');
+	background-image: url('img/fullscreen/corona.png');
 }
 
 div.digilib.dl_fullscreen div.button-on {
-	background-color: white;
+	background-image: url('img/fullscreen/whitedisc.png');
 }
 
 div.digilib.dl_fullscreen div.birdview {

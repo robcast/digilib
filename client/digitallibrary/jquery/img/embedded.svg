@@ -49,7 +49,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="16.533016"
      inkscape:cx="15.816836"
-     inkscape:cy="16.69448"
+     inkscape:cy="9.7629524"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -86,8 +86,7 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1020.3622)"
-     style="display:inline"
-     sodipodi:insensitive="true" />
+     style="display:inline" />
   <g
      inkscape:groupmode="layer"
      id="layer2"
@@ -928,7 +927,8 @@
      inkscape:groupmode="layer"
      id="layer11"
      inkscape:label="mirror-horizontal"
-     style="display:none">
+     style="display:none"
+     sodipodi:insensitive="true">
     <path
        inkscape:connector-curvature="0"
        style="fill:#ffffff;fill-opacity:1;stroke:none;display:inline"

@@ -39,6 +39,7 @@
                 padding: 0px 5px;
                 font-family: Arial;
                 font-size: 9px;
+                display: none;
                 }
 
             div._log {
@@ -69,15 +70,6 @@
                     };
                 var $div = $('div.digilib');
                 $div.digilib(opts);
-                var obj = {
-                    'initExtension' : function() {
-                        var settings = $(this).data('digilib').settings;
-                        console.debug('initExtension:', this, 'settings:', settings);
-                        },
-                    'options' : { 'test' : 'content of option "test"' },
-                    };
-                $div.digilib('extendPlugin', obj);
-                $div.digilib('initExtension');
             });
 
         </script>

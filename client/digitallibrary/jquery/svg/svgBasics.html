@@ -62,7 +62,8 @@ function drawShape() {
 		svg.clear();
 	}
 	else if (shape == 'zoom') {
-		svg.clear();
+		svg.configure({viewBox: '0 0 800 1000'}, true);
+		//svg.animate({svgViewBox: '0, 0, 100, 100'}, 2000);
 	}
 	
 }
