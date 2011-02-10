@@ -40,140 +40,140 @@ if (typeof(console) === 'undefined') {
         reference : {
             onclick : "reference",
             tooltip : "get a reference URL",
-            img : "reference.png"
+            icon : "reference.png"
             },
         zoomin : {
             onclick : ["zoomBy", 1.4],
             tooltip : "zoom in",
-            img : "zoom-in.png"
+            icon : "zoom-in.png"
             },
         zoomout : {
             onclick : ["zoomBy", 0.7],
             tooltip : "zoom out",
-            img : "zoom-out.png"
+            icon : "zoom-out.png"
             },
         zoomarea : {
             onclick : "zoomArea",
             tooltip : "zoom area",
-            img : "zoom-area.png"
+            icon : "zoom-area.png"
             },
         zoomfull : {
             onclick : "zoomFull",
             tooltip : "view the whole image",
-            img : "zoom-full.png"
+            icon : "zoom-full.png"
             },
         pagewidth : {
             onclick : ["zoomFull", "width"],
             tooltip : "page width",
-            img : "pagewidth.png"
+            icon : "pagewidth.png"
             },
         back : {
             onclick : ["gotoPage", "-1"],
             tooltip : "goto previous image",
-            img : "back.png"
+            icon : "back.png"
             },
         fwd : {
             onclick : ["gotoPage", "+1"],
             tooltip : "goto next image",
-            img : "fwd.png"
+            icon : "fwd.png"
             },
         page : {
             onclick : "gotoPage",
             tooltip : "goto image number",
-            img : "page.png"
+            icon : "page.png"
             },
         bird : {
             onclick : "showBirdDiv",
             tooltip : "show bird's eye view",
-            img : "birds-eye.png"
+            icon : "birds-eye.png"
             },
         help : {
             onclick : "showAboutDiv",
             tooltip : "about Digilib",
-            img : "help.png"
+            icon : "help.png"
             },
         reset : {
             onclick : "reset",
             tooltip : "reset image",
-            img : "reset.png"
+            icon : "reset.png"
             },
         mark : {
             onclick : "setMark",
             tooltip : "set a mark",
-            img : "mark.png"
+            icon : "mark.png"
             },
         delmark : {
             onclick : "removeMark",
             tooltip : "delete the last mark",
-            img : "delmark.png"
+            icon : "delmark.png"
             },
         hmir : {
             onclick : ["mirror", "h"],
             tooltip : "mirror horizontally",
-            img : "mirror-horizontal.png"
+            icon : "mirror-horizontal.png"
             },
         vmir : {
             onclick : ["mirror", "v"],
             tooltip : "mirror vertically",
-            img : "mirror-vertical.png"
+            icon : "mirror-vertical.png"
             },
         rot : {
             onclick : "rotate",
             tooltip : "rotate image",
-            img : "rotate.png"
+            icon : "rotate.png"
             },
         brgt : {
             onclick : "brightness",
             tooltip : "set brightness",
-            img : "brightness.png"
+            icon : "brightness.png"
             },
         cont : {
             onclick : "contrast",
             tooltip : "set contrast",
-            img : "contrast.png"
+            icon : "contrast.png"
             },
         rgb : {
             onclick : "javascript:setParamWin('rgb', '...')",
             tooltip : "set rgb values",
-            img : "rgb.png"
+            icon : "rgb.png"
             },
         quality : {
             onclick : "setQuality",
             tooltip : "set image quality",
-            img : "quality.png"
+            icon : "quality.png"
             },
         size : {
             onclick : "javascript:toggleSizeMenu()",
             tooltip : "set page size",
-            img : "size.png"
+            icon : "size.png"
             },
         calibrationx : {
             onclick : "calibrate",
             tooltip : "calibrate screen resolution",
-            img : "calibration-x.png"
+            icon : "calibration-x.png"
             },
         scale : {
             onclick : "setScaleMode",
             tooltip : "change image scale",
-            img : "original-size.png"
+            icon : "original-size.png"
             },
         toggleoptions : {
             onclick : "moreButtons",
             tooltip : "more options",
-            img : "options.png"
+            icon : "options.png"
             },
         moreoptions : {
             onclick : ["moreButtons", "+1"],
             tooltip : "more options",
-            img : "options.png"
+            icon : "options.png"
             },
         lessoptions : {
             onclick : ["moreButtons", "-1"],
             tooltip : "less options",
-            img : "options.png"
+            icon : "options.png"
             },
         SEP : {
-            img : "sep.png"
+            icon : "sep.png"
             }
         };
 
@@ -234,6 +234,7 @@ if (typeof(console) === 'undefined') {
                 'buttonSets' : ['standardSet', 'specialSet']
                 }
         },
+        
         // number of visible button groups
         'visibleButtonSets' : 1,
         // is birdView shown?
@@ -338,7 +339,7 @@ if (typeof(console) === 'undefined') {
                         if (url) {
                             // build it from scaler URL
                             var bp = url.indexOf('/servlet/Scaler');
-                            elemSettings.digilibBaseUrl = url.substring(0, bp) + '/digilib.jsp';                        
+                            elemSettings.digilibBaseUrl = url.substring(0, bp) + '/digilib.jsp';
                         }
                     }
                 }
@@ -352,6 +353,7 @@ if (typeof(console) === 'undefined') {
                 for (var i = 0; i < elemSettings.visibleButtonSets; ++i) {
                     showButtons(data, true, i);
                     }
+                highlightButtons(data);
                 // bird's eye view creation
                 if (elemSettings.isBirdDivVisible) {
                     setupBirdDiv(data);
@@ -376,7 +378,9 @@ if (typeof(console) === 'undefined') {
 
         // show or hide the 'about' window
         showAboutDiv : function(data, show) {
-            data.settings.isAboutDivVisible = showDiv(data.settings.isAboutDivVisible, data.$aboutDiv, show);
+            var on = showDiv(data.settings.isAboutDivVisible, data.$aboutDiv, show);
+            data.settings.isAboutDivVisible = on;
+            highlightButtons(data, 'help', on);
         },
 
         // event handler: toggles the visibility of the bird's eye window 
@@ -386,7 +390,9 @@ if (typeof(console) === 'undefined') {
                 // no bird div -> create
                 setupBirdDiv(data);
             }
-            settings.isBirdDivVisible = showDiv(settings.isBirdDivVisible, data.$birdDiv, show);
+            var on = showDiv(settings.isBirdDivVisible, data.$birdDiv, show);
+            settings.isBirdDivVisible = on;
+            highlightButtons(data, 'bird', on);
             updateBirdDiv(data);
             storeOptions(data);
         },
@@ -859,6 +865,7 @@ if (typeof(console) === 'undefined') {
             data.$img.attr('src', url);
             // redisplay bird img
             updateBirdDiv(data);
+            highlightButtons(data);
             }
     };
 
@@ -967,7 +974,7 @@ if (typeof(console) === 'undefined') {
                     };
                 }
             })());
-            $img.attr('src', buttonSettings.imagePath + buttonConfig.img);
+            $img.attr('src', buttonSettings.imagePath + buttonConfig.icon);
         }
         // make buttons div scroll if too large for window
         if ($buttonsDiv.height() > $(window).height() - 10) {
@@ -1080,7 +1087,8 @@ if (typeof(console) === 'undefined') {
                 $set = createButtons(data, setIdx);
                 }
             if ($set == null) return false;
-            var btnWidth = $set.width();
+            // include border in calculation
+            var btnWidth = $set.outerWidth();
             // move remaining sets left and show new set
             if ($otherSets.length > 0) {
                     $otherSets.animate({right : '+='+btnWidth+'px'}, atime,
@@ -1102,6 +1110,34 @@ if (typeof(console) === 'undefined') {
         return true;
     };
 
+    // check for buttons to highlight
+    var highlightButtons = function (data, name, on) {
+        var $buttons = data.$elem.find('div.buttons:visible'); // include hidden?
+        // add a class for highlighted button
+        var highlight = function (name, on) {
+            var $button = $buttons.find('div.button-' + name);
+            if (on) {
+                $button.addClass('button-on');
+            } else {
+                $button.removeClass('button-on');
+            }
+        };
+        if (name != null) {
+            return highlight(name, on);
+            }
+        var flags = data.scalerFlags;
+        var settings = data.settings;
+        highlight('rot', settings.rot);
+        highlight('brgt', settings.brgt);
+        highlight('cont', settings.cont);
+        highlight('bird', settings.isBirdDivVisible);
+        highlight('help', settings.isAboutDivVisible);
+        highlight('hmir', flags.hmir);
+        highlight('vmir', flags.vmir);
+        highlight('help', flags.q1 || flags.q2);
+        highlight('zoomin', ! isFullArea(data.zoomArea));
+        };
+        
     // create Transform from area and $img
     var getImgTrafo = function ($img, area, rot, hmir, vmir, mode, imgInfo) {
         var picrect = geom.rectangle($img);
