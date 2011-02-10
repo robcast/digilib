@@ -70,6 +70,10 @@ div.digilib.dl_fullscreen div.button:hover {
 	background-image: url('../greyskin/corona.png');
 }
 
+div.digilib.dl_fullscreen div.button-on {
+	background-color: white;
+}
+
 div.digilib.dl_fullscreen div.birdview {
 	position: fixed;
 	bottom: 8px;
@@ -93,6 +97,10 @@ div.digilib.dl_embedded div.buttons {
 
 div.digilib.dl_embedded div.button:hover {
 	background-color: darkred;
+}
+
+div.digilib.dl_embedded div.button-on {
+	background-color: black;
 }
 
 div.digilib.dl_embedded div.birdview {
