@@ -230,7 +230,7 @@ if (typeof(console) === 'undefined') {
             'embedded' : {
                 'imagePath' : 'img/embedded/16/',
                 'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","bird","help","reset","toggleoptions"],
-                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","toggleoptions"],
+                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","scale","toggleoptions"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 }
         },
