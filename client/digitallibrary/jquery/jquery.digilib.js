@@ -22,7 +22,7 @@ Authors:
 **/ 
 
 
-/* jslint browser: true, debug: true, forin: true
+/*jslint browser: true, debug: true, forin: true
 */
 
 // fallback for console.log calls
@@ -344,7 +344,7 @@ if (typeof(console) === 'undefined') {
                 }
                 // get image info from server if needed
                 if (data.scaleMode === 'pixel' || data.scaleMode === 'size') {
-                    getImageInfo(data); // TODO: onload callback
+                    loadImageInfo(data, updateDisplay); // updateDisplay(data) on completion
                 }
                 // create HTML structure for scaler
                 setupScalerDiv(data);
@@ -405,6 +405,7 @@ if (typeof(console) === 'undefined') {
                 settings.pn = oldpn;
                 return false;
                 }
+            // TODO: how do we get pt?
             if (settings.pt) {
                 if (pn > settings.pt) {
                     alert("no such page (page number too high)");
@@ -424,9 +425,16 @@ if (typeof(console) === 'undefined') {
             zoomBy(data, factor);
         },
 
-        // zoom interactively
-        zoomArea : function (data) {
-            zoomArea(data);
+        // zoom to area (or interactive)
+        zoomArea : function (data, area) {
+            var settings = data.settings;
+            if (area == null) {
+                // interactively
+                zoomArea(data);
+            } else {
+                data.zoomArea = geom.rectangle(area);
+                redisplay(data);
+            }
         },
 
         // zoom out to full page
@@ -591,7 +599,7 @@ if (typeof(console) === 'undefined') {
 
         // calibrate (only faking)
         calibrate : function (data) {
-            getImageInfo(data);
+            loadImageInfo(data);
         },
         
         // set image scale mode
@@ -688,6 +696,17 @@ if (typeof(console) === 'undefined') {
         if (moreParams == null) {
             var params = getParamString(birdSettings, settings.birdDivParams, defaults);
         } else {
+            // filter scaler flags
+            if (birdSettings.mo != null) {
+                var mo = '';
+                if (data.scalerFlags.hmir != null) {
+                    mo += 'hmir,';
+                }
+                if (data.scalerFlags.vmir != null) {
+                    mo += 'vmir';
+                }
+                birdSettings.mo = mo;
+            }
             var params = getParamString(birdSettings, 
                     settings.birdDivParams.concat(moreParams), defaults);
         }
@@ -703,12 +722,13 @@ if (typeof(console) === 'undefined') {
         return settings.digilibBaseUrl + '?' + queryString;
     };
 
-    // gets image information from digilib server via HTTP and calls complete
-    var getImageInfo = function (data, complete) {
+    // loads image information from digilib server via HTTP (and calls complete-fn)
+    var loadImageInfo = function (data, complete) {
         var settings = data.settings;
         var p = settings.scalerBaseUrl.indexOf('/servlet/Scaler');
         var url = settings.scalerBaseUrl.substring(0, p) + '/ImgInfo-json.jsp';
         url += '?' + getParamString(settings, ['fn', 'pn'], defaults);
+        // TODO: better error handling
         jQuery.getJSON(url, function (json) {
             console.debug("got json data=", json);
             data.imgInfo = json;
@@ -862,8 +882,20 @@ if (typeof(console) === 'undefined') {
             }
     };
 
+    // update display (overlays etc.)
+    var updateDisplay = function (data) {
+        updateImgTrafo(data);
+        renderMarks(data);
+        setupZoomDrag(data);
+        if (data.settings.isBirdDivVisible) {
+            renderBirdArea(data);
+            setupBirdDrag(data);
+        }
+        // TODO: update event subscriber?
+    };
+    
     // returns maximum size for scaler img in fullscreen mode
-    var getFullscreenImgSize = function($elem) {
+    var getFullscreenImgSize = function ($elem) {
         var $win = $(window);
         var winH = $win.height();
         var winW = $win.width();
@@ -918,6 +950,7 @@ if (typeof(console) === 'undefined') {
         data.$img = $img;
         // setup image load handler before setting the src attribute (IE bug)
         $img.load(scalerImgLoadedHandler(data));
+        $img.error(function () {console.error("error loading scaler image");});
         $img.attr('src', scalerUrl);
     };
 
@@ -1004,6 +1037,7 @@ if (typeof(console) === 'undefined') {
         $birdZoom.css(data.settings.birdIndicatorStyle);
         var birdUrl = getBirdImgUrl(data);
         $birdImg.load(birdImgLoadedHandler(data));
+        $birdImg.error(function () {console.error("error loading birdview image");});
         $birdImg.attr('src', birdUrl);
     };
 
@@ -1146,28 +1180,32 @@ if (typeof(console) === 'undefined') {
         return trafo;
     };
 
-    // returns function for load event of scaler img
-    var scalerImgLoadedHandler = function (data) {
-        return function () {
-            var $img = $(this);
-            var $scaler = data.$scaler;
+    // update scaler image transform
+    var updateImgTrafo = function (data) {
+        var $img = data.$img;
+        if ($img != null && $img.get(0).complete) {
             // create Transform from current zoomArea and image size
             data.imgTrafo = getImgTrafo($img, data.zoomArea,
                     data.settings.rot, data.scalerFlags.hmir, data.scalerFlags.vmir,
                     data.scaleMode, data.imgInfo);
             // console.debug("imgTrafo=", data.imgTrafo);
+        }
+    };
+    
+    // returns function for load event of scaler img
+    var scalerImgLoadedHandler = function (data) {
+        return function () {
+            var $img = $(this);
+            console.debug("scaler img loaded=",$img);
+            var $scaler = data.$scaler;
             var imgRect = geom.rectangle($img);
-            // console.debug("imgrect=", imgRect);
             // adjust scaler div size
             imgRect.adjustDiv($scaler);
             // show image in case it was hidden (for example in zoomDrag)
             $img.css('visibility', 'visible');
             $scaler.css({'opacity' : '1', 'background-image' : 'none'});
-            // display marks
-            renderMarks(data);
-            // enable drag-to-scroll
-            setupZoomDrag(data);
-            // TODO: digilib.showArrows(); // show arrow overlays for zoom navigation
+            // update display (render marks, etc.)
+            updateDisplay(data);
         };
     };
 
@@ -1181,15 +1219,15 @@ if (typeof(console) === 'undefined') {
                 // malheureusement IE7 calls load handler when there is no size info yet 
                 setTimeout(function () { $birdImg.triggerHandler('load'); }, 200);
                 }
-            // display red indicator around zoomarea
-            renderBirdArea(data);
-            // enable click and drag
-            setupBirdDrag(data);
+            // update display (zoom area indicator)
+            updateDisplay(data);
         };
     };
 
     // place marks on the image
     var renderMarks = function (data) {
+        if (data.$img == null || data.imgTrafo == null) return;
+        console.debug("rendermarks img=",data.$img," imgtrafo=",data.imgTrafo);
         var $elem = data.$elem;
         var marks = data.marks;
         // clear marks
@@ -1210,6 +1248,7 @@ if (typeof(console) === 'undefined') {
 
     // show zoom area indicator on bird's eye view
     var renderBirdArea = function (data) {
+        if (data.$birdImg == null) return;
         var $birdZoom = data.$birdZoom;
         var zoomArea = data.zoomArea;
         var normalSize = isFullArea(zoomArea);
@@ -1436,6 +1475,8 @@ if (typeof(console) === 'undefined') {
         var $scaler = data.$scaler;
         var $img = data.$img;
         var fullRect = null;
+        // hide marks
+        data.$elem.find('div.mark').hide();
         // hide the scaler img, show background of div instead
         $img.css('visibility', 'hidden');
         var scalerCss = {
@@ -1517,6 +1558,8 @@ if (typeof(console) === 'undefined') {
                 // no movement
                 $img.css('visibility', 'visible');
                 $scaler.css({'opacity' : '1', 'background-image' : 'none'});
+                // unhide marks
+                data.$elem.find('div.mark').show();
                 return false; 
             }
             // get old zoom area (screen coordinates)
