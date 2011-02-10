@@ -1134,7 +1134,7 @@ if (typeof(console) === 'undefined') {
         highlight('help', settings.isAboutDivVisible);
         highlight('hmir', flags.hmir);
         highlight('vmir', flags.vmir);
-        highlight('help', flags.q1 || flags.q2);
+        highlight('quality', flags.q1 || flags.q2);
         highlight('zoomin', ! isFullArea(data.zoomArea));
         };
         
