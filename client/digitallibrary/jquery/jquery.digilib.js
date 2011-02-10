@@ -342,6 +342,10 @@ if (typeof(console) === 'undefined') {
                         }
                     }
                 }
+                // get image info from server if needed
+                if (data.scaleMode === 'pixel' || data.scaleMode === 'size') {
+                    getImageInfo(data); // TODO: onload callback
+                }
                 // create HTML structure for scaler
                 setupScalerDiv(data);
                 // add buttons
@@ -385,7 +389,6 @@ if (typeof(console) === 'undefined') {
             settings.isBirdDivVisible = showDiv(settings.isBirdDivVisible, data.$birdDiv, show);
             updateBirdDiv(data);
             storeOptions(data);
-            // data.$birdImg.triggerHandler('load'); // TODO: we shouldn't do that
         },
 
         // goto given page nr (+/-: relative)
@@ -599,10 +602,12 @@ if (typeof(console) === 'undefined') {
             }
             if (mode != null) {
                 setScaleMode(data, mode);
+                data.scaleMode = mode;
                 redisplay(data);
             }
         }
-
+        
+    // end of actions
     };
 
     // returns parameters from page url
@@ -745,6 +750,7 @@ if (typeof(console) === 'undefined') {
                 }
             }
         data.scalerFlags = flags;
+        data.scaleMode = getScaleMode(data);
         retrieveOptions(data);
     };
 
@@ -1097,8 +1103,19 @@ if (typeof(console) === 'undefined') {
     };
 
     // create Transform from area and $img
-    var getImgTrafo = function ($img, area, rot, hmir, vmir) {
+    var getImgTrafo = function ($img, area, rot, hmir, vmir, mode, imgInfo) {
         var picrect = geom.rectangle($img);
+        if (mode != null) {
+            if (mode === 'pixel') {
+                // scaler mo=clip - image area size does not come from ww, wh
+                if (imgInfo != null) {
+                    area.width = picrect.width / imgInfo.width;
+                    area.height = picrect.height / imgInfo.height;
+                } else {
+                    console.error("No image info for pixel mode!");
+                }
+            }
+        }
         var trafo = geom.transform();
         // move zoom area offset to center
         trafo.concat(trafo.getTranslation(geom.position(-area.x, -area.y)));
@@ -1136,7 +1153,8 @@ if (typeof(console) === 'undefined') {
             var $scaler = data.$scaler;
             // create Transform from current zoomArea and image size
             data.imgTrafo = getImgTrafo($img, data.zoomArea,
-                    data.settings.rot, data.scalerFlags.hmir, data.scalerFlags.vmir);
+                    data.settings.rot, data.scalerFlags.hmir, data.scalerFlags.vmir,
+                    data.scaleMode, data.imgInfo);
             // console.debug("imgTrafo=", data.imgTrafo);
             var imgRect = geom.rectangle($img);
             // console.debug("imgrect=", imgRect);
