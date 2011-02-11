@@ -234,7 +234,7 @@ if (typeof(console) === 'undefined') {
                 'buttonSets' : ['standardSet', 'specialSet']
                 }
         },
-        
+
         // number of visible button groups
         'visibleButtonSets' : 1,
         // is birdView shown?
@@ -244,10 +244,6 @@ if (typeof(console) === 'undefined') {
         'birdDivHeight' : 200,
         // parameters used by bird's eye div
         'birdDivParams' : ['fn','pn','dw','dh'],
-        // style of the zoom area indicator in the bird's eye div 
-        'birdIndicatorStyle' : {'border' : '2px solid #ff0000' },
-        // style of zoom area "rubber band"
-        'zoomrectStyle' : {'border' : '2px solid #ff0000' },
         // is the "about" window shown?
         'isAboutDivVisible' : false,
         // maximum width of background image for drag-scroll
@@ -607,7 +603,7 @@ if (typeof(console) === 'undefined') {
         calibrate : function (data) {
             loadImageInfo(data);
         },
-        
+
         // set image scale mode
         setScaleMode : function (data, mode) {
             var oldM = getScaleMode(data);
@@ -620,7 +616,7 @@ if (typeof(console) === 'undefined') {
                 redisplay(data);
             }
         }
-        
+
     // end of actions
     };
 
@@ -743,7 +739,7 @@ if (typeof(console) === 'undefined') {
             }
         });
     };
-    
+
     // processes some parameters into objects and stuff
     var unpackParams = function (data) {
         var settings = data.settings;
@@ -900,7 +896,7 @@ if (typeof(console) === 'undefined') {
         }
         // TODO: update event subscriber?
     };
-    
+
     // returns maximum size for scaler img in fullscreen mode
     var getFullscreenImgSize = function ($elem) {
         var $win = $(window);
@@ -1041,7 +1037,7 @@ if (typeof(console) === 'undefined') {
         $elem.append($birdDiv);
         $birdDiv.append($birdZoom);
         $birdDiv.append($birdImg);
-        $birdZoom.css(data.settings.birdIndicatorStyle);
+        // $birdZoom.css(data.settings.birdIndicatorStyle);
         var birdUrl = getBirdImgUrl(data);
         $birdImg.load(birdImgLoadedHandler(data));
         $birdImg.error(function () {console.error("error loading birdview image");});
@@ -1082,12 +1078,11 @@ if (typeof(console) === 'undefined') {
         $logo.attr('src', settings.logoUrl);
         $link.attr('href', settings.homeUrl);
         $content.text('Version: ' + settings.version);
-        // click hides
-        $aboutDiv.bind('click.digilib', function () { 
-            settings.isAboutDivVisible = showDiv(settings.isAboutDivVisible, $aboutDiv, 0);
-            return false;
-            });
         data.$aboutDiv = $aboutDiv;
+        // click hides
+        $aboutDiv.bind('click.digilib', function () {
+            actions['showAboutDiv'](data, false);
+            });
     };
 
     // shows some window e.g. 'about' (toggle visibility if show is null)
@@ -1171,7 +1166,7 @@ if (typeof(console) === 'undefined') {
         highlight('quality', flags.q1 || flags.q2);
         highlight('zoomin', ! isFullArea(data.zoomArea));
         };
-        
+
     // create Transform from area and $img
     var getImgTrafo = function ($img, area, rot, hmir, vmir, mode, imgInfo) {
         var picrect = geom.rectangle($img);
@@ -1227,7 +1222,7 @@ if (typeof(console) === 'undefined') {
             // console.debug("imgTrafo=", data.imgTrafo);
         }
     };
-    
+
     // returns function for load event of scaler img
     var scalerImgLoadedHandler = function (data) {
         return function () {
@@ -1299,7 +1294,8 @@ if (typeof(console) === 'undefined') {
         var zoomRect = data.birdTrafo.transform(zoomArea);
         console.debug("renderBirdArea:", zoomRect, "zoomArea:", zoomArea, "$birdTrafo:", data.birdTrafo);
         // acount for border width
-        zoomRect.addPosition({x : -2, y : -2});
+        var bw = getBorderWidth($birdZoom);
+        zoomRect.addPosition({x : -bw, y : -bw});
         if (data.settings.interactionMode === 'fullscreen') {
             // no animation for fullscreen
             zoomRect.adjustDiv($birdZoom);
@@ -1356,7 +1352,7 @@ if (typeof(console) === 'undefined') {
         var pt1, pt2;
         var $zoomDiv = $('<div class="zoomrect" style="display:none"/>');
         $elem.append($zoomDiv);
-        $zoomDiv.css(data.settings.zoomrectStyle);
+        // $zoomDiv.css(data.settings.zoomrectStyle);
         var picRect = geom.rectangle($scaler);
         // FIX ME: is there a way to query the border width from CSS info?
         // rect.x -= 2; // account for overlay borders
@@ -1422,6 +1418,7 @@ if (typeof(console) === 'undefined') {
         var $document = $(document);
         var $scaler = data.$scaler;
         var startPos, newRect, birdImgRect, birdZoomRect, fullRect, scalerPos;
+        var bw = getBorderWidth($birdZoom);
 
         // mousedown handler: start dragging bird zoom to a new position
         var birdZoomStartDrag = function(evt) {
@@ -1461,7 +1458,7 @@ if (typeof(console) === 'undefined') {
                 'background-position' : bgPos.x + "px " + bgPos.y + "px"
                 });
             // acount for border width
-            newRect.addPosition({x : -2, y : -2});
+            newRect.addPosition({x : -bw, y : -bw});
             newRect.adjustDiv($birdZoom);
             return false;
         };
@@ -1477,7 +1474,7 @@ if (typeof(console) === 'undefined') {
                 birdZoomMove(evt); 
                 }
             // ugly, but needed to prevent double border width compensation
-            newRect.addPosition({x : +2, y : +2});
+            newRect.addPosition({x : bw, y : bw});
             var newArea = data.birdTrafo.invtransform(newRect);
             data.zoomArea = newArea;
             redisplay(data);
@@ -1501,8 +1498,10 @@ if (typeof(console) === 'undefined') {
         // area = FULL_AREA.fit(part); // no, we want to see where we transcend the borders
         birdTrafo = getImgTrafo(data.$birdImg, FULL_AREA);
         var birdRect = birdTrafo.transform(part);
+        var $birdZoom = data.$birdZoom;
         // acount for border width
-        birdRect.addPosition({x : -2, y : -2});
+        var bw = getBorderWidth($birdZoom);
+        birdRect.addPosition({x : -bw, y : -bw});
         birdRect.adjustDiv(data.$birdZoom);
     };
 
@@ -1645,7 +1644,7 @@ if (typeof(console) === 'undefined') {
         // mo=fit is default
         return 'screen';
     };
-    
+
     // set image scale mode (screen, pixel, size)
     var setScaleMode = function (data, mode) {
         delete data.scalerFlags.fit;
@@ -1658,7 +1657,7 @@ if (typeof(console) === 'undefined') {
         }
         // mo=fit is default
     };
-    
+
      // sets a key to a value (relative values with +/- if relative=true)
     var setNumValue = function(settings, key, value) {
         if (value == null) return null;
@@ -1677,6 +1676,12 @@ if (typeof(console) === 'undefined') {
             settings[key] = value;
             }
         return settings[key];
+    };
+
+    // auxiliary function, assuming equal border width on all sides
+    var getBorderWidth = function($elem) {
+        var border = $elem.outerWidth() - $elem.width();
+        return border/2;
     };
 
     // auxiliary function (from old dllib.js)

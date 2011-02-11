@@ -5,17 +5,24 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
         <title>jQuery SVG Basics</title>
-        <style type="text/css">
+
+<style type="text/css">
+
 @import "jquery.svg.css";
 
 #svgbasics { position: absolute; border: 1px solid blue; }
+
 #img img {width: 400px; }
 
-        </style>
-        <script type="text/javascript" src="../dlGeometry.js"></script>
-        <script type="text/javascript" src="../jquery-1.4.4.js"></script>
-        <script type="text/javascript" src="jquery.svg.js"></script>
-        <script type="text/javascript">
+</style>
+
+<script type="text/javascript" src="../dlGeometry.js"></script>
+<script type="text/javascript" src="../jquery-1.4.4.js"></script>
+<script type="text/javascript" src="jquery.svg.js"></script>
+<script type="text/javascript">
+
+var $resDiv;
+
 $(function() {
     var geom = dlGeometry();
     var svg = $('#svgbasics');
@@ -24,17 +31,36 @@ $(function() {
     divrect.addPosition({x: -1, y: -1}).adjustDiv(svg);
     svg.svg({onLoad: drawInitial});
 	$('button').click(drawShape);
+	$resDiv = $('div#res');
+	console.log($resDiv);
 });
 
 function drawInitial(svg) {
+    // svg.configure({viewBox: '0 0 400 300' }, true);
+    svg.configure({transform: 'scale(0.5)' }, true);
 	svg.circle(75, 75, 50, {fill: 'none', stroke: 'red', 'stroke-width': 3});
 	var g = svg.group({stroke: 'black', 'stroke-width': 2});
 	svg.line(g, 15, 75, 135, 75);
 	svg.line(g, 75, 15, 75, 135);
-	svg.configure({viewPort: '0 0 100 100', overflow: 'visible' }, false);
+	var g = svg.group({stroke: 'yellow', 'stroke-width': 4});
+	svg.line(g, 0, 0, 400, 0);
+	svg.line(g, 0, 0, 0, 300);
+	svg.line(g, 400, 0, 400, 300);
+	svg.line(g, 400, 300, 0, 300);
+	// svg.configure({viewPort: '0 0 100 100', overflow: 'visible' }, false);
+
 }
 
 var colours = ['purple', 'red', 'orange', 'yellow', 'lime', 'green', 'blue', 'navy', 'black'];
+
+var x=0,y=0,w=400,h=300;
+
+function setViewBox(svg) {
+    var s = [x,y,w,h].join(' ');
+    svg.configure({viewBox: s }, true);
+    $resDiv.text(s);
+}
+
 
 function drawShape() {
 	var shape = this.id;
@@ -61,9 +87,37 @@ function drawShape() {
 	else if (shape == 'clear') {
 		svg.clear();
 	}
-	else if (shape == 'zoom') {
-		svg.configure({viewBox: '0 0 800 1000'}, true);
-		//svg.animate({svgViewBox: '0, 0, 100, 100'}, 2000);
+	else if (shape == 'x+') {
+	    x+=10; 
+		setViewBox(svg);
+	}
+	else if (shape == 'x-') {
+	    x-=10; 
+		setViewBox(svg);
+	}
+	else if (shape == 'y+') {
+	    y+=10; 
+		setViewBox(svg);
+	}
+	else if (shape == 'y-') {
+	    y-=10; 
+		setViewBox(svg);
+	}
+	else if (shape == 'w+') {
+	    w+=10; 
+		setViewBox(svg);
+	}
+	else if (shape == 'w-') {
+	    w-=10; 
+		setViewBox(svg);
+	}
+	else if (shape == 'h+') {
+	    h+=10; 
+		setViewBox(svg);
+	}
+	else if (shape == 'h-') {
+	    h-=10; 
+		setViewBox(svg);
 	}
 	
 }
@@ -84,8 +138,16 @@ function random(range) {
             <button id="line">Add line</button>
             <button id="circle">Add circle</button>
             <button id="ellipse">Add ellipse</button>
-            <button id="zoom">Zoom</button>
+            <button id="x+">x+</button>
+            <button id="x-">x-</button>
+            <button id="y+">y+</button>
+            <button id="y-">y-</button>
+            <button id="w+">w+</button>
+            <button id="w-">w-</button>
+            <button id="h+">h+</button>
+            <button id="h-">h-</button>
             <button id="clear">Clear</button>
         </p>
+        <div id="res"/>
     </body>
 </html>
