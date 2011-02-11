@@ -317,12 +317,20 @@ public class ImageJobDescription extends ParameterMap {
 					if ((origResX == 0) || (origResY == 0)) {
 						throw new ImageOpException("Missing image DPI information!");
 					}
-					if ((getAsFloat("ddpix") == 0) || (getAsFloat("ddpiy") == 0)) {
-						throw new ImageOpException("Missing display DPI information!");
+					float ddpix = getAsFloat("ddpix");
+                    float ddpiy = getAsFloat("ddpiy");
+					if (ddpix == 0 || ddpiy == 0) {
+					    float ddpi = getAsFloat("ddpi");
+					    if (ddpi == 0) {
+					        throw new ImageOpException("Missing display DPI information!");
+					    } else {
+					        ddpix = ddpi;
+					        ddpiy = ddpi;
+					    }
 					}
 					// calculate absolute scale factor
-					float sx = getAsFloat("ddpix") / origResX;
-					float sy = getAsFloat("ddpiy") / origResY;
+					float sx = ddpix / origResX;
+					float sy = ddpiy / origResY;
 					// currently only same scale -- mean value
 					scaleXY = (sx + sy) / 2f;
 				} else {
