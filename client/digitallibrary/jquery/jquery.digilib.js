@@ -208,7 +208,7 @@ if (typeof(console) === 'undefined') {
         'ddpix' : null,
         'ddpiy' : null,
         // list of digilib parameters
-        'digilibParamNames' : ['fn','pn','ww','wh','wx','wy','ws','mo','rot','cont','brgt','rgbm','rgba','mk','clop'],
+        'digilibParamNames' : ['fn','pn','ww','wh','wx','wy','ws','mo','rot','cont','brgt','rgbm','rgba','ddpi','mk','clop'],
         // digilib parameter defaults
         'mk' : '',
         'clop' : '',
@@ -600,8 +600,15 @@ if (typeof(console) === 'undefined') {
         },
 
         // calibrate (only faking)
-        calibrate : function (data) {
-            loadImageInfo(data);
+        calibrate : function (data, res) {
+            var oldRes = data.settings.ddpi;
+            if (res == null) {
+                res = window.prompt("Display resolution (dpi)", oldRes);
+            }
+            if (res != null) {
+                data.settings.ddpi = res;
+                redisplay(data);
+            }
         },
 
         // set image scale mode
@@ -1168,9 +1175,10 @@ if (typeof(console) === 'undefined') {
         };
 
     // create Transform from area and $img
-    var getImgTrafo = function ($img, area, rot, hmir, vmir, mode, imgInfo) {
+    var getImgTrafo = function ($img, area, rot, hmir, vmir, mode, data) {
         var picrect = geom.rectangle($img);
         if (mode != null) {
+            var imgInfo = data.imgInfo;
             if (mode === 'pixel') {
                 // scaler mo=clip - image area size does not come from ww, wh
                 if (imgInfo != null) {
@@ -1178,6 +1186,16 @@ if (typeof(console) === 'undefined') {
                     area.height = picrect.height / imgInfo.height;
                 } else {
                     console.error("No image info for pixel mode!");
+                }
+            }
+            if (mode === 'size') {
+                // scaler mo=osize - image area size does not come from ww, wh
+                if (imgInfo != null) {
+                    var ddpi = parseFloat(data.settings.ddpi);
+                    area.width = (picrect.width / ddpi) / (imgInfo.width / imgInfo.dpi_x);
+                    area.height = (picrect.height / ddpi) / (imgInfo.height / imgInfo.dpi_y);
+                } else {
+                    console.error("No image info for original size mode!");
                 }
             }
         }
@@ -1218,7 +1236,7 @@ if (typeof(console) === 'undefined') {
             // create Transform from current zoomArea and image size
             data.imgTrafo = getImgTrafo($img, data.zoomArea,
                     data.settings.rot, data.scalerFlags.hmir, data.scalerFlags.vmir,
-                    data.scaleMode, data.imgInfo);
+                    data.scaleMode, data);
             // console.debug("imgTrafo=", data.imgTrafo);
         }
     };
@@ -1279,7 +1297,7 @@ if (typeof(console) === 'undefined') {
 
     // show zoom area indicator on bird's eye view
     var renderBirdArea = function (data) {
-        if (data.$birdImg == null) return;
+        if (data.$birdImg == null || ! data.$birdImg.get(0).complete) return;
         var $birdZoom = data.$birdZoom;
         var zoomArea = data.zoomArea;
         var normalSize = isFullArea(zoomArea);
