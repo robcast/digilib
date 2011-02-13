@@ -37,7 +37,10 @@ if (typeof(console) === 'undefined') {
 
 (function($) {
     console.debug('installing jquery.digilibSVG');
+
     var pluginName = 'digilibSVG';
+    var geom = dlGeometry();
+
     var defaults = {
         // choice of colors offered by toolbar
         lineColors : ['white', 'red', 'yellow', 'green', 'blue', 'black'],
@@ -96,7 +99,7 @@ if (typeof(console) === 'undefined') {
 
     // setup a div for accessing the main SVG functionality
     var setupToolBar = function(settings) {
-        var $toolbar = $('<div id="svg-toolbar"/>');
+        var $toolBar = $('<div id="svg-toolbar"/>');
         // shapes select
         var $shape = $('<select id="svg-shapes"/>');
         for (var i = 0; i < settings.shapes.length; i++) {
@@ -122,6 +125,7 @@ if (typeof(console) === 'undefined') {
         for (var i = 0; i < units.length; i++) {
             var name = units[i].name;
             var $opt = $('<option value="' + i + '">' + name + '</option>');
+            $opt.data(pluginName, units[i]);
             $unit1.append($opt);
             $unit2.append($opt.clone());
             }
@@ -135,33 +139,64 @@ if (typeof(console) === 'undefined') {
         var $result1 = $('<input id="svg-unit1" class="svg-input" value="0.0"/>');
         var $result2 = $('<input id="svg-unit2" class="svg-input" value="0.0"/>');
         var $angle = $('<span id="svg-angle" class="svg-number">0.0</span>');
-        $('body').append($toolbar);
-        $toolbar.append($shape);
-        $toolbar.append($la1);
-        $toolbar.append($px);
-        $toolbar.append($la2);
-        $toolbar.append($factor);
-        $toolbar.append($la3);
-        $toolbar.append($result1);
-        $toolbar.append($unit1);
-        $toolbar.append($la4);
-        $toolbar.append($result2);
-        $toolbar.append($unit2);
-        $toolbar.append($angle);
+        $('body').append($toolBar);
+        $toolBar.append($shape);
+        $toolBar.append($la1);
+        $toolBar.append($px);
+        $toolBar.append($la2);
+        $toolBar.append($factor);
+        $toolBar.append($la3);
+        $toolBar.append($result1);
+        $toolBar.append($unit1);
+        $toolBar.append($la4);
+        $toolBar.append($result2);
+        $toolBar.append($unit2);
+        $toolBar.append($angle);
+        return $toolBar;
+        };
+
+    var drawInitial = function ($svg) {
+        console.debug('SVG is ready');
+        var $svgDiv = $(this);
+        var rect = geom.rectangle($svgDiv);
+        $svg.line(0, 0, rect.width, rect.height,
+            {stroke: 'white', strokeWidth: 2});
+        $svg.line(0, rect.height, rect.width, 0,
+            {stroke: 'red', strokeWidth: 2});
         };
 
     var actions = {
         "init" : function(options) {
             var $digilib = this;
+            var data = $digilib.data('digilib');
             var settings = $.extend({}, defaults, options);
-            // prepare the AJAX call back
+            // prepare the AJAX callback
+            // TODO: return unless interactiveMode === 'fullscreen'?
             var onLoadXML = function (xml) {
                 settings.xml = xml;
-                setupToolBar(settings);
+                settings.$toolBar = setupToolBar(settings);
                 $digilib.each(function() {
                     var $elem = $(this);
                     $elem.data(pluginName, settings);
                     });
+                };
+            var onLoadScalerImg = function () {
+                var $svgDiv = $('<div id="svg" />');
+                $('body').append($svgDiv);
+                // size SVG div like scaler img
+                var $scalerImg = $digilib.find('img.pic');
+                var scalerImgRect = geom.rectangle($scalerImg);
+                scalerImgRect.adjustDiv($svgDiv);
+                console.debug('$svgDiv', scalerImgRect);
+                var $svg = $svgDiv.svg({
+                        'onLoad' : drawInitial
+                    });
+                settings.$elem = $digilib;
+                settings.$svgDiv = $svgDiv;
+                settings.$svg = $svg;
+                // set SVG data 
+                $svg.data('digilib', data);
+                $svg.data(pluginName, settings);
                 };
             // fetch the XML measuring unit list
             $.ajax({
@@ -170,9 +205,9 @@ if (typeof(console) === 'undefined') {
                 dataType : "xml",
                 success : onLoadXML
                 });
+            data.$img.load(onLoadScalerImg);
             return this;
             }
-
         };
 
  // hook plugin into jquery

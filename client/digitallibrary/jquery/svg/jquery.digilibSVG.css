@@ -15,6 +15,7 @@ div#svg-toolbar {
     left: 8px;
     bottom: 8px;
     border: 1px solid black;
+    z-index: 1000;
     }
 
 span.svg-label {
@@ -31,6 +32,7 @@ span.svg-number {
     width: 50px;
     background-color: grey;
     color: white;
+    text-align: right;
     }
 
 select {
@@ -52,6 +54,7 @@ input.svg-input {
     background-color: grey;
     color: lightgreen;
     border: none;
+    text-align: right;
     }
 
 select:hover, select:active, select:focus,
