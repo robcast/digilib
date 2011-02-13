@@ -1,0 +1,79 @@
+/* 
+ * CSS style file for digilib SVG measuring tool
+ *
+ * Martin Raspe, Robert Casties, 11.1.2011
+ */
+body {
+    background: silver;
+    font-family: Tahoma, Helvetica, Arial;
+    }
+ 
+div#svg-toolbar {
+    border: 1px solid black;
+    color: black;
+    background-color: grey;
+    position: fixed;
+    left: 10px;
+    bottom: 10px;
+    }
+
+select {
+    border: none;
+    background-color: grey;
+    color: lightgreen;
+    font-size: 12px;
+    }
+
+span {
+    font-size: 12px;
+    }
+
+span#svg-pixel, span#svg-pixelfactor {
+    width: 50px;
+    background-color: silver;
+    color: white;
+    }
+
+
+div.digilib {
+    margin: 0px;
+}
+
+div.svg {
+    position: absolute;
+    background: transparent;
+}
+
+td {
+    vertical-align: top;
+    }
+
+div#test:hover {
+    background-color: cornsilk;
+    }
+
+#debug {
+    background-color: beige;
+    position: absolute;
+    opacity: 50%;
+    top: 4px;
+    left: 300px;
+    width: 500px;
+    padding: 0px 5px;
+    font-family: Arial;
+    font-size: 9px;
+    display: none;
+    }
+
+div._log {
+    color: grey;
+    }
+
+div._debug {
+    color: darkgreen;
+    }
+
+div._error {
+    color: red;
+    }
+

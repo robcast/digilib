@@ -1,0 +1,1050 @@
+{
+"comment" : [
+  "Angaben nach:",
+  "Klimpert, Richard: Lexikon der Münzen, Maße, Gewichte, Zählarten und Zeitgrößen aller Länder der Erde 2) Berlin 1896 (Reprint Graz 1972)",
+  "Doursther, Horace: Dictionnaire universel des poids et mesures anciens et modernes. Paris 1840 (Reprint Amsterdam 1965)"
+  ],
+"section" : [
+  {
+    "name"  : "Längenmaße: metrisch",
+    "group" : "1",
+    "unit" : [
+      {
+      "name" : "m",
+      "factor" : "1"
+      },
+      {
+      "name" : "mm",
+      "factor" : "0.001"
+      },
+      {
+      "name" : "cm",
+      "factor" : "0.01"
+      },
+      {
+      "name" : "dm",
+      "factor" : "0.1"
+      },
+      {
+      "name" : "km",
+      "factor" : "1000"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Längenmaße: nautisch",
+    "group" : "1",
+    "unit" : [
+      {
+      "name" : "geographische Meile",
+      "factor" : "7420"
+      },
+      {
+      "name" : "Seemeile",
+      "factor" : "1854.965"
+      },
+      {
+      "name" : "fathom",
+      "factor" : "1.828782"
+      },
+      {
+      "name" : "cable",
+      "factor" : "182.8782"
+      },
+      {
+      "name" : "league",
+      "factor" : "5564.895"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Längenmaße: England",
+    "group" : "1",
+    "unit" : [
+      {
+      "name" : "foot",
+      "factor" : "0.304797",
+      "subunits" : "12"
+      },
+      {
+      "name" : "inch",
+      "factor" : "0.02539975"
+      },
+      {
+      "name" : "yard",
+      "factor" : "0.914391",
+      "subunits" : "3"
+      },
+      {
+      "name" : "pole",
+      "factor" : "5.0291505",
+      "subunits" : "11"
+      },
+      {
+      "name" : "chain",
+      "factor" : "20.116602",
+      "subunits" : "4"
+      },
+      {
+      "name" : "furlong",
+      "factor" : "201.16602"
+      },
+      {
+      "name" : "mile",
+      "factor" : "1609.32816",
+      "subunits" : "8"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Längenmaße: Italien",
+    "group" : "1",
+    "unit" : [
+      {
+      "name" : "palmo d'architetto (Rom)",
+      "factor" : "0.223425",
+      "subunits" : "12"
+      },
+      {
+      "name" : "braccio (Florenz)",
+      "factor" : "0.5836"
+      },
+      {
+      "name" : "braccio (Mailand)",
+      "factor" : "0.5949"
+      },
+      {
+      "name" : "canna d'architetto (Rom)",
+      "factor" : "2.23425"
+      },
+      {
+      "name" : "canna di commercio (Rom)",
+      "factor" : "1.9920"
+      },
+      {
+      "name" : "canna d'architetto (Florenz)",
+      "factor" : "2.9180"
+      },
+      {
+      "name" : "canna di commercio (Florenz)",
+      "factor" : "2.3344"
+      },
+      {
+      "name" : "canna (Neapel)",
+      "factor" : "2.0961"
+      },
+      {
+      "name" : "miglio (Lombardei)",
+      "factor" : "1784.808"
+      },
+      {
+      "name" : "miglio (Neapel)",
+      "factor" : "1855.110"
+      },
+      {
+      "name" : "miglio (Rom)",
+      "factor" : "1489.50"
+      },
+      {
+      "name" : "minuta (Rom)",
+      "factor" : "0.00372375"
+      },
+      {
+      "name" : "oncia (Rom)",
+      "factor" : "0.01861875"
+      },
+      {
+      "name" : "oncia (Mailand)",
+      "factor" : "0.49575"
+      },
+      {
+      "name" : "palmo di commercio (Rom)",
+      "factor" : "0.249"
+      },
+      {
+      "name" : "palmo (Florenz)",
+      "factor" : "0.2918"
+      },
+      {
+      "name" : "piede (Brescia)",
+      "factor" : "0.471"
+      },
+      {
+      "name" : "piede (Carrara)",
+      "factor" : "0.2933"
+      },
+      {
+      "name" : "piede (Como)",
+      "factor" : "0.4512"
+      },
+      {
+      "name" : "piede (Modena)",
+      "factor" : "0.523048"
+      },
+      {
+      "name" : "piede (Reggio Em.)",
+      "factor" : "0.530898"
+      },
+      {
+      "name" : "piede (Venedig)",
+      "factor" : "0.347735"
+      },
+      {
+      "name" : "piede (Vicenza)",
+      "factor" : "0.3574"
+      },
+      {
+      "name" : "piede (Verona)",
+      "factor" : "0.3429"
+      },
+      {
+      "name" : "piede (Rom)",
+      "factor" : "0.297587"
+      },
+      {
+      "name" : "piede Lombardo",
+      "factor" : "0.435185"
+      },
+      {
+      "name" : "piede liprando (Turin)",
+      "factor" : "0.51377"
+      },
+      {
+      "name" : "piede manuale (Turin)",
+      "factor" : "0.342511"
+      },
+      {
+      "name" : "piede (Neapel, 'palmo')",
+      "factor" : "0.26455"
+      },
+      {
+      "name" : "soldo (Florenz)",
+      "factor" : "0.2918"
+      },
+      {
+      "name" : "trabucco piemontese (Turin)",
+      "factor" : "3.08259"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Längenmaße: Niederlande",
+    "group" : "1",
+    "unit" : [
+      {
+      "name" : "voet (Amsterdam)",
+      "factor" : "0.283113"
+      },
+      {
+      "name" : "voet (Antwerpen)",
+      "factor" : "0.2868"
+      },
+      {
+      "name" : "voet (Aelst)",
+      "factor" : "0.2772"
+      },
+      {
+      "name" : "voet (Breda)",
+      "factor" : "0.28413"
+      },
+      {
+      "name" : "voet (Brügge)",
+      "factor" : "0.27439"
+      },
+      {
+      "name" : "voet (Brüssel)",
+      "factor" : "0.2757503"
+      },
+      {
+      "name" : "voet (Groningen)",
+      "factor" : "0.2922"
+      },
+      {
+      "name" : "voet (Haarlem)",
+      "factor" : "0.2858"
+      },
+      {
+      "name" : "voet (Kortrijk)",
+      "factor" : "0.2977"
+      },
+      {
+      "name" : "voet (Tournai)",
+      "factor" : "0.2977"
+      },
+      {
+      "name" : "voet (Utrecht)",
+      "factor" : "0.2683"
+      },
+      {
+      "name" : "voet (Ypern)",
+      "factor" : "0.2739"
+      },
+      {
+      "name" : "pied (Hainaut)",
+      "factor" : "0.2934"
+      },
+      {
+      "name" : "pied St. Hubert (Lüttich)",
+      "factor" : "0.294698"
+      },
+      {
+      "name" : "pied St. Lambert (Lüttich)",
+      "factor" : "0.291796"
+      },
+      {
+      "name" : "pied Ste. Gertrude (Nivelles)",
+      "factor" : "0.27709"
+      },
+      {
+      "name" : "steenvoet (Oudenaerde)",
+      "factor" : "0.2977"
+      },
+      {
+      "name" : "houtvoet (Oudenaerde)",
+      "factor" : "0.292"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Längenmaße: Frankreich",
+    "group" : "1",
+    "unit" : [
+      {
+      "name" : "pied du Roi (Paris)",
+      "factor" : "0.32483938497"
+      },
+      {
+      "name" : "pied (Arras)",
+      "factor" : "0.29777"
+      },
+      {
+      "name" : "pied (Cambrai)",
+      "factor" : "0.29777"
+      },
+      {
+      "name" : "Burgundischer Fuß",
+      "factor" : "0.33212"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Längenmaße: Südeuropa",
+    "group" : "1",
+    "unit" : [
+      {
+      "name" : "pié de Burgos (Spanien)",
+      "factor" : "0.278635"
+      },
+      {
+      "name" : "pé (Portugal)",
+      "factor" : "0.33"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Längenmaße: deutschspr. Länder",
+    "group" : "1",
+    "unit" : [
+      {
+      "name" : "Fuß (Basel)",
+      "factor" : "0.29820"
+      },
+      {
+      "name" : "Fuß (Bayern)",
+      "factor" : "0.2918592"
+      },
+      {
+      "name" : "Fuß (Braunschweig)",
+      "factor" : "0.2853624"
+      },
+      {
+      "name" : "Fuß (Gotha)",
+      "factor" : "0.287622"
+      },
+      {
+      "name" : "Fuß (Hamburg)",
+      "factor" : "0.286575"
+      },
+      {
+      "name" : "Fuß (Hessen)",
+      "factor" : "0.287669"
+      },
+      {
+      "name" : "Fuß (Köln)",
+      "factor" : "0.2876"
+      },
+      {
+      "name" : "Fuß (Mecklenburg)",
+      "factor" : "0.291006"
+      },
+      {
+      "name" : "Fuß (Münster)",
+      "factor" : "0.2908"
+      },
+      {
+      "name" : "Fuß (Pommern)",
+      "factor" : "0.2921"
+      },
+      {
+      "name" : "Fuß (rheinisch)",
+      "factor" : "0.3138535"
+      },
+      {
+      "name" : "Fuß (Sachsen)",
+      "factor" : "0.2831901"
+      },
+      {
+      "name" : "Fuß (Preußen)",
+      "factor" : "0.3138535"
+      },
+      {
+      "name" : "Fuß (Wien)",
+      "factor" : "0.3180807"
+      },
+      {
+      "name" : "Fuß (Württemberg)",
+      "factor" : "0.2864903"
+      },
+      {
+      "name" : "Werkschuh (Frankfurt)",
+      "factor" : "0.2846143"
+      },
+      {
+      "name" : "Meile (Preußen)",
+      "factor" : "7532.485"
+      },
+      {
+      "name" : "Postmeile (Österreich)",
+      "factor" : "7585.937"
+      },
+      {
+      "name" : "Dezimalfuß (Preußen)",
+      "factor" : "0.3766242"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Längenmaße: Osteuropa",
+    "group" : "1",
+    "unit" : [
+      {
+      "name" : "Fuß (Böhmen)",
+      "factor" : "0.2964"
+      },
+      {
+      "name" : "Fuß (Mähren)",
+      "factor" : "0.29596"
+      },
+      {
+      "name" : "stopa (Krakauer Fuß)",
+      "factor" : "0.3564"
+      },
+      {
+      "name" : "stopa (Warschauer Fuß)",
+      "factor" : "0.288"
+      },
+      {
+      "name" : "Fuß (Rußland)",
+      "factor" : "0.3556"
+      },
+      {
+      "name" : "arschin",
+      "factor" : "0.7112"
+      },
+      {
+      "name" : "saschen (Faden)",
+      "factor" : "2.133"
+      },
+      {
+      "name" : "werst",
+      "factor" : "1066.8"
+      },
+      {
+      "name" : "milja",
+      "factor" : "7468"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Längenmaße: Antike",
+    "group" : "1",
+    "unit" : [
+      {
+      "name" : "pes romanus",
+      "factor" : "0.2945"
+      },
+      {
+      "name" : "pollex (Zoll)",
+      "factor" : "0.0245416667"
+      },
+      {
+      "name" : "digitus (Fingerbreite)",
+      "factor" : "0.01840625"
+      },
+      {
+      "name" : "palmus (Handbreite)",
+      "factor" : "0.073625"
+      },
+      {
+      "name" : "cubitus (Elle)",
+      "factor" : "0.44175"
+      },
+      {
+      "name" : "passus (Doppelschritt)",
+      "factor" : "1.4725"
+      },
+      {
+      "name" : "pertica",
+      "factor" : "2.945"
+      },
+      {
+      "name" : "actus",
+      "factor" : "35.34"
+      },
+      {
+      "name" : "mille passus (Meile)",
+      "factor" : "1472.5"
+      },
+      {
+      "name" : "stadium (600 Fuß)",
+      "factor" : "176.7"
+      },
+      {
+      "name" : "stadium (1/8 Meile)",
+      "factor" : "184.0625"
+      },
+      {
+      "name" : "stadion (Olympia)",
+      "factor" : "192.25"
+      },
+      {
+      "name" : "Fuß (attisch)",
+      "factor" : "0.308"
+      },
+      {
+      "name" : "Fuß (Babylon)",
+      "factor" : "0.35"
+      },
+      {
+      "name" : "Fuß (Delphi)",
+      "factor" : "0.1848"
+      },
+      {
+      "name" : "Fuß (Olympia)",
+      "factor" : "0.32041667"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Zeitrechnung",
+    "group" : "3",
+    "unit" : [
+      {
+      "name" : "Anno Domini",
+      "factor" : "1",
+      "add" : "-1",
+      "subunits" : "x"
+      },
+      {
+      "name" : "ab urbe condita",
+      "factor" : "1",
+      "add" : "-753"
+      },
+      {
+      "name" : "jüdische Ära",
+      "factor" : "1",
+      "add" : "-3761"
+      },
+      {
+      "name" : "Olympiade",
+      "factor" : "4",
+      "add" : "-776"
+      },
+      {
+      "name" : "Indiktion",
+      "factor" : "15",
+      "add" : "3"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Münzen: Kirchenstaat",
+    "group" : "3",
+    "unit" : [
+      {
+      "name" : "Scudo",
+      "factor" : "1"
+      },
+      {
+      "name" : "Baiocco",
+      "factor" : "0.01"
+      },
+      {
+      "name" : "Paolo",
+      "factor" : "0.1"
+      },
+      {
+      "name" : "Quattrino",
+      "factor" : "0.2"
+      },
+      {
+      "name" : "Giulio",
+      "factor" : "0.1"
+      },
+      {
+      "name" : "Luitpold d'Or",
+      "factor" : "1.234"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Temperatur",
+    "group" : "5",
+    "unit" : [
+      {
+      "name" : "° Celsius",
+      "factor" : "1"
+      },
+      {
+      "name" : "° Fahrenheit",
+      "factor" : "0.5555555555556",
+      "add" : "-17.77777777778"
+      },
+      {
+      "name" : "° Reaumur",
+      "factor" : "1.25"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Gewichte: dezimal",
+    "group" : "6",
+    "unit" : [
+      {
+      "name" : "Gramm",
+      "factor" : "1"
+      },
+      {
+      "name" : "Milligramm",
+      "factor" : "0.001"
+      },
+      {
+      "name" : "Centigramm",
+      "factor" : "0.01"
+      },
+      {
+      "name" : "Pfund",
+      "factor" : "500"
+      },
+      {
+      "name" : "Kilogramm",
+      "factor" : "1000"
+      },
+      {
+      "name" : "Zentner",
+      "factor" : "50000"
+      },
+      {
+      "name" : "Doppelzentner",
+      "factor" : "100000"
+      },
+      {
+      "name" : "Tonne",
+      "factor" : "1000000"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Gewichte: England",
+    "group" : "6",
+    "unit" : [
+      {
+      "name" : "ounce",
+      "factor" : "31.104",
+      "subunits" : "8"
+      },
+      {
+      "name" : "grain",
+      "factor" : "0.065"
+      },
+      {
+      "name" : "scruple",
+      "factor" : "1.296",
+      "subunits" : "20"
+      },
+      {
+      "name" : "pennyweight",
+      "factor" : "1.555",
+      "subunits" : "24"
+      },
+      {
+      "name" : "dram",
+      "factor" : "3.888",
+      "subunits" : "3"
+      },
+      {
+      "name" : "pound",
+      "factor" : "373.24",
+      "subunits" : "12"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Gewichte: engl. Handel",
+    "group" : "6",
+    "unit" : [
+      {
+      "name" : "ounce",
+      "factor" : "28.349609375",
+      "subunits" : "16"
+      },
+      {
+      "name" : "dram",
+      "factor" : "1.771850585938"
+      },
+      {
+      "name" : "pound",
+      "factor" : "453.59375",
+      "subunits" : "16"
+      },
+      {
+      "name" : "stone",
+      "factor" : "6350.3125",
+      "subunits" : "14"
+      },
+      {
+      "name" : "quarter",
+      "factor" : "12700.625",
+      "subunits" : "28"
+      },
+      {
+      "name" : "hundredweight",
+      "factor" : "50802.5",
+      "subunits" : "4"
+      },
+      {
+      "name" : "long ton",
+      "factor" : "101604.16",
+      "subunits" : "20"
+      },
+      {
+      "name" : "cental",
+      "factor" : "45359.375"
+      },
+      {
+      "name" : "short ton",
+      "factor" : "907187.5",
+      "subunits" : "20"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Fläche",
+    "group" : "4",
+    "unit" : [
+      {
+      "name" : "qm",
+      "factor" : "1"
+      },
+      {
+      "name" : "qmm",
+      "factor" : "0.000001"
+      },
+      {
+      "name" : "qcm",
+      "factor" : "0.0001"
+      },
+      {
+      "name" : "qdm",
+      "factor" : "0.01"
+      },
+      {
+      "name" : "Ar",
+      "factor" : "100"
+      },
+      {
+      "name" : "Morgen",
+      "factor" : "2500"
+      },
+      {
+      "name" : "Hektar",
+      "factor" : "10000"
+      },
+      {
+      "name" : "qkm",
+      "factor" : "1000000"
+      },
+      {
+      "name" : "square inch",
+      "factor" : "0.0006452"
+      },
+      {
+      "name" : "square foot",
+      "factor" : "0.09288"
+      },
+      {
+      "name" : "square yard",
+      "factor" : "0.836",
+      "subunits" : "9"
+      },
+      {
+      "name" : "pole (rod, perch)",
+      "factor" : "25.289"
+      },
+      {
+      "name" : "rood",
+      "factor" : "1012",
+      "subunits" : "40"
+      },
+      {
+      "name" : "acre",
+      "factor" : "4048",
+      "subunits" : "4"
+      },
+      {
+      "name" : "square mile",
+      "factor" : "2590000"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Hohlmaße",
+    "group" : "2",
+    "unit" : [
+      {
+      "name" : "cbm",
+      "factor" : "1"
+      },
+      {
+      "name" : "cmm",
+      "factor" : "0.000000001"
+      },
+      {
+      "name" : "ccm",
+      "factor" : "0.000001"
+      },
+      {
+      "name" : "cdm (Liter)",
+      "factor" : "0.001"
+      },
+      {
+      "name" : "Hektoliter",
+      "factor" : "0.1"
+      },
+      {
+      "name" : "cubic inch",
+      "factor" : "0.000016387"
+      },
+      {
+      "name" : "cubic foot",
+      "factor" : "0.028317"
+      },
+      {
+      "name" : "cubic yard",
+      "factor" : "0.7646"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Flüssigkeit: England",
+    "group" : "2",
+    "unit" : [
+      {
+      "name" : "Liter",
+      "factor" : "1"
+      },
+      {
+      "name" : "gill",
+      "factor" : "0.142"
+      },
+      {
+      "name" : "pint",
+      "factor" : "0.568",
+      "subunits" : "4"
+      },
+      {
+      "name" : "quart",
+      "factor" : "1.136",
+      "subunits" : "8"
+      },
+      {
+      "name" : "gallon",
+      "factor" : "4.546",
+      "subunits" : "8"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Flüssigkeit: USA",
+    "group" : "2",
+    "unit" : [
+      {
+      "name" : "gill",
+      "factor" : "0.118"
+      },
+      {
+      "name" : "pint",
+      "factor" : "0.473",
+      "subunits" : "4"
+      },
+      {
+      "name" : "quart",
+      "factor" : "0.946",
+      "subunits" : "8"
+      },
+      {
+      "name" : "gallon",
+      "factor" : "3.787",
+      "subunits" : "8"
+      },
+      {
+      "name" : "barrel",
+      "factor" : "119.2"
+      },
+      {
+      "name" : "barrel of oil",
+      "factor" : "158.8",
+      "subunits" : "42"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Leistung",
+    "group" : "3",
+    "unit" : [
+      {
+      "name" : "Watt",
+      "factor" : "1"
+      },
+      {
+      "name" : "Milliwatt",
+      "factor" : "0.001"
+      },
+      {
+      "name" : "Kilowatt",
+      "factor" : "1000"
+      },
+      {
+      "name" : "Megawatt",
+      "factor" : "1000000"
+      },
+      {
+      "name" : "PS",
+      "factor" : "735.5"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Speicherplatz",
+    "group" : "3",
+    "unit" : [
+      {
+      "name" : "byte",
+      "factor" : "1"
+      },
+      {
+      "name" : "bit",
+      "factor" : "0.125"
+      },
+      {
+      "name" : "$100 byte",
+      "factor" : "256"
+      },
+      {
+      "name" : "kilobyte",
+      "factor" : "1000"
+      },
+      {
+      "name" : "KiloByte (Kb)",
+      "factor" : "1024"
+      },
+      {
+      "name" : "megabyte",
+      "factor" : "1000000"
+      },
+      {
+      "name" : "Megabyte (Mb)",
+      "factor" : "1048576"
+      },
+      {
+      "name" : "gigabyte",
+      "factor" : "1000000000"
+      },
+      {
+      "name" : "Gigabyte (Gb)",
+      "factor" : "1073741824"
+      }
+    ]
+  },
+
+  {
+    "name"  : "Sonstige",
+    "group" : "0",
+    "unit" : [
+      {
+      "name" : "Maßstab 1:200",
+      "factor" : "200"
+      },
+      {
+      "name" : "Maßstab",
+      "factor" : "1:100",
+      "add" : "100"
+      },
+      {
+      "name" : "Maßstab 1:75",
+      "factor" : "75"
+      },
+      {
+      "name" : "Maßstab 1:60",
+      "factor" : "60"
+      },
+      {
+      "name" : "Maßstab",
+      "factor" : "1:50",
+      "add" : "50"
+      },
+      {
+      "name" : "Maßstab 1:25",
+      "factor" : "25"
+      },
+      {
+      "name" : "Maßstab 1:20",
+      "factor" : "20"
+      },
+      {
+      "name" : "Maßstab 1:10",
+      "factor" : "10"
+      },
+      {
+      "name" : "Maßstab 1:5",
+      "factor" : "5"
+      },
+      {
+      "name" : "Maßstab 1:3",
+      "factor" : "3"
+      }
+    ]
+  }
+  ]
+}

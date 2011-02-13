@@ -247,8 +247,9 @@ if (typeof(console) === 'undefined') {
         // is the "about" window shown?
         'isAboutDivVisible' : false,
         // maximum width of background image for drag-scroll
-        'maxBgSize' : 10000
-
+        'maxBgSize' : 10000,
+        // space to be left free in full page display
+        'scalerInset' : 0,
         };
 
     // affine geometry classes
@@ -905,11 +906,12 @@ if (typeof(console) === 'undefined') {
     };
 
     // returns maximum size for scaler img in fullscreen mode
-    var getFullscreenImgSize = function ($elem) {
+    var getFullscreenImgSize = function (data) {
         var $win = $(window);
         var winH = $win.height();
-        var winW = $win.width();
+        var winW = $win.width() - data.settings.scalerInset;
         // TODO: account for borders?
+        console.debug(winW, winH);
         return geom.size(winW, winH);
     };
 
@@ -923,7 +925,7 @@ if (typeof(console) === 'undefined') {
         if (settings.interactionMode === 'fullscreen') {
             // fullscreen
             $elem.addClass('dl_fullscreen');
-            var imgSize = getFullscreenImgSize($elem);
+            var imgSize = getFullscreenImgSize(data);
             // fitwidth/height omits destination height/width
             if (data.dlOpts.fitheight == null) {
                 settings.dw = imgSize.width;
@@ -1737,10 +1739,11 @@ if (typeof(console) === 'undefined') {
         }
 
     // hook plugin into jquery
-    $.fn.digilib = function(action, obj) {
+    $.fn.digilib = function(action) {
         // plugin extension mechanism
         if (action === 'extendPlugin') {
             // for each digilib $elem extend data.settings with obj.options
+            // TODO: couldn't other plugins just access $elem.data('digilib')?
             if (obj.options) {
                 this.each(function() {
                     var $elem = $(this);
@@ -1753,8 +1756,8 @@ if (typeof(console) === 'undefined') {
                     $.extend(settings, obj.options);
                     // console.log('settings:', settings);
                     });
+                delete(obj.options);
                 }
-            delete(obj.options);
             // extend the plugin actions (to make this useful, 
             // maybe we need to expose some more internal functions)
             $.extend(actions, obj);

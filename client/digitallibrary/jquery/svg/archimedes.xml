@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<units>
+<comment>
+  <p>Angaben nach:</p>
+  <p>Klimpert, Richard: Lexikon der Münzen, Maße, Gewichte, Zählarten und Zeitgrößen aller Länder der Erde 2) Berlin 1896 (Reprint Graz 1972)</p>
+  <p>Doursther, Horace: Dictionnaire universel des poids et mesures anciens et modernes. Paris 1840 (Reprint Amsterdam 1965)</p>
+</comment>
+<section icon="ruler" name="Längenmaße: metrisch">
+  <unit name="m" factor="1"/>
+  <unit name="mm" factor="0.001"/>
+  <unit name="cm" factor="0.01"/>
+  <unit name="dm" factor="0.1"/>
+  <unit name="km" factor="1000"/>
+</section>
+<section icon="ruler" name="Längenmaße: nautisch">
+  <unit name="geographische Meile" factor="7420"/>
+  <unit name="Seemeile" factor="1854.965"/>
+  <unit name="fathom" factor="1.828782"/>
+  <unit name="cable" factor="182.8782"/>
+  <unit name="league" factor="5564.895"/>
+</section>
+<section icon="ruler" name="Längenmaße: England">
+  <unit name="foot" factor="0.304797" subunits="12"/>
+  <unit name="inch" factor="0.02539975"/>
+  <unit name="yard" factor="0.914391" subunits="3"/>
+  <unit name="pole" factor="5.0291505" subunits="11"/>
+  <unit name="chain" factor="20.116602" subunits="4"/>
+  <unit name="furlong" factor="201.16602"/>
+  <unit name="mile" factor="1609.32816" subunits="8"/>
+</section>
+<section icon="ruler" name="Längenmaße: Italien">
+  <unit name="palmo d'architetto (Rom)" factor="0.223425" subunits="12"/>
+  <unit name="braccio (Florenz)" factor="0.5836"/>
+  <unit name="braccio (Mailand)" factor="0.5949"/>
+  <unit name="canna d'architetto (Rom)" factor="2.23425"/>
+  <unit name="canna di commercio (Rom)" factor="1.9920"/>
+  <unit name="canna d'architetto (Florenz)" factor="2.9180"/>
+  <unit name="canna di commercio (Florenz)" factor="2.3344"/>
+  <unit name="canna (Neapel)" factor="2.0961"/>
+  <unit name="miglio (Lombardei)" factor="1784.808"/>
+  <unit name="miglio (Neapel)" factor="1855.110"/>
+  <unit name="miglio (Rom)" factor="1489.50"/>
+  <unit name="minuta (Rom)" factor="0.00372375"/>
+  <unit name="oncia (Rom)" factor="0.01861875"/>
+  <unit name="oncia (Mailand)" factor="0.49575"/>
+  <unit name="palmo di commercio (Rom)" factor="0.249"/>
+  <unit name="palmo (Florenz)" factor="0.2918"/>
+  <unit name="piede (Brescia)" factor="0.471"/>
+  <unit name="piede (Carrara)" factor="0.2933"/>
+  <unit name="piede (Como)" factor="0.4512"/>
+  <unit name="piede (Modena)" factor="0.523048"/>
+  <unit name="piede (Reggio Em.)" factor="0.530898"/>
+  <unit name="piede (Venedig)" factor="0.347735"/>
+  <unit name="piede (Vicenza)" factor="0.3574"/>
+  <unit name="piede (Verona)" factor="0.3429"/>
+  <unit name="piede (Rom)" factor="0.297587"/>
+  <unit name="piede Lombardo" factor="0.435185"/>
+  <unit name="piede liprando (Turin)" factor="0.51377"/>
+  <unit name="piede manuale (Turin)" factor="0.342511"/>
+  <unit name="piede (Neapel, 'palmo')" factor="0.26455"/>
+  <unit name="soldo (Florenz)" factor="0.2918"/>
+  <unit name="trabucco piemontese (Turin)" factor="3.08259"/>
+</section>
+<section icon="ruler" name="Längenmaße: Niederlande">
+  <unit name="voet (Amsterdam)" factor="0.283113"/>
+  <unit name="voet (Antwerpen)" factor="0.2868"/>
+  <unit name="voet (Aelst)" factor="0.2772"/>
+  <unit name="voet (Breda)" factor="0.28413"/>
+  <unit name="voet (Brügge)" factor="0.27439"/>
+  <unit name="voet (Brüssel)" factor="0.2757503"/>
+  <unit name="voet (Groningen)" factor="0.2922"/>
+  <unit name="voet (Haarlem)" factor="0.2858"/>
+  <unit name="voet (Kortrijk)" factor="0.2977"/>
+  <unit name="voet (Tournai)" factor="0.2977"/>
+  <unit name="voet (Utrecht)" factor="0.2683"/>
+  <unit name="voet (Ypern)" factor="0.2739"/>
+  <unit name="pied (Hainaut)" factor="0.2934"/>
+  <unit name="pied St. Hubert (Lüttich)" factor="0.294698"/>
+  <unit name="pied St. Lambert (Lüttich)" factor="0.291796"/>
+  <unit name="pied Ste. Gertrude (Nivelles)" factor="0.27709"/>
+  <unit name="steenvoet (Oudenaerde)" factor="0.2977"/>
+  <unit name="houtvoet (Oudenaerde)" factor="0.292"/>
+</section>
+<section icon="ruler" name="Längenmaße: Frankreich">
+  <unit name="pied du Roi (Paris)" factor="0.32483938497"/>
+  <unit name="pied (Arras)" factor="0.29777"/>
+  <unit name="pied (Cambrai)" factor="0.29777"/>
+  <unit name="Burgundischer Fuß" factor="0.33212"/>
+</section>
+<section icon="ruler" name="Längenmaße: Südeuropa">
+  <unit name="pié de Burgos (Spanien)" factor="0.278635"/>
+  <unit name="pé (Portugal)" factor="0.33"/>
+</section>
+<section icon="ruler" name="Längenmaße: deutschspr. Länder">
+  <unit name="Fuß (Basel)" factor="0.29820"/>
+  <unit name="Fuß (Bayern)" factor="0.2918592"/>
+  <unit name="Fuß (Braunschweig)" factor="0.2853624"/>
+  <unit name="Fuß (Gotha)" factor="0.287622"/>
+  <unit name="Fuß (Hamburg)" factor="0.286575"/>
+  <unit name="Fuß (Hessen)" factor="0.287669"/>
+  <unit name="Fuß (Köln)" factor="0.2876"/>
+  <unit name="Fuß (Mecklenburg)" factor="0.291006"/>
+  <unit name="Fuß (Münster)" factor="0.2908"/>
+  <unit name="Fuß (Pommern)" factor="0.2921"/>
+  <unit name="Fuß (rheinisch)" factor="0.3138535"/>
+  <unit name="Fuß (Sachsen)" factor="0.2831901"/>
+  <unit name="Fuß (Preußen)" factor="0.3138535"/>
+  <unit name="Fuß (Wien)" factor="0.3180807"/>
+  <unit name="Fuß (Württemberg)" factor="0.2864903"/>
+  <unit name="Werkschuh (Frankfurt)" factor="0.2846143"/>
+  <unit name="Meile (Preußen)" factor="7532.485"/>
+  <unit name="Postmeile (Österreich)" factor="7585.937"/>
+  <unit name="Dezimalfuß (Preußen)" factor="0.3766242"/>
+</section>
+<section icon="ruler" name="Längenmaße: Osteuropa">
+  <unit name="Fuß (Böhmen)" factor="0.2964"/>
+  <unit name="Fuß (Mähren)" factor="0.29596"/>
+  <unit name="stopa (Krakauer Fuß)" factor="0.3564"/>
+  <unit name="stopa (Warschauer Fuß)" factor="0.288"/>
+  <unit name="Fuß (Rußland)" factor="0.3556"/>
+  <unit name="arschin" factor="0.7112"/>
+  <unit name="saschen (Faden)" factor="2.133"/>
+  <unit name="werst" factor="1066.8"/>
+  <unit name="milja" factor="7468"/>
+</section>
+<section icon="ruler" name="Längenmaße: Antike">
+  <unit name="pes romanus" factor="0.2945"/>
+  <unit name="pollex (Zoll)" factor="0.0245416667"/>
+  <unit name="digitus (Fingerbreite)" factor="0.01840625"/>
+  <unit name="palmus (Handbreite)" factor="0.073625"/>
+  <unit name="cubitus (Elle)" factor="0.44175"/>
+  <unit name="passus (Doppelschritt)" factor="1.4725"/>
+  <unit name="pertica" factor="2.945"/>
+  <unit name="actus" factor="35.34"/>
+  <unit name="mille passus (Meile)" factor="1472.5"/>
+  <unit name="stadium (600 Fuß)" factor="176.7"/>
+  <unit name="stadium (1/8 Meile)" factor="184.0625"/>
+  <unit name="stadion (Olympia)" factor="192.25"/>
+  <unit name="Fuß (attisch)" factor="0.308"/>
+  <unit name="Fuß (Babylon)" factor="0.35"/>
+  <unit name="Fuß (Delphi)" factor="0.1848"/>
+  <unit name="Fuß (Olympia)" factor="0.32041667"/>
+</section>
+<section icon="clock" name="Zeitrechnung">
+  <unit name="Anno Domini" factor="1" add="-1" subunits="x"/>
+  <unit name="ab urbe condita" factor="1" add="-753"/>
+  <unit name="jüdische Ära" factor="1" add="-3761"/>
+  <unit name="Olympiade" factor="4" add="-776"/>
+  <unit name="Indiktion" factor="15" add="3"/>
+</section>
+<section icon="coin" name="Münzen: Kirchenstaat">
+  <unit name="Scudo" factor="1"/>
+  <unit name="Baiocco" factor="0.01"/>
+  <unit name="Paolo" factor="0.1"/>
+  <unit name="Quattrino" factor="0.2"/>
+  <unit name="Giulio" factor="0.1"/>
+  <unit name="Luitpold d'Or" factor="1.234"/>
+</section>
+<section icon="scale" name="Temperatur">
+  <unit name="° Celsius" factor="1"/>
+  <unit name="° Fahrenheit" factor="0.5555555555556" add="-17.77777777778"/>
+  <unit name="° Reaumur" factor="1.25"/>
+</section>
+<section icon="weight" name="Gewichte: dezimal">
+  <unit name="Gramm" factor="1"/>
+  <unit name="Milligramm" factor="0.001"/>
+  <unit name="Centigramm" factor="0.01"/>
+  <unit name="Pfund" factor="500"/>
+  <unit name="Kilogramm" factor="1000"/>
+  <unit name="Zentner" factor="50000"/>
+  <unit name="Doppelzentner" factor="100000"/>
+  <unit name="Tonne" factor="1000000"/>
+</section>
+<section icon="weight" name="Gewichte: England">
+  <unit name="ounce" factor="31.104" subunits="8"/>
+  <unit name="grain" factor="0.065"/>
+  <unit name="scruple" factor="1.296" subunits="20"/>
+  <unit name="pennyweight" factor="1.555" subunits="24"/>
+  <unit name="dram" factor="3.888" subunits="3"/>
+  <unit name="pound" factor="373.24" subunits="12"/>
+</section>
+<section icon="weight" name="Gewichte: engl. Handel">
+  <unit name="ounce" factor="28.349609375" subunits="16"/>
+  <unit name="dram" factor="1.771850585938"/>
+  <unit name="pound" factor="453.59375" subunits="16"/>
+  <unit name="stone" factor="6350.3125" subunits="14"/>
+  <unit name="quarter" factor="12700.625" subunits="28"/>
+  <unit name="hundredweight" factor="50802.5" subunits="4"/>
+  <unit name="long ton" factor="101604.16" subunits="20"/>
+  <unit name="cental" factor="45359.375"/>
+  <unit name="short ton" factor="907187.5" subunits="20"/>
+</section>
+<section icon="area" name="Fläche">
+  <unit name="qm" factor="1"/>
+  <unit name="qmm" factor="0.000001"/>
+  <unit name="qcm" factor="0.0001"/>
+  <unit name="qdm" factor="0.01"/>
+  <unit name="Ar" factor="100"/>
+  <unit name="Morgen" factor="2500"/>
+  <unit name="Hektar" factor="10000"/>
+  <unit name="qkm" factor="1000000"/>
+  <unit name="square inch" factor="0.0006452"/>
+  <unit name="square foot" factor="0.09288"/>
+  <unit name="square yard" factor="0.836" subunits="9"/>
+  <unit name="pole (rod, perch)" factor="25.289"/>
+  <unit name="rood" factor="1012" subunits="40"/>
+  <unit name="acre" factor="4048" subunits="4"/>
+  <unit name="square mile" factor="2590000"/>
+</section>
+<section icon="ton" name="Hohlmaße">
+  <unit name="cbm" factor="1"/>
+  <unit name="cmm" factor="0.000000001"/>
+  <unit name="ccm" factor="0.000001"/>
+  <unit name="cdm (Liter)" factor="0.001"/>
+  <unit name="Hektoliter" factor="0.1"/>
+  <unit name="cubic inch" factor="0.000016387"/>
+  <unit name="cubic foot" factor="0.028317"/>
+  <unit name="cubic yard" factor="0.7646"/>
+</section>
+<section icon="ton" name="Flüssigkeit: England">
+  <unit name="Liter" factor="1"/>
+  <unit name="gill" factor="0.142"/>
+  <unit name="pint" factor="0.568" subunits="4"/>
+  <unit name="quart" factor="1.136" subunits="8"/>
+  <unit name="gallon" factor="4.546" subunits="8"/>
+</section>
+<section icon="ton" name="Flüssigkeit: USA">
+  <unit name="gill" factor="0.118"/>
+  <unit name="pint" factor="0.473" subunits="4"/>
+  <unit name="quart" factor="0.946" subunits="8"/>
+  <unit name="gallon" factor="3.787" subunits="8"/>
+  <unit name="barrel" factor="119.2"/>
+  <unit name="barrel of oil" factor="158.8" subunits="42"/>
+</section>
+<section icon="ton" name="Leistung">
+  <unit name="Watt" factor="1"/>
+  <unit name="Milliwatt" factor="0.001"/>
+  <unit name="Kilowatt" factor="1000"/>
+  <unit name="Megawatt" factor="1000000"/>
+  <unit name="PS" factor="735.5"/>
+</section>
+<section icon="other" name="Speicherplatz">
+  <unit name="byte" factor="1"/>
+  <unit name="bit" factor="0.125"/>
+  <unit name="$100 byte" factor="256"/>
+  <unit name="kilobyte" factor="1000"/>
+  <unit name="KiloByte (Kb)" factor="1024"/>
+  <unit name="megabyte" factor="1000000"/>
+  <unit name="Megabyte (Mb)" factor="1048576"/>
+  <unit name="gigabyte" factor="1000000000"/>
+  <unit name="Gigabyte (Gb)" factor="1073741824"/>
+</section>
+<section icon="other" name="Sonstige">
+  <unit name="Maßstab 1:1000" factor="1000"/>
+  <unit name="Maßstab 1:200" factor="200"/>
+  <unit name="Maßstab 1:100" factor="100"/>
+  <unit name="Maßstab 1:75" factor="75"/>
+  <unit name="Maßstab 1:60" factor="60"/>
+  <unit name="Maßstab 1:50" factor="50"/>
+  <unit name="Maßstab 1:25" factor="25"/>
+  <unit name="Maßstab 1:20" factor="20"/>
+  <unit name="Maßstab 1:10" factor="10"/>
+  <unit name="Maßstab 1:5" factor="5"/>
+  <unit name="Maßstab 1:3" factor="3"/>
+</section>
+</units>
