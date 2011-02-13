@@ -117,25 +117,37 @@ if (typeof(console) === 'undefined') {
             });
         settings.units = units;
         // unit selects
-        var $unit = $('<select id="svg-unit"/>');
-        var $conv = $('<select id="svg-convert"/>');
+        var $unit1 = $('<select id="svg-convert1"/>');
+        var $unit2 = $('<select id="svg-convert2"/>');
         for (var i = 0; i < units.length; i++) {
             var name = units[i].name;
             var $opt = $('<option value="' + i + '">' + name + '</option>');
-            $unit.append($opt);
-            $conv.append($opt.clone());
+            $unit1.append($opt);
+            $unit2.append($opt.clone());
             }
         // other elements
-        var $px = $('<span id="svg-pixel"/>');
-        var $pxlabel = $('<span id="svg-pixellabel"> px x </span>');
-        var $pxfactor = $('<span id="svg-pixelfactor"/>');
+        var $la1 = $('<span class="svg-label">pixel</span>');
+        var $la2 = $('<span class="svg-label">factor</span>');
+        var $la3 = $('<span class="svg-label">=</span>');
+        var $la4 = $('<span class="svg-label">=</span>');
+        var $px = $('<span id="svg-pixel" class="svg-number">0.0</span>');
+        var $factor = $('<span id="svg-factor" class="svg-number">0.0</span>');
+        var $result1 = $('<input id="svg-unit1" class="svg-input" value="0.0"/>');
+        var $result2 = $('<input id="svg-unit2" class="svg-input" value="0.0"/>');
+        var $angle = $('<span id="svg-angle" class="svg-number">0.0</span>');
         $('body').append($toolbar);
         $toolbar.append($shape);
+        $toolbar.append($la1);
         $toolbar.append($px);
-        $toolbar.append($pxlabel);
-        $toolbar.append($pxfactor);
-        $toolbar.append($unit);
-        $toolbar.append($conv);
+        $toolbar.append($la2);
+        $toolbar.append($factor);
+        $toolbar.append($la3);
+        $toolbar.append($result1);
+        $toolbar.append($unit1);
+        $toolbar.append($la4);
+        $toolbar.append($result2);
+        $toolbar.append($unit2);
+        $toolbar.append($angle);
         };
 
     var actions = {

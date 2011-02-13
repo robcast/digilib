@@ -9,31 +9,56 @@ body {
     }
  
 div#svg-toolbar {
-    border: 1px solid black;
-    color: black;
+    color: grey;
     background-color: grey;
     position: fixed;
-    left: 10px;
-    bottom: 10px;
+    left: 8px;
+    bottom: 8px;
+    border: 1px solid black;
     }
 
-select {
-    border: none;
+span.svg-label {
+    font-size: 12px;
+    padding: 0px 3px;
+    color: silver;
     background-color: grey;
-    color: lightgreen;
-    font-size: 12px;
     }
 
-span {
+span.svg-number {
     font-size: 12px;
-    }
-
-span#svg-pixel, span#svg-pixelfactor {
+    padding: 0px 3px;
+    display: inline-block;
     width: 50px;
-    background-color: silver;
+    background-color: grey;
     color: white;
     }
 
+select {
+    font-size: 12px;
+    padding: 0px 3px;
+    margin: 0px;
+    display: inline-block;
+    background-color: grey;
+    color: lightgreen;
+    border: none;
+    }
+
+input.svg-input {
+    width: 50px;
+    font-size: 12px;
+    padding: 0px 3px;
+    margin: 0px;
+    display: inline-block;
+    background-color: grey;
+    color: lightgreen;
+    border: none;
+    }
+
+select:hover, select:active, select:focus,
+input.svg-input:hover, input.svg-input:active, input.svg-input:focus {
+    background-color: white;
+    color: black;
+    }
 
 div.digilib {
     margin: 0px;
