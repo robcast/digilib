@@ -911,17 +911,19 @@ if (typeof(console) === 'undefined') {
         var winH = $win.height();
         var winW = $win.width();
         var $body = $('body');
-         // include standard body margin
-        var bodyB = $body.outerWidth(true) - $body.width();
+         // include standard body margins
+        var borderW = $body.outerWidth(true) - $body.width();
+        var borderH = $body.outerHeight(true) - $body.height();
         // get width of first button div
         var buttonsW = 0; 
         if (data.$buttonSets) {
             buttonsW = data.$buttonSets[0].outerWidth();
         }
         // account for left/right border, body margins and additional requirements
-        var calcW = winW - bodyB - buttonsW - data.settings.scalerInset;
-        console.debug(winW, winH, 'winW:', $win.width(), 'bodyBorder:', bodyB, 'buttonsW:', buttonsW, 'calc:', calcW);
-        return geom.size(calcW, winH);
+        var calcW = winW - borderW - buttonsW - data.settings.scalerInset;
+        var calcH = winH - borderH;
+        console.debug(winW, winH, 'winW:', $win.width(), 'border:', borderW, 'buttonsW:', buttonsW, 'calc:', calcW);
+        return geom.size(calcW, calcH);
     };
 
     // creates HTML structure for digilib in elem
