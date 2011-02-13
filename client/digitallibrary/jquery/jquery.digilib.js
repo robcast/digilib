@@ -32,7 +32,7 @@ if (typeof(console) === 'undefined') {
         debug : function(){}, 
         error : function(){}
         };
-    var customConsole = true;
+    var customConsole = false; // set to true if debugging for MS IE
 }
 
 (function($) {
@@ -248,8 +248,8 @@ if (typeof(console) === 'undefined') {
         'isAboutDivVisible' : false,
         // maximum width of background image for drag-scroll
         'maxBgSize' : 10000,
-        // space to be left free in full page display
-        'scalerInset' : 0,
+        // space to be left free in full page display, default value is for scrollbar
+        'scalerInset' : 10,
         };
 
     // affine geometry classes
@@ -344,12 +344,12 @@ if (typeof(console) === 'undefined') {
                 if (data.scaleMode === 'pixel' || data.scaleMode === 'size') {
                     loadImageInfo(data, updateDisplay); // updateDisplay(data) on completion
                 }
-                // create HTML structure for scaler
-                setupScalerDiv(data);
-                // add buttons
+                // create buttons before scaler 
                 for (var i = 0; i < elemSettings.visibleButtonSets; ++i) {
                     showButtons(data, true, i);
                     }
+                // create HTML structure for scaler, taking width of buttons div into account
+                setupScalerDiv(data);
                 highlightButtons(data);
                 // bird's eye view creation
                 if (elemSettings.isBirdDivVisible) {
@@ -909,10 +909,19 @@ if (typeof(console) === 'undefined') {
     var getFullscreenImgSize = function (data) {
         var $win = $(window);
         var winH = $win.height();
-        var winW = $win.width() - data.settings.scalerInset;
-        // TODO: account for borders?
-        console.debug(winW, winH);
-        return geom.size(winW, winH);
+        var winW = $win.width();
+        var $body = $('body');
+         // include standard body margin
+        var bodyB = $body.outerWidth(true) - $body.width();
+        // get width of first button div
+        var buttonsW = 0; 
+        if (data.$buttonSets) {
+            buttonsW = data.$buttonSets[0].outerWidth();
+        }
+        // account for left/right border, body margins and additional requirements
+        var calcW = winW - bodyB - buttonsW - data.settings.scalerInset;
+        console.debug(winW, winH, 'winW:', $win.width(), 'bodyBorder:', bodyB, 'buttonsW:', buttonsW, 'calc:', calcW);
+        return geom.size(calcW, winH);
     };
 
     // creates HTML structure for digilib in elem
@@ -952,10 +961,11 @@ if (typeof(console) === 'undefined') {
                 $img = $('<img/>');
             }
         }
-        // create new html
-        $elem.empty(); // TODO: should we keep stuff for customization?
+        // create new inner html, keep buttons
+        $elem.contents(":not(div.buttons)").remove();
         var $scaler = $('<div class="scaler"/>');
-        $elem.append($scaler);
+        // scaler should be the first child element?
+        $elem.prepend($scaler);
         $scaler.append($img);
         $img.addClass('pic');
         data.$scaler = $scaler;
@@ -1127,6 +1137,7 @@ if (typeof(console) === 'undefined') {
             if ($set == null) return false;
             // include border in calculation
             var btnWidth = $set.outerWidth();
+            // console.debug("btnWidth", btnWidth);
             // move remaining sets left and show new set
             if ($otherSets.length > 0) {
                     $otherSets.animate({right : '+='+btnWidth+'px'}, atime,
@@ -1138,7 +1149,7 @@ if (typeof(console) === 'undefined') {
             // remove set
             var $set = data.$buttonSets[setIdx];
             if ($set == null) return false;
-            var btnWidth = $set.width();
+            var btnWidth = $set.outerWidth();
             // hide last set
             $set.hide();
             // take remaining sets and move right
