@@ -21,6 +21,7 @@ Authors:
  * digilib jQuery plugin
 **/ 
 
+/*requires dlGeometry.js */
 
 /*jslint browser: true, debug: true, forin: true
 */
@@ -902,7 +903,8 @@ if (typeof(console) === 'undefined') {
             renderBirdArea(data);
             setupBirdDrag(data);
         }
-        // TODO: update event subscriber?
+        // send event
+        $(data).trigger('update');
     };
 
     // returns maximum size for scaler img in fullscreen mode
