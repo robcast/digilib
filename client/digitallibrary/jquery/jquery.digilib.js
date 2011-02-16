@@ -21,8 +21,6 @@ Authors:
  * digilib jQuery plugin
 **/ 
 
-/*requires dlGeometry.js */
-
 /*jslint browser: true, debug: true, forin: true
 */
 
@@ -250,17 +248,26 @@ if (typeof(console) === 'undefined') {
         // maximum width of background image for drag-scroll
         'maxBgSize' : 10000,
         // space to be left free in full page display, default value is for scrollbar
-        'scalerInset' : 10,
+        'scalerInset' : 10
         };
 
     // affine geometry classes
-    var geom = dlGeometry();
+    var geom;
 
-    var FULL_AREA = geom.rectangle(0, 0, 1, 1);
+    var FULL_AREA;
 
     var actions = {
         // init: digilib initialization
         init : function(options) {
+            // import geometry classes TODO: move to general plugin mechanism?
+            if ($.fn.digilib.geometry == null) {
+                console.error("You should use jquery.digilib.geometry");
+                geom = dlGeometry();
+            } else {
+                geom = $.fn.digilib.geometry;
+            }
+            FULL_AREA  = geom.rectangle(0, 0, 1, 1);
+            
             // settings for this digilib instance are merged from defaults and options
             var settings = $.extend({}, defaults, options);
             var isFullscreen = settings.interactionMode === 'fullscreen';
@@ -292,22 +299,22 @@ if (typeof(console) === 'undefined') {
                         params = queryParams;
                     } else {
                         params = parseImgParams($elem);
-                        if (jQuery.cookie) {
+                        if ($.cookie) {
                             // retrieve params from cookie
                             var ck = "digilib-embed:fn:" + escape(params.fn) + ":pn:" + (params.pn || '1');
-                            var cs = jQuery.cookie(ck);
+                            var cs = $.cookie(ck);
                             console.debug("get cookie=", ck, " value=", cs);
                             if (cs) {
                                 var cp = parseQueryString(cs);
                                 // ignore fn and pn from cookie TODO: should we keep pn?
                                 delete cp.fn;
                                 delete cp.pn;
-                                jQuery.extend(params, cp);
+                                $.extend(params, cp);
                             }
                         }
                     }
                     // store $(this) element in the settings
-                    elemSettings = jQuery.extend({}, settings, params);
+                    elemSettings = $.extend({}, settings, params);
                     data = {
                             $elem : $elem,
                             settings : elemSettings,
@@ -702,7 +709,7 @@ if (typeof(console) === 'undefined') {
                 dw : settings.birdDivWidth,
                 dh : settings.birdDivHeight
         };
-        var birdSettings = jQuery.extend({}, settings, birdDivOptions);
+        var birdSettings = $.extend({}, settings, birdDivOptions);
         // use only the relevant parameters
         if (moreParams == null) {
             var params = getParamString(birdSettings, settings.birdDivParams, defaults);
@@ -740,7 +747,7 @@ if (typeof(console) === 'undefined') {
         var url = settings.scalerBaseUrl.substring(0, p) + '/ImgInfo-json.jsp';
         url += '?' + getParamString(settings, ['fn', 'pn'], defaults);
         // TODO: better error handling
-        jQuery.getJSON(url, function (json) {
+        $.getJSON(url, function (json) {
             console.debug("got json data=", json);
             data.imgInfo = json;
             if (complete != null) {
@@ -835,18 +842,18 @@ if (typeof(console) === 'undefined') {
                     }
                 clop += o + '=' + data.dlOpts[o];
                 }
-            if (jQuery.cookie) {
+            if ($.cookie) {
                 var ck = "digilib:fn:" + escape(settings.fn) + ":pn:" + settings.pn;
                 console.debug("set cookie=", ck, " value=", clop);
-                jQuery.cookie(ck, clop);
+                $.cookie(ck, clop);
                 }
         }
-        if (settings.interactionMode !== 'fullscreen' && jQuery.cookie) {
+        if (settings.interactionMode !== 'fullscreen' && $.cookie) {
             // store normal parameters in cookie for embedded mode
             var qs = getParamString(settings, settings.digilibParamNames, defaults);
             var ck = "digilib-embed:fn:" + escape(settings.fn) + ":pn:" + settings.pn;
             console.debug("set cookie=", ck, " value=", qs);
-            jQuery.cookie(ck, qs);
+            $.cookie(ck, qs);
         }
     };
 
@@ -854,10 +861,10 @@ if (typeof(console) === 'undefined') {
         // clop (digilib options)
         var opts = {};
         var settings = data.settings;
-        if (jQuery.cookie) {
+        if ($.cookie) {
             // read from cookie
             var ck = "digilib:fn:" + escape(settings.fn) + ":pn:" + settings.pn;
-            var cp = jQuery.cookie(ck);
+            var cp = $.cookie(ck);
             console.debug("get cookie=", ck, " value=", cp);
             // in query string format
             opts = parseQueryString(cp);
@@ -1754,7 +1761,7 @@ if (typeof(console) === 'undefined') {
         }
 
     // hook plugin into jquery
-    $.fn.digilib = function(action) {
+    $.fn.digilib = function (action) {
         // plugin extension mechanism
         if (action === 'extendPlugin') {
             // for each digilib $elem extend data.settings with obj.options
