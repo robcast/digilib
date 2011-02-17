@@ -253,10 +253,8 @@ if (typeof(console) === 'undefined') {
 
     // list of plugins
     var plugins = {};
-    
     // object to export functions to plugins
     var fn;
-    
     // affine geometry plugin stub
     var geom;
 
@@ -273,7 +271,7 @@ if (typeof(console) === 'undefined') {
                 geom = plugins.geometry.init();
             }
             FULL_AREA  = geom.rectangle(0, 0, 1, 1);
-            
+
             // settings for this digilib instance are merged from defaults and options
             var settings = $.extend({}, defaults, options);
             var isFullscreen = settings.interactionMode === 'fullscreen';
@@ -324,7 +322,8 @@ if (typeof(console) === 'undefined') {
                     data = {
                             $elem : $elem,
                             settings : elemSettings,
-                            queryParams : params
+                            queryParams : params,
+                            plugins : plugins
                     };
                     // store in data element
                     $elem.data('digilib', data);
@@ -1793,7 +1792,7 @@ if (typeof(console) === 'undefined') {
             setScaleMode : setScaleMode,
             isFullArea : isFullArea
     };
-    
+
     // hook plugin into jquery
     $.fn.digilib = function (action) {
         // plugin extension mechanism

@@ -481,7 +481,7 @@
             position : position,
             rectangle : rectangle,
             transform : transform
-        };        
+        };
     };
     if ($.fn.digilib == null) {
         $.error("jquery.digilib.geometry must be loaded after jquery.digilib!");

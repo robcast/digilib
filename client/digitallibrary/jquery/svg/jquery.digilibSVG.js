@@ -39,7 +39,7 @@ if (typeof(console) === 'undefined') {
     console.debug('installing jquery.digilibSVG');
 
     var pluginName = 'digilibSVG';
-    var geom = dlGeometry();
+    var geom;
 
     var defaults = {
         // choice of colors offered by toolbar
@@ -169,6 +169,8 @@ if (typeof(console) === 'undefined') {
         "init" : function(options) {
             var $digilib = this;
             var data = $digilib.data('digilib');
+            var plugins = data.plugins;
+            geom = plugins.geometry.init();
             var settings = $.extend({}, defaults, options);
             // prepare the AJAX callback
             // TODO: return unless interactiveMode === 'fullscreen'?
