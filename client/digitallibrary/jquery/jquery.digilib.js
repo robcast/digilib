@@ -254,6 +254,9 @@ if (typeof(console) === 'undefined') {
     // list of plugins
     var plugins = {};
     
+    // object to export functions to plugins
+    var fn;
+    
     // affine geometry plugin stub
     var geom;
 
@@ -352,8 +355,14 @@ if (typeof(console) === 'undefined') {
                     }
                 }
                 // initialise plugins
-                for (p in plugins) {
-                    plugins[p].init(data);
+                for (n in plugins) {
+                    var p = plugins[n];
+                    // share common objects
+                    p.buttons = buttons;
+                    p.actions = actions;
+                    p.fn = fn;
+                    // and init
+                    p.init(data);
                 }
                 // get image info from server if needed
                 if (data.scaleMode === 'pixel' || data.scaleMode === 'size') {
@@ -1767,6 +1776,24 @@ if (typeof(console) === 'undefined') {
         console.error = logFunction('_error');
         }
 
+    // functions to export to plugins
+    fn = {
+            parseQueryString : parseQueryString,
+            getScalerUrl : getScalerUrl,
+            getParamString : getParamString,
+            getDigilibUrl : getDigilibUrl,
+            unpackParams : unpackParams,
+            packParams : packParams,
+            redisplay : redisplay,
+            updateDisplay : updateDisplay,
+            getImgTrafo : getImgTrafo,
+            getQuality : getQuality,
+            setQuality : setQuality,
+            getScaleMode : getScaleMode,
+            setScaleMode : setScaleMode,
+            isFullArea : isFullArea
+    };
+    
     // hook plugin into jquery
     $.fn.digilib = function (action) {
         // plugin extension mechanism
@@ -1776,25 +1803,7 @@ if (typeof(console) === 'undefined') {
             if (plugin.name != null) {
                 plugins[plugin.name] = plugin;
             }
-            /* for each digilib $elem extend data.settings with obj.options
-            // TODO: couldn't other plugins just access $elem.data('digilib')?
-            if (obj.options) {
-                this.each(function() {
-                    var $elem = $(this);
-                    // console.debug('extending:', $elem);
-                    var data = $elem.data('digilib');
-                    if (!data) {
-                        return console.log('cannot extend digilib plugin, element not initialised!');
-                        }
-                    var settings = data.settings;
-                    $.extend(settings, obj.options);
-                    // console.log('settings:', settings);
-                    });
-                delete(obj.options);
-                }
-            // extend the plugin actions (to make this useful, 
-            // maybe we need to expose some more internal functions)
-            $.extend(actions, obj); */
+            // initialisation of plugins done later
         } else if (actions[action]) {
             // call action on this with the remaining arguments (inserting data as first argument)
             var $elem = $(this);
