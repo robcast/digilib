@@ -474,12 +474,18 @@
         return transform(traf);
     };
 
-    // export functions to digilib plugin
-    $.fn.digilib.geometry = {
-        size : size,
-        position : position,
-        rectangle : rectangle,
-        transform : transform
+    // export constructor functions to digilib plugin
+    var init = function () {
+        return {
+            size : size,
+            position : position,
+            rectangle : rectangle,
+            transform : transform
+        };        
     };
-
+    if ($.fn.digilib == null) {
+        $.error("jquery.digilib.geometry must be loaded after jquery.digilib!");
+    } else {
+        $.fn.digilib('plugin', {name : 'geometry', init : init});
+    }
 })(jQuery);
