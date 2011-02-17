@@ -45,6 +45,11 @@ select {
     border: none;
     }
 
+option.section {
+    border-bottom: 1px dotted grey;
+    padding-left: 10px;
+}
+
 input.svg-input {
     width: 50px;
     font-size: 12px;

@@ -91,6 +91,8 @@ if (typeof(console) === 'undefined') {
         snapMidPoints : false,
         // snap to circle centers
         snapCenters : false,
+        // snap distance (in screen pixels)
+        snapDistance : 5,
         // keep original object when moving/scaling/rotating
         keepOriginal : false,
         // number of copies when drawing grids
@@ -109,26 +111,33 @@ if (typeof(console) === 'undefined') {
             }
         // console.debug($xml);
         var $xml = $(settings.xml);
-        var units = [];
-        $xml.find("unit").each(function() {
-            units.push({
-                'name' : $(this).attr("name"),
-                'factor' : $(this).attr("factor"), 
-                'add' : $(this).attr("add"), 
-                'subunits' : $(this).attr("subunits")
-                });
-            });
-        settings.units = units;
         // unit selects
         var $unit1 = $('<select id="svg-convert1"/>');
         var $unit2 = $('<select id="svg-convert2"/>');
-        for (var i = 0; i < units.length; i++) {
-            var name = units[i].name;
-            var $opt = $('<option value="' + i + '">' + name + '</option>');
-            $opt.data(pluginName, units[i]);
+
+        $xml.find("section").each(function() {
+            var $section = $(this);
+            var name = $section.attr("name");
+            // append section name as option
+            var $opt = $('<option class="section" disabled="disabled">' + name + '</option>');
             $unit1.append($opt);
             $unit2.append($opt.clone());
-            }
+            $section.find("unit").each(function() {
+                var $unit = $(this);
+                var name = $unit.attr("name");
+                var factor = $unit.attr("factor"); 
+                var $opt = $('<option class="unit" value="' + factor + '">' + name + '</option>');
+                $opt.data(pluginName, {
+                    'name' : name,
+                    'factor' : factor, 
+                    'add' : $unit.attr("add"), 
+                    'subunits' : $unit.attr("subunits")
+                    });
+                $unit1.append($opt);
+                $unit2.append($opt.clone());
+                });
+            });
+        // settings.units = units;
         // other elements
         var $la1 = $('<span class="svg-label">pixel</span>');
         var $la2 = $('<span class="svg-label">factor</span>');
