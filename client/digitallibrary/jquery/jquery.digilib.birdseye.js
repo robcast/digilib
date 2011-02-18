@@ -64,6 +64,7 @@
         // install event handler
         $data.bind('setup', handleSetup);
         $data.bind('update', handleUpdate);
+        $data.bind('redisplay', handleRedisplay);
         $data.bind('dragZoom', handleDragZoom);
     };
         
@@ -84,6 +85,14 @@
         if (data.settings.isBirdDivVisible) {
             renderBirdArea(data);
             setupBirdDrag(data);
+        }
+    };
+    
+    var handleRedisplay = function (evt) {
+        console.debug("birdseye: handleRedisplay");
+        data = this;
+        if (data.settings.isBirdDivVisible) {
+            updateBirdDiv(data);
         }
     };
     

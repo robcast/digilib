@@ -35,4 +35,8 @@ The plugin API of jquery.digilib
 
 * further actions should be implemented as custom events on the data object.
 
-* events should be documented here...
+* events triggered by digilib on the data object:
+  "setup": in the init phase, after scalerDiv and buttons have been set up.
+  "update", updateDisplay(): after small updates in the display, e.g. when the scaler-img finished loading.
+  "redisplay", redisplay(): after changes in the display, e.g. after changing zoom factor.
+  "dragZoom(newZoomArea)": while dragging the zoom area (with parameter newZoomArea).
