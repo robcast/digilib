@@ -869,11 +869,20 @@ if (typeof console === 'undefined') {
             // update location.href (browser URL) in fullscreen mode
             var url = getDigilibUrl(data);
             var history = window.history;
-            if (typeof(history.pushState) === 'function') {
-                console.debug("we could modify history, but we don't...");
-                }
-            // reload window
-            window.location = url;
+            if (typeof history.pushState === 'function') {
+                console.debug("faking reload to "+url);
+                // change url without reloading (stateObj, title, url)
+                history.pushState({}, '', url);
+                // change img src
+                var imgurl = getScalerUrl(data);
+                data.$img.attr('src', imgurl);
+                highlightButtons(data);
+                // send event
+                $(data).trigger('redisplay');
+            } else {
+                // reload window
+                window.location = url;
+            }
         } else {
             // embedded mode -- just change img src
             var url = getScalerUrl(data);
@@ -1614,7 +1623,7 @@ if (typeof console === 'undefined') {
             var args = Array.prototype.slice.call(arguments, 1);
             args.unshift(data);
             return actions[action].apply(this, args);
-        } else if (typeof(action) === 'object' || !action) {
+        } else if (typeof action === 'object' || !action) {
             // call init on this
             return actions.init.apply(this, arguments);
         } else {
