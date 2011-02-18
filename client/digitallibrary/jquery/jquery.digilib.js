@@ -25,7 +25,7 @@ Authors:
 */
 
 // fallback for console.log calls
-if (typeof(console) === 'undefined') {
+if (typeof console === 'undefined') {
     var console = {
         log : function(){}, 
         debug : function(){}, 
@@ -357,7 +357,8 @@ if (typeof(console) === 'undefined') {
                 }
                 // get image info from server if needed
                 if (data.scaleMode === 'pixel' || data.scaleMode === 'size') {
-                    loadImageInfo(data, updateDisplay); // updateDisplay(data) on completion
+                    $(data).bind('imageInfo', handleImageInfo);
+                    loadImageInfo(data); // triggers "imageInfo" on completion
                 }
                 // create buttons before scaler 
                 for (var i = 0; i < elemSettings.visibleButtonSets; ++i) {
@@ -722,8 +723,8 @@ if (typeof(console) === 'undefined') {
         return settings.digilibBaseUrl + '?' + queryString;
     };
 
-    // loads image information from digilib server via HTTP (and calls complete-fn)
-    var loadImageInfo = function (data, complete) {
+    // loads image information from digilib server via HTTP
+    var loadImageInfo = function (data) {
         var settings = data.settings;
         var p = settings.scalerBaseUrl.indexOf('/servlet/Scaler');
         var url = settings.scalerBaseUrl.substring(0, p) + '/ImgInfo-json.jsp';
@@ -732,9 +733,8 @@ if (typeof(console) === 'undefined') {
         $.getJSON(url, function (json) {
             console.debug("got json data=", json);
             data.imgInfo = json;
-            if (complete != null) {
-                complete.call(this, data, json);
-            }
+            // send event
+            $(data).trigger('imageInfo', [json]);
         });
     };
 
@@ -1205,7 +1205,7 @@ if (typeof(console) === 'undefined') {
         }
     };
 
-    // returns function for load event of scaler img
+    // returns handler for load event of scaler img
     var scalerImgLoadedHandler = function (data) {
         return function () {
             var $img = $(this);
@@ -1222,6 +1222,12 @@ if (typeof(console) === 'undefined') {
         };
     };
 
+    // handler for imageInfo loaded event
+    var handleImageInfo = function (evt, json) {
+        var data = this;
+        updateDisplay(data);
+    };
+    
     // place marks on the image
     var renderMarks = function (data) {
         if (data.$img == null || data.imgTrafo == null) return;
