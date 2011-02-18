@@ -269,7 +269,8 @@ if (typeof(console) === 'undefined') {
                 // last straw: old version
                 geom = dlGeometry();
             } else {
-                geom = plugins.geometry.init();
+                // geometry plugin puts classes in the shared fn
+                geom = fn.geometry;
             }
             FULL_AREA  = geom.rectangle(0, 0, 1, 1);
 
@@ -327,7 +328,7 @@ if (typeof(console) === 'undefined') {
                             // TODO: move plugins reference out of data
                             plugins : plugins
                     };
-                    // store in data element
+                    // store in jQuery data element
                     $elem.data('digilib', data);
                 }
                 unpackParams(data);
@@ -358,13 +359,9 @@ if (typeof(console) === 'undefined') {
                 // initialise plugins
                 for (n in plugins) {
                     var p = plugins[n];
-                    // share common objects
-                    p.buttons = buttons;
-                    p.actions = actions;
-                    p.fn = fn;
-                    p.plugins = plugins;
-                    // and init
-                    p.init(data);
+                    if (typeof p.init === 'function') {
+                        p.init(data);
+                    }
                 }
                 // get image info from server if needed
                 if (data.scaleMode === 'pixel' || data.scaleMode === 'size') {
@@ -1807,6 +1804,16 @@ if (typeof(console) === 'undefined') {
             // each plugin needs a name
             if (plugin.name != null) {
                 plugins[plugin.name] = plugin;
+                // share common objects
+                plugin.defaults = defaults;
+                plugin.buttons = buttons;
+                plugin.actions = actions;
+                plugin.fn = fn;
+                plugin.plugins = plugins;
+                // and install
+                if (typeof plugin.install === 'function') {
+                    plugin.install(plugin);
+                }
             }
             // initialisation of plugins done later
         } else if (actions[action]) {

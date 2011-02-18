@@ -475,17 +475,33 @@
     };
 
     // export constructor functions to digilib plugin
-    var init = function () {
-        return {
+    var geometry = {
             size : size,
             position : position,
             rectangle : rectangle,
             transform : transform
-        };
     };
+    // install function called by digilib on plugin object
+    var install = function() {
+        // add constructor object to fn
+        this.fn.geometry = geometry;
+    };
+    // digilib plugin object
+    var plugin = {
+            name : 'geometry',
+            install : install,
+            fn : {},
+            // TODO: remove old init
+            init : init
+    };
+    // TODO: remove old version of init returning contructor
+    var init = function () {
+        return geometry;
+    };
+    // plug into digilib
     if ($.fn.digilib == null) {
         $.error("jquery.digilib.geometry must be loaded after jquery.digilib!");
     } else {
-        $.fn.digilib('plugin', {name : 'geometry', init : init});
+        $.fn.digilib('plugin', plugin);
     }
 })(jQuery);
