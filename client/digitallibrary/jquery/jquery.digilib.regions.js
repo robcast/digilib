@@ -15,7 +15,10 @@ TODO:
     var data;
     var buttons;
     var fn;
+    // affine geometry plugin stub
     var geom;
+
+    var FULL_AREA;
 
     var buttons = {
         addregion : {
@@ -39,25 +42,33 @@ TODO:
             icon : "regioninfo.png"
             }
         };
-    var regionSet = ['addregion', 'delregion', 'regions', 'regioninfo', 'lessoptions'];
+
+    var defaults = {
+        // are regions shown?
+        'isRegionVisible' : true,
+        // buttonset of this plugin
+        'regionSet' : ['addregion', 'delregion', 'regions', 'regioninfo', 'lessoptions'],
+        // array of defined regions
+        'regions' : []
+    };
 
     var actions = { 
         // define a region interactively with two clicked points
         "setRegion" : function(data) {
-            $elem = data.$elem;
-            $scaler = data.$scaler;
-            var pt1, pt2;
-            var $regionDiv = $('<div class="region" style="display:none"/>');
-            $regionDiv.attr("id", "region" + data.regions.length);
-            $elem.append($regionDiv);
+            var $elem = data.$elem;
+            var $scaler = data.$scaler;
             var picRect = geom.rectangle($scaler);
+            var pt1, pt2;
+            // TODO: temporary rectangle only, pass values to "addRegion" factory
+            var $tempDiv = $('<div class="region" style="display:none"/>');
+            $elem.append($tempDiv);
 
             var regionStart = function (evt) {
                 pt1 = geom.position(evt);
                 // setup and show zoom div
-                pt1.adjustDiv($regionDiv);
-                $regionDiv.width(0).height(0);
-                $regionDiv.show();
+                pt1.adjustDiv($tempDiv);
+                $tempDiv.width(0).height(0);
+                $tempDiv.show();
                 // register events
                 $elem.bind("mousemove.dlRegion", regionMove);
                 $elem.bind("mouseup.dlRegion", regionEnd);
@@ -70,7 +81,7 @@ TODO:
                 var rect = geom.rectangle(pt1, pt2);
                 rect.clipTo(picRect);
                 // update zoom div
-                rect.adjustDiv($regionDiv);
+                rect.adjustDiv($tempDiv);
                 return false;
             };
 
@@ -85,8 +96,9 @@ TODO:
                 $elem.unbind("mouseup.dlRegion", regionEnd);
                 // clip and transform
                 clickRect.clipTo(picRect);
-                clickRect.adjustDiv($regionDiv);
-                data.regions.push($regionDiv);
+                clickRect.adjustDiv($tempDiv);
+                $tempDiv.remove();
+                data.settings.regions.push(clickRect);
                 // fn.redisplay(data);
                 return false;
             };
@@ -100,7 +112,7 @@ TODO:
 
         // remove the last added region
         "removeRegion" : function (data) {
-            var $regionDiv = data.regions.pop();
+            var $regionDiv = data.settings.regions.pop();
             $regionDiv.remove();
             // fn.redisplay(data);
         },
@@ -170,16 +182,57 @@ TODO:
             }
     };
 
-    // export constructor functions to digilib plugin
-    var init = function (digilibdata) {
-        console.log('initialising regions plugin. data:', digilibdata);
-        data = digilibdata;
-        data.regions = [];
-        // setup geometry object
-        geom = data.plugins.geometry.init();
-        // add buttons and actions from this plugin
-        $.extend(this.buttons, buttons);
-        $.extend(this.actions, actions);
+    var handleSetup = function (evt) {
+        console.debug("regions: handleSetup");
+        data = this;
+//        if (data.settings.isBirdDivVisible) {
+//            setupBirdDiv(data);
+//            data.$birdDiv.show();
+//        }
+    };
+
+    var handleUpdate = function (evt) {
+        console.debug("regions: handleUpdate");
+        data = this;
+//        if (data.settings.isBirdDivVisible) {
+//            renderBirdArea(data);
+//            setupBirdDrag(data);
+//        }
+    };
+
+    var handleRedisplay = function (evt) {
+        console.debug("regions: handleRedisplay");
+        data = this;
+//        if (data.settings.isBirdDivVisible) {
+//            updateBirdDiv(data);
+//        }
+    };
+
+    var handleDragZoom = function (evt, zoomArea) {
+        console.debug("regions: handleDragZoom, zoomArea:", zoomArea);
+        data = this;
+//        if (data.settings.isBirdDivVisible) {
+//            setBirdZoom(data, zoomArea);
+//        }
+    };
+
+    // plugin installation called by digilib on plugin object.
+    var install = function(digilib) {
+        // import geometry classes
+        geom = digilib.fn.geometry;
+        FULL_AREA = geom.rectangle(0,0,1,1);
+        // add defaults
+        $.extend(digilib.defaults, defaults);
+        // add actions
+        $.extend(digilib.actions, actions);
+        // add buttons
+        $.extend(digilib.buttons, buttons);
+    };
+
+    // plugin initialization
+    var init = function (data) {
+        console.debug('initialising regions plugin. data:', data);
+        var $data = $(data);
         var buttonSettings = data.settings.buttonSettings.fullscreen;
         // configure buttons through digilib "regionSet" option
         var buttonSet = data.settings.regionSet || regionSet; 
@@ -188,14 +241,28 @@ TODO:
             buttonSettings['regionSet'] = buttonSet;
             buttonSettings.buttonSets.push('regionSet');
             }
-        fn = this.fn;
-        // console.log(data.settings.buttonSettings.fullscreen.buttonSets);
-        return {
-        };
+        // install event handler
+        $data.bind('setup', handleSetup);
+        $data.bind('update', handleUpdate);
+        $data.bind('redisplay', handleRedisplay);
+        $data.bind('dragZoom', handleDragZoom);
     };
+
+    // plugin object with name and init
+    // shared objects filled by digilib on registration
+    var pluginProperties = {
+            name : 'region',
+            install : install,
+            init : init,
+            buttons : {},
+            actions : {},
+            fn : {},
+            plugins : {}
+    };
+
     if ($.fn.digilib == null) {
-        $.error("jquery.digilib.regions must be loaded after jquery.digilib!");
+        $.error("jquery.digilib.birdview must be loaded after jquery.digilib!");
     } else {
-        $.fn.digilib('plugin', {name : 'regions', init : init});
+        $.fn.digilib('plugin', pluginProperties);
     }
 })(jQuery);

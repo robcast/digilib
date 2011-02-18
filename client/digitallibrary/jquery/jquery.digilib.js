@@ -1596,9 +1596,9 @@ if (typeof console === 'undefined') {
             getBorderWidth : getBorderWidth
     };
 
-    // hook plugin into jquery
+    // hook digilib plugin into jquery
     $.fn.digilib = function (action) {
-        // plugin extension mechanism
+        // plugin extension mechanism, called when the plugins' code is read 
         if (action === 'plugin') {
             var plugin = arguments[1];
             // each plugin needs a name
@@ -1615,7 +1615,7 @@ if (typeof console === 'undefined') {
                     plugin.install(plugin);
                 }
             }
-            // initialisation of plugins done later
+            // plugins will be initialised when action.init is called
         } else if (actions[action]) {
             // call action on this with the remaining arguments (inserting data as first argument)
             var $elem = $(this);
@@ -1624,7 +1624,7 @@ if (typeof console === 'undefined') {
             args.unshift(data);
             return actions[action].apply(this, args);
         } else if (typeof action === 'object' || !action) {
-            // call init on this
+            // call init on the digilib jQuery object
             return actions.init.apply(this, arguments);
         } else {
             $.error('action ' + action + ' does not exist on jQuery.digilib');

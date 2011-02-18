@@ -1,4 +1,5 @@
-/** required digilib geometry plugin
+/**
+digilib bird's eye view plugin
  */
 
 (function($) {
@@ -25,7 +26,7 @@
             // parameters used by bird's eye div
             'birdDivParams' : ['fn','pn','dw','dh']
     };
-    
+
     var actions = {
             // event handler: toggles the visibility of the bird's eye window 
             showBirdDiv : function (data, show) {
@@ -40,8 +41,8 @@
                 updateBirdDiv(data);
                 digilib.fn.storeOptions(data);
             }
-    };       
-       
+    };
+
     // plugin installation called by digilib on plugin object.
     var install = function(digilib) {
         // import geometry classes
@@ -67,7 +68,7 @@
         $data.bind('redisplay', handleRedisplay);
         $data.bind('dragZoom', handleDragZoom);
     };
-        
+
 
     var handleSetup = function (evt) {
         console.debug("birdseye: handleSetup");
@@ -78,7 +79,7 @@
             data.$birdDiv.show();
         }
     };
-    
+
     var handleUpdate = function (evt) {
         console.debug("birdseye: handleUpdate");
         data = this;
@@ -87,7 +88,7 @@
             setupBirdDrag(data);
         }
     };
-    
+
     var handleRedisplay = function (evt) {
         console.debug("birdseye: handleRedisplay");
         data = this;
@@ -95,7 +96,7 @@
             updateBirdDiv(data);
         }
     };
-    
+
     var handleDragZoom = function (evt, zoomArea) {
         //console.debug("birdseye: handleDragZoom za="+zoomArea);
         data = this;
@@ -103,7 +104,7 @@
             setBirdZoom(data, zoomArea);
         }
     };
-    
+
     // returns URL for bird's eye view image
     var getBirdImgUrl = function (data) {
         var settings = data.settings;
@@ -313,7 +314,7 @@
             fn : {},
             plugins : {}
     };
-            
+
     if ($.fn.digilib == null) {
         $.error("jquery.digilib.birdview must be loaded after jquery.digilib!");
     } else {
