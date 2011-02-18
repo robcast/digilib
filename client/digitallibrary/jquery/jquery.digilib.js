@@ -81,11 +81,6 @@ if (typeof(console) === 'undefined') {
             tooltip : "goto image number",
             icon : "page.png"
             },
-        bird : {
-            onclick : "showBirdDiv",
-            tooltip : "show bird's eye view",
-            icon : "birds-eye.png"
-            },
         help : {
             onclick : "showAboutDiv",
             tooltip : "about Digilib",
@@ -222,31 +217,28 @@ if (typeof(console) === 'undefined') {
             'fullscreen' : {
                 // path to button images (must end with a slash)
                 'imagePath' : 'img/fullscreen/',
-                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","help","reset","toggleoptions"],
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","help","reset","toggleoptions"],
                 'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","toggleoptions"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 },
             'embedded' : {
                 'imagePath' : 'img/embedded/16/',
-                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","bird","help","reset","toggleoptions"],
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","help","reset","toggleoptions"],
                 'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","scale","toggleoptions"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 }
         },
-
         // number of visible button groups
         'visibleButtonSets' : 1,
-        // is birdView shown?
-        'isBirdDivVisible' : false,
-        // dimensions of bird's eye div
-        'birdDivWidth' : 200, 
-        'birdDivHeight' : 200,
-        // parameters used by bird's eye div
-        'birdDivParams' : ['fn','pn','dw','dh'],
         // is the "about" window shown?
         'isAboutDivVisible' : false,
-        // maximum width of background image for drag-scroll
+        // default size of background image for drag-scroll (same as Bird's Eye View image)
+        'bgImgWidth' : 200,
+        'bgImgHeight' : 200,
+        // maximum width or height of background image for drag-scroll
         'maxBgSize' : 10000,
+        // parameters used by background image
+        'bgImgParams' : ['fn','pn','dw','dh','mo','rot'],
         // space to be left free in full page display, default value is for scrollbar
         'scalerInset' : 10
         };
@@ -374,15 +366,10 @@ if (typeof(console) === 'undefined') {
                 // create HTML structure for scaler, taking width of buttons div into account
                 setupScalerDiv(data);
                 highlightButtons(data);
-                // bird's eye view creation
-                if (elemSettings.isBirdDivVisible) {
-                    setupBirdDiv(data);
-                    data.$birdDiv.show();
-                    }
                 // about window creation - TODO: could be deferred? restrict to only one item?
                 setupAboutDiv(data);
-                // drag zoom area around in scaler div 
-                // setupZoomDrag(data); // is done in scalerImgLoadedHandler()
+                // send setup event
+                $(data).trigger('setup');
             });
         },
 
@@ -401,20 +388,6 @@ if (typeof(console) === 'undefined') {
             var on = showDiv(data.settings.isAboutDivVisible, data.$aboutDiv, show);
             data.settings.isAboutDivVisible = on;
             highlightButtons(data, 'help', on);
-        },
-
-        // event handler: toggles the visibility of the bird's eye window 
-        showBirdDiv : function (data, show) {
-            var settings = data.settings;
-            if (data.$birdDiv == null) {
-                // no bird div -> create
-                setupBirdDiv(data);
-            }
-            var on = showDiv(settings.isBirdDivVisible, data.$birdDiv, show);
-            settings.isBirdDivVisible = on;
-            highlightButtons(data, 'bird', on);
-            updateBirdDiv(data);
-            storeOptions(data);
         },
 
         // goto given page nr (+/-: relative)
@@ -718,31 +691,25 @@ if (typeof(console) === 'undefined') {
     };
 
     // returns URL for bird's eye view image
-    var getBirdImgUrl = function (data, moreParams) {
+    var getBgImgUrl = function (data, moreParams) {
         var settings = data.settings;
-        var birdDivOptions = {
-                dw : settings.birdDivWidth,
-                dh : settings.birdDivHeight
+        var bgOptions = {
+                dw : settings.bgImgWidth,
+                dh : settings.bgImgHeight
         };
-        var birdSettings = $.extend({}, settings, birdDivOptions);
-        // use only the relevant parameters
-        if (moreParams == null) {
-            var params = getParamString(birdSettings, settings.birdDivParams, defaults);
-        } else {
-            // filter scaler flags
-            if (birdSettings.mo != null) {
-                var mo = '';
-                if (data.scalerFlags.hmir != null) {
-                    mo += 'hmir,';
-                }
-                if (data.scalerFlags.vmir != null) {
-                    mo += 'vmir';
-                }
-                birdSettings.mo = mo;
+        var bgSettings = $.extend({}, settings, bgOptions);
+        // filter scaler flags
+        if (bgSettings.mo != null) {
+            var mo = '';
+            if (data.scalerFlags.hmir != null) {
+                mo += 'hmir,';
             }
-            var params = getParamString(birdSettings, 
-                    settings.birdDivParams.concat(moreParams), defaults);
+            if (data.scalerFlags.vmir != null) {
+                mo += 'vmir';
+            }
+            bgSettings.mo = mo;
         }
+        var params = getParamString(bgSettings, settings.bgImgParams, defaults);
         var url = settings.scalerBaseUrl + '?' + params;
         return url;
     };
@@ -905,14 +872,15 @@ if (typeof(console) === 'undefined') {
             if (typeof(history.pushState) === 'function') {
                 console.debug("we could modify history, but we don't...");
                 }
+            // reload window
             window.location = url;
         } else {
             // embedded mode -- just change img src
             var url = getScalerUrl(data);
             data.$img.attr('src', url);
-            // redisplay bird img
-            updateBirdDiv(data);
             highlightButtons(data);
+            // send event
+            $(data).trigger('redisplay');
             }
     };
 
@@ -921,10 +889,6 @@ if (typeof(console) === 'undefined') {
         updateImgTrafo(data);
         renderMarks(data);
         setupZoomDrag(data);
-        if (data.settings.isBirdDivVisible) {
-            renderBirdArea(data);
-            setupBirdDrag(data);
-        }
         // send event
         $(data).trigger('update');
     };
@@ -1065,45 +1029,6 @@ if (typeof(console) === 'undefined') {
             data.$buttonSets[buttonSetIdx] = $buttonsDiv;
         }
         return $buttonsDiv;
-    };
-
-    // creates HTML structure for the bird's eye view in elem
-    var setupBirdDiv = function (data) {
-        var $elem = data.$elem;
-        // the bird's eye div
-        var $birdDiv = $('<div class="birdview" style="display:none"/>');
-        // the detail indicator frame
-        var $birdZoom = $('<div class="birdzoom" style="display:none; background-color:transparent;"/>');
-        // the small image
-        var $birdImg = $('<img class="birdimg"/>');
-        data.$birdDiv = $birdDiv;
-        data.$birdZoom = $birdZoom;
-        data.$birdImg = $birdImg;
-        $elem.append($birdDiv);
-        $birdDiv.append($birdZoom);
-        $birdDiv.append($birdImg);
-        // $birdZoom.css(data.settings.birdIndicatorStyle);
-        var birdUrl = getBirdImgUrl(data);
-        $birdImg.load(birdImgLoadedHandler(data));
-        $birdImg.error(function () {console.error("error loading birdview image");});
-        $birdImg.attr('src', birdUrl);
-    };
-
-    // update bird's eye view
-    var updateBirdDiv = function (data) {
-        if (!data.settings.isBirdDivVisible) return;
-        var $birdImg = data.$birdImg;
-        var oldsrc = $birdImg.attr('src');
-        var newsrc = getBirdImgUrl(data);
-        if (oldsrc !== newsrc) {
-            $birdImg.attr('src', newsrc);
-            // onload handler re-renders
-        } else {
-            // re-render
-            renderBirdArea(data);
-            // enable click and drag
-            setupBirdDrag(data);
-        }
     };
 
     // creates HTML structure for the about view in elem
@@ -1297,21 +1222,6 @@ if (typeof(console) === 'undefined') {
         };
     };
 
-    // returns function for load event of bird's eye view img
-    var birdImgLoadedHandler = function (data) {
-        return function () {
-            var $birdImg = $(this);
-            var birdRect = geom.rectangle($birdImg);
-            console.debug("birdImg loaded!", $birdImg, "rect=", birdRect, "data=", data);
-            if (birdRect.width === 0) {
-                // malheureusement IE7 calls load handler when there is no size info yet 
-                setTimeout(function () { $birdImg.triggerHandler('load'); }, 200);
-                }
-            // update display (zoom area indicator)
-            updateDisplay(data);
-        };
-    };
-
     // place marks on the image
     var renderMarks = function (data) {
         if (data.$img == null || data.imgTrafo == null) return;
@@ -1332,42 +1242,6 @@ if (typeof(console) === 'undefined') {
                 mpos.adjustDiv($mark);
                 }
             }
-    };
-
-    // show zoom area indicator on bird's eye view
-    var renderBirdArea = function (data) {
-        if (data.$birdImg == null || ! data.$birdImg.get(0).complete) return;
-        var $birdZoom = data.$birdZoom;
-        var zoomArea = data.zoomArea;
-        var normalSize = isFullArea(zoomArea);
-        if (normalSize) {
-            $birdZoom.hide();
-            return;
-        } else {
-            $birdZoom.show();
-        }
-        // create Transform from current area and picsize
-        data.birdTrafo = getImgTrafo(data.$birdImg, FULL_AREA);
-        var zoomRect = data.birdTrafo.transform(zoomArea);
-        console.debug("renderBirdArea:", zoomRect, "zoomArea:", zoomArea, "$birdTrafo:", data.birdTrafo);
-        // acount for border width
-        var bw = getBorderWidth($birdZoom);
-        zoomRect.addPosition({x : -bw, y : -bw});
-        if (data.settings.interactionMode === 'fullscreen') {
-            // no animation for fullscreen
-            zoomRect.adjustDiv($birdZoom);
-        } else {
-            // nice animation for embedded mode :-)
-            // correct offsetParent because animate doesn't use offset
-            var ppos = $birdZoom.offsetParent().offset();
-            var dest = {
-                left : (zoomRect.x - ppos.left) + 'px',
-                top : (zoomRect.y - ppos.top) + 'px',
-                width : zoomRect.width,
-                height : zoomRect.height
-                };
-            $birdZoom.animate(dest);
-        }
     };
 
     // zooms by the given factor
@@ -1468,100 +1342,6 @@ if (typeof(console) === 'undefined') {
         $scaler.one('mousedown.dlZoomArea', zoomStart);
     };
 
-    // bird's eye view zoom area click and drag handler
-    var setupBirdDrag = function(data) {
-        var $birdImg = data.$birdImg;
-        var $birdZoom = data.$birdZoom;
-        var $document = $(document);
-        var $scaler = data.$scaler;
-        var startPos, newRect, birdImgRect, birdZoomRect, fullRect, scalerPos;
-        var bw = getBorderWidth($birdZoom);
-
-        // mousedown handler: start dragging bird zoom to a new position
-        var birdZoomStartDrag = function(evt) {
-            startPos = geom.position(evt);
-            // position may have changed
-            data.birdTrafo = getImgTrafo($birdImg, FULL_AREA);
-            birdImgRect = geom.rectangle($birdImg);
-            birdZoomRect = geom.rectangle($birdZoom);
-            scalerPos = geom.position($scaler);
-            newRect = null;
-            fullRect = setZoomBG(data); // setup zoom background image
-            $document.bind("mousemove.dlBirdMove", birdZoomMove);
-            $document.bind("mouseup.dlBirdMove", birdZoomEndDrag);
-            return false;
-        };
-
-        // mousemove handler: drag
-        var birdZoomMove = function(evt) {
-            var pos = geom.position(evt);
-            var delta = startPos.delta(pos);
-            // move birdZoom div, keeping size
-            newRect = birdZoomRect.copy();
-            newRect.addPosition(delta);
-            newRect.stayInside(birdImgRect);
-            // reflect birdview zoom position in scaler image
-            var area = data.birdTrafo.invtransform(newRect);
-            var imgArea = data.imgTrafo.transform(area);
-            var offset = imgArea.getPosition().neg();
-            offset.add(scalerPos);
-            if (fullRect) {
-                var bgPos = fullRect.getPosition().add(offset);
-            } else {
-                var bgPos = offset;
-            }
-            // move the background image to the new position
-            data.$scaler.css({
-                'background-position' : bgPos.x + "px " + bgPos.y + "px"
-                });
-            // acount for border width
-            newRect.addPosition({x : -bw, y : -bw});
-            newRect.adjustDiv($birdZoom);
-            return false;
-        };
-
-        // mouseup handler: reload page
-        var birdZoomEndDrag = function(evt) {
-            var settings = data.settings;
-            $document.unbind("mousemove.dlBirdMove", birdZoomMove);
-            $document.unbind("mouseup.dlBirdMove", birdZoomEndDrag);
-            if (newRect == null) { 
-                // no movement happened - set center to click position
-                startPos = birdZoomRect.getCenter();
-                birdZoomMove(evt); 
-                }
-            // ugly, but needed to prevent double border width compensation
-            newRect.addPosition({x : bw, y : bw});
-            var newArea = data.birdTrafo.invtransform(newRect);
-            data.zoomArea = newArea;
-            redisplay(data);
-            return false;
-        };
-
-        // clear old handler
-        $document.unbind(".dlBirdMove");
-        $birdImg.unbind(".dlBirdMove");
-        $birdZoom.unbind(".dlBirdMove");
-        if (! isFullArea(data.zoomArea)) {
-            // set new handler
-            $birdImg.bind("mousedown.dlBirdMove", birdZoomStartDrag);
-            $birdZoom.bind("mousedown.dlBirdMove", birdZoomStartDrag);
-        }
-    };
-
-    // move bird zoom indicator to reflect zoomed detail area
-    var setBirdZoom = function(data, rect) {
-        var part = data.imgTrafo.invtransform(rect);
-        // area = FULL_AREA.fit(part); // no, we want to see where we transcend the borders
-        birdTrafo = getImgTrafo(data.$birdImg, FULL_AREA);
-        var birdRect = birdTrafo.transform(part);
-        var $birdZoom = data.$birdZoom;
-        // acount for border width
-        var bw = getBorderWidth($birdZoom);
-        birdRect.addPosition({x : -bw, y : -bw});
-        birdRect.adjustDiv(data.$birdZoom);
-    };
-
     // set zoom background
     var setZoomBG = function(data) {
         var $scaler = data.$scaler;
@@ -1585,7 +1365,7 @@ if (typeof(console) === 'undefined') {
                 // correct offset because background is relative
                 var scalerPos = geom.position($scaler);
                 fullRect.addPosition(scalerPos.neg());
-                var url = getBirdImgUrl(data, ['rot', 'mo']);
+                var url = getBgImgUrl(data);
                 scalerCss['background-image'] = 'url(' + url + ')';
                 scalerCss[data.bgSizeName] = fullRect.width + 'px ' + fullRect.height + 'px';
                 scalerCss['background-position'] = fullRect.x + 'px '+ fullRect.y + 'px';
@@ -1603,6 +1383,7 @@ if (typeof(console) === 'undefined') {
     var setupZoomDrag = function(data) {
         var startPos, delta, fullRect;
         var $document = $(document);
+        var $data = $(data);
         var $elem = data.$elem;
         var $scaler = data.$scaler;
         var $img = data.$img;
@@ -1637,7 +1418,8 @@ if (typeof(console) === 'undefined') {
             // set birdview indicator to reflect new zoom position
             var za = geom.rectangle($img);
             za.addPosition(delta.neg());
-            setBirdZoom(data, za);
+            $data.trigger('dragZoom', [za]);
+            //TODO: setBirdZoom(data, za);
             return false;
             };
 
@@ -1742,12 +1524,12 @@ if (typeof(console) === 'undefined') {
     };
 
     // auxiliary function (from old dllib.js)
-    var isFullArea = function(area) {
+    var isFullArea = function (area) {
         return (area.width === 1.0) && (area.height === 1.0);
     };
 
     // auxiliary function (from Douglas Crockford, A.10)
-    var isNumber = function isNumber(value) {
+    var isNumber = function (value) {
         return typeof value === 'number' && isFinite(value);
     };
 
@@ -1778,22 +1560,25 @@ if (typeof(console) === 'undefined') {
     // functions to export to plugins
     fn = {
             geometry : geom,
-            FULL_AREA : FULL_AREA,
             parseQueryString : parseQueryString,
             getScalerUrl : getScalerUrl,
             getParamString : getParamString,
             getDigilibUrl : getDigilibUrl,
             unpackParams : unpackParams,
             packParams : packParams,
+            storeOptions : storeOptions,
             redisplay : redisplay,
             updateDisplay : updateDisplay,
+            highlightButtons : highlightButtons,
             showDiv : showDiv,
+            setZoomBG : setZoomBG,
             getImgTrafo : getImgTrafo,
             getQuality : getQuality,
             setQuality : setQuality,
             getScaleMode : getScaleMode,
             setScaleMode : setScaleMode,
-            isFullArea : isFullArea
+            isFullArea : isFullArea,
+            getBorderWidth : getBorderWidth
     };
 
     // hook plugin into jquery

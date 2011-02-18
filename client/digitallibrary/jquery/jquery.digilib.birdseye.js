@@ -16,6 +16,16 @@
                 }
     };
 
+    var defaults = {
+            // is birdView shown?
+            'isBirdDivVisible' : false,
+            // dimensions of bird's eye div
+            'birdDivWidth' : 200, 
+            'birdDivHeight' : 200,
+            // parameters used by bird's eye div
+            'birdDivParams' : ['fn','pn','dw','dh']
+    };
+    
     var actions = {
             // event handler: toggles the visibility of the bird's eye window 
             showBirdDiv : function (data, show) {
@@ -24,27 +34,69 @@
                     // no bird div -> create
                     setupBirdDiv(data);
                 }
-                var on = showDiv(settings.isBirdDivVisible, data.$birdDiv, show);
+                var on = digilib.fn.showDiv(settings.isBirdDivVisible, data.$birdDiv, show);
                 settings.isBirdDivVisible = on;
-                highlightButtons(data, 'bird', on);
+                digilib.fn.highlightButtons(data, 'bird', on);
                 updateBirdDiv(data);
-                storeOptions(data);
+                digilib.fn.storeOptions(data);
             }
     };       
        
-    // plugin initialization called by digilib on plugin object.
-    var install = function() {
+    // plugin installation called by digilib on plugin object.
+    var install = function(digilib) {
         // import geometry classes
-        geom = this.fn.geometry;
-        FULL_AREA = digilib.fn.FULL_AREA;
-        // TODO: add actions
-        // TODO: add buttons
-        // TODO: add event handlers
+        geom = digilib.fn.geometry;
+        FULL_AREA = geom.rectangle(0,0,1,1);
+        // add defaults
+        $.extend(digilib.defaults, defaults);
+        // add actions
+        $.extend(digilib.actions, actions);
+        // add buttons
+        $.extend(digilib.buttons, buttons);
+        // insert in button list -- not elegant
+        digilib.defaults.buttonSettings.fullscreen.standardSet.splice(9, 0, 'bird');
+        digilib.defaults.buttonSettings.embedded.standardSet.splice(5, 0, 'bird');
+    };
+
+    // plugin initialization
+    var init = function (data) {
+        var $data = $(data);
+        // install event handler
+        $data.bind('setup', handleSetup);
+        $data.bind('update', handleUpdate);
+        $data.bind('dragZoom', handleDragZoom);
     };
         
-        
+
+    var handleSetup = function (evt) {
+        console.debug("birdseye: handleSetup");
+        data = this;
+        // bird's eye view creation
+        if (data.settings.isBirdDivVisible) {
+            setupBirdDiv(data);
+            data.$birdDiv.show();
+        }
+    };
+    
+    var handleUpdate = function (evt) {
+        console.debug("birdseye: handleUpdate");
+        data = this;
+        if (data.settings.isBirdDivVisible) {
+            renderBirdArea(data);
+            setupBirdDrag(data);
+        }
+    };
+    
+    var handleDragZoom = function (evt, zoomArea) {
+        //console.debug("birdseye: handleDragZoom za="+zoomArea);
+        data = this;
+        if (data.settings.isBirdDivVisible) {
+            setBirdZoom(data, zoomArea);
+        }
+    };
+    
     // returns URL for bird's eye view image
-    var getBirdImgUrl = function (data, moreParams) {
+    var getBirdImgUrl = function (data) {
         var settings = data.settings;
         var birdDivOptions = {
                 dw : settings.birdDivWidth,
@@ -52,23 +104,7 @@
         };
         var birdSettings = $.extend({}, settings, birdDivOptions);
         // use only the relevant parameters
-        if (moreParams == null) {
-            var params = getParamString(birdSettings, settings.birdDivParams, defaults);
-        } else {
-            // filter scaler flags
-            if (birdSettings.mo != null) {
-                var mo = '';
-                if (data.scalerFlags.hmir != null) {
-                    mo += 'hmir,';
-                }
-                if (data.scalerFlags.vmir != null) {
-                    mo += 'vmir';
-                }
-                birdSettings.mo = mo;
-            }
-            var params = getParamString(birdSettings, 
-                    settings.birdDivParams.concat(moreParams), defaults);
-        }
+        var params = digilib.fn.getParamString(birdSettings, settings.birdDivParams, digilib.defaults);
         var url = settings.scalerBaseUrl + '?' + params;
         return url;
     };
@@ -123,7 +159,7 @@
                 setTimeout(function () { $birdImg.triggerHandler('load'); }, 200);
                 }
             // update display (zoom area indicator)
-            updateDisplay(data);
+            digilib.fn.updateDisplay(data);
         };
     };
 
@@ -132,7 +168,7 @@
         if (data.$birdImg == null || ! data.$birdImg.get(0).complete) return;
         var $birdZoom = data.$birdZoom;
         var zoomArea = data.zoomArea;
-        var normalSize = isFullArea(zoomArea);
+        var normalSize = digilib.fn.isFullArea(zoomArea);
         if (normalSize) {
             $birdZoom.hide();
             return;
@@ -140,11 +176,11 @@
             $birdZoom.show();
         }
         // create Transform from current area and picsize
-        data.birdTrafo = getImgTrafo(data.$birdImg, FULL_AREA);
+        data.birdTrafo = digilib.fn.getImgTrafo(data.$birdImg, FULL_AREA);
         var zoomRect = data.birdTrafo.transform(zoomArea);
         console.debug("renderBirdArea:", zoomRect, "zoomArea:", zoomArea, "$birdTrafo:", data.birdTrafo);
         // acount for border width
-        var bw = getBorderWidth($birdZoom);
+        var bw = digilib.fn.getBorderWidth($birdZoom);
         zoomRect.addPosition({x : -bw, y : -bw});
         if (data.settings.interactionMode === 'fullscreen') {
             // no animation for fullscreen
@@ -170,18 +206,18 @@
         var $document = $(document);
         var $scaler = data.$scaler;
         var startPos, newRect, birdImgRect, birdZoomRect, fullRect, scalerPos;
-        var bw = getBorderWidth($birdZoom);
+        var bw = digilib.fn.getBorderWidth($birdZoom);
 
         // mousedown handler: start dragging bird zoom to a new position
         var birdZoomStartDrag = function(evt) {
             startPos = geom.position(evt);
             // position may have changed
-            data.birdTrafo = getImgTrafo($birdImg, FULL_AREA);
+            data.birdTrafo = digilib.fn.getImgTrafo($birdImg, FULL_AREA);
             birdImgRect = geom.rectangle($birdImg);
             birdZoomRect = geom.rectangle($birdZoom);
             scalerPos = geom.position($scaler);
             newRect = null;
-            fullRect = setZoomBG(data); // setup zoom background image
+            fullRect = digilib.fn.setZoomBG(data); // setup zoom background image
             $document.bind("mousemove.dlBirdMove", birdZoomMove);
             $document.bind("mouseup.dlBirdMove", birdZoomEndDrag);
             return false;
@@ -229,7 +265,7 @@
             newRect.addPosition({x : bw, y : bw});
             var newArea = data.birdTrafo.invtransform(newRect);
             data.zoomArea = newArea;
-            redisplay(data);
+            digilib.fn.redisplay(data);
             return false;
         };
 
@@ -237,7 +273,7 @@
         $document.unbind(".dlBirdMove");
         $birdImg.unbind(".dlBirdMove");
         $birdZoom.unbind(".dlBirdMove");
-        if (! isFullArea(data.zoomArea)) {
+        if (! digilib.fn.isFullArea(data.zoomArea)) {
             // set new handler
             $birdImg.bind("mousedown.dlBirdMove", birdZoomStartDrag);
             $birdZoom.bind("mousedown.dlBirdMove", birdZoomStartDrag);
@@ -248,11 +284,11 @@
     var setBirdZoom = function(data, rect) {
         var part = data.imgTrafo.invtransform(rect);
         // area = FULL_AREA.fit(part); // no, we want to see where we transcend the borders
-        birdTrafo = getImgTrafo(data.$birdImg, FULL_AREA);
+        birdTrafo = digilib.fn.getImgTrafo(data.$birdImg, FULL_AREA);
         var birdRect = birdTrafo.transform(part);
         var $birdZoom = data.$birdZoom;
         // acount for border width
-        var bw = getBorderWidth($birdZoom);
+        var bw = digilib.fn.getBorderWidth($birdZoom);
         birdRect.addPosition({x : -bw, y : -bw});
         birdRect.adjustDiv(data.$birdZoom);
     };
@@ -262,6 +298,7 @@
     var digilib = {
             name : 'birdseye',
             install : install,
+            init : init,
             buttons : {},
             actions : {},
             fn : {},
