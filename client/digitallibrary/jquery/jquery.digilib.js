@@ -223,13 +223,13 @@ if (typeof(console) === 'undefined') {
                 // path to button images (must end with a slash)
                 'imagePath' : 'img/fullscreen/',
                 'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","help","reset","toggleoptions"],
-                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","toggleoptions"],
+                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","lessoptions"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 },
             'embedded' : {
                 'imagePath' : 'img/embedded/16/',
                 'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","bird","help","reset","toggleoptions"],
-                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","scale","toggleoptions"],
+                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","scale","lessoptions"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 }
         },
@@ -263,6 +263,7 @@ if (typeof(console) === 'undefined') {
     var actions = {
         // init: digilib initialization
         init : function(options) {
+            console.log('init digilib');
             // import geometry classes
             if (plugins.geometry == null) {
                 $.error("jquery.digilib.geometry plugin not found!");
@@ -1806,6 +1807,7 @@ if (typeof(console) === 'undefined') {
             var plugin = arguments[1];
             // each plugin needs a name
             if (plugin.name != null) {
+                console.log('installing plugin:', plugin.name);
                 plugins[plugin.name] = plugin;
             }
             // initialisation of plugins done later
