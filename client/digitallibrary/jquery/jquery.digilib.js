@@ -266,6 +266,7 @@ if (typeof(console) === 'undefined') {
             // import geometry classes
             if (plugins.geometry == null) {
                 $.error("jquery.digilib.geometry plugin not found!");
+                // last straw: old version
                 geom = dlGeometry();
             } else {
                 geom = plugins.geometry.init();
@@ -323,6 +324,7 @@ if (typeof(console) === 'undefined') {
                             $elem : $elem,
                             settings : elemSettings,
                             queryParams : params,
+                            // TODO: move plugins reference out of data
                             plugins : plugins
                     };
                     // store in data element
@@ -360,6 +362,7 @@ if (typeof(console) === 'undefined') {
                     p.buttons = buttons;
                     p.actions = actions;
                     p.fn = fn;
+                    p.plugins = plugins;
                     // and init
                     p.init(data);
                 }
@@ -1777,6 +1780,7 @@ if (typeof(console) === 'undefined') {
 
     // functions to export to plugins
     fn = {
+            geom : geom,
             parseQueryString : parseQueryString,
             getScalerUrl : getScalerUrl,
             getParamString : getParamString,
