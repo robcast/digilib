@@ -56,6 +56,11 @@ div.digilib div.about {
 	z-index: 1000;
 }
 
+div.digilib div.region {
+	background-color: red;
+	opacity: 0.5;
+}
+
 /* special definitions for fullscreen */
 div.digilib.dl_fullscreen div.buttons {
 	position: fixed;
