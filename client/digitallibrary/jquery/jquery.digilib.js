@@ -318,7 +318,7 @@ if (typeof(console) === 'undefined') {
                             }
                         }
                     }
-                    // store $(this) element in the settings
+                    // store $(this) element in data
                     elemSettings = $.extend({}, settings, params);
                     data = {
                             $elem : $elem,
@@ -1780,7 +1780,8 @@ if (typeof(console) === 'undefined') {
 
     // functions to export to plugins
     fn = {
-            geom : geom,
+            geometry : geom,
+            FULL_AREA : FULL_AREA,
             parseQueryString : parseQueryString,
             getScalerUrl : getScalerUrl,
             getParamString : getParamString,
@@ -1789,6 +1790,7 @@ if (typeof(console) === 'undefined') {
             packParams : packParams,
             redisplay : redisplay,
             updateDisplay : updateDisplay,
+            showDiv : showDiv,
             getImgTrafo : getImgTrafo,
             getQuality : getQuality,
             setQuality : setQuality,
