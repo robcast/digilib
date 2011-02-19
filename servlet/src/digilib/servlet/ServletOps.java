@@ -297,7 +297,7 @@ public class ServletOps {
     public static void sendImage(DocuImage img, String mimeType,
             HttpServletResponse response, Logger logger) throws ImageOpException,
             ServletException {
-        logger.debug("snding to response:"+ response + " committed=" + response.isCommitted());
+        logger.debug("sending to response:"+ response + " committed=" + response.isCommitted());
     	if (response.isCommitted()) {
         	logger.warn("sendImage: response already committed!");
         	//return;

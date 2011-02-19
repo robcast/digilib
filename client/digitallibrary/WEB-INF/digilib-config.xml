@@ -23,7 +23,7 @@
   <parameter name="subsample-minimum" value="2"/>
   
   <!-- default interpolation quality (0=worst) -->
-  <parameter name="default-quality" value="1"/>
+  <parameter name="default-quality" value="2"/>
   
   <!-- is sending whole image files with mo=file allowed? -->
   <parameter name="sendfile-allowed" value="true" />
