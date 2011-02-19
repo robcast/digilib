@@ -222,6 +222,10 @@ public class ServletOps {
     public static void sendFile(File f, String mt, String name, HttpServletResponse response, Logger logger)
             throws ImageOpException, ServletException {
         logger.debug("sendRawFile(" + mt + ", " + f + ")");
+    	if (response.isCommitted()) {
+        	logger.warn("sendFile: response already committed!");
+        	//return;
+    	}
         if (mt == null) {
             // auto-detect mime-type
             mt = FileOps.mimeForFile(f);
@@ -238,22 +242,30 @@ public class ServletOps {
             }
             response.addHeader("Content-Disposition", "attachment; filename=\""+name+"\"");
         }
+        FileInputStream inFile = null;
         try {
-            FileInputStream inFile = new FileInputStream(f);
+            inFile = new FileInputStream(f);
             OutputStream outStream = response.getOutputStream();
+            // TODO: should we set content length? 
+            // see http://www.prozesse-und-systeme.de/servletFlush.html
             response.setContentLength( (int) f.length());
             byte dataBuffer[] = new byte[4096];
             int len;
             while ((len = inFile.read(dataBuffer)) != -1) {
                 // copy out file
                 outStream.write(dataBuffer, 0, len);
-                outStream.flush();
             }
-            response.flushBuffer();
-            inFile.close();
         } catch (IOException e) {
             logger.error("Error sending file:", e);
             throw new ServletException("Error sending file:", e);
+        } finally {
+            try {
+                if (inFile != null) {
+                    inFile.close();
+                }
+            } catch (IOException e) {
+                // nothing to do
+            }
         }
     }
 
@@ -285,6 +297,10 @@ public class ServletOps {
     public static void sendImage(DocuImage img, String mimeType,
             HttpServletResponse response, Logger logger) throws ImageOpException,
             ServletException {
+    	if (response.isCommitted()) {
+        	logger.warn("sendImage: response already committed!");
+        	//return;
+    	}
         try {
             OutputStream outstream = response.getOutputStream();
             // setup output -- if mime type is set use that otherwise
@@ -301,13 +317,11 @@ public class ServletOps {
             // write the image
             response.setContentType(mimeType);
             img.writeImage(mimeType, outstream);
-            outstream.flush();
         } catch (IOException e) {
             logger.error("Error sending image:", e);
             throw new ServletException("Error sending image:", e);
-        } finally {
-            img.dispose();
         }
+        // TODO: should we: finally { img.dispose(); }
     }
 
 }
