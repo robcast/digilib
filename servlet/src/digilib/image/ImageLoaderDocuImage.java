@@ -305,12 +305,8 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		} catch (IOException e) {
 		    logger.error("Error writing image:", e);
 			throw new ServletException("Error writing image:", e);
-		} finally {
-			// clean up
-			if (writer != null) {
-				writer.dispose();
-			}
 		}
+		// TODO: should we: finally { writer.dispose(); }
 	}
 
 	public void scale(double scale, double scaleY) throws ImageOpException {

@@ -23,8 +23,6 @@ import digilib.image.ImageOpException;
 import digilib.image.ImageWorker;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
-import digilib.io.DocuDirent;
-import digilib.io.FileOps.FileClass;
 import digilib.io.ImageInput;
 import digilib.util.DigilibJobCenter;
 
@@ -32,7 +30,7 @@ import digilib.util.DigilibJobCenter;
 public class Scaler extends HttpServlet {
 
     /** digilib servlet version (for all components) */
-    public static final String version = "1.9.0a";
+    public static final String version = "1.9.0a2";
 
     /** servlet error codes */
     public static enum Error {UNKNOWN, AUTH, FILE, IMAGE};
@@ -310,6 +308,11 @@ public class Scaler extends HttpServlet {
                 }
                 img = this.errorImgFile;
                 status = HttpServletResponse.SC_BAD_REQUEST;
+            }
+            if (response.isCommitted()) {
+                // response already committed
+                logger.error("Unable to send error: " + msg);
+                return;
             }
             if (type == ErrMsg.TEXT) {
                 ServletOps.htmlMessage(msg, response);

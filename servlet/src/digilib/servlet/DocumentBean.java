@@ -35,7 +35,6 @@ import digilib.auth.AuthOpException;
 import digilib.auth.AuthOps;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
-import digilib.io.ImageFile;
 import digilib.io.FileOps.FileClass;
 import digilib.io.ImageInput;
 import digilib.io.ImageSet;

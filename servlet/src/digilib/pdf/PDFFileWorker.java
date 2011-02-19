@@ -46,10 +46,18 @@ public class PDFFileWorker implements Callable<File> {
     }
     
     public File call() throws Exception {
-    	OutputStream outstream = streamWorker.call();
-    	outstream.flush();
-    	// move temporary to final file
-    	tempFile.renameTo(finalFile);
+        OutputStream outstream = null;
+        try {
+            outstream = streamWorker.call();
+            outstream.flush();
+            outstream.close();
+            // move temporary to final file
+            tempFile.renameTo(finalFile);
+        } finally {
+            if (outstream != null) {
+                outstream.close();
+            }
+        }
         return finalFile;
     }
     

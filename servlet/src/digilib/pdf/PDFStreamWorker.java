@@ -97,6 +97,7 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 		doc.close();
 		logger.debug("PDF: " + outstream + " doc.close() ("
 				+ (System.currentTimeMillis() - start_time) + "ms)");
+		docwriter.flush();
 		docwriter.close();
 		return outstream;
 	}
