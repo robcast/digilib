@@ -30,7 +30,7 @@ import digilib.util.DigilibJobCenter;
 public class Scaler extends HttpServlet {
 
     /** digilib servlet version (for all components) */
-    public static final String version = "1.9.0a2";
+    public static final String version = "1.9.0a3";
 
     /** servlet error codes */
     public static enum Error {UNKNOWN, AUTH, FILE, IMAGE};

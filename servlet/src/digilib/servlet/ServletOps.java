@@ -222,6 +222,10 @@ public class ServletOps {
     public static void sendFile(File f, String mt, String name, HttpServletResponse response, Logger logger)
             throws ImageOpException, ServletException {
         logger.debug("sendRawFile(" + mt + ", " + f + ")");
+    	if (response.isCommitted()) {
+        	logger.warn("sendFile: response already committed!");
+        	//return;
+    	}
         if (mt == null) {
             // auto-detect mime-type
             mt = FileOps.mimeForFile(f);
@@ -293,6 +297,10 @@ public class ServletOps {
     public static void sendImage(DocuImage img, String mimeType,
             HttpServletResponse response, Logger logger) throws ImageOpException,
             ServletException {
+    	if (response.isCommitted()) {
+        	logger.warn("sendImage: response already committed!");
+        	//return;
+    	}
         try {
             OutputStream outstream = response.getOutputStream();
             // setup output -- if mime type is set use that otherwise
