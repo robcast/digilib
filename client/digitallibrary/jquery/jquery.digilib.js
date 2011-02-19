@@ -21,18 +21,17 @@ Authors:
  * digilib jQuery plugin
 **/ 
 
-
 /*jslint browser: true, debug: true, forin: true
 */
 
 // fallback for console.log calls
-if (typeof(console) === 'undefined') {
+if (typeof console === 'undefined') {
     var console = {
         log : function(){}, 
         debug : function(){}, 
         error : function(){}
         };
-    var customConsole = true;
+    var customConsole = false; // set to true if debugging for MS IE
 }
 
 (function($) {
@@ -81,11 +80,6 @@ if (typeof(console) === 'undefined') {
             onclick : "gotoPage",
             tooltip : "goto image number",
             icon : "page.png"
-            },
-        bird : {
-            onclick : "showBirdDiv",
-            tooltip : "show bird's eye view",
-            icon : "birds-eye.png"
             },
         help : {
             onclick : "showAboutDiv",
@@ -223,46 +217,55 @@ if (typeof(console) === 'undefined') {
             'fullscreen' : {
                 // path to button images (must end with a slash)
                 'imagePath' : 'img/fullscreen/',
-                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","bird","help","reset","toggleoptions"],
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","help","reset","toggleoptions"],
                 'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","toggleoptions"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 },
             'embedded' : {
                 'imagePath' : 'img/embedded/16/',
-                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","bird","help","reset","toggleoptions"],
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","help","reset","toggleoptions"],
                 'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","scale","toggleoptions"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 }
         },
-        
         // number of visible button groups
         'visibleButtonSets' : 1,
-        // is birdView shown?
-        'isBirdDivVisible' : false,
-        // dimensions of bird's eye div
-        'birdDivWidth' : 200, 
-        'birdDivHeight' : 200,
-        // parameters used by bird's eye div
-        'birdDivParams' : ['fn','pn','dw','dh'],
-        // style of the zoom area indicator in the bird's eye div 
-        'birdIndicatorStyle' : {'border' : '2px solid #ff0000' },
-        // style of zoom area "rubber band"
-        'zoomrectStyle' : {'border' : '2px solid #ff0000' },
         // is the "about" window shown?
         'isAboutDivVisible' : false,
-        // maximum width of background image for drag-scroll
-        'maxBgSize' : 10000
-
+        // default size of background image for drag-scroll (same as Bird's Eye View image)
+        'bgImgWidth' : 200,
+        'bgImgHeight' : 200,
+        // maximum width or height of background image for drag-scroll
+        'maxBgSize' : 10000,
+        // parameters used by background image
+        'bgImgParams' : ['fn','pn','dw','dh','mo','rot'],
+        // space to be left free in full page display, default value is for scrollbar
+        'scalerInset' : 10
         };
 
-    // affine geometry classes
-    var geom = dlGeometry();
+    // list of plugins
+    var plugins = {};
+    // object to export functions to plugins
+    var fn;
+    // affine geometry plugin stub
+    var geom;
 
-    var FULL_AREA = geom.rectangle(0, 0, 1, 1);
+    var FULL_AREA;
 
     var actions = {
         // init: digilib initialization
         init : function(options) {
+            // import geometry classes
+            if (plugins.geometry == null) {
+                $.error("jquery.digilib.geometry plugin not found!");
+                // last straw: old version
+                geom = dlGeometry();
+            } else {
+                // geometry plugin puts classes in the shared fn
+                geom = fn.geometry;
+            }
+            FULL_AREA  = geom.rectangle(0, 0, 1, 1);
+
             // settings for this digilib instance are merged from defaults and options
             var settings = $.extend({}, defaults, options);
             var isFullscreen = settings.interactionMode === 'fullscreen';
@@ -294,28 +297,30 @@ if (typeof(console) === 'undefined') {
                         params = queryParams;
                     } else {
                         params = parseImgParams($elem);
-                        if (jQuery.cookie) {
+                        if ($.cookie) {
                             // retrieve params from cookie
                             var ck = "digilib-embed:fn:" + escape(params.fn) + ":pn:" + (params.pn || '1');
-                            var cs = jQuery.cookie(ck);
+                            var cs = $.cookie(ck);
                             console.debug("get cookie=", ck, " value=", cs);
                             if (cs) {
                                 var cp = parseQueryString(cs);
                                 // ignore fn and pn from cookie TODO: should we keep pn?
                                 delete cp.fn;
                                 delete cp.pn;
-                                jQuery.extend(params, cp);
+                                $.extend(params, cp);
                             }
                         }
                     }
-                    // store $(this) element in the settings
-                    elemSettings = jQuery.extend({}, settings, params);
+                    // store $(this) element in data
+                    elemSettings = $.extend({}, settings, params);
                     data = {
                             $elem : $elem,
                             settings : elemSettings,
-                            queryParams : params
+                            queryParams : params,
+                            // TODO: move plugins reference out of data
+                            plugins : plugins
                     };
-                    // store in data element
+                    // store in jQuery data element
                     $elem.data('digilib', data);
                 }
                 unpackParams(data);
@@ -343,26 +348,29 @@ if (typeof(console) === 'undefined') {
                         }
                     }
                 }
+                // initialise plugins
+                for (n in plugins) {
+                    var p = plugins[n];
+                    if (typeof p.init === 'function') {
+                        p.init(data);
+                    }
+                }
                 // get image info from server if needed
                 if (data.scaleMode === 'pixel' || data.scaleMode === 'size') {
-                    loadImageInfo(data, updateDisplay); // updateDisplay(data) on completion
+                    $(data).bind('imageInfo', handleImageInfo);
+                    loadImageInfo(data); // triggers "imageInfo" on completion
                 }
-                // create HTML structure for scaler
-                setupScalerDiv(data);
-                // add buttons
+                // create buttons before scaler 
                 for (var i = 0; i < elemSettings.visibleButtonSets; ++i) {
                     showButtons(data, true, i);
                     }
+                // create HTML structure for scaler, taking width of buttons div into account
+                setupScalerDiv(data);
                 highlightButtons(data);
-                // bird's eye view creation
-                if (elemSettings.isBirdDivVisible) {
-                    setupBirdDiv(data);
-                    data.$birdDiv.show();
-                    }
                 // about window creation - TODO: could be deferred? restrict to only one item?
                 setupAboutDiv(data);
-                // drag zoom area around in scaler div 
-                // setupZoomDrag(data); // is done in scalerImgLoadedHandler()
+                // send setup event
+                $(data).trigger('setup');
             });
         },
 
@@ -381,20 +389,6 @@ if (typeof(console) === 'undefined') {
             var on = showDiv(data.settings.isAboutDivVisible, data.$aboutDiv, show);
             data.settings.isAboutDivVisible = on;
             highlightButtons(data, 'help', on);
-        },
-
-        // event handler: toggles the visibility of the bird's eye window 
-        showBirdDiv : function (data, show) {
-            var settings = data.settings;
-            if (data.$birdDiv == null) {
-                // no bird div -> create
-                setupBirdDiv(data);
-            }
-            var on = showDiv(settings.isBirdDivVisible, data.$birdDiv, show);
-            settings.isBirdDivVisible = on;
-            highlightButtons(data, 'bird', on);
-            updateBirdDiv(data);
-            storeOptions(data);
         },
 
         // goto given page nr (+/-: relative)
@@ -614,7 +608,7 @@ if (typeof(console) === 'undefined') {
                 redisplay(data);
             }
         },
-        
+
         // set image scale mode
         setScaleMode : function (data, mode) {
             var oldM = getScaleMode(data);
@@ -627,7 +621,7 @@ if (typeof(console) === 'undefined') {
                 redisplay(data);
             }
         }
-        
+
     // end of actions
     };
 
@@ -698,31 +692,25 @@ if (typeof(console) === 'undefined') {
     };
 
     // returns URL for bird's eye view image
-    var getBirdImgUrl = function (data, moreParams) {
+    var getBgImgUrl = function (data, moreParams) {
         var settings = data.settings;
-        var birdDivOptions = {
-                dw : settings.birdDivWidth,
-                dh : settings.birdDivHeight
+        var bgOptions = {
+                dw : settings.bgImgWidth,
+                dh : settings.bgImgHeight
         };
-        var birdSettings = jQuery.extend({}, settings, birdDivOptions);
-        // use only the relevant parameters
-        if (moreParams == null) {
-            var params = getParamString(birdSettings, settings.birdDivParams, defaults);
-        } else {
-            // filter scaler flags
-            if (birdSettings.mo != null) {
-                var mo = '';
-                if (data.scalerFlags.hmir != null) {
-                    mo += 'hmir,';
-                }
-                if (data.scalerFlags.vmir != null) {
-                    mo += 'vmir';
-                }
-                birdSettings.mo = mo;
+        var bgSettings = $.extend({}, settings, bgOptions);
+        // filter scaler flags
+        if (bgSettings.mo != null) {
+            var mo = '';
+            if (data.scalerFlags.hmir != null) {
+                mo += 'hmir,';
             }
-            var params = getParamString(birdSettings, 
-                    settings.birdDivParams.concat(moreParams), defaults);
+            if (data.scalerFlags.vmir != null) {
+                mo += 'vmir';
+            }
+            bgSettings.mo = mo;
         }
+        var params = getParamString(bgSettings, settings.bgImgParams, defaults);
         var url = settings.scalerBaseUrl + '?' + params;
         return url;
     };
@@ -735,22 +723,21 @@ if (typeof(console) === 'undefined') {
         return settings.digilibBaseUrl + '?' + queryString;
     };
 
-    // loads image information from digilib server via HTTP (and calls complete-fn)
-    var loadImageInfo = function (data, complete) {
+    // loads image information from digilib server via HTTP
+    var loadImageInfo = function (data) {
         var settings = data.settings;
         var p = settings.scalerBaseUrl.indexOf('/servlet/Scaler');
         var url = settings.scalerBaseUrl.substring(0, p) + '/ImgInfo-json.jsp';
         url += '?' + getParamString(settings, ['fn', 'pn'], defaults);
         // TODO: better error handling
-        jQuery.getJSON(url, function (json) {
+        $.getJSON(url, function (json) {
             console.debug("got json data=", json);
             data.imgInfo = json;
-            if (complete != null) {
-                complete.call(this, data, json);
-            }
+            // send event
+            $(data).trigger('imageInfo', [json]);
         });
     };
-    
+
     // processes some parameters into objects and stuff
     var unpackParams = function (data) {
         var settings = data.settings;
@@ -837,18 +824,18 @@ if (typeof(console) === 'undefined') {
                     }
                 clop += o + '=' + data.dlOpts[o];
                 }
-            if (jQuery.cookie) {
+            if ($.cookie) {
                 var ck = "digilib:fn:" + escape(settings.fn) + ":pn:" + settings.pn;
                 console.debug("set cookie=", ck, " value=", clop);
-                jQuery.cookie(ck, clop);
+                $.cookie(ck, clop);
                 }
         }
-        if (settings.interactionMode !== 'fullscreen' && jQuery.cookie) {
+        if (settings.interactionMode !== 'fullscreen' && $.cookie) {
             // store normal parameters in cookie for embedded mode
             var qs = getParamString(settings, settings.digilibParamNames, defaults);
             var ck = "digilib-embed:fn:" + escape(settings.fn) + ":pn:" + settings.pn;
             console.debug("set cookie=", ck, " value=", qs);
-            jQuery.cookie(ck, qs);
+            $.cookie(ck, qs);
         }
     };
 
@@ -856,10 +843,10 @@ if (typeof(console) === 'undefined') {
         // clop (digilib options)
         var opts = {};
         var settings = data.settings;
-        if (jQuery.cookie) {
+        if ($.cookie) {
             // read from cookie
             var ck = "digilib:fn:" + escape(settings.fn) + ":pn:" + settings.pn;
-            var cp = jQuery.cookie(ck);
+            var cp = $.cookie(ck);
             console.debug("get cookie=", ck, " value=", cp);
             // in query string format
             opts = parseQueryString(cp);
@@ -882,17 +869,27 @@ if (typeof(console) === 'undefined') {
             // update location.href (browser URL) in fullscreen mode
             var url = getDigilibUrl(data);
             var history = window.history;
-            if (typeof(history.pushState) === 'function') {
-                console.debug("we could modify history, but we don't...");
-                }
-            window.location = url;
+            if (typeof history.pushState === 'function') {
+                console.debug("faking reload to "+url);
+                // change url without reloading (stateObj, title, url)
+                history.pushState({}, '', url);
+                // change img src
+                var imgurl = getScalerUrl(data);
+                data.$img.attr('src', imgurl);
+                highlightButtons(data);
+                // send event
+                $(data).trigger('redisplay');
+            } else {
+                // reload window
+                window.location = url;
+            }
         } else {
             // embedded mode -- just change img src
             var url = getScalerUrl(data);
             data.$img.attr('src', url);
-            // redisplay bird img
-            updateBirdDiv(data);
             highlightButtons(data);
+            // send event
+            $(data).trigger('redisplay');
             }
     };
 
@@ -901,20 +898,29 @@ if (typeof(console) === 'undefined') {
         updateImgTrafo(data);
         renderMarks(data);
         setupZoomDrag(data);
-        if (data.settings.isBirdDivVisible) {
-            renderBirdArea(data);
-            setupBirdDrag(data);
-        }
-        // TODO: update event subscriber?
+        // send event
+        $(data).trigger('update');
     };
-    
+
     // returns maximum size for scaler img in fullscreen mode
-    var getFullscreenImgSize = function ($elem) {
+    var getFullscreenImgSize = function (data) {
         var $win = $(window);
         var winH = $win.height();
         var winW = $win.width();
-        // TODO: account for borders?
-        return geom.size(winW, winH);
+        var $body = $('body');
+         // include standard body margins
+        var borderW = $body.outerWidth(true) - $body.width();
+        var borderH = $body.outerHeight(true) - $body.height();
+        // get width of first button div
+        var buttonsW = 0; 
+        if (data.$buttonSets) {
+            buttonsW = data.$buttonSets[0].outerWidth();
+        }
+        // account for left/right border, body margins and additional requirements
+        var calcW = winW - borderW - buttonsW - data.settings.scalerInset;
+        var calcH = winH - borderH;
+        console.debug(winW, winH, 'winW:', $win.width(), 'border:', borderW, 'buttonsW:', buttonsW, 'calc:', calcW);
+        return geom.size(calcW, calcH);
     };
 
     // creates HTML structure for digilib in elem
@@ -927,7 +933,7 @@ if (typeof(console) === 'undefined') {
         if (settings.interactionMode === 'fullscreen') {
             // fullscreen
             $elem.addClass('dl_fullscreen');
-            var imgSize = getFullscreenImgSize($elem);
+            var imgSize = getFullscreenImgSize(data);
             // fitwidth/height omits destination height/width
             if (data.dlOpts.fitheight == null) {
                 settings.dw = imgSize.width;
@@ -954,10 +960,11 @@ if (typeof(console) === 'undefined') {
                 $img = $('<img/>');
             }
         }
-        // create new html
-        $elem.empty(); // TODO: should we keep stuff for customization?
+        // create new inner html, keep buttons
+        $elem.contents(":not(div.buttons)").remove();
         var $scaler = $('<div class="scaler"/>');
-        $elem.append($scaler);
+        // scaler should be the first child element?
+        $elem.prepend($scaler);
         $scaler.append($img);
         $img.addClass('pic');
         data.$scaler = $scaler;
@@ -1033,45 +1040,6 @@ if (typeof(console) === 'undefined') {
         return $buttonsDiv;
     };
 
-    // creates HTML structure for the bird's eye view in elem
-    var setupBirdDiv = function (data) {
-        var $elem = data.$elem;
-        // the bird's eye div
-        var $birdDiv = $('<div class="birdview" style="display:none"/>');
-        // the detail indicator frame
-        var $birdZoom = $('<div class="birdzoom" style="display:none; background-color:transparent;"/>');
-        // the small image
-        var $birdImg = $('<img class="birdimg"/>');
-        data.$birdDiv = $birdDiv;
-        data.$birdZoom = $birdZoom;
-        data.$birdImg = $birdImg;
-        $elem.append($birdDiv);
-        $birdDiv.append($birdZoom);
-        $birdDiv.append($birdImg);
-        $birdZoom.css(data.settings.birdIndicatorStyle);
-        var birdUrl = getBirdImgUrl(data);
-        $birdImg.load(birdImgLoadedHandler(data));
-        $birdImg.error(function () {console.error("error loading birdview image");});
-        $birdImg.attr('src', birdUrl);
-    };
-
-    // update bird's eye view
-    var updateBirdDiv = function (data) {
-        if (!data.settings.isBirdDivVisible) return;
-        var $birdImg = data.$birdImg;
-        var oldsrc = $birdImg.attr('src');
-        var newsrc = getBirdImgUrl(data);
-        if (oldsrc !== newsrc) {
-            $birdImg.attr('src', newsrc);
-            // onload handler re-renders
-        } else {
-            // re-render
-            renderBirdArea(data);
-            // enable click and drag
-            setupBirdDrag(data);
-        }
-    };
-
     // creates HTML structure for the about view in elem
     var setupAboutDiv = function (data) {
         var $elem = data.$elem;
@@ -1089,12 +1057,11 @@ if (typeof(console) === 'undefined') {
         $logo.attr('src', settings.logoUrl);
         $link.attr('href', settings.homeUrl);
         $content.text('Version: ' + settings.version);
-        // click hides
-        $aboutDiv.bind('click.digilib', function () { 
-            settings.isAboutDivVisible = showDiv(settings.isAboutDivVisible, $aboutDiv, 0);
-            return false;
-            });
         data.$aboutDiv = $aboutDiv;
+        // click hides
+        $aboutDiv.bind('click.digilib', function () {
+            actions['showAboutDiv'](data, false);
+            });
     };
 
     // shows some window e.g. 'about' (toggle visibility if show is null)
@@ -1130,6 +1097,7 @@ if (typeof(console) === 'undefined') {
             if ($set == null) return false;
             // include border in calculation
             var btnWidth = $set.outerWidth();
+            // console.debug("btnWidth", btnWidth);
             // move remaining sets left and show new set
             if ($otherSets.length > 0) {
                     $otherSets.animate({right : '+='+btnWidth+'px'}, atime,
@@ -1141,7 +1109,7 @@ if (typeof(console) === 'undefined') {
             // remove set
             var $set = data.$buttonSets[setIdx];
             if ($set == null) return false;
-            var btnWidth = $set.width();
+            var btnWidth = $set.outerWidth();
             // hide last set
             $set.hide();
             // take remaining sets and move right
@@ -1178,7 +1146,7 @@ if (typeof(console) === 'undefined') {
         highlight('quality', flags.q1 || flags.q2);
         highlight('zoomin', ! isFullArea(data.zoomArea));
         };
-        
+
     // create Transform from area and $img
     var getImgTrafo = function ($img, area, rot, hmir, vmir, mode, data) {
         var picrect = geom.rectangle($img);
@@ -1245,8 +1213,8 @@ if (typeof(console) === 'undefined') {
             // console.debug("imgTrafo=", data.imgTrafo);
         }
     };
-    
-    // returns function for load event of scaler img
+
+    // returns handler for load event of scaler img
     var scalerImgLoadedHandler = function (data) {
         return function () {
             var $img = $(this);
@@ -1263,21 +1231,12 @@ if (typeof(console) === 'undefined') {
         };
     };
 
-    // returns function for load event of bird's eye view img
-    var birdImgLoadedHandler = function (data) {
-        return function () {
-            var $birdImg = $(this);
-            var birdRect = geom.rectangle($birdImg);
-            console.debug("birdImg loaded!", $birdImg, "rect=", birdRect, "data=", data);
-            if (birdRect.width === 0) {
-                // malheureusement IE7 calls load handler when there is no size info yet 
-                setTimeout(function () { $birdImg.triggerHandler('load'); }, 200);
-                }
-            // update display (zoom area indicator)
-            updateDisplay(data);
-        };
+    // handler for imageInfo loaded event
+    var handleImageInfo = function (evt, json) {
+        var data = this;
+        updateDisplay(data);
     };
-
+    
     // place marks on the image
     var renderMarks = function (data) {
         if (data.$img == null || data.imgTrafo == null) return;
@@ -1298,41 +1257,6 @@ if (typeof(console) === 'undefined') {
                 mpos.adjustDiv($mark);
                 }
             }
-    };
-
-    // show zoom area indicator on bird's eye view
-    var renderBirdArea = function (data) {
-        if (data.$birdImg == null || ! data.$birdImg.get(0).complete) return;
-        var $birdZoom = data.$birdZoom;
-        var zoomArea = data.zoomArea;
-        var normalSize = isFullArea(zoomArea);
-        if (normalSize) {
-            $birdZoom.hide();
-            return;
-        } else {
-            $birdZoom.show();
-        }
-        // create Transform from current area and picsize
-        data.birdTrafo = getImgTrafo(data.$birdImg, FULL_AREA);
-        var zoomRect = data.birdTrafo.transform(zoomArea);
-        console.debug("renderBirdArea:", zoomRect, "zoomArea:", zoomArea, "$birdTrafo:", data.birdTrafo);
-        // acount for border width
-        zoomRect.addPosition({x : -2, y : -2});
-        if (data.settings.interactionMode === 'fullscreen') {
-            // no animation for fullscreen
-            zoomRect.adjustDiv($birdZoom);
-        } else {
-            // nice animation for embedded mode :-)
-            // correct offsetParent because animate doesn't use offset
-            var ppos = $birdZoom.offsetParent().offset();
-            var dest = {
-                left : (zoomRect.x - ppos.left) + 'px',
-                top : (zoomRect.y - ppos.top) + 'px',
-                width : zoomRect.width,
-                height : zoomRect.height
-                };
-            $birdZoom.animate(dest);
-        }
     };
 
     // zooms by the given factor
@@ -1374,7 +1298,7 @@ if (typeof(console) === 'undefined') {
         var pt1, pt2;
         var $zoomDiv = $('<div class="zoomrect" style="display:none"/>');
         $elem.append($zoomDiv);
-        $zoomDiv.css(data.settings.zoomrectStyle);
+        // $zoomDiv.css(data.settings.zoomrectStyle);
         var picRect = geom.rectangle($scaler);
         // FIX ME: is there a way to query the border width from CSS info?
         // rect.x -= 2; // account for overlay borders
@@ -1433,97 +1357,6 @@ if (typeof(console) === 'undefined') {
         $scaler.one('mousedown.dlZoomArea', zoomStart);
     };
 
-    // bird's eye view zoom area click and drag handler
-    var setupBirdDrag = function(data) {
-        var $birdImg = data.$birdImg;
-        var $birdZoom = data.$birdZoom;
-        var $document = $(document);
-        var $scaler = data.$scaler;
-        var startPos, newRect, birdImgRect, birdZoomRect, fullRect, scalerPos;
-
-        // mousedown handler: start dragging bird zoom to a new position
-        var birdZoomStartDrag = function(evt) {
-            startPos = geom.position(evt);
-            // position may have changed
-            data.birdTrafo = getImgTrafo($birdImg, FULL_AREA);
-            birdImgRect = geom.rectangle($birdImg);
-            birdZoomRect = geom.rectangle($birdZoom);
-            scalerPos = geom.position($scaler);
-            newRect = null;
-            fullRect = setZoomBG(data); // setup zoom background image
-            $document.bind("mousemove.dlBirdMove", birdZoomMove);
-            $document.bind("mouseup.dlBirdMove", birdZoomEndDrag);
-            return false;
-        };
-
-        // mousemove handler: drag
-        var birdZoomMove = function(evt) {
-            var pos = geom.position(evt);
-            var delta = startPos.delta(pos);
-            // move birdZoom div, keeping size
-            newRect = birdZoomRect.copy();
-            newRect.addPosition(delta);
-            newRect.stayInside(birdImgRect);
-            // reflect birdview zoom position in scaler image
-            var area = data.birdTrafo.invtransform(newRect);
-            var imgArea = data.imgTrafo.transform(area);
-            var offset = imgArea.getPosition().neg();
-            offset.add(scalerPos);
-            if (fullRect) {
-                var bgPos = fullRect.getPosition().add(offset);
-            } else {
-                var bgPos = offset;
-            }
-            // move the background image to the new position
-            data.$scaler.css({
-                'background-position' : bgPos.x + "px " + bgPos.y + "px"
-                });
-            // acount for border width
-            newRect.addPosition({x : -2, y : -2});
-            newRect.adjustDiv($birdZoom);
-            return false;
-        };
-
-        // mouseup handler: reload page
-        var birdZoomEndDrag = function(evt) {
-            var settings = data.settings;
-            $document.unbind("mousemove.dlBirdMove", birdZoomMove);
-            $document.unbind("mouseup.dlBirdMove", birdZoomEndDrag);
-            if (newRect == null) { 
-                // no movement happened - set center to click position
-                startPos = birdZoomRect.getCenter();
-                birdZoomMove(evt); 
-                }
-            // ugly, but needed to prevent double border width compensation
-            newRect.addPosition({x : +2, y : +2});
-            var newArea = data.birdTrafo.invtransform(newRect);
-            data.zoomArea = newArea;
-            redisplay(data);
-            return false;
-        };
-
-        // clear old handler
-        $document.unbind(".dlBirdMove");
-        $birdImg.unbind(".dlBirdMove");
-        $birdZoom.unbind(".dlBirdMove");
-        if (! isFullArea(data.zoomArea)) {
-            // set new handler
-            $birdImg.bind("mousedown.dlBirdMove", birdZoomStartDrag);
-            $birdZoom.bind("mousedown.dlBirdMove", birdZoomStartDrag);
-        }
-    };
-
-    // move bird zoom indicator to reflect zoomed detail area
-    var setBirdZoom = function(data, rect) {
-        var part = data.imgTrafo.invtransform(rect);
-        // area = FULL_AREA.fit(part); // no, we want to see where we transcend the borders
-        birdTrafo = getImgTrafo(data.$birdImg, FULL_AREA);
-        var birdRect = birdTrafo.transform(part);
-        // acount for border width
-        birdRect.addPosition({x : -2, y : -2});
-        birdRect.adjustDiv(data.$birdZoom);
-    };
-
     // set zoom background
     var setZoomBG = function(data) {
         var $scaler = data.$scaler;
@@ -1547,7 +1380,7 @@ if (typeof(console) === 'undefined') {
                 // correct offset because background is relative
                 var scalerPos = geom.position($scaler);
                 fullRect.addPosition(scalerPos.neg());
-                var url = getBirdImgUrl(data, ['rot', 'mo']);
+                var url = getBgImgUrl(data);
                 scalerCss['background-image'] = 'url(' + url + ')';
                 scalerCss[data.bgSizeName] = fullRect.width + 'px ' + fullRect.height + 'px';
                 scalerCss['background-position'] = fullRect.x + 'px '+ fullRect.y + 'px';
@@ -1565,6 +1398,7 @@ if (typeof(console) === 'undefined') {
     var setupZoomDrag = function(data) {
         var startPos, delta, fullRect;
         var $document = $(document);
+        var $data = $(data);
         var $elem = data.$elem;
         var $scaler = data.$scaler;
         var $img = data.$img;
@@ -1599,7 +1433,8 @@ if (typeof(console) === 'undefined') {
             // set birdview indicator to reflect new zoom position
             var za = geom.rectangle($img);
             za.addPosition(delta.neg());
-            setBirdZoom(data, za);
+            $data.trigger('dragZoom', [za]);
+            //TODO: setBirdZoom(data, za);
             return false;
             };
 
@@ -1663,7 +1498,7 @@ if (typeof(console) === 'undefined') {
         // mo=fit is default
         return 'screen';
     };
-    
+
     // set image scale mode (screen, pixel, size)
     var setScaleMode = function (data, mode) {
         delete data.scalerFlags.fit;
@@ -1676,7 +1511,7 @@ if (typeof(console) === 'undefined') {
         }
         // mo=fit is default
     };
-    
+
      // sets a key to a value (relative values with +/- if relative=true)
     var setNumValue = function(settings, key, value) {
         if (value == null) return null;
@@ -1697,13 +1532,19 @@ if (typeof(console) === 'undefined') {
         return settings[key];
     };
 
+    // auxiliary function, assuming equal border width on all sides
+    var getBorderWidth = function($elem) {
+        var border = $elem.outerWidth() - $elem.width();
+        return border/2;
+    };
+
     // auxiliary function (from old dllib.js)
-    var isFullArea = function(area) {
+    var isFullArea = function (area) {
         return (area.width === 1.0) && (area.height === 1.0);
     };
 
     // auxiliary function (from Douglas Crockford, A.10)
-    var isNumber = function isNumber(value) {
+    var isNumber = function (value) {
         return typeof value === 'number' && isFinite(value);
     };
 
@@ -1731,28 +1572,50 @@ if (typeof(console) === 'undefined') {
         console.error = logFunction('_error');
         }
 
-    // hook plugin into jquery
-    $.fn.digilib = function(action, obj) {
-        // plugin extension mechanism
-        if (action === 'extendPlugin') {
-            // for each digilib $elem extend data.settings with obj.options
-            if (obj.options) {
-                this.each(function() {
-                    var $elem = $(this);
-                    // console.debug('extending:', $elem);
-                    var data = $elem.data('digilib');
-                    if (!data) {
-                        return console.log('cannot extend digilib plugin, element not initialised!');
-                        }
-                    var settings = data.settings;
-                    $.extend(settings, obj.options);
-                    // console.log('settings:', settings);
-                    });
+    // functions to export to plugins
+    fn = {
+            geometry : geom,
+            parseQueryString : parseQueryString,
+            getScalerUrl : getScalerUrl,
+            getParamString : getParamString,
+            getDigilibUrl : getDigilibUrl,
+            unpackParams : unpackParams,
+            packParams : packParams,
+            storeOptions : storeOptions,
+            redisplay : redisplay,
+            updateDisplay : updateDisplay,
+            highlightButtons : highlightButtons,
+            showDiv : showDiv,
+            setZoomBG : setZoomBG,
+            getImgTrafo : getImgTrafo,
+            getQuality : getQuality,
+            setQuality : setQuality,
+            getScaleMode : getScaleMode,
+            setScaleMode : setScaleMode,
+            isFullArea : isFullArea,
+            getBorderWidth : getBorderWidth
+    };
+
+    // hook digilib plugin into jquery
+    $.fn.digilib = function (action) {
+        // plugin extension mechanism, called when the plugins' code is read 
+        if (action === 'plugin') {
+            var plugin = arguments[1];
+            // each plugin needs a name
+            if (plugin.name != null) {
+                plugins[plugin.name] = plugin;
+                // share common objects
+                plugin.defaults = defaults;
+                plugin.buttons = buttons;
+                plugin.actions = actions;
+                plugin.fn = fn;
+                plugin.plugins = plugins;
+                // and install
+                if (typeof plugin.install === 'function') {
+                    plugin.install(plugin);
                 }
-            delete(obj.options);
-            // extend the plugin actions (to make this useful, 
-            // maybe we need to expose some more internal functions)
-            $.extend(actions, obj);
+            }
+            // plugins will be initialised when action.init is called
         } else if (actions[action]) {
             // call action on this with the remaining arguments (inserting data as first argument)
             var $elem = $(this);
@@ -1760,8 +1623,8 @@ if (typeof(console) === 'undefined') {
             var args = Array.prototype.slice.call(arguments, 1);
             args.unshift(data);
             return actions[action].apply(this, args);
-        } else if (typeof(action) === 'object' || !action) {
-            // call init on this
+        } else if (typeof action === 'object' || !action) {
+            // call init on the digilib jQuery object
             return actions.init.apply(this, arguments);
         } else {
             $.error('action ' + action + ' does not exist on jQuery.digilib');
