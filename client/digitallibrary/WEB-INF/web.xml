@@ -1,8 +1,10 @@
-<!DOCTYPE web-app 
-    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" 
-    "http://java.sun.com/dtd/web-app_2_3.dtd">
-
-<web-app>
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app
+        version="3.0"
+        xmlns="http://java.sun.com/xml/ns/javaee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+        
   <!-- General description of your web application -->
   <display-name>
         digilib
@@ -10,14 +12,11 @@
   <description>
         This is the web frontend of the Digital Document Library.
   </description>
-  <!-- The Initaliser servlet -->
+  <!-- The Initaliser servlet (must run first) -->
   <servlet>
         <servlet-name>
             Initialiser
         </servlet-name>
-        <description>
-            The inialisation servlet (must run first).
-        </description>
         <servlet-class>
             digilib.servlet.Initialiser
         </servlet-class>
@@ -31,9 +30,6 @@
         <servlet-name>
             Scaler
         </servlet-name>
-        <description>
-            The servlet to scale the digilib images.
-        </description>
         <servlet-class>
             digilib.servlet.Scaler
         </servlet-class>
@@ -47,9 +43,6 @@
         <servlet-name>
             Texter
         </servlet-name>
-        <description>
-            The servlet for text.
-        </description>
         <servlet-class>
             digilib.servlet.Texter
         </servlet-class>
@@ -59,9 +52,6 @@
         <servlet-name>
             PDFCache
         </servlet-name>
-        <description>
-            The servlet for PDF.
-        </description>
         <servlet-class>
             digilib.servlet.PDFCache
         </servlet-class>
@@ -73,6 +63,14 @@
         </servlet-name>
         <url-pattern>
             /servlet/Scaler/*
+        </url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+        <servlet-name>
+            Scaler
+        </servlet-name>
+        <url-pattern>
+            /Scaler
         </url-pattern>
   </servlet-mapping>
   <servlet-mapping>

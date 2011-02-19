@@ -61,7 +61,7 @@ public class Initialiser extends HttpServlet {
 	/** DigilibConfiguration instance */
 	DigilibConfiguration dlConfig;
 
-	/** Executor for digilib image jobs */
+	/** Executor for digilib image jobs (AsyncServletWorker doesn't return anything) */
 	DigilibJobCenter<DocuImage> imageEx;
 	
 	/** Executor for PDF jobs */

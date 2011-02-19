@@ -3,12 +3,12 @@ package digilib.servlet;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
+import javax.servlet.AsyncContext;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,17 +20,18 @@ import digilib.auth.AuthOps;
 import digilib.image.DocuImage;
 import digilib.image.ImageJobDescription;
 import digilib.image.ImageOpException;
-import digilib.image.ImageWorker;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
 import digilib.io.ImageInput;
 import digilib.util.DigilibJobCenter;
 
-@SuppressWarnings("serial")
+@WebServlet(name="Scaler", urlPatterns={"/Scaler", "/servlet/Scaler/*"}, asyncSupported=true)
 public class Scaler extends HttpServlet {
 
+    private static final long serialVersionUID = 5289386646192471549L;
+
     /** digilib servlet version (for all components) */
-    public static final String version = "1.9.0a3";
+    public static final String version = "1.9.1a2";
 
     /** servlet error codes */
     public static enum Error {UNKNOWN, AUTH, FILE, IMAGE};
@@ -54,13 +55,13 @@ public class Scaler extends HttpServlet {
     DigilibJobCenter<DocuImage> imageJobCenter;
 
     /** authentication error image file */
-    File denyImgFile;
+    static File denyImgFile;
 
     /** image error image file */
-    File errorImgFile;
+    static File errorImgFile;
 
     /** not found error image file */
-    File notfoundImgFile;
+    static File notfoundImgFile;
 
     /** send files as is? */
     boolean sendFileAllowed = true;
@@ -183,12 +184,13 @@ public class Scaler extends HttpServlet {
 
         accountlog.debug("request: " + request.getQueryString());
         logger.debug("request: " + request.getQueryString());
-        long startTime = System.currentTimeMillis();
+        logger.debug("response:"+ response + " committed=" + response.isCommitted());
+        final long startTime = System.currentTimeMillis();
 
         // parse request
         DigilibRequest dlRequest = new DigilibRequest(request);
         // extract the job information
-        ImageJobDescription jobTicket = ImageJobDescription.getInstance(dlRequest, dlConfig);
+        final ImageJobDescription jobTicket = ImageJobDescription.getInstance(dlRequest, dlConfig);
 
         // type of error reporting
         ErrMsg errMsgType = ErrMsg.IMAGE;
@@ -246,16 +248,14 @@ public class Scaler extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
                 return;
             }
+            
+            // worker job is done asynchronously
+            AsyncContext asyncCtx = request.startAsync(request, response); 
             // create job
-            ImageWorker job = new ImageWorker(dlConfig, jobTicket);
+            AsyncServletWorker job = new AsyncServletWorker(dlConfig, jobTicket, asyncCtx, errMsgType, startTime);
             // submit job
-            Future<DocuImage> jobResult = imageJobCenter.submit(job);
-            // wait for result
-            DocuImage img = jobResult.get();
-            // send image
-            ServletOps.sendImage(img, null, response, logger);
-            logger.debug("Job Processing Time: "
-                    + (System.currentTimeMillis() - startTime) + "ms");
+            imageJobCenter.submit(job);
+            // we're done for now
 
         } catch (ImageOpException e) {
             logger.error(e.getClass() + ": " + e.getMessage());
@@ -266,15 +266,7 @@ public class Scaler extends HttpServlet {
         } catch (AuthOpException e) {
             logger.error(e.getClass() + ": " + e.getMessage());
             digilibError(errMsgType, Error.AUTH, null, response);
-        } catch (InterruptedException e) {
-            logger.error(e.getClass() + ": " + e.getMessage());
-        } catch (ExecutionException e) {
-            logger.error(e.getClass() + ": " + e.getMessage());
-            String causeMsg = e.getCause().getMessage();
-            logger.error("caused by: " + causeMsg);
-            digilibError(errMsgType, Error.IMAGE, causeMsg, response);
         }
-
     }
 
     /**
@@ -285,7 +277,7 @@ public class Scaler extends HttpServlet {
      * @param msg
      * @param response
      */
-    public void digilibError(ErrMsg type, Error error, String msg,
+    public static void digilibError(ErrMsg type, Error error, String msg,
             HttpServletResponse response) {
         try {
             File img = null;
@@ -306,13 +298,12 @@ public class Scaler extends HttpServlet {
                 if (msg == null) {
                     msg = "ERROR: Other image error!";
                 }
-                img = this.errorImgFile;
+                img = errorImgFile;
                 status = HttpServletResponse.SC_BAD_REQUEST;
             }
             if (response.isCommitted()) {
                 // response already committed
-                logger.error("Unable to send error: " + msg);
-                return;
+                logger.warn("Response committed for error "+msg);
             }
             if (type == ErrMsg.TEXT) {
                 ServletOps.htmlMessage(msg, response);
