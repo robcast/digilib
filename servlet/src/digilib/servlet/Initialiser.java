@@ -24,10 +24,10 @@ import java.io.File;
 import java.io.OutputStream;
 import java.util.List;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -41,16 +41,17 @@ import digilib.io.FileOps.FileClass;
 import digilib.util.DigilibJobCenter;
 
 /**
- * Singleton initalisation servlet for setup tasks and resources.
+ * Singleton initalisation listener for setup tasks and resources.
  * 
  * @author casties
  *  
  */
-@SuppressWarnings("serial")
-public class Initialiser extends HttpServlet {
+@WebListener
+public class Initialiser implements ServletContextListener {
+
 
 	/** servlet version */
-	public static final String version = "0.2";
+	public static final String version = "0.3";
 
 	/** gengeral logger for this class */
 	private static Logger logger = Logger.getLogger("digilib.init");
@@ -72,24 +73,19 @@ public class Initialiser extends HttpServlet {
 	
 	/**
 	 * Initialisation on first run.
-	 * 
-	 * @see javax.servlet.Servlet#init(javax.servlet.ServletConfig)
 	 */
-	public void init(ServletConfig config) throws ServletException {
-		super.init(config);
+    public void contextInitialized(ServletContextEvent cte) {
+        ServletContext context = cte.getServletContext();
 
-		System.out
-				.println("***** Digital Image Library Initialisation Servlet (version "
+		System.out.println("***** Digital Image Library Initialiser (version "
 						+ version + ") *****");
 
-		// get our ServletContext
-		ServletContext context = config.getServletContext();
 		// see if there is a Configuration instance
 		dlConfig = (DigilibConfiguration) context.getAttribute("digilib.servlet.configuration");
 		if (dlConfig == null) {
 			// create new Configuration
 			try {
-				dlConfig = new DigilibConfiguration(config);
+				dlConfig = new DigilibConfiguration(context);
 
 				/*
 				 * further initialization
@@ -97,12 +93,12 @@ public class Initialiser extends HttpServlet {
 
 				// set up the logger
 				File logConf = ServletOps.getConfigFile((File) dlConfig
-						.getValue("log-config-file"), config);
+						.getValue("log-config-file"), context);
 				DOMConfigurator.configure(logConf.getAbsolutePath());
 				dlConfig.setValue("log-config-file", logConf);
 				// say hello in the log file
 				logger
-						.info("***** Digital Image Library Initialisation Servlet (version "
+						.info("***** Digital Image Library Initialiser (version "
 								+ version + ") *****");
 				// directory cache
 				String[] bd = (String[]) dlConfig.getValue("basedir-list");
@@ -110,7 +106,7 @@ public class Initialiser extends HttpServlet {
 				if (dlConfig.getAsBoolean("use-mapping")) {
 					// with mapping file
 					File mapConf = ServletOps.getConfigFile((File) dlConfig
-							.getValue("mapping-file"), config);
+							.getValue("mapping-file"), context);
 					dirCache = new AliasingDocuDirCache(bd, fcs, mapConf,
 							dlConfig);
 					dlConfig.setValue("mapping-file", mapConf);
@@ -125,7 +121,7 @@ public class Initialiser extends HttpServlet {
 					//authOp = new DBAuthOpsImpl(util);
 					// XML version
 					File authConf = ServletOps.getConfigFile((File) dlConfig
-							.getValue("auth-file"), config);
+							.getValue("auth-file"), context);
 					AuthOps authOp = new XMLAuthOps(authConf);
 					dlConfig.setValue("servlet.auth.op", authOp);
 					dlConfig.setValue("auth-file", authConf);
@@ -152,22 +148,20 @@ public class Initialiser extends HttpServlet {
 				context.setAttribute("digilib.servlet.configuration", dlConfig);
 
 			} catch (Exception e) {
-				throw new ServletException(e);
+				logger.error("Error in initialisation: ", e);
 			}
 		} else {
 			// say hello in the log file
-			logger
-					.info("***** Digital Image Library Initialisation Servlet (version "
+			logger.info("***** Digital Image Library Initialisation Servlet (version "
 							+ version + ") *****");
 			logger.warn("Already initialised!");
 		}
 	}
 
     /** clean up local resources
-     * @see javax.servlet.GenericServlet#destroy()
+     * 
      */
-    @Override
-    public void destroy() {
+    public void contextDestroyed(ServletContextEvent arg0) {
         if (dirCache != null) {
             // shut down dirCache?
             dirCache = null;
@@ -196,7 +190,6 @@ public class Initialiser extends HttpServlet {
                 logger.error("Still running threads when shutting down PDF-image job queue: "+nrj);
             }
         }
-        super.destroy();
     }
 
 }

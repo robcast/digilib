@@ -31,7 +31,7 @@ public class Scaler extends HttpServlet {
     private static final long serialVersionUID = 5289386646192471549L;
 
     /** digilib servlet version (for all components) */
-    public static final String version = "1.9.1a2";
+    public static final String version = "1.9.1a3";
 
     /** servlet error codes */
     public static enum Error {UNKNOWN, AUTH, FILE, IMAGE};
@@ -95,8 +95,7 @@ public class Scaler extends HttpServlet {
         // get our ServletContext
         ServletContext context = config.getServletContext();
         // see if there is a Configuration instance
-        dlConfig = (DigilibConfiguration) context
-                .getAttribute("digilib.servlet.configuration");
+        dlConfig = (DigilibConfiguration) context.getAttribute("digilib.servlet.configuration");
         if (dlConfig == null) {
             // no Configuration
             throw new ServletException("No Configuration!");
@@ -113,11 +112,11 @@ public class Scaler extends HttpServlet {
                 .getValue("servlet.worker.imageexecutor");
 
         denyImgFile = ServletOps.getFile(
-                (File) dlConfig.getValue("denied-image"), config);
+                (File) dlConfig.getValue("denied-image"), context);
         errorImgFile = ServletOps.getFile(
-                (File) dlConfig.getValue("error-image"), config);
+                (File) dlConfig.getValue("error-image"), context);
         notfoundImgFile = ServletOps.getFile(
-                (File) dlConfig.getValue("notfound-image"), config);
+                (File) dlConfig.getValue("notfound-image"), context);
         sendFileAllowed = dlConfig.getAsBoolean("sendfile-allowed");
     }
 

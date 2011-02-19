@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
 import org.apache.log4j.BasicConfigurator;
@@ -182,7 +183,7 @@ public class DigilibConfiguration extends ParameterMap {
 	 * 
 	 * @see readConfig()
 	 */
-	public DigilibConfiguration(ServletConfig c) throws Exception {
+	public DigilibConfiguration(ServletContext c) throws Exception {
 		this();
 		readConfig(c);
 	}
@@ -192,7 +193,7 @@ public class DigilibConfiguration extends ParameterMap {
 	 * or file digilib-config.xml
 	 */
 	@SuppressWarnings("unchecked")
-    public void readConfig(ServletConfig c) throws Exception {
+    public void readConfig(ServletContext c) throws Exception {
 
 		/*
 		 * Get config file name. The file name is first looked for as an init
@@ -215,7 +216,7 @@ public class DigilibConfiguration extends ParameterMap {
 		XMLListLoader lilo =
 			new XMLListLoader("digilib-config", "parameter", "name", "value");
 		// read config file into HashMap
-		Map<String,String> confTable = lilo.loadURL(f.toURL().toString());
+		Map<String,String> confTable = lilo.loadURL(f.toString());
 
 		// set config file path parameter
 		setValue("servlet.config.file", f.getCanonicalPath());

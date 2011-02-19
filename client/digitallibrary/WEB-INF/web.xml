@@ -12,19 +12,6 @@
   <description>
         This is the web frontend of the Digital Document Library.
   </description>
-  <!-- The Initaliser servlet (must run first) -->
-  <servlet>
-        <servlet-name>
-            Initialiser
-        </servlet-name>
-        <servlet-class>
-            digilib.servlet.Initialiser
-        </servlet-class>
-        <!-- Load this servlet at server startup time -->
-        <load-on-startup>
-            1
-        </load-on-startup>
-  </servlet>
   <!-- The Scaler servlet -->
   <servlet>
         <servlet-name>
