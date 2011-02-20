@@ -1430,7 +1430,7 @@ if (typeof console === 'undefined') {
             $scaler.css({
                 'background-position' : bgPos.x + "px " + bgPos.y + "px"
                 });
-            // set birdview indicator to reflect new zoom position
+            // send message event with current zoom position
             var za = geom.rectangle($img);
             za.addPosition(delta.neg());
             $data.trigger('dragZoom', [za]);
