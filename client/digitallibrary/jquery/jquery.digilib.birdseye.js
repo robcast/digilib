@@ -318,7 +318,7 @@ digilib bird's eye view plugin
     };
 
     if ($.fn.digilib == null) {
-        $.error("jquery.digilib.birdview must be loaded after jquery.digilib!");
+        $.error("jquery.digilib.birdseye must be loaded after jquery.digilib!");
     } else {
         $.fn.digilib('plugin', plugin);
     }
