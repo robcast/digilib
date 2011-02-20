@@ -53,61 +53,66 @@ TODO:
     };
 
     var actions = { 
+
         // define a region interactively with two clicked points
         "setRegion" : function(data) {
             var $elem = data.$elem;
+            var $body = $('body');
+            var bodyRect = geom.rectangle($body);
             var $scaler = data.$scaler;
-            var picRect = geom.rectangle($scaler);
+            var scalerRect = geom.rectangle($scaler);
             var pt1, pt2;
-            // TODO: temporary rectangle only, pass values to "addRegion" factory
-            var $tempDiv = $('<div class="region" style="display:none"/>');
-            $elem.append($tempDiv);
+            // overlay prevents other elements from reacting to mouse events 
+            var $overlay = $('<div class="digilib-overlay"/>');
+            $body.append($overlay);
+            bodyRect.adjustDiv($overlay);
+            // the region to be defined
+            var $regionDiv = $('<div class="region" style="display:none"/>');
+            $elem.append($regionDiv);
 
+            // mousedown handler: start sizing
             var regionStart = function (evt) {
                 pt1 = geom.position(evt);
                 // setup and show zoom div
-                pt1.adjustDiv($tempDiv);
-                $tempDiv.width(0).height(0);
-                $tempDiv.show();
-                // register events
-                $elem.bind("mousemove.dlRegion", regionMove);
-                $elem.bind("mouseup.dlRegion", regionEnd);
+                pt1.adjustDiv($regionDiv);
+                $regionDiv.width(0).height(0);
+                $regionDiv.show();
+                // register mouse events
+                $overlay.bind("mousemove.dlRegion", regionMove);
+                $overlay.bind("mouseup.dlRegion", regionEnd);
                 return false;
             };
 
-            // mouse move handler
+            // mousemove handler: size region
             var regionMove = function (evt) {
                 pt2 = geom.position(evt);
                 var rect = geom.rectangle(pt1, pt2);
-                rect.clipTo(picRect);
-                // update zoom div
-                rect.adjustDiv($tempDiv);
+                rect.clipTo(scalerRect);
+                // update region
+                rect.adjustDiv($regionDiv);
                 return false;
             };
 
-            // mouseup handler: end moving
+            // mouseup handler: end sizing
             var regionEnd = function (evt) {
                 pt2 = geom.position(evt);
                 // assume a click and continue if the area is too small
                 var clickRect = geom.rectangle(pt1, pt2);
                 if (clickRect.getArea() <= 5) return false;
-                // unregister events
-                $elem.unbind("mousemove.dlRegion", regionMove);
-                $elem.unbind("mouseup.dlRegion", regionEnd);
-                // clip and transform
-                clickRect.clipTo(picRect);
-                clickRect.adjustDiv($tempDiv);
-                $tempDiv.remove();
-                data.settings.regions.push(clickRect);
+                // unregister mouse events and get rid of overlay
+                $overlay.unbind("mousemove.dlRegion", regionMove);
+                $overlay.unbind("mouseup.dlRegion", regionEnd);
+                $overlay.remove();
+                // clip region
+                clickRect.clipTo(scalerRect);
+                clickRect.adjustDiv($regionDiv);
+                data.settings.regions.push(clickRect); // TODO: trafo, params
                 // fn.redisplay(data);
                 return false;
             };
 
-            // clear old handler (also ZoomDrag)
-            $scaler.unbind('.dlRegion');
-            $elem.unbind('.dlRegion');
             // bind start zoom handler
-            $scaler.one('mousedown.dlRegion', regionStart);
+            $overlay.one('mousedown.dlRegion', regionStart);
         },
 
         // remove the last added region
@@ -218,14 +223,13 @@ TODO:
 
     // plugin installation called by digilib on plugin object.
     var install = function(digilib) {
+        console.debug('installing regions plugin. digilib:', digilib);
         // import geometry classes
         geom = digilib.fn.geometry;
         FULL_AREA = geom.rectangle(0,0,1,1);
-        // add defaults
+        // add defaults, actions, buttons
         $.extend(digilib.defaults, defaults);
-        // add actions
         $.extend(digilib.actions, actions);
-        // add buttons
         $.extend(digilib.buttons, buttons);
     };
 
@@ -248,7 +252,7 @@ TODO:
         $data.bind('dragZoom', handleDragZoom);
     };
 
-    // plugin object with name and init
+    // plugin object with name and install/init methods
     // shared objects filled by digilib on registration
     var pluginProperties = {
             name : 'region',
@@ -261,7 +265,7 @@ TODO:
     };
 
     if ($.fn.digilib == null) {
-        $.error("jquery.digilib.birdview must be loaded after jquery.digilib!");
+        $.error("jquery.digilib.regions must be loaded after jquery.digilib!");
     } else {
         $.fn.digilib('plugin', pluginProperties);
     }

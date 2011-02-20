@@ -40,3 +40,8 @@ The plugin API of jquery.digilib
   "update", updateDisplay(): after small updates in the display, e.g. when the scaler-img finished loading.
   "redisplay", redisplay(): after changes in the display, e.g. after changing zoom factor.
   "dragZoom(newZoomArea)": while dragging the zoom area (with parameter newZoomArea).
+
+* initial options for the plugin can be passed to digilib, together with digilib options, by passing an object to the 'digilib' function: $div.digilib(options);
+The passed options extend/override the default digilib options. The options are stored in the "data.settings" array.
+
+* A functional stub for new digilib plugins is available in the file "jquery.digilib.pluginstub.js"
