@@ -7,6 +7,9 @@ digilib bird's eye view plugin
     // affine geometry plugin stub
     var geom;
 
+    // digilib object
+    var digilib;
+
     var FULL_AREA;
 
     var buttons = {
@@ -44,7 +47,8 @@ digilib bird's eye view plugin
     };
 
     // plugin installation called by digilib on plugin object.
-    var install = function(digilib) {
+    var install = function(plugin) {
+        digilib = plugin;
         console.debug('installing birdseye plugin. digilib:', digilib);
         // import geometry classes
         geom = digilib.fn.geometry;
@@ -229,6 +233,7 @@ digilib bird's eye view plugin
             birdZoomRect = geom.rectangle($birdZoom);
             scalerPos = geom.position($scaler);
             newRect = null;
+            data.$elem.find(".overlay").hide(); // hide all overlays (marks/regions)
             fullRect = digilib.fn.setZoomBG(data); // setup zoom background image
             $document.bind("mousemove.dlBirdMove", birdZoomMove);
             $document.bind("mouseup.dlBirdMove", birdZoomEndDrag);
