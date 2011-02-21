@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0" encoding="MacRoman" standalone="no"?>
 <jardesc>
     <jar path="digilib-servlet/DigilibServlet.jar"/>
     <options buildIfNeeded="true" compress="true" descriptionLocation="/digilib-servlet/DigilibServlet.jardesc" exportErrors="false" exportWarnings="true" includeDirectoryEntries="false" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
@@ -11,6 +11,14 @@
         </sealing>
     </manifest>
     <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+        <javaElement handleIdentifier="=digilib-servlet/src&lt;digilib.util"/>
+        <javaElement handleIdentifier="=digilib-servlet/src&lt;digilib.auth"/>
         <file path="/digilib-servlet/license.txt"/>
+        <javaElement handleIdentifier="=digilib-servlet/src&lt;digilib.meta"/>
+        <javaElement handleIdentifier="=digilib-servlet/src&lt;digilib.pdf"/>
+        <javaElement handleIdentifier="=digilib-servlet/src&lt;digilib.io"/>
+        <file path="/digilib-servlet/DigilibServlet.jardesc"/>
+        <javaElement handleIdentifier="=digilib-servlet/src&lt;digilib.servlet"/>
+        <javaElement handleIdentifier="=digilib-servlet/src&lt;digilib.image"/>
     </selectedElements>
 </jardesc>

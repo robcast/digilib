@@ -152,7 +152,7 @@ public class Initialiser implements ServletContextListener {
 			}
 		} else {
 			// say hello in the log file
-			logger.info("***** Digital Image Library Initialisation Servlet (version "
+			logger.info("***** Digital Image Library Initialiser (version "
 							+ version + ") *****");
 			logger.warn("Already initialised!");
 		}
