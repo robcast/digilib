@@ -791,8 +791,9 @@ if (typeof console === 'undefined') {
                 if (i) {
                     settings.mk += ',';
                     }
-                settings.mk += cropFloat(data.marks[i].x).toString() +
-                    '/' + cropFloat(data.marks[i].y).toString();
+                settings.mk +=
+                    cropFloatStr(data.marks[i].x) + '/' + 
+                    cropFloatStr(data.marks[i].y);
                 }
             }
         // Scaler flags
@@ -1236,7 +1237,7 @@ if (typeof console === 'undefined') {
         var data = this;
         updateDisplay(data);
     };
-    
+
     // place marks on the image
     var renderMarks = function (data) {
         if (data.$img == null || data.imgTrafo == null) return;
@@ -1251,8 +1252,9 @@ if (typeof console === 'undefined') {
                 var mpos = data.imgTrafo.transform(mark);
                 console.debug("renderMarks: mpos=",mpos);
                 // create mark
-                var html = '<div class="mark">'+(i+1)+'</div>';
+                var html = '<div class="mark overlay">'+(i+1)+'</div>';
                 var $mark = $(html);
+                $mark.attr("id", "dibilib.mark." + i);
                 $elem.append($mark);
                 mpos.adjustDiv($mark);
                 }
@@ -1362,8 +1364,6 @@ if (typeof console === 'undefined') {
         var $scaler = data.$scaler;
         var $img = data.$img;
         var fullRect = null;
-        // hide marks
-        data.$elem.find('div.mark').hide();
         // hide the scaler img, show background of div instead
         $img.css('visibility', 'hidden');
         var scalerCss = {
@@ -1405,9 +1405,10 @@ if (typeof console === 'undefined') {
 
         // drag the image and load a new detail on mouse up
         var dragStart = function (evt) {
-            console.debug("dragstart at=",evt);
+            console.debug("dragstart at=", evt);
             // don't start dragging if not zoomed
             if (isFullArea(data.zoomArea)) return false;
+            $elem.find(".overlay").hide(); // hide all overlays (marks/regions)
             startPos = geom.position(evt);
             delta = null;
             // set low res background immediately on mousedown
@@ -1449,6 +1450,7 @@ if (typeof console === 'undefined') {
                 $scaler.css({'opacity' : '1', 'background-image' : 'none'});
                 // unhide marks
                 data.$elem.find('div.mark').show();
+                $(data).trigger('redisplay');
                 return false; 
             }
             // get old zoom area (screen coordinates)
@@ -1553,6 +1555,11 @@ if (typeof console === 'undefined') {
         return parseInt(10000 * x, 10) / 10000;
     };
 
+    // idem, string version
+    var cropFloatStr = function (x) {
+        return cropFloat(x).toString();
+    };
+
     // fallback for console.log calls
     if (customConsole) {
         var logFunction = function(type) {
@@ -1593,7 +1600,10 @@ if (typeof console === 'undefined') {
             getScaleMode : getScaleMode,
             setScaleMode : setScaleMode,
             isFullArea : isFullArea,
-            getBorderWidth : getBorderWidth
+            isNumber : isNumber,
+            getBorderWidth : getBorderWidth,
+            cropFloat : cropFloat,
+            cropFloatStr : cropFloatStr
     };
 
     // hook digilib plugin into jquery

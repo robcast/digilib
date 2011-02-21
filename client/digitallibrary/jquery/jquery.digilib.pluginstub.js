@@ -4,7 +4,10 @@ digilib plugin stub
 
 (function($) {
 
+    // affine geometry
     var geom;
+    // plugin object with digilib data
+    var digilib;
 
     var FULL_AREA;
 
@@ -31,16 +34,15 @@ digilib plugin stub
     };
 
     // plugin installation called by digilib on plugin object.
-    var install = function(digilib) {
+    var install = function(plugin) {
+        digilib = plugin;
         console.debug('installing stub plugin. digilib:', digilib);
         // import geometry classes
         geom = digilib.fn.geometry;
         FULL_AREA = geom.rectangle(0,0,1,1);
-        // add defaults
+        // add defaults, actins, buttons
         $.extend(digilib.defaults, defaults);
-        // add actions
         $.extend(digilib.actions, actions);
-        // add buttons
         $.extend(digilib.buttons, buttons);
     };
 

@@ -11,19 +11,23 @@ TODO:
 */
 
 (function($) {
+    // the digilib object
+    var digilib;
     // the data object passed by digilib
     var data;
-    var buttons;
+    // the functions made available by digilib
     var fn;
-    // affine geometry plugin stub
+    // affine geometry plugin
     var geom;
 
     var FULL_AREA;
 
+    var ID_PREFIX = "digilib-region-";
+
     var buttons = {
         addregion : {
-            onclick : "setRegion",
-            tooltip : "set a region",
+            onclick : "defineRegion",
+            tooltip : "define a region",
             icon : "addregion.png"
             },
         delregion : {
@@ -46,16 +50,22 @@ TODO:
     var defaults = {
         // are regions shown?
         'isRegionVisible' : true,
+        // are region numbers shown?
+        'showRegionNumbers' : false,
         // buttonset of this plugin
         'regionSet' : ['addregion', 'delregion', 'regions', 'regioninfo', 'lessoptions'],
-        // array of defined regions
-        'regions' : []
-    };
+        // url param for regions
+        'rg' : null,
+        };
 
     var actions = { 
 
         // define a region interactively with two clicked points
-        "setRegion" : function(data) {
+        "defineRegion" : function(data) {
+            if (!data.settings.isRegionVisible) {
+                alert("Please turn on regions visibility!");
+                return;
+            }
             var $elem = data.$elem;
             var $body = $('body');
             var bodyRect = geom.rectangle($body);
@@ -66,9 +76,8 @@ TODO:
             var $overlay = $('<div class="digilib-overlay"/>');
             $body.append($overlay);
             bodyRect.adjustDiv($overlay);
-            // the region to be defined
-            var $regionDiv = $('<div class="region" style="display:none"/>');
-            $elem.append($regionDiv);
+             // we count regions from 1
+            var $regionDiv = addRegionDiv(data, data.regions.length + 1);
 
             // mousedown handler: start sizing
             var regionStart = function (evt) {
@@ -106,126 +115,188 @@ TODO:
                 // clip region
                 clickRect.clipTo(scalerRect);
                 clickRect.adjustDiv($regionDiv);
-                data.settings.regions.push(clickRect); // TODO: trafo, params
+                storeRegion(data, $regionDiv);
                 // fn.redisplay(data);
+                fn.highlightButtons(data, 'addregion', 0);
+                redisplay(data);
                 return false;
             };
 
             // bind start zoom handler
             $overlay.one('mousedown.dlRegion', regionStart);
+            fn.highlightButtons(data, 'addregion', 1);
         },
 
         // remove the last added region
         "removeRegion" : function (data) {
-            var $regionDiv = data.settings.regions.pop();
+            if (!data.settings.isRegionVisible) {
+                alert("Please turn on regions visibility!");
+                return;
+            }
+            var region = data.regions.pop();
+            if (region == null) return;
+            var $regionDiv = region.$div; 
             $regionDiv.remove();
-            // fn.redisplay(data);
+            redisplay(data);
         },
 
-        // add a region programmatically
-        "addRegion" : function(data, pos, url) {
-            // TODO: backlink mechanism
-            if (pos.length === 4) {
-                // TODO: trafo
-                var $regionDiv = $('<div class="region" style="display:none"/>');
-                $regionDiv.attr("id", "region" + i);
-                var regionRect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
-                regionRect.adjustDiv($regionDiv);
-                if (!data.regions) {
-                    data.regions = [];
-                    }
-                data.regions.push($regionDiv);
-            }
+        // show/hide regions 
+        "toggleRegions" : function (data) {
+            var show = !data.settings.isRegionVisible;
+            data.settings.isRegionVisible = show;
+            fn.highlightButtons(data, 'regions' , show);
+            showRegionDivs(data);
         }
     };
 
     var addRegion = actions.addRegion;
 
-    var realizeRegions = function (data) { 
-        // create regions from parameters
-        var settings = data.settings;
-        var rg = settings.rg;
-        var regions = rg.split(",");
-        for (var i = 0; i < regions.length ; i++) {
-            var pos = regions.split("/", 4);
-            // TODO: backlink mechanism
-            var url = paramString.match(/http.*$/);
-            addRegion(data, pos, url);
-            }
-    };
-
-    // display current regions
-    var renderRegions = function (data) { 
+    // store a region div
+    var storeRegion = function (data, $regionDiv) {
         var regions = data.regions;
-        for (var i = 0; i < regions.length; i++) {
-            var region = regions[i];
-            if (data.zoomArea.containsPosition(region)) {
-                var rpos = data.imgTrafo.transform(region);
-                console.debug("renderRegions: rpos=", rpos);
-                // create region
-                var $regionDiv = $('<div class="region" style="display:none"/>');
-                $regionDiv.attr("id", "region" + data.regions.length);
-                $elem.append($regionDiv);
-                rpos.adjustDiv($regionDiv);
-                }
+        var rect = geom.rectangle($regionDiv);
+        var regionRect = data.imgTrafo.invtransform(rect);
+        regionRect.$div = $regionDiv;
+        regions.push(regionRect);
+        console.debug("regions", data.regions, "regionRect", regionRect);
+    };
+
+    // add a region to data.$elem
+    var addRegionDiv = function (data, nr) {
+        var $regionDiv = $('<div class="region overlay" style="display:none"/>');
+        $regionDiv.attr("id", ID_PREFIX + nr);
+        data.$elem.append($regionDiv);
+        if (data.settings.showRegionNumbers) {
+            var $regionNr = $('<div class="regionnumber" />');
+            $regionNr.text(nr);
+            $regionDiv.append($regionNr);
+        }
+        return $regionDiv;
+    };
+
+    // create a region div from the data.regions collection
+    var createRegionDiv = function (data, index) {
+        var regions = data.regions;
+        if (index > regions.length) return null;
+        var region = regions[index];
+        var $regionDiv = addRegionDiv(data, index + 1); // we count regions from 1
+        region.$div = $regionDiv;
+        // TODO store original coords in $regionDiv.data for embedded mode?
+        return $regionDiv;
+    };
+
+    // create regions 
+    var createRegionDivs = function (data) {
+        for (var i = 0; i < data.regions.length ; i++) {
+            createRegionDiv(data, i);
+        }
+    };
+
+    // show a region on top of the scaler image 
+    var showRegionDiv = function (data, index) {
+        if (!data.imgTrafo) return;
+        var $elem = data.$elem;
+        var regions = data.regions;
+        if (index > regions.length) return;
+        var region = regions[index]
+        var $regionDiv = region.$div;
+        if (!$regionDiv) {
+            console.debug("showRegionDiv: region has no $div", region);
+            // alert("showRegionDiv: region has no $div to show");
+            return;
+        }
+        var regionRect = region.copy();
+        var show = data.settings.isRegionVisible;
+        if (show && data.zoomArea.overlapsRect(regionRect)) {
+            regionRect.clipTo(data.zoomArea);
+            var screenRect = data.imgTrafo.transform(regionRect);
+            screenRect.adjustDiv($regionDiv);
+            $regionDiv.show();
+        } else {
+            $regionDiv.hide();
+        }
+    };
+
+    // show regions 
+    var showRegionDivs = function (data) {
+        for (var i = 0; i < data.regions.length ; i++) {
+            showRegionDiv(data, i);
+        }
+    };
+
+    var unpackRegions = function (data) { 
+        // create regions from parameters
+        var rg = data.settings.rg;
+        if (rg == null) return;
+        var regions = data.regions;
+        var rs = rg.split(",");
+        for (var i = 0; i < rs.length; i++) {
+            var r = rs[i];
+            var pos = r.split("/", 4);
+            var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
+            regions.push(rect);
+            // TODO: backlink mechanism
+            // var url = paramString.match(/http.*$/);
             }
     };
 
-    var serializeRegions = function (data) {
-        if (data.regions) {
-            settings.rg = '';
-            for (var i = 0; i < data.regions.length; i++) {
-                if (i) {
-                    settings.rg += ',';
-                    }
-                settings.rg +=
-                    cropFloat(data.regions[i].x).toString() + '/' + 
-                    cropFloat(data.regions[i].y).toString() + '/' +
-                    cropFloat(data.regions[i].width).toString() + '/' +
-                    cropFloat(data.regions[i].height).toString();
-                }
+    // pack regions array into a parameter string
+    var packRegions = function (data) {
+        var regions = data.regions;
+        if (!regions.length) return;
+        var rg = '';
+        for (var i = 0; i < regions.length; i++) {
+            region = regions[i];
+            if (i) {
+                rg += ',';
             }
+            rg += [
+                fn.cropFloatStr(region.x), 
+                fn.cropFloatStr(region.y),
+                fn.cropFloatStr(region.width),
+                fn.cropFloatStr(region.height)
+                ].join('/');
+        }
+        data.settings.rg = rg;
     };
+
+    var redisplay = function (data) {
+        packRegions(data);
+        fn.redisplay(data);
+    }
 
     var handleSetup = function (evt) {
-        console.debug("regions: handleSetup");
         data = this;
-//        if (data.settings.isBirdDivVisible) {
-//            setupBirdDiv(data);
-//            data.$birdDiv.show();
-//        }
+        console.debug("regions: handleSetup", data.settings.rg);
+        unpackRegions(data);
+        createRegionDivs(data);
     };
 
     var handleUpdate = function (evt) {
-        console.debug("regions: handleUpdate");
         data = this;
-//        if (data.settings.isBirdDivVisible) {
-//            renderBirdArea(data);
-//            setupBirdDrag(data);
-//        }
+        fn.highlightButtons(data, 'regions' , data.settings.isRegionVisible);
+        showRegionDivs(data);
+        console.debug("regions: handleUpdate", data.settings.rg);
     };
 
     var handleRedisplay = function (evt) {
-        console.debug("regions: handleRedisplay");
         data = this;
-//        if (data.settings.isBirdDivVisible) {
-//            updateBirdDiv(data);
-//        }
+        showRegionDivs(data);
+        console.debug("regions: handleRedisplay");
     };
 
     var handleDragZoom = function (evt, zoomArea) {
         console.debug("regions: handleDragZoom, zoomArea:", zoomArea);
         data = this;
-//        if (data.settings.isBirdDivVisible) {
-//            setBirdZoom(data, zoomArea);
-//        }
     };
 
     // plugin installation called by digilib on plugin object.
-    var install = function(digilib) {
+    var install = function(plugin) {
+        digilib = plugin;
         console.debug('installing regions plugin. digilib:', digilib);
+        fn = digilib.fn;
         // import geometry classes
-        geom = digilib.fn.geometry;
+        geom = fn.geometry;
         FULL_AREA = geom.rectangle(0,0,1,1);
         // add defaults, actions, buttons
         $.extend(digilib.defaults, defaults);
@@ -244,12 +315,16 @@ TODO:
         if (buttonSet.length && buttonSet.length > 0) {
             buttonSettings['regionSet'] = buttonSet;
             buttonSettings.buttonSets.push('regionSet');
-            }
+        }
         // install event handler
         $data.bind('setup', handleSetup);
         $data.bind('update', handleUpdate);
         $data.bind('redisplay', handleRedisplay);
         $data.bind('dragZoom', handleDragZoom);
+        // regions array
+        data.regions = [];
+        // add "rg" to digilibParamNames
+        data.settings.digilibParamNames.push('rg');
     };
 
     // plugin object with name and install/init methods
