@@ -236,18 +236,13 @@
         };
         // returns true if rectangle "rect" and this rectangle overlap
         that.overlapsRect = function(rect) {
-            return (this.containsPosition(rect.getPt1()) || this
-                    .containsPosition(rect.getPt2()));
+            return this.intersect(rect) != null;
         };
         // changes this rectangle's x/y values so it stays inside of rectangle
         // "rect", keeping the proportions
         that.stayInside = function(rect) {
-            if (this.x < rect.x) {
-                this.x = rect.x;
-            }
-            if (this.y < rect.y) {
-                this.y = rect.y;
-            }
+            this.x = Math.max(this.x, rect.x);
+            this.y = Math.max(this.y, rect.y);
             if (this.x + this.width > rect.x + rect.width) {
                 this.x = rect.x + rect.width - this.width;
             }
@@ -267,24 +262,11 @@
         };
         // returns the intersection of rectangle "rect" and this one
         that.intersect = function(rect) {
-            // FIX ME: not really, it should return null if there is no overlap
-            var sec = rect.copy();
-            if (sec.x < this.x) {
-                sec.width = sec.width - (this.x - sec.x);
-                sec.x = this.x;
-            }
-            if (sec.y < this.y) {
-                sec.height = sec.height - (this.y - sec.y);
-                sec.y = this.y;
-            }
-            if (sec.x + sec.width > this.x + this.width) {
-                sec.width = (this.x + this.width) - sec.x;
-            }
-            if (sec.y + sec.height > this.y + this.height) {
-                sec.height = (this.y + this.height) - sec.y;
-            }
-            return sec;
+            var res = rect.clipTo(this);
+            if (res.width < 0 || res.height < 0) res = null;
+            return res;
         };
+
         // returns a copy of rectangle "rect" that fits into this one
         // (moving it first)
         that.fit = function(rect) {
