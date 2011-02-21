@@ -243,7 +243,10 @@ TODO:
     // pack regions array into a parameter string
     var packRegions = function (data) {
         var regions = data.regions;
-        if (!regions.length) return;
+        if (!regions.length) {
+            data.settings.rg = null;
+            return;
+        }
         var rg = '';
         for (var i = 0; i < regions.length; i++) {
             region = regions[i];
