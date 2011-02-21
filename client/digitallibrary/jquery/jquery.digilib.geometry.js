@@ -178,8 +178,8 @@
             this.y = pos.y;
             return this;
         };
-        that.setPt1 = that.setPosition; // TODO: not really the same
         // adds pos to the position
+        that.setPt1 = that.setPosition; // TODO: not really the same
         that.addPosition = function(pos) {
             this.x += pos.x;
             this.y += pos.y;
@@ -198,14 +198,14 @@
                 y : this.y + this.height / 2
             });
         };
-        // moves this Rectangle's center to position pos
+        // moves this rectangle's center to position pos
         that.setCenter = function(pos) {
             this.x = pos.x - this.width / 2;
             this.y = pos.y - this.height / 2;
             return this;
         };
+        // returns true if both rectangles have equal position and proportion
         that.equals = function(other) {
-            // equal props
             var eq = (this.x === other.x && this.y === other.y && this.width === other.width);
             return eq;
         };
@@ -229,21 +229,20 @@
                     + this.height));
             return ct;
         };
-        // returns if rectangle "rect" is contained in this rectangle
+        // returns true if rectangle "rect" is contained in this rectangle
         that.containsRect = function(rect) {
             return (this.containsPosition(rect.getPt1()) && this
                     .containsPosition(rect.getPt2()));
         };
+        // returns true if rectangle "rect" and this rectangle overlap
+        that.overlapsRect = function(rect) {
+            return this.intersect(rect) != null;
+        };
         // changes this rectangle's x/y values so it stays inside of rectangle
-        // rect
-        // keeping the proportions
+        // "rect", keeping the proportions
         that.stayInside = function(rect) {
-            if (this.x < rect.x) {
-                this.x = rect.x;
-            }
-            if (this.y < rect.y) {
-                this.y = rect.y;
-            }
+            this.x = Math.max(this.x, rect.x);
+            this.y = Math.max(this.y, rect.y);
             if (this.x + this.width > rect.x + rect.width) {
                 this.x = rect.x + rect.width - this.width;
             }
@@ -252,7 +251,7 @@
             }
             return this;
         };
-        // clips this rectangle so it stays inside of rectangle rect
+        // clips this rectangle so it stays inside of rectangle "rect"
         that.clipTo = function(rect) {
             var p1 = rect.getPt1();
             var p2 = rect.getPt2();
@@ -261,27 +260,15 @@
             this.setPt2(position(Math.min(this2.x, p2.x), Math.min(this2.y, p2.y)));
             return this;
         };
-        // returns the intersection of the given Rectangle and this one
+        // returns the intersection of rectangle "rect" and this one
         that.intersect = function(rect) {
-            // FIX ME: not really, it should return null if there is no overlap
-            var sec = rect.copy();
-            if (sec.x < this.x) {
-                sec.width = sec.width - (this.x - sec.x);
-                sec.x = this.x;
-            }
-            if (sec.y < this.y) {
-                sec.height = sec.height - (this.y - sec.y);
-                sec.y = this.y;
-            }
-            if (sec.x + sec.width > this.x + this.width) {
-                sec.width = (this.x + this.width) - sec.x;
-            }
-            if (sec.y + sec.height > this.y + this.height) {
-                sec.height = (this.y + this.height) - sec.y;
-            }
-            return sec;
+            var res = rect.clipTo(this);
+            if (res.width < 0 || res.height < 0) res = null;
+            return res;
         };
-        // returns a Rectangle that fits into this one (by moving first)
+
+        // returns a copy of rectangle "rect" that fits into this one
+        // (moving it first)
         that.fit = function(rect) {
             var sec = rect.copy();
             sec.x = Math.max(sec.x, this.x);
@@ -294,7 +281,7 @@
             }
             return sec.intersect(this);
         };
-        // adjusts position and size of $elem to this rectangle
+        // adjusts position and size of jQuery element "$elem" to this rectangle
         that.adjustDiv = function($elem) {
             $elem.offset({
                 left : this.x,
@@ -302,7 +289,7 @@
             });
             $elem.width(this.width).height(this.height);
         };
-        // returns size and position in css-compatible format
+        // returns position and size of this rectangle in css-compatible format
         that.getAsCss = function() {
             return {
                 left : this.x,
@@ -311,6 +298,11 @@
                 height : this.height
             };
         };
+        // returns position and size of this rectangle formatted for SVG attributes
+        that.getAsSvg = function() {
+            return [this.x, this.y, this.width, this.height].join(" ");
+        };
+        // returns size and position of this rectangle formatted for ??? (w x h@x,y)
         that.toString = function() {
             return this.width + "x" + this.height + "@" + this.x + "," + this.y;
         };

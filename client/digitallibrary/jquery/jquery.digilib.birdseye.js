@@ -7,6 +7,9 @@ digilib bird's eye view plugin
     // affine geometry plugin stub
     var geom;
 
+    // digilib object
+    var digilib;
+
     var FULL_AREA;
 
     var buttons = {
@@ -44,7 +47,9 @@ digilib bird's eye view plugin
     };
 
     // plugin installation called by digilib on plugin object.
-    var install = function(digilib) {
+    var install = function(plugin) {
+        digilib = plugin;
+        console.debug('installing birdseye plugin. digilib:', digilib);
         // import geometry classes
         geom = digilib.fn.geometry;
         FULL_AREA = geom.rectangle(0,0,1,1);
@@ -61,6 +66,7 @@ digilib bird's eye view plugin
 
     // plugin initialization
     var init = function (data) {
+        console.debug('initialising birdseye plugin. data:', data);
         var $data = $(data);
         // install event handler
         $data.bind('setup', handleSetup);
@@ -227,6 +233,7 @@ digilib bird's eye view plugin
             birdZoomRect = geom.rectangle($birdZoom);
             scalerPos = geom.position($scaler);
             newRect = null;
+            data.$elem.find(".overlay").hide(); // hide all overlays (marks/regions)
             fullRect = digilib.fn.setZoomBG(data); // setup zoom background image
             $document.bind("mousemove.dlBirdMove", birdZoomMove);
             $document.bind("mouseup.dlBirdMove", birdZoomEndDrag);
@@ -305,7 +312,7 @@ digilib bird's eye view plugin
 
     // plugin object with name and init
     // shared objects filled by digilib on registration
-    var digilib = {
+    var plugin = {
             name : 'birdseye',
             install : install,
             init : init,
@@ -316,8 +323,8 @@ digilib bird's eye view plugin
     };
 
     if ($.fn.digilib == null) {
-        $.error("jquery.digilib.birdview must be loaded after jquery.digilib!");
+        $.error("jquery.digilib.birdseye must be loaded after jquery.digilib!");
     } else {
-        $.fn.digilib('plugin', digilib);
+        $.fn.digilib('plugin', plugin);
     }
 })(jQuery);

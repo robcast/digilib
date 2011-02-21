@@ -61,6 +61,7 @@
         <script type="text/javascript" src="jquery.digilib.geometry.js"></script>
         <script type="text/javascript" src="jquery.digilib.birdseye.js"></script>
         <script type="text/javascript" src="jquery.digilib.regions.js"></script>
+        <script type="text/javascript" src="jquery.digilib.pluginstub.js"></script>
         <link rel="stylesheet" type="text/css" href="jquery.digilib.css" />
 
 
@@ -68,7 +69,8 @@
             $(document).ready(function(){
                 var opts = {
                     interactionMode : 'fullscreen',
-                    scalerBaseUrl : 'http://digilib.biblhertz.it/digilib04/servlet/Scaler'
+                    scalerBaseUrl : 'http://digilib.biblhertz.it/digilib04/servlet/Scaler',
+                    showRegionNumbers : true
                     };
                 var $div = $('div.digilib');
                 $div.digilib(opts);
