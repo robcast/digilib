@@ -1254,7 +1254,7 @@ if (typeof console === 'undefined') {
                 // create mark
                 var html = '<div class="mark overlay">'+(i+1)+'</div>';
                 var $mark = $(html);
-                $mark.attr("id", "dibilib.mark." + i);
+                $mark.attr("id", "digilib-mark-" + i);
                 $elem.append($mark);
                 mpos.adjustDiv($mark);
                 }
