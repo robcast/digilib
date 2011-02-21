@@ -75,6 +75,16 @@ div.regionnumber {
 	margin: 3px;
 }
 
+div.regioncontent {
+    display: none;
+}
+
+div.regioninfo {
+    display: none;
+    color: white;
+    background-color: black;
+}
+
 /* special definitions for fullscreen */
 div.digilib.dl_fullscreen div.buttons {
 	position: fixed;
