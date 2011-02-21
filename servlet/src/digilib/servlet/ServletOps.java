@@ -191,10 +191,10 @@ public class ServletOps {
      * @throws ImageOpException
      * @throws ServletException
      *             Exception on sending data.
+     * @throws IOException
      */
     public static void sendFile(File f, String mt, String name,
-            HttpServletResponse response) throws ImageOpException,
-            ServletException {
+            HttpServletResponse response) throws ImageOpException, IOException {
         // use default logger
         ServletOps.sendFile(f, mt, name, response, ServletOps.logger);
     }
@@ -217,14 +217,11 @@ public class ServletOps {
      *            Logger to use
      * @throws ImageOpException
      * @throws ServletException Exception on sending data.
+     * @throws IOException 
      */
     public static void sendFile(File f, String mt, String name, HttpServletResponse response, Logger logger)
-            throws ImageOpException, ServletException {
+            throws ImageOpException, IOException {
         logger.debug("sendRawFile(" + mt + ", " + f + ")");
-    	if (response.isCommitted()) {
-        	logger.warn("sendFile: response already committed!");
-        	//return;
-    	}
         if (mt == null) {
             // auto-detect mime-type
             mt = FileOps.mimeForFile(f);
@@ -254,9 +251,6 @@ public class ServletOps {
                 // copy out file
                 outStream.write(dataBuffer, 0, len);
             }
-        } catch (IOException e) {
-            logger.error("Error sending file:", e);
-            throw new ServletException("Error sending file:", e);
         } finally {
             try {
                 if (inFile != null) {
@@ -297,19 +291,20 @@ public class ServletOps {
             HttpServletResponse response, Logger logger) throws ImageOpException,
             ServletException {
         logger.debug("sending to response:"+ response + " committed=" + response.isCommitted());
-    	if (response.isCommitted()) {
-        	logger.warn("sendImage: response already committed!");
-        	//return;
-    	}
         try {
             OutputStream outstream = response.getOutputStream();
             // setup output -- if mime type is set use that otherwise
             // if source is JPG then dest will be JPG else it's PNG
             if (mimeType == null) {
                 mimeType = img.getMimetype();
+                if (mimeType == null) {
+                    // still no mime-type
+                    logger.warn("sendImage without mime-type! using image/jpeg.");
+                    mimeType = "image/jpeg";
+                }
             }
-            if ((mimeType.equals("image/jpeg") || mimeType.equals("image/jp2") || mimeType
-                    .equals("image/fpx"))) {
+            if ((mimeType.equals("image/jpeg") || mimeType.equals("image/jp2") || 
+                    mimeType.equals("image/fpx"))) {
                 mimeType = "image/jpeg";
             } else {
                 mimeType = "image/png";
@@ -318,7 +313,6 @@ public class ServletOps {
             response.setContentType(mimeType);
             img.writeImage(mimeType, outstream);
         } catch (IOException e) {
-            logger.error("Error sending image:", e);
             throw new ServletException("Error sending image:", e);
         }
         // TODO: should we: finally { img.dispose(); }

@@ -43,8 +43,10 @@ import digilib.io.TextFile;
  */
 public class Texter extends HttpServlet {
 
-	/** Servlet version */
-	public static String tlVersion = "0.1b2";
+    private static final long serialVersionUID = 6678666342141409867L;
+
+    /** Servlet version */
+	public static String tlVersion = "0.1b3";
 
 	/** DigilibConfiguration instance */
 	DigilibConfiguration dlConfig = null;
@@ -128,7 +130,7 @@ public class Texter extends HttpServlet {
 	}
 
 	protected void processRequest(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+			HttpServletResponse response) {
 		
 		/*
 		 * request parameters
@@ -146,7 +148,7 @@ public class Texter extends HttpServlet {
 			} else {
 				f = getTextFile(dlRequest, "");
 				if (f != null) {
-					ServletOps.sendFile(f.getFile(),	null, null, response, logger);
+					ServletOps.sendFile(f.getFile(), null, null, response, logger);
 				} else {
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, "Text-File not found!");
 					//ServletOps.htmlMessage("No Text-File!", response);
@@ -156,7 +158,13 @@ public class Texter extends HttpServlet {
 		} catch (ImageOpException e) {
             // most likely wrong file format...
             logger.error("ERROR sending text file: ", e);
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            try {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            } catch (IOException e1) {
+                logger.error("ERROR sending error: ", e1);
+            }
+        } catch (IOException e) {
+            logger.error("ERROR sending text file: ", e);
         }
     }
 	
@@ -175,7 +183,7 @@ public class Texter extends HttpServlet {
 	private TextFile getTextFile(DigilibRequest dlRequest, String subDirectory) {
 		String loadPathName = dlRequest.getFilePath() + subDirectory;
 		// find the file(set)
-		return (TextFile) dirCache.getFile(loadPathName, dlRequest
-				.getAsInt("pn"), FileClass.TEXT);
+		return (TextFile) dirCache.getFile(loadPathName, dlRequest.getAsInt("pn"), 
+		        FileClass.TEXT);
 	}
 }

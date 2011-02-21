@@ -2,7 +2,7 @@
 
  Digital Image Library servlet components
 
- Copyright (C) 2002, 2003 Robert Casties (robcast@mail.berlios.de)
+ Copyright (C) 2002 - 2011 Robert Casties (robcast@mail.berlios.de)
 
  This program is free software; you can redistribute  it and/or modify it
  under  the terms of  the GNU General  Public License as published by the
@@ -60,15 +60,15 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 	/** interpolation type */
 	protected RenderingHints renderHint;
 
-	/** ImageIO image reader */
-	protected ImageReader reader;
-
 	protected static Kernel[] convolutionKernels = {
 	        null,
 	        new Kernel(1, 1, new float[] {1f}),
             new Kernel(2, 2, new float[] {0.25f, 0.25f, 0.25f, 0.25f}),
             new Kernel(3, 3, new float[] {1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f})
 	};
+
+	/** the size of the current image */
+    protected ImageSize imageSize;
 	
 	
 	/* loadSubimage is supported. */
@@ -95,25 +95,26 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
     /* returns the size of the current image */
     public ImageSize getSize() {
-        ImageSize is = null;
-        // TODO: do we want to cache imageSize?
-        int h = 0;
-        int w = 0;
-        try {
-            if (img == null) {
-                // get size from ImageReader
-                h = reader.getHeight(0);
-                w = reader.getWidth(0);
-            } else {
-                // get size from image
-                h = img.getHeight();
-                w = img.getWidth();
+        if (imageSize == null) {
+            int h = 0;
+            int w = 0;
+            try {
+                if (img == null) {
+                    ImageReader reader = getReader(input);
+                    // get size from ImageReader
+                    h = reader.getHeight(0);
+                    w = reader.getWidth(0);
+                } else {
+                    // get size from image
+                    h = img.getHeight();
+                    w = img.getWidth();
+                }
+                imageSize = new ImageSize(w, h);
+            } catch (IOException e) {
+                logger.debug("error in getSize:", e);
             }
-            is = new ImageSize(w, h);
-        } catch (IOException e) {
-            logger.debug("error in getSize:", e);
         }
-        return is;
+        return imageSize;
     }
 
 	/* returns a list of supported image formats */
@@ -130,30 +131,36 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             return ii;
         }
         logger.debug("identifying (ImageIO) " + input);
-        /*
-         * try ImageReader
-         */
+        ImageReader reader = null;
         try {
+            /*
+             * try ImageReader
+             */
             reader = getReader(input);
+            // set size
+            ImageSize d = new ImageSize(reader.getWidth(0), reader.getHeight(0));
+            input.setSize(d);
+            // set mime type
+            if (input.getMimetype() == null) {
+                if (input.hasFile()) {
+                    String t = FileOps.mimeForFile(input.getFile());
+                    input.setMimetype(t);
+                } else {
+                    // FIXME: is format name a mime type???
+                    String t = reader.getFormatName();
+                    input.setMimetype(t);
+                }
+            }
+            return input;
         } catch (FileOpException e) {
             // maybe just our class doesn't know what to do
+            logger.error("ImageLoaderDocuimage unable to identify:", e);
             return null;
-        }
-        // set size
-        ImageSize d = new ImageSize(reader.getWidth(0), reader.getHeight(0));
-        input.setSize(d);
-        // set mime type
-        if (input.getMimetype() == null) {
-            if (input.hasFile()) {
-                String t = FileOps.mimeForFile(input.getFile());
-                input.setMimetype(t);
-            } else {
-                // FIXME: is format name a mime type???
-                String t = reader.getFormatName();
-                input.setMimetype(t);
+        } finally {
+            if (reader != null) {
+                reader.dispose();
             }
         }
-        return input;
     }
     
     /* load image file */
@@ -178,17 +185,6 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 	 */
 	public ImageReader getReader(ImageInput input) throws IOException {
 		logger.debug("get ImageReader for " + input);
-		if (this.reader != null) {
-			if (this.input == input) {
-				// it was the same input
-				logger.debug("reusing Reader");
-				return reader;
-			}
-			// clean up old reader (this shouldn't really happen)
-			logger.debug("cleaning Reader!");
-			dispose();
-		}
-		this.input = input;
 		ImageInputStream istream = null;
 		if (input.hasImageInputStream()) {
 			// stream input
@@ -201,7 +197,11 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			throw new FileOpException("Unable to get data from ImageInput");
 		}
 		Iterator<ImageReader> readers;
-		String mt = input.getMimetype();
+		String mt = null;
+		if (input.hasMimetype()) {
+	        // check hasMimetype first or we might get into a loop
+		    mt = input.getMimetype();
+		}
 		if (mt == null) {
 			logger.debug("No mime-type. Trying automagic.");
 			readers = ImageIO.getImageReaders(istream);
@@ -212,7 +212,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		if (!readers.hasNext()) {
 			throw new FileOpException("Can't find Reader to load File!");
 		}
-		reader = readers.next();
+		ImageReader reader = readers.next();
 		/* are there more readers? */
 		logger.debug("ImageIO: this reader: " + reader.getClass());
 		/* while (readers.hasNext()) {
@@ -226,6 +226,8 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 	public void loadSubimage(ImageInput ii, Rectangle region, int prescale)
 			throws FileOpException {
 		logger.debug("loadSubimage");
+        this.input = ii;
+        ImageReader reader = null;
 		try {
 			reader = getReader(ii);
 			// set up reader parameters
@@ -240,6 +242,10 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			logger.debug("loaded");
 		} catch (IOException e) {
 			throw new FileOpException("Unable to load File!");
+		} finally {
+		    if (reader != null) {
+		        reader.dispose();
+		    }
 		}
 	}
 
@@ -310,7 +316,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 	}
 
 	public void scale(double scale, double scaleY) throws ImageOpException {
-		logger.debug("scale");
+		logger.debug("scale: " + scale);
 		/* for downscaling in high quality the image is blurred first */
 		if ((scale <= 0.5) && (quality > 1)) {
 			int bl = (int) Math.floor(1 / scale);
@@ -524,23 +530,8 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		img = mirImg;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#finalize()
-	 */
-	protected void finalize() throws Throwable {
-		dispose();
-		super.finalize();
-	}
-
 	public void dispose() {
-		// we must dispose the ImageReader because it keeps the filehandle
-		// open!
-		if (reader != null) {
-			reader.dispose();
-			reader = null;
-		}
+	    // is this necessary?
 		img = null;
 	}
 

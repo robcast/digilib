@@ -63,15 +63,15 @@ public interface DocuImage {
 	public void loadSubimage(ImageInput ii, Rectangle region, int subsample)
 		throws FileOpException;
 
-	/** Writes the current image to a ServletResponse.
+	/** Writes the current image to an OutputStream.
 	 *
 	 * The image is encoded to the mime-type <code>mt</code> and sent to the output
-	 * stream of the <code>ServletResponse</code> <code>res</code>.
+	 * stream <code>ostream</code>.
 	 *
 	 * Currently only mime-types "image/jpeg" and "image/png" are supported.
 	 * 
 	 * @param mt mime-type of the image to be sent.
-	 * @param res ServletResponse where the image is sent.
+	 * @param ostream OutputStream where the image is sent.
 	 * @throws ServletException Exception thrown on sending data.
 	 * @throws ImageOpException Exception in other cases.
 	 */

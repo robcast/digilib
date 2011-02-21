@@ -51,7 +51,15 @@ public abstract class ImageInput {
 		this.pixelSize = imageSize;
 	}
 
-	/**
+    /** returns if mimetype has been set.
+     * 
+     * @return String
+     */
+    public boolean hasMimetype() {
+        return (mimetype != null);
+    }
+
+    /**
 	 * @return String
 	 */
 	public String getMimetype() {

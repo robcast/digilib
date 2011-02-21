@@ -156,11 +156,11 @@ public abstract class DocuImageImpl implements DocuImage {
 
     public void crop(int xoff, int yoff, int width, int height)
             throws ImageOpException {
-        // TODO Auto-generated method stub
+        // emtpy implementation
     }
 
     public Image getAwtImage() {
-        // TODO Auto-generated method stub
+        // emtpy implementation
         return null;
     }
 

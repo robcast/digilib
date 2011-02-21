@@ -31,7 +31,7 @@ public class ScalerNoThread extends HttpServlet {
     private static final long serialVersionUID = 1450947819851623306L;
 
     /** digilib servlet version (for all components) */
-    public static final String version = "1.9.0a3 nothread";
+    public static final String version = "1.9.0a5 nothread";
 
     /** servlet error codes */
     public static enum Error {UNKNOWN, AUTH, FILE, IMAGE};

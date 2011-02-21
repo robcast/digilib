@@ -92,7 +92,8 @@ public class ImageSet {
 	public ImageInput getNextSmaller(ImageSize size) {
 		for (ListIterator<ImageInput> i = getHiresIterator(); i.hasNext();) {
 			ImageInput f = i.next();
-			if (f.getSize().isTotallySmallerThan(size)) {
+            ImageSize is = f.getSize();
+            if (is != null && is.isTotallySmallerThan(size)) {
 				return f;
 			}
 		}
@@ -112,7 +113,8 @@ public class ImageSet {
 	public ImageInput getNextBigger(ImageSize size) {
 		for (ListIterator<ImageInput> i = getLoresIterator(); i.hasPrevious();) {
 			ImageInput f = i.previous();
-			if (f.getSize().isBiggerThan(size)) {
+			ImageSize is = f.getSize();
+			if (is != null && is.isBiggerThan(size)) {
 				return f;
 			}
 		}

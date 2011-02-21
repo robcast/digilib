@@ -50,7 +50,7 @@ public class AsyncServletWorker implements Runnable {
     }
 
     /**
-     * runs the ImakeWorker and writes the image to the ServletResponse.
+     * runs the ImageWorker and writes the image to the ServletResponse.
      */
     public void run() {
         // get fresh response
@@ -60,7 +60,7 @@ public class AsyncServletWorker implements Runnable {
             DocuImage img = imageWorker.call();
             // send image
             ServletOps.sendImage(img, null, response, logger);
-            logger.debug("Job Processing Time: "
+            logger.debug("Job done in: "
                     + (System.currentTimeMillis() - startTime) + "ms");
         } catch (ImageOpException e) {
             logger.error(e.getClass() + ": " + e.getMessage());
@@ -70,8 +70,11 @@ public class AsyncServletWorker implements Runnable {
             Scaler.digilibError(errMsgType, Error.FILE, null, response);
         } catch (ServletException e) {
             logger.error("Servlet error: ", e);
+        } catch (Exception e) {
+            logger.error("Other error: ", e);
         } finally {
             // submit response
+            logger.debug("context complete.");
             asyncContext.complete();
         }
 

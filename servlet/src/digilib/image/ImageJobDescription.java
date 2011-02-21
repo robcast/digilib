@@ -166,11 +166,12 @@ public class ImageJobDescription extends ParameterMap {
 					input = imageSet.getBiggest();
 				}
 			}
-			logger.info("Planning to load: " + input);
+			if (input == null || input.getMimetype() == null) {
+			    throw new FileOpException("Unable to load "+input);
+			}
+            logger.info("Planning to load: " + input);
 		}
-		
 		return input;
-
 	}
 	
 	/** Returns the DocuDirectory for the input (file). 
@@ -503,33 +504,27 @@ public class ImageJobDescription extends ParameterMap {
 		|| hasOption("rawfile");
 	}
 	
-	/**
-	 * Returns if the image can be sent without processing. Takes image type and
-	 * additional image operations into account. Does not check requested size
-	 * transformation.
-	 * 
-	 * @return
-	 * @throws IOException
-	 */
-	public boolean isImageSendable() throws IOException {
-		// cached result?
-		if (imageSendable == null) {
-			String mimeType = getMimeType();
-			imageSendable = ( (mimeType.equals("image/jpeg")
-				        	|| mimeType.equals("image/png")
-				        	|| mimeType.equals("image/gif") )
-				        	&& 
-				        	!(hasOption("hmir")
-							|| hasOption("vmir") 
-							|| (getAsFloat("rot") != 0.0)
-							|| (getRGBM() != null) 
-							|| (getRGBA() != null)
-							|| (getAsFloat("cont") != 0.0) 
-							|| (getAsFloat("brgt") != 0.0)));
-		}
-		
-		return imageSendable;
-	}
+    /**
+     * Returns if the image can be sent without processing. Takes image type and
+     * additional image operations into account. Does not check requested size
+     * transformation.
+     * 
+     * @return
+     * @throws IOException
+     */
+    public boolean isImageSendable() throws IOException {
+        if (imageSendable == null) {
+            String mimeType = getMimeType();
+            imageSendable = (mimeType != null
+                    && (mimeType.equals("image/jpeg") || mimeType.equals("image/png") 
+                            || mimeType.equals("image/gif"))
+                    && !(hasOption("hmir")
+                    || hasOption("vmir") || (getAsFloat("rot") != 0.0)
+                    || (getRGBM() != null) || (getRGBA() != null)
+                    || (getAsFloat("cont") != 0.0) || (getAsFloat("brgt") != 0.0)));
+        }
+        return imageSendable;
+    }
 	
 	
 	/**
