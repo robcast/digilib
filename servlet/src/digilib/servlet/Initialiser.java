@@ -162,6 +162,7 @@ public class Initialiser implements ServletContextListener {
      * 
      */
     public void contextDestroyed(ServletContextEvent arg0) {
+        logger.info("Initialiser shutting down.");
         if (dirCache != null) {
             // shut down dirCache?
             dirCache = null;

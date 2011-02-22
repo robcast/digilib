@@ -201,6 +201,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		if (input.hasMimetype()) {
 	        // check hasMimetype first or we might get into a loop
 		    mt = input.getMimetype();
+		} else {
+		    // try file extension
+            mt = FileOps.mimeForFile(input.getFile());
 		}
 		if (mt == null) {
 			logger.debug("No mime-type. Trying automagic.");

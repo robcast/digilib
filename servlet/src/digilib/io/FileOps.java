@@ -107,7 +107,10 @@ public class FileOps {
 	 * get the mime type for a file format (by extension)
 	 */
 	public static String mimeForFile(File f) {
-		return (String) fileTypes.get(extname(f.getName().toLowerCase()));
+	    if (f == null) {
+	        return null;
+	    }
+		return fileTypes.get(extname(f.getName().toLowerCase()));
 	}
 
 	/**

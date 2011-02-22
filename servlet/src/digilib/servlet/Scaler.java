@@ -31,7 +31,7 @@ public class Scaler extends HttpServlet {
     private static final long serialVersionUID = 5289386646192471549L;
 
     /** digilib servlet version (for all components) */
-    public static final String version = "1.9.1a7";
+    public static final String version = "1.9.1a9";
 
     /** servlet error codes */
     public static enum Error {UNKNOWN, AUTH, FILE, IMAGE};
@@ -120,7 +120,8 @@ public class Scaler extends HttpServlet {
         sendFileAllowed = dlConfig.getAsBoolean("sendfile-allowed");
     }
 
-    /** Returns modification time relevant to the request for caching.
+    /**
+     * Returns modification time relevant to the request for caching.
      * 
      * @see javax.servlet.http.HttpServlet#getLastModified(javax.servlet.http.HttpServletRequest)
      */
@@ -128,13 +129,17 @@ public class Scaler extends HttpServlet {
         accountlog.debug("GetLastModified from " + request.getRemoteAddr()
                 + " for " + request.getQueryString());
         long mtime = -1;
-        // create new request
-        DigilibRequest dlReq = new DigilibRequest(request);
-        DocuDirectory dd = dirCache.getDirectory(dlReq.getFilePath());
-        if (dd != null) {
-            mtime = dd.getDirMTime() / 1000 * 1000;
+        try {
+            // create new request
+            DigilibRequest dlReq = new DigilibRequest(request);
+            DocuDirectory dd = dirCache.getDirectory(dlReq.getFilePath());
+            if (dd != null) {
+                mtime = dd.getDirMTime() / 1000 * 1000;
+            }
+        } catch (Exception e) {
+            logger.error("error in getLastModified: " + e.getMessage());
         }
-        logger.debug("  returns "+mtime);
+        logger.debug("  returns " + mtime);
         return mtime;
     }
 
@@ -265,6 +270,10 @@ public class Scaler extends HttpServlet {
         } catch (AuthOpException e) {
             logger.error(e.getClass() + ": " + e.getMessage());
             digilibError(errMsgType, Error.AUTH, null, response);
+        } catch (Exception e) {
+            logger.error("Other Exception: ", e);
+            // TODO: should we rethrow or swallow?
+            //throw new ServletException(e);
         }
     }
 
