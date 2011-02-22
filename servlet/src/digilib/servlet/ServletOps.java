@@ -152,7 +152,7 @@ public class ServletOps {
     }
 
     /**
-     * print a servlet response and exit
+     * print a servlet response
      */
     public static void htmlMessage(String msg, HttpServletResponse response)
             throws IOException {
@@ -160,7 +160,7 @@ public class ServletOps {
     }
 
     /**
-     * print a servlet response and exit
+     * print a servlet response
      */
     public static void htmlMessage(String title, String msg,
             HttpServletResponse response) throws IOException {
@@ -222,6 +222,10 @@ public class ServletOps {
     public static void sendFile(File f, String mt, String name, HttpServletResponse response, Logger logger)
             throws ImageOpException, IOException {
         logger.debug("sendRawFile(" + mt + ", " + f + ")");
+    	if (response == null) {
+    		logger.error("No response!");
+    		return;
+    	}
         if (mt == null) {
             // auto-detect mime-type
             mt = FileOps.mimeForFile(f);
@@ -290,6 +294,10 @@ public class ServletOps {
     public static void sendImage(DocuImage img, String mimeType,
             HttpServletResponse response, Logger logger) throws ImageOpException,
             ServletException {
+    	if (response == null) {
+    		logger.error("No response!");
+    		return;
+    	}
         logger.debug("sending to response:"+ response + " committed=" + response.isCommitted());
         try {
             OutputStream outstream = response.getOutputStream();
