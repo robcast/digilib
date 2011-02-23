@@ -774,40 +774,50 @@ if (typeof console === 'undefined') {
         retrieveOptions(data);
     };
 
+    // put area into parameters
+    var packArea = function (settings, area) {
+        if (!area) return;
+        // zoom area
+        settings.wx = cropFloat(area.x);
+        settings.wy = cropFloat(area.y);
+        settings.ww = cropFloat(area.width);
+        settings.wh = cropFloat(area.height);
+    };
+
+    // put marks into parameters
+    var packMarks = function (settings, marks) {
+        if (!marks) return;
+        settings.mk = '';
+        for (var i = 0; i < marks.length; i++) {
+            if (i) {
+                settings.mk += ',';
+                }
+            settings.mk +=
+                cropFloatStr(marks[i].x) + '/' + 
+                cropFloatStr(marks[i].y);
+            }
+    };
+
+    // pack scaler flags into parameters
+    var packScalerFlags = function (settings, flags) {
+        if (!flags) return;
+        var mo = '';
+        for (var f in flags) {
+            if (mo) {
+                mo += ',';
+            }
+            mo += f;
+        }
+        settings.mo = mo;
+    };
+
     // put objects back into parameters
     var packParams = function (data) {
         var settings = data.settings;
-        // zoom area
-        if (data.zoomArea) {
-            settings.wx = cropFloat(data.zoomArea.x);
-            settings.wy = cropFloat(data.zoomArea.y);
-            settings.ww = cropFloat(data.zoomArea.width);
-            settings.wh = cropFloat(data.zoomArea.height);
-            }
-        // marks
-        if (data.marks) {
-            settings.mk = '';
-            for (var i = 0; i < data.marks.length; i++) {
-                if (i) {
-                    settings.mk += ',';
-                    }
-                settings.mk +=
-                    cropFloatStr(data.marks[i].x) + '/' + 
-                    cropFloatStr(data.marks[i].y);
-                }
-            }
-        // Scaler flags
-        if (data.scalerFlags) {
-            var mo = '';
-            for (var f in data.scalerFlags) {
-                if (mo) {
-                    mo += ',';
-                }
-                mo += f;
-            }
-            settings.mo = mo;
-        }
-        // user interface options
+        packArea(settings, data.zoomArea);
+        packMarks(settings, data.marks);
+        packScalerFlags(settings, data.scalerFlags);
+        // store user interface options in cookie
         storeOptions(data);
     };
 
@@ -961,8 +971,8 @@ if (typeof console === 'undefined') {
                 $img = $('<img/>');
             }
         }
-        // create new inner html, keep buttons
-        $elem.contents(":not(div.buttons)").remove();
+        // create new inner html, keeping buttons and content marked with "keep" class
+        $elem.contents(":not(.keep)").remove();
         var $scaler = $('<div class="scaler"/>');
         // scaler should be the first child element?
         $elem.prepend($scaler);
@@ -987,7 +997,8 @@ if (typeof console === 'undefined') {
             // no buttons here
             return;
         }
-        var $buttonsDiv = $('<div class="buttons"/>');
+        // button divs are marked with class "keep"
+        var $buttonsDiv = $('<div class="keep buttons"/>');
         var buttonNames = buttonSettings[buttonGroup];
         for (var i = 0; i < buttonNames.length; i++) {
             var buttonName = buttonNames[i];
@@ -1588,6 +1599,9 @@ if (typeof console === 'undefined') {
             getDigilibUrl : getDigilibUrl,
             unpackParams : unpackParams,
             packParams : packParams,
+            packArea : packArea,
+            packMarks : packMarks,
+            packScalerFlags : packScalerFlags,
             storeOptions : storeOptions,
             redisplay : redisplay,
             updateDisplay : updateDisplay,
