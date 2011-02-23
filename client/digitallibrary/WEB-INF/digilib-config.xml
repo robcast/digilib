@@ -68,5 +68,7 @@
   <!-- logo for PDFs -->
   <parameter name="pdf-logo" value="http://www.mpiwg-berlin.mpg.de/de/images/logo.png" />
 
+  <!-- is the image toolkit allowed to use a disk cache -->
+  <parameter name="img-diskcache-allowed" value="false"/>
   
 </digilib-config>

@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.OutputStream;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -129,6 +130,10 @@ public class Initialiser implements ServletContextListener {
 				// DocuImage class
 				DocuImage di = DigilibConfiguration.getDocuImageInstance();
 				dlConfig.setValue("servlet.docuimage.class", di.getClass().getName());
+				// disk cache for image toolkit
+				boolean dc = dlConfig.getAsBoolean("img-diskcache-allowed");
+				// TODO: methods for all toolkits?
+				ImageIO.setUseCache(dc);
 				// digilib worker threads
 				int nt = dlConfig.getAsInt("worker-threads");
                 int mt = dlConfig.getAsInt("max-waiting-threads");

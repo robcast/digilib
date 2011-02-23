@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
@@ -173,8 +172,8 @@ public class DigilibConfiguration extends ParameterMap {
         newParameter("pdf-temp-dir", "pdf_temp", null, 'f');
         // PDF generation cache directory
         newParameter("pdf-cache-dir", "pdf_cache", null, 'f');
-        // PDF generation cache directory
-        newParameter("pdf-cache-dir", "pdf_cache", null, 'f');
+		// allow image toolkit to use disk cache
+		newParameter("img-diskcache-allowed", Boolean.TRUE, null, 'f');
 	}
 
 	/**
