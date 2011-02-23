@@ -56,7 +56,9 @@ TODO:
         'showRegionInfo' : false,
         // should digilib look for region content in the page?
         'includeRegionContent' : false,
-        // class name for content divs
+        // turn any region into a clickable link to its detail view
+        'autoRegionLinks' : false,
+        // class name for content divs (must additionally be marked with class "keep")
         'regionContentSelector' : 'div.regioncontent',
         // buttonset of this plugin
         'regionSet' : ['regions', 'addregion', 'delregion', 'regioninfo', 'lessoptions'],
@@ -82,8 +84,7 @@ TODO:
             var $overlay = $('<div class="digilib-overlay"/>');
             $body.append($overlay);
             bodyRect.adjustDiv($overlay);
-             // we count regions from 1
-            var $regionDiv = addRegionDiv(data, data.regions.length + 1);
+            var $regionDiv = addRegionDiv(data, data.regions.length);
 
             // mousedown handler: start sizing
             var regionStart = function (evt) {
@@ -181,14 +182,25 @@ TODO:
     };
 
     // add a region to data.$elem
-    var addRegionDiv = function (data, nr) {
+    var addRegionDiv = function (data, index) {
+        var nr = index + 1; // we count regions from 1
+        // create a digilib URL for this detail
+        var regionUrl = getRegionUrl(data, index);
         var $regionDiv = $('<div class="region overlay" style="display:none"/>');
         $regionDiv.attr("id", ID_PREFIX + nr);
         data.$elem.append($regionDiv);
         if (data.settings.showRegionNumbers) {
-            var $regionNr = $('<div class="regionnumber" />');
-            $regionNr.text(nr);
+            var $regionNr = $('<div class="regionnumber"/>');
+            var $regionLink = $('<a/>');
+            $regionLink.attr('href', regionUrl);
+            $regionLink.text(nr);
+            $regionNr.append($regionLink);
             $regionDiv.append($regionNr);
+        }
+        if (data.settings.autoRegionLinks) {
+            $regionDiv.bind('click.dlRegion', function() {
+                 window.location = regionUrl;
+            })
         }
         return $regionDiv;
     };
@@ -210,7 +222,7 @@ TODO:
     // create a region div from the data.regions collection
     var createRegionDiv = function (regions, index) {
         var region = regions[index];
-        var $regionDiv = addRegionDiv(data, index + 1); // we count regions from 1
+        var $regionDiv = addRegionDiv(data, index);
         region.$div = $regionDiv;
         addRegionInfo(region);
         return $regionDiv;
@@ -226,17 +238,19 @@ TODO:
 
     // create regions from HTML
     var createRegionsFromHTML = function (data) {
+        var regions = data.regions;
         var selector = data.settings.regionContentSelector;
-        // TODO: has digilib div already been emptied here?
         var $content = data.$elem.find(selector);
         console.debug("createRegionsFromHTML", $content);
-        $content.each(function(index, $div) {
+        $content.each(function(index, elem) {
+            var $div = $(elem); 
             var r = $div.attr('title');
             var pos = r.split("/", 4);
             var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
             regions.push(rect);
             var $regionDiv = createRegionDiv(regions, index);
             $regionDiv.append($div);
+            $div.show();
         });
     };
 
@@ -327,11 +341,20 @@ TODO:
         fn.redisplay(data);
     };
 
-    // TODO: turn region numbers or region divs into links to zoomed details 
-    var getDigilibUrl = function (data) {
-        packParams(data);
+    // for turning region numbers/region divs into links to zoomed details 
+    var getRegionUrl = function (data, index) {
+        var region = data.regions[index];
         var settings = data.settings;
-        var queryString = getParamString(settings, settings.digilibParamNames, defaults);
+        var params = {
+            "fn" : settings.fn,
+            "pn" : settings.pn
+            };
+        fn.packArea(params, region);
+        fn.packMarks(params, data.marks);
+        fn.packScalerFlags(params, data.scalerFlags);
+        var paramNames = digilib.defaults.digilibParamNames;
+        // build our own digilib URL without storing anything
+        var queryString = fn.getParamString(params, paramNames, digilib.defaults);
         return settings.digilibBaseUrl + '?' + queryString;
     };
 
@@ -339,9 +362,10 @@ TODO:
     var handleSetup = function (evt) {
         data = this;
         console.debug("regions: handleSetup", data.settings.rg);
-        // content is given in HTML divs
+        // regions with content are given in HTML divs
         if (data.settings.includeRegionContent) {
             createRegionsFromHTML(data);
+        // regions are defined in the URL
         } else {
             unpackRegions(data);
             createRegionDivs(data);
@@ -388,23 +412,27 @@ TODO:
     var init = function (data) {
         console.debug('initialising regions plugin. data:', data);
         var $data = $(data);
-        var buttonSettings = data.settings.buttonSettings.fullscreen;
-        // configure buttons through digilib "regionSet" option
-        var buttonSet = data.settings.regionSet || regionSet; 
-        // set regionSet to [] or '' for no buttons (when showing regions only)
-        if (buttonSet.length && buttonSet.length > 0) {
-            buttonSettings['regionSet'] = buttonSet;
-            buttonSettings.buttonSets.push('regionSet');
+        // regions array
+        data.regions = [];
+        // no URL-defined regions, no buttons when regions are predefined in HTML
+        if (!data.settings.includeRegionContent) {
+            // add "rg" to digilibParamNames
+            data.settings.digilibParamNames.push('rg');
+            // additional buttons
+            var buttonSettings = data.settings.buttonSettings.fullscreen;
+            // configure buttons through digilib "regionSet" option
+            var buttonSet = data.settings.regionSet || regionSet; 
+            // set regionSet to [] or '' for no buttons (when showing regions only)
+            if (buttonSet.length && buttonSet.length > 0) {
+                buttonSettings['regionSet'] = buttonSet;
+                buttonSettings.buttonSets.push('regionSet');
+            }
         }
         // install event handler
         $data.bind('setup', handleSetup);
         $data.bind('update', handleUpdate);
         $data.bind('redisplay', handleRedisplay);
         $data.bind('dragZoom', handleDragZoom);
-        // regions array
-        data.regions = [];
-        // add "rg" to digilibParamNames
-        data.settings.digilibParamNames.push('rg');
     };
 
     // plugin object with name and install/init methods

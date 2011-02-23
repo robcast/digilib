@@ -66,8 +66,9 @@ div.digilib div.region:hover {
 	opacity: 0.5;
 }
 
-div.regionnumber {
+div.regionnumber a {
     color: white;
+    text-decoration: none;
     font-size: 11px;
 	font-weight: bold;
 	height: 15px;
@@ -77,6 +78,14 @@ div.regionnumber {
 
 div.regioncontent {
     display: none;
+    padding: 3px;
+}
+
+div.regioncontent a {
+    color: white;
+    text-decoration: none;
+    font-size: 11px;
+	font-weight: bold;
 }
 
 div.regioninfo {

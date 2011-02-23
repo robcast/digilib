@@ -70,7 +70,8 @@
                 var opts = {
                     interactionMode : 'fullscreen',
                     scalerBaseUrl : 'http://digilib.biblhertz.it/digilib04/servlet/Scaler',
-                    showRegionNumbers : true,
+                    showRegionNumbers : false,
+                    autoRegionLinks : false,
                     includeRegionContent : true 
                     };
                 var $div = $('div.digilib');
@@ -84,10 +85,10 @@
 
         <div id="digilib-1" class="digilib">
             <img src="http://digilib.biblhertz.it/digilib04/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/FransHals-WillemVanHeythuysen" />
-            <div class="regioncontent" title="0.1/0.1/0.2/0.2">
+            <div class="keep regioncontent" title="0.1/0.1/0.4/0.1">
                 <a href="http://www.mpiwg-berlin.mpg.de">MPI fuer Wissenschaftsgeschichte</a>
             </div>
-            <div class="regioncontent" title="0.8/0.8/0.9/0.9">
+            <div class="keep regioncontent" title="0.5/0.8/0.4/0.1">
                 <a href="http://www.biblhertz.it">Bibliotheca Hertziana</a>
             </div>
         </div>
