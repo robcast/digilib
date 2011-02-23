@@ -282,7 +282,7 @@ TODO:
             if (anim) {
                 $regionDiv.fadeOut();
             } else{
-                $regionDiv.show();
+                $regionDiv.hide();
             }
         }
     };
@@ -305,8 +305,6 @@ TODO:
             var pos = r.split("/", 4);
             var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
             regions.push(rect);
-            // TODO: backlink mechanism
-            // var url = paramString.match(/http.*$/);
             }
     };
 
