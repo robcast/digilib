@@ -48,7 +48,6 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.servlet.ServletException;
 
-import digilib.image.DocuImage.ColorOp;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.ImageInput;

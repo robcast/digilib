@@ -57,6 +57,7 @@ public class AsyncServletWorker implements Runnable {
     public void run() {
         // get fresh response
         HttpServletResponse response = (HttpServletResponse) asyncContext.getResponse();
+        logger.debug("working on response: (" + ServletOps.headersToString(response) + ")");
         try {
             // render the image
             DocuImage img = imageWorker.call();
@@ -84,6 +85,7 @@ public class AsyncServletWorker implements Runnable {
         } finally {
             // submit response
             logger.debug("context complete.");
+            logger.debug("response: (" + ServletOps.headersToString(response) + ")");
             asyncContext.complete();
         }
 

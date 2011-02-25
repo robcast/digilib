@@ -26,10 +26,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.Enumeration;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
@@ -298,7 +302,7 @@ public class ServletOps {
     		logger.error("No response!");
     		return;
     	}
-        logger.debug("sending to response:"+ response + " committed=" + response.isCommitted());
+        logger.debug("sending to response: ("+ headersToString(response) + ") committed=" + response.isCommitted());
         try {
             OutputStream outstream = response.getOutputStream();
             // setup output -- if mime type is set use that otherwise
@@ -326,4 +330,31 @@ public class ServletOps {
         // TODO: should we: finally { img.dispose(); }
     }
 
+    /** Returns text representation of headers for debuggging purposes.
+     * @param req
+     * @return
+     */
+    public static String headersToString(HttpServletRequest req) {
+        String s = "";
+        Enumeration<String> hns = req.getHeaderNames();
+        while (hns.hasMoreElements()) {
+            String hn = hns.nextElement();
+            s += hn + "=" + req.getHeader(hn) + "; ";
+        }
+        return s;
+    }
+    
+    /** Returns text representation of headers for debuggging purposes.
+     * @param resp
+     * @return
+     */
+    public static String headersToString(HttpServletResponse resp) {
+        String s = "";
+        Collection<String> hns = resp.getHeaderNames();
+        for (String hn : hns) {
+            s += hn + "=" + resp.getHeader(hn) + "; ";
+        }
+        return s;
+    }
+    
 }
