@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
+import digilib.image.DocuImage.ColorOp;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
 import digilib.io.FileOpException;
@@ -100,6 +101,8 @@ public class ImageJobDescription extends ParameterMap {
 		newParameter("ddpiy", new Float(0), null, 's');
 		// scale factor for mo=ascale
 		newParameter("scale", new Float(1), null, 's');
+		// color conversion operation
+		newParameter("colop", "", null, 's');
 	}
 
 
@@ -427,6 +430,15 @@ public class ImageJobDescription extends ParameterMap {
 		return qual;
 	}
 
+	public ColorOp getColOp() {
+		String op = getAsString("colop");
+		try {
+			return ColorOp.valueOf(op.toUpperCase());
+		} catch (Exception e) {
+			logger.error("Invalid color op: " + op);
+		}
+		return null;
+	}
 	
 	/**
 	 * Returns the area of the source image that will be transformed into the

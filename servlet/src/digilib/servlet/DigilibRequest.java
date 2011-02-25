@@ -131,6 +131,8 @@ public class DigilibRequest extends ParameterMap {
 		newParameter("ddpiy", new Float(0), null, 's');
 		// scale factor for mo=ascale
 		newParameter("scale", new Float(1), null, 's');
+		// color conversion operation
+		newParameter("colop", "", null, 's');
 
 		/*
 		 * Parameters of type 'i' are not exchanged between client and server,

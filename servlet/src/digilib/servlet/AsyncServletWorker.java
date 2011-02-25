@@ -32,7 +32,8 @@ public class AsyncServletWorker implements Runnable {
 
     protected static Logger logger = Logger.getLogger(AsyncServletWorker.class);
     private long startTime;
-    ErrMsg errMsgType = ErrMsg.IMAGE;
+    private ErrMsg errMsgType = ErrMsg.IMAGE;
+	private ImageJobDescription jobinfo;
 
     /**
      * @param dlConfig
@@ -47,6 +48,7 @@ public class AsyncServletWorker implements Runnable {
         this.asyncContext = asyncContext;
         this.startTime = startTime;
         this.errMsgType = errMsgType;
+        this.jobinfo = jobinfo;
     }
 
     /**

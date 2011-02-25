@@ -202,6 +202,22 @@ public interface DocuImage {
 	public void enhanceRGB(float[] rgbm, float[] rgba)
 		throws ImageOpException;
 
+
+	/** Operations for colorOps.
+	 * 
+	 *
+	 */
+	public enum ColorOp {GRAYSCALE};
+
+	/** Changes the colors of the current image.
+	 * 
+	 * Changes the colors of the current image. Operations are e.g.
+	 * reduction to grayscale or false-color palettes.
+	 * 
+	 * @throws ImageOpException
+	 */
+	public void colorOp(ColorOp op) throws ImageOpException;
+
 	/**
 	 * Returns the interpolation quality.
 	 * @return int

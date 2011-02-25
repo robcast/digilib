@@ -22,10 +22,12 @@ package digilib.image;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorConvertOp;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.awt.image.RescaleOp;
@@ -46,6 +48,7 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.servlet.ServletException;
 
+import digilib.image.DocuImage.ColorOp;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.ImageInput;
@@ -420,8 +423,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		 */
 		int ncol = img.getColorModel().getNumColorComponents();
 		if ((ncol != 3) || (rgbm.length != 3) || (rgba.length != 3)) {
-			logger
-					.debug("ERROR(enhance): unknown number of color bands or coefficients ("
+			logger.debug("ERROR(enhance): unknown number of color bands or coefficients ("
 							+ ncol + ")");
 			return;
 		}
@@ -470,6 +472,21 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			}
 		}
 		return fb;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * digilib.image.DocuImageImpl#colorOp(digilib.image.DocuImage.ColorOps)
+	 */
+	public void colorOp(ColorOp op) throws ImageOpException {
+		if (op == ColorOp.GRAYSCALE) {
+			// convert image to grayscale
+			ColorConvertOp colop = new ColorConvertOp(
+					ColorSpace.getInstance(ColorSpace.CS_GRAY), null);
+			img = colop.filter(img, null);
+		}
 	}
 
 	public void rotate(double angle) throws ImageOpException {

@@ -145,6 +145,10 @@ public abstract class DocuImageImpl implements DocuImage {
 		// emtpy implementation
 	}
 
+	public void colorOp(ColorOp op) throws ImageOpException {
+		// emtpy implementation
+	}
+
 	public void dispose() {
 		// emtpy implementation
 	}
@@ -190,5 +194,6 @@ public abstract class DocuImageImpl implements DocuImage {
 
     public abstract void writeImage(String mt, OutputStream ostream)
             throws ServletException, ImageOpException;
+
 	
 }

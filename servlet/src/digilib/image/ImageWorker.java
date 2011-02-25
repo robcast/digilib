@@ -19,7 +19,6 @@ import digilib.servlet.DigilibConfiguration;
  */
 public class ImageWorker implements Callable<DocuImage> {
 
-    
     protected static Logger logger = Logger.getLogger(ImageWorker.class);
     private DigilibConfiguration dlConfig;
     private ImageJobDescription jobinfo;
@@ -139,6 +138,12 @@ public class ImageWorker implements Callable<DocuImage> {
             docuImage.enhance(mult, paramBRGT);
         }
 
+        // color operation
+        DocuImage.ColorOp colop = jobinfo.getColOp();
+        if (colop != null) {
+        	docuImage.colorOp(colop);
+        }
+        
         logger.debug("rendered in " + (System.currentTimeMillis() - startTime) + "ms");
 
         return docuImage;
