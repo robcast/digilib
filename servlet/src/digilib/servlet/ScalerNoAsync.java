@@ -256,8 +256,15 @@ public class ScalerNoAsync extends HttpServlet {
             Future<DocuImage> jobResult = imageJobCenter.submit(job);
             // wait for result
             DocuImage img = jobResult.get();
+            // forced destination image type
+            String mt = null;
+            if (jobTicket.hasOption("jpg")) {
+            	mt = "image/jpeg";
+            } else if (jobTicket.hasOption("png")) {
+            	mt = "image/png";
+            }
             // send image
-            ServletOps.sendImage(img, null, response, logger);
+            ServletOps.sendImage(img, mt, response, logger);
             logger.debug("Job Processing Time: "
                     + (System.currentTimeMillis() - startTime) + "ms");
 

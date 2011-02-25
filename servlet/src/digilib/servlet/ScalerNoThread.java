@@ -238,8 +238,15 @@ public class ScalerNoThread extends HttpServlet {
             ImageWorker job = new ImageWorker(dlConfig, jobTicket);
             // get result immediately
             DocuImage img = job.call();
+            // forced destination image type
+            String mt = null;
+            if (jobTicket.hasOption("jpg")) {
+            	mt = "image/jpeg";
+            } else if (jobTicket.hasOption("png")) {
+            	mt = "image/png";
+            }
             // send image
-            ServletOps.sendImage(img, null, response, logger);
+            ServletOps.sendImage(img, mt, response, logger);
             logger.debug("Job Processing Time: "
                     + (System.currentTimeMillis() - startTime) + "ms");
 

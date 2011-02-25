@@ -60,8 +60,15 @@ public class AsyncServletWorker implements Runnable {
         try {
             // render the image
             DocuImage img = imageWorker.call();
+            // forced destination image type
+            String mt = null;
+            if (jobinfo.hasOption("jpg")) {
+            	mt = "image/jpeg";
+            } else if (jobinfo.hasOption("png")) {
+            	mt = "image/png";
+            }
             // send image
-            ServletOps.sendImage(img, null, response, logger);
+            ServletOps.sendImage(img, mt, response, logger);
             logger.debug("Job done in: "
                     + (System.currentTimeMillis() - startTime) + "ms");
         } catch (ImageOpException e) {
