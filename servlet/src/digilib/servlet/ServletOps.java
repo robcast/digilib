@@ -303,6 +303,7 @@ public class ServletOps {
     		return;
     	}
         logger.debug("sending to response: ("+ headersToString(response) + ") committed=" + response.isCommitted());
+        // TODO: should we erase or replace old last-modified header?
         try {
             OutputStream outstream = response.getOutputStream();
             // setup output -- if mime type is set use that otherwise

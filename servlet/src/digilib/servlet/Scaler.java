@@ -130,7 +130,7 @@ public class Scaler extends HttpServlet {
                 + " for " + request.getQueryString());
         long mtime = -1;
         try {
-            // create new request
+            // create new digilib request
             DigilibRequest dlReq = new DigilibRequest(request);
             DocuDirectory dd = dirCache.getDirectory(dlReq.getFilePath());
             if (dd != null) {
@@ -188,7 +188,8 @@ public class Scaler extends HttpServlet {
 
         accountlog.debug("request: " + request.getQueryString());
         logger.debug("request: " + request.getQueryString());
-        logger.debug("response:"+ response + " committed=" + response.isCommitted());
+        logger.debug("headers: " + ServletOps.headersToString(request));
+        //logger.debug("response:"+ response + " committed=" + response.isCommitted());
         final long startTime = System.currentTimeMillis();
 
         // parse request
