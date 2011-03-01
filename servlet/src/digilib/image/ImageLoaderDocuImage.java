@@ -515,7 +515,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			// TODO: is this enough for all image types?
 			LookupOp colop = new LookupOp(invertByteTable, renderHint);
 			ColorModel cm = img.getColorModel();
-			logger.debug("colop: colormodel="+cm+" trans_bits="+cm.BITMASK);
+			logger.debug("colop: image="+img+" colormodel="+cm);
 			img = colop.filter(img, null);
 		}
 
