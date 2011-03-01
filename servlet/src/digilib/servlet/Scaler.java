@@ -49,31 +49,31 @@ public class Scaler extends HttpServlet {
     protected static Logger authlog = Logger.getLogger("digilib.auth");
 
     /** DocuDirCache instance */
-    DocuDirCache dirCache;
+    protected DocuDirCache dirCache;
 
     /** Image executor */
-    DigilibJobCenter<DocuImage> imageJobCenter;
+    protected DigilibJobCenter<DocuImage> imageJobCenter;
 
     /** authentication error image file */
-    static File denyImgFile;
+    public static File denyImgFile;
 
     /** image error image file */
-    static File errorImgFile;
+    public static File errorImgFile;
 
     /** not found error image file */
-    static File notfoundImgFile;
+    public static File notfoundImgFile;
 
     /** send files as is? */
-    boolean sendFileAllowed = true;
+    protected boolean sendFileAllowed = true;
 
     /** DigilibConfiguration instance */
-    DigilibConfiguration dlConfig;
+    protected DigilibConfiguration dlConfig;
 
     /** use authorization database */
-    boolean useAuthorization = true;
+    protected boolean useAuthorization = true;
 
     /** AuthOps instance */
-    AuthOps authOp;
+    protected AuthOps authOp;
 
     /**
      * Initialisation on first run.
