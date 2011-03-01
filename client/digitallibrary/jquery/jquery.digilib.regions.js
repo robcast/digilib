@@ -168,13 +168,15 @@ TODO:
                 return;
             }
             // empty the div for HTML display
+            $html.append($('<div/>').text('<div class="keep regioncontent">'));
             $.each(data.regions, function(index, region) {
-                var title = "area="
+                    var area = "area:"
                     + region.x + "/" + region.y + "/"
                     + region.width + "/" + region.height;
-                $html.append($('<div/>').text('<div class="keep regioncontent" title="' + title + '">'));
-                $html.append($('<div/>').text('</div>'));
+                $html.append($('<div/>').text('<a href="" rel="' + area + '">'));
+                $html.append($('<div/>').text('</a>'));
                 });
+            $html.append($('<div/>').text('</div>'));
             $html.fadeIn();
         }
     };
@@ -239,18 +241,19 @@ TODO:
     var createRegionsFromHTML = function (data) {
         var regions = data.regions;
         var selector = data.settings.regionContentSelector;
-        var $content = data.$elem.find(selector);
+        var $content = data.$elem.contents(selector).contents('a');
         console.debug("createRegionsFromHTML", $content);
-        $content.each(function(index, elem) {
-            var $div = $(elem); 
-            var title = $div.attr('title');
-            var r = title.replace(/^area=/i, '');
-            var pos = r.split("/", 4);
+        $content.each(function(index, a) {
+            var $a = $(a); 
+            var href = $a.attr('href');
+            var rel = $a.attr('rel');
+            var area = rel.replace(/^area:/i, '');
+            var pos = area.split("/", 4);
             var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
             regions.push(rect);
             var $regionDiv = createRegionDiv(regions, index);
-            $regionDiv.append($div);
-            $div.show();
+            $regionDiv.append($a.clone());
+            // $a.show();
         });
     };
 
@@ -410,15 +413,16 @@ TODO:
     // plugin initialization
     var init = function (data) {
         console.debug('initialising regions plugin. data:', data);
-        var $data = $(data);
+        var $elem = data.$elem;
         // regions array
         data.regions = [];
-        // regions HTML div
-        var $html = $('<div class="keep regionhtml"/>');
+        // regions div
+        var $html = $('<div class="keep regionHTML"/>');
+        $elem.append($html);
         data.$htmlDiv = $html;
-        data.$elem.append($html);
         // no URL-defined regions, no buttons when regions are predefined in HTML
-        if (!data.settings.includeRegionContent) {
+        var hasRegionContent = data.settings.includeRegionContent;
+        if (!hasRegionContent) {
             // add "rg" to digilibParamNames
             data.settings.digilibParamNames.push('rg');
             // additional buttons
@@ -432,6 +436,7 @@ TODO:
             }
         }
         // install event handler
+        var $data = $(data);
         $data.bind('setup', handleSetup);
         $data.bind('update', handleUpdate);
         $data.bind('redisplay', handleRedisplay);

@@ -66,7 +66,7 @@ div.digilib div.region:hover {
 	opacity: 0.5;
 }
 
-div.regionnumber a {
+div.region a {
     color: white;
     text-decoration: none;
     font-size: 11px;
@@ -78,23 +78,9 @@ div.regionnumber a {
 
 div.regioncontent {
     display: none;
-    padding: 3px;
 }
 
-div.regioncontent a {
-    color: white;
-    text-decoration: none;
-    font-size: 11px;
-	font-weight: bold;
-}
-
-div.regioninfo {
-    display: none;
-    color: white;
-    background-color: black;
-}
-
-div.regionhtml {
+div.regionHTML {
     display: none;
     position: absolute;
 	top: 100px;
@@ -105,6 +91,13 @@ div.regionhtml {
 	border: 2px solid lightcyan;
 	background-color: lightgrey;
 	z-index: 1000;
+}
+
+div.regionHTML a {
+    color: white;
+    text-decoration: none;
+    font-size: 11px;
+	font-weight: bold;
 }
 
 /* special definitions for fullscreen */
