@@ -43,13 +43,15 @@ public abstract class ImageInfoDocuImage extends DocuImageImpl {
                 logger.debug("image size: " + ii.getSize());
                 return ii;
             }
-            return null;
+        } catch (Exception e) {
+            logger.debug("ImageInfoDocuimage unable to identify.", e);
         } finally {
             // close file, don't close stream(?)
             if (raf != null) {
                 raf.close();
             }
         }
+        return null;
     }
         
 
