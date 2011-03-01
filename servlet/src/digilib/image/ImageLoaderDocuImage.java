@@ -29,6 +29,7 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.ByteLookupTable;
 import java.awt.image.ColorConvertOp;
+import java.awt.image.ColorModel;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.awt.image.LookupOp;
@@ -63,7 +64,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 	protected BufferedImage img;
 	
 	/** interpolation type */
-	protected RenderingHints renderHint;
+	protected RenderingHints renderHint = null;
 
 	/** convolution kernels for blur() */
 	protected static Kernel[] convolutionKernels = {
@@ -75,6 +76,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
 	/** lookup table for inverting images (byte) */
 	protected static LookupTable invertByteTable;
+    protected static LookupTable invertRGBByteTable;
 	
 	static {
 		byte[] invertByte = new byte[256];
@@ -84,10 +86,10 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			orderedByte[i] = (byte) i;
 		}
 		// works for JPEG in q2
-		invertByteTable = new ByteLookupTable(0, new byte[][] {
-				invertByte, invertByte, orderedByte, invertByte});
-		// should work...
-		/* invertByteTable = new ByteLookupTable(0, invertByte); */
+		invertRGBByteTable = new ByteLookupTable(0, new byte[][] {
+				orderedByte, invertByte, invertByte});
+		// should work for all color models
+		invertByteTable = new ByteLookupTable(0, invertByte);
 	}
 	
 	/** the size of the current image */
@@ -505,13 +507,15 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			// convert image to grayscale
 			logger.debug("Color op: grayscaling");
 			ColorConvertOp colop = new ColorConvertOp(
-					ColorSpace.getInstance(ColorSpace.CS_GRAY), null);
+					ColorSpace.getInstance(ColorSpace.CS_GRAY), renderHint);
 			img = colop.filter(img, null);
 		} else if (op == ColorOp.INVERT) {
 			// invert colors i.e. invert every channel
 			logger.debug("Color op: inverting");
 			// TODO: is this enough for all image types?
 			LookupOp colop = new LookupOp(invertByteTable, renderHint);
+			ColorModel cm = img.getColorModel();
+			logger.debug("colop: colormodel="+cm+" trans_bits="+cm.BITMASK);
 			img = colop.filter(img, null);
 		}
 
