@@ -22,74 +22,142 @@
 package digilib.io;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
-import digilib.image.ImageSize;
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.ImageInputStream;
+
+import digilib.servlet.DigilibConfiguration;
+import digilib.util.ImageSize;
 
 /**
  * @author casties
  */
-public class ImageFile {
+public class ImageFile extends ImageInput {
 	
+	// file
+	private File file = null;
 	// file name
-	private String filename = null;
-	// parent ImageFileset
-	private ImageFileset parent = null;
+	private String name = null;
 	// parent directory
 	private Directory dir = null;
-	// mime file type
-	private String mimetype = null;
-	// image size in pixels
-	private ImageSize pixelSize = null;
 
-	public ImageFile(String fn, ImageFileset parent, Directory dir) {
-		this.filename = fn;
+	/** Constructor with File.
+	 * 
+	 * @param f
+	 * @param parent
+	 * @param dir
+	 */
+	public ImageFile(File f, ImageSet parent, Directory dir) {
+		this.file = f;
+		this.name = f.getName();
 		this.parent = parent;
 		this.dir = dir;
 	}
 	
-	public ImageFile(String fn) {
-		File f = new File(fn);
-		this.dir = new Directory(f.getParentFile());
-		this.filename = f.getName();
+	/** Constructor with filename (without path).
+	 * @param fn
+	 * @param parent
+	 * @param dir
+	 */
+	public ImageFile(String fn, ImageSet parent, Directory dir) {
+		this.name = fn;
+		this.dir = dir;
+		this.file = new File(this.dir.getDir(), fn);
+		this.parent = parent;
 	}
 	
-	/** Returns the file name (without path).
+	
+	/** Checks the image and sets size and type.
+	 * 
+	 */
+	public void check() {
+	    if (pixelSize == null) {
+	        try {
+	            // use the configured toolkit to identify the image
+                DigilibConfiguration.identifyDocuImage(this);
+            } catch (IOException e) {
+                // nothing much to do...
+            }
+	    }
+	}
+	
+	/* (non-Javadoc)
+     * @see digilib.io.ImageInput#getSize()
+     */
+    @Override
+    public ImageSize getSize() {
+        check();
+        return pixelSize;
+    }
+
+    /* (non-Javadoc)
+     * @see digilib.io.ImageInput#getMimetype()
+     */
+    @Override
+    public String getMimetype() {
+        check();
+        return mimetype;
+    }
+
+    /* (non-Javadoc)
+     * @see digilib.io.ImageInput#getAspect()
+     */
+    @Override
+    public float getAspect() {
+        check();
+        return (pixelSize != null) ? pixelSize.getAspect() : 0f;
+    }
+
+    /** Returns the file name (without path).
 	 * 
 	 * @return
 	 */
 	public String getName() {
-		return filename;
+		return name;
 	}
 
+	
+	/* (non-Javadoc)
+     * @see digilib.io.ImageInput#hasImageInputStream()
+     */
+    @Override
+    public boolean hasImageInputStream() {
+        return true;
+    }
 
-	/**
-	 * @return File
+    /* (non-Javadoc)
+     * @see digilib.io.ImageInput#getImageInputStream()
+     */
+    @Override
+    public ImageInputStream getImageInputStream() {
+        try {
+            RandomAccessFile rf = new RandomAccessFile(file, "r");
+            return new FileImageInputStream(rf);
+        } catch (IOException e) {
+            // what now?
+        }
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see digilib.io.ImageInput#hasFile()
+     */
+    @Override
+    public boolean hasFile() {
+        return true;
+    }
+
+    /* (non-Javadoc)
+	 * @see digilib.io.ImageInput#getFile()
 	 */
 	public File getFile() {
-		if (dir == null) {
-			return null;
-		}
-		File f = new File(dir.getDir(), filename);
-		return f;
+		return file;
 	}
 
-	/**
-	 * @return ImageSize
-	 */
-	public ImageSize getSize() {
-		return pixelSize;
-	}
-
-	/**
-	 * @return String
-	 */
-	public String getMimetype() {
-		return mimetype;
-	}
-
-	/**
-	 * Sets the imageSize.
-	 * @param imageSize The imageSize to set
+	/* (non-Javadoc)
+	 * @see digilib.io.ImageInput#setSize(digilib.image.ImageSize)
 	 */
 	public void setSize(ImageSize imageSize) {
 		this.pixelSize = imageSize;
@@ -99,42 +167,17 @@ public class ImageFile {
 		}
 	}
 
-	/**
-	 * Sets the mimetype.
-	 * @param mimetype The mimetype to set
-	 */
-	public void setMimetype(String filetype) {
-		this.mimetype = filetype;
-	}
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        // try to use File.toString
+        if (file != null) {
+            return file.toString();
+        }
+        return super.toString();
+    }
 
-	/**
-	 * @return ImageFileset
-	 */
-	public ImageFileset getParent() {
-		return parent;
-	}
-
-	/**
-	 * Sets the parent.
-	 * @param parent The parent to set
-	 */
-	public void setParent(ImageFileset parent) {
-		this.parent = parent;
-	}
-
-	/**
-	 * @return boolean
-	 */
-	public boolean isChecked() {
-		return (pixelSize != null);
-	}
 	
-	/** Returns the aspect ratio of the image (width/height).
-	 * 
-	 * @return
-	 */
-	public float getAspect() {
-		return (pixelSize != null) ? pixelSize.getAspect() : 0;
-	}
-
 }

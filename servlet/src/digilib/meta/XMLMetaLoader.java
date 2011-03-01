@@ -18,7 +18,7 @@
 
 */
 
-package digilib.io;
+package digilib.meta;
 
 import java.io.IOException;
 import java.util.HashMap;

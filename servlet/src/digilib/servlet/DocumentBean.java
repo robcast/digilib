@@ -33,12 +33,12 @@ import org.apache.log4j.Logger;
 
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthOps;
-import digilib.image.ImageSize;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
 import digilib.io.FileOps.FileClass;
-import digilib.io.ImageFile;
-import digilib.io.ImageFileset;
+import digilib.io.ImageInput;
+import digilib.io.ImageSet;
+import digilib.util.ImageSize;
 
 public class DocumentBean {
 
@@ -191,13 +191,13 @@ public class DocumentBean {
 		}
 		String fn = dlRequest.getFilePath();
 		// get information about the file
-		ImageFileset fileset = (ImageFileset) dirCache.getFile(fn, dlRequest
+		ImageSet fileset = (ImageSet) dirCache.getFile(fn, dlRequest
 				.getAsInt("pn"), FileClass.IMAGE);
 		if (fileset == null) {
 			return;
 		}
 		// add file name
-		dlRequest.setValue("img.fn", fileset.getName());
+		dlRequest.setValue("img.fn", fileset);
 		// add dpi
 		dlRequest.setValue("img.dpix", new Double(fileset.getResX()));
 		dlRequest.setValue("img.dpiy", new Double(fileset.getResY()));
@@ -208,12 +208,8 @@ public class DocumentBean {
 			dlRequest.setValue("pt", dd.size());
 		}
 		// get original pixel size
-		ImageFile origfile = fileset.getBiggest();
-		// check image for size if mo=hires
-		if ((! origfile.isChecked())&&dlRequest.hasOption("hires")) {
-			logger.debug("pre-checking image!");
-			DigilibConfiguration.docuImageIdentify(origfile);
-		}
+		ImageInput origfile = fileset.getBiggest();
+		// check image for size (TODO: just if mo=hires?)
 		ImageSize pixsize = origfile.getSize();
 		if (pixsize != null) {
 			// add pixel size

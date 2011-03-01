@@ -26,8 +26,9 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import digilib.io.XMLListLoader;
 import digilib.servlet.DigilibRequest;
+import digilib.util.HashTree;
+import digilib.util.XMLListLoader;
 
 /** Implementation of AuthOps using XML files.
  *

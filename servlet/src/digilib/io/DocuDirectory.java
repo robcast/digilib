@@ -31,6 +31,8 @@ import java.util.Map;
 import org.xml.sax.SAXException;
 
 import digilib.io.FileOps.FileClass;
+import digilib.meta.MetadataMap;
+import digilib.meta.XMLMetaLoader;
 
 /**
  * @author casties
@@ -40,9 +42,6 @@ public class DocuDirectory extends Directory {
 	/** list of files (DocuDirent) */
 	private List<List<DocuDirent>> list = null;
 
-	/** default FileClass for unspecified calls */
-	public static FileClass defaultFileClass = FileClass.IMAGE;
-	
 	/** directory object is valid (exists on disk) */
 	private boolean isValid = false;
 
@@ -51,6 +50,9 @@ public class DocuDirectory extends Directory {
 
 	/** directory name (digilib canonical form) */
 	private String dirName = null;
+
+	/** array of parallel dirs for scaled images */
+	private Directory[] dirs = null;
 
 	/** directory metadata */
 	private MetadataMap dirMeta = null;
@@ -83,15 +85,6 @@ public class DocuDirectory extends Directory {
 	public DocuDirectory(String path, DocuDirCache cache) {
 		this.dirName = path;
 		this.cache = cache;
-		initDir();
-		checkDir();
-	}
-
-	/**
-	 * Sets and checks the dir object.
-	 *  
-	 */
-	protected void initDir() {
 		String baseDirName = cache.getBaseDirNames()[0];
 		// clear directory list
 		FileClass[] fcs = FileClass.values();
@@ -100,10 +93,10 @@ public class DocuDirectory extends Directory {
 		for (@SuppressWarnings("unused") FileClass fc: fcs) {
 		    list.add(null);
 		}
-		isValid = false;
 		dirMTime = 0;
 		// the first directory has to exist
-		dir = new File(baseDirName, dirName);
+		dir = new File(baseDirName, path);
+		isValid = dir.isDirectory();
 	}
 
 	/**
@@ -111,7 +104,7 @@ public class DocuDirectory extends Directory {
 	 *  
 	 */
 	public int size() {
-	    return size(defaultFileClass);
+		return ((list != null) && (list.get(0) != null)) ? list.get(0).size() : 0;
 	}
 
 	/**
@@ -121,13 +114,7 @@ public class DocuDirectory extends Directory {
 	 *            fileClass
 	 */
 	public int size(FileClass fc) {
-        if (list != null) {
-            List<DocuDirent> l = list.get(fc.ordinal());
-            if (l != null) {
-                return l.size();
-            }
-        }
-        return 0;
+		return ((list != null) && (list.get(fc.ordinal()) != null)) ? list.get(fc.ordinal()).size() : 0;
 	}
 
 	/**
@@ -136,8 +123,11 @@ public class DocuDirectory extends Directory {
 	 * @param index
 	 * @return
 	 */
-	public ImageFileset get(int index) {
-		return (ImageFileset) get(index, defaultFileClass);
+	public DocuDirent get(int index) {
+		if ((list == null) || (list.get(0) == null) || (index >= list.get(0).size())) {
+			return null;
+		}
+		return list.get(0).get(index);
 	}
 
 	/**
@@ -156,102 +146,84 @@ public class DocuDirectory extends Directory {
 	}
 
 	/**
-	 * Checks if the directory exists on the filesystem.
-	 * 
-	 * Sets isValid.
-	 * 
-	 * @return
-	 */
-	public boolean checkDir() {
-		if (dir == null) {
-			initDir();
-		}
-		isValid = dir.isDirectory();
-		return isValid;
-	}
-
-	/**
 	 * Read the filesystem directory and fill this object.
 	 * 
 	 * Clears the List and (re)reads all files.
 	 * 
 	 * @return boolean the directory exists
 	 */
-	public boolean readDir() {
+	public synchronized boolean readDir() {
 		// check directory first
-		checkDir();
 		if (!isValid) {
 			return false;
 		}
-		// first file extension to try for scaled directories
-		String scalext = null;
+		// re-check modification time because the thread may have slept
+		if (dir.lastModified() <= dirMTime) {
+			return true;
+		}
 		// read all filenames
-		logger.debug("reading directory " + dir.getPath());
+		logger.debug("reading directory "+this+" = "+dir.getPath());
+		File[] allFiles = null;
 		/*
 		 * using ReadableFileFilter is safer (we won't get directories with file
 		 * extensions) but slower.
 		 */
-		File[] allFiles = null;
-		//	allFiles = dir.listFiles(new FileOps.ReadableFileFilter());
+		// allFiles = dir.listFiles(new FileOps.ReadableFileFilter());
 		allFiles = dir.listFiles();
-		//logger.debug("  done");
 		if (allFiles == null) {
 			// not a directory
 			return false;
 		}
-		// list of base dirs from the parent cache
-		String[] baseDirNames = cache.getBaseDirNames();
-		// number of base dirs
-		int nb = baseDirNames.length;
-		// array of base dirs
-		Directory[] dirs = new Directory[nb];
-		// first entry is this directory
-		dirs[0] = this;
-		// fill array with the remaining directories
-		for (int j = 1; j < nb; j++) {
-			File d = new File(baseDirNames[j], dirName);
-			if (d.isDirectory()) {
-				dirs[j] = new Directory(d);
-				logger.debug("  reading scaled directory " + d.getPath());
-				dirs[j].readDir();
-				//logger.debug("    done");
+		// init parallel directories
+		if (dirs == null) {
+			// list of base dirs from the parent cache
+			String[] baseDirNames = cache.getBaseDirNames();
+			// number of base dirs
+			int nb = baseDirNames.length;
+			// array of parallel dirs
+			dirs = new Directory[nb];
+			// first entry is this directory
+			dirs[0] = this;
+			// fill array with the remaining directories
+			for (int j = 1; j < nb; j++) {
+				// add dirName to baseDirName
+				File d = new File(baseDirNames[j], dirName);
+				if (d.isDirectory()) {
+					dirs[j] = new Directory(d);
+					logger.debug("  reading scaled directory " + d.getPath());
+					dirs[j].readDir();
+				}
 			}
 		}
 
 		// go through all file classes
-        //for (int classIdx = 0; classIdx < FileOps.NUM_CLASSES; classIdx++) {
-		for (FileClass fileClass: cache.getFileClasses()) {
-			//fileClass = cache.getFileClasses()[classIdx];
-			File[] fileList = FileOps.listFiles(allFiles, FileOps
-					.filterForClass(fileClass));
-			//logger.debug(" done");
+		for (FileClass fileClass : cache.getFileClasses()) {
+			File[] fileList = FileOps.listFiles(allFiles,
+					FileOps.filterForClass(fileClass));
 			// number of files in the directory
 			int numFiles = fileList.length;
 			if (numFiles > 0) {
 				// create new list
-				list.set(fileClass.ordinal(), new ArrayList<DocuDirent>(numFiles));
-				// sort the file names alphabetically and iterate the list
-				// Arrays.sort(fileList); // not needed <hertzhaft>
-				Map<Integer, Object> hints = FileOps.newHints(FileOps.HINT_BASEDIRS, dirs);
-				hints.put(FileOps.HINT_FILEEXT, scalext);
-				for (int i = 0; i < numFiles; i++) {
-					DocuDirent f = FileOps.fileForClass(fileClass, fileList[i],
-							hints);
+				ArrayList<DocuDirent> dl = new ArrayList<DocuDirent>(numFiles);
+				list.set(fileClass.ordinal(), dl);
+				for (File f : fileList) {
+					DocuDirent df = FileOps.fileForClass(fileClass, f, dirs);
+					df.setParent(this);
 					// add the file to our list
-                    // logger.debug(f.getName());
-
-					list.get(fileClass.ordinal()).add(f);
-					f.setParent(this);
+					dl.add(df);
 				}
-                // we sort the inner ArrayList (the list of files not the list of file types)
-				// for binarySearch to work (DocuDirent's natural sort order is by filename)
-                Collections.sort(list.get(fileClass.ordinal()));
+				/*
+				 * we sort the inner ArrayList (the list of files not the list
+				 * of file types) for binarySearch to work (DocuDirent's natural
+				 * sort order is by filename)
+				 */
+				Collections.sort(dl);
 			}
 		}
 		// clear the scaled directories
-		for (int j = 1; j < nb; j++) {
-			if (dirs[j] != null) {
-				dirs[j].clearFilenames();
+		for (Directory d: dirs) {
+			if (d != null) {
+				d.clearFilenames();
 			}
 		}
 		// update number of cached files if this was the first time
@@ -456,9 +428,8 @@ public class DocuDirectory extends Directory {
 		return -1;
 	}
 
-	private boolean isBasenameInList(List<DocuDirent> fl, int idx, String fn) {
-		String dfn = FileOps.basename((fl.get(idx))
-				.getName());
+	private boolean isBasenameInList(List<DocuDirent> fileList, int idx, String fn) {
+		String dfn = FileOps.basename((fileList.get(idx)).getName());
 		return (dfn.equals(fn)||dfn.equals(FileOps.basename(fn))); 
 	}
 	
@@ -474,7 +445,12 @@ public class DocuDirectory extends Directory {
 	 * @return DocuDirent
 	 */
 	public DocuDirent find(String fn) {
-		return find(fn, defaultFileClass);
+		FileClass fc = FileOps.classForFilename(fn);
+		int i = indexOf(fn, fc);
+		if (i >= 0) {
+			return list.get(0).get(i);
+		}
+		return null;
 	}
 
 	/**
@@ -491,7 +467,7 @@ public class DocuDirectory extends Directory {
 	public DocuDirent find(String fn, FileClass fc) {
 		int i = indexOf(fn, fc);
 		if (i >= 0) {
-			return (DocuDirent) list.get(fc.ordinal()).get(i);
+			return list.get(fc.ordinal()).get(i);
 		}
 		return null;
 	}

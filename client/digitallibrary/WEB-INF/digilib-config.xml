@@ -23,7 +23,7 @@
   <parameter name="subsample-minimum" value="2"/>
   
   <!-- default interpolation quality (0=worst) -->
-  <parameter name="default-quality" value="1"/>
+  <parameter name="default-quality" value="2"/>
   
   <!-- is sending whole image files with mo=file allowed? -->
   <parameter name="sendfile-allowed" value="true" />
@@ -68,5 +68,7 @@
   <!-- logo for PDFs -->
   <parameter name="pdf-logo" value="http://www.mpiwg-berlin.mpg.de/de/images/logo.png" />
 
+  <!-- is the image toolkit allowed to use a disk cache -->
+  <parameter name="img-diskcache-allowed" value="false"/>
   
 </digilib-config>

@@ -12,7 +12,7 @@
  * Boston, MA 02111-1307 USA Created on 26.08.2003
  */
 
-package digilib.image;
+package digilib.util;
 
 /** Class for image size (width, height).
  * 

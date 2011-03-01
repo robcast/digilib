@@ -27,8 +27,9 @@ import java.util.Iterator;
 
 import javax.servlet.ServletException;
 
-import digilib.io.ImageFile;
 import digilib.io.FileOpException;
+import digilib.io.ImageInput;
+import digilib.util.ImageSize;
 
 /** The basic class for the representation of a digilib image.
  *
@@ -41,12 +42,12 @@ public interface DocuImage {
 
 	/** Loads an image file into the Object.
 	 * 
-	 * @param f Image File.
+	 * @param ii Image File.
 	 * @throws FileOpException Exception thrown if any error occurs.
 	 */
-	public void loadImage(ImageFile f) throws FileOpException;
+	public void loadImage(ImageInput ii) throws FileOpException;
 
-	/** This DocuImage support the loadSubImage operation.
+	/** This DocuImage supports the loadSubImage operation.
 	 * 
 	 * @return boolean
 	 */
@@ -54,23 +55,23 @@ public interface DocuImage {
 
 	/** Load only a subsampled region of the image file.
 	 * 
-	 * @param f
+	 * @param ii
 	 * @param region
 	 * @param subsample
 	 * @throws FileOpException
 	 */
-	public void loadSubimage(ImageFile f, Rectangle region, int subsample)
+	public void loadSubimage(ImageInput ii, Rectangle region, int subsample)
 		throws FileOpException;
 
-	/** Writes the current image to a ServletResponse.
+	/** Writes the current image to an OutputStream.
 	 *
 	 * The image is encoded to the mime-type <code>mt</code> and sent to the output
-	 * stream of the <code>ServletResponse</code> <code>res</code>.
+	 * stream <code>ostream</code>.
 	 *
 	 * Currently only mime-types "image/jpeg" and "image/png" are supported.
 	 * 
 	 * @param mt mime-type of the image to be sent.
-	 * @param res ServletResponse where the image is sent.
+	 * @param ostream OutputStream where the image is sent.
 	 * @throws ServletException Exception thrown on sending data.
 	 * @throws ImageOpException Exception in other cases.
 	 */
@@ -95,7 +96,7 @@ public interface DocuImage {
 	 */
 	public ImageSize getSize();
 
-	/** The mime-type of the current image.
+	/** The mime-type of the image, i.e. the mime-type of the input that was read.
 	 * 
 	 * @return String the mime-type of this image.
 	 */
@@ -201,6 +202,22 @@ public interface DocuImage {
 	public void enhanceRGB(float[] rgbm, float[] rgba)
 		throws ImageOpException;
 
+
+	/** Operations for colorOps.
+	 * 
+	 *
+	 */
+	public enum ColorOp {GRAYSCALE, INVERT};
+
+	/** Changes the colors of the current image.
+	 * 
+	 * Changes the colors of the current image. Operations are e.g.
+	 * reduction to grayscale or false-color palettes.
+	 * 
+	 * @throws ImageOpException
+	 */
+	public void colorOp(ColorOp op) throws ImageOpException;
+
 	/**
 	 * Returns the interpolation quality.
 	 * @return int
@@ -221,9 +238,9 @@ public interface DocuImage {
 	public void dispose();
 
     /**
-     * Check image size and type and store in ImageFile f
+     * Check image size and type and store in ImageInput ii
      */
-    public ImageFile identify(ImageFile imgf) throws IOException;
+    public ImageInput identify(ImageInput ii) throws IOException;
 
     /**
      * Returns a list of supported image formats

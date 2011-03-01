@@ -24,7 +24,6 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -46,8 +45,8 @@ import com.sun.media.jai.codec.ImageCodec;
 
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
-import digilib.io.ImageFile;
-import digilib.io.ImageFileset;
+import digilib.io.ImageInput;
+import digilib.util.ImageSize;
 
 /** A DocuImage implementation using Java Advanced Imaging Library. */
 /**
@@ -104,53 +103,64 @@ public class JAIDocuImage extends ImageInfoDocuImage {
     }
 
 	/* Check image size and type and store in ImageFile f */
-	public ImageFile identify(ImageFile imageFile) throws IOException {
+	public ImageInput identify(ImageInput input) throws IOException {
+        this.input = input;
         // try parent method first
-	    ImageFile imf = super.identify(imageFile);
+	    ImageInput imf = super.identify(input);
 		if (imf != null) {
 			return imf;
-		}
-		// fileset to store the information
-		ImageFileset imgfs = imageFile.getParent();
-		File f = imageFile.getFile();
-		if (f == null) {
-			throw new IOException("File not found!");
 		}
 		/*
 		 * try JAI
 		 */
-		logger.debug("identifying (JAI) " + f);
+		logger.debug("identifying (JAI) " + input);
 		try {
-			RenderedOp img = JAI.create("fileload", f.getAbsolutePath());
+		    RenderedOp img = null;
+		    if (input.hasFile()) {
+		        String t = FileOps.mimeForFile(input.getFile());
+		        input.setMimetype(t);
+		        img = JAI.create("fileload", input.getFile().getAbsolutePath());
+		    } else if (input.hasInputStream()) {
+                img = JAI.create("stream", input.getInputStream());
+                // FIXME: where do we get the mimetype?
+		    } else {
+	            throw new FileOpException("unable to get data for image!");
+		    }
 			ImageSize d = new ImageSize(img.getWidth(), img.getHeight());
-			imageFile.setSize(d);
-			String t = FileOps.mimeForFile(f);
-			imageFile.setMimetype(t);
-			// logger.debug(" format:"+t);
-			if (imgfs != null) {
-				imgfs.setAspect(d);
-			}
-			logger.debug("image size: " + imageFile.getSize());
-			return imageFile;
+			input.setSize(d);
+			logger.debug("image size: " + d);
+			return input;
 		} catch (Exception e) {
-			throw new FileOpException("ERROR: unknown image file format!");
+			throw new FileOpException("ERROR: unable to identify image!");
 		}
 	}
 
 	/* Load an image file into the Object. */
-	public void loadImage(ImageFile f) throws FileOpException {
-		img = JAI.create("fileload", f.getFile().getAbsolutePath());
+	public void loadImage(ImageInput ii) throws FileOpException {
+        this.input = ii;
+        if (ii.hasFile()) {
+            img = JAI.create("fileload", ii.getFile().getAbsolutePath());
+        } else if (ii.hasInputStream()) {
+            img = JAI.create("stream", ii.getInputStream());
+        } else {
+            throw new FileOpException("unable to get data for image!");
+        }
 		if (img == null) {
 			throw new FileOpException("Unable to load File!");
 		}
-        mimeType = f.getMimetype();
 	}
 
 	/* Load an image file into the Object. */
-	public void loadSubimage(ImageFile f, Rectangle region, int subsample)
-			throws FileOpException {
+	public void loadSubimage(ImageInput ii, Rectangle region, int subsample) throws FileOpException {
 		logger.debug("loadSubimage");
-		img = JAI.create("fileload", f.getFile().getAbsolutePath());
+        this.input = ii;
+        if (ii.hasFile()) {
+            img = JAI.create("fileload", ii.getFile().getAbsolutePath());
+        } else if (ii.hasInputStream()) {
+            img = JAI.create("stream", ii.getInputStream());
+        } else {
+            throw new FileOpException("unable to get data for image!");
+        }
 		if ((region.width < img.getWidth())
 				|| (region.height < img.getHeight())) {
 			// setup Crop
@@ -174,7 +184,6 @@ public class JAIDocuImage extends ImageInfoDocuImage {
 			// scale
 			logger.debug("loadSubimage: scale");
 			img = JAI.create("scale", sp);
-            mimeType = f.getMimetype();
 		}
 	}
 

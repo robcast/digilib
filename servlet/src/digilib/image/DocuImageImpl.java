@@ -33,7 +33,8 @@ import javax.servlet.ServletException;
 import org.apache.log4j.Logger;
 
 import digilib.io.FileOpException;
-import digilib.io.ImageFile;
+import digilib.io.ImageInput;
+import digilib.util.ImageSize;
 
 /** Simple abstract implementation of the <code>DocuImage</code> interface.
  *
@@ -53,12 +54,12 @@ public abstract class DocuImageImpl implements DocuImage {
 	
 	/** epsilon for float comparisons. */
 	public final double epsilon = 1e-5;
-	
-	/** image mime-type */
-	protected String mimeType = null;
 
 	/** image size */
     protected ImageSize imgSize = null;
+
+    /** ImageInput that was read */
+    protected ImageInput input;
 
 	/**
 	 * Returns the quality.
@@ -99,14 +100,20 @@ public abstract class DocuImageImpl implements DocuImage {
 		scale(scale, scale);
 	}
 	
+	/* (non-Javadoc)
+	 * @see digilib.image.DocuImage#getMimetype()
+	 */
 	public String getMimetype() {
-		return mimeType;
+	    if (input != null) {
+	        return input.getMimetype();
+	    }
+	    return null;
 	}
 
     /* (non-Javadoc)
      * @see digilib.image.DocuImage#identify(digilib.io.ImageFile)
      */
-    public ImageFile identify(ImageFile imgf) throws IOException {
+    public ImageInput identify(ImageInput ii) throws IOException {
         // just a do-nothing implementation
         return null;
     }
@@ -128,13 +135,17 @@ public abstract class DocuImageImpl implements DocuImage {
 		return false;
 	}
 
-	public void loadSubimage(ImageFile f, Rectangle region, int subsample)
+	public void loadSubimage(ImageInput ii, Rectangle region, int subsample)
 		throws FileOpException {
 		// empty implementation
 	}
 
 	public void enhanceRGB(float[] rgbm, float[] rgba)
 		throws ImageOpException {
+		// emtpy implementation
+	}
+
+	public void colorOp(ColorOp op) throws ImageOpException {
 		// emtpy implementation
 	}
 
@@ -149,11 +160,11 @@ public abstract class DocuImageImpl implements DocuImage {
 
     public void crop(int xoff, int yoff, int width, int height)
             throws ImageOpException {
-        // TODO Auto-generated method stub
+        // emtpy implementation
     }
 
     public Image getAwtImage() {
-        // TODO Auto-generated method stub
+        // emtpy implementation
         return null;
     }
 
@@ -177,19 +188,12 @@ public abstract class DocuImageImpl implements DocuImage {
         return imgSize;
     }
 
-    public void loadImage(ImageFile f) throws FileOpException {
-        // TODO Auto-generated method stub
-        
-    }
+    public abstract void loadImage(ImageInput ii) throws FileOpException;
 
-    public void scale(double scaleX, double scaleY) throws ImageOpException {
-        // TODO Auto-generated method stub
-        
-    }
+    public abstract void scale(double scaleX, double scaleY) throws ImageOpException;
 
-    public void writeImage(String mt, OutputStream ostream)
-            throws ServletException, ImageOpException {
-        // TODO Auto-generated method stub
-    }
+    public abstract void writeImage(String mt, OutputStream ostream)
+            throws ServletException, ImageOpException;
+
 	
 }

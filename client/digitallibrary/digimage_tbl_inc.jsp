@@ -1,6 +1,6 @@
 <%@ page language="java" %><%
 // retrieve objects from context
-digilib.servlet.DocumentBean docBean = (digilib.servlet.DocumentBean) pageContext.getAttribute("docBean", pageContext.REQUEST_SCOPE);
+digilib.servlet.DocumentBean docBean = (digilib.servlet.DocumentBean) pageContext.getAttribute("docBean", PageContext.REQUEST_SCOPE);
 digilib.servlet.DigilibRequest dlRequest = docBean.getRequest();
 String ua = request.getHeader("User-Agent");
 boolean isN4 = ((ua.indexOf("Mozilla/4.") > -1)&&(ua.indexOf("MSIE") == -1));

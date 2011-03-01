@@ -18,7 +18,7 @@
 
  */
 
-package digilib.auth;
+package digilib.util;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -63,7 +63,7 @@ public class HashTree {
         optimizeTable();
     }
 
-    void optimizeTable() {
+    private void optimizeTable() {
     }
 
     /**
@@ -76,7 +76,7 @@ public class HashTree {
      * @param branch
      * @return
      */
-    List<String> match(String branch) {
+    public List<String> match(String branch) {
         String b = "";
         String m;
         LinkedList<String> matches = new LinkedList<String>();

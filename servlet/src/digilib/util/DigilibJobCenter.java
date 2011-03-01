@@ -51,12 +51,21 @@ public class DigilibJobCenter<V> {
         }
     }
     
-    /** Submit job to execute
+    /** Submit Callable job that returns a Value to execute.
      * 
      * @param job
      * @return Future to control the job
      */
     public Future<V> submit(Callable<V> job) {
+        return executor.submit(job);
+    }
+
+    /** Submit Runnable job to execute.
+     * 
+     * @param job
+     * @return Future to control the job
+     */
+    public Future<?> submit(Runnable job) {
         return executor.submit(job);
     }
 

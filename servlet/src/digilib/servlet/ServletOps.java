@@ -26,10 +26,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.Enumeration;
 import java.util.StringTokenizer;
 
-import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
@@ -72,11 +76,11 @@ public class ServletOps {
      * @param sc
      * @return
      */
-    public static File getFile(File f, ServletConfig sc) {
+    public static File getFile(File f, ServletContext sc) {
         // is the filename absolute?
         if (!f.isAbsolute()) {
             // relative path -> use getRealPath to resolve in WEB-INF
-            String fn = sc.getServletContext().getRealPath(f.getPath());
+            String fn = sc.getRealPath(f.getPath());
             f = new File(fn);
         }
         return f;
@@ -92,12 +96,12 @@ public class ServletOps {
      * @param sc
      * @return
      */
-    public static String getFile(String filename, ServletConfig sc) {
+    public static String getFile(String filename, ServletContext sc) {
         File f = new File(filename);
         // is the filename absolute?
         if (!f.isAbsolute()) {
             // relative path -> use getRealPath to resolve in WEB-INF
-            filename = sc.getServletContext().getRealPath(filename);
+            filename = sc.getRealPath(filename);
         }
         return filename;
     }
@@ -112,7 +116,7 @@ public class ServletOps {
      * @param sc
      * @return
      */
-    public static File getConfigFile(File f, ServletConfig sc) {
+    public static File getConfigFile(File f, ServletContext sc) {
         String fn = f.getPath();
         // is the filename absolute?
         if (f.isAbsolute()) {
@@ -126,7 +130,7 @@ public class ServletOps {
             }
         }
         // relative path -> use getRealPath to resolve in WEB-INF
-        String newfn = sc.getServletContext().getRealPath("WEB-INF/" + fn);
+        String newfn = sc.getRealPath("WEB-INF/" + fn);
         f = new File(newfn);
         return f;
     }
@@ -141,19 +145,18 @@ public class ServletOps {
      * @param sc
      * @return
      */
-    public static String getConfigFile(String filename, ServletConfig sc) {
+    public static String getConfigFile(String filename, ServletContext sc) {
         File f = new File(filename);
         // is the filename absolute?
         if (!f.isAbsolute()) {
             // relative path -> use getRealPath to resolve in WEB-INF
-            filename = sc.getServletContext()
-                    .getRealPath("WEB-INF/" + filename);
+            filename = sc.getRealPath("WEB-INF/" + filename);
         }
         return filename;
     }
 
     /**
-     * print a servlet response and exit
+     * print a servlet response
      */
     public static void htmlMessage(String msg, HttpServletResponse response)
             throws IOException {
@@ -161,7 +164,7 @@ public class ServletOps {
     }
 
     /**
-     * print a servlet response and exit
+     * print a servlet response
      */
     public static void htmlMessage(String title, String msg,
             HttpServletResponse response) throws IOException {
@@ -192,10 +195,10 @@ public class ServletOps {
      * @throws ImageOpException
      * @throws ServletException
      *             Exception on sending data.
+     * @throws IOException
      */
     public static void sendFile(File f, String mt, String name,
-            HttpServletResponse response) throws ImageOpException,
-            ServletException {
+            HttpServletResponse response) throws ImageOpException, IOException {
         // use default logger
         ServletOps.sendFile(f, mt, name, response, ServletOps.logger);
     }
@@ -218,13 +221,14 @@ public class ServletOps {
      *            Logger to use
      * @throws ImageOpException
      * @throws ServletException Exception on sending data.
+     * @throws IOException 
      */
     public static void sendFile(File f, String mt, String name, HttpServletResponse response, Logger logger)
-            throws ImageOpException, ServletException {
+            throws ImageOpException, IOException {
         logger.debug("sendRawFile(" + mt + ", " + f + ")");
-    	if (response.isCommitted()) {
-        	logger.warn("sendFile: response already committed!");
-        	//return;
+    	if (response == null) {
+    		logger.error("No response!");
+    		return;
     	}
         if (mt == null) {
             // auto-detect mime-type
@@ -255,9 +259,6 @@ public class ServletOps {
                 // copy out file
                 outStream.write(dataBuffer, 0, len);
             }
-        } catch (IOException e) {
-            logger.error("Error sending file:", e);
-            throw new ServletException("Error sending file:", e);
         } finally {
             try {
                 if (inFile != null) {
@@ -297,19 +298,26 @@ public class ServletOps {
     public static void sendImage(DocuImage img, String mimeType,
             HttpServletResponse response, Logger logger) throws ImageOpException,
             ServletException {
-    	if (response.isCommitted()) {
-        	logger.warn("sendImage: response already committed!");
-        	//return;
+    	if (response == null) {
+    		logger.error("No response!");
+    		return;
     	}
+        logger.debug("sending to response: ("+ headersToString(response) + ") committed=" + response.isCommitted());
+        // TODO: should we erase or replace old last-modified header?
         try {
             OutputStream outstream = response.getOutputStream();
             // setup output -- if mime type is set use that otherwise
             // if source is JPG then dest will be JPG else it's PNG
             if (mimeType == null) {
                 mimeType = img.getMimetype();
+                if (mimeType == null) {
+                    // still no mime-type
+                    logger.warn("sendImage without mime-type! using image/jpeg.");
+                    mimeType = "image/jpeg";
+                }
             }
-            if ((mimeType.equals("image/jpeg") || mimeType.equals("image/jp2") || mimeType
-                    .equals("image/fpx"))) {
+            if ((mimeType.equals("image/jpeg") || mimeType.equals("image/jp2") || 
+                    mimeType.equals("image/fpx"))) {
                 mimeType = "image/jpeg";
             } else {
                 mimeType = "image/png";
@@ -318,10 +326,36 @@ public class ServletOps {
             response.setContentType(mimeType);
             img.writeImage(mimeType, outstream);
         } catch (IOException e) {
-            logger.error("Error sending image:", e);
             throw new ServletException("Error sending image:", e);
         }
         // TODO: should we: finally { img.dispose(); }
     }
 
+    /** Returns text representation of headers for debuggging purposes.
+     * @param req
+     * @return
+     */
+    public static String headersToString(HttpServletRequest req) {
+        String s = "";
+        Enumeration<String> hns = req.getHeaderNames();
+        while (hns.hasMoreElements()) {
+            String hn = hns.nextElement();
+            s += hn + "=" + req.getHeader(hn) + "; ";
+        }
+        return s;
+    }
+    
+    /** Returns text representation of headers for debuggging purposes.
+     * @param resp
+     * @return
+     */
+    public static String headersToString(HttpServletResponse resp) {
+        String s = "";
+        Collection<String> hns = resp.getHeaderNames();
+        for (String hn : hns) {
+            s += hn + "=" + resp.getHeader(hn) + "; ";
+        }
+        return s;
+    }
+    
 }

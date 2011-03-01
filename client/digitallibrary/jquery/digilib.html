@@ -1,0 +1,42 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Digilib jQuery: fullscreen</title>
+
+        <style type="text/css">
+            body {
+                 background: silver;
+            }
+        </style>
+
+        <script type="text/javascript" src="jquery-1.4.4.js"></script>
+        <script type="text/javascript" src="jquery.cookie.js"></script>
+        <script type="text/javascript" src="jquery.digilib.js"></script>
+        <script type="text/javascript" src="jquery.digilib.geometry.js"></script>
+        <script type="text/javascript" src="jquery.digilib.birdseye.js"></script>
+        <script type="text/javascript" src="jquery.digilib.regions.js"></script>
+<!--        <script type="text/javascript" src="jquery.digilib.pluginstub.js"></script> -->
+        <link rel="stylesheet" type="text/css" href="jquery.digilib.css" />
+
+
+        <script type="text/javascript">
+            $(document).ready(function(){
+                var opts = {
+                    interactionMode : 'fullscreen'
+                    };
+                var $div = $('div.digilib');
+                $div.digilib(opts);
+            });
+
+        </script>
+    </head>
+
+    <body>
+        <div id="digilib" class="digilib">
+            <p>digilib doesn't work! Please switch on Javascript or notify the server administrator!</p>
+            <img src="http://digilib.berlios.de/images/digilib-logo-big.png" />
+        </div>
+    </body>
+</html>
+

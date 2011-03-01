@@ -6,29 +6,29 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
+import digilib.image.DocuImage.ColorOp;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.FileOps.FileClass;
-import digilib.io.ImageFile;
-import digilib.io.ImageFileset;
+import digilib.io.ImageInput;
+import digilib.io.ImageSet;
 import digilib.servlet.DigilibConfiguration;
+import digilib.util.ImageSize;
 import digilib.util.OptionsSet;
 import digilib.util.Parameter;
 import digilib.util.ParameterMap;
 
-
-/** 
- * A container class for storing a set of instructional parameters 
- * used for content generating classes like MakePDF.  
+/**
+ * A class for storing the set of parameters necessary for scaling images 
+ * with an ImageWorker.
  * 
- * This contains the functionality formerly found in Scaler, processRequest, only factorized.
- * 
- * TODO clean up...
+ * This contains the functionality formerly found in Scaler.processRequest(),
+ * only factorized.
  * 
  * @author cmielack, casties
- *
+ * 
  */
 
 public class ImageJobDescription extends ParameterMap {
@@ -36,18 +36,18 @@ public class ImageJobDescription extends ParameterMap {
 	DigilibConfiguration dlConfig = null;
 	protected static Logger logger = Logger.getLogger("digilib.servlet");
 
-	ImageFile fileToLoad = null;
-	ImageFileset fileset = null;
+	ImageInput input = null;
+	ImageSet imageSet = null;
 	DocuDirectory fileDir = null;
 	String filePath = null;
 	ImageSize expectedSourceSize = null;
 	Float scaleXY = null;
 	Rectangle2D userImgArea = null;
-	Rectangle2D outerUserImgArea= null;
+	Rectangle2D outerUserImgArea = null;
 	Boolean imageSendable = null;
-	String mimeType;
-	Integer paramDW;
-	Integer paramDH;
+	String mimeType = null;
+	Integer paramDW = null;
+	Integer paramDH = null;
 
 	/** create empty ImageJobDescription.
 	 * @param dlcfg
@@ -101,6 +101,8 @@ public class ImageJobDescription extends ParameterMap {
 		newParameter("ddpiy", new Float(0), null, 's');
 		// scale factor for mo=ascale
 		newParameter("scale", new Float(1), null, 's');
+		// color conversion operation
+		newParameter("colop", "", null, 's');
 	}
 
 
@@ -128,48 +130,57 @@ public class ImageJobDescription extends ParameterMap {
 	}
 
 	
+	/** Returns the mime-type (of the input). 
+	 * @return
+	 * @throws IOException
+	 */
 	public String getMimeType() throws IOException {
 		if (mimeType == null) {
-			fileToLoad = getFileToLoad();
-			if(! fileToLoad.isChecked()){
-				DigilibConfiguration.docuImageIdentify(fileToLoad);
-			}
-			mimeType = fileToLoad.getMimetype();
+			input = getInput();
+			mimeType = input.getMimetype();
 		}
 		return mimeType;
 	}
 	
-	public ImageFile getFileToLoad() throws IOException {
-		
-		if(fileToLoad == null){
-			fileset = getFileset();
+	/** Returns the ImageInput to use.
+	 * @return
+	 * @throws IOException
+	 */
+	public ImageInput getInput() throws IOException {
+		if(input == null){
+			imageSet = getImageSet();
 			
 			/* select a resolution */
-			if (getHiresOnly()) {
+			if (isHiresOnly()) {
 				// get first element (= highest resolution)
-				fileToLoad = fileset.getBiggest();
-			} else if (getLoresOnly()) {
+				input = imageSet.getBiggest();
+			} else if (isLoresOnly()) {
 				// enforced lores uses next smaller resolution
-				fileToLoad = fileset.getNextSmaller(getExpectedSourceSize());
-				if (fileToLoad == null) {
+				input = imageSet.getNextSmaller(getExpectedSourceSize());
+				if (input == null) {
 					// this is the smallest we have
-					fileToLoad = fileset.getSmallest();
+					input = imageSet.getSmallest();
 				}
 			} else {
 				// autores: use next higher resolution
-				fileToLoad = fileset.getNextBigger(getExpectedSourceSize());
-				if (fileToLoad == null) {
+				input = imageSet.getNextBigger(getExpectedSourceSize());
+				if (input == null) {
 					// this is the highest we have
-					fileToLoad = fileset.getBiggest();
+					input = imageSet.getBiggest();
 				}
 			}
-			logger.info("Planning to load: " + fileToLoad.getFile());
+			if (input == null || input.getMimetype() == null) {
+			    throw new FileOpException("Unable to load "+input);
+			}
+            logger.info("Planning to load: " + input);
 		}
-		
-		return fileToLoad;
-
+		return input;
 	}
 	
+	/** Returns the DocuDirectory for the input (file). 
+	 * @return
+	 * @throws FileOpException
+	 */
 	public DocuDirectory getFileDirectory() throws FileOpException {
 		if(fileDir == null){
 			DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
@@ -182,19 +193,26 @@ public class ImageJobDescription extends ParameterMap {
 		return fileDir;
 	}
 	
-    public ImageFileset getFileset() throws FileOpException {
-        if(fileset==null){
+    /** Returns the ImageSet to load.
+     * @return
+     * @throws FileOpException
+     */
+    public ImageSet getImageSet() throws FileOpException {
+        if(imageSet==null){
             DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
     
-            fileset = (ImageFileset) dirCache.getFile(getFilePath(), getAsInt("pn"), FileClass.IMAGE);
-            if (fileset == null) {
+            imageSet = (ImageSet) dirCache.getFile(getFilePath(), getAsInt("pn"), FileClass.IMAGE);
+            if (imageSet == null) {
                 throw new FileOpException("File " + getFilePath() + "("
                         + getAsInt("pn") + ") not found.");
             }
         }
-        return fileset;
+        return imageSet;
     }
     
+	/** Returns the file path name from the request.
+	 * @return
+	 */
 	public String getFilePath() {
 		if(filePath == null){
 			String s = this.getAsString("request.path");
@@ -204,32 +222,36 @@ public class ImageJobDescription extends ParameterMap {
 		return filePath;
 	}
 
-	public boolean getHiresOnly(){
+	public boolean isHiresOnly(){
 		return hasOption("clip") || hasOption("hires");
 	}
 	
-	public boolean getLoresOnly(){
+	public boolean isLoresOnly(){
 		return hasOption("lores");
 	}
 
-	public boolean getScaleToFit() {
+	public boolean isScaleToFit() {
 		return !(hasOption("clip") || hasOption("osize") || hasOption("ascale"));
 	}
 
-	public boolean getAbsoluteScale(){
+	public boolean isAbsoluteScale(){
 		return hasOption("osize") || hasOption("ascale");
 	}
 	
 	
+	/** Returns the minimum size the source image should have for scaling.
+	 * @return
+	 * @throws IOException
+	 */
 	public ImageSize getExpectedSourceSize() throws IOException {
 		if (expectedSourceSize == null){
 			expectedSourceSize = new ImageSize();
-			if (getScaleToFit()) {
+			if (isScaleToFit()) {
 				// scale to fit -- calculate minimum source size
 				float scale = (1 / Math.min(getAsFloat("ww"), getAsFloat("wh"))) * getAsFloat("ws");
 				expectedSourceSize.setSize((int) (getDw() * scale),
 						(int) (getDh() * scale));
-			} else if (getAbsoluteScale() && hasOption("ascale")) {
+			} else if (isAbsoluteScale() && hasOption("ascale")) {
 				// absolute scale -- apply scale to hires size
 				expectedSourceSize = getHiresSize().getScaled(getAsFloat("scale"));
 			} else {
@@ -241,16 +263,17 @@ public class ImageJobDescription extends ParameterMap {
 		return expectedSourceSize;
 	}
 	
+	/** Returns the size of the highest resolution image.
+	 * @return
+	 * @throws IOException
+	 */
 	public ImageSize getHiresSize() throws IOException {
 		logger.debug("get_hiresSize()");
 
 		ImageSize hiresSize = null;
-		ImageFileset fileset = getFileset();
-		if (getAbsoluteScale()) {
-			ImageFile hiresFile = fileset.getBiggest();
-			if (!hiresFile.isChecked()) {
-				DigilibConfiguration.docuImageIdentify(hiresFile);
-			}
+		ImageSet fileset = getImageSet();
+		if (isAbsoluteScale()) {
+			ImageInput hiresFile = fileset.getBiggest();
 			hiresSize = hiresFile.getSize();
 		}
 		return hiresSize;
@@ -270,7 +293,7 @@ public class ImageJobDescription extends ParameterMap {
 			float areaWidth;
 			float areaHeight;
 			float ws = getAsFloat("ws");
-			ImageSize imgSize = getFileToLoad().getSize();
+			ImageSize imgSize = getInput().getSize();
 			// user window area in [0,1] coordinates
 			Rectangle2D relUserArea = new Rectangle2D.Float(getAsFloat("wx"), getAsFloat("wy"),
 					getAsFloat("ww"), getAsFloat("wh"));
@@ -281,20 +304,20 @@ public class ImageJobDescription extends ParameterMap {
 			userImgArea = imgTrafo.createTransformedShape(
 					relUserArea).getBounds2D();
 	
-			if (getScaleToFit()) {
+			if (isScaleToFit()) {
 				// calculate scaling factors based on inner user area
 				areaWidth = (float) userImgArea.getWidth();
 				areaHeight = (float) userImgArea.getHeight();
 				float scaleX = getDw() / areaWidth * ws;
 				float scaleY = getDh() / areaHeight * ws;
 				scaleXY = (scaleX > scaleY) ? scaleY : scaleX;
-			} else if (getAbsoluteScale()) {
+			} else if (isAbsoluteScale()) {
 				// absolute scaling factor
 				if (hasOption("osize")) {
 					// get original resolution from metadata
-					fileset.checkMeta();
-					float origResX = fileset.getResX();
-					float origResY = fileset.getResY();
+					imageSet.checkMeta();
+					float origResX = imageSet.getResX();
+					float origResY = imageSet.getResY();
 					if ((origResX == 0) || (origResY == 0)) {
 						throw new ImageOpException("Missing image DPI information!");
 					}
@@ -340,6 +363,11 @@ public class ImageJobDescription extends ParameterMap {
 		return (float) scaleXY;
 	}
 	
+	/** Returns the width of the destination image.
+	 * Uses dh parameter and aspect ratio if dw parameter is empty. 
+	 * @return
+	 * @throws IOException
+	 */
 	public int getDw() throws IOException {
 		logger.debug("get_paramDW()");
 		if (paramDW == null) {
@@ -347,7 +375,7 @@ public class ImageJobDescription extends ParameterMap {
 			paramDW = getAsInt("dw");
 			paramDH = getAsInt("dh");
 
-			float imgAspect = getFileToLoad().getAspect();
+			float imgAspect = getInput().getAspect();
 			if (paramDW == 0) {
 				// calculate dw
 				paramDW = Math.round(paramDH * imgAspect);
@@ -361,6 +389,11 @@ public class ImageJobDescription extends ParameterMap {
 		return paramDW;
 	}
 	
+	/** Returns the height of the destination image.
+	 * Uses dw parameter and aspect ratio if dh parameter is empty. 
+	 * @return
+	 * @throws IOException
+	 */
 	public int getDh() throws IOException {
 		logger.debug("get_paramDH()");
 		if (paramDH == null) {
@@ -368,7 +401,7 @@ public class ImageJobDescription extends ParameterMap {
 			paramDW = getAsInt("dw");
 			paramDH = getAsInt("dh");
 
-			float imgAspect = getFileToLoad().getAspect();
+			float imgAspect = getInput().getAspect();
 			if (paramDW == 0) {
 				// calculate dw
 				paramDW = Math.round(paramDH * imgAspect);
@@ -382,9 +415,12 @@ public class ImageJobDescription extends ParameterMap {
 		return paramDH;
 	}
 	
-	public Integer getScaleQual(){
+	/** Returns image quality as an integer.
+	 * @return
+	 */
+	public int getScaleQual(){
 		logger.debug("get_scaleQual()");
-		Integer qual = dlConfig.getAsInt("default-quality");
+		int qual = dlConfig.getAsInt("default-quality");
 		if(hasOption("q0"))
 			qual = 0;
 		else if(hasOption("q1"))
@@ -394,22 +430,43 @@ public class ImageJobDescription extends ParameterMap {
 		return qual;
 	}
 
+	public ColorOp getColOp() {
+		String op = getAsString("colop");
+		try {
+			return ColorOp.valueOf(op.toUpperCase());
+		} catch (Exception e) {
+			logger.error("Invalid color op: " + op);
+		}
+		return null;
+	}
 	
+	/**
+	 * Returns the area of the source image that will be transformed into the
+	 * destination image.
+	 * 
+	 * @return
+	 * @throws IOException
+	 * @throws ImageOpException
+	 */
 	public Rectangle2D getUserImgArea() throws IOException, ImageOpException{
 		if(userImgArea == null) {
 			// getScaleXY sets userImgArea
 			getScaleXY();
 		}
 		return userImgArea;		
-		
 	}
 	
+	/** Returns the maximal area of the source image that will be used.
+	 * @return
+	 * @throws IOException
+	 * @throws ImageOpException
+	 */
 	public Rectangle2D getOuterUserImgArea() throws IOException, ImageOpException {
 		if(outerUserImgArea == null){
 			outerUserImgArea = getUserImgArea();
 			
 			// image size in pixels
-			ImageSize imgSize = getFileToLoad().getSize();
+			ImageSize imgSize = getInput().getSize();
 			Rectangle2D imgBounds = new Rectangle2D.Float(0, 0, imgSize.getWidth(), 
 					imgSize.getHeight());
 			
@@ -437,10 +494,7 @@ public class ImageJobDescription extends ParameterMap {
 		float[] paramRGBM = null;//{0f,0f,0f};
 		Parameter p = params.get("rgbm");
 		if (p.hasValue() && (!p.getAsString().equals("0/0/0"))) {
-			paramRGBM = p.parseAsFloatArray("/");
-			if ((paramRGBM == null) || (paramRGBM.length != 3)) {
-			    return null;
-			}
+			return p.parseAsFloatArray("/");
 		}	
 		return paramRGBM;
 	}
@@ -450,9 +504,6 @@ public class ImageJobDescription extends ParameterMap {
 		Parameter p = params.get("rgba");
 		if (p.hasValue() && (!p.getAsString().equals("0/0/0"))) {
 			paramRGBA = p.parseAsFloatArray("/");
-            if ((paramRGBA == null) || (paramRGBA.length != 3)) {
-                return null;
-            }
 		}
 		return paramRGBA;
 	}
@@ -465,42 +516,45 @@ public class ImageJobDescription extends ParameterMap {
 		|| hasOption("rawfile");
 	}
 	
-	/** Could the image be sent without processing?
-	 * Takes image type and additional image operations into account. 
-	 * Does not check requested size transformation.
+    /**
+     * Returns if the image can be sent without processing. Takes image type and
+     * additional image operations into account. Does not check requested size
+     * transformation.
+     * 
+     * @return
+     * @throws IOException
+     */
+    public boolean isImageSendable() throws IOException {
+        if (imageSendable == null) {
+            String mimeType = getMimeType();
+            imageSendable = (mimeType != null
+                    && (mimeType.equals("image/jpeg") || mimeType.equals("image/png") 
+                            || mimeType.equals("image/gif"))
+                    && !(hasOption("hmir")
+                    || hasOption("vmir") || (getAsFloat("rot") != 0.0)
+                    || (getRGBM() != null) || (getRGBA() != null)
+                    || (getAsFloat("cont") != 0.0) || (getAsFloat("brgt") != 0.0)));
+        }
+        return imageSendable;
+    }
+	
+	
+	/**
+	 * Returns if any transformation of the source image (image manipulation or
+	 * format conversion) is required.
+	 * 
 	 * @return
-	 * @throws IOException 
+	 * @throws IOException
 	 */
-	public boolean isImageSendable() throws IOException {
-		// cached result?
-		if (imageSendable == null) {
-			String mimeType = getMimeType();
-			imageSendable = ( (mimeType.equals("image/jpeg")
-				        	|| mimeType.equals("image/png")
-				        	|| mimeType.equals("image/gif") )
-				        	&& 
-				        	!(hasOption("hmir")
-							|| hasOption("vmir") 
-							|| (getAsFloat("rot") != 0.0)
-							|| (getRGBM() != null) 
-							|| (getRGBA() != null)
-							|| (getAsFloat("cont") != 0.0) 
-							|| (getAsFloat("brgt") != 0.0)));
-		}
-		
-		return imageSendable;
-	}
-	
-	
 	public boolean isTransformRequired() throws IOException {
-		ImageSize is = getFileToLoad().getSize();
+		ImageSize is = getInput().getSize();
 		ImageSize ess = getExpectedSourceSize();
 		// nt = no transform required
 		boolean nt = isImageSendable() && (
 			// lores: send if smaller
-			(getLoresOnly() && is.isSmallerThan(ess))
+			(isLoresOnly() && is.isSmallerThan(ess))
 			// else send if it fits
-			|| (!(getLoresOnly() || getHiresOnly()) && is.fitsIn(ess)));
+			|| (!(isLoresOnly() || isHiresOnly()) && is.fitsIn(ess)));
 		return ! nt;
 	}
 }

@@ -19,7 +19,6 @@ import digilib.servlet.DigilibConfiguration;
  */
 public class ImageWorker implements Callable<DocuImage> {
 
-    
     protected static Logger logger = Logger.getLogger(ImageWorker.class);
     private DigilibConfiguration dlConfig;
     private ImageJobDescription jobinfo;
@@ -69,19 +68,14 @@ public class ImageWorker implements Callable<DocuImage> {
                 logger.debug("Using subsampling: " + subsamp + " rest "
                         + scaleXY);
             }
-
-            docuImage.loadSubimage(jobinfo.getFileToLoad(), loadRect, (int) subsamp);
-
+            docuImage.loadSubimage(jobinfo.getInput(), loadRect, (int) subsamp);
             logger.debug("SUBSAMP: " + subsamp + " -> " + docuImage.getSize());
-
             docuImage.scale(scaleXY, scaleXY);
-
         } else {
             // else load and crop the whole file
-            docuImage.loadImage(jobinfo.getFileToLoad());
+            docuImage.loadImage(jobinfo.getInput());
             docuImage.crop((int) loadRect.getX(), (int) loadRect.getY(),
                     (int) loadRect.getWidth(), (int) loadRect.getHeight());
-
             docuImage.scale(scaleXY, scaleXY);
         }
 
@@ -144,6 +138,12 @@ public class ImageWorker implements Callable<DocuImage> {
             docuImage.enhance(mult, paramBRGT);
         }
 
+        // color operation
+        DocuImage.ColorOp colop = jobinfo.getColOp();
+        if (colop != null) {
+        	docuImage.colorOp(colop);
+        }
+        
         logger.debug("rendered in " + (System.currentTimeMillis() - startTime) + "ms");
 
         return docuImage;

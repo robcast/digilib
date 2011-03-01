@@ -1,7 +1,7 @@
 /**
  * 
  */
-package digilib.io;
+package digilib.meta;
 
 import java.util.HashMap;
 
@@ -9,6 +9,7 @@ import java.util.HashMap;
  * @author casties
  *
  */
+@SuppressWarnings("serial")
 public class MetadataMap extends HashMap<String, String> {
 
 }
