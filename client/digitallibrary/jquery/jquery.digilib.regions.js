@@ -40,8 +40,8 @@ TODO:
             tooltip : "show or hide regions",
             icon : "regions.png"
             },
-        regioninfo : {
-            onclick : "toggleRegionInfo",
+        regionhtml : {
+            onclick : "showRegionHTML",
             tooltip : "show information about regions",
             icon : "regioninfo.png"
             }
@@ -52,8 +52,8 @@ TODO:
         'isRegionVisible' : true,
         // are region numbers shown?
         'showRegionNumbers' : false,
-        // is region info shown?
-        'showRegionInfo' : false,
+        // is window with region HTML shown?
+        'showRegionHTML' : false,
         // should digilib look for region content in the page?
         'includeRegionContent' : false,
         // turn any region into a clickable link to its detail view
@@ -61,7 +61,7 @@ TODO:
         // class name for content divs (must additionally be marked with class "keep")
         'regionContentSelector' : 'div.regioncontent',
         // buttonset of this plugin
-        'regionSet' : ['regions', 'addregion', 'delregion', 'regioninfo', 'lessoptions'],
+        'regionSet' : ['regions', 'addregion', 'delregion', 'regionhtml', 'lessoptions'],
         // url param for regions
         'rg' : null,
         };
@@ -155,21 +155,29 @@ TODO:
             showRegionDivs(data, 1);
         },
 
-        // show/hide region info 
-        "toggleRegionInfo" : function (data) {
-            var show = !data.settings.showRegionInfo;
-            data.settings.showRegionInfo = show;
-            fn.highlightButtons(data, 'regioninfo', show);
-            var $info = $('.regioninfo');
-            if (show) {
-                $info.fadeIn();
-            } else {
-                $info.fadeOut();
+        // show/hide region HTML code 
+        "showRegionHTML" : function (data) {
+            var show = !data.settings.showRegionHTML;
+            data.settings.showRegionHTML = show;
+            fn.highlightButtons(data, 'regionhtml', show);
+            var $html = data.$htmlDiv;
+            if (!show) {
+                $html.fadeOut(function () { 
+                    $html.contents().remove();
+                    });
+                return;
             }
+            // empty the div for HTML display
+            $.each(data.regions, function(index, region) {
+                var title = "area="
+                    + region.x + "/" + region.y + "/"
+                    + region.width + "/" + region.height;
+                $html.append($('<div/>').text('<div class="keep regioncontent" title="' + title + '">'));
+                $html.append($('<div/>').text('</div>'));
+                });
+            $html.fadeIn();
         }
     };
-
-    var addRegion = actions.addRegion;
 
     // store a region div
     var storeRegion = function (data, $regionDiv) {
@@ -205,14 +213,6 @@ TODO:
         return $regionDiv;
     };
 
-    // add region info
-    var addRegionInfo = function (region) {
-        var $regionDiv = region.$div;
-        var $regionInfoDiv = $('<div class="regioninfo" />');
-        $regionInfoDiv.text(region.toString());
-        $regionDiv.append($regionInfoDiv);
-    }
-
     // add region content
     var addRegionContent = function (region, $elem) {
         var $regionDiv = region.$div;
@@ -224,16 +224,15 @@ TODO:
         var region = regions[index];
         var $regionDiv = addRegionDiv(data, index);
         region.$div = $regionDiv;
-        addRegionInfo(region);
         return $regionDiv;
     };
 
     // create regions 
     var createRegionDivs = function (data) {
         var regions = data.regions;
-        for (var i = 0; i < regions.length ; i++) {
+        $.each(regions, function(i) {
             createRegionDiv(regions, i);
-        }
+            });
     };
 
     // create regions from HTML
@@ -244,7 +243,8 @@ TODO:
         console.debug("createRegionsFromHTML", $content);
         $content.each(function(index, elem) {
             var $div = $(elem); 
-            var r = $div.attr('title');
+            var title = $div.attr('title');
+            var r = title.replace(/^area=/i, '');
             var pos = r.split("/", 4);
             var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
             regions.push(rect);
@@ -367,6 +367,7 @@ TODO:
         } else {
             unpackRegions(data);
             createRegionDivs(data);
+            fn.highlightButtons(data, 'regionhtml', data.settings.showRegionHTML);
         }
     };
 
@@ -374,7 +375,7 @@ TODO:
     var handleUpdate = function (evt) {
         data = this;
         fn.highlightButtons(data, 'regions' , data.settings.isRegionVisible);
-        fn.highlightButtons(data, 'regioninfo' , data.settings.showRegionInfo);
+        fn.highlightButtons(data, 'regionhtml' , data.settings.showRegionHTML);
         showRegionDivs(data);
         console.debug("regions: handleUpdate", data.settings.rg);
     };
@@ -412,6 +413,10 @@ TODO:
         var $data = $(data);
         // regions array
         data.regions = [];
+        // regions HTML div
+        var $html = $('<div class="keep regionhtml"/>');
+        data.$htmlDiv = $html;
+        data.$elem.append($html);
         // no URL-defined regions, no buttons when regions are predefined in HTML
         if (!data.settings.includeRegionContent) {
             // add "rg" to digilibParamNames
