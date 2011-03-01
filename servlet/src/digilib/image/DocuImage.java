@@ -207,7 +207,7 @@ public interface DocuImage {
 	 * 
 	 *
 	 */
-	public enum ColorOp {GRAYSCALE};
+	public enum ColorOp {GRAYSCALE, INVERT};
 
 	/** Changes the colors of the current image.
 	 * 

@@ -27,9 +27,12 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.ByteLookupTable;
 import java.awt.image.ColorConvertOp;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
+import java.awt.image.LookupOp;
+import java.awt.image.LookupTable;
 import java.awt.image.RescaleOp;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -62,6 +65,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 	/** interpolation type */
 	protected RenderingHints renderHint;
 
+	/** convolution kernels for blur() */
 	protected static Kernel[] convolutionKernels = {
 	        null,
 	        new Kernel(1, 1, new float[] {1f}),
@@ -69,6 +73,23 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             new Kernel(3, 3, new float[] {1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f})
 	};
 
+	/** lookup table for inverting images (byte) */
+	protected static LookupTable invertByteTable;
+	
+	static {
+		byte[] invertByte = new byte[256];
+		byte[] orderedByte = new byte[256];
+		for (int i = 0; i < 256; ++i) {
+			invertByte[i] = (byte) (256 - i);
+			orderedByte[i] = (byte) i;
+		}
+		// works for JPEG in q2
+		invertByteTable = new ByteLookupTable(0, new byte[][] {
+				invertByte, invertByte, orderedByte, invertByte});
+		// should work...
+		/* invertByteTable = new ByteLookupTable(0, invertByte); */
+	}
+	
 	/** the size of the current image */
     protected ImageSize imageSize;
 	
@@ -482,10 +503,18 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 	public void colorOp(ColorOp op) throws ImageOpException {
 		if (op == ColorOp.GRAYSCALE) {
 			// convert image to grayscale
+			logger.debug("Color op: grayscaling");
 			ColorConvertOp colop = new ColorConvertOp(
 					ColorSpace.getInstance(ColorSpace.CS_GRAY), null);
 			img = colop.filter(img, null);
+		} else if (op == ColorOp.INVERT) {
+			// invert colors i.e. invert every channel
+			logger.debug("Color op: inverting");
+			// TODO: is this enough for all image types?
+			LookupOp colop = new LookupOp(invertByteTable, renderHint);
+			img = colop.filter(img, null);
 		}
+
 	}
 
 	public void rotate(double angle) throws ImageOpException {
