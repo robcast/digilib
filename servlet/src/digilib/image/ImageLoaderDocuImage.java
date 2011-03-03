@@ -75,21 +75,31 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 	};
 
 	/** lookup table for inverting images (byte) */
-	protected static LookupTable invertByteTable;
-    protected static LookupTable invertRGBByteTable;
+	protected static LookupTable invertSingleByteTable;
+    protected static LookupTable invertRgbaByteTable;
 	
 	static {
 		byte[] invertByte = new byte[256];
 		byte[] orderedByte = new byte[256];
+		byte[] nullByte = new byte[256];
 		for (int i = 0; i < 256; ++i) {
 			invertByte[i] = (byte) (256 - i);
 			orderedByte[i] = (byte) i;
+			nullByte[i] = 0;
 		}
-		// works for JPEG in q2
-		invertRGBByteTable = new ByteLookupTable(0, new byte[][] {
-				orderedByte, invertByte, invertByte});
-		// should work for all color models
-		invertByteTable = new ByteLookupTable(0, invertByte);
+		// should(!) work for all color models
+		invertSingleByteTable = new ByteLookupTable(0, invertByte);
+		// but doesn't work with alpha channel on all platforms
+		String ver = System.getProperty("java.version");
+		String os =  System.getProperty("os.name");
+		logger.debug("os="+os+" ver="+ver);
+		if (os.startsWith("Linux") && ver.startsWith("1.6")) {
+			// GRAB(WTF?) works in Linux JDK1.6 with transparency
+			invertRgbaByteTable = new ByteLookupTable(0, new byte[][] {
+					invertByte, invertByte, orderedByte, invertByte});
+		} else {
+			invertRgbaByteTable = invertSingleByteTable;
+		}
 	}
 	
 	/** the size of the current image */
@@ -513,8 +523,15 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			// invert colors i.e. invert every channel
 			logger.debug("Color op: inverting");
 			// TODO: is this enough for all image types?
-			LookupOp colop = new LookupOp(invertByteTable, renderHint);
+			LookupTable invtbl = null;
 			ColorModel cm = img.getColorModel();
+			if (cm.hasAlpha()) {
+				// JDK 1.6 in Linux (at least) is broken :-(
+				invtbl = invertRgbaByteTable;
+			} else {
+				invtbl = invertSingleByteTable;
+			}
+			LookupOp colop = new LookupOp(invtbl, renderHint);
 			logger.debug("colop: image="+img+" colormodel="+cm);
 			img = colop.filter(img, null);
 		}
