@@ -31,7 +31,7 @@ public class Scaler extends HttpServlet {
     private static final long serialVersionUID = 5289386646192471549L;
 
     /** digilib servlet version (for all components) */
-    public static final String version = "1.9.1a16";
+    public static final String version = "1.9.1a17";
 
     /** servlet error codes */
     public static enum Error {UNKNOWN, AUTH, FILE, IMAGE};
