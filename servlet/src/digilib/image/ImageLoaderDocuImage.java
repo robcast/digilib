@@ -429,6 +429,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 	}
 
 	public void enhance(float mult, float add) throws ImageOpException {
+		RescaleOp op = null;
+		logger.debug("enhance: cm="+img.getColorModel());
+		op = new RescaleOp(mult, add, renderHint);
 		/*
 		 * Only one constant should work regardless of the number of bands
 		 * according to the JDK spec. Doesn't work on JDK 1.4 for OSX and Linux
@@ -436,7 +439,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		 * (float)add, null); scaleOp.filter(img, img);
 		 */
 
-		/* The number of constants must match the number of bands in the image. */
+		/* The number of constants must match the number of bands in the image.
 		int ncol = img.getColorModel().getNumComponents();
 		float[] dm = new float[ncol];
 		float[] da = new float[ncol];
@@ -444,8 +447,8 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			dm[i] = (float) mult;
 			da[i] = (float) add;
 		}
-		RescaleOp scaleOp = new RescaleOp(dm, da, null);
-		scaleOp.filter(img, img);
+		RescaleOp scaleOp = new RescaleOp(dm, da, null); */
+		op.filter(img, img);
 	}
 
 	public void enhanceRGB(float[] rgbm, float[] rgba) throws ImageOpException {
