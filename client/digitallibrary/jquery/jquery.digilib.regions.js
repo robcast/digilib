@@ -3,11 +3,7 @@
 markup a digilib image with rectangular regions
 
 TODO:
-- store region in params/cookie, regarding zoom, mirror, rotation (like marks)
-- set regions programmatically
-- read regions from params/cookie and display
-- backlink mechanism
-- don't write to data.settings?
+    how to display regions correctly in embedded mode?
 */
 
 (function($) {
@@ -54,8 +50,8 @@ TODO:
         'showRegionNumbers' : false,
         // is window with region HTML shown?
         'showRegionHTML' : false,
-        // should digilib look for region content in the page?
-        'includeRegionContent' : false,
+        // is there region content in the page?
+        'hasRegionContent' : false,
         // turn any region into a clickable link to its detail view
         'autoRegionLinks' : false,
         // class name for content divs (must additionally be marked with class "keep")
@@ -152,7 +148,7 @@ TODO:
             var show = !data.settings.isRegionVisible;
             data.settings.isRegionVisible = show;
             fn.highlightButtons(data, 'regions', show);
-            showRegionDivs(data, 1);
+            renderRegions(data, 1);
         },
 
         // show/hide region HTML code 
@@ -178,6 +174,10 @@ TODO:
                 });
             $html.append($('<div/>').text('</div>'));
             $html.fadeIn();
+        },
+
+        "redraw" : function (data) {
+            renderRegions(data);
         }
     };
 
@@ -241,24 +241,27 @@ TODO:
     var createRegionsFromHTML = function (data) {
         var regions = data.regions;
         var selector = data.settings.regionContentSelector;
+        // regions are defined in "a" tags
         var $content = data.$elem.contents(selector).contents('a');
         console.debug("createRegionsFromHTML", $content);
         $content.each(function(index, a) {
             var $a = $(a); 
-            var href = $a.attr('href');
+            // the "rel" attribute has area coords
             var rel = $a.attr('rel');
             var area = rel.replace(/^area:/i, '');
             var pos = area.split("/", 4);
             var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
             regions.push(rect);
             var $regionDiv = createRegionDiv(regions, index);
+            var href = $a.attr('href');
+            var text = $a.text();
             $regionDiv.append($a.clone());
             // $a.show();
         });
     };
 
     // show a region on top of the scaler image 
-    var showRegionDiv = function (data, index, anim) {
+    var renderRegion = function (data, index, anim) {
         if (!data.imgTrafo) return;
         var $elem = data.$elem;
         var regions = data.regions;
@@ -266,8 +269,8 @@ TODO:
         var region = regions[index]
         var $regionDiv = region.$div;
         if (!$regionDiv) {
-            console.debug("showRegionDiv: region has no $div", region);
-            // alert("showRegionDiv: region has no $div to show");
+            console.debug("renderRegion: region has no $div", region);
+            // alert("renderRegion: region has no $div to show");
             return;
         }
         var regionRect = region.copy();
@@ -275,6 +278,8 @@ TODO:
         if (show && data.zoomArea.overlapsRect(regionRect)) {
             regionRect.clipTo(data.zoomArea);
             var screenRect = data.imgTrafo.transform(regionRect);
+            // console.debug('renderRegion:', screenRect, regionRect, "imgTrafo=", data.imgTrafo);
+            console.debug("renderRegion: mpos=",geom.position(screenRect));
             screenRect.adjustDiv($regionDiv);
             if (anim) {
                 $regionDiv.fadeIn();
@@ -291,9 +296,9 @@ TODO:
     };
 
     // show regions 
-    var showRegionDivs = function (data, anim) {
+    var renderRegions = function (data, anim) {
         for (var i = 0; i < data.regions.length ; i++) {
-            showRegionDiv(data, i, anim);
+            renderRegion(data, i, anim);
         }
     };
 
@@ -336,7 +341,7 @@ TODO:
 
     // reload display after a region has been added or removed
     var redisplay = function (data) {
-        if (!data.settings.includeRegionContent) {
+        if (!data.settings.hasRegionContent) {
             packRegions(data);
         }
         fn.redisplay(data);
@@ -364,7 +369,7 @@ TODO:
         data = this;
         console.debug("regions: handleSetup", data.settings.rg);
         // regions with content are given in HTML divs
-        if (data.settings.includeRegionContent) {
+        if (data.settings.hasRegionContent) {
             createRegionsFromHTML(data);
         // regions are defined in the URL
         } else {
@@ -377,18 +382,18 @@ TODO:
     // event handler, sets buttons and shows regions
     var handleUpdate = function (evt) {
         data = this;
+        console.debug("regions: handleUpdate");
         var settings = data.settings;
         fn.highlightButtons(data, 'regions' , settings.isRegionVisible);
         fn.highlightButtons(data, 'regionhtml' , settings.showRegionHTML);
-        showRegionDivs(data);
-        console.debug("regions: handleUpdate", settings.rg);
+        renderRegions(data);
     };
 
     // event handler, redisplays regions (e.g. in a new position)
     var handleRedisplay = function (evt) {
         data = this;
-        showRegionDivs(data);
         console.debug("regions: handleRedisplay");
+        renderRegions(data);
     };
 
     // event handler
@@ -428,9 +433,10 @@ TODO:
         $data.bind('redisplay', handleRedisplay);
         $data.bind('dragZoom', handleDragZoom);
         var settings = data.settings;
-        var hasRegionContent = settings.includeRegionContent;
-        // no URL-defined regions, no buttons when regions are predefined in HTML
-        if (!hasRegionContent) {
+        var selector = data.settings.regionContentSelector;
+        settings.hasRegionContent = $elem.has(selector).length > 0;
+        // neither URL-defined regions nor buttons when regions are predefined in HTML
+        if (!settings.hasRegionContent) {
             var mode = settings.interactionMode;
             // add "rg" to digilibParamNames
             settings.digilibParamNames.push('rg');

@@ -218,13 +218,13 @@ if (typeof console === 'undefined') {
                 // path to button images (must end with a slash)
                 'imagePath' : 'img/fullscreen/',
                 'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","help","reset","toggleoptions"],
-                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","toggleoptions"],
+                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","lessoptions"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 },
             'embedded' : {
                 'imagePath' : 'img/embedded/16/',
                 'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","help","reset","toggleoptions"],
-                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","scale","toggleoptions"],
+                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","scale","lessoptions"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 }
         },
@@ -1252,7 +1252,7 @@ if (typeof console === 'undefined') {
     // place marks on the image
     var renderMarks = function (data) {
         if (data.$img == null || data.imgTrafo == null) return;
-        console.debug("rendermarks img=",data.$img," imgtrafo=",data.imgTrafo);
+        console.debug("renderMarks: img=",data.$img," imgtrafo=",data.imgTrafo);
         var $elem = data.$elem;
         var marks = data.marks;
         // clear marks
@@ -1265,7 +1265,7 @@ if (typeof console === 'undefined') {
                 // create mark
                 var html = '<div class="mark overlay">'+(i+1)+'</div>';
                 var $mark = $(html);
-                $mark.attr("id", "digilib-mark-" + i);
+                $mark.attr("id", "digilib-mark-"+(i+1));
                 $elem.append($mark);
                 mpos.adjustDiv($mark);
                 }
