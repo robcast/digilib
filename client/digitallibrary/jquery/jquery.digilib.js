@@ -311,8 +311,8 @@ if (typeof console === 'undefined') {
                             }
                         }
                     }
-                    // store $(this) element in data
-                    elemSettings = $.extend({}, settings, params);
+                    // store $(this) element in data, needs a deep copy
+                    elemSettings = $.extend(true, {}, settings, params);
                     data = {
                             $elem : $elem,
                             settings : elemSettings,
