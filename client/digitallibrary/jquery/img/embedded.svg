@@ -51,7 +51,7 @@
      inkscape:cx="15.816836"
      inkscape:cy="15.897753"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="layer27"
      showgrid="true"
      inkscape:window-width="1024"
      inkscape:window-height="719"
@@ -988,7 +988,7 @@
   <g
      inkscape:groupmode="layer"
      id="layer27"
-     inkscape:label="addregions"
+     inkscape:label="addregion"
      style="display:none"
      sodipodi:insensitive="true">
     <path
@@ -1004,7 +1004,7 @@
   </g>
   <g
      style="display:none"
-     inkscape:label="delregions"
+     inkscape:label="delregion"
      id="g202"
      inkscape:groupmode="layer"
      sodipodi:insensitive="true">

@@ -135,16 +135,16 @@ div.digilib.dl_embedded div.buttons {
 	top: 0px;
 	padding: 1px;
 	background-color: grey;
-	opacity: 0.4;
+	opacity: 0.5;
 	z-index: 100;
 }
 
 div.digilib.dl_embedded div.button:hover {
-	background-color: darkred;
+	background-color: black;
 }
 
 div.digilib.dl_embedded div.button-on {
-	background-color: black;
+	background-color: darkgreen;
 }
 
 div.digilib.dl_embedded div.birdview {

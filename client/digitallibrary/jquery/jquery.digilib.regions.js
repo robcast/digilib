@@ -377,10 +377,11 @@ TODO:
     // event handler, sets buttons and shows regions
     var handleUpdate = function (evt) {
         data = this;
-        fn.highlightButtons(data, 'regions' , data.settings.isRegionVisible);
-        fn.highlightButtons(data, 'regionhtml' , data.settings.showRegionHTML);
+        var settings = data.settings;
+        fn.highlightButtons(data, 'regions' , settings.isRegionVisible);
+        fn.highlightButtons(data, 'regionhtml' , settings.showRegionHTML);
         showRegionDivs(data);
-        console.debug("regions: handleUpdate", data.settings.rg);
+        console.debug("regions: handleUpdate", settings.rg);
     };
 
     // event handler, redisplays regions (e.g. in a new position)
@@ -420,27 +421,29 @@ TODO:
         var $html = $('<div class="keep regionHTML"/>');
         $elem.append($html);
         data.$htmlDiv = $html;
-        // no URL-defined regions, no buttons when regions are predefined in HTML
-        var hasRegionContent = data.settings.includeRegionContent;
-        if (!hasRegionContent) {
-            // add "rg" to digilibParamNames
-            data.settings.digilibParamNames.push('rg');
-            // additional buttons
-            var buttonSettings = data.settings.buttonSettings.fullscreen;
-            // configure buttons through digilib "regionSet" option
-            var buttonSet = data.settings.regionSet || regionSet; 
-            // set regionSet to [] or '' for no buttons (when showing regions only)
-            if (buttonSet.length && buttonSet.length > 0) {
-                buttonSettings['regionSet'] = buttonSet;
-                buttonSettings.buttonSets.push('regionSet');
-            }
-        }
         // install event handler
         var $data = $(data);
         $data.bind('setup', handleSetup);
         $data.bind('update', handleUpdate);
         $data.bind('redisplay', handleRedisplay);
         $data.bind('dragZoom', handleDragZoom);
+        var settings = data.settings;
+        var hasRegionContent = settings.includeRegionContent;
+        // no URL-defined regions, no buttons when regions are predefined in HTML
+        if (!hasRegionContent) {
+            var mode = settings.interactionMode;
+            // add "rg" to digilibParamNames
+            settings.digilibParamNames.push('rg');
+            // additional buttons
+            var buttonSettings = settings.buttonSettings[mode];
+            // configure buttons through digilib "regionSet" option
+            var buttonSet = settings.regionSet || regionSet; 
+            // set regionSet to [] or '' for no buttons (when showing regions only)
+            if (buttonSet.length && buttonSet.length > 0) {
+                buttonSettings['regionSet'] = buttonSet;
+                buttonSettings.buttonSets.push('regionSet');
+            }
+        }
     };
 
     // plugin object with name and install/init methods
