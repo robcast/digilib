@@ -37,7 +37,7 @@ TODO:
             icon : "regions.png"
             },
         regionhtml : {
-            onclick : "showRegionHTML",
+            onclick : "showRegionInfo",
             tooltip : "show information about regions",
             icon : "regioninfo.png"
             }
@@ -49,7 +49,7 @@ TODO:
         // are region numbers shown?
         'showRegionNumbers' : false,
         // is window with region HTML shown?
-        'showRegionHTML' : false,
+        'showRegionInfo' : false,
         // is there region content in the page?
         'hasRegionContent' : false,
         // turn any region into a clickable link to its detail view
@@ -152,28 +152,19 @@ TODO:
         },
 
         // show/hide region HTML code 
-        "showRegionHTML" : function (data) {
-            var show = !data.settings.showRegionHTML;
-            data.settings.showRegionHTML = show;
+        "showRegionInfo" : function (data) {
+            var show = !data.settings.showRegionInfo;
+            data.settings.showRegionInfo = show;
             fn.highlightButtons(data, 'regionhtml', show);
             var $html = data.$htmlDiv;
             if (!show) {
+                // empty the div
                 $html.fadeOut(function () { 
                     $html.contents().remove();
                     });
                 return;
             }
-            // empty the div for HTML display
-            $html.append($('<div/>').text('<div class="keep regioncontent">'));
-            $.each(data.regions, function(index, region) {
-                    var area = "area:"
-                    + region.x + "/" + region.y + "/"
-                    + region.width + "/" + region.height;
-                $html.append($('<div/>').text('<a href="" rel="' + area + '">'));
-                $html.append($('<div/>').text('</a>'));
-                });
-            $html.append($('<div/>').text('</div>'));
-            $html.fadeIn();
+            regionInfo(data);
         },
 
         "redraw" : function (data) {
@@ -189,6 +180,77 @@ TODO:
         regionRect.$div = $regionDiv;
         regions.push(regionRect);
         console.debug("regions", data.regions, "regionRect", regionRect);
+    };
+
+    // clickable header
+    var regionInfoHeader = function (data) {
+        var $infoDiv = $('<div class="infoheader"/>');
+        var $h01 = $('<div class="infobutton">HTML</div>'); 
+        var $h02 = $('<div class="infobutton">SVG</div>'); 
+        var $h03 = $('<div class="infobutton">Digilib</div>'); 
+        var $h04 = $('<div class="infobutton">X</div>');
+        var bind = function($div, name) {
+            $div.bind('click.regioninfo', function () {
+                var $top = $(this).parent().parent();
+                $top.find('.info').hide();
+                $top.find('.' + name).show();
+                });
+            };
+        bind($h01, 'html');
+        bind($h02, 'svgattr');
+        bind($h03, 'digilib');
+        var $html = data.$htmlDiv;
+        $h04.bind('click.regioninfo', function () {
+            data.settings.showRegionInfo = false;
+            fn.highlightButtons(data, 'regionhtml', false);
+            $html.fadeOut(function () { 
+                $html.contents().remove();
+                });
+            });
+        $infoDiv.append($h01, $h02, $h03, $h04);
+        return $infoDiv;
+    };
+
+    // html for later insertion
+    var regionInfoHTML = function (data) {
+        var $infoDiv = $('<div class="info html"/>');
+        $infoDiv.append($('<div/>').text('<div class="keep regioncontent">'));
+        $.each(data.regions, function(index, r) {
+            var area = [r.x, r.y, r.width, r.height].join(',');
+            $infoDiv.append($('<div/>').text('<a coords="' + area + '" >'));
+            });
+        $infoDiv.append($('<div/>').text('</div>'));
+        return $infoDiv;
+    };
+
+    // SVG-style
+    var regionInfoSVG = function (data) {
+        var $infoDiv = $('<div class="info svgattr"/>');
+        $.each(data.regions, function(index, r) {
+            var area = [r.x, r.y, r.width, r.height].join(' ');
+            $infoDiv.append($('<div/>').text('"' + area + '"'));
+            });
+        return $infoDiv;
+    };
+
+    // digilib-style
+    var regionInfoDigilib = function (data) {
+        var $infoDiv = $('<div class="info digilib"/>');
+        $.each(data.regions, function(index, r) {
+            var area = r.width + 'x' + r.height + '@' + r.x + ',' + r.y;
+            $infoDiv.append($('<div/>').text(area));
+            });
+        return $infoDiv;
+    };
+
+    // show region info in a window
+    var regionInfo = function (data) {
+        var $html = data.$htmlDiv;
+        $html.append(regionInfoHeader(data))
+        $html.append(regionInfoHTML(data));
+        $html.append(regionInfoSVG(data));
+        $html.append(regionInfoDigilib(data));
+        $html.fadeIn();
     };
 
     // add a region to data.$elem
@@ -366,7 +428,7 @@ TODO:
         // regions are defined in the URL
         } else {
             createRegionsFromURL(data);
-            fn.highlightButtons(data, 'regionhtml', data.settings.showRegionHTML);
+            fn.highlightButtons(data, 'regionhtml', data.settings.showRegionInfo);
         }
     };
 
@@ -376,7 +438,7 @@ TODO:
         console.debug("regions: handleUpdate");
         var settings = data.settings;
         fn.highlightButtons(data, 'regions' , settings.isRegionVisible);
-        fn.highlightButtons(data, 'regionhtml' , settings.showRegionHTML);
+        fn.highlightButtons(data, 'regionhtml' , settings.showRegionInfo);
         renderRegions(data);
     };
 
