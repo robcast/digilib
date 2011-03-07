@@ -74,10 +74,13 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             new Kernel(3, 3, new float[] {1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f})
 	};
 
-	/** lookup table for inverting images (byte) */
+	/* lookup tables for inverting images (byte) */
 	protected static LookupTable invertSingleByteTable;
     protected static LookupTable invertRgbaByteTable;
-	
+    protected static boolean needsInvertRgba = false;
+	/* RescaleOps for contrast/brightness operation */
+    protected static boolean needsRescaleRgba = false;
+    
 	static {
 		byte[] invertByte = new byte[256];
 		byte[] orderedByte = new byte[256];
@@ -97,6 +100,8 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			// GRAB(WTF?) works in Linux JDK1.6 with transparency
 			invertRgbaByteTable = new ByteLookupTable(0, new byte[][] {
 					invertByte, invertByte, orderedByte, invertByte});
+			needsInvertRgba = true;
+			needsRescaleRgba = true;
 		} else {
 			invertRgbaByteTable = invertSingleByteTable;
 		}
@@ -430,24 +435,30 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
 	public void enhance(float mult, float add) throws ImageOpException {
 		RescaleOp op = null;
-		logger.debug("enhance: cm="+img.getColorModel());
-		op = new RescaleOp(mult, add, renderHint);
-		/*
-		 * Only one constant should work regardless of the number of bands
-		 * according to the JDK spec. Doesn't work on JDK 1.4 for OSX and Linux
-		 * (at least). RescaleOp scaleOp = new RescaleOp( (float)mult,
-		 * (float)add, null); scaleOp.filter(img, img);
-		 */
+		logger.debug("enhance: cm=" + img.getColorModel());
+		if (needsRescaleRgba) {
+			/*
+			 * Only one constant should work regardless of the number of bands
+			 * according to the JDK spec. Doesn't work on JDK 1.4 for OSX and
+			 * Linux (at least). RescaleOp scaleOp = new RescaleOp( (float)mult,
+			 * (float)add, null); scaleOp.filter(img, img);
+			 */
 
-		/* The number of constants must match the number of bands in the image.
-		int ncol = img.getColorModel().getNumComponents();
-		float[] dm = new float[ncol];
-		float[] da = new float[ncol];
-		for (int i = 0; i < ncol; i++) {
-			dm[i] = (float) mult;
-			da[i] = (float) add;
+			/*
+			 * The number of constants must match the number of bands in the
+			 * image.
+			 */
+			int ncol = img.getColorModel().getNumComponents();
+			float[] dm = new float[ncol];
+			float[] da = new float[ncol];
+			for (int i = 0; i < ncol; i++) {
+				dm[i] = (float) mult;
+				da[i] = (float) add;
+			}
+			op = new RescaleOp(dm, da, null);
+		} else {
+			op = new RescaleOp(mult, add, renderHint);
 		}
-		RescaleOp scaleOp = new RescaleOp(dm, da, null); */
 		op.filter(img, img);
 	}
 
@@ -528,7 +539,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			// TODO: is this enough for all image types?
 			LookupTable invtbl = null;
 			ColorModel cm = img.getColorModel();
-			if (cm.hasAlpha()) {
+			if (needsInvertRgba && cm.hasAlpha()) {
 				// JDK 1.6 in Linux (at least) is broken :-(
 				invtbl = invertRgbaByteTable;
 			} else {
