@@ -66,14 +66,22 @@ div.digilib div.region:hover {
 	opacity: 0.5;
 }
 
-div.region a {
+div.region {
+    color: white;
+    font-size: 80%;
+}
+
+div.region a.regionnumber {
     color: white;
     text-decoration: none;
-    font-size: 11px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
-	height: 15px;
-	width: 16px;
-	margin: 3px;
+	font-size: 11px;
+	text-align: center;
+    padding: 0px 2px;
+    margin-right: 4px;
+    border: 1px solid white;
+    display: inline-block;
 }
 
 div.regioncontent {

@@ -1261,7 +1261,7 @@ if (typeof console === 'undefined') {
             var mark = marks[i];
             if (data.zoomArea.containsPosition(mark)) {
                 var mpos = data.imgTrafo.transform(mark);
-                console.debug("renderMarks: mpos=",mpos);
+                console.debug("renderMarks: pos=",mpos);
                 // create mark
                 var html = '<div class="mark overlay">'+(i+1)+'</div>';
                 var $mark = $(html);

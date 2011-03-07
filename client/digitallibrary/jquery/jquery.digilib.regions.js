@@ -59,7 +59,7 @@ TODO:
         // buttonset of this plugin
         'regionSet' : ['regions', 'addregion', 'delregion', 'regionhtml', 'lessoptions'],
         // url param for regions
-        'rg' : null,
+        'rg' : null
         };
 
     var actions = { 
@@ -192,45 +192,38 @@ TODO:
     };
 
     // add a region to data.$elem
-    var addRegionDiv = function (data, index) {
+    var addRegionDiv = function (data, index, url) {
         var nr = index + 1; // we count regions from 1
         // create a digilib URL for this detail
-        var regionUrl = getRegionUrl(data, index);
+        url = url || getRegionUrl(data, index);
         var $regionDiv = $('<div class="region overlay" style="display:none"/>');
         $regionDiv.attr("id", ID_PREFIX + nr);
         data.$elem.append($regionDiv);
         if (data.settings.showRegionNumbers) {
-            var $regionNr = $('<div class="regionnumber"/>');
-            var $regionLink = $('<a/>');
-            $regionLink.attr('href', regionUrl);
+            var $regionLink = $('<a class="regionnumber"/>');
+            $regionLink.attr('href', url);
             $regionLink.text(nr);
-            $regionNr.append($regionLink);
-            $regionDiv.append($regionNr);
+            $regionDiv.append($regionLink);
         }
         if (data.settings.autoRegionLinks) {
             $regionDiv.bind('click.dlRegion', function() {
-                 window.location = regionUrl;
-            })
+                 window.location = url;
+            });
         }
         return $regionDiv;
     };
 
-    // add region content
-    var addRegionContent = function (region, $elem) {
-        var $regionDiv = region.$div;
-        $regionDiv.append($elem);
-    }
-
-    // create a region div from the data.regions collection
-    var createRegionDiv = function (regions, index) {
+    // create a region div from the data.regions array
+    var createRegionDiv = function (regions, index, url) {
+        var $regionDiv = addRegionDiv(data, index, url);
         var region = regions[index];
-        var $regionDiv = addRegionDiv(data, index);
         region.$div = $regionDiv;
         return $regionDiv;
     };
 
-    // create regions 
-    var createRegionDivs = function (data) {
+    // create regions from URL parameters
+    var createRegionsFromURL = function (data) {
+        unpackRegions(data);
         var regions = data.regions;
         $.each(regions, function(i) {
             createRegionDiv(regions, i);
@@ -243,20 +236,20 @@ TODO:
         var selector = data.settings.regionContentSelector;
         // regions are defined in "a" tags
         var $content = data.$elem.contents(selector).contents('a');
-        console.debug("createRegionsFromHTML", $content);
+        console.debug("createRegionsFromHTML. elems: ", $content);
         $content.each(function(index, a) {
             var $a = $(a); 
-            // the "rel" attribute has area coords
+            // the "rel" attribute contains the region coords
             var rel = $a.attr('rel');
             var area = rel.replace(/^area:/i, '');
             var pos = area.split("/", 4);
             var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
             regions.push(rect);
-            var $regionDiv = createRegionDiv(regions, index);
+            // create the div
             var href = $a.attr('href');
-            var text = $a.text();
-            $regionDiv.append($a.clone());
-            // $a.show();
+            var $regionDiv = createRegionDiv(regions, index, href);
+            var $contents = $a.contents().clone();
+            $regionDiv.append($contents);
         });
     };
 
@@ -266,7 +259,7 @@ TODO:
         var $elem = data.$elem;
         var regions = data.regions;
         if (index > regions.length) return;
-        var region = regions[index]
+        var region = regions[index];
         var $regionDiv = region.$div;
         if (!$regionDiv) {
             console.debug("renderRegion: region has no $div", region);
@@ -278,14 +271,14 @@ TODO:
         if (show && data.zoomArea.overlapsRect(regionRect)) {
             regionRect.clipTo(data.zoomArea);
             var screenRect = data.imgTrafo.transform(regionRect);
-            // console.debug('renderRegion:', screenRect, regionRect, "imgTrafo=", data.imgTrafo);
-            console.debug("renderRegion: mpos=",geom.position(screenRect));
-            screenRect.adjustDiv($regionDiv);
+            console.debug("renderRegion: pos=",geom.position(screenRect));
             if (anim) {
                 $regionDiv.fadeIn();
             } else{
                 $regionDiv.show();
             }
+            // for some reason adjustDiv sets wrong coords when called BEFORE show()?
+            screenRect.adjustDiv($regionDiv);
         } else {
             if (anim) {
                 $regionDiv.fadeOut();
@@ -373,13 +366,12 @@ TODO:
             createRegionsFromHTML(data);
         // regions are defined in the URL
         } else {
-            unpackRegions(data);
-            createRegionDivs(data);
+            createRegionsFromURL(data);
             fn.highlightButtons(data, 'regionhtml', data.settings.showRegionHTML);
         }
     };
 
-    // event handler, sets buttons and shows regions
+    // event handler, sets buttons and shows regions when scaler img is reloaded
     var handleUpdate = function (evt) {
         data = this;
         console.debug("regions: handleUpdate");
@@ -393,7 +385,7 @@ TODO:
     var handleRedisplay = function (evt) {
         data = this;
         console.debug("regions: handleRedisplay");
-        renderRegions(data);
+        // renderRegions(data);
     };
 
     // event handler
@@ -446,7 +438,7 @@ TODO:
             var buttonSet = settings.regionSet || regionSet; 
             // set regionSet to [] or '' for no buttons (when showing regions only)
             if (buttonSet.length && buttonSet.length > 0) {
-                buttonSettings['regionSet'] = buttonSet;
+                buttonSettings.regionSet = buttonSet;
                 buttonSettings.buttonSets.push('regionSet');
             }
         }
