@@ -68,13 +68,13 @@ div.digilib div.region:hover {
 
 div.region {
     color: white;
-    font-size: 80%;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 11px;
 }
 
 div.region a.regionnumber {
     color: white;
     text-decoration: none;
-	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	font-size: 11px;
 	text-align: center;

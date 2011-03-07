@@ -239,10 +239,9 @@ TODO:
         console.debug("createRegionsFromHTML. elems: ", $content);
         $content.each(function(index, a) {
             var $a = $(a); 
-            // the "rel" attribute contains the region coords
-            var rel = $a.attr('rel');
-            var area = rel.replace(/^area:/i, '');
-            var pos = area.split("/", 4);
+            // the "coords" attribute contains the region coords (0..1)
+            var coords = $a.attr('coords');
+            var pos = coords.split(",", 4);
             var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
             regions.push(rect);
             // create the div
@@ -300,10 +299,10 @@ TODO:
         var rg = data.settings.rg;
         if (rg == null) return;
         var regions = data.regions;
-        var rs = rg.split(",");
+        var rs = rg.split(";");
         for (var i = 0; i < rs.length; i++) {
             var r = rs[i];
-            var pos = r.split("/", 4);
+            var pos = r.split(",", 4);
             var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
             regions.push(rect);
             }
@@ -320,14 +319,14 @@ TODO:
         for (var i = 0; i < regions.length; i++) {
             region = regions[i];
             if (i) {
-                rg += ',';
+                rg += ';';
             }
             rg += [
                 fn.cropFloatStr(region.x), 
                 fn.cropFloatStr(region.y),
                 fn.cropFloatStr(region.width),
                 fn.cropFloatStr(region.height)
-                ].join('/');
+                ].join(',');
         }
         data.settings.rg = rg;
     };
