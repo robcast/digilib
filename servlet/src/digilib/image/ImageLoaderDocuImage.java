@@ -368,25 +368,10 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		/* then scaled */
 		AffineTransformOp scaleOp = new AffineTransformOp(AffineTransform
 				.getScaleInstance(scale, scale), renderHint);
-		BufferedImage scaledImg = null;
-		/* enforce destination image type (*Java2D BUG*)
-		int type = img.getType();
-		if ((quality > 0) && (type != 0)) {
-			logger.debug("creating destination image");
-			Rectangle2D dstBounds = scaleOp.getBounds2D(img);
-			scaledImg = new BufferedImage((int) dstBounds.getWidth(),
-					(int) dstBounds.getHeight(), type);
-		} */
 		logger.debug("scaling...");
-		scaledImg = scaleOp.filter(img, scaledImg);
-		if (scaledImg == null) {
-			throw new ImageOpException("Unable to scale");
-		}
-		// DEBUG
-		logger.debug("destination image type " + scaledImg.getType());
-		logger.debug("SCALE: " + scale + " ->" + scaledImg.getWidth() + "x"
-				+ scaledImg.getHeight());
-		img = scaledImg;
+		img = scaleOp.filter(img, null);
+		logger.debug("SCALE: " + scale + " ->" + img.getWidth() + "x"
+				+ img.getHeight() + " type=" + img.getType());
 	}
 
 	public void blur(int radius) throws ImageOpException {
@@ -410,41 +395,32 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		// blur with convolve operation
 		ConvolveOp blurOp = new ConvolveOp(blur, ConvolveOp.EDGE_NO_OP,
 				renderHint);
-		BufferedImage blurredImg = null;
-		// blur needs explicit destination image type for color *Java2D BUG*
+		/* blur needs explicit destination image type for color *Java2D BUG*
 		if (img.getType() == BufferedImage.TYPE_3BYTE_BGR) {
 			logger.debug("blur: fixing destination image type");
 			blurredImg = new BufferedImage(img.getWidth(), img.getHeight(), img
 					.getType());
-		}
-		blurredImg = blurOp.filter(img, blurredImg);
-		img = blurredImg;
+		} */
+		img = blurOp.filter(img, null);
 	}
 
 	public void crop(int x_off, int y_off, int width, int height)
 			throws ImageOpException {
 		// setup Crop
-		BufferedImage croppedImg = img.getSubimage(x_off, y_off, width, height);
-		if (croppedImg == null) {
-			throw new ImageOpException("Unable to crop");
-		}
-		logger.debug("CROP:" + croppedImg.getWidth() + "x"
-				+ croppedImg.getHeight());
-		img = croppedImg;
+		img = img.getSubimage(x_off, y_off, width, height);
+		logger.debug("CROP:" + img.getWidth() + "x"
+				+ img.getHeight());
 	}
 
 	public void enhance(float mult, float add) throws ImageOpException {
 		RescaleOp op = null;
 		logger.debug("enhance: cm=" + img.getColorModel());
 		if (needsRescaleRgba) {
-			/*
-			 * Only one constant should work regardless of the number of bands
-			 * according to the JDK spec. Doesn't work on JDK 1.4 for OSX and
-			 * Linux (at least). RescaleOp scaleOp = new RescaleOp( (float)mult,
-			 * (float)add, null); scaleOp.filter(img, img);
-			 */
-
-			/*
+            /*
+             * Only one constant should work regardless of the number of bands
+             * according to the JDK spec. Doesn't work on JDK 1.4 for OSX and
+             * Linux (at least).
+             * 
 			 * The number of constants must match the number of bands in the
 			 * image.
 			 */
@@ -532,6 +508,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			logger.debug("Color op: grayscaling");
 			ColorConvertOp colop = new ColorConvertOp(
 					ColorSpace.getInstance(ColorSpace.CS_GRAY), renderHint);
+			// let filter create new image
 			img = colop.filter(img, null);
 		} else if (op == ColorOp.INVERT) {
 			// invert colors i.e. invert every channel
@@ -540,14 +517,16 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			LookupTable invtbl = null;
 			ColorModel cm = img.getColorModel();
 			if (needsInvertRgba && cm.hasAlpha()) {
-				// JDK 1.6 in Linux (at least) is broken :-(
+				/* should work with one array for all channels, but
+				 * JDK 1.6 in Linux (at least) is broken :-(
+				 */
 				invtbl = invertRgbaByteTable;
 			} else {
 				invtbl = invertSingleByteTable;
 			}
 			LookupOp colop = new LookupOp(invtbl, renderHint);
 			logger.debug("colop: image="+img+" colormodel="+cm);
-			img = colop.filter(img, null);
+			colop.filter(img, img);
 		}
 
 	}
@@ -573,10 +552,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		trafo.preConcatenate(AffineTransform.getTranslateInstance(-xoff, -yoff));
 		// transform image
 		rotOp = new AffineTransformOp(trafo, renderHint);
-		BufferedImage rotImg = rotOp.filter(img, null);
+		rotOp.filter(img, img);
 		// calculate new bounding box
 		// Rectangle2D bounds = rotOp.getBounds2D(img);
-		img = rotImg;
 		// crop new image (with self-made rounding)
 		/*
 		 * img = rotImg.getSubimage( (int) (bounds.getX()+0.5), (int)
@@ -609,8 +587,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		}
 		AffineTransformOp mirOp = new AffineTransformOp(new AffineTransform(mx,
 				0, 0, my, tx, ty), renderHint);
-		BufferedImage mirImg = mirOp.filter(img, null);
-		img = mirImg;
+		mirOp.filter(img, img);
 	}
 
 	public void dispose() {
