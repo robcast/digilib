@@ -109,7 +109,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
                 mapB[i] = (byte) (255 - 2 * (i - 64));
 			} else {
                 mapR[i] = (byte) 255;
-                mapG[i] = (byte) (4 * (i - 192));
+                mapG[i] = (byte) (255 - (4 * (i - 192)));
                 mapB[i] = 0;
 			}
 		}
