@@ -137,17 +137,17 @@ public class Initialiser implements ServletContextListener {
 				// digilib worker threads
 				int nt = dlConfig.getAsInt("worker-threads");
                 int mt = dlConfig.getAsInt("max-waiting-threads");
-				imageEx = new DigilibJobCenter<DocuImage>(nt, mt, true, "servlet.worker.imageexecutor");
+				imageEx = new DigilibJobCenter<DocuImage>(nt, mt, false, "servlet.worker.imageexecutor");
                 dlConfig.setValue("servlet.worker.imageexecutor", imageEx);				
 				// PDF worker threads
 				int pnt = dlConfig.getAsInt("pdf-worker-threads");
                 int pmt = dlConfig.getAsInt("pdf-max-waiting-threads");
-				pdfEx = new DigilibJobCenter<OutputStream>(pnt, pmt, true, "servlet.worker.pdfexecutor");
+				pdfEx = new DigilibJobCenter<OutputStream>(pnt, pmt, false, "servlet.worker.pdfexecutor");
                 dlConfig.setValue("servlet.worker.pdfexecutor", pdfEx);				
 				// PDF image worker threads
 				int pint = dlConfig.getAsInt("pdf-image-worker-threads");
                 int pimt = dlConfig.getAsInt("pdf-image-max-waiting-threads");
-				pdfImageEx = new DigilibJobCenter<DocuImage>(pint, pimt, true, "servlet.worker.pdfimageexecutor");
+				pdfImageEx = new DigilibJobCenter<DocuImage>(pint, pimt, false, "servlet.worker.pdfimageexecutor");
                 dlConfig.setValue("servlet.worker.pdfimageexecutor", pdfImageEx);				
 				// set as the servlets main config
 				context.setAttribute("digilib.servlet.configuration", dlConfig);
