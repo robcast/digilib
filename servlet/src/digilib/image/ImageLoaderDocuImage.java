@@ -26,6 +26,7 @@ import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.AffineTransformOp;
+import java.awt.image.BandCombineOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.ByteLookupTable;
 import java.awt.image.ColorConvertOp;
@@ -78,17 +79,39 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 	protected static LookupTable invertSingleByteTable;
     protected static LookupTable invertRgbaByteTable;
     protected static boolean needsInvertRgba = false;
-	/* RescaleOps for contrast/brightness operation */
+	/* RescaleOp for contrast/brightness operation */
     protected static boolean needsRescaleRgba = false;
+    /* lookup tables for false-color */
+    protected static LookupTable mapBgrByteTable;
     
 	static {
 		byte[] invertByte = new byte[256];
 		byte[] orderedByte = new byte[256];
 		byte[] nullByte = new byte[256];
+        byte[] mapR = new byte[256];
+        byte[] mapG = new byte[256];
+        byte[] mapB = new byte[256];
 		for (int i = 0; i < 256; ++i) {
+		    // counting down
 			invertByte[i] = (byte) (256 - i);
+			// counting up
 			orderedByte[i] = (byte) i;
+			// constant 0
 			nullByte[i] = 0;
+			// three overlapping slopes
+			if (i < 64) {
+			    mapR[i] = 0;
+			    mapG[i] = (byte) (4 * i);
+			    mapB[i] = (byte) 255;
+			} else if (i >= 64 && i < 192) {
+                mapR[i] = (byte) (2 * (i - 64));
+                mapG[i] = (byte) 255;
+                mapB[i] = (byte) (255 - 2 * (i - 64));
+			} else {
+                mapR[i] = (byte) 255;
+                mapG[i] = (byte) (4 * (i - 192));
+                mapB[i] = 0;
+			}
 		}
 		// should(!) work for all color models
 		invertSingleByteTable = new ByteLookupTable(0, invertByte);
@@ -105,6 +128,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		} else {
 			invertRgbaByteTable = invertSingleByteTable;
 		}
+		// this hopefully works for all
+		mapBgrByteTable = new ByteLookupTable(0, new byte[][] {
+                mapR, mapG, mapB});
 	}
 	
 	/** the size of the current image */
@@ -496,40 +522,86 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		return fb;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * digilib.image.DocuImageImpl#colorOp(digilib.image.DocuImage.ColorOps)
-	 */
-	public void colorOp(ColorOp op) throws ImageOpException {
-		if (op == ColorOp.GRAYSCALE) {
-			// convert image to grayscale
-			logger.debug("Color op: grayscaling");
-			ColorConvertOp colop = new ColorConvertOp(
-					ColorSpace.getInstance(ColorSpace.CS_GRAY), renderHint);
-			// let filter create new image
-			img = colop.filter(img, null);
-		} else if (op == ColorOp.INVERT) {
-			// invert colors i.e. invert every channel
-			logger.debug("Color op: inverting");
-			// TODO: is this enough for all image types?
-			LookupTable invtbl = null;
-			ColorModel cm = img.getColorModel();
-			if (needsInvertRgba && cm.hasAlpha()) {
-				/* should work with one array for all channels, but
-				 * JDK 1.6 in Linux (at least) is broken :-(
-				 */
-				invtbl = invertRgbaByteTable;
-			} else {
-				invtbl = invertSingleByteTable;
-			}
-			LookupOp colop = new LookupOp(invtbl, renderHint);
-			logger.debug("colop: image="+img+" colormodel="+cm);
-			colop.filter(img, img);
-		}
-
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * digilib.image.DocuImageImpl#colorOp(digilib.image.DocuImage.ColorOps)
+     */
+    public void colorOp(ColorOp colop) throws ImageOpException {
+        if (colop == ColorOp.GRAYSCALE) {
+            /*
+             * convert image to grayscale
+             */
+            logger.debug("Color op: grayscaling");
+            ColorModel cm = img.getColorModel();
+            if (cm.getNumColorComponents() == 1) {
+                // grayscale already
+                return;
+            }
+            ColorConvertOp op = new ColorConvertOp(
+                    ColorSpace.getInstance(ColorSpace.CS_GRAY), renderHint);
+            // let filter create new image
+            img = op.filter(img, null);
+        } else if (colop == ColorOp.NTSC_GRAY) {
+            /*
+             * convert image to grayscale NTSC-style: luminance = 0.2989*red +
+             * 0.5870*green + 0.1140*blue
+             */
+            logger.debug("Color op: NTSC gray");
+            ColorModel cm = img.getColorModel();
+            if (cm.getNumColorComponents() == 1) {
+                // grayscale already
+                return;
+            }
+            float[][] combineFn = new float[1][4];
+            combineFn[0] = rgbOrdered(new float[] { 0.299f, 0.114f, 0.587f, 0f });
+            BandCombineOp op = new BandCombineOp(combineFn, renderHint);
+            // unfortunately BandCombineOp only works on Rasters so we create a
+            // new image and use its Raster
+            BufferedImage dest = new BufferedImage(img.getWidth(),
+                    img.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+            op.filter(img.getRaster(), dest.getRaster());
+            img = dest;
+        } else if (colop == ColorOp.INVERT) {
+            /*
+             * invert colors i.e. invert every channel
+             */
+            logger.debug("Color op: inverting");
+            // TODO: is this enough for all image types?
+            LookupTable invtbl = null;
+            ColorModel cm = img.getColorModel();
+            if (needsInvertRgba && cm.hasAlpha()) {
+                /*
+                 * should work with one array for all channels, but JDK 1.6 in
+                 * Linux (at least) is broken :-(
+                 */
+                invtbl = invertRgbaByteTable;
+            } else {
+                invtbl = invertSingleByteTable;
+            }
+            LookupOp op = new LookupOp(invtbl, renderHint);
+            logger.debug("colop: image=" + img + " colormodel=" + cm);
+            op.filter(img, img);
+        } else if (colop == ColorOp.MAP_GRAY_BGR) {
+            /*
+             * false color image from grayscale (0: blue, 128: green, 255: red)
+             */
+            logger.debug("Color op: map_gray_bgr");
+            // convert to grayscale
+            ColorConvertOp grayOp = new ColorConvertOp(
+                    ColorSpace.getInstance(ColorSpace.CS_GRAY), renderHint);
+            // create new 3-byte image
+            BufferedImage dest = new BufferedImage(img.getWidth(),
+                    img.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+            img = grayOp.filter(img, dest);
+            logger.debug("map_gray: image=" + img);
+            // convert to false color
+            LookupOp mapOp = new LookupOp(mapBgrByteTable, renderHint);
+            mapOp.filter(img, img);
+            logger.debug("mapped image=" + img);
+        }
+    }
 
 	public void rotate(double angle) throws ImageOpException {
 		// setup rotation
