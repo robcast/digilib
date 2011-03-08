@@ -126,6 +126,17 @@ div.infoheader {
     margin-bottom: 20px;
 }
 
+div.arrow {
+    position: absolute;
+    text-align: center;
+    background-color: black;
+    opacity: 0.08;
+}
+
+div.arrow:hover {
+    opacity: 0.5;
+}
+
 /* special definitions for fullscreen */
 div.digilib.dl_fullscreen div.buttons {
 	position: fixed;

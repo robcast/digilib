@@ -231,7 +231,7 @@ if (typeof console === 'undefined') {
         // arrow overlays for moving the zoomed area
         'zoomArrows' : true,
         // zoom arrow image info
-        'zoomArrowImg' : {
+        'zoomArrowsInfo' : {
              // path to arrow images (must end with a slash)
             'imagePath' : 'img/',
             // minimal width of the arrow bar (pixel)
@@ -928,6 +928,7 @@ if (typeof console === 'undefined') {
         updateImgTrafo(data);
         renderMarks(data);
         setupZoomDrag(data);
+        renderZoomArrows(data);
         // send event
         $(data).trigger('update');
     };
@@ -1078,7 +1079,52 @@ if (typeof console === 'undefined') {
         var show = settings.zoomArrows;
         console.log('zoom arrows:', show);
         if (!show) return;
+        data.$arrows = {};
+        var $arrows = data.$arrows;
+        var info = settings.zoomArrowsInfo;
+        $.each(['up','down','left','right'], function(i, s){
+            var src = info.imagePath + info[s];
+            var $div = $('<div class="keep arrow arrow-' + s + '"/>');
+            var $img = $('<img src="' + src + '"/>');
+            $div.attr('title', s);
+            $img.attr('alt', s);
+            $div.append($img);
+            $elem.append($div);
+            $arrows[s] = $div;
+        });
+        $arrows.up.bind('click.digilib', function(event) {
+            //za.addPosition(delta.neg());
+            // transform back
+            // var newArea = data.imgTrafo.invtransform(za);
+            // data.zoomArea = FULL_AREA.fit(newArea);
+            redisplay(data);
+        });
+        $arrows.down.bind('click.digilib', function(event) {
+            redisplay(data);
+        });
+        $arrows.left.bind('click.digilib', function(event) {
+            redisplay(data);
+        });
+        $arrows.right.bind('click.digilib', function(event) {
+            redisplay(data);
+        });
     };
+
+    // size and show arrow overlays, called after scaler img is loaded
+    var renderZoomArrows = function (data) {
+        var $arrows = data.$arrows;
+        var r = FULL_AREA.copy();
+        r.height = 0.05;
+        data.imgTrafo.transform(r).adjustDiv($arrows.up);
+        r.y = 0.95;
+        data.imgTrafo.transform(r).adjustDiv($arrows.down);
+        r = FULL_AREA.copy();
+        r.width = 0.05;
+        data.imgTrafo.transform(r).adjustDiv($arrows.left);
+        r.x = 0.95;
+        data.imgTrafo.transform(r).adjustDiv($arrows.right);
+    };
+
 
     // creates HTML structure for the about view in elem
     var setupAboutDiv = function (data) {

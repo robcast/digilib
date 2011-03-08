@@ -227,7 +227,7 @@ TODO:
     var regionInfoSVG = function (data) {
         var $infoDiv = $('<div class="info svgattr"/>');
         $.each(data.regions, function(index, r) {
-            var area = [r.x, r.y, r.width, r.height].join(' ');
+            var area = r.getAsSvg();
             $infoDiv.append($('<div/>').text('"' + area + '"'));
             });
         return $infoDiv;
@@ -237,7 +237,7 @@ TODO:
     var regionInfoDigilib = function (data) {
         var $infoDiv = $('<div class="info digilib"/>');
         $.each(data.regions, function(index, r) {
-            var area = r.width + 'x' + r.height + '@' + r.x + ',' + r.y;
+            var area = r.toString();
             $infoDiv.append($('<div/>').text(area));
             });
         return $infoDiv;
