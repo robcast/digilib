@@ -228,6 +228,20 @@ if (typeof console === 'undefined') {
                 'buttonSets' : ['standardSet', 'specialSet']
                 }
         },
+        // arrow overlays for moving the zoomed area
+        'zoomArrows' : true,
+        // zoom arrow image info
+        'zoomArrowImg' : {
+             // path to arrow images (must end with a slash)
+            'imagePath' : 'img/',
+            // minimal width of the arrow bar (pixel)
+            'minwidth' : 6,
+            // image file names
+            'up' : 'up.png',
+            'down' : 'down.png',
+            'left' : 'left.png',
+            'right' : 'right.png'
+            },
         // number of visible button groups
         'visibleButtonSets' : 1,
         // is the "about" window shown?
@@ -239,7 +253,7 @@ if (typeof console === 'undefined') {
         'maxBgSize' : 10000,
         // parameters used by background image
         'bgImgParams' : ['fn','pn','dw','dh','mo','rot'],
-        // space to be left free in full page display, default value is for scrollbar
+        // reserved space in full page display (default value accounts for vertical scrollbar)
         'scalerInset' : 10
         };
 
@@ -311,11 +325,14 @@ if (typeof console === 'undefined') {
                             }
                         }
                     }
-                    // store $(this) element in data, needs a deep copy
+                    // setup $elem.data, needs "deep copy" because of nesting
                     elemSettings = $.extend(true, {}, settings, params);
                     data = {
+                            // let $(this) know about $(this) :-)
                             $elem : $elem,
+                            // let $elem have its own copy of settings
                             settings : elemSettings,
+                            // and of the URL query parameters
                             queryParams : params,
                             // TODO: move plugins reference out of data
                             plugins : plugins
@@ -369,6 +386,8 @@ if (typeof console === 'undefined') {
                 highlightButtons(data);
                 // about window creation - TODO: could be deferred? restrict to only one item?
                 setupAboutDiv(data);
+                // arrow overlays for moving zoomed detail
+                setupZoomArrows(data);
                 // send setup event
                 $(data).trigger('setup');
             });
@@ -1050,6 +1069,15 @@ if (typeof console === 'undefined') {
             data.$buttonSets[buttonSetIdx] = $buttonsDiv;
         }
         return $buttonsDiv;
+    };
+
+    // creates arrow overlays for moving the zoomed area
+    var setupZoomArrows = function (data) {
+        var $elem = data.$elem;
+        var settings = data.settings;
+        var show = settings.zoomArrows;
+        console.log('zoom arrows:', show);
+        if (!show) return;
     };
 
     // creates HTML structure for the about view in elem
