@@ -36,6 +36,7 @@ import java.awt.image.Kernel;
 import java.awt.image.LookupOp;
 import java.awt.image.LookupTable;
 import java.awt.image.RescaleOp;
+import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
@@ -397,7 +398,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		logger.debug("scaling...");
 		img = scaleOp.filter(img, null);
 		logger.debug("SCALE: " + scale + " ->" + img.getWidth() + "x"
-				+ img.getHeight() + " type=" + img.getType());
+				+ img.getHeight() + " type=" + img);
 	}
 
 	public void blur(int radius) throws ImageOpException {
@@ -406,6 +407,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		int klen = Math.max(radius, 2);
 		Kernel blur = null;
 		if (klen < convolutionKernels.length) {
+		    // use precalculated Kernel
             blur = convolutionKernels[klen];
 		} else {
             // calculate our own kernel
@@ -421,13 +423,15 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		// blur with convolve operation
 		ConvolveOp blurOp = new ConvolveOp(blur, ConvolveOp.EDGE_NO_OP,
 				renderHint);
-		/* blur needs explicit destination image type for color *Java2D BUG*
+		/* blur needs explicit destination image type for color *Java2D BUG* */
+		BufferedImage dest = null;
 		if (img.getType() == BufferedImage.TYPE_3BYTE_BGR) {
-			logger.debug("blur: fixing destination image type");
-			blurredImg = new BufferedImage(img.getWidth(), img.getHeight(), img
+			logger.debug("blur: fixing destination image type for "+img);
+			dest = new BufferedImage(img.getWidth(), img.getHeight(), img
 					.getType());
-		} */
-		img = blurOp.filter(img, null);
+		}
+		img = blurOp.filter(img, dest);
+		logger.debug("blurred: "+img);
 	}
 
 	public void crop(int x_off, int y_off, int width, int height)
@@ -471,7 +475,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		 */
 		int ncol = img.getColorModel().getNumColorComponents();
 		if ((ncol != 3) || (rgbm.length != 3) || (rgba.length != 3)) {
-			logger.debug("ERROR(enhance): unknown number of color bands or coefficients ("
+			logger.error("enhanceRGB: unknown number of color bands or coefficients ("
 							+ ncol + ")");
 			return;
 		}
@@ -557,7 +561,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             float[][] combineFn = new float[1][4];
             combineFn[0] = rgbOrdered(new float[] { 0.299f, 0.114f, 0.587f, 0f });
             BandCombineOp op = new BandCombineOp(combineFn, renderHint);
-            // unfortunately BandCombineOp only works on Rasters so we create a
+            // BandCombineOp only works on Rasters so we create a
             // new image and use its Raster
             BufferedImage dest = new BufferedImage(img.getWidth(),
                     img.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
@@ -568,7 +572,6 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
              * invert colors i.e. invert every channel
              */
             logger.debug("Color op: inverting");
-            // TODO: is this enough for all image types?
             LookupTable invtbl = null;
             ColorModel cm = img.getColorModel();
             if (needsInvertRgba && cm.hasAlpha()) {
@@ -624,7 +627,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		trafo.preConcatenate(AffineTransform.getTranslateInstance(-xoff, -yoff));
 		// transform image
 		rotOp = new AffineTransformOp(trafo, renderHint);
-		rotOp.filter(img, img);
+		img = rotOp.filter(img, null);
 		// calculate new bounding box
 		// Rectangle2D bounds = rotOp.getBounds2D(img);
 		// crop new image (with self-made rounding)
@@ -659,7 +662,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		}
 		AffineTransformOp mirOp = new AffineTransformOp(new AffineTransform(mx,
 				0, 0, my, tx, ty), renderHint);
-		mirOp.filter(img, img);
+		img = mirOp.filter(img, null);
 	}
 
 	public void dispose() {
