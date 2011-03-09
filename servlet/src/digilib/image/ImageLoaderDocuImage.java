@@ -32,11 +32,11 @@ import java.awt.image.ByteLookupTable;
 import java.awt.image.ColorConvertOp;
 import java.awt.image.ColorModel;
 import java.awt.image.ConvolveOp;
+import java.awt.image.IndexColorModel;
 import java.awt.image.Kernel;
 import java.awt.image.LookupOp;
 import java.awt.image.LookupTable;
 import java.awt.image.RescaleOp;
-import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
@@ -86,6 +86,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     protected static LookupTable mapBgrByteTable;
     
 	static {
+	    /*
+	     * create static lookup tables
+	     */
 		byte[] invertByte = new byte[256];
 		byte[] orderedByte = new byte[256];
 		byte[] nullByte = new byte[256];
@@ -331,21 +334,16 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			if (mt == "image/jpeg") {
 				/*
 				 * JPEG doesn't do transparency so we have to convert any RGBA
-				 * image to RGB :-( *Java2D BUG*
+				 * image to RGB or we the client will think its CMYK :-( *Java2D BUG*
 				 */
 				if (img.getColorModel().hasAlpha()) {
 					logger.debug("BARF: JPEG with transparency!!");
-					int w = img.getWidth();
-					int h = img.getHeight();
-					// BufferedImage.TYPE_INT_RGB seems to be fastest (JDK1.4.1,
-					// OSX)
-					int destType = BufferedImage.TYPE_INT_RGB;
-					BufferedImage img2 = new BufferedImage(w, h, destType);
-					img2.createGraphics().drawImage(img, null, 0, 0);
-					img = img2;
+                    BufferedImage rgbImg = new BufferedImage(img.getWidth(),
+                            img.getHeight(), BufferedImage.TYPE_INT_RGB);
+					rgbImg.createGraphics().drawImage(img, null, 0, 0);
+					img = rgbImg;
 				}
-				writer = (ImageWriter) ImageIO.getImageWritersByFormatName(
-						"jpeg").next();
+				writer = ImageIO.getImageWritersByFormatName("jpeg").next();
 				if (writer == null) {
 					throw new ImageOpException("Unable to get JPEG writer");
 				}
@@ -353,25 +351,20 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 				if (quality > 1) {
 					// change JPEG compression quality
 					param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-					//logger.debug("JPEG qual before: "
-					//		+ Float.toString(param.getCompressionQuality()));
 					param.setCompressionQuality(0.9f);
-					//logger.debug("JPEG qual now: "
-					//		+ Float.toString(param.getCompressionQuality()));
 				}
 				writer.setOutput(imgout);
 				// render output
-				logger.debug("writing");
+				logger.debug("writing JPEG");
 				writer.write(null, new IIOImage(img, null, null), param);
 			} else if (mt == "image/png") {
 				// render output
-				writer = (ImageWriter) ImageIO.getImageWritersByFormatName(
-						"png").next();
+				writer = ImageIO.getImageWritersByFormatName("png").next();
 				if (writer == null) {
 					throw new ImageOpException("Unable to get PNG writer");
 				}
 				writer.setOutput(imgout);
-				logger.debug("writing");
+				logger.debug("writing PNG");
 				writer.write(img);
 			} else {
 				// unknown mime type
@@ -385,21 +378,20 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		// TODO: should we: finally { writer.dispose(); }
 	}
 
-	public void scale(double scale, double scaleY) throws ImageOpException {
-		logger.debug("scale: " + scale);
-		/* for downscaling in high quality the image is blurred first */
-		if ((scale <= 0.5) && (quality > 1)) {
-			int bl = (int) Math.floor(1 / scale);
-			blur(bl);
-		}
-		/* then scaled */
-		AffineTransformOp scaleOp = new AffineTransformOp(AffineTransform
-				.getScaleInstance(scale, scale), renderHint);
-		logger.debug("scaling...");
-		img = scaleOp.filter(img, null);
-		logger.debug("SCALE: " + scale + " ->" + img.getWidth() + "x"
-				+ img.getHeight() + " type=" + img);
-	}
+    public void scale(double scaleX, double scaleY) throws ImageOpException {
+        logger.debug("scale: " + scaleX);
+        /* for downscaling in high quality the image is blurred first */
+        if ((scaleX <= 0.5) && (quality > 1)) {
+            int bl = (int) Math.floor(1 / scaleX);
+            blur(bl);
+        }
+        /* then scaled */
+        AffineTransformOp scaleOp = new AffineTransformOp(
+                AffineTransform.getScaleInstance(scaleX, scaleY), renderHint);
+        img = scaleOp.filter(img, null);
+        logger.debug("scaled to " + img.getWidth() + "x" + img.getHeight()
+                + " img=" + img);
+    }
 
 	public void blur(int radius) throws ImageOpException {
 		logger.debug("blur: " + radius);
@@ -423,12 +415,11 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		// blur with convolve operation
 		ConvolveOp blurOp = new ConvolveOp(blur, ConvolveOp.EDGE_NO_OP,
 				renderHint);
-		/* blur needs explicit destination image type for color *Java2D BUG* */
 		BufferedImage dest = null;
+        // blur needs explicit destination image type for 3BYTE_BGR *Java2D BUG*
 		if (img.getType() == BufferedImage.TYPE_3BYTE_BGR) {
-			logger.debug("blur: fixing destination image type for "+img);
-			dest = new BufferedImage(img.getWidth(), img.getHeight(), img
-					.getType());
+		    logger.debug("blur: fixing destination image type");
+		    dest = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
 		}
 		img = blurOp.filter(img, dest);
 		logger.debug("blurred: "+img);
@@ -442,89 +433,109 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 				+ img.getHeight());
 	}
 
-	public void enhance(float mult, float add) throws ImageOpException {
-		RescaleOp op = null;
-		logger.debug("enhance: cm=" + img.getColorModel());
-		if (needsRescaleRgba) {
+	public void rotate(double angle) throws ImageOpException {
+        logger.debug("rotate: " + angle);
+		// setup rotation
+		double rangle = Math.toRadians(angle);
+		// center of rotation is center of image
+        double w = img.getWidth();
+        double h = img.getHeight();
+		double x = (w / 2);
+		double y = (h / 2);
+        AffineTransform trafo = AffineTransform.getRotateInstance(rangle, x, y);
+		AffineTransformOp rotOp = new AffineTransformOp(trafo, renderHint);
+        // rotate bounds to see how much of the image would be off screen
+		Rectangle2D rotbounds = rotOp.getBounds2D(img);
+		double xoff = rotbounds.getX();
+		double yoff = rotbounds.getY();
+		if (Math.abs(xoff) > epsilon || Math.abs(yoff) > epsilon) {
+		    // move image back on screen
+		    logger.debug("move rotation: xoff="+xoff+" yoff="+yoff);
+		    trafo.preConcatenate(AffineTransform.getTranslateInstance(-xoff, -yoff));
+	        rotOp = new AffineTransformOp(trafo, renderHint);
+		}
+		// transform image
+		img = rotOp.filter(img, null);
+		logger.debug("rotated: "+img);
+	}
+
+	public void mirror(double angle) throws ImageOpException {
+        logger.debug("mirror: " + angle);
+		// setup mirror
+		double mx = 1;
+		double my = 1;
+		double tx = 0;
+		double ty = 0;
+		if (Math.abs(angle - 0) < epsilon) { // 0 degree
+			mx = -1;
+			tx = img.getWidth();
+		} else if (Math.abs(angle - 90) < epsilon) { // 90 degree
+			my = -1;
+			ty = img.getHeight();
+		} else if (Math.abs(angle - 180) < epsilon) { // 180 degree
+			mx = -1;
+			tx = img.getWidth();
+		} else if (Math.abs(angle - 270) < epsilon) { // 270 degree
+			my = -1;
+			ty = img.getHeight();
+		} else if (Math.abs(angle - 360) < epsilon) { // 360 degree
+			mx = -1;
+			tx = img.getWidth();
+		} else {
+		    logger.error("invalid mirror angle "+angle);
+		    return;
+		}
+		AffineTransformOp mirOp = new AffineTransformOp(new AffineTransform(mx,
+				0, 0, my, tx, ty), renderHint);
+		img = mirOp.filter(img, null);
+	}
+
+    public void enhance(float mult, float add) throws ImageOpException {
+        RescaleOp op = null;
+        logger.debug("enhance: img=" + img);
+        if (needsRescaleRgba) {
             /*
              * Only one constant should work regardless of the number of bands
              * according to the JDK spec. Doesn't work on JDK 1.4 for OSX and
              * Linux (at least).
              * 
-			 * The number of constants must match the number of bands in the
-			 * image.
-			 */
-			int ncol = img.getColorModel().getNumComponents();
-			float[] dm = new float[ncol];
-			float[] da = new float[ncol];
-			for (int i = 0; i < ncol; i++) {
-				dm[i] = (float) mult;
-				da[i] = (float) add;
-			}
-			op = new RescaleOp(dm, da, null);
-		} else {
-			op = new RescaleOp(mult, add, renderHint);
-		}
-		op.filter(img, img);
-	}
+             * The number of constants must match the number of bands in the
+             * image.
+             */
+            int ncol = img.getColorModel().getNumComponents();
+            float[] dm = new float[ncol];
+            float[] da = new float[ncol];
+            for (int i = 0; i < ncol; i++) {
+                dm[i] = (float) mult;
+                da[i] = (float) add;
+            }
+            op = new RescaleOp(dm, da, null);
+        } else {
+            op = new RescaleOp(mult, add, renderHint);
+        }
+        op.filter(img, img);
+    }
 
-	public void enhanceRGB(float[] rgbm, float[] rgba) throws ImageOpException {
-		/*
-		 * The number of constants must match the number of bands in the image.
-		 * We do only 3 (RGB) bands.
-		 */
-		int ncol = img.getColorModel().getNumColorComponents();
-		if ((ncol != 3) || (rgbm.length != 3) || (rgba.length != 3)) {
-			logger.error("enhanceRGB: unknown number of color bands or coefficients ("
-							+ ncol + ")");
-			return;
-		}
-		RescaleOp scaleOp = new RescaleOp(rgbOrdered(rgbm), rgbOrdered(rgba),
-				null);
-		scaleOp.filter(img, img);
-	}
-
-	/**
-	 * Ensures that the array f is in the right order to map the images RGB
-	 * components. (not sure what happens otherwise)
-	 */
-	public float[] rgbOrdered(float[] fa) {
-		/*
-		 * TODO: this is UGLY, UGLY!!
-		 */
-		float[] fb;
-		int t = img.getType();
-		if (img.getColorModel().hasAlpha()) {
-			fb = new float[4];
-			if ((t == BufferedImage.TYPE_INT_ARGB)
-					|| (t == BufferedImage.TYPE_INT_ARGB_PRE)) {
-				// RGB Type
-				fb[0] = fa[0];
-				fb[1] = fa[1];
-				fb[2] = fa[2];
-				fb[3] = 1f;
-			} else {
-				// this isn't tested :-(
-				fb[0] = 1f;
-				fb[1] = fa[0];
-				fb[2] = fa[1];
-				fb[3] = fa[2];
-			}
-		} else {
-			fb = new float[3];
-			if (t == BufferedImage.TYPE_3BYTE_BGR) {
-				// BGR Type (actually it looks like RBG...)
-				fb[0] = fa[0];
-				fb[1] = fa[2];
-				fb[2] = fa[1];
-			} else {
-				fb[0] = fa[0];
-				fb[1] = fa[1];
-				fb[2] = fa[2];
-			}
-		}
-		return fb;
-	}
+    public void enhanceRGB(float[] rgbm, float[] rgba) throws ImageOpException {
+        logger.debug("enhanceRGB: rgbm="+rgbm+" rgba="+rgba);
+        /*
+         * The number of constants must match the number of bands in the image.
+         * We do only 3 (RGB) bands.
+         */
+        int ncol = img.getColorModel().getNumColorComponents();
+        if ((ncol != 3) || (rgbm.length != 3) || (rgba.length != 3)) {
+            logger.error("enhanceRGB: unknown number of color bands or coefficients ("
+                            + ncol + ")");
+            return;
+        }
+        if (img.getColorModel().hasAlpha()) {
+            // add constant for alpha
+            rgbm = new float[] {rgbm[0], rgbm[1], rgbm[2], 1};
+            rgba = new float[] {rgba[0], rgba[1], rgba[2], 0};
+        }
+        RescaleOp scaleOp = new RescaleOp(rgbm, rgba, renderHint);
+        scaleOp.filter(img, img);
+    }
 
     /*
      * (non-Javadoc)
@@ -539,8 +550,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
              */
             logger.debug("Color op: grayscaling");
             ColorModel cm = img.getColorModel();
-            if (cm.getNumColorComponents() == 1) {
+            if (cm.getNumColorComponents() < 3) {
                 // grayscale already
+                logger.debug("Color op: not grayscaling");
                 return;
             }
             ColorConvertOp op = new ColorConvertOp(
@@ -553,13 +565,15 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
              * 0.5870*green + 0.1140*blue
              */
             logger.debug("Color op: NTSC gray");
+            logger.debug("img="+img);
             ColorModel cm = img.getColorModel();
-            if (cm.getNumColorComponents() == 1) {
-                // grayscale already
+            if (cm.getNumColorComponents() < 3 || cm instanceof IndexColorModel) {
+                // grayscale already or not possible
+                logger.debug("Color op: unable to NTSC gray");
                 return;
             }
             float[][] combineFn = new float[1][4];
-            combineFn[0] = rgbOrdered(new float[] { 0.299f, 0.114f, 0.587f, 0f });
+            combineFn[0] = new float[] { 0.299f, 0.587f, 0.114f, 0f };
             BandCombineOp op = new BandCombineOp(combineFn, renderHint);
             // BandCombineOp only works on Rasters so we create a
             // new image and use its Raster
@@ -574,11 +588,14 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             logger.debug("Color op: inverting");
             LookupTable invtbl = null;
             ColorModel cm = img.getColorModel();
+            if (cm instanceof IndexColorModel) {
+                // invert not possible
+                // TODO: should we convert?
+                logger.debug("Color op: unable to invert");
+                return;
+            }
             if (needsInvertRgba && cm.hasAlpha()) {
-                /*
-                 * should work with one array for all channels, but JDK 1.6 in
-                 * Linux (at least) is broken :-(
-                 */
+                // fix for some cases
                 invtbl = invertRgbaByteTable;
             } else {
                 invtbl = invertSingleByteTable;
@@ -594,9 +611,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             // convert to grayscale
             ColorConvertOp grayOp = new ColorConvertOp(
                     ColorSpace.getInstance(ColorSpace.CS_GRAY), renderHint);
-            // create new 3-byte image
+            // create new 3-channel image
             BufferedImage dest = new BufferedImage(img.getWidth(),
-                    img.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+                    img.getHeight(), BufferedImage.TYPE_INT_RGB);
             img = grayOp.filter(img, dest);
             logger.debug("map_gray: image=" + img);
             // convert to false color
@@ -605,65 +622,6 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             logger.debug("mapped image=" + img);
         }
     }
-
-	public void rotate(double angle) throws ImageOpException {
-		// setup rotation
-		double rangle = Math.toRadians(angle);
-		// create offset to make shure the rotated image has no negative
-		// coordinates
-		double w = img.getWidth();
-		double h = img.getHeight();
-		AffineTransform trafo = new AffineTransform();
-		// center of rotation
-		double x = (w / 2);
-		double y = (h / 2);
-		trafo.rotate(rangle, x, y);
-		// try rotation to see how far we're out of bounds
-		AffineTransformOp rotOp = new AffineTransformOp(trafo, renderHint);
-		Rectangle2D rotbounds = rotOp.getBounds2D(img);
-		double xoff = rotbounds.getX();
-		double yoff = rotbounds.getY();
-		// move image back in line
-		trafo.preConcatenate(AffineTransform.getTranslateInstance(-xoff, -yoff));
-		// transform image
-		rotOp = new AffineTransformOp(trafo, renderHint);
-		img = rotOp.filter(img, null);
-		// calculate new bounding box
-		// Rectangle2D bounds = rotOp.getBounds2D(img);
-		// crop new image (with self-made rounding)
-		/*
-		 * img = rotImg.getSubimage( (int) (bounds.getX()+0.5), (int)
-		 * (bounds.getY()+0.5), (int) (bounds.getWidth()+0.5), (int)
-		 * (bounds.getHeight()+0.5));
-		 */
-	}
-
-	public void mirror(double angle) throws ImageOpException {
-		// setup mirror
-		double mx = 1;
-		double my = 1;
-		double tx = 0;
-		double ty = 0;
-		if (Math.abs(angle - 0) < epsilon) { // 0 degree
-			mx = -1;
-			tx = getWidth();
-		} else if (Math.abs(angle - 90) < epsilon) { // 90 degree
-			my = -1;
-			ty = getHeight();
-		} else if (Math.abs(angle - 180) < epsilon) { // 180 degree
-			mx = -1;
-			tx = getWidth();
-		} else if (Math.abs(angle - 270) < epsilon) { // 270 degree
-			my = -1;
-			ty = getHeight();
-		} else if (Math.abs(angle - 360) < epsilon) { // 360 degree
-			mx = -1;
-			tx = getWidth();
-		}
-		AffineTransformOp mirOp = new AffineTransformOp(new AffineTransform(mx,
-				0, 0, my, tx, ty), renderHint);
-		img = mirOp.filter(img, null);
-	}
 
 	public void dispose() {
 	    // is this necessary?

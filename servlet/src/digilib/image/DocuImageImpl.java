@@ -53,7 +53,7 @@ public abstract class DocuImageImpl implements DocuImage {
 	protected int quality = 0;
 	
 	/** epsilon for float comparisons. */
-	public final double epsilon = 1e-5;
+	public static final double epsilon = 1e-5;
 
 	/** image size */
     protected ImageSize imgSize = null;
