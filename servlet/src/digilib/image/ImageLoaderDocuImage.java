@@ -82,8 +82,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     protected static boolean needsInvertRgba = false;
 	/* RescaleOp for contrast/brightness operation */
     protected static boolean needsRescaleRgba = false;
-    /* lookup tables for false-color */
+    /* lookup table for false-color */
     protected static LookupTable mapBgrByteTable;
+    protected static boolean needsMapBgr = false;
     
 	static {
 	    /*
@@ -129,11 +130,12 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 					invertByte, invertByte, orderedByte, invertByte});
 			needsInvertRgba = true;
 			needsRescaleRgba = true;
+			needsMapBgr = true;
 		} else {
 			invertRgbaByteTable = invertSingleByteTable;
 		}
 		// this hopefully works for all
-		mapBgrByteTable = new ByteLookupTable(0, new byte[][] {
+        mapBgrByteTable = new ByteLookupTable(0, new byte[][] {
                 mapR, mapG, mapB});
 	}
 	
@@ -313,6 +315,13 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			logger.debug("loading..");
 			img = reader.read(0, readParam);
 			logger.debug("loaded");
+			/* downconversion of highcolor images seems not to work
+	        if (img.getColorModel().getComponentSize(0) > 8) {
+	            logger.debug("converting to 8bit");
+	            BufferedImage dest = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+	            dest.createGraphics().drawImage(img, null, 0, 0);
+	            img = dest;
+	        } */
 		} catch (IOException e) {
 			throw new FileOpException("Unable to load File!");
 		} finally {
@@ -601,7 +610,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
                 invtbl = invertSingleByteTable;
             }
             LookupOp op = new LookupOp(invtbl, renderHint);
-            logger.debug("colop: image=" + img + " colormodel=" + cm);
+            logger.debug("colop: image=" + img);
             op.filter(img, img);
         } else if (colop == ColorOp.MAP_GRAY_BGR) {
             /*
@@ -612,8 +621,13 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             ColorConvertOp grayOp = new ColorConvertOp(
                     ColorSpace.getInstance(ColorSpace.CS_GRAY), renderHint);
             // create new 3-channel image
+            int destType = BufferedImage.TYPE_INT_RGB;
+            if (needsMapBgr) {
+                // special case for broken Java2Ds
+                destType = BufferedImage.TYPE_3BYTE_BGR;
+            }
             BufferedImage dest = new BufferedImage(img.getWidth(),
-                    img.getHeight(), BufferedImage.TYPE_INT_RGB);
+                    img.getHeight(), destType);
             img = grayOp.filter(img, dest);
             logger.debug("map_gray: image=" + img);
             // convert to false color
