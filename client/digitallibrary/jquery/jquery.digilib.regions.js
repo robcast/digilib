@@ -3,11 +3,7 @@
 markup a digilib image with rectangular regions
 
 TODO:
-- store region in params/cookie, regarding zoom, mirror, rotation (like marks)
-- set regions programmatically
-- read regions from params/cookie and display
-- backlink mechanism
-- don't write to data.settings?
+    how to display regions correctly in embedded mode?
 */
 
 (function($) {
@@ -41,7 +37,7 @@ TODO:
             icon : "regions.png"
             },
         regionhtml : {
-            onclick : "showRegionHTML",
+            onclick : "showRegionInfo",
             tooltip : "show information about regions",
             icon : "regioninfo.png"
             }
@@ -53,9 +49,9 @@ TODO:
         // are region numbers shown?
         'showRegionNumbers' : false,
         // is window with region HTML shown?
-        'showRegionHTML' : false,
-        // should digilib look for region content in the page?
-        'includeRegionContent' : false,
+        'showRegionInfo' : false,
+        // is there region content in the page?
+        'hasRegionContent' : false,
         // turn any region into a clickable link to its detail view
         'autoRegionLinks' : false,
         // class name for content divs (must additionally be marked with class "keep")
@@ -63,7 +59,7 @@ TODO:
         // buttonset of this plugin
         'regionSet' : ['regions', 'addregion', 'delregion', 'regionhtml', 'lessoptions'],
         // url param for regions
-        'rg' : null,
+        'rg' : null
         };
 
     var actions = { 
@@ -152,32 +148,27 @@ TODO:
             var show = !data.settings.isRegionVisible;
             data.settings.isRegionVisible = show;
             fn.highlightButtons(data, 'regions', show);
-            showRegionDivs(data, 1);
+            renderRegions(data, 1);
         },
 
         // show/hide region HTML code 
-        "showRegionHTML" : function (data) {
-            var show = !data.settings.showRegionHTML;
-            data.settings.showRegionHTML = show;
+        "showRegionInfo" : function (data) {
+            var show = !data.settings.showRegionInfo;
+            data.settings.showRegionInfo = show;
             fn.highlightButtons(data, 'regionhtml', show);
             var $html = data.$htmlDiv;
             if (!show) {
+                // empty the div
                 $html.fadeOut(function () { 
                     $html.contents().remove();
                     });
                 return;
             }
-            // empty the div for HTML display
-            $html.append($('<div/>').text('<div class="keep regioncontent">'));
-            $.each(data.regions, function(index, region) {
-                    var area = "area:"
-                    + region.x + "/" + region.y + "/"
-                    + region.width + "/" + region.height;
-                $html.append($('<div/>').text('<a href="" rel="' + area + '">'));
-                $html.append($('<div/>').text('</a>'));
-                });
-            $html.append($('<div/>').text('</div>'));
-            $html.fadeIn();
+            regionInfo(data);
+        },
+
+        "redraw" : function (data) {
+            renderRegions(data);
         }
     };
 
@@ -191,46 +182,110 @@ TODO:
         console.debug("regions", data.regions, "regionRect", regionRect);
     };
 
+    // clickable header
+    var regionInfoHeader = function (data) {
+        var $infoDiv = $('<div class="infoheader"/>');
+        var $h01 = $('<div class="infobutton">HTML</div>'); 
+        var $h02 = $('<div class="infobutton">SVG</div>'); 
+        var $h03 = $('<div class="infobutton">Digilib</div>'); 
+        var $h04 = $('<div class="infobutton">X</div>');
+        var bind = function($div, name) {
+            $div.bind('click.regioninfo', function () {
+                var $top = $(this).parent().parent();
+                $top.find('.info').hide();
+                $top.find('.' + name).show();
+                });
+            };
+        bind($h01, 'html');
+        bind($h02, 'svgattr');
+        bind($h03, 'digilib');
+        var $html = data.$htmlDiv;
+        $h04.bind('click.regioninfo', function () {
+            data.settings.showRegionInfo = false;
+            fn.highlightButtons(data, 'regionhtml', false);
+            $html.fadeOut(function () { 
+                $html.contents().remove();
+                });
+            });
+        $infoDiv.append($h01, $h02, $h03, $h04);
+        return $infoDiv;
+    };
+
+    // html for later insertion
+    var regionInfoHTML = function (data) {
+        var $infoDiv = $('<div class="info html"/>');
+        $infoDiv.append($('<div/>').text('<div class="keep regioncontent">'));
+        $.each(data.regions, function(index, r) {
+            var area = [r.x, r.y, r.width, r.height].join(',');
+            $infoDiv.append($('<div/>').text('<a coords="' + area + '" >'));
+            });
+        $infoDiv.append($('<div/>').text('</div>'));
+        return $infoDiv;
+    };
+
+    // SVG-style
+    var regionInfoSVG = function (data) {
+        var $infoDiv = $('<div class="info svgattr"/>');
+        $.each(data.regions, function(index, r) {
+            var area = r.getAsSvg();
+            $infoDiv.append($('<div/>').text('"' + area + '"'));
+            });
+        return $infoDiv;
+    };
+
+    // digilib-style
+    var regionInfoDigilib = function (data) {
+        var $infoDiv = $('<div class="info digilib"/>');
+        $.each(data.regions, function(index, r) {
+            var area = r.toString();
+            $infoDiv.append($('<div/>').text(area));
+            });
+        return $infoDiv;
+    };
+
+    // show region info in a window
+    var regionInfo = function (data) {
+        var $html = data.$htmlDiv;
+        $html.append(regionInfoHeader(data))
+        $html.append(regionInfoHTML(data));
+        $html.append(regionInfoSVG(data));
+        $html.append(regionInfoDigilib(data));
+        $html.fadeIn();
+    };
+
     // add a region to data.$elem
-    var addRegionDiv = function (data, index) {
+    var addRegionDiv = function (data, index, url) {
         var nr = index + 1; // we count regions from 1
         // create a digilib URL for this detail
-        var regionUrl = getRegionUrl(data, index);
+        url = url || getRegionUrl(data, index);
         var $regionDiv = $('<div class="region overlay" style="display:none"/>');
         $regionDiv.attr("id", ID_PREFIX + nr);
         data.$elem.append($regionDiv);
         if (data.settings.showRegionNumbers) {
-            var $regionNr = $('<div class="regionnumber"/>');
-            var $regionLink = $('<a/>');
-            $regionLink.attr('href', regionUrl);
+            var $regionLink = $('<a class="regionnumber"/>');
+            $regionLink.attr('href', url);
             $regionLink.text(nr);
-            $regionNr.append($regionLink);
-            $regionDiv.append($regionNr);
+            $regionDiv.append($regionLink);
         }
         if (data.settings.autoRegionLinks) {
             $regionDiv.bind('click.dlRegion', function() {
-                 window.location = regionUrl;
-            })
+                 window.location = url;
+            });
         }
         return $regionDiv;
     };
 
-    // add region content
-    var addRegionContent = function (region, $elem) {
-        var $regionDiv = region.$div;
-        $regionDiv.append($elem);
-    }
-
-    // create a region div from the data.regions collection
-    var createRegionDiv = function (regions, index) {
+    // create a region div from the data.regions array
+    var createRegionDiv = function (regions, index, url) {
+        var $regionDiv = addRegionDiv(data, index, url);
         var region = regions[index];
-        var $regionDiv = addRegionDiv(data, index);
         region.$div = $regionDiv;
         return $regionDiv;
     };
 
-    // create regions 
-    var createRegionDivs = function (data) {
+    // create regions from URL parameters
+    var createRegionsFromURL = function (data) {
+        unpackRegions(data);
         var regions = data.regions;
         $.each(regions, function(i) {
             createRegionDiv(regions, i);
@@ -241,33 +296,35 @@ TODO:
     var createRegionsFromHTML = function (data) {
         var regions = data.regions;
         var selector = data.settings.regionContentSelector;
+        // regions are defined in "a" tags
         var $content = data.$elem.contents(selector).contents('a');
-        console.debug("createRegionsFromHTML", $content);
+        console.debug("createRegionsFromHTML. elems: ", $content);
         $content.each(function(index, a) {
             var $a = $(a); 
-            var href = $a.attr('href');
-            var rel = $a.attr('rel');
-            var area = rel.replace(/^area:/i, '');
-            var pos = area.split("/", 4);
+            // the "coords" attribute contains the region coords (0..1)
+            var coords = $a.attr('coords');
+            var pos = coords.split(",", 4);
             var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
             regions.push(rect);
-            var $regionDiv = createRegionDiv(regions, index);
-            $regionDiv.append($a.clone());
-            // $a.show();
+            // create the div
+            var href = $a.attr('href');
+            var $regionDiv = createRegionDiv(regions, index, href);
+            var $contents = $a.contents().clone();
+            $regionDiv.append($contents);
         });
     };
 
     // show a region on top of the scaler image 
-    var showRegionDiv = function (data, index, anim) {
+    var renderRegion = function (data, index, anim) {
         if (!data.imgTrafo) return;
         var $elem = data.$elem;
         var regions = data.regions;
         if (index > regions.length) return;
-        var region = regions[index]
+        var region = regions[index];
         var $regionDiv = region.$div;
         if (!$regionDiv) {
-            console.debug("showRegionDiv: region has no $div", region);
-            // alert("showRegionDiv: region has no $div to show");
+            console.debug("renderRegion: region has no $div", region);
+            // alert("renderRegion: region has no $div to show");
             return;
         }
         var regionRect = region.copy();
@@ -275,12 +332,14 @@ TODO:
         if (show && data.zoomArea.overlapsRect(regionRect)) {
             regionRect.clipTo(data.zoomArea);
             var screenRect = data.imgTrafo.transform(regionRect);
-            screenRect.adjustDiv($regionDiv);
+            console.debug("renderRegion: pos=",geom.position(screenRect));
             if (anim) {
                 $regionDiv.fadeIn();
             } else{
                 $regionDiv.show();
             }
+            // for some reason adjustDiv sets wrong coords when called BEFORE show()?
+            screenRect.adjustDiv($regionDiv);
         } else {
             if (anim) {
                 $regionDiv.fadeOut();
@@ -291,9 +350,9 @@ TODO:
     };
 
     // show regions 
-    var showRegionDivs = function (data, anim) {
+    var renderRegions = function (data, anim) {
         for (var i = 0; i < data.regions.length ; i++) {
-            showRegionDiv(data, i, anim);
+            renderRegion(data, i, anim);
         }
     };
 
@@ -302,10 +361,10 @@ TODO:
         var rg = data.settings.rg;
         if (rg == null) return;
         var regions = data.regions;
-        var rs = rg.split(",");
+        var rs = rg.split(";");
         for (var i = 0; i < rs.length; i++) {
             var r = rs[i];
-            var pos = r.split("/", 4);
+            var pos = r.split(",", 4);
             var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
             regions.push(rect);
             }
@@ -322,21 +381,21 @@ TODO:
         for (var i = 0; i < regions.length; i++) {
             region = regions[i];
             if (i) {
-                rg += ',';
+                rg += ';';
             }
             rg += [
                 fn.cropFloatStr(region.x), 
                 fn.cropFloatStr(region.y),
                 fn.cropFloatStr(region.width),
                 fn.cropFloatStr(region.height)
-                ].join('/');
+                ].join(',');
         }
         data.settings.rg = rg;
     };
 
     // reload display after a region has been added or removed
     var redisplay = function (data) {
-        if (!data.settings.includeRegionContent) {
+        if (!data.settings.hasRegionContent) {
             packRegions(data);
         }
         fn.redisplay(data);
@@ -364,30 +423,30 @@ TODO:
         data = this;
         console.debug("regions: handleSetup", data.settings.rg);
         // regions with content are given in HTML divs
-        if (data.settings.includeRegionContent) {
+        if (data.settings.hasRegionContent) {
             createRegionsFromHTML(data);
         // regions are defined in the URL
         } else {
-            unpackRegions(data);
-            createRegionDivs(data);
-            fn.highlightButtons(data, 'regionhtml', data.settings.showRegionHTML);
+            createRegionsFromURL(data);
+            fn.highlightButtons(data, 'regionhtml', data.settings.showRegionInfo);
         }
     };
 
-    // event handler, sets buttons and shows regions
+    // event handler, sets buttons and shows regions when scaler img is reloaded
     var handleUpdate = function (evt) {
         data = this;
-        fn.highlightButtons(data, 'regions' , data.settings.isRegionVisible);
-        fn.highlightButtons(data, 'regionhtml' , data.settings.showRegionHTML);
-        showRegionDivs(data);
-        console.debug("regions: handleUpdate", data.settings.rg);
+        console.debug("regions: handleUpdate");
+        var settings = data.settings;
+        fn.highlightButtons(data, 'regions' , settings.isRegionVisible);
+        fn.highlightButtons(data, 'regionhtml' , settings.showRegionInfo);
+        renderRegions(data);
     };
 
     // event handler, redisplays regions (e.g. in a new position)
     var handleRedisplay = function (evt) {
         data = this;
-        showRegionDivs(data);
         console.debug("regions: handleRedisplay");
+        // renderRegions(data);
     };
 
     // event handler
@@ -420,27 +479,30 @@ TODO:
         var $html = $('<div class="keep regionHTML"/>');
         $elem.append($html);
         data.$htmlDiv = $html;
-        // no URL-defined regions, no buttons when regions are predefined in HTML
-        var hasRegionContent = data.settings.includeRegionContent;
-        if (!hasRegionContent) {
-            // add "rg" to digilibParamNames
-            data.settings.digilibParamNames.push('rg');
-            // additional buttons
-            var buttonSettings = data.settings.buttonSettings.fullscreen;
-            // configure buttons through digilib "regionSet" option
-            var buttonSet = data.settings.regionSet || regionSet; 
-            // set regionSet to [] or '' for no buttons (when showing regions only)
-            if (buttonSet.length && buttonSet.length > 0) {
-                buttonSettings['regionSet'] = buttonSet;
-                buttonSettings.buttonSets.push('regionSet');
-            }
-        }
         // install event handler
         var $data = $(data);
         $data.bind('setup', handleSetup);
         $data.bind('update', handleUpdate);
         $data.bind('redisplay', handleRedisplay);
         $data.bind('dragZoom', handleDragZoom);
+        var settings = data.settings;
+        var selector = data.settings.regionContentSelector;
+        settings.hasRegionContent = $elem.has(selector).length > 0;
+        // neither URL-defined regions nor buttons when regions are predefined in HTML
+        if (!settings.hasRegionContent) {
+            var mode = settings.interactionMode;
+            // add "rg" to digilibParamNames
+            settings.digilibParamNames.push('rg');
+            // additional buttons
+            var buttonSettings = settings.buttonSettings[mode];
+            // configure buttons through digilib "regionSet" option
+            var buttonSet = settings.regionSet || regionSet; 
+            // set regionSet to [] or '' for no buttons (when showing regions only)
+            if (buttonSet.length && buttonSet.length > 0) {
+                buttonSettings.regionSet = buttonSet;
+                buttonSettings.buttonSets.push('regionSet');
+            }
+        }
     };
 
     // plugin object with name and install/init methods

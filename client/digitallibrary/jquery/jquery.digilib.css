@@ -66,14 +66,22 @@ div.digilib div.region:hover {
 	opacity: 0.5;
 }
 
-div.region a {
+div.region {
+    color: white;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 11px;
+}
+
+div.region a.regionnumber {
     color: white;
     text-decoration: none;
-    font-size: 11px;
 	font-weight: bold;
-	height: 15px;
-	width: 16px;
-	margin: 3px;
+	font-size: 11px;
+	text-align: center;
+    padding: 0px 2px;
+    margin-right: 4px;
+    border: 1px solid white;
+    display: inline-block;
 }
 
 div.regioncontent {
@@ -84,7 +92,6 @@ div.regionHTML {
     display: none;
     position: absolute;
 	top: 100px;
-	left: 250px;
 	padding: 10px;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-size: 12px;
@@ -98,6 +105,36 @@ div.regionHTML a {
     text-decoration: none;
     font-size: 11px;
 	font-weight: bold;
+}
+
+div.infobutton {
+    background-color: white;
+    color: grey;
+    padding: 0px 4px;
+    margin: 0px 2px;
+    float: left;
+}
+
+div.info {
+    clear: both;
+    display: none;
+    margin: 10px;
+}
+
+div.infoheader {
+    width: 300px;
+    margin-bottom: 20px;
+}
+
+div.arrow {
+    position: absolute;
+    text-align: center;
+    background-color: black;
+    opacity: 0.08;
+}
+
+div.arrow:hover {
+    opacity: 0.5;
 }
 
 /* special definitions for fullscreen */
@@ -135,16 +172,16 @@ div.digilib.dl_embedded div.buttons {
 	top: 0px;
 	padding: 1px;
 	background-color: grey;
-	opacity: 0.4;
+	opacity: 0.5;
 	z-index: 100;
 }
 
 div.digilib.dl_embedded div.button:hover {
-	background-color: darkred;
+	background-color: black;
 }
 
 div.digilib.dl_embedded div.button-on {
-	background-color: black;
+	background-color: darkgreen;
 }
 
 div.digilib.dl_embedded div.birdview {

@@ -262,24 +262,25 @@
         };
         // returns the intersection of rectangle "rect" and this one
         that.intersect = function(rect) {
-            var res = rect.clipTo(this);
-            if (res.width < 0 || res.height < 0) res = null;
-            return res;
+            var r = rect.copy();
+            var result = r.clipTo(this);
+            if (result.width < 0 || result.height < 0) result = null;
+            return result;
         };
 
         // returns a copy of rectangle "rect" that fits into this one
         // (moving it first)
         that.fit = function(rect) {
-            var sec = rect.copy();
-            sec.x = Math.max(sec.x, this.x);
-            sec.y = Math.max(sec.y, this.x);
-            if (sec.x + sec.width > this.x + this.width) {
-                sec.x = this.x + this.width - sec.width;
+            var r = rect.copy();
+            r.x = Math.max(r.x, this.x);
+            r.y = Math.max(r.y, this.x);
+            if (r.x + r.width > this.x + this.width) {
+                r.x = this.x + this.width - r.width;
             }
-            if (sec.y + sec.height > this.y + this.height) {
-                sec.y = this.y + this.height - sec.height;
+            if (r.y + r.height > this.y + this.height) {
+                r.y = this.y + this.height - r.height;
             }
-            return sec.intersect(this);
+            return r.intersect(this);
         };
         // adjusts position and size of jQuery element "$elem" to this rectangle
         that.adjustDiv = function($elem) {
