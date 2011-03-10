@@ -31,13 +31,16 @@ public class Scaler extends HttpServlet {
     private static final long serialVersionUID = 5289386646192471549L;
 
     /** digilib servlet version (for all components) */
-    public static final String version = "1.9.1a24";
+    public static final String version = "1.9.1a26";
 
     /** servlet error codes */
     public static enum Error {UNKNOWN, AUTH, FILE, IMAGE};
     
     /** type of error message */
     public static enum ErrMsg {IMAGE, TEXT, CODE};
+    
+    /** default error message type */
+    public static ErrMsg defaultErrMsgType = ErrMsg.IMAGE;
     
     /** logger for accounting requests */
     protected static Logger accountlog = Logger.getLogger("account.request");
@@ -118,6 +121,11 @@ public class Scaler extends HttpServlet {
         notfoundImgFile = ServletOps.getFile(
                 (File) dlConfig.getValue("notfound-image"), context);
         sendFileAllowed = dlConfig.getAsBoolean("sendfile-allowed");
+        try {
+            defaultErrMsgType = ErrMsg.valueOf(dlConfig.getAsString("default-errmsg-type"));
+        } catch (Exception e) {
+            // nothing to do
+        }
     }
 
     /**
@@ -198,8 +206,10 @@ public class Scaler extends HttpServlet {
         final ImageJobDescription jobTicket = ImageJobDescription.getInstance(dlRequest, dlConfig);
 
         // type of error reporting
-        ErrMsg errMsgType = ErrMsg.IMAGE;
-        if (dlRequest.hasOption("errtxt")) {
+        ErrMsg errMsgType = defaultErrMsgType;
+        if (dlRequest.hasOption("errimg")) {
+            errMsgType = ErrMsg.IMAGE;
+        } else if (dlRequest.hasOption("errtxt")) {
         	errMsgType = ErrMsg.TEXT;
         } else if (dlRequest.hasOption("errcode")) {
         	errMsgType = ErrMsg.CODE;

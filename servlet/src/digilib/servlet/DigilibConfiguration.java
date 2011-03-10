@@ -174,6 +174,8 @@ public class DigilibConfiguration extends ParameterMap {
         newParameter("pdf-cache-dir", "pdf_cache", null, 'f');
 		// allow image toolkit to use disk cache
 		newParameter("img-diskcache-allowed", Boolean.TRUE, null, 'f');
+		// default type of error message (image, text, code)
+        newParameter("default-errmsg-type", "image", null, 'f');
 	}
 
 	/**
