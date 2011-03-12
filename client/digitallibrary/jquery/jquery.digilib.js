@@ -1117,6 +1117,8 @@ if (typeof console === 'undefined') {
 
     // size and show arrow overlays, called after scaler img is loaded
     var renderZoomArrows = function (data) {
+        if (!data.settings.zoomArrows) return;
+        if (isFullArea(data)) return;
         var $arrows = data.$arrows;
         var r = FULL_AREA.copy();
         r.height = 0.05;

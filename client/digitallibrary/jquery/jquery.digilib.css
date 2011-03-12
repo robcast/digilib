@@ -131,6 +131,7 @@ div.arrow {
     text-align: center;
     background-color: black;
     opacity: 0.08;
+    display: none;
 }
 
 div.arrow:hover {
