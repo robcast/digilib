@@ -980,14 +980,17 @@ if (typeof console === 'undefined') {
             scalerUrl = getScalerUrl(data);
             $img = $elem.find('img');
             if ($img.length > 0) {
-                //oldUrl = $img.attr('src');
-                //if (oldUrl === scalerUrl) {
-                //    console.debug("img detach:", $img);
-                //    $img.detach();
-                //} else {
-                //    $img = $('<img/>');
-                // keep title, alt etc. attributes (src gets changed anyway) 
-                $img.detach();
+                var oldUrl = $img.attr('src');
+                // keep img attributes from html
+                var title = $img.attr('title');
+                var alt = $img.attr('alt');
+                if (oldUrl === scalerUrl) {
+                    console.debug("img detach:", $img);
+                    $img.detach();
+                } else {
+                    $img = $('<img/>');
+                    $img.attr("title", title);
+                    $img.attr("alt", alt);
                 }
             } else {
                 $img = $('<img/>');
