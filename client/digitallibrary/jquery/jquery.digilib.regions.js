@@ -276,8 +276,10 @@ TODO:
             $regionDiv.append($regionLink);
         }
         if (data.settings.autoRegionLinks) {
-            delete attributes.href;
-            $regionDiv.attr(attributes);
+            if (attributes) {
+                delete attributes.href;
+                $regionDiv.attr(attributes);
+                };
             $regionDiv.bind('click.dlRegion', function() {
                  window.location = url;
             });
