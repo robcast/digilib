@@ -262,20 +262,22 @@ TODO:
     };
 
     // add a region to data.$elem
-    var addRegionDiv = function (data, index, url) {
+    var addRegionDiv = function (data, index, attributes) {
         var nr = index + 1; // we count regions from 1
         // create a digilib URL for this detail
-        url = url || getRegionUrl(data, index);
+        var url = attributes.href || getRegionUrl(data, index);
         var $regionDiv = $('<div class="region overlay" style="display:none"/>');
         $regionDiv.attr("id", ID_PREFIX + nr);
         data.$elem.append($regionDiv);
         if (data.settings.showRegionNumbers) {
             var $regionLink = $('<a class="regionnumber"/>');
-            $regionLink.attr('href', url);
+            $regionLink.attr(attributes);
             $regionLink.text(nr);
             $regionDiv.append($regionLink);
         }
         if (data.settings.autoRegionLinks) {
+            delete attributes.href;
+            $regionDiv.attr(attributes);
             $regionDiv.bind('click.dlRegion', function() {
                  window.location = url;
             });
@@ -284,8 +286,8 @@ TODO:
     };
 
     // create a region div from the data.regions array
-    var createRegionDiv = function (regions, index, url) {
-        var $regionDiv = addRegionDiv(data, index, url);
+    var createRegionDiv = function (regions, index, attributes) {
+        var $regionDiv = addRegionDiv(data, index, attributes);
         var region = regions[index];
         region.$div = $regionDiv;
         return $regionDiv;
@@ -314,9 +316,13 @@ TODO:
             var pos = coords.split(",", 4);
             var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
             regions.push(rect);
+            // save the attributes
+            var attributes = {};
+            if ($a.attr('id')) { attributes.id = $a.attr('id') };
+            if ($a.attr('href')) { attributes.href = $a.attr('href') };
+            if ($a.attr('title')) { attributes.title = $a.attr('title') };
             // create the div
-            var href = $a.attr('href');
-            var $regionDiv = createRegionDiv(regions, index, href);
+            var $regionDiv = createRegionDiv(regions, index, attributes);
             var $contents = $a.contents().clone();
             $regionDiv.append($contents);
         });
