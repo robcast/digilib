@@ -96,6 +96,7 @@ div.regionHTML {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-size: 12px;
 	border: 2px solid lightcyan;
+	color: black;
 	background-color: lightgrey;
 	z-index: 1000;
 }

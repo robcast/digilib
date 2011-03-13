@@ -216,7 +216,11 @@ TODO:
         var $infoDiv = $('<div class="info html"/>');
         $infoDiv.append($('<div/>').text('<div class="keep regioncontent">'));
         $.each(data.regions, function(index, r) {
-            var area = [r.x, r.y, r.width, r.height].join(',');
+            var area = [
+                fn.cropFloatStr(r.x),
+                fn.cropFloatStr(r.y),
+                fn.cropFloatStr(r.width),
+                fn.cropFloatStr(r.height)].join(',');
             $infoDiv.append($('<div/>').text('<a coords="' + area + '" >'));
             });
         $infoDiv.append($('<div/>').text('</div>'));
@@ -227,7 +231,11 @@ TODO:
     var regionInfoSVG = function (data) {
         var $infoDiv = $('<div class="info svgattr"/>');
         $.each(data.regions, function(index, r) {
-            var area = r.getAsSvg();
+            var area = [
+                fn.cropFloatStr(r.x),
+                fn.cropFloatStr(r.y),
+                fn.cropFloatStr(r.width),
+                fn.cropFloatStr(r.height)].join(' ');
             $infoDiv.append($('<div/>').text('"' + area + '"'));
             });
         return $infoDiv;
