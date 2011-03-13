@@ -254,7 +254,7 @@ TODO:
     // show region info in a window
     var regionInfo = function (data) {
         var $html = data.$htmlDiv;
-        $html.append(regionInfoHeader(data))
+        $html.append(regionInfoHeader(data));
         $html.append(regionInfoHTML(data));
         $html.append(regionInfoSVG(data));
         $html.append(regionInfoDigilib(data));
@@ -265,7 +265,7 @@ TODO:
     var addRegionDiv = function (data, index, attributes) {
         var nr = index + 1; // we count regions from 1
         // create a digilib URL for this detail
-        var url = attributes.href || getRegionUrl(data, index);
+        var url = attributes ? attributes.href : getRegionUrl(data, index);
         var $regionDiv = $('<div class="region overlay" style="display:none"/>');
         $regionDiv.attr("id", ID_PREFIX + nr);
         data.$elem.append($regionDiv);
@@ -318,9 +318,9 @@ TODO:
             regions.push(rect);
             // save the attributes
             var attributes = {};
-            if ($a.attr('id')) { attributes.id = $a.attr('id') };
-            if ($a.attr('href')) { attributes.href = $a.attr('href') };
-            if ($a.attr('title')) { attributes.title = $a.attr('title') };
+            if ($a.attr('id')) { attributes.id = $a.attr('id'); }
+            if ($a.attr('href')) { attributes.href = $a.attr('href'); }
+            if ($a.attr('title')) { attributes.title = $a.attr('title'); }
             // create the div
             var $regionDiv = createRegionDiv(regions, index, attributes);
             var $contents = $a.contents().clone();
