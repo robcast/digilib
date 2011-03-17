@@ -1137,7 +1137,7 @@ if (typeof console === 'undefined') {
     // size and show arrow overlays, called after scaler img is loaded
     var renderZoomArrows = function (data) {
         var settings = data.settings;
-        if (isFullArea(data) || !settings.showZoomArrows) return;
+        if (isFullArea(data.zoomArea) || !settings.showZoomArrows) return;
         var $arrowsDiv = data.$elem.find('div.arrows');
         var r = geom.rectangle(data.$scaler);
         // calculate arrow bar width
@@ -1152,16 +1152,34 @@ if (typeof console === 'undefined') {
             }
         }
         $arrowsDiv.show();
-        renderZoomArrow($arrowsDiv, 'up', geom.rectangle(r.x, r.y, r.width, aw));
-        renderZoomArrow($arrowsDiv, 'down', geom.rectangle(r.x, r.y + r.height - aw, r.width));
-        renderZoomArrow($arrowsDiv, 'left', geom.rectangle(r.x, r.y, aw, r.height));
-        renderZoomArrow($arrowsDiv, 'right', geom.rectangle(r.x + r.width - aw, r.y, aw, r.height));
-   };
-
-    // render a single zoom Arrow
-    var renderZoomArrow = function ($div, name, rect) {
-        var $arrow = $div.find('div.button-' + name);
-        rect.adjustDiv($arrow);
+        var arrowData = [{
+            name : 'up',
+            rect : geom.rectangle(r.x, r.y, r.width, aw), 
+            show : canMove(data, 0, -1)
+        }, {
+            name : 'down',
+            rect : geom.rectangle(r.x, r.y + r.height - aw, r.width),
+            show : canMove(data, 0, 1)
+        }, {
+            name : 'left',
+            rect : geom.rectangle(r.x, r.y, aw, r.height),
+            show : canMove(data, -1, 0)
+        }, {
+            name : 'right',
+            rect : geom.rectangle(r.x + r.width - aw, r.y, aw, r.height),
+            show : canMove(data, 1, 0)
+        }];
+        // render a single zoom Arrow
+        var render = function (i, item) {
+            var $arrow = $arrowsDiv.find('div.button-' + item.name);
+            item.rect.adjustDiv($arrow);
+            if (item.show) {
+                $arrow.show();
+            } else {
+                $arrow.hide();
+            }
+        };
+        $.each(arrowData, render);
     };
 
     // creates HTML structure for the about view in elem
@@ -1663,6 +1681,18 @@ if (typeof console === 'undefined') {
         return border/2;
     };
 
+    // auxiliary function, can the current zoomarea be moved further?
+    var canMove = function(data, movx, movy) {
+        var za = data.zoomArea;
+        if (isFullArea(za)) return false;
+        var x2 = za.x + za.width;
+        var y2 = za.y + za.height;
+        return ((movx < 0) && (za.x > 0))
+            || ((movx > 0) && (x2 < 1.0))
+            || ((movy < 0) && (za.y > 0))
+            || ((movy > 0) && (y2 < 1.0))
+    };
+
     // auxiliary function (from old dllib.js)
     var isFullArea = function (area) {
         return (area.width === 1.0) && (area.height === 1.0);
@@ -1725,6 +1755,7 @@ if (typeof console === 'undefined') {
             setQuality : setQuality,
             getScaleMode : getScaleMode,
             setScaleMode : setScaleMode,
+            canMove : canMove,
             isFullArea : isFullArea,
             isNumber : isNumber,
             getBorderWidth : getBorderWidth,
