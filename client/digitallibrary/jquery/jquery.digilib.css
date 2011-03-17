@@ -136,10 +136,15 @@ div.digilib div.arrows div.button {
     text-align: center;
     background-color: black;
     opacity: 0.08;
+    z-index: 200;
     }
 
 div.digilib div.arrows div.button:hover {
     opacity: 0.5;
+}
+
+div.digilib div.arrows div.button a {
+    position: relative;
 }
 
 /* special definitions for fullscreen */
@@ -149,7 +154,7 @@ div.digilib.dl_fullscreen div.buttons {
 	top: 0px;
 	padding: 2px;
 	background-color: transparent;
-	z-index: 100;
+	z-index: 200;
 }
 
 div.digilib.dl_fullscreen div.buttons div.button:hover {

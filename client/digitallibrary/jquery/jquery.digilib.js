@@ -1125,6 +1125,7 @@ if (typeof console === 'undefined') {
         if (!show) return;
         var mode = settings.interactionMode;
         var arrowNames = settings.buttonSettings[mode].arrowSet;
+        if (arrowNames == null) return;
         // arrow divs are marked with class "keep"
         var $arrowsDiv = $('<div class="keep arrows"/>');
         $elem.append($arrowsDiv);
@@ -1137,8 +1138,12 @@ if (typeof console === 'undefined') {
     // size and show arrow overlays, called after scaler img is loaded
     var renderZoomArrows = function (data) {
         var settings = data.settings;
-        if (isFullArea(data.zoomArea) || !settings.showZoomArrows) return;
         var $arrowsDiv = data.$elem.find('div.arrows');
+        if (isFullArea(data.zoomArea) || !settings.showZoomArrows) {
+            $arrowsDiv.hide();
+            return;
+            }
+        $arrowsDiv.show();
         var r = geom.rectangle(data.$scaler);
         // calculate arrow bar width
         var aw = settings.zoomArrowWidth;
@@ -1151,19 +1156,19 @@ if (typeof console === 'undefined') {
                 aw = minWidth;
             }
         }
-        $arrowsDiv.show();
+        // vertical position of left/right image
         var arrowData = [{
             name : 'up',
             rect : geom.rectangle(r.x, r.y, r.width, aw), 
             show : canMove(data, 0, -1)
         }, {
             name : 'down',
-            rect : geom.rectangle(r.x, r.y + r.height - aw, r.width),
+            rect : geom.rectangle(r.x, r.y + r.height - aw, r.width, aw),
             show : canMove(data, 0, 1)
         }, {
             name : 'left',
             rect : geom.rectangle(r.x, r.y, aw, r.height),
-            show : canMove(data, -1, 0)
+            show : canMove(data, -1, 0),
         }, {
             name : 'right',
             rect : geom.rectangle(r.x + r.width - aw, r.y, aw, r.height),
@@ -1172,12 +1177,22 @@ if (typeof console === 'undefined') {
         // render a single zoom Arrow
         var render = function (i, item) {
             var $arrow = $arrowsDiv.find('div.button-' + item.name);
-            item.rect.adjustDiv($arrow);
             if (item.show) {
                 $arrow.show();
             } else {
                 $arrow.hide();
+                return;
             }
+            var r = item.rect; 
+            r.adjustDiv($arrow);
+            var $a = $arrow.contents('a');
+            var $img = $a.contents('img');
+            $img.width(aw).height(aw);
+            // hack for missing vertical-align
+            if (item.name.match(/left|right/)) {
+                var top = (r.height - $a.height())/2;
+                $a.css({'top' : top}); // position : 'relative'
+                }
         };
         $.each(arrowData, render);
     };
