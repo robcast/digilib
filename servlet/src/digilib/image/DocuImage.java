@@ -205,14 +205,22 @@ public interface DocuImage {
 
 	/** Operations for colorOps.
 	 * 
+     * GRAYSCALE: cast color image to grayscale
+     * NTSC_GRAY: convert color image to grayscale using NTSC formula
+     * INVERT: invert colors (every channel separately)
+     * MAP_GRAY_BGR: false color image from grayscale (0: blue, 128: green, 255: red)
 	 *
 	 */
-	public enum ColorOp {GRAYSCALE, INVERT};
+	public enum ColorOp {GRAYSCALE, NTSC_GRAY, INVERT, MAP_GRAY_BGR};
 
 	/** Changes the colors of the current image.
 	 * 
-	 * Changes the colors of the current image. Operations are e.g.
-	 * reduction to grayscale or false-color palettes.
+	 * Changes the colors of the current image. Operations are instances of ColorOp:
+	 * 
+	 * GRAYSCALE: cast color image to grayscale
+     * NTSC_GRAY: convert color image to grayscale using NTSC formula
+	 * INVERT: invert colors (every channel separately)
+	 * MAP_GRAY_BGR: false color image from grayscale (0: blue, 128: green, 255: red)
 	 * 
 	 * @throws ImageOpException
 	 */

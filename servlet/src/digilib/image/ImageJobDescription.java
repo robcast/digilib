@@ -432,6 +432,9 @@ public class ImageJobDescription extends ParameterMap {
 
 	public ColorOp getColOp() {
 		String op = getAsString("colop");
+		if (op == null || op.length() == 0) {
+			return null;
+		}
 		try {
 			return ColorOp.valueOf(op.toUpperCase());
 		} catch (Exception e) {
