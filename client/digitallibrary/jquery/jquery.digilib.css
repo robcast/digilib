@@ -66,13 +66,13 @@ div.digilib div.region:hover {
 	opacity: 0.5;
 }
 
-div.region {
+div.digilib div.region {
     color: white;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size: 11px;
 }
 
-div.region a.regionnumber {
+div.digilib div.region a.regionnumber {
     color: white;
     text-decoration: none;
 	font-weight: bold;
@@ -84,11 +84,11 @@ div.region a.regionnumber {
     display: inline-block;
 }
 
-div.regioncontent {
+div.digilib div.regioncontent {
     display: none;
 }
 
-div.regionHTML {
+div.digilib div.regionHTML {
     display: none;
     position: absolute;
 	top: 100px;
@@ -101,7 +101,7 @@ div.regionHTML {
 	z-index: 1000;
 }
 
-div.regionHTML a {
+div.digilib div.regionHTML a {
     color: white;
     text-decoration: none;
     font-size: 11px;
@@ -127,15 +127,18 @@ div.infoheader {
     margin-bottom: 20px;
 }
 
-div.arrow {
+div.digilib div.arrows {
+    display: none;
+}
+
+div.digilib div.arrows div.button {
     position: absolute;
     text-align: center;
     background-color: black;
     opacity: 0.08;
-    display: none;
-}
+    }
 
-div.arrow:hover {
+div.digilib div.arrows div.button:hover {
     opacity: 0.5;
 }
 
@@ -149,12 +152,14 @@ div.digilib.dl_fullscreen div.buttons {
 	z-index: 100;
 }
 
-div.digilib.dl_fullscreen div.button:hover {
+div.digilib.dl_fullscreen div.buttons div.button:hover {
 	background-image: url('img/fullscreen/corona.png');
+	background-repeat: no-repeat;
 }
 
 div.digilib.dl_fullscreen div.button-on {
 	background-image: url('img/fullscreen/whitedisc.png');
+	background-repeat: no-repeat;
 }
 
 div.digilib.dl_fullscreen div.birdview {
@@ -178,7 +183,7 @@ div.digilib.dl_embedded div.buttons {
 	z-index: 100;
 }
 
-div.digilib.dl_embedded div.button:hover {
+div.digilib.dl_embedded div.buttons div.button:hover {
 	background-color: black;
 }
 
@@ -191,3 +196,4 @@ div.digilib.dl_embedded div.birdview {
 	bottom: 0px;
 	right: 0px;
 }
+

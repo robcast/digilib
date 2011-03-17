@@ -185,6 +185,12 @@
             this.y += pos.y;
             return this;
         };
+        // adds pos to the dimensions
+        that.enlarge = function(pos) {
+            this.width += pos.x;
+            this.height += pos.y;
+            return this;
+        };
         // sets the lower right corner to position pos
         that.setPt2 = function(pos) {
             this.width = pos.x - this.x;

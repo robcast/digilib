@@ -168,22 +168,22 @@ if (typeof console === 'undefined') {
             },
         up : {
             onclick : ["moveZoomArea", 0, -1],
-            tooltip : "move up",
+            tooltip : "move zoom area up",
             icon : "up.png"
             },
         down : {
             onclick : ["moveZoomArea", 0, 1],
-            tooltip : "move down",
+            tooltip : "move zoom area down",
             icon : "down.png"
             },
         left : {
             onclick : ["moveZoomArea", -1, 0],
-            tooltip : "move left",
+            tooltip : "move zoom area left",
             icon : "left.png"
             },
         right : {
             onclick : ["moveZoomArea", 1, 0],
-            tooltip : "move right",
+            tooltip : "move zoom area right",
             icon : "right.png"
             },
         SEP : {
@@ -1061,7 +1061,7 @@ if (typeof console === 'undefined') {
         $button.addClass('button-' + buttonName);
         $img.attr('src', icon);
         // create handler for the buttons
-        $a.bind('click.digilib', (function () {
+        $button.bind('click.digilib', (function () {
             // we create a new closure to capture the value of action
             if ($.isArray(action)) {
                 // the handler function calls digilib with action and parameters
@@ -1120,57 +1120,49 @@ if (typeof console === 'undefined') {
     var setupZoomArrows = function (data) {
         var $elem = data.$elem;
         var settings = data.settings;
-        var show = settings.zoomArrows;
+        var show = settings.showZoomArrows;
         console.log('zoom arrows:', show);
         if (!show) return;
-        data.$arrows = {};
-        var $arrows = data.$arrows;
-        var info = settings.zoomArrowsInfo;
-        $.each(['up','down','left','right'], function(i, s){
-            var src = info.imagePath + info[s];
-            var $div = $('<div class="keep arrow arrow-' + s + '"/>');
-            var $img = $('<img src="' + src + '"/>');
-            $div.attr('title', s);
-            $img.attr('alt', s);
-            $div.append($img);
-            $elem.append($div);
-            $arrows[s] = $div;
-        });
-        $arrows.up.bind('click.digilib', function(event) {
-            //za.addPosition(delta.neg());
-            // transform back
-            // var newArea = data.imgTrafo.invtransform(za);
-            // data.zoomArea = FULL_AREA.fit(newArea);
-            redisplay(data);
-        });
-        $arrows.down.bind('click.digilib', function(event) {
-            redisplay(data);
-        });
-        $arrows.left.bind('click.digilib', function(event) {
-            redisplay(data);
-        });
-        $arrows.right.bind('click.digilib', function(event) {
-            redisplay(data);
-        });
+        var mode = settings.interactionMode;
+        var arrowNames = settings.buttonSettings[mode].arrowSet;
+        // arrow divs are marked with class "keep"
+        var $arrowsDiv = $('<div class="keep arrows"/>');
+        $elem.append($arrowsDiv);
+        // create all arrow buttons
+        $.each(arrowNames, function(i, arrowName){
+            createButton(data, $arrowsDiv, arrowName);
+            });
     };
 
     // size and show arrow overlays, called after scaler img is loaded
     var renderZoomArrows = function (data) {
-        if (!data.settings.zoomArrows) return;
-        if (isFullArea(data)) return;
-        var $arrows = data.$arrows;
-        var r = FULL_AREA.copy();
-        r.height = 0.05;
-        data.imgTrafo.transform(r).adjustDiv($arrows.up);
-        r.y = 0.95;
-        data.imgTrafo.transform(r).adjustDiv($arrows.down);
-        r = FULL_AREA.copy();
-        r.width = 0.05;
-        data.imgTrafo.transform(r).adjustDiv($arrows.left);
-        r.x = 0.95;
-        data.imgTrafo.transform(r).adjustDiv($arrows.right);
-    };
+        var settings = data.settings;
+        if (isFullArea(data) || !settings.showZoomArrows) return;
+        var $arrowsDiv = data.$elem.find('div.arrows');
+        var r = geom.rectangle(data.$scaler);
+        // calculate arrow bar width
+        var aw = settings.zoomArrowWidth;
+        var minWidth = settings.zoomArrowMinWidth;
+        // arrow bar width should not exceed 10% of scaler width/height
+        var maxWidth = Math.min(r.width, r.height)/10;
+        if (aw > maxWidth) {
+            aw = maxWidth;
+            if (aw < minWidth) {
+                aw = minWidth;
+            }
+        }
+        $arrowsDiv.show();
+        renderZoomArrow($arrowsDiv, 'up', geom.rectangle(r.x, r.y, r.width, aw));
+        renderZoomArrow($arrowsDiv, 'down', geom.rectangle(r.x, r.y + r.height - aw, r.width));
+        renderZoomArrow($arrowsDiv, 'left', geom.rectangle(r.x, r.y, aw, r.height));
+        renderZoomArrow($arrowsDiv, 'right', geom.rectangle(r.x + r.width - aw, r.y, aw, r.height));
+   };
 
+    // render a single zoom Arrow
+    var renderZoomArrow = function ($div, name, rect) {
+        var $arrow = $div.find('div.button-' + name);
+        rect.adjustDiv($arrow);
+    };
 
     // creates HTML structure for the about view in elem
     var setupAboutDiv = function (data) {
