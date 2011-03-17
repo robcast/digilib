@@ -166,6 +166,26 @@ if (typeof console === 'undefined') {
             tooltip : "less options",
             icon : "options.png"
             },
+        up : {
+            onclick : ["moveZoomArea", 0, -1],
+            tooltip : "move up",
+            icon : "up.png"
+            },
+        down : {
+            onclick : ["moveZoomArea", 0, 1],
+            tooltip : "move down",
+            icon : "down.png"
+            },
+        left : {
+            onclick : ["moveZoomArea", -1, 0],
+            tooltip : "move left",
+            icon : "left.png"
+            },
+        right : {
+            onclick : ["moveZoomArea", 1, 0],
+            tooltip : "move right",
+            icon : "right.png"
+            },
         SEP : {
             icon : "sep.png"
             }
@@ -219,29 +239,25 @@ if (typeof console === 'undefined') {
                 'imagePath' : 'img/fullscreen/',
                 'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","help","reset","toggleoptions"],
                 'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","lessoptions"],
+                'arrowSet' : ["up", "down", "left", "right"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 },
             'embedded' : {
                 'imagePath' : 'img/embedded/16/',
                 'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","help","reset","toggleoptions"],
                 'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","scale","lessoptions"],
+                'arrowSet' : ["up", "down", "left", "right"],
                 'buttonSets' : ['standardSet', 'specialSet']
-                }
+                },
         },
-        // arrow overlays for moving the zoomed area
-        'zoomArrows' : true,
-        // zoom arrow image info
-        'zoomArrowsInfo' : {
-             // path to arrow images (must end with a slash)
-            'imagePath' : 'img/',
-            // minimal width of the arrow bar (pixel)
-            'minwidth' : 6,
-            // image file names
-            'up' : 'up.png',
-            'down' : 'down.png',
-            'left' : 'left.png',
-            'right' : 'right.png'
-            },
+        // arrow bar overlays for moving the zoomed area
+        'showZoomArrows' : true,
+        // zoom arrow bar minimal width (for small images)
+        'zoomArrowMinWidth' : 6,
+        // zoom arrow bar standard width
+        'zoomArrowWidth' : 32,
+        // by what percentage should the arrows move the zoomed area?
+        'zoomArrowMoveFactor' : 0.5,
         // number of visible button groups
         'visibleButtonSets' : 1,
         // is the "about" window shown?
@@ -469,6 +485,17 @@ if (typeof console === 'undefined') {
                 delete data.dlOpts.fitwidth;
                 delete data.dlOpts.fitheight;
             }
+            redisplay(data);
+        },
+
+        // move zoomed area
+        moveZoomArea : function (data, dx, dy) {
+            var za = data.zoomArea;
+            var factor = data.settings.zoomArrowMoveFactor;
+            var deltaX = dx * factor * za.width;
+            var deltaY = dy * factor * za.height;
+            za.addPosition(geom.position(deltaX, deltaY));
+            data.zoomArea = FULL_AREA.fit(za);
             redisplay(data);
         },
 
@@ -1011,6 +1038,49 @@ if (typeof console === 'undefined') {
         $img.attr('src', scalerUrl);
     };
 
+    // creates HTML structure for a single button
+    var createButton = function (data, $div, buttonName) {
+        var $elem = data.$elem;
+        var settings = data.settings;
+        var mode = settings.interactionMode;
+        var imagePath = settings.buttonSettings[mode].imagePath;
+        var buttonConfig = settings.buttons[buttonName];
+        // button properties
+        var action = buttonConfig.onclick;
+        var tooltip = buttonConfig.tooltip;
+        var icon = imagePath + buttonConfig.icon;
+        // construct the button html
+        var $button = $('<div class="button"></div>');
+        var $a = $('<a/>');
+        var $img = $('<img class="button"/>');
+        $div.append($button);
+        $button.append($a);
+        $a.append($img);
+        // add attributes and bindings
+        $button.attr('title', tooltip);
+        $button.addClass('button-' + buttonName);
+        $img.attr('src', icon);
+        // create handler for the buttons
+        $a.bind('click.digilib', (function () {
+            // we create a new closure to capture the value of action
+            if ($.isArray(action)) {
+                // the handler function calls digilib with action and parameters
+                return function (evt) {
+                    console.debug('click action=', action, ' evt=', evt);
+                    $elem.digilib.apply($elem, action);
+                    return false;
+                };
+            } else {
+                // the handler function calls digilib with action
+                return function (evt) {
+                    console.debug('click action=', action, ' evt=', evt);
+                    $elem.digilib(action);
+                    return false;
+                };
+            }
+        })());
+    };
+
     // creates HTML structure for buttons in elem
     var createButtons = function (data, buttonSetIdx) {
         var $elem = data.$elem;
@@ -1027,38 +1097,7 @@ if (typeof console === 'undefined') {
         var buttonNames = buttonSettings[buttonGroup];
         for (var i = 0; i < buttonNames.length; i++) {
             var buttonName = buttonNames[i];
-            var buttonConfig = settings.buttons[buttonName];
-            // construct the button html
-            var $button = $('<div class="button"></div>');
-            var $a = $('<a/>');
-            var $img = $('<img class="button"/>');
-            $buttonsDiv.append($button);
-            $button.append($a);
-            $a.append($img);
-            // add attributes and bindings
-            $button.attr('title', buttonConfig.tooltip);
-            $button.addClass('button-' + buttonName);
-            // create handler for the buttons
-            $a.bind('click.digilib', (function () {
-                // we create a new closure to capture the value of action
-                var action = buttonConfig.onclick;
-                if ($.isArray(action)) {
-                    // the handler function calls digilib with action and parameters
-                    return function (evt) {
-                        console.debug('click action=', action, ' evt=', evt);
-                        $elem.digilib.apply($elem, action);
-                        return false;
-                    };
-                } else {
-                    // the handler function calls digilib with action
-                    return function (evt) {
-                        console.debug('click action=', action, ' evt=', evt);
-                        $elem.digilib(action);
-                        return false;
-                    };
-                }
-            })());
-            $img.attr('src', buttonSettings.imagePath + buttonConfig.icon);
+            createButton(data, $buttonsDiv, buttonName);
         }
         // make buttons div scroll if too large for window
         if ($buttonsDiv.height() > $(window).height() - 10) {
