@@ -8131,8 +8131,8 @@ jQuery.offset = {
 			curPosition = curElem.position();
 		}
 
-		curTop  = calculatePosition ? curPosition.top  : parseInt( curCSSTop,  10 ) || 0;
-		curLeft = calculatePosition ? curPosition.left : parseInt( curCSSLeft, 10 ) || 0;
+		curTop  = calculatePosition ? curPosition.top  : parseFloat( curCSSTop,  10 ) || 0;
+		curLeft = calculatePosition ? curPosition.left : parseFloat( curCSSLeft, 10 ) || 0;
 
 		if ( jQuery.isFunction( options ) ) {
 			options = options.call( elem, i, curOffset );
