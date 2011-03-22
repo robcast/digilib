@@ -248,7 +248,7 @@ if (typeof console === 'undefined') {
                 'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","scale","lessoptions"],
                 'arrowSet' : ["up", "down", "left", "right"],
                 'buttonSets' : ['standardSet', 'specialSet']
-                },
+                }
         },
         // arrow bar overlays for moving the zoomed area
         'showZoomArrows' : true,
@@ -965,18 +965,26 @@ if (typeof console === 'undefined') {
         var $win = $(window);
         var winH = $win.height();
         var winW = $win.width();
+        console.debug("window size="+winW+"x"+winH);
         var $body = $('body');
          // include standard body margins
         var borderW = $body.outerWidth(true) - $body.width();
         var borderH = $body.outerHeight(true) - $body.height();
+        console.debug("body outerwidth="+$body.outerWidth(true)+" width="+$body.width());
         // get width of first button div
         var buttonsW = 0; 
         if (data.$buttonSets) {
             buttonsW = data.$buttonSets[0].outerWidth();
+            // try to fix ipad...
+            if (buttonsW === $body.width()) {
+                console.error("buttons width can't be measured -- using 32");
+                buttonsW = 32;
+            }
         }
         // account for left/right border, body margins and additional requirements
         var calcW = winW - borderW - buttonsW - data.settings.scalerInset;
         var calcH = winH - borderH;
+        console.debug("calcw="+calcW+" buttonsw="+buttonsW+" inset="+data.settings.scalerInset+" calcH="+calcH);
         console.debug(winW, winH, 'winW:', $win.width(), 'border:', borderW, 'buttonsW:', buttonsW, 'calc:', calcW);
         return geom.size(calcW, calcH);
     };
@@ -1168,7 +1176,7 @@ if (typeof console === 'undefined') {
         }, {
             name : 'left',
             rect : geom.rectangle(r.x, r.y, aw, r.height),
-            show : canMove(data, -1, 0),
+            show : canMove(data, -1, 0)
         }, {
             name : 'right',
             rect : geom.rectangle(r.x + r.width - aw, r.y, aw, r.height),
@@ -1705,7 +1713,7 @@ if (typeof console === 'undefined') {
         return ((movx < 0) && (za.x > 0))
             || ((movx > 0) && (x2 < 1.0))
             || ((movy < 0) && (za.y > 0))
-            || ((movy > 0) && (y2 < 1.0))
+            || ((movy > 0) && (y2 < 1.0));
     };
 
     // auxiliary function (from old dllib.js)
