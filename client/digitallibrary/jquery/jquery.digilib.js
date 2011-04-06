@@ -237,6 +237,7 @@ if (typeof console === 'undefined') {
             'fullscreen' : {
                 // path to button images (must end with a slash)
                 'imagePath' : 'img/fullscreen/',
+                'buttonSetWidth' : 36,
                 'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","help","reset","toggleoptions"],
                 'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","lessoptions"],
                 'arrowSet' : ["up", "down", "left", "right"],
@@ -244,6 +245,7 @@ if (typeof console === 'undefined') {
                 },
             'embedded' : {
                 'imagePath' : 'img/embedded/16/',
+                'buttonSetWidth' : 18,
                 'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","help","reset","toggleoptions"],
                 'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","scale","lessoptions"],
                 'arrowSet' : ["up", "down", "left", "right"],
@@ -929,6 +931,8 @@ if (typeof console === 'undefined') {
             if (typeof history.pushState === 'function') {
                 console.debug("faking reload to "+url);
                 // change url without reloading (stateObj, title, url)
+                // TODO: we really need to put the state in stateObj and listen to pop-events
+                // TODO: use replace-state(?)
                 history.pushState({}, '', url);
                 // change img src
                 var imgurl = getScalerUrl(data);
@@ -962,23 +966,33 @@ if (typeof console === 'undefined') {
 
     // returns maximum size for scaler img in fullscreen mode
     var getFullscreenImgSize = function (data) {
+        var mode = data.settings.interactionMode;
         var $win = $(window);
         var winH = $win.height();
         var winW = $win.width();
         var $body = $('body');
-         // include standard body margins
+        // include standard body margins and check plausibility
         var borderW = $body.outerWidth(true) - $body.width();
+        if (borderW === 0 || borderW > 100) {
+            console.debug("fixing border width for getFullscreenImgSize!");
+            borderW = data.settings.scalerInset;
+        }
         var borderH = $body.outerHeight(true) - $body.height();
-        // get width of first button div
+        if (borderH === 0 || borderH > 100) {
+            console.debug("fixing border height for getFullscreenImgSize!");
+            borderH = 5;
+        }
         var buttonsW = 0; 
-        if (data.$buttonSets) {
-            buttonsW = data.$buttonSets[0].outerWidth();
+        if (data.settings.visibleButtonSets) {
+            // get button width from settings
+            buttonsW = data.settings.buttonSettings[mode].buttonSetWidth;
+            // TODO: leave space for all button sets?
         }
         // account for left/right border, body margins and additional requirements
-        var calcW = winW - borderW - buttonsW - data.settings.scalerInset;
-        var calcH = winH - borderH;
-        console.debug(winW, winH, 'winW:', $win.width(), 'border:', borderW, 'buttonsW:', buttonsW, 'calc:', calcW);
-        return geom.size(calcW, calcH);
+        var imgW = winW - borderW - buttonsW;
+        var imgH = winH - borderH;
+        console.debug(winW, winH, 'winW:', $win.width(), 'border:', borderW, 'buttonsW:', buttonsW, 'calc:', imgW);
+        return geom.size(imgW, imgH);
     };
 
     // creates HTML structure for digilib in elem
@@ -1168,7 +1182,7 @@ if (typeof console === 'undefined') {
         }, {
             name : 'left',
             rect : geom.rectangle(r.x, r.y, aw, r.height),
-            show : canMove(data, -1, 0),
+            show : canMove(data, -1, 0)
         }, {
             name : 'right',
             rect : geom.rectangle(r.x + r.width - aw, r.y, aw, r.height),
@@ -1202,7 +1216,7 @@ if (typeof console === 'undefined') {
         var $elem = data.$elem;
         var settings = data.settings;
         var $aboutDiv = $('<div class="about" style="display:none"/>');
-        var $header = $('<p>Digilib Graphic Viewer</p>');
+        var $header = $('<p>Digilib Image Viewer</p>');
         var $link = $('<a/>');
         var $logo = $('<img class="logo" title="digilib"/>');
         var $content = $('<p/>');
@@ -1241,6 +1255,9 @@ if (typeof console === 'undefined') {
     // display more (or less) button sets
     var showButtons = function (data, more, setIdx, animated) {
         var atime = animated ? 'fast': 0;
+        // get button width from settings
+        var mode = data.settings.interactionMode;
+        var btnWidth = data.settings.buttonSettings[mode].buttonSetWidth;
         if (more) {
             // add set
             var $otherSets = data.$elem.find('div.buttons:visible');
@@ -1253,7 +1270,7 @@ if (typeof console === 'undefined') {
                 }
             if ($set == null) return false;
             // include border in calculation
-            var btnWidth = $set.outerWidth();
+            //var btnWidth = $set.outerWidth();
             // console.debug("btnWidth", btnWidth);
             // move remaining sets left and show new set
             if ($otherSets.length > 0) {
@@ -1266,7 +1283,7 @@ if (typeof console === 'undefined') {
             // remove set
             var $set = data.$buttonSets[setIdx];
             if ($set == null) return false;
-            var btnWidth = $set.outerWidth();
+            //var btnWidth = $set.outerWidth();
             // hide last set
             $set.hide();
             // take remaining sets and move right
