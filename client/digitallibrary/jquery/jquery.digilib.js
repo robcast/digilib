@@ -931,9 +931,8 @@ if (typeof console === 'undefined') {
             if (typeof history.pushState === 'function') {
                 console.debug("faking reload to "+url);
                 // change url without reloading (stateObj, title, url)
-                // TODO: we really need to put the state in stateObj and listen to pop-events
-                // TODO: use replace-state(?)
-                history.pushState({}, '', url);
+                // TODO: we really need to push the state in stateObj and listen to pop-events
+                history.replaceState({}, '', url);
                 // change img src
                 var imgurl = getScalerUrl(data);
                 data.$img.attr('src', imgurl);
