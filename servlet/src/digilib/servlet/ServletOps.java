@@ -32,7 +32,6 @@ import java.util.StringTokenizer;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -302,7 +301,8 @@ public class ServletOps {
     		logger.error("No response!");
     		return;
     	}
-        logger.debug("sending to response: ("+ headersToString(response) + ") committed=" + response.isCommitted());
+        //logger.debug("sending to response: ("+ headersToString(response) + ") committed=" + response.isCommitted());
+        logger.debug("sending to response. committed=" + response.isCommitted());
         // TODO: should we erase or replace old last-modified header?
         try {
             OutputStream outstream = response.getOutputStream();
@@ -346,6 +346,7 @@ public class ServletOps {
     }
     
     /** Returns text representation of headers for debuggging purposes.
+     * Works only with Servlet spec 3.0!
      * @param resp
      * @return
      */
