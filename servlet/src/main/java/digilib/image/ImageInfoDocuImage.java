@@ -6,7 +6,7 @@ package digilib.image;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-import org.marcoschmidt.image.ImageInfo;
+import org.devlib.schmidt.imageinfo.ImageInfo;
 
 import digilib.io.ImageInput;
 import digilib.util.ImageSize;
