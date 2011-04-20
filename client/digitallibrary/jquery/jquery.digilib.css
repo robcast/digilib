@@ -59,11 +59,13 @@ div.digilib div.about {
 div.digilib div.region {
 	position: absolute;
 	background-color: red;
-	opacity: 0.3;
+    opacity: 0.3;
+	filter:progid:DXImageTransform.Microsoft.Alpha(opacity=30); 
 }
 
 div.digilib div.region:hover {
 	opacity: 0.5;
+	filter:progid:DXImageTransform.Microsoft.Alpha(opacity=50); 
 }
 
 div.digilib div.region {

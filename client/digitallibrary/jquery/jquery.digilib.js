@@ -1378,7 +1378,13 @@ if (typeof console === 'undefined') {
     // update scaler image transform
     var updateImgTrafo = function (data) {
         var $img = data.$img;
-        if ($img != null && $img.get(0).complete) {
+        if ($img == null)
+            return;
+        var image  = $img.get(0);
+        var imgLoaded = $.browser.msie
+            ? image.width > 0
+            : image.complete;
+        if (imgLoaded) {
             // create Transform from current zoomArea and image size
             data.imgTrafo = getImgTrafo($img, data.zoomArea,
                     data.settings.rot, data.scalerFlags.hmir, data.scalerFlags.vmir,
