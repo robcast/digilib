@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>digilib</artifactId>
+    <groupId>digilib</groupId>
+    <version>2.0-SNAPSHOT</version>
+  </parent>
+  <groupId>digilib</groupId>
+  <artifactId>digilib-servlet2</artifactId>
+  <version>2.0-SNAPSHOT</version>
+  <name>digilib-servlet2</name>
+  <description>The Digital Image Library - Servlet with version 2 API</description>
+  <url>http://maven.apache.org</url>
+  <packaging>jar</packaging>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  <dependencies>
+  	<dependency>
+  		<groupId>digilib</groupId>
+  		<artifactId>digilib-common</artifactId>
+  		<type>jar</type>
+  		<scope>compile</scope>
+  	</dependency>
+  	<dependency>
+  		<groupId>javax.servlet</groupId>
+  		<artifactId>servlet-api</artifactId>
+  		<version>2.3</version>
+  		<type>jar</type>
+  		<scope>provided</scope>
+  	</dependency>
+  </dependencies>
+</project>

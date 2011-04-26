@@ -22,7 +22,42 @@
             </configuration>
   		</plugin>
   	</plugins>
+  	<pluginManagement>
+  		<plugins>
+  			<plugin>
+  				<groupId>org.apache.maven.plugins</groupId>
+  				<artifactId>maven-war-plugin</artifactId>
+  				<version>2.1.1</version>
+  			</plugin>
+  		</plugins>
+  	</pluginManagement>
   </build>
+  <profiles>
+  	<profile>
+  		<id>servlet2</id>
+  		<activation>
+  			<activeByDefault>true</activeByDefault>
+  		</activation>
+  		<dependencyManagement>
+  			<dependencies>
+  			</dependencies>
+  		</dependencyManagement>
+  	</profile>
+  	<profile>
+  		<id>servlet3</id>
+  		<dependencyManagement>
+  			<dependencies>
+  				<dependency>
+  					<groupId>org.mortbay.jetty</groupId>
+  					<artifactId>servlet-api</artifactId>
+  					<version>3.0.20100224</version>
+  					<type>jar</type>
+  					<scope>provided</scope>
+  				</dependency>
+  			</dependencies>
+  		</dependencyManagement>
+  	</profile>
+  </profiles>
   <repositories>
     <repository>
       <id>itextpdf.com</id>
@@ -39,20 +74,6 @@
 
   <dependencyManagement>
   	<dependencies>
-  		<dependency>
-  			<groupId>digilib</groupId>
-  			<artifactId>digilib-servlet</artifactId>
-  			<version>2.0-SNAPSHOT</version>
-  			<type>jar</type>
-  			<scope>compile</scope>
-  		</dependency>
-  		<dependency>
-  			<groupId>digilib</groupId>
-  			<artifactId>digilib-webapp</artifactId>
-  			<version>2.0-SNAPSHOT</version>
-  			<type>war</type>
-  			<scope>compile</scope>
-  		</dependency>
     <dependency>
       <groupId>javax.media</groupId>
       <artifactId>jai_imageio</artifactId>
@@ -96,11 +117,39 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-        <groupId>org.mortbay.jetty</groupId>
-        <artifactId>servlet-api</artifactId>
-        <version>3.0.20100224</version>
-        <type>jar</type>
-        <scope>provided</scope>
+    	<groupId>digilib</groupId>
+    	<artifactId>digilib-common</artifactId>
+    	<version>2.0-SNAPSHOT</version>
+    	<type>jar</type>
+    	<scope>compile</scope>
+    </dependency>
+    <dependency>
+    	<groupId>digilib</groupId>
+    	<artifactId>digilib-pdf</artifactId>
+    	<version>2.0-SNAPSHOT</version>
+    	<type>jar</type>
+    	<scope>compile</scope>
+    </dependency>
+    <dependency>
+    	<groupId>digilib</groupId>
+    	<artifactId>digilib-servlet2</artifactId>
+    	<version>2.0-SNAPSHOT</version>
+    	<type>jar</type>
+    	<scope>compile</scope>
+    </dependency>
+    <dependency>
+    	<groupId>digilib</groupId>
+    	<artifactId>digilib-servlet3</artifactId>
+    	<version>2.0-SNAPSHOT</version>
+    	<type>jar</type>
+    	<scope>compile</scope>
+    </dependency>
+    <dependency>
+    	<groupId>digilib</groupId>
+    	<artifactId>digilib-webapp</artifactId>
+    	<version>2.0-SNAPSHOT</version>
+    	<type>war</type>
+    	<scope>compile</scope>
     </dependency>
   	</dependencies>
   </dependencyManagement>
@@ -135,7 +184,10 @@
   <dependencies>
   </dependencies>
   <modules>
-    <module>client</module>
-    <module>servlet</module>
+  	<module>webapp</module>
+  	<module>common</module>
+    <module>servlet2</module>
+    <module>servlet3</module>
+    <module>pdf</module>
   </modules>
 </project>
