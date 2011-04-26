@@ -1,0 +1,47 @@
+
+The plugin API of jquery.digilib
+--------------------------------
+
+* The plugin Javascript file has to be loaded after jquery.digilib.js.
+
+* The plugin should be written as a closure on jQuery (like a jquery plugin) exporting a plugin object as its interface:
+
+  var plugin = {
+            name : 'mydigilibplugin',
+            install : install,
+            init : init,
+            buttons : {},
+            actions : {},
+            fn : {},
+            plugins : {},
+            defaults : {}
+  };
+
+  The "name" string, "install" function and "init" function are provided by the plugin and called by digilib. 
+  "buttons", "actions", "fn" and "plugins" are shared objects provided by digilib.
+  "buttons" is the array of button objects. The plugin can add its own buttons to this array.
+  "actions" is the array of action objects. The plugin can add its own actions to this array.
+  "fn" is an object with functions from digilib.
+  "plugins" is an object with all digilib plugin objects.
+  "defaults" is an object with all digilib defaults.
+
+* the plugin object is passed to digilib in the "plugin" action on loading the plugin javascript file:
+
+  $.fn.digilib('plugin', plugin);
+
+  digilib then calls the "install" function on the populated plugin object (i.e. this = plugin) with the plugin object as parameter.
+  
+* digilib calls the "init" function from the plugin object with the data object instance as a parameter in digilibs init phase.
+
+* further actions should be implemented as custom events on the data object.
+
+* events triggered by digilib on the data object:
+  "setup": in the init phase, after scalerDiv and buttons have been set up.
+  "update", updateDisplay(): after small updates in the display, e.g. when the scaler-img finished loading.
+  "redisplay", redisplay(): after changes in the display, e.g. after changing zoom factor.
+  "dragZoom(newZoomArea)": while dragging the zoom area (with parameter newZoomArea).
+
+* initial options for the plugin can be passed to digilib, together with digilib options, by passing an object to the 'digilib' function: $div.digilib(options);
+The passed options extend/override the default digilib options. The options are stored in the "data.settings" array.
+
+* A functional stub for new digilib plugins is available in the file "jquery.digilib.pluginstub.js"

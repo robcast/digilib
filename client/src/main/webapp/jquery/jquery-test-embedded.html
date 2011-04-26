@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Digilib jQuery Test: embedded</title>
+
+        <style type="text/css">
+            body {
+                 background: silver;
+            }
+
+            div.digilib {
+                /* padding for buttons and bird-div */
+                padding-right: 18px;
+                padding-bottom: 100px;
+                /* width: 220px; */
+            }
+
+            div.svg {
+                position: absolute;
+                background: transparent;
+            }
+
+            td {
+                vertical-align: top;
+                }
+
+            #debug {
+                background-color: beige;
+                position: absolute;
+                top: 400px;
+                padding: 0px 10px;
+                font-family: Arial;
+                font-size: 9pt;
+                }
+
+            div._log {
+                color: grey;
+                }
+
+            div._debug {
+                color: darkgreen;
+                }
+
+            div._error {
+                color: red;
+                }
+
+            div#test:hover {
+                background-color: cornsilk;
+                }
+
+        </style>
+
+        <script type="text/javascript" src="jquery-1.5.1.js"></script>
+        <script type="text/javascript" src="jquery.cookie.js"></script>
+        <script type="text/javascript" src="jquery.digilib.js"></script>
+        <script type="text/javascript" src="jquery.digilib.geometry.js"></script>
+        <script type="text/javascript" src="jquery.digilib.birdseye.js"></script>
+        <script type="text/javascript" src="jquery.digilib.regions.js"></script>
+        <script type="text/javascript" src="jquery.digilib.pluginstub.js"></script>
+        <link rel="stylesheet" type="text/css" href="jquery.digilib.css" />
+
+
+        <script type="text/javascript">
+            $(document).ready(function(){
+                var opts = {
+                    interactionMode : 'embedded',
+                    scalerBaseUrl : 'http://digilib.biblhertz.it/digilib04/servlet/Scaler',
+                    showRegionNumbers : false,
+                    autoRegionLinks : true
+                    };
+                var $div = $('div.digilib');
+                $div.digilib(opts);
+
+                // $('div.digilib').each(function(){
+                //    console.log($(this).data('digilib').settings);
+                //    });
+            });
+
+        </script>
+    </head>
+
+    <body>
+        <table>
+            <tr>
+                <td>
+                    <div id="digilib-1" class="digilib single">
+                        <img title="test" alt="testalt" src="http://digilib.biblhertz.it/digilib04/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/&amp;pn=1" />
+                    </div>
+                </td>
+
+                <td>
+                    <div id="digilib-2" class="digilib">
+                        <img src="http://digilib.biblhertz.it/digilib04/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/ferrara" />
+                    </div>
+                </td>
+
+                <td>
+                    <div id="digilib-3" class="digilib">
+                        <img src="http://digilib.biblhertz.it/digilib04/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/FransHals-WillemVanHeythuysen" />
+                        <div class="keep regioncontent">
+                            <a href="http://www.mpiwg-berlin.mpg.de" coords="0.1,0.1,0.4,0.1">MPI fuer Wissenschaftsgeschichte</a>
+                            <a href="http://www.biblhertz.it" coords="0.5,0.8,0.4,0.1">Bibliotheca Hertziana</a>
+                            <a coords="0.3,0.5,0.15,0.1" />
+                        </div>
+                    </div>
+                </td>
+
+                <td>
+                    <div id="digilib-4" class="digilib">
+                        <img src="http://digilib.biblhertz.it/digilib04/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/HansHolbein-NikolausKratzer" />
+                    </div>
+                </td>
+            </tr>
+        </table>
+        <div id="debug">DEBUG</div>
+        <div id="test">
+            <img id="test" src="img/black-glass-16.png"></img>
+            <img id="test2" src="img/black-glass-32.png"></img>
+        </div>
+    </body>
+</html>
+

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">
+ 
+<web-app>
+  <!-- General description of your web application -->
+  <display-name>
+        digilib
+  </display-name>
+  <description>
+        This is the web frontend of the Digital Document Library.
+  </description>
+  <!-- The Intialisation Listener -->
+  <listener>
+        <listener-class>
+            digilib.servlet.Initialiser
+        </listener-class>
+  </listener>
+  <!-- The Scaler servlet -->
+  <servlet>
+        <servlet-name>
+            Scaler
+        </servlet-name>
+        <servlet-class>
+            digilib.servlet.ScalerNoAsync
+        </servlet-class>
+        <!-- Load this servlet at server startup time -->
+        <load-on-startup>
+            5
+        </load-on-startup>
+  </servlet>
+  <!-- The Texter servlet -->
+  <servlet>
+        <servlet-name>
+            Texter
+        </servlet-name>
+        <servlet-class>
+            digilib.servlet.Texter
+        </servlet-class>
+  </servlet>
+  <!-- The PDFCache servlet -->
+  <servlet>
+        <servlet-name>
+            PDFCache
+        </servlet-name>
+        <servlet-class>
+            digilib.servlet.PDFCache
+        </servlet-class>
+  </servlet>
+  <!-- The mapping for the Scaler servlet -->
+  <servlet-mapping>
+        <servlet-name>
+            Scaler
+        </servlet-name>
+        <url-pattern>
+            /servlet/Scaler/*
+        </url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+        <servlet-name>
+            Scaler
+        </servlet-name>
+        <url-pattern>
+            /Scaler
+        </url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+        <servlet-name>
+            Scaler
+        </servlet-name>
+        <url-pattern>
+            /authenticated/servlet/Scaler/*
+        </url-pattern>
+  </servlet-mapping>
+  <!-- The mapping for the Texter servlet -->
+  <servlet-mapping>
+        <servlet-name>
+            Texter
+        </servlet-name>
+        <url-pattern>
+            /servlet/Texter/*
+        </url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+        <servlet-name>
+            Texter
+        </servlet-name>
+        <url-pattern>
+            /authenticated/servlet/Texter/*
+        </url-pattern>
+  </servlet-mapping>
+  <!-- The mapping for the Texter servlet -->
+  <servlet-mapping>
+        <servlet-name>
+            PDFCache
+        </servlet-name>
+        <url-pattern>
+            /servlet/PDFCache/*
+        </url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+        <servlet-name>
+            PDFCache
+        </servlet-name>
+        <url-pattern>
+            /authenticated/servlet/PDFCache/*
+        </url-pattern>
+  </servlet-mapping>
+  <!-- region for authenticated access -->
+  <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>
+                Authenticated Digilib
+            </web-resource-name>
+            <url-pattern>
+                /authenticated/*
+            </url-pattern>
+        </web-resource-collection>
+        <!-- we need a default user -->
+<!--         <auth-constraint>
+            <role-name>
+                user
+            </role-name>
+        </auth-constraint>  -->
+  </security-constraint>
+  <login-config>
+  <!--
+        <auth-method>BASIC</auth-method>
+        <realm-name>digilib</realm-name> 
+   -->
+        <auth-method>
+            FORM
+        </auth-method>
+        <form-login-config>
+            <form-login-page>
+                /digilib-login.html
+            </form-login-page>
+            <form-error-page>
+                /digilib-fail.html
+            </form-error-page>
+        </form-login-config>
+  </login-config>
+</web-app>

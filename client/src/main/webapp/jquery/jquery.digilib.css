@@ -1,0 +1,206 @@
+/* 
+ * CSS style file for jQuery digilib
+ *
+ * Martin Raspe, Robert Casties, 11.1.2011
+ */
+div.digilib div.scaler {
+	background-color: grey;
+	z-index: 0;
+	width: 0px;
+	height: 0px;
+}
+
+div.digilib div.birdview {
+	border: 1px solid white;
+	z-index: 10;
+}
+
+div.digilib div.zoomrect {
+	position: absolute;
+	border: 2px solid #ff0000;
+	z-index: 100;
+}
+
+div.digilib div.birdzoom {
+    position: absolute;
+    border: 2px solid #ff0000;
+    z-index: 100;
+}
+
+div.digilib div.mark {
+	position: absolute;
+	color: white;
+	background: url('../greyskin/mark-bg-16.png');
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	font-size: 11px;
+	height: 15px;
+	width: 16px;
+	padding-top: 1px;
+	text-align: center;
+	z-index: 10;
+}
+
+div.digilib div.about {
+	position: absolute;
+	width: 200px;
+	top: 100px;
+	left: 350px;
+	height: 200px;
+	padding: 0px 2px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	border: 2px solid lightcyan;
+	background-color: lightgrey;
+	text-align: center;
+	display: none;
+	z-index: 1000;
+}
+
+div.digilib div.region {
+	position: absolute;
+	background-color: red;
+    opacity: 0.3;
+	filter:progid:DXImageTransform.Microsoft.Alpha(opacity=30); 
+}
+
+div.digilib div.region:hover {
+	opacity: 0.5;
+	filter:progid:DXImageTransform.Microsoft.Alpha(opacity=50); 
+}
+
+div.digilib div.region {
+    color: white;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 11px;
+}
+
+div.digilib div.region a.regionnumber {
+    color: white;
+    text-decoration: none;
+	font-weight: bold;
+	font-size: 11px;
+	text-align: center;
+    padding: 0px 2px;
+    margin-right: 4px;
+    border: 1px solid white;
+    display: inline-block;
+}
+
+div.digilib div.regioncontent {
+    display: none;
+}
+
+div.digilib div.regionHTML {
+    display: none;
+    position: absolute;
+	top: 100px;
+	padding: 10px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	border: 2px solid lightcyan;
+	color: black;
+	background-color: lightgrey;
+	z-index: 1000;
+}
+
+div.digilib div.regionHTML a {
+    color: white;
+    text-decoration: none;
+    font-size: 11px;
+	font-weight: bold;
+}
+
+div.infobutton {
+    background-color: white;
+    color: grey;
+    padding: 0px 4px;
+    margin: 0px 2px;
+    float: left;
+}
+
+div.info {
+    clear: both;
+    display: none;
+    margin: 10px;
+}
+
+div.infoheader {
+    width: 300px;
+    margin-bottom: 20px;
+}
+
+div.digilib div.arrows {
+    display: none;
+}
+
+div.digilib div.arrows div.button {
+    position: absolute;
+    text-align: center;
+    background-color: black;
+    opacity: 0.08;
+    z-index: 200;
+    }
+
+div.digilib div.arrows div.button:hover {
+    opacity: 0.5;
+}
+
+div.digilib div.arrows div.button a {
+    position: relative;
+}
+
+/* special definitions for fullscreen */
+div.digilib.dl_fullscreen div.buttons {
+	position: fixed;
+	right: 0px;
+	top: 0px;
+	padding: 2px;
+	background-color: transparent;
+	z-index: 200;
+}
+
+div.digilib.dl_fullscreen div.buttons div.button:hover {
+	background-image: url('img/fullscreen/corona.png');
+	background-repeat: no-repeat;
+}
+
+div.digilib.dl_fullscreen div.button-on {
+	background-image: url('img/fullscreen/whitedisc.png');
+	background-repeat: no-repeat;
+}
+
+div.digilib.dl_fullscreen div.birdview {
+	position: fixed;
+	bottom: 8px;
+	right: 48px;
+}
+
+/* special definitions for embedded */
+div.digilib.dl_embedded {
+	position: relative;
+}
+
+div.digilib.dl_embedded div.buttons {
+	position: absolute;
+	right: 0px;
+	top: 0px;
+	padding: 1px;
+	background-color: grey;
+	opacity: 0.5;
+	z-index: 100;
+}
+
+div.digilib.dl_embedded div.buttons div.button:hover {
+	background-color: black;
+}
+
+div.digilib.dl_embedded div.button-on {
+	background-color: darkgreen;
+}
+
+div.digilib.dl_embedded div.birdview {
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+}
+
