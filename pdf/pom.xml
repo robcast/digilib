@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>digilib</artifactId>
@@ -9,4 +10,64 @@
   <artifactId>digilib-pdf</artifactId>
   <version>2.0-SNAPSHOT</version>
   <name>digilib-pdf</name>
+  <description>The Digital Image Library - PDF generation servlet</description>
+  <url>http://digilib.berlios.de</url>
+  <dependencies>
+    <dependency>
+      <groupId>digilib</groupId>
+      <artifactId>digilib-common</artifactId>
+      <type>jar</type>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.itextpdf</groupId>
+      <artifactId>itextpdf</artifactId>
+      <type>jar</type>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.3</version>
+      <type>jar</type>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+  <profiles>
+    <profile>
+      <id>servlet2</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+        <property>
+          <name>servletapi</name>
+          <value>2</value>
+        </property>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>digilib</groupId>
+          <artifactId>digilib-servlet2</artifactId>
+          <type>jar</type>
+          <scope>provided</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>servlet3</id>
+      <activation>
+        <property>
+          <name>servletapi</name>
+          <value>3</value>
+        </property>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>digilib</groupId>
+          <artifactId>digilib-servlet3</artifactId>
+          <type>jar</type>
+          <scope>provided</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
 </project>
