@@ -7,11 +7,9 @@
 		<version>2.0-SNAPSHOT</version>
 	</parent>
 	<groupId>digilib</groupId>
-	<artifactId>digilib-pdf</artifactId>
+	<artifactId>text</artifactId>
 	<version>2.0-SNAPSHOT</version>
-	<name>digilib-pdf</name>
-	<description>The Digital Image Library - PDF generation servlet</description>
-	<url>http://digilib.berlios.de</url>
+	<name>digilib-text</name>
 	<dependencies>
 		<dependency>
 			<groupId>digilib</groupId>
@@ -19,13 +17,9 @@
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.itextpdf</groupId>
-			<artifactId>itextpdf</artifactId>
-			<type>jar</type>
-			<scope>compile</scope>
-		</dependency>
 	</dependencies>
+	<description>The Digital Image Library - text (plain or XML) serving servlet</description>
+	<url>http://digilib.berlios.de</url>
 	<profiles>
 		<profile>
 			<id>servlet2</id>

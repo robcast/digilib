@@ -189,5 +189,6 @@
     <module>servlet2</module>
     <module>servlet3</module>
     <module>pdf</module>
+    <module>text</module>
   </modules>
 </project>
