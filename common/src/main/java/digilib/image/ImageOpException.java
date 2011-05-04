@@ -22,7 +22,7 @@ package digilib.image;
 
 public class ImageOpException extends Exception {
 
-	private static final long serialVersionUID = -8662921779682407942L;
+    private static final long serialVersionUID = -8662921779682407942L;
 
 	public ImageOpException() {
 	}
@@ -30,4 +30,9 @@ public class ImageOpException extends Exception {
 	public ImageOpException(String s) {
 		super(s);
 	}
+
+	public ImageOpException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }

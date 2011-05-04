@@ -37,12 +37,12 @@ public class ImageWorker implements Callable<DocuImage> {
         logger.debug("image worker starting");
         long startTime = System.currentTimeMillis();
 
-        /* crop and scale image */
-
-        // new DocuImage instance
-        DocuImage docuImage = DigilibConfiguration.getDocuImageInstance();
+        DocuImage docuImage = jobinfo.getDocuImage();
         if (docuImage == null) {
-            throw new ImageOpException("Unable to load DocuImage class!");
+            docuImage = DigilibConfiguration.getDocuImageInstance();
+            if (docuImage == null) {
+                throw new ImageOpException("Unable to load DocuImage class!");
+            }
         }
 
         // set interpolation quality

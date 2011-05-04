@@ -13,6 +13,11 @@ public class ImageStream extends ImageInput {
 
     protected InputStream stream = null;
 
+    /** Create ImageStream from InputStream and String.
+     * 
+     * @param stream
+     * @param mimeType mime-type
+     */
     public ImageStream(InputStream stream, String mimeType) {
         this.stream = stream;
         this.mimetype = mimeType;

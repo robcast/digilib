@@ -32,4 +32,8 @@ public class FileOpException extends IOException {
 	public FileOpException(String s) {
 		super(s);
 	}
+
+    public FileOpException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

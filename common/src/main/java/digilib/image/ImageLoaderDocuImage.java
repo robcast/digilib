@@ -52,7 +52,6 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
-import javax.servlet.ServletException;
 
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
@@ -65,6 +64,12 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 	/** image object */
 	protected BufferedImage img;
 	
+	/** the reader object */
+	protected ImageReader reader = null;
+	
+    /** try to reuse reader object */
+    public boolean reuseReader = false;
+    
 	/** interpolation type */
 	protected RenderingHints renderHint = null;
 
@@ -172,7 +177,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             int w = 0;
             try {
                 if (img == null) {
-                    ImageReader reader = getReader(input);
+                    reader = getReader(input);
                     // get size from ImageReader
                     h = reader.getHeight(0);
                     w = reader.getWidth(0);
@@ -197,13 +202,15 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
     /* Check image size and type and store in ImageInput */
     public ImageInput identify(ImageInput input) throws IOException {
-        // try parent method first
-        ImageInput ii = super.identify(input);
-        if (ii != null) {
-            return ii;
+        ImageInput ii = null;
+        if (!reuseReader) {
+            // try parent method first
+            ii = super.identify(input);
+            if (ii != null) {
+                return ii;
+            }
         }
         logger.debug("identifying (ImageIO) " + input);
-        ImageReader reader = null;
         try {
             /*
              * try ImageReader
@@ -229,7 +236,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             logger.error("ImageLoaderDocuimage unable to identify:", e);
             return null;
         } finally {
-            if (reader != null) {
+            if (!reuseReader && reader != null) {
                 reader.dispose();
             }
         }
@@ -246,7 +253,10 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		        img = ImageIO.read(ii.getFile());
 		    }
 		} catch (IOException e) {
-			throw new FileOpException("Error reading image.");
+			throw new FileOpException("Error reading image!", e);
+		}
+		if (img == null) {
+		    throw new FileOpException("Unable to read image!");
 		}
 	}
 
@@ -257,9 +267,13 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 	 */
 	public ImageReader getReader(ImageInput input) throws IOException {
 		logger.debug("get ImageReader for " + input);
+		if (reuseReader && reader != null) {
+		    logger.debug("reuseing ImageReader");
+		    return reader;
+		}
 		ImageInputStream istream = null;
 		if (input.hasImageInputStream()) {
-			// stream input
+			// ImageInputStream input
 			istream = input.getImageInputStream();
 		} else if (input.hasFile()) {
 			// file only input
@@ -302,9 +316,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			throws FileOpException {
 		logger.debug("loadSubimage");
         this.input = ii;
-        ImageReader reader = null;
+        //ImageReader reader = null;
 		try {
-			reader = getReader(ii);
+		    reader = getReader(ii);
 			// set up reader parameters
 			ImageReadParam readParam = reader.getDefaultReadParam();
 			readParam.setSourceRegion(region);
@@ -323,9 +337,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 	            img = dest;
 	        } */
 		} catch (IOException e) {
-			throw new FileOpException("Unable to load File!");
+			throw new FileOpException("Unable to load File!", e);
 		} finally {
-		    if (reader != null) {
+		    if (!reuseReader && reader != null) {
 		        reader.dispose();
 		    }
 		}
@@ -333,7 +347,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
 	/* write image of type mt to Stream */
 	public void writeImage(String mt, OutputStream ostream)
-			throws ImageOpException, ServletException {
+			throws ImageOpException, FileOpException {
 		logger.debug("writeImage");
 		// setup output
 		ImageWriter writer = null;
@@ -382,7 +396,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
 		} catch (IOException e) {
 		    logger.error("Error writing image:", e);
-			throw new ServletException("Error writing image:", e);
+			throw new FileOpException("Error writing image!", e);
 		}
 		// TODO: should we: finally { writer.dispose(); }
 	}
@@ -638,6 +652,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     }
 
 	public void dispose() {
+	    if (reader != null) {
+	        reader.dispose();
+	    }
 	    // is this necessary?
 		img = null;
 	}

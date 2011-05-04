@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
 
@@ -193,7 +192,7 @@ public abstract class DocuImageImpl implements DocuImage {
     public abstract void scale(double scaleX, double scaleY) throws ImageOpException;
 
     public abstract void writeImage(String mt, OutputStream ostream)
-            throws ServletException, ImageOpException;
+            throws ImageOpException, FileOpException;
 
 	
 }

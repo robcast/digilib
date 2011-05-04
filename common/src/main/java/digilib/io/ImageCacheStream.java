@@ -3,10 +3,11 @@
  */
 package digilib.io;
 
+import java.io.IOException;
 import java.io.InputStream;
 
+import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.MemoryCacheImageInputStream;
 
 /**
  * @author casties
@@ -14,8 +15,24 @@ import javax.imageio.stream.MemoryCacheImageInputStream;
  */
 public class ImageCacheStream extends ImageStream {
 
-    public ImageCacheStream(InputStream stream, String mimeType) {
+    private ImageInputStream iis = null;
+    
+    /** Create ImageCacheStream from InputStream and mime-type.
+     * 
+     * @param stream
+     * @param mimeType
+     * @throws IOException 
+     */
+    public ImageCacheStream(InputStream stream, String mimeType) throws IOException {
         super(stream, mimeType);
+        /*
+         * Type of stream backing configured via ImageIO.setUseCache(). 
+         * [...] In general, it is preferable to
+         * use a FileCacheImageInputStream when reading from a regular
+         * InputStream. This class is provided for cases where it is not
+         * possible to create a writable temporary file.
+         */
+        iis = ImageIO.createImageInputStream(stream);
     }
 
     /*
@@ -35,14 +52,6 @@ public class ImageCacheStream extends ImageStream {
      */
     @Override
     public ImageInputStream getImageInputStream() {
-        /*
-         * TODO: which type of stream backing? 
-         * In general, it is preferable to
-         * use a FileCacheImageInputStream when reading from a regular
-         * InputStream. This class is provided for cases where it is not
-         * possible to create a writable temporary file.
-         */
-        ImageInputStream iis = new MemoryCacheImageInputStream(this.stream);
         return iis;
     }
 

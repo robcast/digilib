@@ -39,6 +39,7 @@ public class ImageJobDescription extends ParameterMap {
 	ImageInput input = null;
 	ImageSet imageSet = null;
 	DocuDirectory fileDir = null;
+	DocuImage docuImage = null;
 	String filePath = null;
 	ImageSize expectedSourceSize = null;
 	Float scaleXY = null;
@@ -142,7 +143,15 @@ public class ImageJobDescription extends ParameterMap {
 		return mimeType;
 	}
 	
-	/** Returns the ImageInput to use.
+	/**
+     * @param input the input to set
+     */
+    public void setInput(ImageInput input) {
+        this.input = input;
+    }
+
+
+    /** Returns the ImageInput to use.
 	 * @return
 	 * @throws IOException
 	 */
@@ -560,4 +569,20 @@ public class ImageJobDescription extends ParameterMap {
 			|| (!(isLoresOnly() || isHiresOnly()) && is.fitsIn(ess)));
 		return ! nt;
 	}
+
+
+    /**
+     * @return the docuImage
+     */
+    public DocuImage getDocuImage() {
+        return docuImage;
+    }
+
+
+    /**
+     * @param docuImage the docuImage to set
+     */
+    public void setDocuImage(DocuImage docuImage) {
+        this.docuImage = docuImage;
+    }
 }

@@ -35,7 +35,6 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.JAI;
-import javax.servlet.ServletException;
 
 import digilib.io.FileOpException;
 import digilib.io.ImageInput;
@@ -173,7 +172,7 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 
 	/* Write the current image to an OutputStream. */
 	public void writeImage(String mt, OutputStream ostream)
-		throws ImageOpException, ServletException {
+		throws ImageOpException, FileOpException {
 		logger.debug("writeImage");
 		try {
 			// setup output
@@ -191,7 +190,7 @@ public class JAIImageLoaderDocuImage extends JAIDocuImage {
 			// render output
 			JAI.create("ImageWrite", pb3);
 		} catch (RuntimeException e) {
-			throw new ServletException("Error writing image.");
+			throw new FileOpException("Error writing image.");
 		}
 	}
 

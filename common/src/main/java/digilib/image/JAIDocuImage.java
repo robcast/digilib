@@ -39,7 +39,6 @@ import javax.media.jai.ParameterBlockJAI;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.TransposeDescriptor;
 import javax.media.jai.operator.TransposeType;
-import javax.servlet.ServletException;
 
 import com.sun.media.jai.codec.ImageCodec;
 
@@ -188,7 +187,7 @@ public class JAIDocuImage extends ImageInfoDocuImage {
 	}
 
 	/* Write the current image to an OutputStream. */
-	public void writeImage(String mt, OutputStream ostream) throws ServletException, ImageOpException {
+	public void writeImage(String mt, OutputStream ostream) throws ImageOpException, FileOpException {
 		try {
 			// setup output
 			ParameterBlock pb3 = new ParameterBlock();
@@ -207,7 +206,7 @@ public class JAIDocuImage extends ImageInfoDocuImage {
 
 		} catch (RuntimeException e) {
 		    // JAI likes to throw RuntimeExceptions
-			throw new ServletException("Error writing image:", e);
+			throw new FileOpException("Error writing image: "+e);
 		}
 	}
 

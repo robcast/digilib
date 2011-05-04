@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
 
-import javax.servlet.ServletException;
 
 import digilib.io.FileOpException;
 import digilib.io.ImageInput;
@@ -72,11 +71,11 @@ public interface DocuImage {
 	 * 
 	 * @param mt mime-type of the image to be sent.
 	 * @param ostream OutputStream where the image is sent.
-	 * @throws ServletException Exception thrown on sending data.
 	 * @throws ImageOpException Exception in other cases.
+	 * @throws FileOpException Exception on sending data
 	 */
 	public void writeImage(String mt, OutputStream ostream)
-		throws ServletException, ImageOpException;
+		throws ImageOpException, FileOpException;
 
 	/** The width of the current image in pixel.
 	 * 
