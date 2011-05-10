@@ -60,7 +60,7 @@ import digilib.util.ParameterMap;
  * @author casties
  * 
  */
-public abstract class DigilibRequest extends ParameterMap {
+public class DigilibRequest extends ParameterMap {
 
 	protected DocuImage image; // internal DocuImage instance for this request
 
