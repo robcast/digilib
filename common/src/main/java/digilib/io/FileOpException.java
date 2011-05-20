@@ -34,6 +34,9 @@ public class FileOpException extends IOException {
 	}
 
     public FileOpException(String message, Throwable cause) {
+        /* only Java6, sigh.
         super(message, cause);
+        */
+        super(message+" caused by "+cause.toString());
     }
 }
