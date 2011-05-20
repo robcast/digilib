@@ -52,7 +52,7 @@ public class Initialiser implements ServletContextListener {
 	/** servlet version */
 	public static final String version = "0.3";
 
-	/** gengeral logger for this class */
+	/** general logger for this class */
 	private static Logger logger = Logger.getLogger("digilib.init");
 
 	/** DocuDirCache instance */
@@ -75,7 +75,8 @@ public class Initialiser implements ServletContextListener {
 	 */
     public void contextInitialized(ServletContextEvent cte) {
         ServletContext context = cte.getServletContext();
-
+        context.log("***** Digital Image Library Initialiser (version "
+                + version + ") *****");
 		System.out.println("***** Digital Image Library Initialiser (version "
 						+ version + ") *****");
 

@@ -45,7 +45,7 @@
             <artifactId>maven-war-plugin</artifactId>
             <configuration>
               <webXml>${basedir}/src/main/webapp/WEB-INF/web-2.3.xml</webXml>
-              <classifier>srv3</classifier>
+              <classifier>srv2</classifier>
             </configuration>
           </plugin>
         </plugins>
