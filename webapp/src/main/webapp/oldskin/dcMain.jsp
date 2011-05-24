@@ -18,7 +18,7 @@ public void jspInit() {
 // parsing the query
 // -----------------
 
-digilib.servlet.DigilibRequest dcRequest = new digilib.servlet.DigilibRequest(request);
+digilib.servlet.DigilibServletRequest dcRequest = new digilib.servlet.DigilibServletRequest(request);
 // check if authentication is needed and redirect if necessary
 docBean.doAuthentication(dcRequest, response);
 // set number of pages  

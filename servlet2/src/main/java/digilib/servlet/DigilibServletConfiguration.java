@@ -164,71 +164,77 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
 		readConfig(c);
 	}
 
-	/**
-	 * read parameter list from the XML file in init parameter "config-file"
-	 * or file digilib-config.xml
-	 */
-	@SuppressWarnings("unchecked")
+    /**
+     * read parameter list from the XML file in init parameter "config-file" or
+     * file digilib-config.xml
+     */
+    @SuppressWarnings("unchecked")
     public void readConfig(ServletContext c) throws Exception {
 
-		/*
-		 * Get config file name. The file name is first looked for as an init
-		 * parameter, then in a fixed location in the webapp.
-		 */
-		if (c == null) {
-			// no config no file...
-			return;
-		}
-		String fn = c.getInitParameter("config-file");
-		if (fn == null) {
-			fn = ServletOps.getConfigFile("digilib-config.xml", c);
-			if (fn == null) {
-				logger.fatal("readConfig: no param config-file");
-				throw new ServletException("ERROR: no digilib config file!");
-			}
-		}
-		File f = new File(fn);
-		// setup config file list reader
-		XMLListLoader lilo =
-			new XMLListLoader("digilib-config", "parameter", "name", "value");
-		// read config file into HashMap
-		Map<String,String> confTable = lilo.loadURL(f.toURL().toString());
+        /*
+         * Get config file name. The file name is first looked for as an init
+         * parameter, then in a fixed location in the webapp.
+         */
+        if (c == null) {
+            // no config no file...
+            return;
+        }
+        String fn = c.getInitParameter("config-file");
+        if (fn == null) {
+            fn = ServletOps.getConfigFile("digilib-config.xml", c);
+            if (fn == null) {
+                logger.fatal("readConfig: no param config-file");
+                throw new ServletException("ERROR: no digilib config file!");
+            }
+        }
+        File f = new File(fn);
+        // setup config file list reader
+        XMLListLoader lilo = new XMLListLoader("digilib-config", "parameter",
+                "name", "value");
+        // read config file into HashMap
+        Map<String, String> confTable = lilo.loadURL(f.toURL().toString());
 
-		// set config file path parameter
-		setValue("servlet.config.file", f.getCanonicalPath());
+        // set config file path parameter
+        setValue("servlet.config.file", f.getCanonicalPath());
 
-		/*
-		 * read parameters
-		 */
+        /*
+         * read parameters
+         */
 
-		for (Entry<String, String> confEntry: confTable.entrySet()) {
-			Parameter p = get(confEntry.getKey());
-			if (p != null) {
-				if (p.getType() == 's') {
-					// type 's' Parameters are not overwritten.
-					continue;
-				}
-				if (!p.setValueFromString(confEntry.getValue())) {
-					/*
-					 * automatic conversion failed -- try special cases
-					 */
+        for (Entry<String, String> confEntry : confTable.entrySet()) {
+            Parameter p = get(confEntry.getKey());
+            if (p != null) {
+                if (p.getType() == 's') {
+                    // type 's' Parameters are not overwritten.
+                    continue;
+                }
+                if (!p.setValueFromString(confEntry.getValue())) {
+                    /*
+                     * automatic conversion failed -- try special cases
+                     */
 
-					// basedir-list
-					if (confEntry.getKey().equals("basedir-list")) {
-						// split list into directories
-						String[] sa = FileOps.pathToArray(confEntry.getValue());
-						if (sa != null) {
-							p.setValue(sa);
-						}
-					}
-				}
-			} else {
-				// parameter unknown -- just add
-				newParameter(confEntry.getKey(), null, confEntry.getValue(), 'f');
-			}
-		}
-		// initialise static DocuImage class instance
-		DigilibServletConfiguration.docuImageClass = (Class<DocuImageImpl>) Class.forName(getAsString("docuimage-class"));
-	}
+                    // basedir-list
+                    if (confEntry.getKey().equals("basedir-list")) {
+                        // split list into directories
+                        String[] dirs = FileOps.pathToArray(confEntry.getValue());
+                        for (int j = 0; j < dirs.length; j++) {
+                            // make relative directory paths be inside the webapp
+                            dirs[j] = ServletOps.getFile(dirs[j], c);
+                        }
+                        if (dirs != null) {
+                            p.setValue(dirs);
+                        }
+                    }
+                }
+            } else {
+                // parameter unknown -- just add
+                newParameter(confEntry.getKey(), null, confEntry.getValue(),
+                        'f');
+            }
+        }
+        // initialise static DocuImage class instance
+        DigilibServletConfiguration.docuImageClass = (Class<DocuImageImpl>) Class
+                .forName(getAsString("docuimage-class"));
+    }
 
 }
