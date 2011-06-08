@@ -329,6 +329,8 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			logger.debug("loading..");
 			img = reader.read(0, readParam);
 			logger.debug("loaded");
+			// invalidate image size
+			imageSize = null;
 			/* downconversion of highcolor images seems not to work
 	        if (img.getColorModel().getComponentSize(0) > 8) {
 	            logger.debug("converting to 8bit");
@@ -414,6 +416,8 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         img = scaleOp.filter(img, null);
         logger.debug("scaled to " + img.getWidth() + "x" + img.getHeight()
                 + " img=" + img);
+        // invalidate image size
+        imageSize = null;
     }
 
 	public void blur(int radius) throws ImageOpException {
@@ -454,6 +458,8 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		img = img.getSubimage(x_off, y_off, width, height);
 		logger.debug("CROP:" + img.getWidth() + "x"
 				+ img.getHeight());
+        // invalidate image size
+        imageSize = null;
 	}
 
 	public void rotate(double angle) throws ImageOpException {
@@ -480,6 +486,8 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		// transform image
 		img = rotOp.filter(img, null);
 		logger.debug("rotated: "+img);
+        // invalidate image size
+        imageSize = null;
 	}
 
 	public void mirror(double angle) throws ImageOpException {
@@ -511,6 +519,8 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		AffineTransformOp mirOp = new AffineTransformOp(new AffineTransform(mx,
 				0, 0, my, tx, ty), renderHint);
 		img = mirOp.filter(img, null);
+        // invalidate image size
+        imageSize = null;
 	}
 
     public void enhance(float mult, float add) throws ImageOpException {
