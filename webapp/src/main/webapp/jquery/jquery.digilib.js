@@ -193,14 +193,14 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 0.9',
+        'version' : 'jquery.digilib.js 2.0a1',
         // logo url
-        'logoUrl' : '../img/digilib-logo-text1.png',
+        'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
         'homeUrl' : 'http://digilib.berlios.de',
-        // base URL to digilib viewer (for reference URLs)
+        // base URL to digilib (e.g. 'http://digilib.mpiwg-berlin.mpg.de/digitallibrary')
         'digilibBaseUrl' : null,
-        // base URL to Scaler servlet
+        // base URL to Scaler servlet (usually digilibBaseUrl+'/servlet/Scaler')
         'scalerBaseUrl' : null,
         // list of Scaler parameters
         'scalerParamNames' : ['fn','pn','dw','dh','ww','wh','wx','wy','ws','mo',
@@ -226,6 +226,8 @@ if (typeof console === 'undefined') {
         // digilib parameter defaults
         'mk' : '',
         'clop' : '',
+        // list of additional parameters (for page outside of digilib)
+        'additionalParamNames' : [],
         // mode of operation: 
         // fullscreen = take parameters from page URL, keep state in page URL
         // embedded = take parameters from Javascript options, keep state inside object 
@@ -303,20 +305,13 @@ if (typeof console === 'undefined') {
             var isFullscreen = settings.interactionMode === 'fullscreen';
             var queryParams = {};
             if (isFullscreen) {
-                queryParams = parseQueryParams();
-                // check scalerBaseUrl
-                if (settings.scalerBaseUrl == null) {
-                    // try the host this came from
-                    var h = window.location.host;
-                    if (window.location.host) {
-                        var url = window.location.href;
-                        // assume the page lives in [webapp]/jquery/
-                        var pos = url.indexOf('jquery/');
-                        if (pos > 0) {
-                            settings.scalerBaseUrl = url.substring(0, pos) + 'servlet/Scaler';
-                        }
-                    }
-                }
+            	queryParams = parseQueryParams();
+            	// filter additional parameters
+            	for (var p in queryParams) {
+            		if ($.inArray(p, settings.digilibParamNames) < 0) {
+            			settings.additionalParamNames.push(p);
+            		}
+            	}
             }
             return this.each(function() {
                 var $elem = $(this);
@@ -372,16 +367,26 @@ if (typeof console === 'undefined') {
                     if (isFullscreen) {
                         // take current host
                         var url = window.location.toString();
-                        var pos = url.indexOf('?');
-                        elemSettings.digilibBaseUrl = url.substring(0, pos);
+                        // assume the page lives in [webapp]/jquery/
+                        var pos = url.indexOf('jquery/');
+                        if (pos > 0) {
+                            elemSettings.digilibBaseUrl = url.substring(0, pos);
+                        }
                     } else {
+                    	// may be we got the scaler URL from the img
                         var url = elemSettings.scalerBaseUrl;
                         if (url) {
                             // build it from scaler URL
-                            var bp = url.indexOf('/servlet/Scaler');
-                            elemSettings.digilibBaseUrl = url.substring(0, bp) + '/digilib.jsp';
+                            var pos = url.indexOf('/servlet/Scaler');
+                            elemSettings.digilibBaseUrl = url.substring(0, pos);
                         }
                     }
+                }
+                // check scaler base URL
+                if (elemSettings.scalerBaseUrl == null) {
+                	if (elemSettings.digilibBaseUrl) {
+                		elemSettings.scalerBaseUrl = elemSettings.digilibBaseUrl + '/servlet/Scaler';
+                	}
                 }
                 // initialise plugins
                 for (n in plugins) {
@@ -710,7 +715,7 @@ if (typeof console === 'undefined') {
     var getParamString = function (settings, keys, defaults) {
         var paramString = '';
         var nx = false;
-        for (i = 0; i < keys.length; ++i) {
+        for (var i = 0; i < keys.length; ++i) {
             var key = keys[i];
             if ((settings[key] != null) && ((defaults == null) || (settings[key] != defaults[key]))) {
                 // first param gets no '&'
@@ -767,8 +772,15 @@ if (typeof console === 'undefined') {
     var getDigilibUrl = function (data) {
         packParams(data);
         var settings = data.settings;
-        var queryString = getParamString(settings, settings.digilibParamNames, defaults);
-        return settings.digilibBaseUrl + '?' + queryString;
+        var paramList = settings.additionalParamNames.concat(settings.digilibParamNames);
+        var queryString = getParamString(settings, paramList, defaults);
+        // take url from current location
+        var url = window.location.href;
+        var pos = url.indexOf('?');
+        if (pos > -1) {
+        	url = url.substring(0, pos);
+        }
+        return url + '?' + queryString;
     };
 
     // loads image information from digilib server via HTTP
@@ -928,17 +940,23 @@ if (typeof console === 'undefined') {
             // update location.href (browser URL) in fullscreen mode
             var url = getDigilibUrl(data);
             var history = window.history;
-            if (typeof history.pushState === 'function') {
+            if (typeof history.replaceState === 'function') {
                 console.debug("faking reload to "+url);
                 // change url without reloading (stateObj, title, url)
                 // TODO: we really need to push the state in stateObj and listen to pop-events
-                history.replaceState({}, '', url);
-                // change img src
-                var imgurl = getScalerUrl(data);
-                data.$img.attr('src', imgurl);
-                highlightButtons(data);
-                // send event
-                $(data).trigger('redisplay');
+                try {
+                	history.replaceState({}, '', url);
+                	// change img src
+                	var imgurl = getScalerUrl(data);
+                	data.$img.attr('src', imgurl);
+                	highlightButtons(data);
+                	// send event
+                	$(data).trigger('redisplay');
+                } catch (e) {
+                	console.error("replaceState("+url+") didn't work: "+e);
+                    // reload window
+                    window.location = url;
+                }
             } else {
                 // reload window
                 window.location = url;
@@ -950,7 +968,7 @@ if (typeof console === 'undefined') {
             highlightButtons(data);
             // send event
             $(data).trigger('redisplay');
-            }
+        }
     };
 
     // update display (overlays etc.)
@@ -1057,6 +1075,10 @@ if (typeof console === 'undefined') {
         var settings = data.settings;
         var mode = settings.interactionMode;
         var imagePath = settings.buttonSettings[mode].imagePath;
+        // make relative imagePath absolute
+        if (imagePath.charAt(0) !== '/' && imagePath.substring(0,3) !== 'http') {
+        	imagePath = settings.digilibBaseUrl + '/jquery/' + imagePath;
+        }
         var buttonConfig = settings.buttons[buttonName];
         // button properties
         var action = buttonConfig.onclick;
@@ -1224,7 +1246,12 @@ if (typeof console === 'undefined') {
         $aboutDiv.append($link);
         $aboutDiv.append($content);
         $link.append($logo);
-        $logo.attr('src', settings.logoUrl);
+        logoUrl = settings.logoUrl;
+        // make relative logoUrl absolute
+        if (logoUrl.charAt(0) !== '/' && logoUrl.substring(0,3) !== 'http') {
+        	logoUrl = settings.digilibBaseUrl + '/' + logoUrl;
+        }
+        $logo.attr('src', logoUrl);
         $link.attr('href', settings.homeUrl);
         $content.text('Version: ' + settings.version);
         data.$aboutDiv = $aboutDiv;

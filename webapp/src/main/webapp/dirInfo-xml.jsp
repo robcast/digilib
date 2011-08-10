@@ -23,7 +23,7 @@ digilib.io.DocuDirCache dirCache = (digilib.io.DocuDirCache) dlConfig.getValue("
 // get directory
 digilib.io.DocuDirectory dir = dirCache.getDirectory(dlRequest.getFilePath());
 FileOps.FileClass fc = FileOps.FileClass.IMAGE;
-int dirSize = dir.size(fc);
+int dirSize = dir != null ? dir.size(fc) : 0;
 
 %><!-- Automatically generated XML snippet with directory info -->
 <dir><% if (dir != null) { %>
