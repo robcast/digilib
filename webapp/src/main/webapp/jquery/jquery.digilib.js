@@ -228,6 +228,8 @@ if (typeof console === 'undefined') {
         'clop' : '',
         // list of additional parameters (for page outside of digilib)
         'additionalParamNames' : [],
+        // list of parameters to suppress when generating page URL
+        'suppressParamNames' : null,
         // mode of operation: 
         // fullscreen = take parameters from page URL, keep state in page URL
         // embedded = take parameters from Javascript options, keep state inside object 
@@ -773,6 +775,16 @@ if (typeof console === 'undefined') {
         packParams(data);
         var settings = data.settings;
         var paramList = settings.additionalParamNames.concat(settings.digilibParamNames);
+        if (settings.suppressParamNames != null) {
+        	// eliminate suppressed parameters from list
+        	paramList = $.map(paramList, function(e, idx) {
+        		if ($.inArray(e, settings.suppressParamNames) >= 0) {
+        			return null;
+        		} else {
+        			return e;
+        		}
+        	});
+        }
         var queryString = getParamString(settings, paramList, defaults);
         // take url from current location
         var url = window.location.href;
