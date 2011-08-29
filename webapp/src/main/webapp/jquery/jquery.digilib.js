@@ -370,7 +370,7 @@ if (typeof console === 'undefined') {
                         // take current host
                         var url = window.location.toString();
                         // assume the page lives in [webapp]/jquery/
-                        var pos = url.indexOf('jquery/');
+                        var pos = url.indexOf('/jquery/');
                         if (pos > 0) {
                             elemSettings.digilibBaseUrl = url.substring(0, pos);
                         }
