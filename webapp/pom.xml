@@ -8,7 +8,6 @@
     <groupId>digilib</groupId>
     <version>2.0-SNAPSHOT</version>
   </parent>
-  <groupId>digilib</groupId>
   <artifactId>digilib-webapp</artifactId>
   <version>2.0-SNAPSHOT</version>
   <name>digilib-webapp</name>
@@ -77,6 +76,14 @@
               <classifier>srv3</classifier>
             </configuration>
           </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+	             <configuration>
+	                 <source>1.6</source>
+	                 <target>1.6</target> 
+	             </configuration>
+			</plugin>
         </plugins>
       </build>
     </profile>

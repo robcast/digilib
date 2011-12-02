@@ -1,0 +1,58 @@
+
+syntax: regexp
+^webapp/src/main/webapp/META-INF$
+syntax: regexp
+^webapp/src/main/webapp/WEB-INF/web\.xml$
+syntax: regexp
+^webapp/target$
+syntax: regexp
+^text/target$
+syntax: regexp
+^servlet2/target$
+syntax: regexp
+^servlet3/target$
+syntax: regexp
+^pdf/target$
+syntax: regexp
+^common/target$
+syntax: regexp
+^\.project$
+syntax: regexp
+^webapp/\.settings$
+syntax: regexp
+^servlet2/\.settings$
+syntax: regexp
+^servlet3/\.settings$
+syntax: regexp
+^pdf/\.settings$
+syntax: regexp
+^text/\.settings$
+syntax: regexp
+^common/\.settings$
+syntax: regexp
+^webapp/\.classpath$
+syntax: regexp
+^servlet2/\.classpath$
+syntax: regexp
+^servlet3/\.classpath$
+syntax: regexp
+^pdf/\.classpath$
+syntax: regexp
+^text/\.classpath$
+syntax: regexp
+^common/\.classpath$
+syntax: regexp
+^webapp/\.project$
+syntax: regexp
+^servlet2/\.project$
+syntax: regexp
+^servlet3/\.project$
+syntax: regexp
+^pdf/\.project$
+syntax: regexp
+^text/\.project$
+syntax: regexp
+^common/\.project$
+
+syntax: regexp
+^\.settings$
