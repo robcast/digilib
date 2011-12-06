@@ -90,8 +90,8 @@ TODO:
                 $regionDiv.width(0).height(0);
                 $regionDiv.show();
                 // register mouse events
-                $overlay.bind("mousemove.dlRegion", regionMove);
-                $overlay.bind("mouseup.dlRegion", regionEnd);
+                $overlay.on("mousemove.dlRegion", regionMove);
+                $overlay.on("mouseup.dlRegion", regionEnd);
                 return false;
             };
 
@@ -112,8 +112,8 @@ TODO:
                 var clickRect = geom.rectangle(pt1, pt2);
                 if (clickRect.getArea() <= 5) return false;
                 // unregister mouse events and get rid of overlay
-                $overlay.unbind("mousemove.dlRegion", regionMove);
-                $overlay.unbind("mouseup.dlRegion", regionEnd);
+                $overlay.off("mousemove.dlRegion", regionMove);
+                $overlay.off("mouseup.dlRegion", regionEnd);
                 $overlay.remove();
                 // clip region
                 clickRect.clipTo(scalerRect);
@@ -190,7 +190,7 @@ TODO:
         var $h03 = $('<div class="infobutton">Digilib</div>'); 
         var $h04 = $('<div class="infobutton">X</div>');
         var bind = function($div, name) {
-            $div.bind('click.regioninfo', function () {
+            $div.on('click.regioninfo', function () {
                 var $top = $(this).parent().parent();
                 $top.find('.info').hide();
                 $top.find('.' + name).show();
@@ -200,7 +200,7 @@ TODO:
         bind($h02, 'svgattr');
         bind($h03, 'digilib');
         var $html = data.$htmlDiv;
-        $h04.bind('click.regioninfo', function () {
+        $h04.on('click.regioninfo', function () {
             data.settings.showRegionInfo = false;
             fn.highlightButtons(data, 'regionhtml', false);
             $html.fadeOut(function () { 
@@ -271,7 +271,7 @@ TODO:
         data.$elem.append($regionDiv);
         if (data.settings.showRegionNumbers) {
             var $regionLink = $('<a class="regionnumber"/>');
-            $regionLink.attr(attributes);
+            if (attributes) $regionLink.attr(attributes);
             $regionLink.text(nr);
             $regionDiv.append($regionLink);
         }
@@ -280,7 +280,7 @@ TODO:
                 delete attributes.href;
                 $regionDiv.attr(attributes);
                 };
-            $regionDiv.bind('click.dlRegion', function() {
+            $regionDiv.on('click.dlRegion', function() {
                  window.location = url;
             });
         }
@@ -497,10 +497,10 @@ TODO:
         data.$htmlDiv = $html;
         // install event handler
         var $data = $(data);
-        $data.bind('setup', handleSetup);
-        $data.bind('update', handleUpdate);
-        $data.bind('redisplay', handleRedisplay);
-        $data.bind('dragZoom', handleDragZoom);
+        $data.on('setup', handleSetup);
+        $data.on('update', handleUpdate);
+        $data.on('redisplay', handleRedisplay);
+        $data.on('dragZoom', handleDragZoom);
         var settings = data.settings;
         var selector = data.settings.regionContentSelector;
         settings.hasRegionContent = $elem.has(selector).length > 0;

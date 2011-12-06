@@ -69,10 +69,10 @@ digilib bird's eye view plugin
         console.debug('initialising birdseye plugin. data:', data);
         var $data = $(data);
         // install event handler
-        $data.bind('setup', handleSetup);
-        $data.bind('update', handleUpdate);
-        $data.bind('redisplay', handleRedisplay);
-        $data.bind('dragZoom', handleDragZoom);
+        $data.on('setup', handleSetup);
+        $data.on('update', handleUpdate);
+        $data.on('redisplay', handleRedisplay);
+        $data.on('dragZoom', handleDragZoom);
     };
 
 
@@ -235,8 +235,8 @@ digilib bird's eye view plugin
             newRect = null;
             data.$elem.find(".overlay").hide(); // hide all overlays (marks/regions)
             fullRect = digilib.fn.setZoomBG(data); // setup zoom background image
-            $document.bind("mousemove.dlBirdMove", birdZoomMove);
-            $document.bind("mouseup.dlBirdMove", birdZoomEndDrag);
+            $document.on("mousemove.dlBirdMove", birdZoomMove);
+            $document.on("mouseup.dlBirdMove", birdZoomEndDrag);
             return false;
         };
 
@@ -271,8 +271,8 @@ digilib bird's eye view plugin
         // mouseup handler: reload page
         var birdZoomEndDrag = function(evt) {
             var settings = data.settings;
-            $document.unbind("mousemove.dlBirdMove", birdZoomMove);
-            $document.unbind("mouseup.dlBirdMove", birdZoomEndDrag);
+            $document.off("mousemove.dlBirdMove", birdZoomMove);
+            $document.off("mouseup.dlBirdMove", birdZoomEndDrag);
             if (newRect == null) { 
                 // no movement happened - set center to click position
                 startPos = birdZoomRect.getCenter();
@@ -287,13 +287,13 @@ digilib bird's eye view plugin
         };
 
         // clear old handler
-        $document.unbind(".dlBirdMove");
-        $birdImg.unbind(".dlBirdMove");
-        $birdZoom.unbind(".dlBirdMove");
+        $document.off(".dlBirdMove");
+        $birdImg.off(".dlBirdMove");
+        $birdZoom.off(".dlBirdMove");
         if (! digilib.fn.isFullArea(data.zoomArea)) {
             // set new handler
-            $birdImg.bind("mousedown.dlBirdMove", birdZoomStartDrag);
-            $birdZoom.bind("mousedown.dlBirdMove", birdZoomStartDrag);
+            $birdImg.on("mousedown.dlBirdMove", birdZoomStartDrag);
+            $birdZoom.on("mousedown.dlBirdMove", birdZoomStartDrag);
         }
     };
 
