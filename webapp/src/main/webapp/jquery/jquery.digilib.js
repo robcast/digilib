@@ -1596,31 +1596,32 @@ if (typeof console === 'undefined') {
         var fullRect = null;
         // hide the scaler img, show background of div instead
         $img.css('visibility', 'hidden');
+        // use current image as first background
         var scalerCss = {
             'background-image' : 'url(' + $img.attr('src') + ')',
             'background-repeat' : 'no-repeat',
             'background-position' : 'left top',
-            'opacity' : '0.5',
+            'opacity' : '0.7',
             'cursor' : 'move'
             };
         if (data.hasBgSize) {
-            // full-size background using CSS3-background-size
+            // additional full-size background using CSS3-background-size
             fullRect = data.imgTrafo.transform(FULL_AREA);
             if (fullRect.height < data.settings.maxBgSize && fullRect.width < data.settings.maxBgSize) {
                 // correct offset because background is relative
                 var scalerPos = geom.position($scaler);
                 fullRect.addPosition(scalerPos.neg());
                 var url = getBgImgUrl(data);
-                scalerCss['background-image'] = 'url(' + url + ')';
-                scalerCss[data.bgSizeName] = fullRect.width + 'px ' + fullRect.height + 'px';
-                scalerCss['background-position'] = fullRect.x + 'px '+ fullRect.y + 'px';
+                // add background url, size and position
+                scalerCss['background-image'] += ', url(' + url + ')';
+                scalerCss[data.bgSizeName] = 'auto, ' + fullRect.width + 'px ' + fullRect.height + 'px';
+                scalerCss['background-position'] += ', ' + fullRect.x + 'px '+ fullRect.y + 'px';
             } else {
-                // too big
+                // scaled full-size background image too big
                 fullRect = null;
-                }
             }
-            $scaler.css(scalerCss);
-            // isBgReady = true;
+        }
+        $scaler.css(scalerCss);
         return fullRect;
     };
 
@@ -1652,20 +1653,19 @@ if (typeof console === 'undefined') {
         var dragMove = function (evt) {
             var pos = geom.position(evt);
             delta = startPos.delta(pos);
+            // background position
+            var bgPos = delta.x + "px " + delta.y + "px";
             if (fullRect) {
-                var bgPos = fullRect.getPosition().add(delta);
-            } else {
-                var bgPos = delta;
+            	// add full-size background position
+                var bp = fullRect.getPosition().add(delta);
+                bgPos += ', ' + bp.x + "px " + bp.y + "px";
             }
             // move the background image to the new position
-            $scaler.css({
-                'background-position' : bgPos.x + "px " + bgPos.y + "px"
-                });
+            $scaler.css('background-position', bgPos);
             // send message event with current zoom position
             var za = geom.rectangle($img);
             za.addPosition(delta.neg());
             $data.trigger('dragZoom', [za]);
-            //TODO: setBirdZoom(data, za);
             return false;
             };
 
