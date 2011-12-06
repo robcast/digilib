@@ -193,7 +193,7 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.0a1',
+        'version' : 'jquery.digilib.js 2.0b2',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -399,7 +399,6 @@ if (typeof console === 'undefined') {
                 }
                 // get image info from server if needed
                 if (data.scaleMode === 'pixel' || data.scaleMode === 'size') {
-                    $(data).bind('imageInfo', handleImageInfo);
                     loadImageInfo(data); // triggers "imageInfo" on completion
                 }
                 // create buttons before scaler 
@@ -422,7 +421,7 @@ if (typeof console === 'undefined') {
         destroy : function(data) {
             return this.each(function(){
                 var $elem = $(this);
-                $(window).unbind('.digilib'); // unbind all digilibs(?)
+                $(window).off('.digilib'); // unbind all digilibs(?)
                 data.digilib.remove();
                 $elem.removeData('digilib');
             });
@@ -459,7 +458,7 @@ if (typeof console === 'undefined') {
                 }
             // reset mk and others(?)
             data.marks = [];
-            data.zoomArea = FULL_AREA;
+            data.zoomArea = FULL_AREA.copy;
             // then reload
             redisplay(data);
         },
@@ -483,7 +482,7 @@ if (typeof console === 'undefined') {
 
         // zoom out to full page
         zoomFull : function (data, mode) {
-            data.zoomArea = FULL_AREA;
+            data.zoomArea = FULL_AREA.copy();
             if (mode === 'width') {
                 data.dlOpts.fitwidth = 1;
                 delete data.dlOpts.fitheight;
@@ -621,7 +620,7 @@ if (typeof console === 'undefined') {
             settings.isBirdDivVisible = false;
             settings.visibleButtonSets = 1;
             // resets zoomArea, marks, scalerflags
-            data.zoomArea = FULL_AREA;
+            data.zoomArea = FULL_AREA.copy();
             data.marks = [];
             data.scalerFlags = {};
             delete data.dlOpts.fitwidth;
@@ -631,7 +630,6 @@ if (typeof console === 'undefined') {
 
         // presents a reference url (returns value if noprompt)
         reference : function (data, noprompt) {
-            var settings = data.settings;
             var url = getDigilibUrl(data);
             if (noprompt == null) {
                 window.prompt("URL reference to the current view", url);
@@ -798,8 +796,10 @@ if (typeof console === 'undefined') {
     // loads image information from digilib server via HTTP
     var loadImageInfo = function (data) {
         var settings = data.settings;
-        var p = settings.scalerBaseUrl.indexOf('/servlet/Scaler');
-        var url = settings.scalerBaseUrl.substring(0, p) + '/ImgInfo-json.jsp';
+        // bind default function (only once)
+        $(data).off('imageInfo', handleImageInfo);
+        $(data).on('imageInfo', handleImageInfo);
+        var url = settings.digilibBaseUrl + '/ImgInfo-json.jsp';
         url += '?' + getParamString(settings, ['fn', 'pn'], defaults);
         // TODO: better error handling
         $.getJSON(url, function (json) {
@@ -961,7 +961,13 @@ if (typeof console === 'undefined') {
                 	// change img src
                 	var imgurl = getScalerUrl(data);
                 	data.$img.attr('src', imgurl);
-                	highlightButtons(data);
+                	if (data.scalerFlags.clip != null || data.scalerFlags.osize != null) {
+                    	// we need image info, do we have it?
+                		if (data.imgInfo == null) {
+                			loadImageInfo(data);
+                		}
+                	}
+                	highlightButtons(data); // TODO: better solution
                 	// send event
                 	$(data).trigger('redisplay');
                 } catch (e) {
@@ -977,7 +983,13 @@ if (typeof console === 'undefined') {
             // embedded mode -- just change img src
             var url = getScalerUrl(data);
             data.$img.attr('src', url);
-            highlightButtons(data);
+        	if (data.scalerFlags.clip != null || data.scalerFlags.osize != null) {
+            	// we need image info, do we have it?
+        		if (data.imgInfo == null) {
+        			loadImageInfo(data);
+        		}
+        	}
+            highlightButtons(data); // TODO: better solution
             // send event
             $(data).trigger('redisplay');
         }
@@ -1108,7 +1120,7 @@ if (typeof console === 'undefined') {
         $button.addClass('button-' + buttonName);
         $img.attr('src', icon);
         // create handler for the buttons
-        $button.bind('click.digilib', (function () {
+        $button.on('click.digilib', (function () {
             // we create a new closure to capture the value of action
             if ($.isArray(action)) {
                 // the handler function calls digilib with action and parameters
@@ -1268,7 +1280,7 @@ if (typeof console === 'undefined') {
         $content.text('Version: ' + settings.version);
         data.$aboutDiv = $aboutDiv;
         // click hides
-        $aboutDiv.bind('click.digilib', function () {
+        $aboutDiv.on('click.digilib', function () {
             actions['showAboutDiv'](data, false);
             });
     };
@@ -1451,6 +1463,7 @@ if (typeof console === 'undefined') {
 
     // handler for imageInfo loaded event
     var handleImageInfo = function (evt, json) {
+    	console.debug("handleImageInfo:", json);
         var data = this;
         updateDisplay(data);
     };
@@ -1497,7 +1510,7 @@ if (typeof console === 'undefined') {
     var setMark = function (data) {
         var $scaler = data.$scaler;
         // unbind other handler
-        $scaler.unbind(".dlZoomDrag");
+        $scaler.off(".dlZoomDrag");
         // start event capturing
         $scaler.one('mousedown.dlSetMark', function (evt) {
             // event handler adding a new mark
@@ -1530,8 +1543,8 @@ if (typeof console === 'undefined') {
             $zoomDiv.width(0).height(0);
             $zoomDiv.show();
             // register events
-            $elem.bind("mousemove.dlZoomArea", zoomMove);
-            $elem.bind("mouseup.dlZoomArea", zoomEnd);
+            $elem.on("mousemove.dlZoomArea", zoomMove);
+            $elem.on("mouseup.dlZoomArea", zoomEnd);
             return false;
         };
 
@@ -1554,8 +1567,8 @@ if (typeof console === 'undefined') {
             // hide zoom div
             $zoomDiv.remove();
             // unregister events
-            $elem.unbind("mousemove.dlZoomArea", zoomMove);
-            $elem.unbind("mouseup.dlZoomArea", zoomEnd);
+            $elem.off("mousemove.dlZoomArea", zoomMove);
+            $elem.off("mouseup.dlZoomArea", zoomEnd);
             // clip and transform
             clickRect.clipTo(picRect);
             var area = data.imgTrafo.invtransform(clickRect);
@@ -1569,9 +1582,9 @@ if (typeof console === 'undefined') {
         };
 
         // clear old handler (also ZoomDrag)
-        $scaler.unbind('.dlZoomArea');
-        $scaler.unbind(".dlZoomDrag");
-        $elem.unbind('.dlZoomArea');
+        $scaler.off('.dlZoomArea');
+        $scaler.off(".dlZoomDrag");
+        $elem.off('.dlZoomArea');
         // bind start zoom handler
         $scaler.one('mousedown.dlZoomArea', zoomStart);
     };
@@ -1630,8 +1643,8 @@ if (typeof console === 'undefined') {
             delta = null;
             // set low res background immediately on mousedown
             fullRect = setZoomBG(data);
-            $document.bind("mousemove.dlZoomDrag", dragMove);
-            $document.bind("mouseup.dlZoomDrag", dragEnd);
+            $document.on("mousemove.dlZoomDrag", dragMove);
+            $document.on("mouseup.dlZoomDrag", dragEnd);
             return false;
             };
 
@@ -1659,8 +1672,8 @@ if (typeof console === 'undefined') {
         // mouseup handler: reload zoomed image in new position
         var dragEnd = function (evt) {
             $scaler.css('cursor', 'auto');
-            $document.unbind("mousemove.dlZoomDrag", dragMove);
-            $document.unbind("mouseup.dlZoomDrag", dragEnd);
+            $document.off("mousemove.dlZoomDrag", dragMove);
+            $document.off("mouseup.dlZoomDrag", dragEnd);
             if (delta == null || delta.distance() < 2) {
                 // no movement
                 $img.css('visibility', 'visible');
@@ -1682,11 +1695,11 @@ if (typeof console === 'undefined') {
             };
 
         // clear old handler
-        $document.unbind(".dlZoomDrag");
-        $scaler.unbind(".dlZoomDrag");
+        $document.off(".dlZoomDrag");
+        $scaler.off(".dlZoomDrag");
         if (! isFullArea(data.zoomArea)) {
             // set handler
-            $scaler.bind("mousedown.dlZoomDrag", dragStart);
+            $scaler.on("mousedown.dlZoomDrag", dragStart);
         }
     };
 
