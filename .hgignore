@@ -56,3 +56,5 @@ syntax: regexp
 
 syntax: regexp
 ^\.settings$
+syntax: regexp
+^servlet3/bin$
