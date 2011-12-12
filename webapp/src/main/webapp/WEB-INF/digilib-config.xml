@@ -31,9 +31,6 @@
   <!-- the a maximum size of any sent image. (0 means no limit) -->
   <parameter name="max-image-size" value="0" />
 
-  <!-- use safe but slow directory indexing -->
-  <parameter name="safe-dir-index" value="false" />
-
   <!-- number of working threads -->
   <parameter name="worker-threads" value="2" />
 
