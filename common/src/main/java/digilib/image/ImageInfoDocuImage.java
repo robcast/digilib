@@ -39,7 +39,12 @@ public abstract class ImageInfoDocuImage extends DocuImageImpl {
             if (iif.check()) {
                 ImageSize d = new ImageSize(iif.getWidth(), iif.getHeight());
                 ii.setSize(d);
-                ii.setMimetype(iif.getMimeType());
+                String mt = iif.getMimeType();
+                // fix image/pjpeg
+                if (mt.equals("image/pjpeg")) {
+                    mt = "image/jpeg";
+                }
+                ii.setMimetype(mt);
                 logger.debug("image size: " + ii.getSize());
                 return ii;
             }
