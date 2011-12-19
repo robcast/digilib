@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.servlet.AsyncContext;
+import javax.servlet.AsyncEvent;
+import javax.servlet.AsyncListener;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -31,7 +33,7 @@ public class Scaler extends HttpServlet {
     private static final long serialVersionUID = 5289386646192471549L;
 
     /** digilib servlet version (for all components) */
-    public static final String version = "2.0b1 async";
+    public static final String version = "2.0b2 async";
 
     /** servlet error codes */
     public static enum Error {UNKNOWN, AUTH, FILE, IMAGE};
@@ -265,9 +267,11 @@ public class Scaler extends HttpServlet {
             }
             
             // worker job is done asynchronously
-            AsyncContext asyncCtx = request.startAsync(request, response); 
+            AsyncContext asyncCtx = request.startAsync(request, response);
             // create job
             AsyncServletWorker job = new AsyncServletWorker(dlConfig, jobTicket, asyncCtx, errMsgType, startTime);
+            // AsyncServletWorker is its own AsyncListener
+            asyncCtx.addListener(job);
             // submit job
             imageJobCenter.submit(job);
             // we're done for now

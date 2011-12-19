@@ -37,6 +37,9 @@
   <!-- number of waiting requests in queue -->
   <parameter name="max-waiting-threads" value="20" />
 
+  <!-- timeout for asynchronous servlet worker (ms) -->
+  <parameter name="worker-timeout" value="60000" />
+
   <!-- Restrict access to authorized users.
        User authentication and roles are provided by the servlet container 
        (see tomcat-users.xml).

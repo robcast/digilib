@@ -138,7 +138,10 @@ public class Initialiser implements ServletContextListener {
 				int nt = dlConfig.getAsInt("worker-threads");
                 int mt = dlConfig.getAsInt("max-waiting-threads");
 				imageEx = new DigilibJobCenter<DocuImage>(nt, mt, false, "servlet.worker.imageexecutor");
-                dlConfig.setValue("servlet.worker.imageexecutor", imageEx);				
+                dlConfig.setValue("servlet.worker.imageexecutor", imageEx);
+                // digilib worker timeout
+                long to = dlConfig.getAsInt("worker-timeout");
+                AsyncServletWorker.setTimeout(to);
 				// PDF worker threads
 				int pnt = dlConfig.getAsInt("pdf-worker-threads");
                 int pmt = dlConfig.getAsInt("pdf-max-waiting-threads");

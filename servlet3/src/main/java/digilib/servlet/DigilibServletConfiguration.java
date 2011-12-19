@@ -120,6 +120,8 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
         newParameter("worker-threads", new Integer(1), null, 'f');
         // max number of waiting threads
         newParameter("max-waiting-threads", new Integer(20), null, 'f');
+        // timeout for worker threads (ms)
+        newParameter("worker-timeout", new Integer(60000), null, 'f');
         // number of pdf-generation threads
         newParameter("pdf-worker-threads", new Integer(1), null, 'f');
         // max number of waiting pdf-generation threads

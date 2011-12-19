@@ -62,3 +62,7 @@ syntax: regexp
 ^digilib-log\.txt$
 syntax: regexp
 ^dl-access-log\.txt$
+syntax: regexp
+^webapp/digilib-log\.txt$
+syntax: regexp
+^webapp/dl-access-log\.txt$
