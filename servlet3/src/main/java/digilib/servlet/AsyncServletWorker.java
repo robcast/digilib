@@ -36,7 +36,7 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
     private long startTime;
     private ErrMsg errMsgType = ErrMsg.IMAGE;
     private ImageJobDescription jobinfo;
-    /** flag to indicate that the response is completed (on abort)*/
+    /** flag to indicate that the response is completed (on abort) */
     private boolean completed = false;
     /** AsyncRequest timeout */
     protected static long timeout = 60000l;
@@ -133,23 +133,27 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
         }
         imageWorker.stopNow();
         this.completed = true;
-        Scaler.digilibError(errMsgType, Error.UNKNOWN, null, (HttpServletResponse) asyncContext.getResponse());
+        Scaler.digilibError(errMsgType, Error.UNKNOWN, null,
+                (HttpServletResponse) asyncContext.getResponse());
         asyncContext.complete();
     }
 
     @Override
     public void onTimeout(AsyncEvent event) throws IOException {
-        logger.error("AsyncServletWorker TIMED OUT! (increase worker-timeout?)"+event);
+        logger.error("AsyncServletWorker TIMED OUT after "
+                + (System.currentTimeMillis() - startTime)
+                + "ms! (increase worker-timeout?)");
         if (completed) {
             logger.debug("AsyncServletWorker already completed (TimeOut)!");
             return;
         }
         imageWorker.stopNow();
         this.completed = true;
-        Scaler.digilibError(errMsgType, Error.UNKNOWN, null, (HttpServletResponse) asyncContext.getResponse());
+        Scaler.digilibError(errMsgType, Error.UNKNOWN, null,
+                (HttpServletResponse) asyncContext.getResponse());
         asyncContext.complete();
     }
-    
+
     public static long getTimeout() {
         return timeout;
     }
