@@ -961,6 +961,8 @@ if (typeof console === 'undefined') {
                 	// change img src
                 	var imgurl = getScalerUrl(data);
                 	data.$img.attr('src', imgurl);
+                	// show busy cursor
+                	$('body').css('cursor', 'progress');
                 	if (data.scalerFlags.clip != null || data.scalerFlags.osize != null) {
                     	// we need image info, do we have it?
                 		if (data.imgInfo == null) {
@@ -983,6 +985,8 @@ if (typeof console === 'undefined') {
             // embedded mode -- just change img src
             var url = getScalerUrl(data);
             data.$img.attr('src', url);
+        	// show busy cursor
+        	$('body').css('cursor', 'progress');
         	if (data.scalerFlags.clip != null || data.scalerFlags.osize != null) {
             	// we need image info, do we have it?
         		if (data.imgInfo == null) {
@@ -1091,6 +1095,8 @@ if (typeof console === 'undefined') {
         $img.load(scalerImgLoadedHandler(data));
         $img.error(function () {console.error("error loading scaler image");});
         $img.attr('src', scalerUrl);
+        // set busy cursor
+        $('body').css('cursor','progress');
     };
 
     // creates HTML structure for a single button
@@ -1449,6 +1455,8 @@ if (typeof console === 'undefined') {
         return function () {
             var $img = $(this);
             console.debug("scaler img loaded=",$img);
+        	// reset busy cursor
+        	$('body').css('cursor', 'inherit');
             var $scaler = data.$scaler;
             var imgRect = geom.rectangle($img);
             // adjust scaler div size
