@@ -193,7 +193,7 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.0b2',
+        'version' : 'jquery.digilib.js 2.0b3',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -458,7 +458,7 @@ if (typeof console === 'undefined') {
                 }
             // reset mk and others(?)
             data.marks = [];
-            data.zoomArea = FULL_AREA.copy;
+            data.zoomArea = FULL_AREA.copy();
             // then reload
             redisplay(data);
         },
