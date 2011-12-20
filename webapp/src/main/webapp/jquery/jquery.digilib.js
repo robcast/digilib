@@ -193,7 +193,7 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.0b3',
+        'version' : 'jquery.digilib.js 2.0b4',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -603,7 +603,7 @@ if (typeof console === 'undefined') {
             storeOptions(data);
         },
 
-        // reset image parameters to defaults
+        // reset image parameters to defaults TODO: improve this!
         reset : function (data) {
             var settings = data.settings;
             var paramNames = settings.digilibParamNames;
@@ -1349,7 +1349,7 @@ if (typeof console === 'undefined') {
         return true;
     };
 
-    // check for buttons to highlight
+    // check for buttons to highlight TODO: improve this!
     var highlightButtons = function (data, name, on) {
         var $buttons = data.$elem.find('div.buttons:visible'); // include hidden?
         // add a class for highlighted button
@@ -1598,7 +1598,7 @@ if (typeof console === 'undefined') {
     };
 
     // set zoom background
-    var setZoomBG = function(data) {
+    var setZoomBg = function(data) {
         var $scaler = data.$scaler;
         var $img = data.$img;
         var fullRect = null;
@@ -1632,7 +1632,20 @@ if (typeof console === 'undefined') {
         $scaler.css(scalerCss);
         return fullRect;
     };
-
+    
+    // move zoom background 
+    var moveZoomBg = function(data, fullRect, delta) {
+        // background position
+        var bgPos = delta.x + "px " + delta.y + "px";
+        if (fullRect) {
+        	// add full-size background position
+            var bp = fullRect.getPosition().add(delta);
+            bgPos += ', ' + bp.x + "px " + bp.y + "px";
+        }
+        // move the background image to the new position
+        data.$scaler.css('background-position', bgPos);
+    };
+    
     // setup handlers for dragging the zoomed image
     var setupZoomDrag = function(data) {
         var startPos, delta, fullRect;
@@ -1651,7 +1664,7 @@ if (typeof console === 'undefined') {
             startPos = geom.position(evt);
             delta = null;
             // set low res background immediately on mousedown
-            fullRect = setZoomBG(data);
+            fullRect = setZoomBg(data);
             $document.on("mousemove.dlZoomDrag", dragMove);
             $document.on("mouseup.dlZoomDrag", dragEnd);
             return false;
@@ -1661,15 +1674,8 @@ if (typeof console === 'undefined') {
         var dragMove = function (evt) {
             var pos = geom.position(evt);
             delta = startPos.delta(pos);
-            // background position
-            var bgPos = delta.x + "px " + delta.y + "px";
-            if (fullRect) {
-            	// add full-size background position
-                var bp = fullRect.getPosition().add(delta);
-                bgPos += ', ' + bp.x + "px " + bp.y + "px";
-            }
-            // move the background image to the new position
-            $scaler.css('background-position', bgPos);
+            // position background
+            moveZoomBg(data, fullRect, delta);
             // send message event with current zoom position
             var za = geom.rectangle($img);
             za.addPosition(delta.neg());
@@ -1846,7 +1852,7 @@ if (typeof console === 'undefined') {
             updateDisplay : updateDisplay,
             highlightButtons : highlightButtons,
             showDiv : showDiv,
-            setZoomBG : setZoomBG,
+            setZoomBg : setZoomBg,
             getImgTrafo : getImgTrafo,
             getQuality : getQuality,
             setQuality : setQuality,
