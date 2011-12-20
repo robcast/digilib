@@ -23,11 +23,14 @@ package digilib.servlet;
 import java.io.File;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.ServletRequestEvent;
+import javax.servlet.ServletRequestListener;
 import javax.servlet.annotation.WebListener;
 
 import org.apache.log4j.Logger;
@@ -48,7 +51,7 @@ import digilib.util.DigilibJobCenter;
  *  
  */
 @WebListener
-public class Initialiser implements ServletContextListener {
+public class Initialiser implements ServletContextListener, ServletRequestListener {
 
 
 	/** servlet version */
@@ -61,7 +64,7 @@ public class Initialiser implements ServletContextListener {
 	DocuDirCache dirCache;
 
 	/** DigilibConfiguration instance */
-	DigilibConfiguration dlConfig;
+	DigilibServletConfiguration dlConfig;
 
 	/** Executor for digilib image jobs (AsyncServletWorker doesn't return anything) */
 	DigilibJobCenter<DocuImage> imageEx;
@@ -199,6 +202,18 @@ public class Initialiser implements ServletContextListener {
                 logger.error("Still running threads when shutting down PDF-image job queue: "+nrj);
             }
         }
+    }
+
+    @Override
+    public void requestDestroyed(ServletRequestEvent arg0) {
+        int i = dlConfig.openRequestCnt.decrementAndGet();
+        logger.debug("ServletRequest destroyed. (cnt="+i+")");
+    }
+
+    @Override
+    public void requestInitialized(ServletRequestEvent arg0) {
+        int i = dlConfig.openRequestCnt.incrementAndGet();
+        logger.debug("ServletRequest created. (cnt="+i+")");
     }
 
 }

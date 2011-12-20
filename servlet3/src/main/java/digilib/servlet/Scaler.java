@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.servlet.AsyncContext;
-import javax.servlet.AsyncEvent;
-import javax.servlet.AsyncListener;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -27,23 +25,27 @@ import digilib.io.DocuDirectory;
 import digilib.io.ImageInput;
 import digilib.util.DigilibJobCenter;
 
-@WebServlet(name="Scaler", urlPatterns={"/Scaler", "/servlet/Scaler/*"}, asyncSupported=true)
+@WebServlet(name = "Scaler", urlPatterns = { "/Scaler", "/servlet/Scaler/*" }, asyncSupported = true)
 public class Scaler extends HttpServlet {
 
     private static final long serialVersionUID = 5289386646192471549L;
 
     /** digilib servlet version (for all components) */
-    public static final String version = "2.0b2 async";
+    public static final String version = "2.0b3 async";
 
     /** servlet error codes */
-    public static enum Error {UNKNOWN, AUTH, FILE, IMAGE};
-    
+    public static enum Error {
+        UNKNOWN, AUTH, FILE, IMAGE
+    };
+
     /** type of error message */
-    public static enum ErrMsg {IMAGE, TEXT, CODE};
-    
+    public static enum ErrMsg {
+        IMAGE, TEXT, CODE
+    };
+
     /** default error message type */
     public static ErrMsg defaultErrMsgType = ErrMsg.IMAGE;
-    
+
     /** logger for accounting requests */
     protected static Logger accountlog = Logger.getLogger("account.request");
 
@@ -100,7 +102,8 @@ public class Scaler extends HttpServlet {
         // get our ServletContext
         ServletContext context = config.getServletContext();
         // see if there is a Configuration instance
-        dlConfig = (DigilibConfiguration) context.getAttribute("digilib.servlet.configuration");
+        dlConfig = (DigilibConfiguration) context
+                .getAttribute("digilib.servlet.configuration");
         if (dlConfig == null) {
             // no Configuration
             throw new ServletException("No Configuration!");
@@ -124,7 +127,8 @@ public class Scaler extends HttpServlet {
                 (File) dlConfig.getValue("notfound-image"), context);
         sendFileAllowed = dlConfig.getAsBoolean("sendfile-allowed");
         try {
-            defaultErrMsgType = ErrMsg.valueOf(dlConfig.getAsString("default-errmsg-type"));
+            defaultErrMsgType = ErrMsg.valueOf(dlConfig
+                    .getAsString("default-errmsg-type"));
         } catch (Exception e) {
             // nothing to do
         }
@@ -153,40 +157,50 @@ public class Scaler extends HttpServlet {
         return mtime;
     }
 
-    /* (non-Javadoc)
-     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest
+     * , javax.servlet.http.HttpServletResponse)
      */
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException {
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException {
         accountlog.info("GET from " + request.getRemoteAddr());
         this.processRequest(request, response);
     }
 
-
-    /* (non-Javadoc)
-     * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest
+     * , javax.servlet.http.HttpServletResponse)
      */
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException {
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException {
         accountlog.info("POST from " + request.getRemoteAddr());
         this.processRequest(request, response);
     }
-    
 
-	protected void doHead(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
-		logger.debug("HEAD from "+req.getRemoteAddr());
-		super.doHead(req, resp);
-	}
+    protected void doHead(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        logger.debug("HEAD from " + req.getRemoteAddr());
+        super.doHead(req, resp);
+    }
 
-	protected void doOptions(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
-		logger.debug("OPTIONS from "+req.getRemoteAddr());
-		super.doOptions(req, resp);
-	}
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        logger.debug("OPTIONS from " + req.getRemoteAddr());
+        super.doOptions(req, resp);
+    }
 
-	/** Service this request using the response.
+    /**
+     * Service this request using the response.
+     * 
      * @param request
      * @param response
-     * @throws ServletException 
+     * @throws ServletException
      */
     public void processRequest(HttpServletRequest request,
             HttpServletResponse response) throws ServletException {
@@ -199,28 +213,30 @@ public class Scaler extends HttpServlet {
         accountlog.debug("request: " + request.getQueryString());
         logger.debug("request: " + request.getQueryString());
         logger.debug("headers: " + ServletOps.headersToString(request));
-        //logger.debug("response:"+ response + " committed=" + response.isCommitted());
+        // logger.debug("response:"+ response + " committed=" +
+        // response.isCommitted());
         final long startTime = System.currentTimeMillis();
 
         // parse request
         DigilibServletRequest dlRequest = new DigilibServletRequest(request);
         // extract the job information
-        final ImageJobDescription jobTicket = ImageJobDescription.getInstance(dlRequest, dlConfig);
+        final ImageJobDescription jobTicket = ImageJobDescription.getInstance(
+                dlRequest, dlConfig);
 
         // type of error reporting
         ErrMsg errMsgType = defaultErrMsgType;
         if (dlRequest.hasOption("errimg")) {
             errMsgType = ErrMsg.IMAGE;
         } else if (dlRequest.hasOption("errtxt")) {
-        	errMsgType = ErrMsg.TEXT;
+            errMsgType = ErrMsg.TEXT;
         } else if (dlRequest.hasOption("errcode")) {
-        	errMsgType = ErrMsg.CODE;
+            errMsgType = ErrMsg.CODE;
         }
-        
+
         try {
-        	/*
-        	 *  check if we can fast-track without scaling
-        	 */
+            /*
+             * check if we can fast-track without scaling
+             */
             ImageInput fileToLoad = (ImageInput) jobTicket.getInput();
 
             // check permissions
@@ -246,16 +262,21 @@ public class Scaler extends HttpServlet {
                     mt = "application/octet-stream";
                 }
                 logger.debug("Sending RAW File as is.");
-                ServletOps.sendFile(fileToLoad.getFile(), mt, null, response, logger);
-                logger.info("Done in " + (System.currentTimeMillis() - startTime) + "ms");
+                ServletOps.sendFile(fileToLoad.getFile(), mt, null, response,
+                        logger);
+                logger.info("Done in "
+                        + (System.currentTimeMillis() - startTime) + "ms");
                 return;
             }
 
-            // if possible, send the image without actually having to transform it
-            if (! jobTicket.isTransformRequired()) {
+            // if possible, send the image without actually having to transform
+            // it
+            if (!jobTicket.isTransformRequired()) {
                 logger.debug("Sending File as is.");
-                ServletOps.sendFile(fileToLoad.getFile(), null, null, response, logger);
-                logger.info("Done in " + (System.currentTimeMillis() - startTime) + "ms");
+                ServletOps.sendFile(fileToLoad.getFile(), null, null, response,
+                        logger);
+                logger.info("Done in "
+                        + (System.currentTimeMillis() - startTime) + "ms");
                 return;
             }
 
@@ -265,11 +286,12 @@ public class Scaler extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
                 return;
             }
-            
+
             // worker job is done asynchronously
             AsyncContext asyncCtx = request.startAsync(request, response);
             // create job
-            AsyncServletWorker job = new AsyncServletWorker(dlConfig, jobTicket, asyncCtx, errMsgType, startTime);
+            AsyncServletWorker job = new AsyncServletWorker(dlConfig,
+                    jobTicket, asyncCtx, errMsgType, startTime);
             // AsyncServletWorker is its own AsyncListener
             asyncCtx.addListener(job);
             // submit job
@@ -288,7 +310,7 @@ public class Scaler extends HttpServlet {
         } catch (Exception e) {
             logger.error("Other Exception: ", e);
             // TODO: should we rethrow or swallow?
-            //throw new ServletException(e);
+            // throw new ServletException(e);
         }
     }
 
@@ -326,7 +348,7 @@ public class Scaler extends HttpServlet {
             }
             if (response.isCommitted()) {
                 // response already committed
-                logger.warn("Response committed for error "+msg);
+                logger.warn("Response committed for error " + msg);
             }
             if (type == ErrMsg.TEXT) {
                 ServletOps.htmlMessage(msg, response);

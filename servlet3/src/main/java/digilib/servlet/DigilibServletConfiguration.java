@@ -24,6 +24,7 @@ package digilib.servlet;
 import java.io.File;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -49,6 +50,9 @@ import digilib.util.XMLListLoader;
  * 
  */
 public class DigilibServletConfiguration extends DigilibConfiguration {
+
+    /** counter for open HttpRequests (mostly for debugging) */
+    public AtomicInteger openRequestCnt = new AtomicInteger(0);
 
     /**
      * Definition of parameters and default values.

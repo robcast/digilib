@@ -20,7 +20,7 @@ public void jspInit() {
 
 <%
 // get digilib config
-digilib.servlet.DigilibConfiguration dlConfig = docBean.getDlConfig();
+digilib.servlet.DigilibServletConfiguration dlConfig = docBean.getDlConfig();
 // parsing the query
 digilib.servlet.DigilibServletRequest dlRequest = new digilib.servlet.DigilibServletRequest(request);
 // add number of pages
@@ -46,27 +46,27 @@ DigilibJobCenter imageProcessor =  (DigilibJobCenter)dlConfig.getValue("servlet.
     java.util.Arrays.sort(keys);
     int l = keys.length;
     for (int i = 0; i < l; i++) {
-	String key = (String) keys[i];
-	String val = dlConfig.getAsString(key);
-	if (key.equals("basedir-list")) {
-	    String[] bd = (String[]) dlConfig.getValue("basedir-list");
-	    val = "";
-	    if (bd != null) {
-		for (int j = 0; j < bd.length; j++) {
-		    val += bd[j] + "<br> ";
-		}
-	    }
-	}
-	if (val.length() == 0) {
-	    val = "(none)";
-	}
+        String key = (String) keys[i];
+       	String val = dlConfig.getAsString(key);
+        if (key.equals("basedir-list")) {
+            String[] bd = (String[]) dlConfig.getValue("basedir-list");
+            val = "";
+            if (bd != null) {
+                for (int j = 0; j < bd.length; j++) {
+                    val += bd[j] + "<br> ";
+                }
+            }
+        }
+        if (val.length() == 0) {
+            val = "(none)";
+        }
 %>
   <tr>
     <td valign="top"><%= key %></td><td><b><%= val %></b></td>
     <td></td>
   </tr>
 <%
-       }
+   }
 %>
 </table>
 
@@ -80,6 +80,10 @@ DigilibJobCenter imageProcessor =  (DigilibJobCenter)dlConfig.getValue("servlet.
   <tr>
     <td>currently running</td><td><b><%= imageProcessor.getRunningJobs() %></b></td>
     <td></td>
+  </tr>
+  <tr>
+    <td>currently open requests</td><td><b><%= dlConfig.openRequestCnt.get() %></b></td>
+    <td>(including this)</td>
   </tr>
 </table>
 
