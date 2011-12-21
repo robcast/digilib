@@ -329,26 +329,32 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			// try to restrict target color space to sRGB
 			for (Iterator<ImageTypeSpecifier> i = reader.getImageTypes(0); i.hasNext(); ) {
 			    ImageTypeSpecifier type = (ImageTypeSpecifier) i.next();
-			    ColorSpace cs = type.getColorModel().getColorSpace();
+			    ColorModel cm = type.getColorModel();
+			    ColorSpace cs = cm.getColorSpace();
+                //logger.debug("loadSubimage: possible color model:"+cm+" color space:"+cs);
 			    if (cs.isCS_sRGB()) {
 	                logger.debug("loadSubimage: substituted sRGB destination type "+type);
 			        readParam.setDestinationType(type);
-			        break;
+			        //break;
 			    }
 			}
 			// read image
-			logger.debug("loading..");
+			logger.debug("loadSubimage: loading..");
 			img = reader.read(0, readParam);
-			logger.debug("loaded");
+			logger.debug("loadSubimage: loaded");
 			// invalidate image size
 			imageSize = null;
-			/* downconversion of highcolor images seems not to work
+			// downconvert highcolor images
 	        if (img.getColorModel().getComponentSize(0) > 8) {
-	            logger.debug("converting to 8bit");
-	            BufferedImage dest = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+	            logger.debug("loadSubimage: converting to 8bit");
+	            int type = BufferedImage.TYPE_INT_RGB;
+	            if (img.getColorModel().hasAlpha()) {
+	                type = BufferedImage.TYPE_INT_ARGB;
+	            }
+	            BufferedImage dest = new BufferedImage(img.getWidth(), img.getHeight(), type);
 	            dest.createGraphics().drawImage(img, null, 0, 0);
 	            img = dest;
-	        } */
+	        }
 		} catch (IOException e) {
 			throw new FileOpException("Unable to load File!", e);
 		} finally {
