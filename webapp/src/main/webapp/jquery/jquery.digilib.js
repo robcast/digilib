@@ -965,6 +965,7 @@ if (typeof console === 'undefined') {
                 	history.replaceState({}, '', url);
                 	// show busy cursor
                 	$('body').css('cursor', 'progress');
+                	data.$scaler.css('cursor', 'progress');
                 	// change img src
                 	var imgurl = getScalerUrl(data);
                 	data.$img.attr('src', imgurl);
@@ -990,6 +991,7 @@ if (typeof console === 'undefined') {
             // embedded mode -- just change img src
         	// show busy cursor
         	$('body').css('cursor', 'progress');
+        	data.$scaler.css('cursor', 'progress');
             var url = getScalerUrl(data);
             data.$img.attr('src', url);
         	if (data.scalerFlags.clip != null || data.scalerFlags.osize != null) {
@@ -1102,6 +1104,7 @@ if (typeof console === 'undefined') {
         $img.attr('src', scalerUrl);
         // set busy cursor
         $('body').css('cursor','progress');
+    	data.$scaler.css('cursor', 'progress');
     };
 
     // creates HTML structure for a single button
@@ -1460,11 +1463,12 @@ if (typeof console === 'undefined') {
         return function () {
             var $img = $(this);
             console.debug("scaler img loaded=",$img);
-        	// reset busy cursor
-        	$('body').css('cursor', 'inherit');
             var $scaler = data.$scaler;
             var imgRect = geom.rectangle($img);
             data.imgRect = imgRect;
+        	// reset busy cursor
+        	$('body').css('cursor', 'auto');
+        	$scaler.css('cursor', 'auto');
             // adjust scaler div size
             imgRect.adjustDiv($scaler);
             // show image in case it was hidden (for example in zoomDrag)
