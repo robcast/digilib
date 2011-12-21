@@ -498,12 +498,17 @@ if (typeof console === 'undefined') {
 
         // move zoomed area
         moveZoomArea : function (data, dx, dy) {
+            var fullBgRect = setZoomBg(data);
             var za = data.zoomArea;
             var factor = data.settings.zoomArrowMoveFactor;
             var deltaX = dx * factor * za.width;
             var deltaY = dy * factor * za.height;
-            za.addPosition(geom.position(deltaX, deltaY));
+            var delta = geom.position(deltaX, deltaY);
+            za.addPosition(delta);
             data.zoomArea = FULL_AREA.fit(za);
+            // TODO: improve this calculation
+            var deltapix = geom.position(-dx*factor*data.imgRect.width,-dy*factor*data.imgRect.height);
+            moveZoomBg(data, fullBgRect, deltapix);
             redisplay(data);
         },
 
@@ -752,7 +757,7 @@ if (typeof console === 'undefined') {
                 dh : settings.bgImgHeight
         };
         var bgSettings = $.extend({}, settings, bgOptions);
-        // filter scaler flags
+        // filter scaler flags (use only hmir and vmir)
         if (bgSettings.mo != null) {
             var mo = '';
             if (data.scalerFlags.hmir != null) {
@@ -958,11 +963,11 @@ if (typeof console === 'undefined') {
                 // TODO: we really need to push the state in stateObj and listen to pop-events
                 try {
                 	history.replaceState({}, '', url);
+                	// show busy cursor
+                	$('body').css('cursor', 'progress');
                 	// change img src
                 	var imgurl = getScalerUrl(data);
                 	data.$img.attr('src', imgurl);
-                	// show busy cursor
-                	$('body').css('cursor', 'progress');
                 	if (data.scalerFlags.clip != null || data.scalerFlags.osize != null) {
                     	// we need image info, do we have it?
                 		if (data.imgInfo == null) {
@@ -983,10 +988,10 @@ if (typeof console === 'undefined') {
             }
         } else {
             // embedded mode -- just change img src
-            var url = getScalerUrl(data);
-            data.$img.attr('src', url);
         	// show busy cursor
         	$('body').css('cursor', 'progress');
+            var url = getScalerUrl(data);
+            data.$img.attr('src', url);
         	if (data.scalerFlags.clip != null || data.scalerFlags.osize != null) {
             	// we need image info, do we have it?
         		if (data.imgInfo == null) {
@@ -1459,6 +1464,7 @@ if (typeof console === 'undefined') {
         	$('body').css('cursor', 'inherit');
             var $scaler = data.$scaler;
             var imgRect = geom.rectangle($img);
+            data.imgRect = imgRect;
             // adjust scaler div size
             imgRect.adjustDiv($scaler);
             // show image in case it was hidden (for example in zoomDrag)
@@ -1597,7 +1603,7 @@ if (typeof console === 'undefined') {
         $scaler.one('mousedown.dlZoomArea', zoomStart);
     };
 
-    // set zoom background
+    // set zoom background (returns rectangle with fullsize backgroud coordinates)
     var setZoomBg = function(data) {
         var $scaler = data.$scaler;
         var $img = data.$img;
