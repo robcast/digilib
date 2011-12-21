@@ -62,6 +62,7 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
     /**
      * runs the ImageWorker and writes the image to the ServletResponse.
      */
+    @Override
     public void run() {
         // get fresh response
         HttpServletResponse response = (HttpServletResponse) asyncContext
@@ -149,7 +150,7 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
         }
         imageWorker.stopNow();
         this.completed = true;
-        Scaler.digilibError(errMsgType, Error.UNKNOWN, null,
+        Scaler.digilibError(errMsgType, Error.UNKNOWN, "ERROR: timeout rendering image!",
                 (HttpServletResponse) asyncContext.getResponse());
         asyncContext.complete();
     }
