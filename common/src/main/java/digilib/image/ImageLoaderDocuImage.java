@@ -47,6 +47,7 @@ import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
+import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.FileImageInputStream;
@@ -311,8 +312,8 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		return reader;
 	}
 
-	/* Load an image file into the Object. */
-	public void loadSubimage(ImageInput ii, Rectangle region, int prescale)
+    /* Load an image file into the Object. */
+    public void loadSubimage(ImageInput ii, Rectangle region, int prescale)
 			throws FileOpException {
 		logger.debug("loadSubimage");
         this.input = ii;
@@ -324,6 +325,16 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 			readParam.setSourceRegion(region);
 			if (prescale > 1) {
 				readParam.setSourceSubsampling(prescale, prescale, 0, 0);
+			}
+			// try to restrict target color space to sRGB
+			for (Iterator<ImageTypeSpecifier> i = reader.getImageTypes(0); i.hasNext(); ) {
+			    ImageTypeSpecifier type = (ImageTypeSpecifier) i.next();
+			    ColorSpace cs = type.getColorModel().getColorSpace();
+			    if (cs.isCS_sRGB()) {
+	                logger.debug("loadSubimage: substituted sRGB destination type "+type);
+			        readParam.setDestinationType(type);
+			        break;
+			    }
 			}
 			// read image
 			logger.debug("loading..");
