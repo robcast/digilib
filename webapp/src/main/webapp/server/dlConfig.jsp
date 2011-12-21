@@ -81,9 +81,22 @@ DigilibJobCenter imageProcessor =  (DigilibJobCenter)dlConfig.getValue("servlet.
     <td>currently running</td><td><b><%= imageProcessor.getRunningJobs() %></b></td>
     <td></td>
   </tr>
+</table>
+
+<h2>Webapp</h2>
+
+<table>
   <tr>
     <td>currently open requests</td><td><b><%= dlConfig.openRequestCnt.get() %></b></td>
     <td>(including this)</td>
+  </tr>
+  <tr>
+    <td>total requests</td><td><b><%= dlConfig.webappRequestCnt.get() %></b></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>total runtime </td><td><b><%= (System.currentTimeMillis() - dlConfig.webappStartTime)/1000 %></b></td>
+    <td>seconds</td>
   </tr>
 </table>
 
@@ -91,12 +104,12 @@ DigilibJobCenter imageProcessor =  (DigilibJobCenter)dlConfig.getValue("servlet.
 
 <table>
   <tr>
-	<td>size (directories)</td><td><b><%= dirCache.size() %></b></td>
-    <td></td>
+	<td>size</td><td><b><%= dirCache.size() %></b></td>
+    <td>directories</td>
   </tr>
   <tr>
-	<td>numFiles</td><td><b><%= dirCache.getNumFiles() %></b></td>
-    <td></td>
+    <td></td><td><b><%= dirCache.getNumFiles() %></b></td>
+    <td>image files (approximately)</td>
   </tr>
   <tr>
 	<td>hits</td><td><b><%= dirCache.getHits() %></b></td>

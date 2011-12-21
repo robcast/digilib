@@ -51,6 +51,12 @@ import digilib.util.XMLListLoader;
  */
 public class DigilibServletConfiguration extends DigilibConfiguration {
 
+    /** time the webapp (i.e. this class) was loaded */
+    public final Long webappStartTime = System.currentTimeMillis();
+    
+    /** counter for HttpRequests (mostly for debugging) */
+    public AtomicInteger webappRequestCnt = new AtomicInteger(0);
+
     /** counter for open HttpRequests (mostly for debugging) */
     public AtomicInteger openRequestCnt = new AtomicInteger(0);
 

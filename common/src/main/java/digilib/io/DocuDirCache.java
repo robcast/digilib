@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 
@@ -51,13 +52,13 @@ public class DocuDirCache {
 	private FileClass[] fileClasses = null;
 
 	/** number of files in the whole cache (approximate) */
-	long numFiles = 0;
+	protected AtomicInteger numImgFiles = new AtomicInteger(0);
 
 	/** number of cache hits */
-	long hits = 0;
+	protected AtomicInteger hits = new AtomicInteger(0);
 
 	/** number of cache misses */
-	long misses = 0;
+	protected AtomicInteger misses = new AtomicInteger(0);
 
 	/** the root directory element */
 	public static Directory ROOT = null;
@@ -111,7 +112,7 @@ public class DocuDirCache {
 			logger.warn("Duplicate key in DocuDirCache.put -- ignoring!");
 			return olddir;
 		}
-		numFiles += newdir.size();
+		numImgFiles.addAndGet(newdir.size(FileClass.IMAGE));
 		return newdir;
 	}
 
@@ -193,7 +194,7 @@ public class DocuDirCache {
 		dd = map.get(fn);
 		if (dd == null) {
 			// cache miss
-			misses++;
+			misses.incrementAndGet();
 			/*
 			 * see if fn is a directory
 			 */
@@ -228,14 +229,14 @@ public class DocuDirCache {
 					}
 				} else {
 					// it was not a real cache miss
-					misses--;
+					misses.decrementAndGet();
 				}
 				// get the file's index
 				n = dd.indexOf(f.getName(), fc);
 			}
 		} else {
 			// cache hit
-			hits++;
+			hits.incrementAndGet();
 		}
 		dd.refresh();
 		if (dd.isValid()) {
@@ -263,7 +264,7 @@ public class DocuDirCache {
 		dd = map.get(fn);
 		if (dd == null) {
 			// cache miss
-			misses++;
+			misses.incrementAndGet();
 			// see if it's a directory
 			File f = new File(baseDirNames[0], fn);
 			if (f.isDirectory()) {
@@ -289,7 +290,7 @@ public class DocuDirCache {
 						}
 					} else {
 						// not a real cache miss then
-						misses--;
+						misses.decrementAndGet();
 					}
 				} else {
 					// it's not even a file :-(
@@ -298,7 +299,7 @@ public class DocuDirCache {
 			}
 		} else {
 			// cache hit
-			hits++;
+			hits.incrementAndGet();
 		}
 		dd.refresh();
 		if (dd.isValid()) {
@@ -315,13 +316,6 @@ public class DocuDirCache {
 	}
 
 	/**
-	 * @return long
-	 */
-	public long getNumFiles() {
-		return numFiles;
-	}
-
-	/**
 	 * Sets the baseDirNames.
 	 * 
 	 * @param baseDirNames
@@ -331,18 +325,25 @@ public class DocuDirCache {
 		this.baseDirNames = baseDirNames;
 	}
 
+    /**
+     * @return long
+     */
+    public int getNumFiles() {
+        return numImgFiles.get();
+    }
+
 	/**
 	 * @return long
 	 */
-	public long getHits() {
-		return hits;
+	public int getHits() {
+		return hits.get();
 	}
 
 	/**
 	 * @return long
 	 */
-	public long getMisses() {
-		return misses;
+	public int getMisses() {
+		return misses.get();
 	}
 
 	/**

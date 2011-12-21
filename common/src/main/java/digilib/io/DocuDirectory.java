@@ -228,7 +228,7 @@ public class DocuDirectory extends Directory {
 		}
 		// update number of cached files if this was the first time
 		if (dirMTime == 0) {
-			cache.numFiles += size();
+			cache.numImgFiles.addAndGet(size(FileClass.IMAGE));
 		}
 		dirMTime = dir.lastModified();
 		// read metadata as well

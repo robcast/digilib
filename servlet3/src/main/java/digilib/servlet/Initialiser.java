@@ -212,6 +212,7 @@ public class Initialiser implements ServletContextListener, ServletRequestListen
 
     @Override
     public void requestInitialized(ServletRequestEvent arg0) {
+        dlConfig.webappRequestCnt.incrementAndGet();
         int i = dlConfig.openRequestCnt.incrementAndGet();
         logger.debug("ServletRequest created. (cnt="+i+")");
     }
