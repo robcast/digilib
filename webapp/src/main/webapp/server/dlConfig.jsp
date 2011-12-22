@@ -96,7 +96,7 @@ DigilibJobCenter imageProcessor =  (DigilibJobCenter)dlConfig.getValue("servlet.
   </tr>
   <tr>
     <td>total runtime </td><td><b><%= (System.currentTimeMillis() - dlConfig.webappStartTime)/1000 %></b></td>
-    <td>seconds</td>
+    <td>s (<%= dlConfig.webappRequestCnt.get() / (float)((System.currentTimeMillis() - dlConfig.webappStartTime)/1000) %> req/s)</td>
   </tr>
 </table>
 
