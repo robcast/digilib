@@ -254,7 +254,7 @@ if (typeof console === 'undefined') {
                 'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","scale","lessoptions"],
                 'arrowSet' : ["up", "down", "left", "right"],
                 'buttonSets' : ['standardSet', 'specialSet']
-                },
+                }
         },
         // arrow bar overlays for moving the zoomed area
         'showZoomArrows' : true,
