@@ -78,7 +78,7 @@ digilib bird's eye view plugin
 
     var handleSetup = function (evt) {
         console.debug("birdseye: handleSetup");
-        data = this;
+        var data = this;
         // bird's eye view creation
         if (data.settings.isBirdDivVisible) {
             setupBirdDiv(data);
@@ -88,7 +88,7 @@ digilib bird's eye view plugin
 
     var handleUpdate = function (evt) {
         console.debug("birdseye: handleUpdate");
-        data = this;
+        var data = this;
         if (data.settings.isBirdDivVisible) {
             renderBirdArea(data);
             setupBirdDrag(data);
@@ -97,7 +97,7 @@ digilib bird's eye view plugin
 
     var handleRedisplay = function (evt) {
         console.debug("birdseye: handleRedisplay");
-        data = this;
+        var data = this;
         if (data.settings.isBirdDivVisible) {
             updateBirdDiv(data);
         }
@@ -105,7 +105,7 @@ digilib bird's eye view plugin
 
     var handleDragZoom = function (evt, zoomArea) {
         //console.debug("birdseye: handleDragZoom za="+zoomArea);
-        data = this;
+    	var data = this;
         if (data.settings.isBirdDivVisible) {
             setBirdZoom(data, zoomArea);
         }

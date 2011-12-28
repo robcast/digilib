@@ -436,7 +436,7 @@ TODO:
 
     // event handler, reads region parameter and creates region divs
     var handleSetup = function (evt) {
-        data = this;
+        var data = this;
         console.debug("regions: handleSetup", data.settings.rg);
         // regions with content are given in HTML divs
         if (data.settings.hasRegionContent) {
@@ -450,7 +450,7 @@ TODO:
 
     // event handler, sets buttons and shows regions when scaler img is reloaded
     var handleUpdate = function (evt) {
-        data = this;
+        var data = this;
         console.debug("regions: handleUpdate");
         var settings = data.settings;
         fn.highlightButtons(data, 'regions' , settings.isRegionVisible);
@@ -460,7 +460,7 @@ TODO:
 
     // event handler, redisplays regions (e.g. in a new position)
     var handleRedisplay = function (evt) {
-        data = this;
+        var data = this;
         console.debug("regions: handleRedisplay");
         // renderRegions(data);
     };
@@ -468,7 +468,7 @@ TODO:
     // event handler
     var handleDragZoom = function (evt, zoomArea) {
         // console.debug("regions: handleDragZoom, zoomArea:", zoomArea);
-        // data = this;
+        // var data = this;
     };
 
     // plugin installation called by digilib on plugin object.
