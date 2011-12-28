@@ -234,7 +234,7 @@ digilib bird's eye view plugin
             scalerPos = geom.position($scaler);
             newRect = null;
             data.$elem.find(".overlay").hide(); // hide all overlays (marks/regions)
-            fullRect = digilib.fn.setZoomBG(data); // setup zoom background image
+            fullRect = digilib.fn.setZoomBg(data); // setup zoom background image
             $document.on("mousemove.dlBirdMove", birdZoomMove);
             $document.on("mouseup.dlBirdMove", birdZoomEndDrag);
             return false;
