@@ -364,6 +364,8 @@ if (typeof console === 'undefined') {
                         break;
                     }
                 }
+                // check if browser supports AJAX-like URL-replace without reload
+                data.hasAsyncReload = (typeof history.replaceState === 'function');
                 // check digilib base URL
                 if (elemSettings.digilibBaseUrl == null) {
                     if (isFullscreen) {
@@ -404,7 +406,7 @@ if (typeof console === 'undefined') {
                 // create buttons before scaler 
                 for (var i = 0; i < elemSettings.visibleButtonSets; ++i) {
                     showButtons(data, true, i);
-                    }
+                }
                 // create HTML structure for scaler, taking width of buttons div into account
                 setupScalerDiv(data);
                 highlightButtons(data);
@@ -506,6 +508,7 @@ if (typeof console === 'undefined') {
             var delta = geom.position(deltaX, deltaY);
             za.addPosition(delta);
             data.zoomArea = FULL_AREA.fit(za);
+            $(data).trigger('changeZoomArea', za);
             // TODO: improve this calculation
             var deltapix = geom.position(-dx*factor*data.imgRect.width,-dy*factor*data.imgRect.height);
             moveZoomBg(data, fullBgRect, deltapix);
@@ -957,7 +960,7 @@ if (typeof console === 'undefined') {
             // update location.href (browser URL) in fullscreen mode
             var url = getDigilibUrl(data);
             var history = window.history;
-            if (typeof history.replaceState === 'function') {
+            if (data.hasAsyncReload) {
                 console.debug("faking reload to "+url);
                 // change url without reloading (stateObj, title, url)
                 // TODO: we really need to push the state in stateObj and listen to pop-events
@@ -976,6 +979,8 @@ if (typeof console === 'undefined') {
                 		}
                 	}
                 	highlightButtons(data); // TODO: better solution
+                	// invalidate background
+                	data.hasPreviewBg = null;
                 	// send event
                 	$(data).trigger('redisplay');
                 } catch (e) {
@@ -1001,6 +1006,8 @@ if (typeof console === 'undefined') {
         		}
         	}
             highlightButtons(data); // TODO: better solution
+        	// invalidate background
+        	data.hasPreviewBg = null;
             // send event
             $(data).trigger('redisplay');
         }
@@ -1098,7 +1105,9 @@ if (typeof console === 'undefined') {
         $img.addClass('pic');
         data.$scaler = $scaler;
         data.$img = $img;
-        // setup image load handler before setting the src attribute (IE bug)
+        // set up event handlers
+        $(data).on('changeZoomArea', handleChangeZoomArea);
+        // set up image load handler before setting the src attribute (IE bug)
         $img.load(scalerImgLoadedHandler(data));
         $img.error(function () {console.error("error loading scaler image");});
         $img.attr('src', scalerUrl);
@@ -1486,6 +1495,23 @@ if (typeof console === 'undefined') {
         updateDisplay(data);
     };
 
+    // handler for changeZoomArea event
+    var handleChangeZoomArea = function (evt, newZa) {
+    	console.debug("handleChangeZoomArea:", newZa);
+    	var data = this;
+    	if (data.hasPreviewBg == null) {
+    		// no background yet
+            setZoomBg(data);
+    	} else {
+    		// move background
+            // TODO: improve this calculation
+            var deltapix = geom.position(-dx*factor*data.imgRect.width,-dy*factor*data.imgRect.height);
+            moveZoomBg(data, fullBgRect, deltapix);    		
+    	}
+    	
+    };
+    
+    
     // place marks on the image
     var renderMarks = function (data) {
         if (data.$img == null || data.imgTrafo == null) return;
@@ -1630,7 +1656,7 @@ if (typeof console === 'undefined') {
                 var scalerPos = geom.position($scaler);
                 fullRect.addPosition(scalerPos.neg());
                 var url = getBgImgUrl(data);
-                // add background url, size and position
+                // add second background url, size and position (CSS3)
                 scalerCss['background-image'] += ', url(' + url + ')';
                 scalerCss[data.bgSizeName] = 'auto, ' + fullRect.width + 'px ' + fullRect.height + 'px';
                 scalerCss['background-position'] += ', ' + fullRect.x + 'px '+ fullRect.y + 'px';
@@ -1640,14 +1666,16 @@ if (typeof console === 'undefined') {
             }
         }
         $scaler.css(scalerCss);
+        data.hasPreviewBg = true;
+        data.fullBgRect = fullRect;
         return fullRect;
     };
     
     // move zoom background 
-    var moveZoomBg = function(data, fullRect, delta) {
+    var moveZoomBg = function(data, delta) {
         // background position
         var bgPos = delta.x + "px " + delta.y + "px";
-        if (fullRect) {
+        if (data.fullBgRect != null) {
         	// add full-size background position
             var bp = fullRect.getPosition().add(delta);
             bgPos += ', ' + bp.x + "px " + bp.y + "px";
@@ -1658,7 +1686,7 @@ if (typeof console === 'undefined') {
     
     // setup handlers for dragging the zoomed image
     var setupZoomDrag = function(data) {
-        var startPos, delta, fullRect;
+        var startPos, delta;
         var $document = $(document);
         var $data = $(data);
         var $elem = data.$elem;
@@ -1674,7 +1702,7 @@ if (typeof console === 'undefined') {
             startPos = geom.position(evt);
             delta = null;
             // set low res background immediately on mousedown
-            fullRect = setZoomBg(data);
+            setZoomBg(data);
             $document.on("mousemove.dlZoomDrag", dragMove);
             $document.on("mouseup.dlZoomDrag", dragEnd);
             return false;
@@ -1685,7 +1713,7 @@ if (typeof console === 'undefined') {
             var pos = geom.position(evt);
             delta = startPos.delta(pos);
             // position background
-            moveZoomBg(data, fullRect, delta);
+            moveZoomBg(data, delta);
             // send message event with current zoom position
             var za = geom.rectangle($img);
             za.addPosition(delta.neg());
@@ -1702,6 +1730,7 @@ if (typeof console === 'undefined') {
                 // no movement
                 $img.css('visibility', 'visible');
                 $scaler.css({'opacity' : '1', 'background-image' : 'none'});
+                data.hasPreviewBg = null;
                 // unhide marks
                 data.$elem.find('div.mark').show();
                 $(data).trigger('redisplay');
