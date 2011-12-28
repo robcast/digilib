@@ -285,8 +285,10 @@ if (typeof console === 'undefined') {
     var fn;
     // affine geometry plugin stub
     var geom;
-
+    // rectangle with maximum zoom area
     var FULL_AREA;
+    // limit for float comparison
+    var EPSILON = 0.000001;
 
     var actions = {
         // init: digilib initialization
@@ -349,8 +351,6 @@ if (typeof console === 'undefined') {
                             settings : elemSettings,
                             // and of the URL query parameters
                             queryParams : params,
-                            // TODO: move plugins reference out of data
-                            plugins : plugins
                     };
                     // store in jQuery data element
                     $elem.data('digilib', data);
@@ -364,6 +364,7 @@ if (typeof console === 'undefined') {
                         break;
                     }
                 }
+                data.hasPreviewBg = false;
                 // check if browser supports AJAX-like URL-replace without reload
                 data.hasAsyncReload = (typeof history.replaceState === 'function');
                 // check digilib base URL
@@ -500,18 +501,15 @@ if (typeof console === 'undefined') {
 
         // move zoomed area
         moveZoomArea : function (data, dx, dy) {
-            var fullBgRect = setZoomBg(data);
-            var za = data.zoomArea;
+            var za = data.zoomArea.copy();
             var factor = data.settings.zoomArrowMoveFactor;
             var deltaX = dx * factor * za.width;
             var deltaY = dy * factor * za.height;
             var delta = geom.position(deltaX, deltaY);
             za.addPosition(delta);
-            data.zoomArea = FULL_AREA.fit(za);
+            za = FULL_AREA.fit(za);
             $(data).trigger('changeZoomArea', za);
-            // TODO: improve this calculation
-            var deltapix = geom.position(-dx*factor*data.imgRect.width,-dy*factor*data.imgRect.height);
-            moveZoomBg(data, fullBgRect, deltapix);
+            data.zoomArea = za;
             redisplay(data);
         },
 
@@ -980,7 +978,7 @@ if (typeof console === 'undefined') {
                 	}
                 	highlightButtons(data); // TODO: better solution
                 	// invalidate background
-                	data.hasPreviewBg = null;
+                	data.hasPreviewBg = false;
                 	// send event
                 	$(data).trigger('redisplay');
                 } catch (e) {
@@ -1007,7 +1005,7 @@ if (typeof console === 'undefined') {
         	}
             highlightButtons(data); // TODO: better solution
         	// invalidate background
-        	data.hasPreviewBg = null;
+        	data.hasPreviewBg = false;
             // send event
             $(data).trigger('redisplay');
         }
@@ -1499,16 +1497,27 @@ if (typeof console === 'undefined') {
     var handleChangeZoomArea = function (evt, newZa) {
     	console.debug("handleChangeZoomArea:", newZa);
     	var data = this;
-    	if (data.hasPreviewBg == null) {
-    		// no background yet
-            setZoomBg(data);
-    	} else {
+    	var delta = data.zoomArea.delta(newZa);
+    	if (Math.abs(delta.width) > EPSILON || Math.abs(delta.height) > EPSILON) {
+    		// zoom changed -- set new background
+    		console.debug("zoom level changed!");
+    		var dw = data.zoomArea.width / newZa.width;
+    		var dh = data.zoomArea.height / newZa.height;
+    		var deltapix = geom.size(dw, dh);
+    		setZoomBg(data, deltapix);
+    	} else if (Math.abs(delta.x) > EPSILON || Math.abs(delta.y) > EPSILON) {
     		// move background
-            // TODO: improve this calculation
-            var deltapix = geom.position(-dx*factor*data.imgRect.width,-dy*factor*data.imgRect.height);
-            moveZoomBg(data, fullBgRect, deltapix);    		
+    		console.debug("zoom area moved:", delta);
+    		var opx = data.imgTrafo.transform(data.zoomArea.getPosition());
+    		var npx = data.imgTrafo.transform(newZa.getPosition());
+    		var deltapix = npx.delta(opx);
+    		if (data.hasPreviewBg) {
+    			moveZoomBg(data, deltapix);    		
+    		} else {
+    			// no background yet
+    			setZoomBg(data, deltapix);
+    		}
     	}
-    	
     };
     
     
@@ -1546,6 +1555,7 @@ if (typeof console === 'undefined') {
         newarea.x -= 0.5 * (newarea.width - area.width);
         newarea.y -= 0.5 * (newarea.height - area.height);
         newarea = FULL_AREA.fit(newarea);
+        $(data).trigger('changeZoomArea', newarea);
         data.zoomArea = newarea;
         redisplay(data);
     };
@@ -1634,7 +1644,7 @@ if (typeof console === 'undefined') {
     };
 
     // set zoom background (returns rectangle with fullsize backgroud coordinates)
-    var setZoomBg = function(data) {
+    var setZoomBg = function(data, delta) {
         var $scaler = data.$scaler;
         var $img = data.$img;
         var fullRect = null;
@@ -1649,6 +1659,17 @@ if (typeof console === 'undefined') {
             'cursor' : 'move'
             };
         if (data.hasBgSize) {
+        	if (delta != null && delta.width != null) {
+        		// scale background by delta
+        		var nw = Math.round(data.imgRect.width * delta.width);
+        		var nh = Math.round(data.imgRect.height * delta.height);
+        		scalerCss[data.bgSizeName] = nw + 'px ' +  nh + 'px';
+        		// correct offset
+        		scalerCss['background-position'] = Math.round((data.imgRect.width - nw) / 2) + 'px ' 
+        				+ Math.round((data.imgRect.height - nh) / 2) + 'px';
+        	} else {
+        		scalerCss[data.bgSizeName] = 'auto';
+        	}
             // additional full-size background using CSS3-background-size
             fullRect = data.imgTrafo.transform(FULL_AREA);
             if (fullRect.height < data.settings.maxBgSize && fullRect.width < data.settings.maxBgSize) {
@@ -1658,8 +1679,19 @@ if (typeof console === 'undefined') {
                 var url = getBgImgUrl(data);
                 // add second background url, size and position (CSS3)
                 scalerCss['background-image'] += ', url(' + url + ')';
-                scalerCss[data.bgSizeName] = 'auto, ' + fullRect.width + 'px ' + fullRect.height + 'px';
-                scalerCss['background-position'] += ', ' + fullRect.x + 'px '+ fullRect.y + 'px';
+            	if (delta != null && delta.width != null) {
+            		// scale second background by delta
+            		var nw = Math.round(fullRect.width * delta.width);
+            		var nh = Math.round(fullRect.height * delta.height);
+                    scalerCss[data.bgSizeName] += ', ' + nw + 'px ' + nh + 'px';
+                    // and correct position
+                    var nx = Math.round(fullRect.x + (fullRect.width - nw) / 2);
+                    var ny = Math.round(fullRect.y + (fullRect.height - nh) / 2);
+                    scalerCss['background-position'] += ', ' + nx + 'px '+ ny + 'px';
+            	} else {
+                    scalerCss[data.bgSizeName] += ', ' + fullRect.width + 'px ' + fullRect.height + 'px';
+                    scalerCss['background-position'] += ', ' + fullRect.x + 'px '+ fullRect.y + 'px';
+            	}
             } else {
                 // scaled full-size background image too big
                 fullRect = null;
@@ -1668,6 +1700,9 @@ if (typeof console === 'undefined') {
         $scaler.css(scalerCss);
         data.hasPreviewBg = true;
         data.fullBgRect = fullRect;
+        if (delta != null && delta.x != null) {
+        	moveZoomBg(data, delta);
+        }
         return fullRect;
     };
     
@@ -1677,7 +1712,7 @@ if (typeof console === 'undefined') {
         var bgPos = delta.x + "px " + delta.y + "px";
         if (data.fullBgRect != null) {
         	// add full-size background position
-            var bp = fullRect.getPosition().add(delta);
+            var bp = data.fullBgRect.getPosition().add(delta);
             bgPos += ', ' + bp.x + "px " + bp.y + "px";
         }
         // move the background image to the new position
@@ -1695,6 +1730,8 @@ if (typeof console === 'undefined') {
 
         // drag the image and load a new detail on mouse up
         var dragStart = function (evt) {
+        	// cancel if not left-click
+        	if (evt.which != 1) return;
             console.debug("dragstart at=", evt);
             // don't start dragging if not zoomed
             if (isFullArea(data.zoomArea)) return false;
@@ -1730,7 +1767,7 @@ if (typeof console === 'undefined') {
                 // no movement
                 $img.css('visibility', 'visible');
                 $scaler.css({'opacity' : '1', 'background-image' : 'none'});
-                data.hasPreviewBg = null;
+                data.hasPreviewBg = false;
                 // unhide marks
                 data.$elem.find('div.mark').show();
                 $(data).trigger('redisplay');

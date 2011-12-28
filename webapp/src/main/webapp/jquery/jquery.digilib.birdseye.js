@@ -14,9 +14,9 @@ digilib bird's eye view plugin
 
     var buttons = {
             bird : {
-                onclick : "showBirdDiv",
-                tooltip : "show bird's eye view",
-                icon : "birds-eye.png"
+                'onclick' : "showBirdDiv",
+                'tooltip' : "show bird's eye view",
+                'icon' : "birds-eye.png"
                 }
     };
 
@@ -206,10 +206,10 @@ digilib bird's eye view plugin
             // correct offsetParent because animate doesn't use offset
             var ppos = $birdZoom.offsetParent().offset();
             var dest = {
-                left : (zoomRect.x - ppos.left) + 'px',
-                top : (zoomRect.y - ppos.top) + 'px',
-                width : zoomRect.width,
-                height : zoomRect.height
+                'left' : (zoomRect.x - ppos.left) + 'px',
+                'top' : (zoomRect.y - ppos.top) + 'px',
+                'width' : zoomRect.width,
+                'height' : zoomRect.height
                 };
             $birdZoom.animate(dest);
         }
@@ -221,7 +221,7 @@ digilib bird's eye view plugin
         var $birdZoom = data.$birdZoom;
         var $document = $(document);
         var $scaler = data.$scaler;
-        var startPos, newRect, birdImgRect, birdZoomRect, fullRect, scalerPos;
+        var startPos, newRect, birdImgRect, birdZoomRect;
         var bw = digilib.fn.getBorderWidth($birdZoom);
 
         // mousedown handler: start dragging bird zoom to a new position
@@ -231,10 +231,8 @@ digilib bird's eye view plugin
             data.birdTrafo = digilib.fn.getImgTrafo($birdImg, FULL_AREA);
             birdImgRect = geom.rectangle($birdImg);
             birdZoomRect = geom.rectangle($birdZoom);
-            scalerPos = geom.position($scaler);
             newRect = null;
             data.$elem.find(".overlay").hide(); // hide all overlays (marks/regions)
-            fullRect = digilib.fn.setZoomBg(data); // setup zoom background image
             $document.on("mousemove.dlBirdMove", birdZoomMove);
             $document.on("mouseup.dlBirdMove", birdZoomEndDrag);
             return false;
@@ -250,18 +248,7 @@ digilib bird's eye view plugin
             newRect.stayInside(birdImgRect);
             // reflect birdview zoom position in scaler image
             var area = data.birdTrafo.invtransform(newRect);
-            var imgArea = data.imgTrafo.transform(area);
-            var offset = imgArea.getPosition().neg();
-            offset.add(scalerPos);
-            if (fullRect) {
-                var bgPos = fullRect.getPosition().add(offset);
-            } else {
-                var bgPos = offset;
-            }
-            // move the background image to the new position
-            data.$scaler.css({
-                'background-position' : bgPos.x + "px " + bgPos.y + "px"
-                });
+            $(data).trigger('changeZoomArea', area);
             // acount for border width
             newRect.addPosition({x : -bw, y : -bw});
             newRect.adjustDiv($birdZoom);

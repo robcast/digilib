@@ -87,7 +87,7 @@
                 y : other.y - this.y
             });
         };
-        // adjusts position $elem to this position
+        // adjusts CSS position of $elem to this position
         that.adjustDiv = function($elem) {
             $elem.offset({
                 left : this.x,
@@ -210,10 +210,15 @@
             this.y = pos.y - this.height / 2;
             return this;
         };
-        // returns true if both rectangles have equal position and proportion
+        // returns true if both rectangles have equal position and size
         that.equals = function(other) {
             var eq = (this.x === other.x && this.y === other.y && this.width === other.width);
             return eq;
+        };
+        // returns a rectangle with the difference width, height and position
+        that.delta = function(other) {
+            return rectangle(other.x - this.x, other.y - this.y, 
+            		other.width - this.width, other.height - this.height);
         };
         // returns the area of this Rectangle
         that.getArea = function() {
