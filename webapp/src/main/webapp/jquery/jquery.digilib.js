@@ -1626,6 +1626,7 @@ if (typeof console === 'undefined') {
             // clip and transform
             clickRect.clipTo(picRect);
             var area = data.imgTrafo.invtransform(clickRect);
+            //$(data).trigger('changeZoomArea', area); // TODO: doesn't work yet
             data.zoomArea = area;
             // zoomed is always fit
             data.settings.ws = 1;
