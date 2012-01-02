@@ -95,7 +95,7 @@ if (typeof console === 'undefined') {
         // maximum width or height of background image for drag-scroll
         'maxBgSize' : 10000,
         // parameters used by background image
-        'bgImgParams' : ['fn','pn','dw','dh','mo','rot'],
+        'bgImgParamNames' : ['fn','pn','dw','dh','mo','rot'],
         // reserved space in full page display (default value accounts for vertical scrollbar)
         'scalerInset' : 10
         };
@@ -103,11 +103,11 @@ if (typeof console === 'undefined') {
     // list of plugins
     var plugins = {};
     // object to export functions to plugins
-    var fn;
+    var fn = null;
     // affine geometry plugin stub
-    var geom;
+    var geom = null;
     // rectangle with maximum zoom area
-    var FULL_AREA;
+    var FULL_AREA = null;
     // limit for float comparison
     var EPSILON = 0.0001;
     // list of buttons
@@ -562,7 +562,7 @@ if (typeof console === 'undefined') {
             }
             bgSettings.mo = mo;
         }
-        var params = getParamString(bgSettings, settings.bgImgParams, defaults);
+        var params = getParamString(bgSettings, settings.bgImgParamNames, defaults);
         var url = settings.scalerBaseUrl + '?' + params;
         return url;
     };
