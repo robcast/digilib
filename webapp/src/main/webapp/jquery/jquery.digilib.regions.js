@@ -9,8 +9,6 @@ TODO:
 (function($) {
     // the digilib object
     var digilib;
-    // the data object passed by digilib
-    var data;
     // the functions made available by digilib
     var fn;
     // affine geometry plugin
@@ -288,7 +286,7 @@ TODO:
     };
 
     // create a region div from the data.regions array
-    var createRegionDiv = function (regions, index, attributes) {
+    var createRegionDiv = function (data, regions, index, attributes) {
         var $regionDiv = addRegionDiv(data, index, attributes);
         var region = regions[index];
         region.$div = $regionDiv;
@@ -300,7 +298,7 @@ TODO:
         unpackRegions(data);
         var regions = data.regions;
         $.each(regions, function(i) {
-            createRegionDiv(regions, i);
+            createRegionDiv(data, regions, i);
             });
     };
 
@@ -324,7 +322,7 @@ TODO:
             if ($a.attr('href')) { attributes.href = $a.attr('href'); }
             if ($a.attr('title')) { attributes.title = $a.attr('title'); }
             // create the div
-            var $regionDiv = createRegionDiv(regions, index, attributes);
+            var $regionDiv = createRegionDiv(data, regions, index, attributes);
             var $contents = $a.contents().clone();
             $regionDiv.append($contents);
         });
@@ -462,13 +460,7 @@ TODO:
     var handleRedisplay = function (evt) {
         var data = this;
         console.debug("regions: handleRedisplay");
-        // renderRegions(data);
-    };
-
-    // event handler
-    var handleDragZoom = function (evt, zoomArea) {
-        // console.debug("regions: handleDragZoom, zoomArea:", zoomArea);
-        // var data = this;
+        //renderRegions(data);
     };
 
     // plugin installation called by digilib on plugin object.
@@ -500,9 +492,8 @@ TODO:
         $data.on('setup', handleSetup);
         $data.on('update', handleUpdate);
         $data.on('redisplay', handleRedisplay);
-        $data.on('dragZoom', handleDragZoom);
         var settings = data.settings;
-        var selector = data.settings.regionContentSelector;
+        var selector = settings.regionContentSelector;
         settings.hasRegionContent = $elem.has(selector).length > 0;
         // neither URL-defined regions nor buttons when regions are predefined in HTML
         if (!settings.hasRegionContent) {

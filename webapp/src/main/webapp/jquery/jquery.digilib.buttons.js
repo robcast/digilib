@@ -164,8 +164,8 @@ digilib buttons plugin
             };
 
     var defaults = {
-            // buttons
-            'buttons' : buttons,
+            // buttons (reference added later)
+            'buttons' : null,
             // defaults for digilib buttons
             'buttonSettings' : {
                 'fullscreen' : {
@@ -230,8 +230,11 @@ digilib buttons plugin
         $.extend(digilib.defaults, defaults);
         $.extend(digilib.actions, actions);
         $.extend(digilib.buttons, buttons);
+        // update buttons reference in defaults
+        digilib.defaults.buttons = digilib.buttons;
         // export functions
         digilib.fn.createButton = createButton;
+        digilib.fn.highlightButtons = highlightButtons;
     };
 
     // plugin initialization
@@ -413,7 +416,7 @@ digilib buttons plugin
             name : 'buttons',
             install : install,
             init : init,
-            //buttons : {},
+            buttons : {},
             actions : {},
             fn : {},
             plugins : {}

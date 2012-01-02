@@ -40,7 +40,7 @@ digilib bird's eye view plugin
                 }
                 var on = digilib.fn.showDiv(settings.isBirdDivVisible, data.$birdDiv, show);
                 settings.isBirdDivVisible = on;
-                digilib.fn.highlightButtons(data, 'bird', on);
+                //digilib.fn.highlightButtons(data, 'bird', on);
                 updateBirdDiv(data);
                 digilib.fn.storeOptions(data);
             }
@@ -72,7 +72,7 @@ digilib bird's eye view plugin
         $data.on('setup', handleSetup);
         $data.on('update', handleUpdate);
         $data.on('redisplay', handleRedisplay);
-        $data.on('dragZoom', handleDragZoom);
+        $data.on('changeZoomArea', handleChangeZoomArea);
     };
 
 
@@ -103,11 +103,11 @@ digilib bird's eye view plugin
         }
     };
 
-    var handleDragZoom = function (evt, zoomArea) {
+    var handleChangeZoomArea = function (evt, zoomArea) {
         //console.debug("birdseye: handleDragZoom za="+zoomArea);
     	var data = this;
         if (data.settings.isBirdDivVisible) {
-            setBirdZoom(data, zoomArea);
+            updateBirdZoom(data, zoomArea);
         }
     };
 
@@ -174,8 +174,10 @@ digilib bird's eye view plugin
                 // malheureusement IE7 calls load handler when there is no size info yet 
                 setTimeout(function () { $birdImg.triggerHandler('load'); }, 200);
                 }
+            // create Transform from current area and picsize
+            data.birdTrafo = digilib.fn.getImgTrafo(data.$birdImg, FULL_AREA);
             // update display (zoom area indicator)
-            digilib.fn.updateDisplay(data);
+            $(data).trigger('update');
         };
     };
 
@@ -191,8 +193,6 @@ digilib bird's eye view plugin
         } else {
             $birdZoom.show();
         }
-        // create Transform from current area and picsize
-        data.birdTrafo = digilib.fn.getImgTrafo(data.$birdImg, FULL_AREA);
         var zoomRect = data.birdTrafo.transform(zoomArea);
         console.debug("renderBirdArea:", zoomRect, "zoomArea:", zoomArea, "$birdTrafo:", data.birdTrafo);
         // acount for border width
@@ -213,6 +213,16 @@ digilib bird's eye view plugin
                 };
             $birdZoom.animate(dest);
         }
+    };
+
+    // move bird zoom indicator to reflect zoomed detail area
+    var updateBirdZoom = function(data, zoomArea) {
+        var birdRect = data.birdTrafo.transform(zoomArea);
+        var $birdZoom = data.$birdZoom;
+        // acount for border width
+        var bw = digilib.fn.getBorderWidth($birdZoom);
+        birdRect.addPosition({x : -bw, y : -bw});
+        birdRect.adjustDiv(data.$birdZoom);
     };
 
     // bird's eye view zoom area click and drag handler
@@ -246,12 +256,12 @@ digilib bird's eye view plugin
             newRect = birdZoomRect.copy();
             newRect.addPosition(delta);
             newRect.stayInside(birdImgRect);
-            // reflect birdview zoom position in scaler image
-            var area = data.birdTrafo.invtransform(newRect);
-            $(data).trigger('changeZoomArea', area);
             // acount for border width
             newRect.addPosition({x : -bw, y : -bw});
             newRect.adjustDiv($birdZoom);
+            // reflect birdview zoom position in scaler image
+            var area = data.birdTrafo.invtransform(newRect);
+            $(data).trigger('changeZoomArea', area);
             return false;
         };
 
@@ -282,19 +292,6 @@ digilib bird's eye view plugin
             $birdImg.on("mousedown.dlBirdMove", birdZoomStartDrag);
             $birdZoom.on("mousedown.dlBirdMove", birdZoomStartDrag);
         }
-    };
-
-    // move bird zoom indicator to reflect zoomed detail area
-    var setBirdZoom = function(data, rect) {
-        var part = data.imgTrafo.invtransform(rect);
-        // area = FULL_AREA.fit(part); // no, we want to see where we transcend the borders
-        birdTrafo = digilib.fn.getImgTrafo(data.$birdImg, FULL_AREA);
-        var birdRect = birdTrafo.transform(part);
-        var $birdZoom = data.$birdZoom;
-        // acount for border width
-        var bw = digilib.fn.getBorderWidth($birdZoom);
-        birdRect.addPosition({x : -bw, y : -bw});
-        birdRect.adjustDiv(data.$birdZoom);
     };
 
     // plugin object with name and init

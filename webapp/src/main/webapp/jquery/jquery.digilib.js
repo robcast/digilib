@@ -109,7 +109,9 @@ if (typeof console === 'undefined') {
     // rectangle with maximum zoom area
     var FULL_AREA;
     // limit for float comparison
-    var EPSILON = 0.000001;
+    var EPSILON = 0.0001;
+    // list of buttons
+    var buttons = {};
 
     var actions = {
         // init: digilib initialization
@@ -214,6 +216,9 @@ if (typeof console === 'undefined') {
                 		elemSettings.scalerBaseUrl = elemSettings.digilibBaseUrl + '/servlet/Scaler';
                 	}
                 }
+                // set up event handlers
+                $(data).on('update', handleUpdate); // handleUpdate needs to be the first handler for update
+                $(data).on('changeZoomArea', handleChangeZoomArea);
                 // initialise plugins
                 for (n in plugins) {
                     var p = plugins[n];
@@ -226,7 +231,7 @@ if (typeof console === 'undefined') {
                 if (data.scaleMode === 'pixel' || data.scaleMode === 'size') {
                     loadImageInfo(data); // triggers "imageInfo" on completion
                 }
-                // create HTML structure for scaler, taking width of buttons div into account
+                // create HTML structure for scaler
                 setupScalerDiv(data);
                 // about window creation - TODO: could be deferred? restrict to only one item?
                 setupAboutDiv(data);
@@ -801,14 +806,19 @@ if (typeof console === 'undefined') {
 
     // update display (overlays etc.)
     var updateDisplay = function (data) {
-        updateImgTrafo(data);
-        renderMarks(data);
-        setupZoomDrag(data);
-        renderZoomArrows(data);
         // send event
         $(data).trigger('update');
     };
 
+    // update display (overlays etc.)
+    var handleUpdate = function (evt) {
+    	var data = this;
+        updateImgTrafo(data);
+        renderMarks(data);
+        setupZoomDrag(data);
+        renderZoomArrows(data);
+    };
+    
     // returns maximum size for scaler img in fullscreen mode
     var getFullscreenImgSize = function (data) {
         var mode = data.settings.interactionMode;
@@ -827,12 +837,10 @@ if (typeof console === 'undefined') {
             console.debug("fixing border height for getFullscreenImgSize!");
             borderH = 5;
         }
-        // FIXME!
         var buttonsW = 0;
         if (data.settings.visibleButtonSets) {
             // get button width from settings
-            buttonsW = data.settings.buttonSettings[mode].buttonSetWidth;
-            // TODO: leave space for all button sets?
+            buttonsW = data.settings.buttonSettings[mode].buttonSetWidth * data.settings.visibleButtonSets;
         }
         // account for left/right border, body margins and additional requirements
         var imgW = winW - borderW - buttonsW;
@@ -892,15 +900,13 @@ if (typeof console === 'undefined') {
         $img.addClass('pic');
         data.$scaler = $scaler;
         data.$img = $img;
-        // set up event handlers
-        $(data).on('changeZoomArea', handleChangeZoomArea);
+        // set busy cursor
+        $('body').css('cursor','progress');
+    	data.$scaler.css('cursor', 'progress');
         // set up image load handler before setting the src attribute (IE bug)
         $img.load(scalerImgLoadedHandler(data));
         $img.error(function () {console.error("error loading scaler image");});
         $img.attr('src', scalerUrl);
-        // set busy cursor
-        $('body').css('cursor','progress');
-    	data.$scaler.css('cursor', 'progress');
     };
 
     // creates arrow overlays for moving the zoomed area
@@ -1100,7 +1106,7 @@ if (typeof console === 'undefined') {
             data.imgTrafo = getImgTrafo($img, data.zoomArea,
                     data.settings.rot, data.scalerFlags.hmir, data.scalerFlags.vmir,
                     data.scaleMode, data);
-            // console.debug("imgTrafo=", data.imgTrafo);
+            console.debug("imgTrafo=", data.imgTrafo);
         }
     };
 
@@ -1143,6 +1149,7 @@ if (typeof console === 'undefined') {
     		var dw = data.zoomArea.width / newZa.width;
     		var dh = data.zoomArea.height / newZa.height;
     		var deltapix = geom.size(dw, dh);
+            data.$elem.find(".overlay").hide(); // hide all overlays (marks/regions)
     		setZoomBg(data, deltapix);
     	} else if (Math.abs(delta.x) > EPSILON || Math.abs(delta.y) > EPSILON) {
     		// move background
@@ -1154,6 +1161,7 @@ if (typeof console === 'undefined') {
     			moveZoomBg(data, deltapix);    		
     		} else {
     			// no background yet
+                data.$elem.find(".overlay").hide(); // hide all overlays (marks/regions)
     			setZoomBg(data, deltapix);
     		}
     	}
@@ -1283,7 +1291,7 @@ if (typeof console === 'undefined') {
         $scaler.one('mousedown.dlZoomArea', zoomStart);
     };
 
-    // set zoom background (returns rectangle with fullsize backgroud coordinates)
+    // set zoom background (returns rectangle with fullsize background coordinates)
     var setZoomBg = function(data, delta) {
         var $scaler = data.$scaler;
         var $img = data.$img;
@@ -1390,11 +1398,14 @@ if (typeof console === 'undefined') {
             var pos = geom.position(evt);
             delta = startPos.delta(pos);
             // position background
-            moveZoomBg(data, delta);
+            //moveZoomBg(data, delta);
             // send message event with current zoom position
             var za = geom.rectangle($img);
             za.addPosition(delta.neg());
-            $data.trigger('dragZoom', [za]);
+            // transform back
+            var newArea = data.imgTrafo.invtransform(za);
+            $data.trigger('changeZoomArea', newArea);
+            //$data.trigger('dragZoom', [za]);
             return false;
             };
 
@@ -1591,7 +1602,7 @@ if (typeof console === 'undefined') {
                 plugins[plugin.name] = plugin;
                 // share common objects
                 plugin.defaults = defaults;
-                //plugin.buttons = buttons; FIXME
+                plugin.buttons = buttons;
                 plugin.actions = actions;
                 plugin.fn = fn;
                 plugin.plugins = plugins;
