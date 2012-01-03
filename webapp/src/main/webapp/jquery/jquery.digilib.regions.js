@@ -333,18 +333,19 @@ TODO:
         if (!data.imgTrafo) return;
         var $elem = data.$elem;
         var regions = data.regions;
+        var zoomArea = data.zoomArea;
         if (index > regions.length) return;
         var region = regions[index];
         var $regionDiv = region.$div;
         if (!$regionDiv) {
-            console.debug("renderRegion: region has no $div", region);
+            console.error("renderRegion: region has no $div", region);
             // alert("renderRegion: region has no $div to show");
             return;
         }
         var regionRect = region.copy();
         var show = data.settings.isRegionVisible;
-        if (show && data.zoomArea.overlapsRect(regionRect)) {
-            regionRect.clipTo(data.zoomArea);
+        if (show && zoomArea.overlapsRect(regionRect)) {
+            regionRect.clipTo(zoomArea);
             var screenRect = data.imgTrafo.transform(regionRect);
             console.debug("renderRegion: pos=",geom.position(screenRect));
             if (anim) {
@@ -456,13 +457,6 @@ TODO:
         renderRegions(data);
     };
 
-    // event handler, redisplays regions (e.g. in a new position)
-    var handleRedisplay = function (evt) {
-        var data = this;
-        console.debug("regions: handleRedisplay");
-        //renderRegions(data);
-    };
-
     // plugin installation called by digilib on plugin object.
     var install = function(plugin) {
         digilib = plugin;
@@ -491,7 +485,6 @@ TODO:
         var $data = $(data);
         $data.on('setup', handleSetup);
         $data.on('update', handleUpdate);
-        $data.on('redisplay', handleRedisplay);
         var settings = data.settings;
         var selector = settings.regionContentSelector;
         settings.hasRegionContent = $elem.has(selector).length > 0;
