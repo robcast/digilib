@@ -183,7 +183,7 @@ digilib bird's eye view plugin
 
     // show zoom area indicator on bird's eye view
     var renderBirdArea = function (data) {
-        if (data.$birdImg == null || ! data.$birdImg.get(0).complete) return;
+        if (data.$birdImg == null || ! data.$birdImg.prop('complete') || data.birdTrafo == null) return;
         var $birdZoom = data.$birdZoom;
         var zoomArea = data.zoomArea;
         var normalSize = digilib.fn.isFullArea(zoomArea);

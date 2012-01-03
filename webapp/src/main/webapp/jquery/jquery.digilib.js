@@ -768,8 +768,8 @@ if (typeof console === 'undefined') {
                 	var $img = data.$img;
                 	var imgurl = getScalerUrl(data);
                 	$img.attr('src', imgurl);
-                	// trigger load event if image is cached
-                	if ($img.prop('complete')) $img.trigger('load');
+                	// trigger load event if image is cached. Doesn't work with Firefox!!
+                	//if ($img.prop('complete')) $img.trigger('load');
                 	if (data.scalerFlags.clip != null || data.scalerFlags.osize != null) {
                     	// we need image info, do we have it?
                 		if (data.imgInfo == null) {
@@ -1156,7 +1156,7 @@ if (typeof console === 'undefined') {
             imgRect.adjustDiv($scaler);
             // show image in case it was hidden (for example in zoomDrag)
             $img.css('visibility', 'visible');
-            $scaler.css({'opacity' : '1', 'background-image' : 'none'});
+            $scaler.css({'opacity' : '1', 'background' : 'transparent'});
             data.hasPreviewBg = false;
             // update display (render marks, etc.)
             updateDisplay(data);
