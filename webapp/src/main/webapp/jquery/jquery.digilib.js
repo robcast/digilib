@@ -177,6 +177,9 @@ if (typeof console === 'undefined') {
                     };
                     // store in jQuery data element
                     $elem.data('digilib', data);
+                } else {
+                	// data exists
+                	elemSettings = data.settings;
                 }
                 unpackParams(data);
                 // check if browser knows *background-size
@@ -295,7 +298,6 @@ if (typeof console === 'undefined') {
 
         // zoom to area (or interactive)
         zoomArea : function (data, area) {
-            var settings = data.settings;
             if (area == null) {
                 // interactively
                 zoomArea(data);
@@ -617,12 +619,13 @@ if (typeof console === 'undefined') {
         data.zoomArea = zoomArea;
         // marks
         var marks = [];
+        var pa;
         if (settings.mk) {
             var mk = settings.mk;
             if (mk.indexOf(";") >= 0) {
-                var pa = mk.split(";");    // old format with ";"
+                pa = mk.split(";");    // old format with ";"
             } else {
-                var pa = mk.split(",");    // new format
+                pa = mk.split(",");    // new format
             }
             for (var i = 0; i < pa.length ; i++) {
                 var pos = pa[i].split("/");
@@ -744,7 +747,9 @@ if (typeof console === 'undefined') {
             }
     };
 
-    // (re)load the img from a new scaler URL
+    /** (re)load the image with the current settings.
+     * 
+     */
     var redisplay = function (data) {
         var settings = data.settings; 
         if (settings.interactionMode === 'fullscreen') {
@@ -761,8 +766,11 @@ if (typeof console === 'undefined') {
                 	$('body').css('cursor', 'progress');
                 	data.$scaler.css('cursor', 'progress');
                 	// change img src
+                	var $img = data.$img;
                 	var imgurl = getScalerUrl(data);
-                	data.$img.attr('src', imgurl);
+                	$img.attr('src', imgurl);
+                	// trigger load event if image is cached
+                	if ($img.prop('complete')) $img.trigger('load');
                 	if (data.scalerFlags.clip != null || data.scalerFlags.osize != null) {
                     	// we need image info, do we have it?
                 		if (data.imgInfo == null) {
@@ -770,7 +778,7 @@ if (typeof console === 'undefined') {
                 		}
                 	}
                 	//FIXME: highlightButtons(data);
-                	// invalidate background
+                	// invalidate background(?)
                 	data.hasPreviewBg = false;
                 	// send event
                 	$(data).trigger('redisplay');
@@ -788,29 +796,36 @@ if (typeof console === 'undefined') {
         	// show busy cursor
         	$('body').css('cursor', 'progress');
         	data.$scaler.css('cursor', 'progress');
+        	var $img = data.$img;
             var url = getScalerUrl(data);
-            data.$img.attr('src', url);
+            $img.attr('src', url);
+        	// trigger load event if image is cached
+        	if ($img.prop('complete')) $img.trigger('load');
         	if (data.scalerFlags.clip != null || data.scalerFlags.osize != null) {
             	// we need image info, do we have it?
         		if (data.imgInfo == null) {
         			loadImageInfo(data);
         		}
         	}
-            //FIXME: highlightButtons(data); // TODO: better solution
-        	// invalidate background
+            //FIXME: highlightButtons(data);
+        	// invalidate background(?)
         	data.hasPreviewBg = false;
             // send event
             $(data).trigger('redisplay');
         }
     };
 
-    // update display (overlays etc.)
+    /** update display (overlays etc.)
+     * (just triggers "update" event)
+     */
     var updateDisplay = function (data) {
         // send event
         $(data).trigger('update');
     };
 
-    // update display (overlays etc.)
+    /** handle "update" display event.
+     * updates overlays etc.
+     */
     var handleUpdate = function (evt) {
     	var data = this;
         updateImgTrafo(data);
@@ -819,7 +834,9 @@ if (typeof console === 'undefined') {
         renderZoomArrows(data);
     };
     
-    // returns maximum size for scaler img in fullscreen mode
+    /** returns maximum size for scaler img in fullscreen mode.
+     * 
+     */
     var getFullscreenImgSize = function (data) {
         var mode = data.settings.interactionMode;
         var $win = $(window);
@@ -849,7 +866,9 @@ if (typeof console === 'undefined') {
         return geom.size(imgW, imgH);
     };
 
-    // creates HTML structure for digilib in elem
+    /** creates HTML structure for digilib in elem
+     * 
+     */
     var setupScalerDiv = function (data) {
         var settings = data.settings;
         var $elem = data.$elem;
@@ -909,7 +928,9 @@ if (typeof console === 'undefined') {
         $img.attr('src', scalerUrl);
     };
 
-    // creates arrow overlays for moving the zoomed area
+    /** create arrow overlays for moving the zoomed area.
+     * 
+     */
     var setupZoomArrows = function (data) {
         var $elem = data.$elem;
         var settings = data.settings;
@@ -929,7 +950,9 @@ if (typeof console === 'undefined') {
             });
     };
 
-    // size and show arrow overlays, called after scaler img is loaded
+    /** size and show arrow overlays, called after scaler img is loaded.
+     * 
+     */
     var renderZoomArrows = function (data) {
         var settings = data.settings;
         var $arrowsDiv = data.$elem.find('div.arrows');
@@ -991,7 +1014,9 @@ if (typeof console === 'undefined') {
         $.each(arrowData, render);
     };
 
-    // creates HTML structure for the about view in elem
+    /** creates HTML structure for the about view in elem
+     * 
+     */
     var setupAboutDiv = function (data) {
         var $elem = data.$elem;
         var settings = data.settings;
@@ -1020,7 +1045,9 @@ if (typeof console === 'undefined') {
             });
     };
 
-    // shows some window e.g. 'about' (toggle visibility if show is null)
+    /** shows some window e.g. 'about' (toggle visibility if show is null)
+     * 
+     */
     var showDiv = function (isVisible, $div, show) {
         if (show == null) {
             // toggle visibility
@@ -1037,9 +1064,12 @@ if (typeof console === 'undefined') {
         return isVisible;
     };
 
-    // create Transform from area and $img
+    /** Create Transform from zoom area and image size and parameters.
+     * Returns Transform between normalized coordinates and image pixel coordinates.
+     */
     var getImgTrafo = function ($img, area, rot, hmir, vmir, mode, data) {
         var picrect = geom.rectangle($img);
+        // handle pixel-by-pixel and original-size modes 
         if (mode != null) {
             var imgInfo = data.imgInfo;
             if (mode === 'pixel') {
@@ -1092,25 +1122,27 @@ if (typeof console === 'undefined') {
         return trafo;
     };
 
-    // update scaler image transform
+    /** update current scaler image transform
+     */
     var updateImgTrafo = function (data) {
         var $img = data.$img;
         if ($img == null)
             return;
-        var image  = $img.get(0);
         var imgLoaded = $.browser.msie
-            ? image.width > 0
-            : image.complete;
-        if (imgLoaded) {
-            // create Transform from current zoomArea and image size
-            data.imgTrafo = getImgTrafo($img, data.zoomArea,
-                    data.settings.rot, data.scalerFlags.hmir, data.scalerFlags.vmir,
-                    data.scaleMode, data);
-            console.debug("imgTrafo=", data.imgTrafo);
-        }
+            ? $img.prop('width') > 0
+            : $img.prop('complete');
+		        if (imgLoaded) {
+			// create Transform from current zoomArea and image size
+			data.imgTrafo = getImgTrafo($img, data.zoomArea, data.settings.rot,
+					data.scalerFlags.hmir, data.scalerFlags.vmir,
+					data.scaleMode, data);
+			console.debug("imgTrafo=", data.imgTrafo);
+		}
     };
 
-    // returns handler for load event of scaler img
+    /** return handler for load event of scaler img
+     * (necessary for closure with data object)
+     */
     var scalerImgLoadedHandler = function (data) {
         return function () {
             var $img = $(this);
@@ -1131,14 +1163,18 @@ if (typeof console === 'undefined') {
         };
     };
 
-    // handler for imageInfo loaded event
+    /** handle imageInfo loaded event
+     * 
+     */
     var handleImageInfo = function (evt, json) {
     	console.debug("handleImageInfo:", json);
         var data = this;
         updateDisplay(data);
     };
 
-    // handler for changeZoomArea event
+    /** handle changeZoomArea event
+     * 
+     */
     var handleChangeZoomArea = function (evt, newZa) {
     	console.debug("handleChangeZoomArea:", newZa);
     	var data = this;
@@ -1168,7 +1204,9 @@ if (typeof console === 'undefined') {
     };
     
     
-    // place marks on the image
+    /** place marks on the image
+     * 
+     */
     var renderMarks = function (data) {
         if (data.$img == null || data.imgTrafo == null) return;
         console.debug("renderMarks: img=",data.$img," imgtrafo=",data.imgTrafo);
@@ -1191,7 +1229,9 @@ if (typeof console === 'undefined') {
             }
     };
 
-    // zooms by the given factor
+    /** zoom by the given factor.
+     * 
+     */
     var zoomBy = function(data, factor) {
         var area = data.zoomArea;
         var newarea = area.copy();
@@ -1207,7 +1247,9 @@ if (typeof console === 'undefined') {
         redisplay(data);
     };
 
-    // add a mark where clicked
+    /** add a mark where clicked.
+     * 
+     */
     var setMark = function (data) {
         var $scaler = data.$scaler;
         // unbind other handler
@@ -1224,7 +1266,9 @@ if (typeof console === 'undefined') {
         });
     };
 
-    // zoom to the area around two clicked points
+    /** zoom to the area around two clicked points.
+     * 
+     */
     var zoomArea = function(data) {
         $elem = data.$elem;
         $scaler = data.$scaler;
@@ -1291,7 +1335,9 @@ if (typeof console === 'undefined') {
         $scaler.one('mousedown.dlZoomArea', zoomStart);
     };
 
-    // set zoom background (returns rectangle with fullsize background coordinates)
+    /** set zoom background (returns rectangle with fullsize background coordinates)
+     * 
+     */
     var setZoomBg = function(data, delta) {
         var $scaler = data.$scaler;
         var $img = data.$img;
@@ -1354,7 +1400,9 @@ if (typeof console === 'undefined') {
         return fullRect;
     };
     
-    // move zoom background 
+    /** move zoom background.
+     * 
+     */
     var moveZoomBg = function(data, delta) {
         // background position
         var bgPos = delta.x + "px " + delta.y + "px";
@@ -1367,7 +1415,9 @@ if (typeof console === 'undefined') {
         data.$scaler.css('background-position', bgPos);
     };
     
-    // setup handlers for dragging the zoomed image
+    /** setup handlers for dragging the zoomed image.
+     * 
+     */
     var setupZoomDrag = function(data) {
         var startPos, delta;
         var $document = $(document);
@@ -1444,14 +1494,18 @@ if (typeof console === 'undefined') {
         }
     };
 
-    // get image quality as a number (0..2)
+    /** get image quality as a number (0..2).
+     * 
+     */
     var getQuality = function (data) {
         var flags = data.scalerFlags;
         var q = flags.q2 || flags.q1 || 'q0'; // assume q0 as default
         return parseInt(q[1], 10);
     };
 
-    // set image quality as a number (0..2)
+    /** set image quality as a number (0..2).
+     * 
+     */
     var setQuality = function (data, qual) {
         var flags = data.scalerFlags;
         // clear flags
@@ -1461,7 +1515,9 @@ if (typeof console === 'undefined') {
         flags['q'+qual] = 'q'+qual;
     };
 
-    // get image scale mode (screen, pixel, size)
+    /** get image scale mode (screen, pixel, size).
+     * 
+     */
     var getScaleMode = function (data) {
         if (data.scalerFlags.clip != null) {
             return 'pixel';
@@ -1472,7 +1528,9 @@ if (typeof console === 'undefined') {
         return 'screen';
     };
 
-    // set image scale mode (screen, pixel, size)
+    /** set image scale mode (screen, pixel, size).
+     * 
+     */
     var setScaleMode = function (data, mode) {
         delete data.scalerFlags.fit;
         delete data.scalerFlags.clip;
@@ -1485,10 +1543,12 @@ if (typeof console === 'undefined') {
         // mo=fit is default
     };
 
-     // sets a key to a value (relative values with +/- if relative=true)
+    /** sets a key to a value (relative values with +/- if relative=true).
+     * 
+     */
     var setNumValue = function(settings, key, value) {
         if (value == null) return null;
-        if (isNumber(value)) {
+        if ($.isNumeric(value)) {
             settings[key] = value;
             return value;
         }
@@ -1505,40 +1565,45 @@ if (typeof console === 'undefined') {
         return settings[key];
     };
 
-    // auxiliary function, assuming equal border width on all sides
+    /** return width of border on $elem.
+     * assumes equal border width on all sides.
+     */
     var getBorderWidth = function($elem) {
         var border = $elem.outerWidth() - $elem.width();
         return border/2;
     };
 
-    // auxiliary function, can the current zoomarea be moved further?
+    /** return if the current zoomarea can be moved further.
+     * 
+     */
     var canMove = function(data, movx, movy) {
         var za = data.zoomArea;
         if (isFullArea(za)) return false;
         var x2 = za.x + za.width;
         var y2 = za.y + za.height;
-        return ((movx < 0) && (za.x > 0))
+        return (((movx < 0) && (za.x > 0))
             || ((movx > 0) && (x2 < 1.0))
             || ((movy < 0) && (za.y > 0))
-            || ((movy > 0) && (y2 < 1.0))
+            || ((movy > 0) && (y2 < 1.0)));
     };
 
-    // auxiliary function (from old dllib.js)
+    /** return if area is maximal.
+     * 
+     */
     var isFullArea = function (area) {
         return (area.width === 1.0) && (area.height === 1.0);
     };
 
-    // auxiliary function (from Douglas Crockford, A.10)
-    var isNumber = function (value) {
-        return typeof value === 'number' && isFinite(value);
-    };
-
-    // auxiliary function to crop senseless precision
+    /** return number with reduced precision.
+     * ("crop senseless precision")
+     */
     var cropFloat = function (x) {
         return parseInt(10000 * x, 10) / 10000;
     };
 
-    // idem, string version
+    /** return string from number with reduced precision.
+     * 
+     */
     var cropFloatStr = function (x) {
         return cropFloat(x).toString();
     };
@@ -1562,7 +1627,8 @@ if (typeof console === 'undefined') {
         console.error = logFunction('_error');
         }
 
-    // functions to export to plugins
+    /** functions to export to plugins.
+     */
     fn = {
             geometry : geom,
             parseQueryString : parseQueryString,
@@ -1586,7 +1652,6 @@ if (typeof console === 'undefined') {
             setScaleMode : setScaleMode,
             canMove : canMove,
             isFullArea : isFullArea,
-            isNumber : isNumber,
             getBorderWidth : getBorderWidth,
             cropFloat : cropFloat,
             cropFloatStr : cropFloatStr
