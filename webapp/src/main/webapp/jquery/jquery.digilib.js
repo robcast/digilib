@@ -89,13 +89,13 @@ if (typeof console === 'undefined') {
         'zoomArrowMoveFactor' : 0.5,
         // is the "about" window shown?
         'isAboutDivVisible' : false,
-        // default size of background image for drag-scroll (same as Bird's Eye View image)
-        'bgImgWidth' : 200,
-        'bgImgHeight' : 200,
-        // maximum width or height of background image for drag-scroll
+        // default size of preview image for drag-scroll (same as Bird's Eye View image)
+        'previewImgWidth' : 200,
+        'previewImgHeight' : 200,
+        // maximum width or height of preview background image for drag-scroll
         'maxBgSize' : 10000,
         // parameters used by background image
-        'bgImgParamNames' : ['fn','pn','dw','dh','mo','rot'],
+        'previewImgParamNames' : ['fn','pn','dw','dh','mo','rot'],
         // reserved space in full page display (default value accounts for vertical scrollbar)
         'scalerInset' : 10
         };
@@ -114,7 +114,12 @@ if (typeof console === 'undefined') {
     var buttons = {};
 
     var actions = {
-        // init: digilib initialization
+            
+        /** init: digilib initialization
+         * 
+         * @param options
+         * @returns
+         */
         init : function(options) {
             // import geometry classes
             if (plugins.geometry == null) {
@@ -245,7 +250,11 @@ if (typeof console === 'undefined') {
             });
         },
 
-        // destroy: clean up digilib
+        /** destroy: clean up digilib
+         * 
+         * @param data
+         * @returns
+         */
         destroy : function(data) {
             return this.each(function(){
                 var $elem = $(this);
@@ -255,14 +264,23 @@ if (typeof console === 'undefined') {
             });
         },
 
-        // show or hide the 'about' window
+        /** show or hide the 'about' window
+         * 
+         * @param data
+         * @param show
+         */
         showAboutDiv : function(data, show) {
             var on = showDiv(data.settings.isAboutDivVisible, data.$aboutDiv, show);
             data.settings.isAboutDivVisible = on;
             //FIXME: highlightButtons(data, 'help', on);
         },
 
-        // goto given page nr (+/-: relative)
+        /** goto given page nr (+/-: relative)
+         * 
+         * @param data
+         * @param pageNr
+         * @returns {Boolean}
+         */
         gotoPage : function (data, pageNr) {
             var settings = data.settings;
             var oldpn = settings.pn;
@@ -291,12 +309,20 @@ if (typeof console === 'undefined') {
             redisplay(data);
         },
 
-        // zoom by a given factor
+        /** zoom by a given factor
+         * 
+         * @param data
+         * @param factor
+         */
         zoomBy : function (data, factor) {
             zoomBy(data, factor);
         },
 
-        // zoom to area (or interactive)
+        /** zoom to area (or interactive)
+         * 
+         * @param data
+         * @param area
+         */
         zoomArea : function (data, area) {
             if (area == null) {
                 // interactively
@@ -307,7 +333,11 @@ if (typeof console === 'undefined') {
             }
         },
 
-        // zoom out to full page
+        /** zoom out to full page
+         * 
+         * @param data
+         * @param mode
+         */
         zoomFull : function (data, mode) {
             data.zoomArea = FULL_AREA.copy();
             if (mode === 'width') {
@@ -323,7 +353,12 @@ if (typeof console === 'undefined') {
             redisplay(data);
         },
 
-        // move zoomed area
+        /** move zoomed area
+         * 
+         * @param data
+         * @param dx
+         * @param dy
+         */
         moveZoomArea : function (data, dx, dy) {
             var za = data.zoomArea.copy();
             var factor = data.settings.zoomArrowMoveFactor;
@@ -336,7 +371,11 @@ if (typeof console === 'undefined') {
             redisplay(data);
         },
 
-        // set a mark by clicking (or giving a position)
+        /** set a mark by clicking (or giving a position)
+         * 
+         * @param data
+         * @param mpos
+         */
         setMark : function (data, mpos) {
             if (mpos == null) {
                 // interactive
@@ -348,13 +387,20 @@ if (typeof console === 'undefined') {
             }
         },
 
-        // remove the last mark
+        /** remove the last mark
+         * 
+         * @param data
+         */
         removeMark : function (data) {
             data.marks.pop();
             redisplay(data);
         },
 
-        // mirror the image
+        /** mirror the image
+         * 
+         * @param data
+         * @param mode
+         */
         mirror : function (data, mode) {
             var flags = data.scalerFlags;
             if (mode === 'h') {
@@ -373,7 +419,11 @@ if (typeof console === 'undefined') {
             redisplay(data);
         },
 
-        // rotate the image
+        /** rotate the image
+         * 
+         * @param data
+         * @param angle
+         */
         rotate : function (data, angle) {
             var rot = data.settings.rot;
             if (angle == null) {
@@ -383,7 +433,11 @@ if (typeof console === 'undefined') {
             redisplay(data);
         },
 
-        // change brightness
+        /** change brightness
+         * 
+         * @param data
+         * @param factor
+         */
         brightness : function (data, factor) {
             var brgt = data.settings.brgt;
             if (factor == null) {
@@ -393,7 +447,11 @@ if (typeof console === 'undefined') {
             redisplay(data);
         },
 
-        // change contrast
+        /** change contrast
+         * 
+         * @param data
+         * @param factor
+         */
         contrast : function (data, factor) {
             var cont = data.settings.cont;
             if (factor == null) {
@@ -403,7 +461,11 @@ if (typeof console === 'undefined') {
             redisplay(data);
         },
 
-        // reset image parameters to defaults TODO: improve this!
+        /** reset image parameters to defaults 
+         * TODO: improve this!
+         * 
+         * @param data
+         */
         reset : function (data) {
             var settings = data.settings;
             var paramNames = settings.digilibParamNames;
@@ -428,7 +490,12 @@ if (typeof console === 'undefined') {
             redisplay(data);
         },
 
-        // presents a reference url (returns value if noprompt)
+        /** presents a reference url (returns value if noprompt)
+         * 
+         * @param data
+         * @param noprompt
+         * @returns
+         */
         reference : function (data, noprompt) {
             var url = getDigilibUrl(data);
             if (noprompt == null) {
@@ -437,7 +504,11 @@ if (typeof console === 'undefined') {
             return url;
         },
 
-        // set image quality
+        /** set image quality
+         * 
+         * @param data
+         * @param qual
+         */
         setQuality : function (data, qual) {
             var oldq = getQuality(data);
             if (qual == null) {
@@ -450,7 +521,11 @@ if (typeof console === 'undefined') {
             }
         },
 
-        // calibrate (only faking)
+        /** calibrate (only faking)
+         * 
+         * @param data
+         * @param res
+         */
         calibrate : function (data, res) {
             var oldRes = data.settings.ddpi;
             if (res == null) {
@@ -462,7 +537,11 @@ if (typeof console === 'undefined') {
             }
         },
 
-        // set image scale mode
+        /** set image scale mode
+         * 
+         * @param data
+         * @param mode
+         */
         setScaleMode : function (data, mode) {
             var oldM = getScaleMode(data);
             if (mode == null) {
@@ -478,12 +557,16 @@ if (typeof console === 'undefined') {
     // end of actions
     };
 
-    // returns parameters from page url
+    /** return parameters from page url
+     * 
+     */
     var parseQueryParams = function() {
         return parseQueryString(window.location.search.slice(1));
     };
 
-    // returns parameters from embedded img-element
+    /** returns parameters from embedded img-element
+     * 
+     */
     var parseImgParams = function($elem) {
         var src = $elem.find('img').first().attr('src');
         if (!src) return null;
@@ -495,7 +578,9 @@ if (typeof console === 'undefined') {
         return params;
     };
 
-    // parses query parameter string into parameter object
+    /** parses query parameter string into parameter object
+     * 
+     */
     var parseQueryString = function(query) {
         var params = {};
         if (query == null) return params;
@@ -511,7 +596,10 @@ if (typeof console === 'undefined') {
         return params;
     };
 
-    // returns a query string from key names from a parameter hash (ignoring if the same value is in defaults)
+    /** return a query string from key names from a parameter hash 
+     * (ignores keys if the same value is in defaults)
+     * 
+     */
     var getParamString = function (settings, keys, defaults) {
         var paramString = '';
         var nx = false;
@@ -531,7 +619,9 @@ if (typeof console === 'undefined') {
         return paramString;
     };
 
-    // returns URL and query string for Scaler
+    /** returns URL and query string for Scaler
+     * 
+     */
     var getScalerUrl = function (data) {
         packParams(data);
         var settings = data.settings;
@@ -544,12 +634,14 @@ if (typeof console === 'undefined') {
         return url;
     };
 
-    // returns URL for bird's eye view image
-    var getBgImgUrl = function (data, moreParams) {
+    /** returns URL for preview background image
+     * 
+     */
+    var getPreviewImgUrl = function (data, moreParams) {
         var settings = data.settings;
         var bgOptions = {
-                dw : settings.bgImgWidth,
-                dh : settings.bgImgHeight
+                dw : settings.previewImgWidth,
+                dh : settings.previewImgHeight
         };
         var bgSettings = $.extend({}, settings, bgOptions);
         // filter scaler flags (use only hmir and vmir)
@@ -563,12 +655,14 @@ if (typeof console === 'undefined') {
             }
             bgSettings.mo = mo;
         }
-        var params = getParamString(bgSettings, settings.bgImgParamNames, defaults);
+        var params = getParamString(bgSettings, settings.previewImgParamNames, defaults);
         var url = settings.scalerBaseUrl + '?' + params;
         return url;
     };
 
-    // returns URL and query string for current digilib
+    /** returns URL and query string for current digilib
+     * 
+     */
     var getDigilibUrl = function (data) {
         packParams(data);
         var settings = data.settings;
@@ -593,7 +687,9 @@ if (typeof console === 'undefined') {
         return url + '?' + queryString;
     };
 
-    // loads image information from digilib server via HTTP
+    /** loads image information from digilib server via HTTP
+     * 
+     */
     var loadImageInfo = function (data) {
         var settings = data.settings;
         // bind default function (only once)
@@ -610,7 +706,9 @@ if (typeof console === 'undefined') {
         });
     };
 
-    // processes some parameters into objects and stuff
+    /** processes some parameters into objects and stuff
+     * 
+     */
     var unpackParams = function (data) {
         var settings = data.settings;
         // zoom area
@@ -647,7 +745,9 @@ if (typeof console === 'undefined') {
         retrieveOptions(data);
     };
 
-    // put area into parameters
+    /** put area into parameters
+     * 
+     */
     var packArea = function (settings, area) {
         if (!area) return;
         // zoom area
@@ -657,7 +757,9 @@ if (typeof console === 'undefined') {
         settings.wh = cropFloat(area.height);
     };
 
-    // put marks into parameters
+    /** put marks into parameters
+     * 
+     */
     var packMarks = function (settings, marks) {
         if (!marks) return;
         settings.mk = '';
@@ -671,7 +773,9 @@ if (typeof console === 'undefined') {
             }
     };
 
-    // pack scaler flags into parameters
+    /** pack scaler flags into parameters
+     * 
+     */
     var packScalerFlags = function (settings, flags) {
         if (!flags) return;
         var mo = '';
@@ -684,7 +788,9 @@ if (typeof console === 'undefined') {
         settings.mo = mo;
     };
 
-    // put objects back into parameters
+    /** put objects back into parameters
+     * 
+     */
     var packParams = function (data) {
         var settings = data.settings;
         packArea(settings, data.zoomArea);
@@ -694,8 +800,10 @@ if (typeof console === 'undefined') {
         storeOptions(data);
     };
 
+    /** store digilib options in a cookie   
+     * 
+     */
     var storeOptions = function (data) {
-        // save digilib options in cookie
         var settings = data.settings;
         if (data.dlOpts) {
             // save digilib settings in options
@@ -723,6 +831,9 @@ if (typeof console === 'undefined') {
         }
     };
 
+    /** restrieve digilib options from a cookie
+     * 
+     */
     var retrieveOptions = function (data) {
         // clop (digilib options)
         var opts = {};
@@ -823,7 +934,7 @@ if (typeof console === 'undefined') {
     };
 
     /** handle "update" display event.
-     * updates overlays etc.
+     * updates image transform, redraws marks etc.
      */
     var handleUpdate = function (evt) {
     	var data = this;
@@ -1335,6 +1446,7 @@ if (typeof console === 'undefined') {
         	// check if aspect ratio has changed
         	if (newZoomArea.getAspect() !== data.zoomArea.getAspect()) {
         		console.debug("aspect ratio changed!");
+        		// what now?
         	}
         	// get transform for new zoomArea
         	imgTrafo = getImgTrafo($img, newZoomArea, data.settings.rot,
@@ -1359,7 +1471,7 @@ if (typeof console === 'undefined') {
             if (fullRect.height < data.settings.maxBgSize && fullRect.width < data.settings.maxBgSize) {
                 // correct offset because background is relative
                 fullRect.addPosition(scalerPos.neg());
-                var url = getBgImgUrl(data);
+                var url = getPreviewImgUrl(data);
                 // add second background url, size and position
                 scalerCss['background-image'] += ', url(' + url + ')';
                 scalerCss[data.bgSizeName] += ', ' + Math.round(fullRect.width) + 'px ' + Math.round(fullRect.height) + 'px';
