@@ -224,6 +224,10 @@
         that.getArea = function() {
             return (this.width * this.height);
         };
+        // returns the aspect ratio of this Rectangle
+        that.getAspect = function() {
+            return (this.width / this.height);
+        };
         // eliminates negative width and height
         that.normalize = function() {
             var p = this.getPt2();

@@ -38,7 +38,7 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.1a1',
+        'version' : 'jquery.digilib.js 2.1b1',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -1332,6 +1332,11 @@ if (typeof console === 'undefined') {
                 'cursor' : 'move'
         };
         if (newZoomArea != null) {
+        	// check if aspect ratio has changed
+        	if (newZoomArea.getAspect() !== data.zoomArea.getAspect()) {
+        		console.debug("aspect ratio changed!");
+        	}
+        	// get transform for new zoomArea
         	imgTrafo = getImgTrafo($img, newZoomArea, data.settings.rot,
 					data.scalerFlags.hmir, data.scalerFlags.vmir,
 					data.scaleMode, data);

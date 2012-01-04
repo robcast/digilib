@@ -96,6 +96,7 @@ digilib bird's eye view plugin
     };
 
     var handleRedisplay = function (evt) {
+    	// TODO: do we need this?
         console.debug("birdseye: handleRedisplay");
         var data = this;
         if (data.settings.isBirdDivVisible) {
@@ -193,6 +194,8 @@ digilib bird's eye view plugin
         } else {
             $birdZoom.show();
         }
+        // update birdTrafo
+        data.birdTrafo = digilib.fn.getImgTrafo(data.$birdImg, FULL_AREA);        
         var zoomRect = data.birdTrafo.transform(zoomArea);
         console.debug("renderBirdArea:", zoomRect, "zoomArea:", zoomArea, "$birdTrafo:", data.birdTrafo);
         // acount for border width
