@@ -295,7 +295,7 @@ if (typeof console === 'undefined') {
                 return false;
                 }
             // TODO: how do we get pt?
-            if (settings.pt) {
+            if (settings.pt != null) {
                 if (pn > settings.pt) {
                     alert("no such page (page number too high)");
                     settings.pn = oldpn;
@@ -965,7 +965,7 @@ if (typeof console === 'undefined') {
             borderH = 5;
         }
         var buttonsW = 0;
-        if (data.settings.visibleButtonSets) {
+        if (data.buttons != null) {
             // get button width from settings
             buttonsW = data.settings.buttonSettings[mode].buttonSetWidth * data.settings.visibleButtonSets;
         }
@@ -1621,7 +1621,7 @@ if (typeof console === 'undefined') {
      */
     var setNumValue = function(settings, key, value) {
         if (value == null) return null;
-        if ($.isNumeric(value)) {
+        if (isNumber(value)) {
             settings[key] = value;
             return value;
         }
@@ -1667,6 +1667,13 @@ if (typeof console === 'undefined') {
         return (area.width === 1.0) && (area.height === 1.0);
     };
 
+    /** return if the argument is a number.
+     * from Douglas Crockford, A.10.
+     * this is different from $.isNumeric().
+     */
+    var isNumber = function (value) {
+        return typeof value === 'number' && isFinite(value);
+    };
     /** return number with reduced precision.
      * ("crop senseless precision")
      */
