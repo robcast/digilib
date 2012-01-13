@@ -1263,8 +1263,8 @@ if (typeof console === 'undefined') {
         	// reset busy cursor
         	$('body').css('cursor', 'auto');
         	$scaler.css('cursor', 'auto');
-            // adjust scaler div size
-            imgRect.adjustDiv($scaler);
+            // adjust scaler div size (beware: setting position makes the element relative)
+            imgRect.getSize().adjustDiv($scaler);
             // show image in case it was hidden (for example in zoomDrag)
             $img.css('visibility', 'visible');
             $scaler.css({'opacity' : '1', 'background' : 'transparent'});

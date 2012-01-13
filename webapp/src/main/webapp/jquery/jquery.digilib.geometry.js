@@ -23,6 +23,10 @@
         that.equals = function(other) {
             return (this.width === other.width && this.height === other.height);
         };
+        // adjusts size of jQuery element "$elem" to this size
+        that.adjustDiv = function($elem) {
+            $elem.width(this.width).height(this.height);
+        };
         that.toString = function() {
             return (this.width + "x" + this.height);
         };
