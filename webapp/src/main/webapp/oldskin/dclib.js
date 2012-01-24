@@ -17,7 +17,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  
 Author: 
   Christian Luginbuehl, 07.04.2004 , Version Alcatraz 0.6
-  Robert Casties 28.10.2004
+  Robert Casties, 28.10.2004
+  Martin Raspe, 28.12.2011
 
 !! requires baselib.js !!
 
@@ -52,12 +53,15 @@ function dc_render(doc) {
 
     var mx = getParameter("mx");
     cells = mx.split('x');
-  
+
     var dw = getParameter("dw");
     var dh = getParameter("dh");
     var pt = getParameter("pt");
     var pn = parseInt(getParameter("pn"));
     var fn = getParameter("fn");
+    if (fn == "") {
+        fn = "/"; // empty fn prevents page numbers to work
+        }
     var par_mo = (hasParameter("mo")) ? "&mo="+getParameter("mo") : "";
 
     var picWidth = (dw != 0) ? dw : Math.floor((fWidth-30)/cells[0])-2*cells[0]-1;
@@ -78,11 +82,12 @@ function dc_render(doc) {
 	doc.writeln('<tr>');
 	for (var i = 0; i < cells[0]; i++) {
 	    var idx  = pn+i+j*cells[0];
-	    var img  = baseUrl + "/servlet/Scaler?fn=" + fn + "&pn=" + idx;
+	    // create a relative link. ".." because we are in subdirectory "oldskin"
+	    var img  = "../servlet/Scaler?fn=" + fn + "&pn=" + idx;
 	    img += "&dw=" + picWidth + "&dh=" + picHeight + par_mo;
 	    doc.write('<td width="'+cellWidth+'" height="'+cellHeight+'">');
 	    if (idx <= pt) {
-		doc.write('<a href="'+dl_link(idx)+'" target="_blank"><img src="'+img+'" border="0"></a><div class="number">'+idx+'</div>');
+		doc.write('<a href="'+dl_link(idx, fn, par_mo)+'" target="_blank"><img src="'+img+'" border="0"></a><div class="number">'+idx+'</div>');
 	    } else {
 		doc.write('<div class="nonumber">'+idx+'</div>');
 	    }
@@ -93,12 +98,11 @@ function dc_render(doc) {
     doc.writeln('</table>');
 }
 
-
-function dl_link(i) {
-    var link = baseUrl+"/digilib.jsp?fn="+getParameter("fn")+"&pn="+i+"&mo="+getParameter("mo");
+function dl_link(pn, fn, par_mo) {
+    // create a relative link. ".." because we are in subdirectory "oldskin"
+    var link = "../jquery/digilib.html?fn=" + fn + "&pn=" + pn + par_mo;
     return link;
-}  
-
+}
 
 function Backpage() {
     var pn = parseInt(getParameter("pn"));
