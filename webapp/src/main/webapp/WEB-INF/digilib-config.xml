@@ -14,7 +14,7 @@
   <!-- List of directories where images are searched.
        Directories with low-resolution images are LAST!!! in list.
 	   Use OS-specific path separators (":" for Unix, ";" for Windows) --> 
-  <parameter name="basedir-list" value="Y:\scans\quellen;Y:\scaled\small;Y:\scaled\mini;Y:\thumbs" />
+  <parameter name="basedir-list" value="/docuserver/images:/docuserver/scaled/small:/docuserver/scaled/thumb" />
 
   <!-- Java class to use for image operations -->
   <parameter name="docuimage-class" value="digilib.image.ImageLoaderDocuImage" />
