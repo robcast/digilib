@@ -66,3 +66,19 @@ syntax: regexp
 ^webapp/digilib-log\.txt$
 syntax: regexp
 ^webapp/dl-access-log\.txt$
+syntax: regexp
+^common-jai/target$
+syntax: regexp
+^common-imagej/target$
+syntax: regexp
+^common-imagej/\.classpath$
+syntax: regexp
+^common-imagej/\.project$
+syntax: regexp
+^common-imagej/\.settings$
+syntax: regexp
+^common-jai/\.settings$
+syntax: regexp
+^common-jai/\.classpath$
+syntax: regexp
+^common-jai/\.project$

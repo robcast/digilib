@@ -18,6 +18,7 @@
 
   <!-- Java class to use for image operations -->
   <parameter name="docuimage-class" value="digilib.image.ImageLoaderDocuImage" />
+  <!-- <parameter name="docuimage-class" value="digilib.image.ImageJ1DocuImage" /> -->
 
   <!-- mimimum amount of scaling done with antialiasing -->
   <parameter name="subsample-minimum" value="2"/>

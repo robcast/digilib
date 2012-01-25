@@ -23,7 +23,6 @@ package digilib.servlet;
 import java.io.File;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletContext;

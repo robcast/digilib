@@ -69,7 +69,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
 		// DocuImage class instance
 		newParameter(
 			"servlet.docuimage.class",
-			digilib.image.JAIDocuImage.class,
+			digilib.image.ImageLoaderDocuImage.class,
 			null,
 			's');
 		// AuthOps instance for authentication
@@ -115,7 +115,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
 		// Type of DocuImage instance
 		newParameter(
 			"docuimage-class",
-			"digilib.image.JAIDocuImage",
+			"digilib.image.ImageLoaderDocuImage",
 			null,
 			'f');
 		// part of URL used to indicate authorized access
