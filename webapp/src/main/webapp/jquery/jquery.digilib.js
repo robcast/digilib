@@ -243,8 +243,6 @@ if (typeof console === 'undefined') {
                 setupScalerDiv(data);
                 // about window creation - TODO: could be deferred? restrict to only one item?
                 setupAboutDiv(data);
-                // scale mode menu creation - TODO: could be deferred?
-                setupScaleModeDiv(data);
                 // arrow overlays for moving zoomed detail
                 setupZoomArrows(data);
                 // send setup event
@@ -1153,27 +1151,6 @@ if (typeof console === 'undefined') {
         // click hides
         $aboutDiv.on('click.digilib', function () {
             actions['showAboutDiv'](data, false);
-            });
-    };
-
-    /** creates HTML structure for the scale mode menu
-     * 
-     */
-    var setupScaleModeDiv = function (data) {
-        var $elem = data.$elem;
-        var settings = data.settings;
-        var $scaleModeDiv = $('<div class="scalemode" style="display:none"/>');
-        var $scaleModeSelect = $('<select class="scalemode" />');
-        var $scaleModeOptScreen = $('<option name="fit">fit to screen</option>');
-        var $scaleModeOptPixel = $('<option name="pixel">pixel by pixel</option>');
-        var $scaleModeOptOrig = $('<option name="original">original size</option>');
-        $elem.append($scaleModeDiv);
-        $scaleModeDiv.append($scaleModeSelect);
-        $scaleModeSelect.append($scaleModeOptScreen);
-        $scaleModeSelect.append($scaleModeOptPixel);
-        $scaleModeSelect.append($scaleModeOptOrig);
-        $scaleModeSelect.on('change.digilib', function () {
-            actions['setScaleMode'](data, false);
             });
     };
 

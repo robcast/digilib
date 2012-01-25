@@ -6,6 +6,10 @@ digilib buttons plugin
 
     // plugin object with digilib data
     var digilib;
+    // the functions made available by digilib
+    var fn;
+    // affine geometry plugin
+    var geom;
 
     var buttons = {
             reference : {
@@ -119,7 +123,7 @@ digilib buttons plugin
                 icon : "calibration-x.png"
                 },
             scale : {
-                onclick : "setScaleMode",
+                onclick : "showScaleModeSelector",
                 tooltip : "change image scale",
                 icon : "original-size.png"
                 },
@@ -162,6 +166,20 @@ digilib buttons plugin
                 icon : "sep.png"
                 }
             };
+
+    var modes = [
+            {   name : "screen", 
+                label : "fit to screen",
+                tooltip : "scales the graphic file so that it fills the screen"
+            },
+            {   name : "pixel",
+                label : "pixel by pixel",
+                tooltip : "all pixels of the current part of the graphic file are shown"
+            },
+            {   name : "size",
+                label : "original size",
+                tooltip : "tries to display the current part of the graphic file in the size of the orginal resource (after screen calibration)" }
+            ];
 
     var defaults = {
             // buttons (reference added later)
@@ -217,15 +235,38 @@ digilib buttons plugin
                     }
                 }
                 // persist setting
-                digilib.fn.storeOptions(data);
+                fn.storeOptions(data);
+            },
+            // shows ScaleModeSelector
+            showScaleModeSelector : function (data) {
+                var $elem = data.$elem;
+                var settings = data.settings;
+                var $div = $("#scalemode");
+                if ($div.is(":visible")) {
+                    $div.fadeOut();
+                    return;
+                    }
+                var $button = $elem.find('div.button-scale');
+                var buttonRect = geom.rectangle($button);
+                var divRect = geom.rectangle($div);
+                $(document).on("click.scalemode", function(event) {
+                        $div.fadeOut();
+                        });
+                $div.fadeIn();
+                $div.offset({
+                    left : Math.abs(buttonRect.x - divRect.width - 4),
+                    top : buttonRect.y + 4
+                    });
             }
-
-    };
+        };
 
     // plugin installation called by digilib on plugin object.
     var install = function(plugin) {
         digilib = plugin;
         console.debug('installing buttons plugin. digilib:', digilib);
+        fn = digilib.fn;
+        // import geometry classes
+        geom = fn.geometry;
         // add defaults, actions, buttons
         $.extend(digilib.defaults, defaults);
         $.extend(digilib.actions, actions);
@@ -233,8 +274,8 @@ digilib buttons plugin
         // update buttons reference in defaults
         digilib.defaults.buttons = digilib.buttons;
         // export functions
-        digilib.fn.createButton = createButton;
-        digilib.fn.highlightButtons = highlightButtons;
+        fn.createButton = createButton;
+        fn.highlightButtons = highlightButtons;
     };
 
     // plugin initialization
@@ -249,14 +290,55 @@ digilib buttons plugin
         $data.bind('setup', handleSetup);
     };
 
-
     var handleSetup = function (evt) {
-        console.debug("stub: handleSetup");
+        console.debug("buttons: handleSetup");
         var data = this;
         // create buttons before scaler 
         for (var i = 0; i < data.settings.visibleButtonSets; ++i) {
             showButtons(data, true, i);
         }
+        // create ScaleMode selector;
+        setupScaleModeDiv(data);
+    };
+
+    /** creates HTML structure for the scale mode menu
+     */
+    var setupScaleModeDiv = function (data) {
+        var $elem = data.$elem;
+        var settings = data.settings;
+        var currentMode = digilib.fn.getScaleMode(data);
+        var $scaleModeDiv = $('<div id="scalemode" style="display:none; z-index:9999; position:absolute"/>');
+        data.scaleModeDiv = $scaleModeDiv;
+        var $scaleModeSelect = $('<select class="scalemode" />');
+        $elem.append($scaleModeDiv);
+        $scaleModeDiv.append($scaleModeSelect);
+        for (var i = 0; i < modes.length; i++) {
+            var mode = modes[i];
+            var select = (mode.name == currentMode) ? ' select="select"' : '';
+            $scaleModeSelect.append($('<option name="'
+                    + mode.name + '"' + select + '>' 
+                    + mode.label + '</option>'));
+        }
+        $scaleModeDiv.on("click.scalemode", function(event) {
+            return false;
+            });
+        $scaleModeSelect.on('change.scalemode', function(event) {
+            var d = data;
+            changeMode(event, d);
+            });
+    };
+
+    /** event handler
+     */
+    var changeMode = function (event, data) {
+        var $select = $(event.target);
+        var newMode = $select.find("option:selected").attr("name");
+        console.debug('setting mode to:', newMode);
+        fn.setScaleMode(data, newMode);
+        var $div = data.scaleModeDiv;
+        $(document).off("click.scalemode");
+        $div.fadeOut();
+        fn.redisplay(data);
     };
 
     // creates HTML structure for a single button
