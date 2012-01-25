@@ -178,7 +178,7 @@ if (typeof console === 'undefined') {
                             // let $elem have its own copy of settings
                             settings : elemSettings,
                             // and of the URL query parameters
-                            queryParams : params,
+                            queryParams : params
                     };
                     // store in jQuery data element
                     $elem.data('digilib', data);

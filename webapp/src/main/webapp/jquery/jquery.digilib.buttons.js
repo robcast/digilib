@@ -218,7 +218,7 @@ digilib buttons plugin
                 }
                 // persist setting
                 digilib.fn.storeOptions(data);
-            },
+            }
 
     };
 
