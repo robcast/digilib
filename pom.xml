@@ -148,13 +148,13 @@
   <dependencies>
   </dependencies>
   <modules>
-  	<module>webapp</module>
-  	<module>common</module>
+    <module>common</module>
+    <module>common-jai</module>
+    <module>common-imagej</module>
     <module>servlet2</module>
     <module>servlet3</module>
     <module>pdf</module>
     <module>text</module>
-    <module>common-jai</module>
-    <module>common-imagej</module>
+    <module>webapp</module>
   </modules>
 </project>
