@@ -187,7 +187,7 @@ digilib buttons plugin
                     }
             },
             // number of visible button groups
-            'visibleButtonSets' : 1,
+            'visibleButtonSets' : 1
     };
 
     var actions = {
