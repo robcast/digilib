@@ -78,7 +78,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
         newParameter("servlet.dir.cache", null, null, 's');
         // DocuImage class instance
         newParameter("servlet.docuimage.class",
-                digilib.image.JAIDocuImage.class, null, 's');
+                digilib.image.ImageLoaderDocuImage.class, null, 's');
         // AuthOps instance for authentication
         newParameter("servlet.auth.op", null, null, 's');
         // Executor for image operations
@@ -111,7 +111,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
         // sending image files as-is allowed
         newParameter("sendfile-allowed", Boolean.TRUE, null, 'f');
         // Type of DocuImage instance
-        newParameter("docuimage-class", "digilib.image.JAIDocuImage", null, 'f');
+        newParameter("docuimage-class", "digilib.image.ImageLoaderDocuImage", null, 'f');
         // part of URL used to indicate authorized access
         newParameter("auth-url-path", "authenticated/", null, 'f');
         // degree of subsampling on image load

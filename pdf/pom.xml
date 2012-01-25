@@ -12,6 +12,13 @@
 	<name>digilib-pdf</name>
 	<description>The Digital Image Library - PDF generation servlet</description>
 	<url>http://digilib.berlios.de</url>
+	<repositories>
+    <repository>
+      <id>itextpdf.com</id>
+      <name>Maven Repository for iText</name>
+      <url>http://maven.itextpdf.com/</url>
+    </repository>
+    </repositories>
 	<dependencies>
 		<dependency>
 			<groupId>digilib</groupId>
@@ -22,6 +29,7 @@
 		<dependency>
 			<groupId>com.itextpdf</groupId>
 			<artifactId>itextpdf</artifactId>
+	        <version>5.0.4</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
