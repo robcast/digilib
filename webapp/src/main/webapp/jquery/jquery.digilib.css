@@ -114,7 +114,6 @@ div.digilib div.calibration {
 	background: url('blue.png');
 	position: absolute;
 	border: 1px solid lightcyan;
-	top: 0px;
 	width: 400px;
 	display: none;
 	z-index: 9999;
@@ -133,7 +132,32 @@ div.digilib div.ruler {
 	}
 
 div.digilib div.cm {
+	padding: 5px;
+	}
+
+div.digilib div.calibration-error {
+	color: red;
 	padding: 10px;
+	display: none;
+	}
+
+div.digilib button.calibration-button {
+	margin: 0px 10px;
+	border: 1px solid lightcyan;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-weight: bold;
+	color: lightcyan;
+	background-color: transparent;
+	}
+
+div.digilib input.calibration-input {
+	margin: 0px 10px;
+	}
+
+div.digilib input.error {
+	color: red;
+	background-color: khaki;
 	}
 
 div.infobutton {
