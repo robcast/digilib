@@ -27,6 +27,7 @@ ImageFileSet imgFile = (ImageFileSet) dirCache.getFile(dlRequest.getFilePath(), 
 
 %>{ <% 
     if (imgFile != null) {
+        imgFile.checkMeta();
 		ImageFile img = (ImageFile) imgFile.getBiggest();
 		ImageSize imgSize = img.getSize(); 
 		%>
