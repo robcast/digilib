@@ -75,7 +75,7 @@ TODO:
             var scalerRect = geom.rectangle($scaler);
             var pt1, pt2;
             // overlay prevents other elements from reacting to mouse events 
-            var $overlay = $('<div class="digilib-overlay"/>');
+            var $overlay = $('<div class="digilib-overlay" style="position:absolute"/>');
             $body.append($overlay);
             bodyRect.adjustDiv($overlay);
             var $regionDiv = addRegionDiv(data, data.regions.length);
