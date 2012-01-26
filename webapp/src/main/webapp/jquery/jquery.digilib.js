@@ -340,16 +340,9 @@ if (typeof console === 'undefined') {
          */
         zoomFull : function (data, mode) {
             data.zoomArea = FULL_AREA.copy();
-            if (mode === 'width') {
-                data.dlOpts.fitwidth = 1;
-                delete data.dlOpts.fitheight;
-            } else if (mode === 'height') {
-                data.dlOpts.fitheight = 1;
-                delete data.dlOpts.fitwidth;
-            } else {
-                delete data.dlOpts.fitwidth;
-                delete data.dlOpts.fitheight;
-            }
+            setFitMode(data, mode);
+            // zoom full only works in screen mode
+            setScaleMode(data, 'screen');
             redisplay(data);
         },
 
@@ -549,7 +542,6 @@ if (typeof console === 'undefined') {
             }
             if (mode != null) {
                 setScaleMode(data, mode);
-                data.scaleMode = mode;
                 redisplay(data);
             }
         }
@@ -1332,6 +1324,9 @@ if (typeof console === 'undefined') {
         newarea.y -= 0.5 * (newarea.height - area.height);
         newarea = FULL_AREA.fit(newarea);
         setZoomArea(data, newarea);
+        // reset modes
+        setScaleMode(data, 'screen');
+        setFitMode(data, 'both');
         redisplay(data);
     };
 
@@ -1406,10 +1401,9 @@ if (typeof console === 'undefined') {
             clickRect.clipTo(picRect);
             var area = data.imgTrafo.invtransform(clickRect);
             setZoomArea(data, area);
-            // zoomed is always fit
-            data.settings.ws = 1;
-            delete data.dlOpts.fitwidth;
-            delete data.dlOpts.fitheight;
+            // reset modes
+            setFitMode(data, 'both');
+            setScaleMode(data, 'screen');
             redisplay(data);
             return false;
         };
@@ -1613,8 +1607,39 @@ if (typeof console === 'undefined') {
             data.scalerFlags.osize = 'osize';
         }
         // mo=fit is default
+        // save mode
+        data.scaleMode = mode;
     };
 
+    /** get screen fit mode (width, height, both).
+     * 
+     */
+    var getFitMode = function (data) {
+    	if (data.dlOpts.fitwidth != null) {
+    		return "width";
+    	} else if (data.dlOpts.fitheight != null) {
+    		return "height";
+    	}
+    	// "both" is default
+    	return "both";
+    };
+    
+    /** 
+     * set screen fit mode (width, height, both).
+     */
+    var setFitMode = function (data, mode) {
+    	if (mode === 'width') {
+    		data.dlOpts.fitwidth = 1;
+    		delete data.dlOpts.fitheight;
+    	} else if (mode === 'height') {
+    		data.dlOpts.fitheight = 1;
+    		delete data.dlOpts.fitwidth;
+    	} else {
+    		delete data.dlOpts.fitwidth;
+    		delete data.dlOpts.fitheight;
+    	}
+    };
+    	
     /** sets a key to a value (relative values with +/- if relative=true).
      * 
      */
@@ -1729,6 +1754,8 @@ if (typeof console === 'undefined') {
             setQuality : setQuality,
             getScaleMode : getScaleMode,
             setScaleMode : setScaleMode,
+            getFitMode : getFitMode,
+            setFitMode : setFitMode,
             canMove : canMove,
             isFullArea : isFullArea,
             getBorderWidth : getBorderWidth,
