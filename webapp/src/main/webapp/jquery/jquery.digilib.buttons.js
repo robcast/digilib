@@ -256,12 +256,21 @@ digilib buttons plugin
             // shows ScaleModeSelector
             showScaleModeSelector : function (data) {
                 var $elem = data.$elem;
-                var settings = data.settings;
                 var $div = $("#scalemode");
                 if ($div.is(":visible")) {
                     $div.fadeOut();
                     return;
                     }
+                // select current mode
+                var mode = data.scaleMode;
+                $div.find('option').each(function () {
+                	$this = $(this);
+                	if ($this.attr('name') == mode) {
+                		$this.prop('selected', true);
+                	} else {
+                		$this.prop('selected', false);
+                	}
+                });
                 var $button = $elem.find('div.button-scale');
                 var buttonRect = geom.rectangle($button);
                 var divRect = geom.rectangle($div);
