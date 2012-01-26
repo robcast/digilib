@@ -934,7 +934,7 @@ if (typeof console === 'undefined') {
         setupZoomDrag(data);
         renderZoomArrows(data);
     };
-    
+
     /** returns maximum size for scaler img in fullscreen mode.
      * 
      */
@@ -963,8 +963,15 @@ if (typeof console === 'undefined') {
         // account for left/right border, body margins and additional requirements
         var imgW = winW - borderW - buttonsW;
         var imgH = winH - borderH;
-        console.debug(winW, winH, 'winW:', $win.width(), 'border:', borderW, 'buttonsW:', buttonsW, 'calc:', imgW);
+        console.debug('screen w/h:', winW, winH, 'window.width', $win.width(), 'border:', borderW, 'buttonsW:', buttonsW, 'img w/h:', imgW, imgH);
         return geom.size(imgW, imgH);
+    };
+
+    /** returns a rectangle.with the fullscreen dimensions 
+     * 
+     */
+    var getFullscreenRect = function (data) {
+        return geom.rectangle(getFullscreenImgSize(data));
     };
 
     /** creates HTML structure for digilib in elem
@@ -1758,6 +1765,7 @@ if (typeof console === 'undefined') {
             setFitMode : setFitMode,
             canMove : canMove,
             isFullArea : isFullArea,
+            getFullscreenRect : getFullscreenRect,
             getBorderWidth : getBorderWidth,
             cropFloat : cropFloat,
             cropFloatStr : cropFloatStr

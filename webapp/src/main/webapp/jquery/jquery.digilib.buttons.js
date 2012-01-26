@@ -118,7 +118,7 @@ digilib buttons plugin
                 icon : "size.png"
                 },
             calibrationx : {
-                onclick : "calibrate",
+                onclick : "showCalibrationDiv",
                 tooltip : "calibrate screen resolution",
                 icon : "calibration-x.png"
                 },
@@ -237,6 +237,22 @@ digilib buttons plugin
                 // persist setting
                 fn.storeOptions(data);
             },
+            // shows Calibration Div
+            showCalibrationDiv : function (data) {
+                var $elem = data.$elem;
+                var settings = data.settings;
+                var $calDiv = $('#calibration');
+                var $input = $('#calibration-input');
+                $calDiv.fadeIn();
+                $
+                // var cm = window.prompt("The length of the scale on your screen in centimeter:");
+/*                 if (cm) {
+                    var dpi = calRect.width / parseFloat(cm) * 2.54;
+                    this.params.set("ddpi", cropFloat(dpi));
+                    }
+ */
+            },
+
             // shows ScaleModeSelector
             showScaleModeSelector : function (data) {
                 var $elem = data.$elem;
@@ -299,6 +315,34 @@ digilib buttons plugin
         }
         // create ScaleMode selector;
         setupScaleModeDiv(data);
+        // create Calibration div;
+        setupCalibrationDiv(data);
+    };
+
+    /** creates HTML structure for the calibration div
+     */
+    var setupCalibrationDiv = function (data) {
+        var $elem = data.$elem;
+        var settings = data.settings;
+        var html = '\
+            <div id="calibration" class="calibration">\
+                <div class="ruler">\
+                    <div class="cm">Please enter the length of this scale on your screen</div>\
+                    <input id="calibration-input" /> cm\
+                </div>\
+            </div>';
+        var $calDiv = $(html);
+        //$rulerDiv.append($cmDiv);
+        //$rulerDiv.append($cmInput);
+        //$calDiv.append($rulerDiv);
+        $elem.append($calDiv);
+        var calRect = geom.rectangle($calDiv);
+        var screenRect = fn.getFullscreenRect(data);
+        console.debug('calRect:', calRect);
+        console.debug('screenRect:', screenRect);
+        calRect.setCenter(screenRect.getCenter());
+        console.debug('calRect:', calRect);
+        calRect.adjustDiv($calDiv);
     };
 
     /** creates HTML structure for the scale mode menu
@@ -334,11 +378,10 @@ digilib buttons plugin
         var $select = $(event.target);
         var newMode = $select.find("option:selected").attr("name");
         console.debug('setting mode to:', newMode);
-        fn.setScaleMode(data, newMode);
         var $div = data.scaleModeDiv;
         $(document).off("click.scalemode");
         $div.fadeOut();
-        fn.redisplay(data);
+        digilib.actions.setScaleMode(data, newMode);
     };
 
     // creates HTML structure for a single button

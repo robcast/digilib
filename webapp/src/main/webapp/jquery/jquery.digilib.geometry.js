@@ -133,10 +133,10 @@
             } else if (y == null) {
                 // assume x is rectangle
                 that = {
-                    x : x.x,
-                    y : x.y,
-                    width : x.width,
-                    height : x.height
+                    x : x.x || 0,
+                    y : x.y || 0,
+                    width : x.width || 0,
+                    height : x.height || 0
                 };
             } else {
                 // assume x and y are Position
