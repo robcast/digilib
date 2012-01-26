@@ -1765,6 +1765,7 @@ if (typeof console === 'undefined') {
             setFitMode : setFitMode,
             canMove : canMove,
             isFullArea : isFullArea,
+            isNumber : isNumber,
             getFullscreenRect : getFullscreenRect,
             getBorderWidth : getBorderWidth,
             cropFloat : cropFloat,
