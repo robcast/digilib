@@ -1448,10 +1448,10 @@ if (typeof console === 'undefined') {
         		console.debug("aspect ratio changed!");
         		// what now?
         	}
-        	// get transform for new zoomArea
+        	// get transform for new zoomArea (use 'screen' instead of data.scaleMode)
         	imgTrafo = getImgTrafo($img, newZoomArea, data.settings.rot,
 					data.scalerFlags.hmir, data.scalerFlags.vmir,
-					data.scaleMode, data);
+					'screen', data);
         	// for new background coordinates transform old zoomArea with new Transform
         	bgRect = imgTrafo.transform(data.zoomArea);
         	// correct offset because background is relative
