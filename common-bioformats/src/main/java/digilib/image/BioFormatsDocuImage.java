@@ -12,6 +12,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import ome.xml.model.primitives.PositiveInteger;
+
+import loci.common.services.DependencyException;
+import loci.common.services.ServiceException;
+import loci.common.services.ServiceFactory;
 import loci.formats.FormatException;
 import loci.formats.IFormatWriter;
 import loci.formats.ImageReader;
@@ -19,7 +24,11 @@ import loci.formats.ImageWriter;
 import loci.formats.gui.BufferedImageReader;
 import loci.formats.gui.BufferedImageWriter;
 import loci.formats.meta.DummyMetadata;
+import loci.formats.meta.IMetadata;
 import loci.formats.meta.MetadataRetrieve;
+import loci.formats.meta.MetadataStore;
+import loci.formats.ome.OMEXMLMetadata;
+import loci.formats.services.OMEXMLService;
 
 import digilib.io.FileOpException;
 import digilib.io.ImageInput;
@@ -35,6 +44,7 @@ public class BioFormatsDocuImage extends DocuImageImpl {
     private Object imageSize;
     private RenderingHints renderHint;
     private ImageReader reader;
+    private OMEXMLMetadata meta;
 
     /*
      * (non-Javadoc)
@@ -73,6 +83,14 @@ public class BioFormatsDocuImage extends DocuImageImpl {
         this.input = ii;
         reader = new ImageReader();
         try {
+            // construct the object that stores OME-XML metadata
+            ServiceFactory factory = new ServiceFactory();
+            OMEXMLService service = factory.getInstance(OMEXMLService.class);
+            meta = service.createOMEXMLMetadata();
+
+            // set up the reader and associate it with the input file
+            reader = new ImageReader();
+            reader.setMetadataStore(meta);
             reader.setId(ii.getFile().getAbsolutePath());
             BufferedImageReader biReader = BufferedImageReader.makeBufferedImageReader(reader);
             img = biReader.openImage(0);
@@ -81,6 +99,12 @@ public class BioFormatsDocuImage extends DocuImageImpl {
             throw new FileOpException("Unable to load image format: " + e);
         } catch (IOException e) {
             throw new FileOpException("Unable to load image file: " + e);
+        } catch (ServiceException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (DependencyException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 
@@ -148,10 +172,16 @@ public class BioFormatsDocuImage extends DocuImageImpl {
          */
         BufferedImageWriter writer = BufferedImageWriter.makeBufferedImageWriter(iw);
         try {
-            logger.debug("setting metadata");
-            iw.setMetadataRetrieve((MetadataRetrieve) reader.getMetadataStore());
+            logger.debug("setting metadata "+meta);
+            iw.setMetadataRetrieve(meta);
             logger.debug("writing to file  " + outFile);
             writer.setId(outFile.getAbsolutePath());
+            logger.debug("fixing metadata "+meta);
+            iw.setInterleaved(reader.isInterleaved());
+            iw.setWriteSequentially(true);
+            meta.setPixelsSizeX(new PositiveInteger(img.getWidth()), 0);
+            meta.setPixelsSizeY(new PositiveInteger(img.getHeight()), 0);
+            meta.setPixelsSizeC(new PositiveInteger(img.getColorModel().getNumComponents()), 0);
             logger.debug("saving image " + img);
             writer.saveImage(0, img);
             logger.debug("closing file");

@@ -26,7 +26,7 @@
   	<dependency>
   		<groupId>loci</groupId>
   		<artifactId>bio-formats</artifactId>
-  		<version>4.3.3-SNAPSHOT</version>
+  		<version>5.0-SNAPSHOT</version>
   	</dependency>
   </dependencies>
 </project>
