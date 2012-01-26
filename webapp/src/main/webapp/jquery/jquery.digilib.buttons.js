@@ -274,7 +274,7 @@ digilib buttons plugin
                 var $button = $elem.find('div.button-scale');
                 var buttonRect = geom.rectangle($button);
                 var divRect = geom.rectangle($div);
-                $(document).on("click.scalemode", function(event) {
+                $('body').on("click.scalemode", function(event) {
                         $div.fadeOut();
                         });
                 $div.fadeIn();
@@ -388,7 +388,7 @@ digilib buttons plugin
         var newMode = $select.find("option:selected").attr("name");
         console.debug('setting mode to:', newMode);
         var $div = data.scaleModeDiv;
-        $(document).off("click.scalemode");
+        $('body').off("click.scalemode");
         $div.fadeOut();
         digilib.actions.setScaleMode(data, newMode);
     };
