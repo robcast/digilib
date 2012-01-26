@@ -111,7 +111,7 @@ div.digilib div.regionHTML a {
 }
 
 div.digilib div.calibration {
-	background: url('blue.png');
+	background: url('img/blue.png');
 	position: absolute;
 	border: 1px solid lightcyan;
 	width: 400px;
@@ -128,7 +128,7 @@ div.digilib div.ruler {
 	font-weight: bold;
 	text-align: center;
 	color: lightcyan;
-	background: url('ruler-top.gif') 0px -1px repeat-x;
+	background: url('img/ruler-top.gif') 0px -1px repeat-x;
 	}
 
 div.digilib div.cm {
