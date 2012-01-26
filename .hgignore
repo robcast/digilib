@@ -82,3 +82,11 @@ syntax: regexp
 ^common-jai/\.classpath$
 syntax: regexp
 ^common-jai/\.project$
+syntax: regexp
+^common-bioformats/\.classpath$
+syntax: regexp
+^common-bioformats/\.project$
+syntax: regexp
+^common-bioformats/target$
+syntax: regexp
+^common-bioformats/\.settings$

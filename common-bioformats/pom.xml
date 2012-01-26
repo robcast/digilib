@@ -1,0 +1,32 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>digilib</artifactId>
+    <groupId>digilib</groupId>
+    <version>2.1-SNAPSHOT</version>
+    <relativePath>..</relativePath>
+  </parent>
+  <artifactId>digilib-common-bioformats</artifactId>
+  <name>digilib-common-bioformats</name>
+  <description>digilib codec implementation using Bio-Formats (http://loci.wisc.edu/software/bio-formats) library.</description>
+	<repositories>
+		<!--  we currently use ImageJ snapshot repo -->
+		<repository>
+			<id>imagej.snapshots</id>
+			<url>http://code.imagej.net/maven2/snapshots</url>
+			<snapshots/>
+		</repository>
+	</repositories>
+
+  <dependencies>
+  	<dependency>
+  		<groupId>digilib</groupId>
+  		<artifactId>digilib-common</artifactId>
+  	</dependency>
+  	<dependency>
+  		<groupId>loci</groupId>
+  		<artifactId>bio-formats</artifactId>
+  		<version>4.3.3-SNAPSHOT</version>
+  	</dependency>
+  </dependencies>
+</project>
