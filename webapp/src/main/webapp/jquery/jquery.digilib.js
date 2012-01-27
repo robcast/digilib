@@ -527,7 +527,8 @@ if (typeof console === 'undefined') {
         return parseQueryString(window.location.search.slice(1));
     };
 
-    /** returns parameters from embedded img-element
+    /** 
+     * returns parameters from embedded img-element
      * 
      */
     var parseImgParams = function($elem) {
@@ -541,7 +542,8 @@ if (typeof console === 'undefined') {
         return params;
     };
 
-    /** parses query parameter string into parameter object
+    /** 
+     * parses query parameter string into parameter object
      * 
      */
     var parseQueryString = function(query) {
@@ -559,7 +561,8 @@ if (typeof console === 'undefined') {
         return params;
     };
 
-    /** return a query string from key names from a parameter hash 
+    /** 
+     * return a query string from key names from a parameter hash 
      * (ignores keys if the same value is in defaults)
      * 
      */
@@ -582,8 +585,8 @@ if (typeof console === 'undefined') {
         return paramString;
     };
 
-    /** returns URL and query string for Scaler
-     * 
+    /** 
+     * returns URL and query string for Scaler
      */
     var getScalerUrl = function (data) {
         packParams(data);
@@ -906,8 +909,8 @@ if (typeof console === 'undefined') {
         setupZoomDrag(data);
     };
 
-    /** returns maximum size for scaler img in fullscreen mode.
-     * 
+    /** 
+     * returns maximum size for scaler img in fullscreen mode.
      */
     var getFullscreenImgSize = function (data) {
         var mode = data.settings.interactionMode;
@@ -938,15 +941,15 @@ if (typeof console === 'undefined') {
         return geom.size(imgW, imgH);
     };
 
-    /** returns a rectangle.with the fullscreen dimensions 
-     * 
+    /** 
+     * returns a rectangle.with the fullscreen dimensions 
      */
     var getFullscreenRect = function (data) {
         return geom.rectangle(getFullscreenImgSize(data));
     };
 
-    /** creates HTML structure for digilib in elem
-     * 
+    /** 
+     * creates HTML structure for digilib in elem
      */
     var setupScalerDiv = function (data) {
         var settings = data.settings;
@@ -958,6 +961,7 @@ if (typeof console === 'undefined') {
             // fullscreen
             $elem.addClass('dl_fullscreen');
             var imgSize = getFullscreenImgSize(data);
+            data.fullscreenImgSize = imgSize;
             // fitwidth/height omits destination height/width
             if (data.dlOpts.fitheight == null) {
                 settings.dw = imgSize.width;
@@ -1520,15 +1524,31 @@ if (typeof console === 'undefined') {
      * set screen fit mode (width, height, both).
      */
     var setFitMode = function (data, mode) {
+        var settings = data.settings;
+        var imgSize = data.fullscreenImgSize;
     	if (mode === 'width') {
     		data.dlOpts.fitwidth = 1;
     		delete data.dlOpts.fitheight;
+    		if (imgSize != null) {
+    		    // fitwidth omits destination height
+    		    settings.dw = imgSize.width;
+    		    settings.dh = null;
+    		}
     	} else if (mode === 'height') {
     		data.dlOpts.fitheight = 1;
     		delete data.dlOpts.fitwidth;
+            if (imgSize != null) {
+                // fitheight omits destination width
+                settings.dw = null;
+                settings.dh = imgSize.height;
+            }
     	} else {
     		delete data.dlOpts.fitwidth;
     		delete data.dlOpts.fitheight;
+            if (imgSize != null) {
+                settings.dw = imgSize.width;
+                settings.dh = imgSize.height;
+            }
     	}
     };
     	
