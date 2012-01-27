@@ -60,8 +60,10 @@ digilib bird's eye view plugin
         // add buttons
         $.extend(digilib.buttons, buttons);
         // insert in button list -- not elegant
-        digilib.defaults.buttonSettings.fullscreen.standardSet.splice(9, 0, 'bird');
-        digilib.defaults.buttonSettings.embedded.standardSet.splice(5, 0, 'bird');
+        if (digilib.defaults.buttonSettings != null) {
+            digilib.defaults.buttonSettings.fullscreen.standardSet.splice(9, 0, 'bird');
+            digilib.defaults.buttonSettings.embedded.standardSet.splice(5, 0, 'bird');
+        }
     };
 
     // plugin initialization
