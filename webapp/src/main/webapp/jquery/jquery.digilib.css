@@ -160,6 +160,23 @@ div.digilib input.error {
 	background-color: khaki;
 	}
 
+div.digilib div.slider {
+	background: url('img/blue.png');
+	display: none;
+	border: 1px solid lightcyan;
+	position: absolute;
+	z-index: 9999;
+	width: 400px;
+	height: 16px;
+	}
+
+div.digilib div.sliderbutton {
+	border: 3px solid lightcyan;
+	background-color: cyan;
+	position: absolute;
+	z-index: 10000;
+	}
+
 div.infobutton {
     background-color: white;
     color: grey;

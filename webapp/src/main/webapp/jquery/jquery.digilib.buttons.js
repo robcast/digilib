@@ -89,16 +89,19 @@ digilib buttons plugin
                 },
             rot : {
                 onclick : "rotate",
+                //onclick : ["slider", 0, 360, "rotate-slider"],
                 tooltip : "rotate image",
                 icon : "rotate.png"
                 },
             brgt : {
                 onclick : "brightness",
+                //onclick : ["slider", -255, 255, "brightness-slider"],
                 tooltip : "set brightness",
                 icon : "brightness.png"
                 },
             cont : {
                 onclick : "contrast",
+                //onclick : ["slider", -8, 8, "contrast-slider"],
                 tooltip : "set contrast",
                 icon : "contrast.png"
                 },
@@ -182,30 +185,30 @@ digilib buttons plugin
             ];
 
     var defaults = {
-            // buttons (reference added later)
-            'buttons' : null,
-            // defaults for digilib buttons
-            'buttonSettings' : {
-                'fullscreen' : {
-                    // path to button images (must end with a slash)
-                    'imagePath' : 'img/fullscreen/',
-                    'buttonSetWidth' : 36,
-                    'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","help","reset","toggleoptions"],
-                    'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","lessoptions"],
-                    'arrowSet' : ["up", "down", "left", "right"],
-                    'buttonSets' : ['standardSet', 'specialSet']
-                    },
-                'embedded' : {
-                    'imagePath' : 'img/embedded/16/',
-                    'buttonSetWidth' : 18,
-                    'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","help","reset","toggleoptions"],
-                    'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","scale","lessoptions"],
-                    'arrowSet' : ["up", "down", "left", "right"],
-                    'buttonSets' : ['standardSet', 'specialSet']
-                    }
-            },
-            // number of visible button groups
-            'visibleButtonSets' : 1
+        // buttons (reference added later)
+        'buttons' : null,
+        // defaults for digilib buttons
+        'buttonSettings' : {
+            'fullscreen' : {
+                // path to button images (must end with a slash)
+                'imagePath' : 'img/fullscreen/',
+                'buttonSetWidth' : 36,
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","help","reset","toggleoptions"],
+                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","lessoptions"],
+                'arrowSet' : ["up", "down", "left", "right"],
+                'buttonSets' : ['standardSet', 'specialSet']
+                },
+            'embedded' : {
+                'imagePath' : 'img/embedded/16/',
+                'buttonSetWidth' : 18,
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","help","reset","toggleoptions"],
+                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","scale","lessoptions"],
+                'arrowSet' : ["up", "down", "left", "right"],
+                'buttonSets' : ['standardSet', 'specialSet']
+                }
+        },
+        // number of visible button groups
+        'visibleButtonSets' : 1
     };
 
     var actions = {
@@ -236,6 +239,16 @@ digilib buttons plugin
                 }
                 // persist setting
                 fn.storeOptions(data);
+            },
+            // brightness slider
+            slider : function (data, min, max, id) {
+                var $elem = data.$elem;
+                var settings = data.settings;
+                var $div = $('<div/>');
+                $div.attr('id', id);
+                $div.slider({'min' : min, 'max' : max });
+                $elem.append($div);
+                $div.slider('show');
             },
             // shows Calibration Div
             showCalibrationDiv : function (data) {
@@ -307,6 +320,7 @@ digilib buttons plugin
         // install event handler
         var $data = $(data);
         $data.bind('setup', handleSetup);
+        sliderPlugin(jQuery, data);
     };
 
     var handleSetup = function (evt) {
@@ -320,6 +334,146 @@ digilib buttons plugin
         setupScaleModeDiv(data);
         // create Calibration div;
         setupCalibrationDiv(data);
+    };
+
+    var centerOnScreen = function (data, $div) {
+        var r = geom.rectangle($div);
+        var s = fn.getFullscreenRect(data);
+        r.setCenter(s.getCenter());
+        r.adjustDiv($div);
+    };
+
+    // slider
+    var sliderPlugin = function($, digilibdata) {
+        var defaults = {
+            'id' : 'slider',
+            'class' : 'slider',
+            'size' : '10px',
+            'direction' : 'x',
+            'min' : 0,
+            'max' : 100,
+            'val' : 33
+            };
+        var methods = {
+            init : function( options ) { 
+                return this.each(function() {
+                    var $this = $(this);
+                    // var settings = data.settings;
+                    var settings = $.extend( defaults, options);
+                    console.debug('slider instance data:', settings);
+                    $this.data('digilib', digilibdata);
+                    var data = $this.data('settings');
+                    if (!data) {
+                        $this.data('settings', settings);
+                        $this.addClass(settings.class);
+                        var $sliderbutton = $('<div class="sliderbutton" />');
+                        settings.$button = $sliderbutton;
+                        $this.append($sliderbutton);
+                        $this.slider('setpos');
+                        }
+                });
+            },
+            setval : function(data, val) {
+                settings.val =
+                    val < settings.min ? settings.min :
+                    val > settings.max() ? settings.max :
+                    val;
+            },
+            setpos : function() {
+                var $this = $(this);
+                var settings = $this.data('settings');
+                var $sliderbutton = settings.$button;
+                var delta = (settings.max - settings.min) / settings.max * settings.val;
+                var r = geom.rectangle($this);
+                var s = geom.rectangle($sliderbutton);
+                var newpos, middle; 
+                if (settings.direction == 'y') {
+                    $sliderbutton.width(r.width).height(settings.size);
+                    newpos = r.y + delta * r.height;
+                    middle = r.x + r.width / 2;
+                    s.setCenter(geom.position(middle, newpos));
+                    s.adjustDiv($sliderbutton);
+                    }
+                else {
+                    $sliderbutton.height(r.height).width(settings.size);
+                    newpos = r.x + delta * r.width;
+                    middle = r.y + r.height / 2;
+                    s.setCenter(geom.position(newpos, middle));
+                    s.adjustDiv($sliderbutton);
+                    }
+                return $this;
+            },
+            getval : function(data) {
+                var $this = $(this);
+                var settings = $this.data('settings');
+            },
+            show : function(data) {
+                var $this = $(this);
+                var settings = $this.data('slider');
+                var $elem = data.$elem;
+                $this.fadeIn();
+                centerOnScreen(data, $this);
+                return;
+                var $body = $('body');
+                var pt1, pt2;
+
+                // mousedown handler: start sliding
+                var sliderStart = function (event) {
+                    pt1 = geom.position(event);
+                    // overlay prevents other elements from reacting to mouse events 
+                    // var $overlay = $('<div class="digilib-overlay" style="position:absolute"/>');
+                    $body.on("mousemove.slider", sliderMove);
+                    $body.on("mouseup.slider", sliderEnd);
+                    return false;
+                };
+
+                // mousemove handler: move slider
+                var sliderMove = function (event) {
+                    pt2 = geom.position(event);
+                    return false;
+                };
+    
+                // mouseup handler: end sliding
+                var sliderEnd = function (event) {
+                    pt2 = geom.position(event);
+                    $body.off("mousemove.slider");
+                    $body.off("mouseup.slider");
+                    // $overlay.remove();
+                    settings.callback(settings.val);
+                    redisplay(data);
+                    return false;
+                };
+
+            // bind start zoom handler
+            $overlay.one('mousedown.dlRegion', regionStart);
+            fn.highlightButtons(data, 'addregion', 1);
+
+            },
+            hide : function( ) { 
+            },
+            destroy : function( ) { 
+            },
+            update : function( content ) { 
+            }
+        };
+        // constructor
+        $.fn.slider = function( method ) {
+            if ( methods[method] ) {
+                // call a method
+                var $elem = $(this);
+                var data = $elem.data('digilib');
+                var args = Array.prototype.slice.call(arguments, 1);
+                args.unshift(data);
+                return methods[method].apply(this, args);
+                }
+            else if ( !method || typeof method === 'object' ) {
+                // call init(), with an optional object containing options
+                return methods.init.apply( this, arguments );
+                }
+            else {
+                $.error( 'Method ' +  method + ' does not exist on digilib.slider!' );
+                }
+        };
     };
 
     /** creates HTML structure for the calibration div
@@ -347,10 +501,7 @@ digilib buttons plugin
         data.calibrationDiv = $calDiv;
         data.calibrationErrorDiv = $calDiv.find("div.calibration-error");
         data.calibrationInput = $input;
-        var calRect = geom.rectangle($calDiv);
-        var screenRect = fn.getFullscreenRect(data);
-        calRect.setCenter(screenRect.getCenter());
-        calRect.adjustDiv($calDiv);
+        centerOnScreen(data, $calDiv);
         var handler = function(event) {
             var _data = data;
             if (event.keyCode == 27 || event.target.id == 'calibrationCancel') {
