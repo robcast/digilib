@@ -915,6 +915,7 @@ if (typeof console === 'undefined') {
      * returns maximum size for scaler img in fullscreen mode.
      */
     var getFullscreenImgSize = function (data) {
+        var mode = data.settings.interactionMode;
         var $win = $(window);
         var winH = $win.height();
         var winW = $win.width();
