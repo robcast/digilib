@@ -442,8 +442,9 @@ if (typeof console === 'undefined') {
                 }
             settings.fn = params.fn || ''; // no default defined
             settings.pn = params.pn || defaults.pn;
-            settings.dw = params.dw;
-            settings.dh = params.dh;
+            var size = getFullscreenImgSize(data);
+            settings.dw = params.dw || size.width;
+            settings.dh = params.dh || size.height;
             settings.isBirdDivVisible = false;
             settings.visibleButtonSets = 1; // FIXME
             // resets zoomArea, marks, scalerflags
@@ -452,6 +453,7 @@ if (typeof console === 'undefined') {
             data.scalerFlags = {};
             delete data.dlOpts.fitwidth;
             delete data.dlOpts.fitheight;
+            data.scaleMode = 'screen';
             redisplay(data);
         },
 
@@ -913,7 +915,6 @@ if (typeof console === 'undefined') {
      * returns maximum size for scaler img in fullscreen mode.
      */
     var getFullscreenImgSize = function (data) {
-        var mode = data.settings.interactionMode;
         var $win = $(window);
         var winH = $win.height();
         var winW = $win.width();
