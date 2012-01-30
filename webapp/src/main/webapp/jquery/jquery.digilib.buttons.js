@@ -89,19 +89,19 @@ digilib buttons plugin
                 },
             rot : {
                 onclick : "rotate",
-                //onclick : ["slider", 0, 360, "rotate-slider"],
+                //onclick : ["slider", 0, 360, "rot"],
                 tooltip : "rotate image",
                 icon : "rotate.png"
                 },
             brgt : {
                 onclick : "brightness",
-                //onclick : ["slider", -255, 255, "brightness-slider"],
+                // onclick : ["slider", -255, 255, "brgt"],
                 tooltip : "set brightness",
                 icon : "brightness.png"
                 },
             cont : {
                 onclick : "contrast",
-                //onclick : ["slider", -8, 8, "contrast-slider"],
+                //onclick : ["slider", -8, 8, "cont"],
                 tooltip : "set contrast",
                 icon : "contrast.png"
                 },
@@ -241,12 +241,12 @@ digilib buttons plugin
                 fn.storeOptions(data);
             },
             // brightness slider
-            slider : function (data, min, max, id) {
+            slider : function (data, min, max, paramname) {
                 var $elem = data.$elem;
                 var settings = data.settings;
                 var $div = $('<div/>');
-                $div.attr('id', id);
-                $div.slider({'min' : min, 'max' : max });
+                $div.attr('id', paramname + "-slider");
+                $div.slider({'min' : min, 'max' : max, 'param' : paramname });
                 $elem.append($div);
                 $div.slider('show');
             },
@@ -348,14 +348,16 @@ digilib buttons plugin
         var defaults = {
             'id' : 'slider',
             'class' : 'slider',
-            'size' : '10px',
             'direction' : 'x',
+            'param' : '',
+            'size' : 10,
             'min' : 0,
             'max' : 100,
             'val' : 33
             };
         var methods = {
-            init : function( options ) { 
+            init : function( options ) {
+                // make a slider from each element
                 return this.each(function() {
                     var $this = $(this);
                     // var settings = data.settings;
@@ -369,7 +371,6 @@ digilib buttons plugin
                         var $sliderbutton = $('<div class="sliderbutton" />');
                         settings.$button = $sliderbutton;
                         $this.append($sliderbutton);
-                        $this.slider('setpos');
                         }
                 });
             },
@@ -380,46 +381,41 @@ digilib buttons plugin
                     val;
             },
             setpos : function() {
-                var $this = $(this);
+                var $this = this;
                 var settings = $this.data('settings');
                 var $sliderbutton = settings.$button;
-                var delta = (settings.max - settings.min) / settings.max * settings.val;
+                var delta = settings.val / Math.abs(settings.max - settings.min);
                 var r = geom.rectangle($this);
-                var s = geom.rectangle($sliderbutton);
-                var newpos, middle; 
+                var s = geom.rectangle(0, 0, settings.size, settings.size);
+                var newpos;
                 if (settings.direction == 'y') {
-                    $sliderbutton.width(r.width).height(settings.size);
-                    newpos = r.y + delta * r.height;
-                    middle = r.x + r.width / 2;
-                    s.setCenter(geom.position(middle, newpos));
-                    s.adjustDiv($sliderbutton);
+                    s.width = r.width;
+                    newpos = geom.position(r.x + r.width / 2, r.y + delta * r.height);
                     }
                 else {
-                    $sliderbutton.height(r.height).width(settings.size);
-                    newpos = r.x + delta * r.width;
-                    middle = r.y + r.height / 2;
-                    s.setCenter(geom.position(newpos, middle));
-                    s.adjustDiv($sliderbutton);
+                    s.height = r.height;
+                    newpos = geom.position(r.x + delta * r.width, r.y + r.height / 2);
                     }
+                s.setCenter(newpos).adjustDiv($sliderbutton);
                 return $this;
             },
             getval : function(data) {
-                var $this = $(this);
+                var $this = this;
                 var settings = $this.data('settings');
             },
             show : function(data) {
-                var $this = $(this);
-                var settings = $this.data('slider');
-                var $elem = data.$elem;
+                var $this = this;
+                var settings = $this.data('settings');
+                var $sliderbutton = settings.$button;
+                var $body = $('body');
                 $this.fadeIn();
                 centerOnScreen(data, $this);
-                return;
-                var $body = $('body');
-                var pt1, pt2;
+                $this.slider('setpos');
+                var r = geom.rectangle($this);
+                var pt;
 
                 // mousedown handler: start sliding
                 var sliderStart = function (event) {
-                    pt1 = geom.position(event);
                     // overlay prevents other elements from reacting to mouse events 
                     // var $overlay = $('<div class="digilib-overlay" style="position:absolute"/>');
                     $body.on("mousemove.slider", sliderMove);
@@ -429,34 +425,48 @@ digilib buttons plugin
 
                 // mousemove handler: move slider
                 var sliderMove = function (event) {
-                    pt2 = geom.position(event);
+                    pt = geom.position(event);
+                    var s = geom.rectangle($sliderbutton);
+                    var c = s.getCenter();
+                    var newpos;
+                    if (settings.direction == 'y') {
+                        newpos = geom.position(c.x, Math.min(Math.max(r.y, pt.y), r.y + r.height));
+                        }
+                    else {
+                        newpos = geom.position(Math.min(Math.max(r.x, pt.x), r.x + r.width), c.y);
+                        }
+                    s.setCenter(newpos).adjustDiv($sliderbutton);
                     return false;
                 };
-    
+
                 // mouseup handler: end sliding
                 var sliderEnd = function (event) {
-                    pt2 = geom.position(event);
+                    pt = geom.position(event);
                     $body.off("mousemove.slider");
                     $body.off("mouseup.slider");
                     // $overlay.remove();
-                    settings.callback(settings.val);
-                    redisplay(data);
+                    $this.slider('getval');
+                    $this.slider('destroy');
+                    // settings.callback(settings.val);
+                    fn.redisplay(data);
                     return false;
                 };
 
-            // bind start zoom handler
-            $overlay.one('mousedown.dlRegion', regionStart);
-            fn.highlightButtons(data, 'addregion', 1);
-
+            // bind start handler
+            $body.one('mousedown.slider', sliderStart);
             },
-            hide : function( ) { 
-            },
-            destroy : function( ) { 
-            },
-            update : function( content ) { 
+            destroy : function( ) {
+                var $this = this;
+                var settings = $this.data('settings');
+                $this.fadeOut(function(){
+                    $this.remove()
+                    });
             }
         };
-        // constructor
+        // TODO:
+        // - take start value from a given param
+        // - set the param after sliding
+        // - show min/max/current values on slider
         $.fn.slider = function( method ) {
             if ( methods[method] ) {
                 // call a method
