@@ -196,24 +196,22 @@ div.infoheader {
     margin-bottom: 20px;
 }
 
-div.digilib div.arrows {
-    display: none;
+/* scroll arrows */
+div.digilib table.scalertable {
+	border: 0;
+	padding: 0;
 }
-
-div.digilib div.arrows div.button {
-    position: absolute;
-    text-align: center;
+div.digilib table.scalertable td {
+    padding: 0;
+}
+div.digilib table.scalertable td.arrow {
+}
+div.digilib table.scalertable td.arrow:hover {
     background-color: black;
-    opacity: 0.08;
-    z-index: 200;
-    }
-
-div.digilib div.arrows div.button:hover {
-    opacity: 0.5;
+	opacity: 0.3;
 }
-
-div.digilib div.arrows div.button a {
-    position: relative;
+div.digilib table.scalertable img.button {
+    opacity: 1;
 }
 
 /* special definitions for fullscreen */

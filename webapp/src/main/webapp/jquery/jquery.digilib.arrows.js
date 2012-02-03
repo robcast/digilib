@@ -5,22 +5,14 @@
 (function($) {
 
     // affine geometry
-    var geom;
+    var geom = null;
     // plugin object with digilib data
-    var digilib;
+    var digilib = null;
 
-    var FULL_AREA;
-
-    var buttons = {
-        stub : {
-            onclick : [ "doStub", 1 ],
-            tooltip : "what does this button do?",
-            icon : "stub.png"
-        }
-    };
+    var FULL_AREA = null;
 
     var defaults = {
-        // arrow bar overlays for moving the zoomed area
+        // arrow bars for moving the zoomed area
         'showZoomArrows' : true,
         // zoom arrow bar minimal width (for small images)
         'zoomArrowMinWidth' : 6,
@@ -28,6 +20,43 @@
         'zoomArrowWidth' : 32,
         // by what percentage should the arrows move the zoomed area?
         'zoomArrowMoveFactor' : 0.5,
+        // defaults for digilib buttons
+        'buttonSettings' : {
+            'fullscreen' : {
+                // path to button images (must end with a slash)
+                'imagePath' : 'img/fullscreen/',
+                'buttonSetWidth' : 36,
+                'arrowSet' : [ "up", "down", "left", "right" ],
+            },
+            'embedded' : {
+                'imagePath' : 'img/embedded/16/',
+                'buttonSetWidth' : 18,
+                'arrowSet' : [ "up", "down", "left", "right" ],
+            }
+        }
+    };
+
+    var buttons = {
+        up : {
+            onclick : [ "moveZoomArea", 0, -1 ],
+            tooltip : "move zoom area up",
+            icon : "up.png"
+        },
+        down : {
+            onclick : [ "moveZoomArea", 0, 1 ],
+            tooltip : "move zoom area down",
+            icon : "down.png"
+        },
+        left : {
+            onclick : [ "moveZoomArea", -1, 0 ],
+            tooltip : "move zoom area left",
+            icon : "left.png"
+        },
+        right : {
+            onclick : [ "moveZoomArea", 1, 0 ],
+            tooltip : "move zoom area right",
+            icon : "right.png"
+        }
     };
 
     var actions = {
@@ -59,20 +88,22 @@
         // import geometry classes
         geom = digilib.fn.geometry;
         FULL_AREA = geom.rectangle(0, 0, 1, 1);
-        // add defaults, actions, buttons
-        $.extend(digilib.defaults, defaults);
-        $.extend(digilib.actions, actions);
+        // add defaults, actions
+        $.extend(true, digilib.defaults, defaults); // make deep copy
         $.extend(digilib.buttons, buttons);
+        $.extend(digilib.actions, actions);
     };
 
     // plugin initialization
     var init = function(data) {
         console.debug('initialising arrows plugin. data:', data);
         var $data = $(data);
+        // adjust insets
+        data.currentInsets['arrows'] = getInsets(data);
         // install event handler
         $data.bind('setup', handleSetup);
         $data.bind('update', handleUpdate);
-        //$data.bind('redisplay', handleRedisplay);
+        // $data.bind('redisplay', handleRedisplay);
     };
 
     var handleSetup = function(evt) {
@@ -87,14 +118,70 @@
         renderZoomArrows(data);
     };
 
-    var handleRedisplay = function(evt) {
-        console.debug("arrows: handleRedisplay");
-        var data = this;
+
+    /** 
+     * returns insets for arrows (based on canMove and buttonSetWidth
+     */
+    var getInsets = function(data) {
+        var settings = data.settings;
+        var insets = {
+            'x' : 0,
+            'y' : 0
+        };
+        if (settings.showZoomArrows) {
+            var mode = settings.interactionMode;
+            var bw = settings.buttonSettings[mode].buttonSetWidth;
+            if (digilib.fn.canMove(data, 0, -1))
+                insets.y += bw;
+            if (digilib.fn.canMove(data, 0, 1))
+                insets.y += bw;
+            if (digilib.fn.canMove(data, -1, 0))
+                insets.x += bw;
+            if (digilib.fn.canMove(data, 1, 0))
+                insets.x += bw;
+        }
+        return insets;
     };
 
     /**
-     * create arrow overlays for moving the zoomed area.
-     * 
+     * creates HTML structure for a single button
+     */
+    var createButton = function(data, $div, buttonName, show) {
+        var $elem = data.$elem;
+        var settings = data.settings;
+        var mode = settings.interactionMode;
+        var imagePath = settings.buttonSettings[mode].imagePath;
+        // make relative imagePath absolute
+        if (imagePath.charAt(0) !== '/' && imagePath.substring(0, 3) !== 'http') {
+            imagePath = settings.digilibBaseUrl + '/jquery/' + imagePath;
+        }
+        var buttonConfig = settings.buttons[buttonName];
+        // button properties
+        var action = buttonConfig.onclick;
+        var tooltip = buttonConfig.tooltip;
+        var icon = imagePath + buttonConfig.icon;
+        // construct the button html
+        var $button = $('<div class="keep"><a href=""><img class="button" src="' + icon + '"/></a></div>');
+        if (!show) {
+            $button.hide();
+        }
+        $div.append($button);
+        // add attributes and bindings
+        $button.attr('title', tooltip);
+        $button.addClass('arrow-' + buttonName);
+        // create handler for the buttons on the div (necessary for horizontal
+        // scroll arrows)
+        $div.on('click.digilib', function(evt) {
+            // the handler function calls digilib with action and parameters
+            console.debug('click action=', action, ' evt=', evt);
+            $elem.digilib.apply($elem, action);
+            return false;
+        });
+        return $button;
+    };
+
+    /**
+     * create arrows for moving the zoomed area.
      */
     var setupZoomArrows = function(data) {
         var $elem = data.$elem;
@@ -105,83 +192,66 @@
             return;
         var mode = settings.interactionMode;
         var arrowNames = settings.buttonSettings[mode].arrowSet;
-        if (arrowNames == null)
+        if (arrowNames == null) {
+            console.error("No buttons for scroll arrows!");
+            settings.showZoomArrows = false;
             return;
-        // arrow divs are marked with class "keep"
-        var $arrowsDiv = $('<div class="keep arrows"/>');
-        $elem.append($arrowsDiv);
-        // create all arrow buttons
-        // TODO: do this without buttons plugin?
-        $.each(arrowNames, function(i, arrowName) {
-            digilib.fn.createButton(data, $arrowsDiv, arrowName);
-        });
+        }
+        // wrap scaler img in table
+        data.$scaler.wrap('<table class="scalertable"><tbody><tr class="midrow"><td/></tr></tbody></table>');
+        // middle row with img has three elements
+        data.$scaler.parent().before('<td class="arrow left" valign="middle"/>').after('<td class="arrow right" valign="middle"/>');
+        // first and last row has only one
+        var $table = $elem.find('table.scalertable');
+        $table.find('tr.midrow').before('<tr class="firstrow"><td colspan="3" class="arrow up" align="center"/></tr>').after(
+                '<tr class="lasttrow"><td colspan="3" class="arrow down" align="center"/></tr>');
+        // add arrow buttons
+        var ar = {};
+        ar.$up = createButton(data, $table.find('td.up'), 'up', digilib.fn.canMove(data, 0, -1));
+        ar.$down = createButton(data, $table.find('td.down'), 'down', digilib.fn.canMove(data, 0, 1));
+        ar.$left = createButton(data, $table.find('td.left'), 'left', digilib.fn.canMove(data, -1, 0));
+        ar.$right = createButton(data, $table.find('td.right'), 'right', digilib.fn.canMove(data, 1, 0));
+        data.arrows = ar;
+
     };
 
     /**
-     * size and show arrow overlays, called after scaler img is loaded.
+     * show or hide arrows, called after scaler img is loaded.
      * 
      */
     var renderZoomArrows = function(data) {
         var settings = data.settings;
-        var $arrowsDiv = data.$elem.find('div.arrows');
+        var arrows = data.arrows;
         if (digilib.fn.isFullArea(data.zoomArea) || !settings.showZoomArrows) {
-            $arrowsDiv.hide();
+            arrows.$up.hide();
+            arrows.$down.hide();
+            arrows.$left.hide();
+            arrows.$right.hide();
+            data.currentInsets['arrows'] = {'x' : 0, 'y' : 0};
             return;
         }
-        $arrowsDiv.show();
-        var r = geom.rectangle(data.$scaler);
-        // calculate arrow bar width
-        var aw = settings.zoomArrowWidth;
-        var minWidth = settings.zoomArrowMinWidth;
-        // arrow bar width should not exceed 10% of scaler width/height
-        var maxWidth = Math.min(r.width, r.height) / 10;
-        if (aw > maxWidth) {
-            aw = maxWidth;
-            if (aw < minWidth) {
-                aw = minWidth;
-            }
+        if (digilib.fn.canMove(data, 0, -1)) {
+            arrows.$up.show();
+        } else {
+            arrows.$up.hide();
         }
-        // vertical position of left/right image
-        var arrowData = [ {
-            name : 'up',
-            rect : geom.rectangle(r.x, r.y, r.width, aw),
-            show : digilib.fn.canMove(data, 0, -1)
-        }, {
-            name : 'down',
-            rect : geom.rectangle(r.x, r.y + r.height - aw, r.width, aw),
-            show : digilib.fn.canMove(data, 0, 1)
-        }, {
-            name : 'left',
-            rect : geom.rectangle(r.x, r.y, aw, r.height),
-            show : digilib.fn.canMove(data, -1, 0)
-        }, {
-            name : 'right',
-            rect : geom.rectangle(r.x + r.width - aw, r.y, aw, r.height),
-            show : digilib.fn.canMove(data, 1, 0)
-        } ];
-        // render a single zoom Arrow
-        var render = function(i, item) {
-            var $arrow = $arrowsDiv.find('div.button-' + item.name);
-            if (item.show) {
-                $arrow.show();
-            } else {
-                $arrow.hide();
-                return;
-            }
-            var r = item.rect;
-            r.adjustDiv($arrow);
-            var $a = $arrow.contents('a');
-            var $img = $a.contents('img');
-            $img.width(aw).height(aw);
-            // hack for missing vertical-align
-            if (item.name.match(/left|right/)) {
-                var top = (r.height - $a.height()) / 2;
-                $a.css({
-                    'top' : top
-                }); // position : 'relative'
-            }
-        };
-        $.each(arrowData, render);
+        if (digilib.fn.canMove(data, 0, 1)) {
+            arrows.$down.show();
+        } else {
+            arrows.$down.hide();
+        }
+        if (digilib.fn.canMove(data, -1, 0)) {
+            arrows.$left.show();
+        } else {
+            arrows.$left.hide();
+        }
+        if (digilib.fn.canMove(data, 1, 0)) {
+            arrows.$right.show();
+        } else {
+            arrows.$right.hide();
+        }
+        // adjust insets
+        data.currentInsets['arrows'] = getInsets(data);
     };
 
     // plugin object with name and init

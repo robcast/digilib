@@ -38,7 +38,7 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.1.2b1',
+        'version' : 'jquery.digilib.js 2.1.2b2',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -88,8 +88,8 @@ if (typeof console === 'undefined') {
         'maxBgSize' : 10000,
         // parameters used by background image
         'previewImgParamNames' : ['fn','pn','dw','dh','mo','rot'],
-        // reserved space in full page display (default value accounts for vertical scrollbar)
-        'scalerInset' : 10
+        // reserved space in full page display (default value accounts for body margins)
+        'scalerInsets' : { 'x' : 16, 'y': 20 }
         };
 
     // list of plugins
@@ -179,6 +179,8 @@ if (typeof console === 'undefined') {
                 	elemSettings = data.settings;
                 }
                 unpackParams(data);
+                // list of current insets (dynamic for buttons etc.)
+                data.currentInsets = {'static' : elemSettings.scalerInsets};
                 // check if browser knows *background-size
                 for (var bs in {'':1, '-moz-':1, '-webkit-':1, '-o-':1}) {
                     if ($elem.css(bs+'background-size')) {
@@ -915,31 +917,20 @@ if (typeof console === 'undefined') {
      * returns maximum size for scaler img in fullscreen mode.
      */
     var getFullscreenImgSize = function (data) {
-        var mode = data.settings.interactionMode;
+        //var mode = data.settings.interactionMode;
         var $win = $(window);
         var winH = $win.height();
         var winW = $win.width();
-        var $body = $('body');
-        // include standard body margins and check plausibility
-        var borderW = $body.outerWidth(true) - $body.width();
-        if (borderW === 0 || borderW > 100) {
-            console.debug("fixing border width for getFullscreenImgSize!");
-            borderW = data.settings.scalerInset;
-        }
-        var borderH = $body.outerHeight(true) - $body.height();
-        if (borderH === 0 || borderH > 100) {
-            console.debug("fixing border height for getFullscreenImgSize!");
-            borderH = 5;
-        }
-        var buttonsW = 0;
-        if (data.buttons != null) {
-            // get button width from settings
-            buttonsW = data.settings.buttonSettings[mode].buttonSetWidth * data.settings.visibleButtonSets;
-        }
-        // account for left/right border, body margins and additional requirements
-        var imgW = winW - borderW - buttonsW;
-        var imgH = winH - borderH;
-        console.debug('screen w/h:', winW, winH, 'window.width', $win.width(), 'border:', borderW, 'buttonsW:', buttonsW, 'img w/h:', imgW, imgH);
+        // add all current insets
+        var insets = { 'x' : 0, 'y' : 0};
+        for (var n in data.currentInsets) {
+            insets.x += data.currentInsets[n].x;
+            insets.y += data.currentInsets[n].y;
+        };
+        // accounting for left/right border, body margins and additional requirements
+        var imgW = winW - insets.x;
+        var imgH = winH - insets.y;
+        console.debug('screen w/h:', winW, winH, 'window.width', $win.width(), 'img w/h:', imgW, imgH);
         return geom.size(imgW, imgH);
     };
 

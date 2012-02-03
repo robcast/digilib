@@ -145,26 +145,6 @@ digilib buttons plugin
                 tooltip : "less options",
                 icon : "options.png"
                 },
-            up : {
-                onclick : ["moveZoomArea", 0, -1],
-                tooltip : "move zoom area up",
-                icon : "up.png"
-                },
-            down : {
-                onclick : ["moveZoomArea", 0, 1],
-                tooltip : "move zoom area down",
-                icon : "down.png"
-                },
-            left : {
-                onclick : ["moveZoomArea", -1, 0],
-                tooltip : "move zoom area left",
-                icon : "left.png"
-                },
-            right : {
-                onclick : ["moveZoomArea", 1, 0],
-                tooltip : "move zoom area right",
-                icon : "right.png"
-                },
             SEP : {
                 icon : "sep.png"
                 }
@@ -195,7 +175,6 @@ digilib buttons plugin
                 'buttonSetWidth' : 36,
                 'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","help","reset","toggleoptions"],
                 'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","lessoptions"],
-                'arrowSet' : ["up", "down", "left", "right"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 },
             'embedded' : {
@@ -203,7 +182,6 @@ digilib buttons plugin
                 'buttonSetWidth' : 18,
                 'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","help","reset","toggleoptions"],
                 'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","scale","lessoptions"],
-                'arrowSet' : ["up", "down", "left", "right"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 }
         },
@@ -237,6 +215,8 @@ digilib buttons plugin
                         settings.visibleButtonSets++;
                     }
                 }
+                // adjust insets
+                data.currentInsets['buttons'] = getInsets(data);
                 // persist setting
                 fn.storeOptions(data);
             },
@@ -300,9 +280,9 @@ digilib buttons plugin
         // import geometry classes
         geom = fn.geometry;
         // add defaults, actions, buttons
-        $.extend(digilib.defaults, defaults);
-        $.extend(digilib.actions, actions);
         $.extend(digilib.buttons, buttons);
+        $.extend(true, digilib.defaults, defaults); // make deep copy
+        $.extend(digilib.actions, actions);
         // update buttons reference in defaults
         digilib.defaults.buttons = digilib.buttons;
         // export functions
@@ -313,10 +293,8 @@ digilib buttons plugin
     // plugin initialization
     var init = function (data) {
         console.debug('initialising buttons plugin. data:', data);
-        /* create buttons before scaler 
-        for (var i = 0; i < data.settings.visibleButtonSets; ++i) {
-            showButtons(data, true, i);
-        } */
+        // adjust insets
+        data.currentInsets['buttons'] = getInsets(data);
         // install event handler
         var $data = $(data);
         $data.bind('setup', handleSetup);
@@ -326,8 +304,9 @@ digilib buttons plugin
     var handleSetup = function (evt) {
         console.debug("buttons: handleSetup");
         var data = this;
+        var settings = data.settings;
         // create buttons before scaler 
-        for (var i = 0; i < data.settings.visibleButtonSets; ++i) {
+        for (var i = 0; i < settings.visibleButtonSets; ++i) {
             showButtons(data, true, i);
         }
         // create ScaleMode selector;
@@ -336,6 +315,16 @@ digilib buttons plugin
         setupCalibrationDiv(data);
     };
 
+    /** 
+     * returns insets for buttons (based on visibleButtonSets and buttonSetWidth
+     */
+    var getInsets = function (data) {
+        var settings = data.settings;
+        var bw = settings.visibleButtonSets * settings.buttonSettings[settings.interactionMode].buttonSetWidth;
+        var insets = {'x' : bw, 'y' : 0};
+        return insets;
+    };
+    
     var centerOnScreen = function (data, $div) {
         var r = geom.rectangle($div);
         var s = fn.getFullscreenRect(data);
@@ -602,7 +591,7 @@ digilib buttons plugin
         var icon = imagePath + buttonConfig.icon;
         // construct the button html
         var $button = $('<div class="button"></div>');
-        var $a = $('<a/>');
+        var $a = $('<a href=""/>');
         var $img = $('<img class="button"/>');
         $div.append($button);
         $button.append($a);
