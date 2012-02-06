@@ -38,7 +38,7 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.1.3a1',
+        'version' : 'jquery.digilib.js 2.1.3b1',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -229,6 +229,8 @@ if (typeof console === 'undefined') {
                         p.init(data);
                     }
                 }
+                // trigger unpack params handlers
+                $(data).trigger('unpack');
                 // get image info from server if needed
                 if (data.scaleMode === 'pixel' || data.scaleMode === 'size') {
                     loadImageInfo(data); // triggers "imageInfo" on completion
@@ -659,24 +661,6 @@ if (typeof console === 'undefined') {
         // zoom area
         var zoomArea = geom.rectangle(settings.wx, settings.wy, settings.ww, settings.wh);
         data.zoomArea = zoomArea;
-        // marks
-        var marks = [];
-        var pa;
-        if (settings.mk) {
-            var mk = settings.mk;
-            if (mk.indexOf(";") >= 0) {
-                pa = mk.split(";");    // old format with ";"
-            } else {
-                pa = mk.split(",");    // new format
-            }
-            for (var i = 0; i < pa.length ; i++) {
-                var pos = pa[i].split("/");
-                if (pos.length > 1) {
-                    marks.push(geom.position(pos[0], pos[1]));
-                    }
-                }
-            }
-        data.marks = marks;
         // mo (Scaler flags)
         var flags = {};
         if (settings.mo) {
@@ -702,22 +686,6 @@ if (typeof console === 'undefined') {
         settings.wh = cropFloat(area.height);
     };
 
-    /** put marks into parameters
-     * 
-     */
-    var packMarks = function (settings, marks) {
-        if (!marks) return;
-        settings.mk = '';
-        for (var i = 0; i < marks.length; i++) {
-            if (i) {
-                settings.mk += ',';
-                }
-            settings.mk +=
-                cropFloatStr(marks[i].x) + '/' + 
-                cropFloatStr(marks[i].y);
-            }
-    };
-
     /** pack scaler flags into parameters
      * 
      */
@@ -739,10 +707,11 @@ if (typeof console === 'undefined') {
     var packParams = function (data) {
         var settings = data.settings;
         packArea(settings, data.zoomArea);
-        packMarks(settings, data.marks);
         packScalerFlags(settings, data.scalerFlags);
         // store user interface options in cookie
         storeOptions(data);
+        // trigger pack handlers
+        $(data).trigger('pack');
     };
 
     /** store digilib options in a cookie   
@@ -1577,7 +1546,6 @@ if (typeof console === 'undefined') {
             unpackParams : unpackParams,
             packParams : packParams,
             packArea : packArea,
-            packMarks : packMarks,
             packScalerFlags : packScalerFlags,
             storeOptions : storeOptions,
             redisplay : redisplay,
