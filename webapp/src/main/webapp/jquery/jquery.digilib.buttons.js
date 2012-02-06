@@ -67,16 +67,6 @@ digilib buttons plugin
                 tooltip : "reset image",
                 icon : "reset.png"
                 },
-            mark : {
-                onclick : "setMark",
-                tooltip : "set a mark",
-                icon : "mark.png"
-                },
-            delmark : {
-                onclick : "removeMark",
-                tooltip : "delete the last mark",
-                icon : "delmark.png"
-                },
             hmir : {
                 onclick : ["mirror", "h"],
                 tooltip : "mirror horizontally",

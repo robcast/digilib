@@ -163,11 +163,8 @@ TODO:
                 return;
             }
             regionInfo(data);
-        },
-
-        "redraw" : function (data) {
-            renderRegions(data);
         }
+
     };
 
     // store a region div

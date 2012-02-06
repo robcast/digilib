@@ -38,7 +38,7 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.1.2b2',
+        'version' : 'jquery.digilib.js 2.1.3a1',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -81,7 +81,7 @@ if (typeof console === 'undefined') {
         'interactionMode' : 'fullscreen',
         // is the "about" window shown?
         'isAboutDivVisible' : false,
-        // default size of preview image for drag-scroll (same as Bird's Eye View image)
+        // default size of preview image for drag-scroll (preferrably same as Bird's Eye View image)
         'previewImgWidth' : 200,
         'previewImgHeight' : 200,
         // maximum width or height of preview background image for drag-scroll
@@ -338,31 +338,6 @@ if (typeof console === 'undefined') {
             redisplay(data);
         },
 
-        /** set a mark by clicking (or giving a position)
-         * 
-         * @param data
-         * @param mpos
-         */
-        setMark : function (data, mpos) {
-            if (mpos == null) {
-                // interactive
-                setMark(data);
-            } else {
-                // use position
-                data.marks.push(pos);
-                redisplay(data);
-            }
-        },
-
-        /** remove the last mark
-         * 
-         * @param data
-         */
-        removeMark : function (data) {
-            data.marks.pop();
-            redisplay(data);
-        },
-
         /** mirror the image
          * 
          * @param data
@@ -490,7 +465,7 @@ if (typeof console === 'undefined') {
             }
         },
 
-        /** calibrate (only faking)
+        /** calibrate (set client screen dpi)
          * 
          * @param data
          * @param res
@@ -904,12 +879,11 @@ if (typeof console === 'undefined') {
     };
 
     /** handle "update" display event.
-     * updates image transform, redraws marks etc.
+     * updates image transform, etc.
      */
     var handleUpdate = function (evt) {
     	var data = this;
         updateImgTrafo(data);
-        renderMarks(data);
         setupZoomDrag(data);
     };
 
@@ -922,12 +896,12 @@ if (typeof console === 'undefined') {
         var winH = $win.height();
         var winW = $win.width();
         // add all current insets
+        // accounting for left/right border, body margins and additional requirements
         var insets = { 'x' : 0, 'y' : 0};
         for (var n in data.currentInsets) {
             insets.x += data.currentInsets[n].x;
             insets.y += data.currentInsets[n].y;
         };
-        // accounting for left/right border, body margins and additional requirements
         var imgW = winW - insets.x;
         var imgH = winH - insets.y;
         console.debug('screen w/h:', winW, winH, 'window.width', $win.width(), 'img w/h:', imgW, imgH);
@@ -1174,31 +1148,6 @@ if (typeof console === 'undefined') {
     };
     
     
-    /** place marks on the image
-     * 
-     */
-    var renderMarks = function (data) {
-        if (data.$img == null || data.imgTrafo == null) return;
-        console.debug("renderMarks: img=",data.$img," imgtrafo=",data.imgTrafo);
-        var $elem = data.$elem;
-        var marks = data.marks;
-        // clear marks
-        $elem.find('div.mark').remove();
-        for (var i = 0; i < marks.length; i++) {
-            var mark = marks[i];
-            if (data.zoomArea.containsPosition(mark)) {
-                var mpos = data.imgTrafo.transform(mark);
-                console.debug("renderMarks: pos=",mpos);
-                // create mark
-                var html = '<div class="mark overlay">'+(i+1)+'</div>';
-                var $mark = $(html);
-                $mark.attr("id", "digilib-mark-"+(i+1));
-                $elem.append($mark);
-                mpos.adjustDiv($mark);
-                }
-            }
-    };
-
     /** zoom by the given factor.
      * 
      */
@@ -1217,25 +1166,6 @@ if (typeof console === 'undefined') {
         setScaleMode(data, 'screen');
         setFitMode(data, 'both');
         redisplay(data);
-    };
-
-    /** add a mark where clicked.
-     * 
-     */
-    var setMark = function (data) {
-        var $scaler = data.$scaler;
-        // unbind other handler
-        $scaler.off(".dlZoomDrag");
-        // start event capturing
-        $scaler.one('mousedown.dlSetMark', function (evt) {
-            // event handler adding a new mark
-            console.log("setmark at=", evt);
-            var mpos = geom.position(evt);
-            var pos = data.imgTrafo.invtransform(mpos);
-            data.marks.push(pos);
-            redisplay(data);
-            return false;
-        });
     };
 
     /** zoom to the area around two clicked points.
@@ -1415,8 +1345,8 @@ if (typeof console === 'undefined') {
                 $img.css('visibility', 'visible');
                 $scaler.css({'opacity' : '1', 'background-image' : 'none'});
                 data.hasPreviewBg = false;
-                // unhide marks
-                data.$elem.find('div.mark').show();
+                // unhide marks FIXME!
+                //data.$elem.find('div.mark').show();
                 $(data).trigger('redisplay');
                 return false; 
             }
