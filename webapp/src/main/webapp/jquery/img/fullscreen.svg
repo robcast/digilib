@@ -13,11 +13,11 @@
    height="48"
    id="svg2388"
    sodipodi:version="0.32"
-   inkscape:version="0.48+devel r10012"
+   inkscape:version="0.48.2 r9819"
    sodipodi:docname="fullscreen.svg"
-   inkscape:export-filename="C:\src\ECHO\digilib\client\digitallibrary\greyskin\back.png"
-   inkscape:export-xdpi="60.000000"
-   inkscape:export-ydpi="60.000000"
+   inkscape:export-filename="/Users/casties/Library/Eclipse/digilib/webapp/src/main/webapp/jquery/img/fullscreen/down.png"
+   inkscape:export-xdpi="89.475731"
+   inkscape:export-ydpi="89.475731"
    version="1.1"
    style="display:inline">
   <defs
@@ -76,16 +76,16 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="13.477814"
-     inkscape:cx="36.471552"
+     inkscape:cx="25.861523"
      inkscape:cy="25.345983"
-     inkscape:current-layer="layer6"
+     inkscape:current-layer="g3359"
      showgrid="true"
      inkscape:grid-bbox="true"
      inkscape:document-units="px"
-     inkscape:window-width="1024"
-     inkscape:window-height="719"
-     inkscape:window-x="1020"
-     inkscape:window-y="-4"
+     inkscape:window-width="1295"
+     inkscape:window-height="724"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
      showguides="true"
      inkscape:guide-bbox="true"
@@ -111,7 +111,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -119,10 +119,10 @@
      inkscape:groupmode="layer"
      id="layer6"
      inkscape:label="bg"
-     style="display:inline;opacity:1"
+     style="display:none"
      sodipodi:insensitive="true">
     <rect
-       style="color:#000000;fill:#924747;fill-opacity:0.59183673000000003;fill-rule:evenodd;stroke:none;stroke-width:0;marker:none;visibility:visible;display:inline;overflow:visible"
+       style="color:#000000;fill:#924747;fill-opacity:0.59183673;fill-rule:evenodd;stroke:none;stroke-width:0;marker:none;visibility:visible;display:inline;overflow:visible"
        id="rect468"
        width="47.930622"
        height="47.856426"
@@ -211,7 +211,7 @@
          id="layer1-4">
         <path
            transform="matrix(1.062015,0,0,1.062015,-7.659466,-4.965116)"
-           d="m 48.142857,26.214285 a 17.928572,18.214285 0 1 1 -35.857144,0 17.928572,18.214285 0 1 1 35.857144,0 z"
+           d="m 48.142857,26.214285 c 0,10.059472 -8.026895,18.214285 -17.928572,18.214285 -9.901677,0 -17.928572,-8.154813 -17.928572,-18.214285 C 12.285713,16.154813 20.312608,8 30.214285,8 c 9.901677,0 17.928572,8.154813 17.928572,18.214285 z"
            sodipodi:ry="18.214285"
            sodipodi:rx="17.928572"
            sodipodi:cy="26.214285"
@@ -250,7 +250,7 @@
              sodipodi:cy="12.5"
              sodipodi:rx="10.214286"
              sodipodi:ry="10.214286"
-             d="m 44.857142,12.5 a 10.214286,10.214286 0 1 1 -20.428571,0 10.214286,10.214286 0 1 1 20.428571,0 z"
+             d="m 44.857142,12.5 c 0,5.641194 -4.573091,10.214286 -10.214285,10.214286 -5.641195,0 -10.214286,-4.573092 -10.214286,-10.214286 0,-5.6411943 4.573091,-10.2142859 10.214286,-10.2142859 5.641194,0 10.214285,4.5730916 10.214285,10.2142859 z"
              transform="translate(-10.42857,10.28571)" />
           <g
              style="fill:#919191;fill-opacity:1"
@@ -333,7 +333,7 @@
      inkscape:groupmode="layer"
      id="layer9"
      inkscape:label="calibration-y"
-     style="display:inline"
+     style="display:none"
      sodipodi:insensitive="true">
     <path
        sodipodi:type="arc"
@@ -432,7 +432,7 @@
   <g
      inkscape:groupmode="layer"
      id="layer15"
-     inkscape:label="down"
+     inkscape:label="down1"
      style="display:none"
      sodipodi:insensitive="true">
     <path
@@ -522,7 +522,7 @@
   <g
      inkscape:groupmode="layer"
      id="layer21"
-     inkscape:label="left"
+     inkscape:label="left1"
      style="display:none"
      sodipodi:insensitive="true">
     <path
@@ -879,7 +879,7 @@
   <g
      inkscape:groupmode="layer"
      id="layer40"
-     inkscape:label="right"
+     inkscape:label="right1"
      style="display:none"
      sodipodi:insensitive="true">
     <path
@@ -1045,8 +1045,68 @@
   </g>
   <g
      inkscape:groupmode="layer"
-     id="layer45"
+     id="layer13"
      inkscape:label="up"
+     style="display:none"
+     sodipodi:insensitive="true">
+    <path
+       style="fill:#ff0000;fill-opacity:1;stroke:#ff0000;stroke-width:0.38758379;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="M 8.352353,39.799805 23.939657,24.325015 39.623771,39.944431 z"
+       id="path3893"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/Users/casties/Library/Eclipse/digilib/webapp/src/main/webapp/jquery/img/fullscreen/up.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+  </g>
+  <g
+     inkscape:label="down"
+     id="g3359"
+     inkscape:groupmode="layer"
+     style="display:inline"
+     sodipodi:insensitive="true">
+    <path
+       inkscape:export-ydpi="90"
+       inkscape:export-xdpi="90"
+       inkscape:export-filename="/Users/casties/Library/Eclipse/digilib/webapp/src/main/webapp/jquery/img/fullscreen/up.png"
+       inkscape:connector-curvature="0"
+       id="path3361"
+       d="M 39.549575,8.1465192 23.962271,23.621309 8.278157,8.0018932 z"
+       style="fill:#ff0000;fill-opacity:1;stroke:#ff0000;stroke-width:0.38758379;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="g3363"
+     inkscape:label="left"
+     style="display:none"
+     sodipodi:insensitive="true">
+    <path
+       style="fill:#ff0000;fill-opacity:1;stroke:#ff0000;stroke-width:0.38758379;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="M 39.666313,39.608871 24.191523,24.021567 39.810939,8.337453 z"
+       id="path3365"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/Users/casties/Library/Eclipse/digilib/webapp/src/main/webapp/jquery/img/fullscreen/left.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+  </g>
+  <g
+     inkscape:label="right"
+     id="g3367"
+     inkscape:groupmode="layer"
+     sodipodi:insensitive="true"
+     style="display:none">
+    <path
+       inkscape:export-ydpi="90"
+       inkscape:export-xdpi="90"
+       inkscape:export-filename="/Users/casties/Library/Eclipse/digilib/webapp/src/main/webapp/jquery/img/fullscreen/right.png"
+       inkscape:connector-curvature="0"
+       id="path3369"
+       d="M 8.3840072,8.560041 23.858797,24.147345 8.2393812,39.831459 z"
+       style="fill:#ff0000;fill-opacity:1;stroke:#ff0000;stroke-width:0.38758379;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer45"
+     inkscape:label="up1"
      style="display:none"
      sodipodi:insensitive="true">
     <path

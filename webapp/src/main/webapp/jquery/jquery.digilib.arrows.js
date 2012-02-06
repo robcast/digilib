@@ -14,10 +14,6 @@
     var defaults = {
         // arrow bars for moving the zoomed area
         'showZoomArrows' : true,
-        // zoom arrow bar minimal width (for small images)
-        'zoomArrowMinWidth' : 6,
-        // zoom arrow bar standard width
-        'zoomArrowWidth' : 32,
         // by what percentage should the arrows move the zoomed area?
         'zoomArrowMoveFactor' : 0.5,
         // defaults for digilib buttons
@@ -25,12 +21,12 @@
             'fullscreen' : {
                 // path to button images (must end with a slash)
                 'imagePath' : 'img/fullscreen/',
-                'buttonSetWidth' : 36,
+                'arrowSetSize' : 18,
                 'arrowSet' : [ "up", "down", "left", "right" ],
             },
             'embedded' : {
                 'imagePath' : 'img/embedded/16/',
-                'buttonSetWidth' : 18,
+                'arrowSetSize' : 9,
                 'arrowSet' : [ "up", "down", "left", "right" ],
             }
         }
@@ -120,7 +116,7 @@
 
 
     /** 
-     * returns insets for arrows (based on canMove and buttonSetWidth
+     * returns insets for arrows (based on canMove and arrowSetSize
      */
     var getInsets = function(data) {
         var settings = data.settings;
@@ -130,7 +126,7 @@
         };
         if (settings.showZoomArrows) {
             var mode = settings.interactionMode;
-            var bw = settings.buttonSettings[mode].buttonSetWidth;
+            var bw = settings.buttonSettings[mode].arrowSetSize;
             if (digilib.fn.canMove(data, 0, -1))
                 insets.y += bw;
             if (digilib.fn.canMove(data, 0, 1))

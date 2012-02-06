@@ -89,7 +89,7 @@ if (typeof console === 'undefined') {
         // parameters used by background image
         'previewImgParamNames' : ['fn','pn','dw','dh','mo','rot'],
         // reserved space in full page display (default value accounts for body margins)
-        'scalerInsets' : { 'x' : 16, 'y': 20 }
+        'scalerInsets' : { 'x' : 26, 'y': 20 }
         };
 
     // list of plugins
