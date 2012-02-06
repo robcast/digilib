@@ -57,7 +57,7 @@
     // plugin installation called by digilib on plugin object.
     var install = function(plugin) {
         digilib = plugin;
-        console.debug('installing stub plugin. digilib:', digilib);
+        console.debug('installing marks plugin. digilib:', digilib);
         // import geometry classes
         geom = digilib.fn.geometry;
         // add defaults, actins, buttons
@@ -79,7 +79,7 @@
     };
 
     var handleUpdate = function(evt) {
-        console.debug("stub: handleUpdate");
+        console.debug("marks: handleUpdate");
         var data = this;
         renderMarks(data);
     };

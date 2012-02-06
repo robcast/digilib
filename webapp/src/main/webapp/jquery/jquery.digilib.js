@@ -192,6 +192,8 @@ if (typeof console === 'undefined') {
                 data.hasPreviewBg = false;
                 // check if browser supports AJAX-like URL-replace without reload
                 data.hasAsyncReload = (typeof history.replaceState === 'function');
+                // check if browser sets complete on cached images
+                data.hasCachedComplete = ! $.browser.mozilla;
                 // check digilib base URL
                 if (elemSettings.digilibBaseUrl == null) {
                     if (isFullscreen) {
@@ -794,7 +796,10 @@ if (typeof console === 'undefined') {
                 	var imgurl = getScalerUrl(data);
                 	$img.attr('src', imgurl);
                 	// trigger load event if image is cached. Doesn't work with Firefox!!
-                	//if ($img.prop('complete')) $img.trigger('load');
+                	if (data.hasCachedComplete && $img.prop('complete')) {
+                	    console.debug("cached img.load");
+                	    $img.trigger('load');
+                	}
                 	if (data.scalerFlags.clip != null || data.scalerFlags.osize != null) {
                     	// we need image info, do we have it?
                 		if (data.imgInfo == null) {
@@ -1314,9 +1319,8 @@ if (typeof console === 'undefined') {
                 $img.css('visibility', 'visible');
                 $scaler.css({'opacity' : '1', 'background-image' : 'none'});
                 data.hasPreviewBg = false;
-                // unhide marks FIXME!
-                //data.$elem.find('div.mark').show();
-                $(data).trigger('redisplay');
+                // unhide marks etc.
+                updateDisplay(data);
                 return false; 
             }
             // get old zoom area (screen coordinates)
