@@ -88,6 +88,8 @@
         $.extend(true, digilib.defaults, defaults); // make deep copy
         $.extend(digilib.buttons, buttons);
         $.extend(digilib.actions, actions);
+        // update buttons reference in defaults
+        digilib.defaults.buttons = digilib.buttons;
     };
 
     // plugin initialization
