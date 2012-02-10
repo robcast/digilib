@@ -148,6 +148,7 @@
         var $elem = data.$elem;
         var settings = data.settings;
         var mode = settings.interactionMode;
+        var cssPrefix = settings.cssPrefix;
         var imagePath = settings.buttonSettings[mode].imagePath;
         // make relative imagePath absolute
         if (imagePath.charAt(0) !== '/' && imagePath.substring(0, 3) !== 'http') {
@@ -159,14 +160,14 @@
         var tooltip = buttonConfig.tooltip;
         var icon = imagePath + buttonConfig.icon;
         // construct the button html
-        var $button = $('<div class="keep"><a href=""><img class="button" src="' + icon + '"/></a></div>');
+        var $button = $('<div class="'+cssPrefix+'keep"><a href=""><img class="'+cssPrefix+'button" src="' + icon + '"/></a></div>');
         if (!show) {
             $button.hide();
         }
         $div.append($button);
         // add attributes and bindings
         $button.attr('title', tooltip);
-        $button.addClass('arrow-' + buttonName);
+        $button.addClass(cssPrefix+'arrow-' + buttonName);
         // create handler for the buttons on the div (necessary for horizontal
         // scroll arrows)
         $div.on('click.digilib', function(evt) {
@@ -184,6 +185,7 @@
     var setupZoomArrows = function(data) {
         var $elem = data.$elem;
         var settings = data.settings;
+        var cssPrefix = settings.cssPrefix;
         var show = settings.showZoomArrows;
         console.log('zoom arrows:', show);
         if (!show)
@@ -196,19 +198,21 @@
             return;
         }
         // wrap scaler img in table
-        data.$scaler.wrap('<table class="scalertable"><tbody><tr class="midrow"><td/></tr></tbody></table>');
+        data.$scaler.wrap('<table class="'+cssPrefix+'scalertable"><tbody><tr class="'+cssPrefix+'midrow"><td/></tr></tbody></table>');
         // middle row with img has three elements
-        data.$scaler.parent().before('<td class="arrow left" valign="middle"/>').after('<td class="arrow right" valign="middle"/>');
+        data.$scaler.parent().before('<td class="'+cssPrefix+'arrow '+cssPrefix+'left" valign="middle"/>')
+            .after('<td class="'+cssPrefix+'arrow '+cssPrefix+'right" valign="middle"/>');
         // first and last row has only one
-        var $table = $elem.find('table.scalertable');
-        $table.find('tr.midrow').before('<tr class="firstrow"><td colspan="3" class="arrow up" align="center"/></tr>').after(
-                '<tr class="lasttrow"><td colspan="3" class="arrow down" align="center"/></tr>');
+        var $table = $elem.find('table.'+cssPrefix+'scalertable');
+        $table.find('tr.'+cssPrefix+'midrow')
+            .before('<tr class="'+cssPrefix+'firstrow"><td colspan="3" class="'+cssPrefix+'arrow '+cssPrefix+'up" align="center"/></tr>')
+            .after('<tr class="'+cssPrefix+'lasttrow"><td colspan="3" class="'+cssPrefix+'arrow '+cssPrefix+'down" align="center"/></tr>');
         // add arrow buttons
         var ar = {};
-        ar.$up = createButton(data, $table.find('td.up'), 'up', digilib.fn.canMove(data, 0, -1));
-        ar.$down = createButton(data, $table.find('td.down'), 'down', digilib.fn.canMove(data, 0, 1));
-        ar.$left = createButton(data, $table.find('td.left'), 'left', digilib.fn.canMove(data, -1, 0));
-        ar.$right = createButton(data, $table.find('td.right'), 'right', digilib.fn.canMove(data, 1, 0));
+        ar.$up = createButton(data, $table.find('td.'+cssPrefix+'up'), 'up', digilib.fn.canMove(data, 0, -1));
+        ar.$down = createButton(data, $table.find('td.'+cssPrefix+'down'), 'down', digilib.fn.canMove(data, 0, 1));
+        ar.$left = createButton(data, $table.find('td.'+cssPrefix+'left'), 'left', digilib.fn.canMove(data, -1, 0));
+        ar.$right = createButton(data, $table.find('td.'+cssPrefix+'right'), 'right', digilib.fn.canMove(data, 1, 0));
         data.arrows = ar;
 
     };

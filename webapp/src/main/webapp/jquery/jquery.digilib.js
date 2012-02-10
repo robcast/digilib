@@ -38,7 +38,7 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.1.4a1',
+        'version' : 'jquery.digilib.js 2.1.4b1',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -897,7 +897,8 @@ if (typeof console === 'undefined') {
     var setupScalerDiv = function (data) {
         var settings = data.settings;
         var $elem = data.$elem;
-        $elem.addClass('digilib');
+        var cssPrefix = settings.cssPrefix;
+        $elem.addClass(cssPrefix+'digilib');
         var $img;
         var scalerUrl;
         if (settings.interactionMode === 'fullscreen') {
@@ -937,7 +938,7 @@ if (typeof console === 'undefined') {
             }
         }
         // create new inner html, keeping buttons and content marked with "keep" class
-        $elem.contents(":not(.keep)").remove();
+        $elem.contents(':not(.'+cssPrefix+'keep)').remove();
         var $scaler = $('<div class="'+cssPrefix+'scaler"/>');
         // scaler should be the first child element?
         $elem.prepend($scaler);
@@ -960,10 +961,10 @@ if (typeof console === 'undefined') {
     var setupAboutDiv = function (data) {
         var $elem = data.$elem;
         var settings = data.settings;
-        var $aboutDiv = $('<div class="'+cssPrefix+'about" style="display:none"/>');
+        var $aboutDiv = $('<div class="'+settings.cssPrefix+'about" style="display:none"/>');
         var $header = $('<p>Digilib Image Viewer</p>');
         var $link = $('<a/>');
-        var $logo = $('<img class="'+cssPrefix+'logo" title="digilib"/>');
+        var $logo = $('<img class="'+settings.cssPrefix+'logo" title="digilib"/>');
         var $content = $('<p/>');
         $elem.append($aboutDiv);
         $aboutDiv.append($header);
@@ -1120,7 +1121,7 @@ if (typeof console === 'undefined') {
     	console.debug("handleChangeZoomArea:", newZa);
     	var data = this;
     	// hide all overlays (marks/regions)
-        data.$elem.find('.'+cssPrefix+'overlay').hide();
+        data.$elem.find('.'+data.settings.cssPrefix+'overlay').hide();
     	setPreviewBg(data, newZa);
     };
     
@@ -1152,7 +1153,7 @@ if (typeof console === 'undefined') {
         $elem = data.$elem;
         $scaler = data.$scaler;
         var pt1, pt2;
-        var $zoomDiv = $('<div class="'+cssPrefix+'zoomrect" style="display:none"/>');
+        var $zoomDiv = $('<div class="'+data.settings.cssPrefix+'zoomrect" style="display:none"/>');
         $elem.append($zoomDiv);
         // $zoomDiv.css(data.settings.zoomrectStyle);
         var picRect = geom.rectangle($scaler);
@@ -1527,7 +1528,7 @@ if (typeof console === 'undefined') {
     if (customConsole) {
         var logFunction = function(type) {
             return function(){
-                var $debug = $('#debug'); // debug div
+                var $debug = $('#'+defaults.cssPrefix+'debug'); // debug div
                 if (!$debug) return;
                 var args = Array.prototype.slice.call(arguments);
                 var argtext = args.join(' ');

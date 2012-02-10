@@ -130,13 +130,14 @@ digilib bird's eye view plugin
 
     // creates HTML structure for the bird's eye view in elem
     var setupBirdDiv = function (data) {
+        var cssPrefix = data.settings.cssPrefix;
         var $elem = data.$elem;
         // the bird's eye div
-        var $birdDiv = $('<div class="birdview" style="display:none"/>');
+        var $birdDiv = $('<div class="'+cssPrefix+'birdview" style="display:none"/>');
         // the detail indicator frame
-        var $birdZoom = $('<div class="birdzoom" style="display:none; background-color:transparent;"/>');
+        var $birdZoom = $('<div class="'+cssPrefix+'birdzoom" style="display:none; background-color:transparent;"/>');
         // the small image
-        var $birdImg = $('<img class="birdimg"/>');
+        var $birdImg = $('<img class="'+cssPrefix+'birdimg"/>');
         data.$birdDiv = $birdDiv;
         data.$birdZoom = $birdZoom;
         data.$birdImg = $birdImg;
@@ -232,6 +233,7 @@ digilib bird's eye view plugin
 
     // bird's eye view zoom area click and drag handler
     var setupBirdDrag = function(data) {
+        var cssPrefix = data.settings.cssPrefix;
         var $birdImg = data.$birdImg;
         var $birdZoom = data.$birdZoom;
         var $document = $(document);
@@ -247,7 +249,7 @@ digilib bird's eye view plugin
             birdImgRect = geom.rectangle($birdImg);
             birdZoomRect = geom.rectangle($birdZoom);
             newRect = null;
-            data.$elem.find(".overlay").hide(); // hide all overlays (marks/regions)
+            data.$elem.find('.'+cssPrefix+'overlay').hide(); // hide all overlays (marks/regions)
             $document.on("mousemove.dlBirdMove", birdZoomMove);
             $document.on("mouseup.dlBirdMove", birdZoomEndDrag);
             return false;
@@ -262,8 +264,8 @@ digilib bird's eye view plugin
             newRect.addPosition(delta);
             newRect.stayInside(birdImgRect);
             // acount for border width
-            newRect.addPosition({x : -bw, y : -bw});
-            newRect.adjustDiv($birdZoom);
+            /* newRect.addPosition({x : -bw, y : -bw});
+            newRect.adjustDiv($birdZoom); */
             // reflect birdview zoom position in scaler image
             var area = data.birdTrafo.invtransform(newRect);
             $(data).trigger('changeZoomArea', area);
@@ -281,7 +283,7 @@ digilib bird's eye view plugin
                 birdZoomMove(evt); 
                 }
             // ugly, but needed to prevent double border width compensation
-            newRect.addPosition({x : bw, y : bw});
+            /* newRect.addPosition({x : bw, y : bw}); */
             var newArea = data.birdTrafo.invtransform(newRect);
             data.zoomArea = newArea;
             digilib.fn.redisplay(data);

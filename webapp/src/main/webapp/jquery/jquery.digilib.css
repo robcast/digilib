@@ -215,7 +215,7 @@ div.dl-digilib table.dl-scalertable img.button {
 }
 
 /* special definitions for fullscreen */
-div.dl-digilib.dl_fullscreen div.dl-buttons {
+div.dl-digilib.dl-fullscreen div.dl-buttons {
 	position: fixed;
 	right: 0px;
 	top: 0px;
@@ -224,28 +224,28 @@ div.dl-digilib.dl_fullscreen div.dl-buttons {
 	z-index: 200;
 }
 
-div.dl-digilib.dl_fullscreen div.dl-buttons div.dl-button:hover {
+div.dl-digilib.dl-fullscreen div.dl-buttons div.dl-button:hover {
 	background-image: url('img/fullscreen/corona.png');
 	background-repeat: no-repeat;
 }
 
-div.dl-digilib.dl_fullscreen div.dl-button-on {
+div.dl-digilib.dl-fullscreen div.dl-button-on {
 	background-image: url('img/fullscreen/whitedisc.png');
 	background-repeat: no-repeat;
 }
 
-div.dl-digilib.dl_fullscreen div.dl-birdview {
+div.dl-digilib.dl-fullscreen div.dl-birdview {
 	position: fixed;
 	bottom: 8px;
 	right: 48px;
 }
 
 /* special definitions for embedded */
-div.dl-digilib.dl_embedded {
+div.dl-digilib.dl-embedded {
 	position: relative;
 }
 
-div.dl-digilib.dl_embedded div.dl-buttons {
+div.dl-digilib.dl-embedded div.dl-buttons {
 	position: absolute;
 	right: 0px;
 	top: 0px;
@@ -255,15 +255,15 @@ div.dl-digilib.dl_embedded div.dl-buttons {
 	z-index: 100;
 }
 
-div.dl-digilib.dl_embedded div.dl-buttons div.dl-button:hover {
+div.dl-digilib.dl-embedded div.dl-buttons div.dl-button:hover {
 	background-color: black;
 }
 
-div.dl-digilib.dl_embedded div.dl-button-on {
+div.dl-digilib.dl-embedded div.dl-button-on {
 	background-color: darkgreen;
 }
 
-div.dl-digilib.dl_embedded div.dl-birdview {
+div.dl-digilib.dl-embedded div.dl-birdview {
 	position: absolute;
 	bottom: 0px;
 	right: 0px;

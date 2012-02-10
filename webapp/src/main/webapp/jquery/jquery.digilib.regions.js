@@ -8,13 +8,11 @@ TODO:
 
 (function($) {
     // the digilib object
-    var digilib;
+    var digilib = null;
     // the functions made available by digilib
-    var fn;
+    var fn = null;
     // affine geometry plugin
-    var geom;
-
-    var FULL_AREA;
+    var geom = null;
 
     var ID_PREFIX = "digilib-region-";
 
@@ -68,6 +66,7 @@ TODO:
                 alert("Please turn on regions visibility!");
                 return;
             }
+            var cssPrefix = data.settings.cssPrefix;
             var $elem = data.$elem;
             var $body = $('body');
             var bodyRect = geom.rectangle($body);
@@ -75,7 +74,7 @@ TODO:
             var scalerRect = geom.rectangle($scaler);
             var pt1, pt2;
             // overlay prevents other elements from reacting to mouse events 
-            var $overlay = $('<div class="digilib-overlay" style="position:absolute"/>');
+            var $overlay = $('<div class="'+cssPrefix+'overlay" style="position:absolute"/>');
             $body.append($overlay);
             bodyRect.adjustDiv($overlay);
             var $regionDiv = addRegionDiv(data, data.regions.length);
@@ -179,16 +178,17 @@ TODO:
 
     // clickable header
     var regionInfoHeader = function (data) {
-        var $infoDiv = $('<div class="infoheader"/>');
-        var $h01 = $('<div class="infobutton">HTML</div>'); 
-        var $h02 = $('<div class="infobutton">SVG</div>'); 
-        var $h03 = $('<div class="infobutton">Digilib</div>'); 
-        var $h04 = $('<div class="infobutton">X</div>');
+        var cssPrefix = data.settings.cssPrefix;
+        var $infoDiv = $('<div class="'+cssPrefix+'infoheader"/>');
+        var $h01 = $('<div class="'+cssPrefix+'infobutton">HTML</div>'); 
+        var $h02 = $('<div class="'+cssPrefix+'infobutton">SVG</div>'); 
+        var $h03 = $('<div class="'+cssPrefix+'infobutton">Digilib</div>'); 
+        var $h04 = $('<div class="'+cssPrefix+'infobutton">X</div>');
         var bind = function($div, name) {
             $div.on('click.regioninfo', function () {
                 var $top = $(this).parent().parent();
-                $top.find('.info').hide();
-                $top.find('.' + name).show();
+                $top.find('.'+cssPrefix+'info').hide();
+                $top.find('.'+cssPrefix+ name).show();
                 });
             };
         bind($h01, 'html');
@@ -208,8 +208,9 @@ TODO:
 
     // html for later insertion
     var regionInfoHTML = function (data) {
-        var $infoDiv = $('<div class="info html"/>');
-        $infoDiv.append($('<div/>').text('<div class="keep regioncontent">'));
+        var cssPrefix = data.settings.cssPrefix;
+        var $infoDiv = $('<div class="'+cssPrefix+'info '+cssPrefix+'html"/>');
+        $infoDiv.append($('<div/>').text('<div class="'+cssPrefix+'keep '+cssPrefix+'regioncontent">'));
         $.each(data.regions, function(index, r) {
             var area = [
                 fn.cropFloatStr(r.x),
@@ -224,7 +225,8 @@ TODO:
 
     // SVG-style
     var regionInfoSVG = function (data) {
-        var $infoDiv = $('<div class="info svgattr"/>');
+        var cssPrefix = data.settings.cssPrefix;
+        var $infoDiv = $('<div class="'+cssPrefix+'info '+cssPrefix+'svgattr"/>');
         $.each(data.regions, function(index, r) {
             var area = [
                 fn.cropFloatStr(r.x),
@@ -238,7 +240,8 @@ TODO:
 
     // digilib-style
     var regionInfoDigilib = function (data) {
-        var $infoDiv = $('<div class="info digilib"/>');
+        var cssPrefix = data.settings.cssPrefix;
+        var $infoDiv = $('<div class="'+cssPrefix+'info '+cssPrefix+'digilib"/>');
         $.each(data.regions, function(index, r) {
             var area = r.toString();
             $infoDiv.append($('<div/>').text(area));
@@ -258,14 +261,15 @@ TODO:
 
     // add a region to data.$elem
     var addRegionDiv = function (data, index, attributes) {
+        var cssPrefix = data.settings.cssPrefix;
         var nr = index + 1; // we count regions from 1
         // create a digilib URL for this detail
         var url = attributes ? attributes.href : getRegionUrl(data, index);
-        var $regionDiv = $('<div class="region overlay" style="display:none"/>');
+        var $regionDiv = $('<div class="'+cssPrefix+'region '+cssPrefix+'overlay" style="display:none"/>');
         $regionDiv.attr("id", ID_PREFIX + nr);
         data.$elem.append($regionDiv);
         if (data.settings.showRegionNumbers) {
-            var $regionLink = $('<a class="regionnumber"/>');
+            var $regionLink = $('<a class="'+cssPrefix+'regionnumber"/>');
             if (attributes) $regionLink.attr(attributes);
             $regionLink.text(nr);
             $regionDiv.append($regionLink);
@@ -461,7 +465,6 @@ TODO:
         fn = digilib.fn;
         // import geometry classes
         geom = fn.geometry;
-        FULL_AREA = geom.rectangle(0,0,1,1);
         // add defaults, actions, buttons
         $.extend(digilib.defaults, defaults);
         $.extend(digilib.actions, actions);
@@ -472,10 +475,11 @@ TODO:
     var init = function (data) {
         console.debug('initialising regions plugin. data:', data);
         var $elem = data.$elem;
+        var cssPrefix = data.settings.cssPrefix;
         // regions array
         data.regions = [];
         // regions div
-        var $html = $('<div class="keep regionHTML"/>');
+        var $html = $('<div class="'+cssPrefix+'keep '+cssPrefix+'regionHTML"/>');
         $elem.append($html);
         data.$htmlDiv = $html;
         // install event handler

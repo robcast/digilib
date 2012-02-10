@@ -81,7 +81,9 @@
     var handleUpdate = function(evt) {
         console.debug("marks: handleUpdate");
         var data = this;
-        renderMarks(data);
+        if (data.marks != null && data.marks.length > 0) {
+            renderMarks(data);
+        }
     };
 
     /**
@@ -141,20 +143,20 @@
     var renderMarks = function(data) {
         if (data.marks == null || data.$img == null || data.imgTrafo == null)
             return;
-        console.debug("renderMarks: img=", data.$img, " imgtrafo=", data.imgTrafo);
+        var cssPrefix = data.settings.cssPrefix;
         var $elem = data.$elem;
         var marks = data.marks;
+        console.debug("renderMarks: marks="+marks);
         // clear marks
-        $elem.find('div.mark').remove();
+        $elem.find('div.'+cssPrefix+'mark').remove();
         for ( var i = 0; i < marks.length; i++) {
             var mark = marks[i];
             if (data.zoomArea.containsPosition(mark)) {
                 var mpos = data.imgTrafo.transform(mark);
                 console.debug("renderMarks: pos=", mpos);
                 // create mark
-                var html = '<div class="mark overlay">' + (i + 1) + '</div>';
+                var html = '<div class="'+cssPrefix+'mark '+cssPrefix+'overlay">' + (i + 1) + '</div>';
                 var $mark = $(html);
-                $mark.attr("id", "digilib-mark-" + (i + 1));
                 $elem.append($mark);
                 mpos.adjustDiv($mark);
             }

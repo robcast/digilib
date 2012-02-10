@@ -5,11 +5,11 @@ digilib buttons plugin
 (function($) {
 
     // plugin object with digilib data
-    var digilib;
+    var digilib = null;
     // the functions made available by digilib
-    var fn;
+    var fn = null;
     // affine geometry plugin
-    var geom;
+    var geom = null;
 
     var buttons = {
             reference : {
@@ -223,9 +223,9 @@ digilib buttons plugin
             // shows Calibration Div
             showCalibrationDiv : function (data) {
                 var $elem = data.$elem;
-                var settings = data.settings;
-                var $calDiv = $('#calibration');
-                var $input = $('#calibration-input');
+                var cssPrefix = data.settings.cssPrefix;
+                var $calDiv = $elem.find('.'+cssPrefix+'calibration');
+                var $input = $elem.find('.'+cssPrefix+'calibration-input');
                 $calDiv.fadeIn();
                 $input.focus();
             },
@@ -233,28 +233,24 @@ digilib buttons plugin
             // shows ScaleModeSelector
             showScaleModeSelector : function (data) {
                 var $elem = data.$elem;
-                var $div = $("#scalemode");
-                if ($div.is(":visible")) {
+                var cssPrefix = data.settings.cssPrefix;
+                var $div = $elem.find('div#'+cssPrefix+'scalemode');
+                if ($div.is(':visible')) {
                     $div.fadeOut();
                     return;
                     }
                 // select current mode
                 var mode = data.scaleMode;
                 $div.find('option').each(function () {
-                	$this = $(this);
-                	if ($this.attr('name') == mode) {
-                		$this.prop('selected', true);
-                	} else {
-                		$this.prop('selected', false);
-                	}
+                	$(this).prop('selected', $(this).attr('name') == mode);
                 });
-                var $button = $elem.find('div.button-scale');
+                var $button = $elem.find('div.'+cssPrefix+'button-scale');
                 var buttonRect = geom.rectangle($button);
-                var divRect = geom.rectangle($div);
                 $('body').on("click.scalemode", function(event) {
                         $div.fadeOut();
                         });
                 $div.fadeIn();
+                var divRect = geom.rectangle($div);
                 $div.offset({
                     left : Math.abs(buttonRect.x - divRect.width - 4),
                     top : buttonRect.y + 4
@@ -283,7 +279,7 @@ digilib buttons plugin
     // plugin initialization
     var init = function (data) {
         console.debug('initialising buttons plugin. data:', data);
-        // adjust insets
+        // add insets
         data.currentInsets['buttons'] = getInsets(data);
         // install event handler
         var $data = $(data);
@@ -470,38 +466,39 @@ digilib buttons plugin
     var setupCalibrationDiv = function (data) {
         var $elem = data.$elem;
         var settings = data.settings;
+        var cssPrefix = settings.cssPrefix;
         var html = '\
-            <div id="calibration" class="calibration">\
-                <div class="ruler">\
-                    <div class="cm">Please enter the length of this scale on your screen</div>\
+            <div id="'+cssPrefix+'calibration" class="'+cssPrefix+'calibration">\
+                <div class="'+cssPrefix+'ruler">\
+                    <div class="'+cssPrefix+'cm">Please enter the length of this scale on your screen</div>\
                     <div>\
-                        <input id="calibration-input" size="5"/> cm\
-                        <button class="calibration-button" id="calibrationOk">OK</button>\
-                        <button class="calibration-button" id="calibrationCancel">Cancel</button>\
+                        <input id="'+cssPrefix+'calibration-input" size="5"/> cm\
+                        <button class="'+cssPrefix+'calibration-button" id="'+cssPrefix+'calibrationOk">OK</button>\
+                        <button class="'+cssPrefix+'calibration-button" id="'+cssPrefix+'calibrationCancel">Cancel</button>\
                     </div>\
-                    <div class="calibration-error">Please enter a numeric value like this: 12.3</div>\
+                    <div class="'+cssPrefix+'calibration-error">Please enter a numeric value like this: 12.3</div>\
                 </div>\
             </div>';
         var $calDiv = $(html);
         $elem.append($calDiv);
-        var $input = $calDiv.find("input");
-        var $ok = $calDiv.find("#calibrationOk");
+        var $input = $calDiv.find('input');
+        var $ok = $calDiv.find('#'+cssPrefix+'calibrationOk');
         var $cancel = $calDiv.find("#calibrationCancel");
         data.calibrationDiv = $calDiv;
-        data.calibrationErrorDiv = $calDiv.find("div.calibration-error");
+        data.calibrationErrorDiv = $calDiv.find('div.'+cssPrefix+'calibration-error');
         data.calibrationInput = $input;
         centerOnScreen(data, $calDiv);
         var handler = function(event) {
             var _data = data;
-            if (event.keyCode == 27 || event.target.id == 'calibrationCancel') {
+            if (event.keyCode == 27 || event.target.id == cssPrefix+'calibrationCancel') {
                 $calDiv.fadeOut();
                 return false;
                 }
-            if (event.keyCode == 13 || event.target.id == 'calibrationOk') {
+            if (event.keyCode == 13 || event.target.id == cssPrefix+'calibrationOk') {
                 changeCalibration(_data);
                 return false;
                 }
-            _data.calibrationInput.removeClass('error');
+            _data.calibrationInput.removeClass(cssPrefix+'error');
             };
         $ok.on("click", handler);
         $cancel.on("click", handler);
@@ -513,17 +510,18 @@ digilib buttons plugin
     var setupScaleModeDiv = function (data) {
         var $elem = data.$elem;
         var settings = data.settings;
+        var cssPrefix = settings.cssPrefix;
         var currentMode = digilib.fn.getScaleMode(data);
-        var $scaleModeDiv = $('<div id="scalemode" style="display:none; z-index:9999; position:absolute"/>');
+        var $scaleModeDiv = $('<div id="'+cssPrefix+'scalemode" style="display:none; z-index:9999; position:absolute"/>');
         data.scaleModeDiv = $scaleModeDiv;
-        var $scaleModeSelect = $('<select class="scalemode" />');
+        var $scaleModeSelect = $('<select class="'+cssPrefix+'scalemode" />');
         $elem.append($scaleModeDiv);
         $scaleModeDiv.append($scaleModeSelect);
         for (var i = 0; i < modes.length; i++) {
             var mode = modes[i];
-            var select = (mode.name == currentMode) ? ' select="select"' : '';
+            var selected = (mode.name == currentMode) ? ' selected="selected"' : '';
             $scaleModeSelect.append($('<option name="'
-                    + mode.name + '"' + select + '>' 
+                    + mode.name + '"' + selected + '>' 
                     + mode.label + '</option>'));
         }
         $scaleModeDiv.on("click.scalemode", function(event) {
@@ -557,17 +555,20 @@ digilib buttons plugin
   		var dpi = fn.cropFloat(w / parseFloat(cm) * 2.54);
   		console.debug('width', w, 'cm', cm, 'input dpi:', dpi);
   		if(!fn.isNumber(dpi)) {
-  		    $input.addClass('error');
+  		    $input.addClass(data.settings.cssPrefix+'error');
   		    return;
   		    }
   		digilib.actions.calibrate(data, dpi);
         $calDiv.fadeOut();
     };
 
-    // creates HTML structure for a single button
+    /**
+     *  creates HTML structure for a single button
+     */
     var createButton = function (data, $div, buttonName) {
         var $elem = data.$elem;
         var settings = data.settings;
+        var cssPrefix = settings.cssPrefix;
         var mode = settings.interactionMode;
         var imagePath = settings.buttonSettings[mode].imagePath;
         // make relative imagePath absolute
@@ -580,15 +581,15 @@ digilib buttons plugin
         var tooltip = buttonConfig.tooltip;
         var icon = imagePath + buttonConfig.icon;
         // construct the button html
-        var $button = $('<div class="button"></div>');
+        var $button = $('<div class="'+cssPrefix+'button"></div>');
         var $a = $('<a href=""/>');
-        var $img = $('<img class="button"/>');
+        var $img = $('<img class="'+cssPrefix+'button"/>');
         $div.append($button);
         $button.append($a);
         $a.append($img);
         // add attributes and bindings
         $button.attr('title', tooltip);
-        $button.addClass('button-' + buttonName);
+        $button.addClass(cssPrefix+'button-'+buttonName);
         $img.attr('src', icon);
         // create handler for the buttons
         $button.on('click.digilib', (function () {
@@ -616,6 +617,7 @@ digilib buttons plugin
         var $elem = data.$elem;
         var settings = data.settings;
         var mode = settings.interactionMode;
+        var cssPrefix = settings.cssPrefix;
         var buttonSettings = settings.buttonSettings[mode];
         var buttonGroup = buttonSettings.buttonSets[buttonSetIdx];
         if (buttonGroup == null) {
@@ -623,7 +625,7 @@ digilib buttons plugin
             return;
         }
         // button divs are marked with class "keep"
-        var $buttonsDiv = $('<div class="keep buttons"/>');
+        var $buttonsDiv = $('<div class="'+cssPrefix+'keep '+cssPrefix+'buttons"/>');
         var buttonNames = buttonSettings[buttonGroup];
         for (var i = 0; i < buttonNames.length; i++) {
             var buttonName = buttonNames[i];
@@ -649,12 +651,13 @@ digilib buttons plugin
     // display more (or less) button sets
     var showButtons = function (data, more, setIdx, animated) {
         var atime = animated ? 'fast': 0;
+        var cssPrefix = data.settings.cssPrefix;
         // get button width from settings
         var mode = data.settings.interactionMode;
         var btnWidth = data.settings.buttonSettings[mode].buttonSetWidth;
         if (more) {
             // add set
-            var $otherSets = data.$elem.find('div.buttons:visible');
+            var $otherSets = data.$elem.find('div.'+cssPrefix+'buttons:visible');
             var $set;
             if (data.$buttonSets && data.$buttonSets[setIdx]) {
                 // set exists
@@ -681,7 +684,7 @@ digilib buttons plugin
             // hide last set
             $set.hide();
             // take remaining sets and move right
-            var $otherSets = data.$elem.find('div.buttons:visible');
+            var $otherSets = data.$elem.find('div.'+cssPrefix+'buttons:visible');
             $otherSets.animate({right : '-='+btnWidth+'px'}, atime);
         }
         return true;
@@ -689,14 +692,15 @@ digilib buttons plugin
 
     // check for buttons to highlight TODO: improve this!
     var highlightButtons = function (data, name, on) {
-        var $buttons = data.$elem.find('div.buttons:visible'); // include hidden?
+        var cssPrefix = data.settings.cssPrefix;
+        var $buttons = data.$elem.find('div.'+cssPrefix+'buttons:visible'); // include hidden?
         // add a class for highlighted button
         var highlight = function (name, on) {
-            var $button = $buttons.find('div.button-' + name);
+            var $button = $buttons.find('div.'+cssPrefix+'button-' + name);
             if (on) {
-                $button.addClass('button-on');
+                $button.addClass(cssPrefix+'button-on');
             } else {
-                $button.removeClass('button-on');
+                $button.removeClass(cssPrefix+'button-on');
             }
         };
         if (name != null) {
