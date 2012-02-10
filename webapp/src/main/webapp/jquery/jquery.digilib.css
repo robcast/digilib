@@ -3,31 +3,31 @@
  *
  * Martin Raspe, Robert Casties, 11.1.2011
  */
-div.digilib div.scaler {
+div.dl-digilib div.dl-scaler {
 	background-color: grey;
 	z-index: 0;
 	width: 0px;
 	height: 0px;
 }
 
-div.digilib div.birdview {
+div.dl-digilib div.dl-birdview {
 	border: 1px solid white;
 	z-index: 10;
 }
 
-div.digilib div.zoomrect {
+div.dl-digilib div.dl-zoomrect {
 	position: absolute;
 	border: 2px solid #ff0000;
 	z-index: 100;
 }
 
-div.digilib div.birdzoom {
+div.dl-digilib div.dl-birdzoom {
     position: absolute;
     border: 2px solid #ff0000;
     z-index: 100;
 }
 
-div.digilib div.mark {
+div.dl-digilib div.dl-mark {
 	position: absolute;
 	color: white;
 	background: url('../greyskin/mark-bg-16.png');
@@ -41,7 +41,7 @@ div.digilib div.mark {
 	z-index: 10;
 }
 
-div.digilib div.about {
+div.dl-digilib div.dl-about {
 	position: absolute;
 	width: 200px;
 	top: 100px;
@@ -56,25 +56,25 @@ div.digilib div.about {
 	z-index: 1000;
 }
 
-div.digilib div.region {
+div.dl-digilib div.dl-region {
 	position: absolute;
 	background-color: red;
     opacity: 0.3;
 	filter:progid:DXImageTransform.Microsoft.Alpha(opacity=30); 
 }
 
-div.digilib div.region:hover {
+div.dl-digilib div.dl-region:hover {
 	opacity: 0.5;
 	filter:progid:DXImageTransform.Microsoft.Alpha(opacity=50); 
 }
 
-div.digilib div.region {
+div.dl-digilib div.dl-region {
     color: white;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size: 11px;
 }
 
-div.digilib div.region a.regionnumber {
+div.dl-digilib div.dl-region a.dl-regionnumber {
     color: white;
     text-decoration: none;
 	font-weight: bold;
@@ -86,11 +86,11 @@ div.digilib div.region a.regionnumber {
     display: inline-block;
 }
 
-div.digilib div.regioncontent {
+div.dl-digilib div.dl-regioncontent {
     display: none;
 }
 
-div.digilib div.regionHTML {
+div.dl-digilib div.dl-regionHTML {
     display: none;
     position: absolute;
 	top: 100px;
@@ -103,14 +103,14 @@ div.digilib div.regionHTML {
 	z-index: 1000;
 }
 
-div.digilib div.regionHTML a {
+div.dl-digilib div.dl-regionHTML a {
     color: white;
     text-decoration: none;
     font-size: 11px;
 	font-weight: bold;
 }
 
-div.digilib div.calibration {
+div.dl-digilib div.dl-calibration {
 	background: url('img/blue.png');
 	position: absolute;
 	border: 1px solid lightcyan;
@@ -119,7 +119,7 @@ div.digilib div.calibration {
 	z-index: 9999;
 	}
 
-div.digilib div.ruler {
+div.dl-digilib div.dl-ruler {
 	width: 100%;
 	height: 100%;
 	padding-bottom: 10px;
@@ -131,17 +131,17 @@ div.digilib div.ruler {
 	background: url('img/ruler-top.gif') 0px -1px repeat-x;
 	}
 
-div.digilib div.cm {
+div.dl-digilib div.dl-cm {
 	padding: 5px;
 	}
 
-div.digilib div.calibration-error {
+div.dl-digilib div.dl-calibration-error {
 	color: red;
 	padding: 10px;
 	display: none;
 	}
 
-div.digilib button.calibration-button {
+div.dl-digilib button.dl-calibration-button {
 	margin: 0px 10px;
 	border: 1px solid lightcyan;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
@@ -151,16 +151,16 @@ div.digilib button.calibration-button {
 	background-color: transparent;
 	}
 
-div.digilib input.calibration-input {
+div.dl-digilib input.dl-calibration-input {
 	margin: 0px 10px;
 	}
 
-div.digilib input.error {
+div.dl-digilib input.dl-error {
 	color: red;
 	background-color: khaki;
 	}
 
-div.digilib div.slider {
+div.dl-digilib div.dl-slider {
 	background: url('img/blue.png');
 	display: none;
 	border: 1px solid lightcyan;
@@ -170,14 +170,14 @@ div.digilib div.slider {
 	height: 16px;
 	}
 
-div.digilib div.sliderbutton {
+div.dl-digilib div.dl-sliderbutton {
 	border: 3px solid lightcyan;
 	background-color: cyan;
 	position: absolute;
 	z-index: 10000;
 	}
 
-div.infobutton {
+div.dl-infobutton {
     background-color: white;
     color: grey;
     padding: 0px 4px;
@@ -185,37 +185,37 @@ div.infobutton {
     float: left;
 }
 
-div.info {
+div.dl-info {
     clear: both;
     display: none;
     margin: 10px;
 }
 
-div.infoheader {
+div.dl-infoheader {
     width: 300px;
     margin-bottom: 20px;
 }
 
 /* scroll arrows */
-div.digilib table.scalertable {
+div.dl-digilib table.dl-scalertable {
 	border: 0;
 	padding: 0;
 }
-div.digilib table.scalertable td {
+div.dl-digilib table.dl-scalertable td {
     padding: 0;
 }
-div.digilib table.scalertable td.arrow {
+div.dl-digilib table.dl-scalertable td.dl-arrow {
 }
-div.digilib table.scalertable td.arrow:hover {
+div.dl-digilib table.dl-scalertable td.dl-arrow:hover {
     background-color: black;
 	opacity: 0.3;
 }
-div.digilib table.scalertable img.button {
+div.dl-digilib table.dl-scalertable img.button {
     opacity: 1;
 }
 
 /* special definitions for fullscreen */
-div.digilib.dl_fullscreen div.buttons {
+div.dl-digilib.dl_fullscreen div.dl-buttons {
 	position: fixed;
 	right: 0px;
 	top: 0px;
@@ -224,28 +224,28 @@ div.digilib.dl_fullscreen div.buttons {
 	z-index: 200;
 }
 
-div.digilib.dl_fullscreen div.buttons div.button:hover {
+div.dl-digilib.dl_fullscreen div.dl-buttons div.dl-button:hover {
 	background-image: url('img/fullscreen/corona.png');
 	background-repeat: no-repeat;
 }
 
-div.digilib.dl_fullscreen div.button-on {
+div.dl-digilib.dl_fullscreen div.dl-button-on {
 	background-image: url('img/fullscreen/whitedisc.png');
 	background-repeat: no-repeat;
 }
 
-div.digilib.dl_fullscreen div.birdview {
+div.dl-digilib.dl_fullscreen div.dl-birdview {
 	position: fixed;
 	bottom: 8px;
 	right: 48px;
 }
 
 /* special definitions for embedded */
-div.digilib.dl_embedded {
+div.dl-digilib.dl_embedded {
 	position: relative;
 }
 
-div.digilib.dl_embedded div.buttons {
+div.dl-digilib.dl_embedded div.dl-buttons {
 	position: absolute;
 	right: 0px;
 	top: 0px;
@@ -255,15 +255,15 @@ div.digilib.dl_embedded div.buttons {
 	z-index: 100;
 }
 
-div.digilib.dl_embedded div.buttons div.button:hover {
+div.dl-digilib.dl_embedded div.dl-buttons div.dl-button:hover {
 	background-color: black;
 }
 
-div.digilib.dl_embedded div.button-on {
+div.dl-digilib.dl_embedded div.dl-button-on {
 	background-color: darkgreen;
 }
 
-div.digilib.dl_embedded div.birdview {
+div.dl-digilib.dl_embedded div.dl-birdview {
 	position: absolute;
 	bottom: 0px;
 	right: 0px;

@@ -38,7 +38,7 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.1.3b1',
+        'version' : 'jquery.digilib.js 2.1.4a1',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -47,6 +47,8 @@ if (typeof console === 'undefined') {
         'digilibBaseUrl' : null,
         // base URL to Scaler servlet (usually digilibBaseUrl+'/servlet/Scaler')
         'scalerBaseUrl' : null,
+        // prefix of digilib classes in CSS styles
+        'cssPrefix' : 'dl-',
         // list of Scaler parameters
         'scalerParamNames' : ['fn','pn','dw','dh','ww','wh','wx','wy','ws','mo',
                               'rot','cont','brgt','rgbm','rgba','ddpi','ddpix','ddpiy'],
@@ -900,7 +902,7 @@ if (typeof console === 'undefined') {
         var scalerUrl;
         if (settings.interactionMode === 'fullscreen') {
             // fullscreen
-            $elem.addClass('dl_fullscreen');
+            $elem.addClass(cssPrefix+'fullscreen');
             var imgSize = getFullscreenImgSize(data);
             data.fullscreenImgSize = imgSize;
             // fitwidth/height omits destination height/width
@@ -914,7 +916,7 @@ if (typeof console === 'undefined') {
             $img = $('<img/>');
         } else {
             // embedded mode -- try to keep img tag
-            $elem.addClass('dl_embedded');
+            $elem.addClass(cssPrefix+'embedded');
             scalerUrl = getScalerUrl(data);
             $img = $elem.find('img');
             if ($img.length > 0) {
@@ -936,11 +938,11 @@ if (typeof console === 'undefined') {
         }
         // create new inner html, keeping buttons and content marked with "keep" class
         $elem.contents(":not(.keep)").remove();
-        var $scaler = $('<div class="scaler"/>');
+        var $scaler = $('<div class="'+cssPrefix+'scaler"/>');
         // scaler should be the first child element?
         $elem.prepend($scaler);
         $scaler.append($img);
-        $img.addClass('pic');
+        $img.addClass(cssPrefix+'pic');
         data.$scaler = $scaler;
         data.$img = $img;
         // set busy cursor
@@ -958,10 +960,10 @@ if (typeof console === 'undefined') {
     var setupAboutDiv = function (data) {
         var $elem = data.$elem;
         var settings = data.settings;
-        var $aboutDiv = $('<div class="about" style="display:none"/>');
+        var $aboutDiv = $('<div class="'+cssPrefix+'about" style="display:none"/>');
         var $header = $('<p>Digilib Image Viewer</p>');
         var $link = $('<a/>');
-        var $logo = $('<img class="logo" title="digilib"/>');
+        var $logo = $('<img class="'+cssPrefix+'logo" title="digilib"/>');
         var $content = $('<p/>');
         $elem.append($aboutDiv);
         $aboutDiv.append($header);
@@ -1117,7 +1119,8 @@ if (typeof console === 'undefined') {
     var handleChangeZoomArea = function (evt, newZa) {
     	console.debug("handleChangeZoomArea:", newZa);
     	var data = this;
-        data.$elem.find(".overlay").hide(); // hide all overlays (marks/regions)
+    	// hide all overlays (marks/regions)
+        data.$elem.find('.'+cssPrefix+'overlay').hide();
     	setPreviewBg(data, newZa);
     };
     
@@ -1149,7 +1152,7 @@ if (typeof console === 'undefined') {
         $elem = data.$elem;
         $scaler = data.$scaler;
         var pt1, pt2;
-        var $zoomDiv = $('<div class="zoomrect" style="display:none"/>');
+        var $zoomDiv = $('<div class="'+cssPrefix+'zoomrect" style="display:none"/>');
         $elem.append($zoomDiv);
         // $zoomDiv.css(data.settings.zoomrectStyle);
         var picRect = geom.rectangle($scaler);
