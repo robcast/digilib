@@ -101,17 +101,13 @@ digilib bird's eye view plugin
     	// TODO: do we need this?
         console.debug("birdseye: handleRedisplay");
         var data = this;
-        if (data.settings.isBirdDivVisible) {
-            updateBirdDiv(data);
-        }
+        actions.showBirdDiv(data, data.settings.isBirdDivVisible);
     };
 
     var handleChangeZoomArea = function (evt, zoomArea) {
         //console.debug("birdseye: handleDragZoom za="+zoomArea);
     	var data = this;
-        if (data.settings.isBirdDivVisible) {
-            updateBirdZoom(data, zoomArea);
-        }
+        updateBirdZoom(data, zoomArea);
     };
 
     // returns URL for bird's eye view image
@@ -223,6 +219,7 @@ digilib bird's eye view plugin
 
     // move bird zoom indicator to reflect zoomed detail area
     var updateBirdZoom = function(data, zoomArea) {
+        if (!data.settings.isBirdDivVisible) return;
         var birdRect = data.birdTrafo.transform(zoomArea);
         var $birdZoom = data.$birdZoom;
         // acount for border width
