@@ -240,6 +240,11 @@ div.dl-digilib.dl-fullscreen div.dl-birdview {
 	right: 48px;
 }
 
+/* no borders for button images */
+div.dl-digilib a img.dl-button {
+    border:none;
+}
+
 /* special definitions for embedded */
 div.dl-digilib.dl-embedded {
 	position: relative;
@@ -268,4 +273,5 @@ div.dl-digilib.dl-embedded div.dl-birdview {
 	bottom: 0px;
 	right: 0px;
 }
+
 
