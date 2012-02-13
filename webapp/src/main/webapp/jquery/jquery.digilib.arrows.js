@@ -22,12 +22,12 @@
                 // path to button images (must end with a slash)
                 'imagePath' : 'img/fullscreen/',
                 'arrowSetSize' : 18,
-                'arrowSet' : [ "up", "down", "left", "right" ],
+                'arrowSet' : [ "up", "down", "left", "right" ]
             },
             'embedded' : {
                 'imagePath' : 'img/embedded/16/',
                 'arrowSetSize' : 9,
-                'arrowSet' : [ "up", "down", "left", "right" ],
+                'arrowSet' : [ "up", "down", "left", "right" ]
             }
         }
     };
