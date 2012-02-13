@@ -380,7 +380,7 @@ digilib buttons plugin
         var cssPrefix = digilibdata.settings.cssPrefix;
         var defaults = {
             'id' : 'slider',
-            'class' : cssPrefix+'slider',
+            'cssclass' : cssPrefix+'slider',
             'label' : 'Slider',
             'direction' : 'x',
             'handlesize' : 16,
@@ -400,8 +400,8 @@ digilib buttons plugin
                     var data = $this.data('settings');
                     if (!data) {
                         $this.data('settings', settings);
-                        $this.addClass(settings.class);
-                        var $sliderhandle = $('<div class="'+settings.class+'handle" />');
+                        $this.addClass(settings.cssclass);
+                        var $sliderhandle = $('<div class="'+settings.cssclass+'handle" />');
                         settings.$handle = $sliderhandle;
                         $this.append($sliderhandle);
                         }
