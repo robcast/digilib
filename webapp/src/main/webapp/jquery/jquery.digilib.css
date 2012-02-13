@@ -167,12 +167,12 @@ div.dl-digilib div.dl-slider {
 	position: absolute;
 	z-index: 9999;
 	width: 400px;
-	height: 16px;
+	height: 6px;
 	}
 
-div.dl-digilib div.dl-sliderbutton {
-	border: 3px solid lightcyan;
-	background-color: cyan;
+div.dl-digilib div.dl-sliderhandle {
+	border: 1px solid white;
+	background-color: blue;
 	position: absolute;
 	z-index: 10000;
 	}

@@ -880,7 +880,7 @@ if (typeof console === 'undefined') {
         };
         var imgW = winW - insets.x;
         var imgH = winH - insets.y;
-        console.debug('screen w/h:', winW, winH, 'window.width', $win.width(), 'img w/h:', imgW, imgH);
+        console.debug('getFullscreenImgSize - screen w/h:', winW, winH, 'window.width', $win.width(), 'img w/h:', imgW, imgH);
         return geom.size(imgW, imgH);
     };
 

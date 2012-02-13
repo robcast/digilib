@@ -12,147 +12,202 @@ digilib buttons plugin
     var geom = null;
 
     var buttons = {
-            reference : {
-                onclick : "reference",
-                tooltip : "get a reference URL",
-                icon : "reference.png"
-                },
-            zoomin : {
-                onclick : ["zoomBy", 1.4],
-                tooltip : "zoom in",
-                icon : "zoom-in.png"
-                },
-            zoomout : {
-                onclick : ["zoomBy", 0.7],
-                tooltip : "zoom out",
-                icon : "zoom-out.png"
-                },
-            zoomarea : {
-                onclick : "zoomArea",
-                tooltip : "zoom area",
-                icon : "zoom-area.png"
-                },
-            zoomfull : {
-                onclick : "zoomFull",
-                tooltip : "view the whole image",
-                icon : "zoom-full.png"
-                },
-            pagewidth : {
-                onclick : ["zoomFull", "width"],
-                tooltip : "page width",
-                icon : "pagewidth.png"
-                },
-            back : {
-                onclick : ["gotoPage", "-1"],
-                tooltip : "goto previous image",
-                icon : "back.png"
-                },
-            fwd : {
-                onclick : ["gotoPage", "+1"],
-                tooltip : "goto next image",
-                icon : "fwd.png"
-                },
-            page : {
-                onclick : "gotoPage",
-                tooltip : "goto image number",
-                icon : "page.png"
-                },
-            help : {
-                onclick : "showAboutDiv",
-                tooltip : "about Digilib",
-                icon : "help.png"
-                },
-            reset : {
-                onclick : "reset",
-                tooltip : "reset image",
-                icon : "reset.png"
-                },
-            hmir : {
-                onclick : ["mirror", "h"],
-                tooltip : "mirror horizontally",
-                icon : "mirror-horizontal.png"
-                },
-            vmir : {
-                onclick : ["mirror", "v"],
-                tooltip : "mirror vertically",
-                icon : "mirror-vertical.png"
-                },
-            rot : {
-                onclick : "rotate",
-                //onclick : ["slider", 0, 360, "rot"],
-                tooltip : "rotate image",
-                icon : "rotate.png"
-                },
-            brgt : {
-                onclick : "brightness",
-                // onclick : ["slider", -255, 255, "brgt"],
-                tooltip : "set brightness",
-                icon : "brightness.png"
-                },
-            cont : {
-                onclick : "contrast",
-                //onclick : ["slider", -8, 8, "cont"],
-                tooltip : "set contrast",
-                icon : "contrast.png"
-                },
-            rgb : {
-                onclick : "javascript:setParamWin('rgb', '...')",
-                tooltip : "set rgb values",
-                icon : "rgb.png"
-                },
-            quality : {
-                onclick : "setQuality",
-                tooltip : "set image quality",
-                icon : "quality.png"
-                },
-            size : {
-                onclick : "javascript:toggleSizeMenu()",
-                tooltip : "set page size",
-                icon : "size.png"
-                },
-            calibrationx : {
-                onclick : "showCalibrationDiv",
-                tooltip : "calibrate screen resolution",
-                icon : "calibration-x.png"
-                },
-            scale : {
-                onclick : "showScaleModeSelector",
-                tooltip : "change image scale",
-                icon : "original-size.png"
-                },
-            toggleoptions : {
-                onclick : "moreButtons",
-                tooltip : "more options",
-                icon : "options.png"
-                },
-            moreoptions : {
-                onclick : ["moreButtons", "+1"],
-                tooltip : "more options",
-                icon : "options.png"
-                },
-            lessoptions : {
-                onclick : ["moreButtons", "-1"],
-                tooltip : "less options",
-                icon : "options.png"
-                },
-            SEP : {
-                icon : "sep.png"
-                }
-            };
+        reference : {
+            onclick : "reference",
+            tooltip : "get a reference URL",
+            icon : "reference.png"
+            },
+        zoomin : {
+            onclick : ["zoomBy", 1.4],
+            tooltip : "zoom in",
+            icon : "zoom-in.png"
+            },
+        zoomout : {
+            onclick : ["zoomBy", 0.7],
+            tooltip : "zoom out",
+            icon : "zoom-out.png"
+            },
+        zoomarea : {
+            onclick : "zoomArea",
+            tooltip : "zoom area",
+            icon : "zoom-area.png"
+            },
+        zoomfull : {
+            onclick : "zoomFull",
+            tooltip : "view the whole image",
+            icon : "zoom-full.png"
+            },
+        pagewidth : {
+            onclick : ["zoomFull", "width"],
+            tooltip : "page width",
+            icon : "pagewidth.png"
+            },
+        back : {
+            onclick : ["gotoPage", "-1"],
+            tooltip : "goto previous image",
+            icon : "back.png"
+            },
+        fwd : {
+            onclick : ["gotoPage", "+1"],
+            tooltip : "goto next image",
+            icon : "fwd.png"
+            },
+        page : {
+            onclick : "gotoPage",
+            tooltip : "goto image number",
+            icon : "page.png"
+            },
+        help : {
+            onclick : "showAboutDiv",
+            tooltip : "about Digilib",
+            icon : "help.png"
+            },
+        reset : {
+            onclick : "reset",
+            tooltip : "reset image",
+            icon : "reset.png"
+            },
+        hmir : {
+            onclick : ["mirror", "h"],
+            tooltip : "mirror horizontally",
+            icon : "mirror-horizontal.png"
+            },
+        vmir : {
+            onclick : ["mirror", "v"],
+            tooltip : "mirror vertically",
+            icon : "mirror-vertical.png"
+            },
+        rot : {
+            onclick : "rotate",
+            onclick : ["slider", "rot"],
+            tooltip : "rotate image",
+            icon : "rotate.png"
+            },
+        brgt : {
+            onclick : "brightness",
+            //onclick : ["slider", "brgt"],
+            tooltip : "set brightness",
+            icon : "brightness.png"
+            },
+        cont : {
+            onclick : "contrast",
+            //onclick : ["slider", "cont"],
+            tooltip : "set contrast",
+            icon : "contrast.png"
+            },
+        rgb : {
+            onclick : "javascript:setParamWin('rgb', '...')",
+            //onclick : ["multislider", "rgb"],
+            tooltip : "set rgb values",
+            icon : "rgb.png"
+            },
+        quality : {
+            onclick : "setQuality",
+            tooltip : "set image quality",
+            icon : "quality.png"
+            },
+        size : {
+            onclick : "javascript:toggleSizeMenu()",
+            tooltip : "set page size",
+            icon : "size.png"
+            },
+        calibrationx : {
+            onclick : "showCalibrationDiv",
+            tooltip : "calibrate screen resolution",
+            icon : "calibration-x.png"
+            },
+        scale : {
+            onclick : "showScaleModeSelector",
+            tooltip : "change image scale",
+            icon : "original-size.png"
+            },
+        toggleoptions : {
+            onclick : "moreButtons",
+            tooltip : "more options",
+            icon : "options.png"
+            },
+        moreoptions : {
+            onclick : ["moreButtons", "+1"],
+            tooltip : "more options",
+            icon : "options.png"
+            },
+        lessoptions : {
+            onclick : ["moreButtons", "-1"],
+            tooltip : "less options",
+            icon : "options.png"
+            },
+        SEP : {
+            icon : "sep.png"
+            }
+        };
+
+    var sliders = {
+        rot : {
+            label : "Rotation angle",
+            tooltip : "rotate image",
+            icon : "rotate.png",
+            'min' : 0,
+            'max' : 360,
+            'val' : 90
+            },
+        brgt : {
+            label : "Brightness: Value to add",
+            tooltip : "set brightness",
+            icon : "brightness.png",
+            'min' : -255,
+            'max' : 255,
+            'val' : 0
+            },
+        cont : {
+            label : "Contrast: Value to multiply",
+            tooltip : "set contrast",
+            icon : "contrast.png",
+            'min' : -8,
+            'max' : 8,
+            'val' : 0
+        },
+        red : {
+            label : "Red value",
+            tooltip : "set red value",
+            icon : "rgb.png",
+            'min' : 0,
+            'max' : 255,
+            'val' : 127
+            },
+
+        green : {
+            label : "Green value",
+            tooltip : "set green value",
+            icon : "rgb.png",
+            'min' : 0,
+            'max' : 255,
+            'val' : 127
+            },
+
+        blue : {
+            label : "Blue value",
+            tooltip : "set blue value",
+            icon : "rgb.png",
+            'min' : 0,
+            'max' : 255,
+            'val' : 127
+            },
+        };
 
     var modes = [
-            {   name : "screen", 
-                label : "fit to screen",
-                tooltip : "scales the graphic file so that it fills the screen"
-            },
-            {   name : "pixel",
-                label : "pixel by pixel",
-                tooltip : "all pixels of the current part of the graphic file are shown"
-            },
-            {   name : "size",
-                label : "original size",
-                tooltip : "tries to display the current part of the graphic file in the size of the orginal resource (after screen calibration)" }
-            ];
+        {   name : "screen", 
+            label : "fit to screen",
+            tooltip : "scales the graphic file so that it fills the screen"
+        },
+        {   name : "pixel",
+            label : "pixel by pixel",
+            tooltip : "all pixels of the current part of the graphic file are shown"
+        },
+        {   name : "size",
+            label : "original size",
+            tooltip : "tries to display the current part of the graphic file in the size of the orginal resource (after screen calibration)" 
+        }
+    ];
 
     var defaults = {
         // buttons (reference added later)
@@ -210,14 +265,16 @@ digilib buttons plugin
                 // persist setting
                 fn.storeOptions(data);
             },
-            // brightness slider
-            slider : function (data, min, max, paramname) {
+            // single slider control for parameters
+            slider : function (data, paramname) {
                 var $elem = data.$elem;
-                var settings = data.settings;
                 var $div = $('<div/>');
+                var options = sliders[paramname];
+                console.debug ('Creating slider', $div, options);
                 $div.attr('id', paramname + "-slider");
-                $div.slider({'min' : min, 'max' : max, 'param' : paramname });
+                $div.slider(options);
                 $elem.append($div);
+                centerOnScreen(data, $div);
                 $div.slider('show');
             },
             // shows Calibration Div
@@ -310,7 +367,7 @@ digilib buttons plugin
         var insets = {'x' : bw, 'y' : 0};
         return insets;
     };
-    
+
     var centerOnScreen = function (data, $div) {
         var r = geom.rectangle($div);
         var s = fn.getFullscreenRect(data);
@@ -320,12 +377,13 @@ digilib buttons plugin
 
     // slider
     var sliderPlugin = function($, digilibdata) {
+        var cssPrefix = digilibdata.settings.cssPrefix;
         var defaults = {
             'id' : 'slider',
-            'class' : 'slider',
+            'class' : cssPrefix+'slider',
+            'label' : 'Slider',
             'direction' : 'x',
-            'param' : '',
-            'size' : 10,
+            'handlesize' : 16,
             'min' : 0,
             'max' : 100,
             'val' : 33
@@ -337,15 +395,15 @@ digilib buttons plugin
                     var $this = $(this);
                     // var settings = data.settings;
                     var settings = $.extend( defaults, options);
-                    console.debug('slider instance data:', settings);
+                    console.debug('New slider instance: ', $this, ' data:', settings);
                     $this.data('digilib', digilibdata);
                     var data = $this.data('settings');
                     if (!data) {
                         $this.data('settings', settings);
                         $this.addClass(settings.class);
-                        var $sliderbutton = $('<div class="sliderbutton" />');
-                        settings.$button = $sliderbutton;
-                        $this.append($sliderbutton);
+                        var $sliderhandle = $('<div class="'+settings.class+'handle" />');
+                        settings.$handle = $sliderhandle;
+                        $this.append($sliderhandle);
                         }
                 });
             },
@@ -358,20 +416,20 @@ digilib buttons plugin
             setpos : function() {
                 var $this = this;
                 var settings = $this.data('settings');
-                var $sliderbutton = settings.$button;
+                var $sliderhandle = settings.$handle;
                 var delta = settings.val / Math.abs(settings.max - settings.min);
                 var r = geom.rectangle($this);
-                var s = geom.rectangle(0, 0, settings.size, settings.size);
+                var s = geom.rectangle(0, 0, settings.handlesize, settings.handlesize);
                 var newpos;
                 if (settings.direction == 'y') {
-                    s.width = r.width;
+                    // s.width = r.width;
                     newpos = geom.position(r.x + r.width / 2, r.y + delta * r.height);
                     }
                 else {
-                    s.height = r.height;
+                    // s.height = r.height;
                     newpos = geom.position(r.x + delta * r.width, r.y + r.height / 2);
                     }
-                s.setCenter(newpos).adjustDiv($sliderbutton);
+                s.setCenter(newpos).adjustDiv($sliderhandle);
                 return $this;
             },
             getval : function(data) {
@@ -381,10 +439,9 @@ digilib buttons plugin
             show : function(data) {
                 var $this = this;
                 var settings = $this.data('settings');
-                var $sliderbutton = settings.$button;
+                var $sliderhandle = settings.$handle;
                 var $body = $('body');
                 $this.fadeIn();
-                centerOnScreen(data, $this);
                 $this.slider('setpos');
                 var r = geom.rectangle($this);
                 var pt;
@@ -401,7 +458,7 @@ digilib buttons plugin
                 // mousemove handler: move slider
                 var sliderMove = function (event) {
                     pt = geom.position(event);
-                    var s = geom.rectangle($sliderbutton);
+                    var s = geom.rectangle($sliderhandle);
                     var c = s.getCenter();
                     var newpos;
                     if (settings.direction == 'y') {
@@ -410,7 +467,7 @@ digilib buttons plugin
                     else {
                         newpos = geom.position(Math.min(Math.max(r.x, pt.x), r.x + r.width), c.y);
                         }
-                    s.setCenter(newpos).adjustDiv($sliderbutton);
+                    s.setCenter(newpos).adjustDiv($sliderhandle);
                     return false;
                 };
 
@@ -419,9 +476,8 @@ digilib buttons plugin
                     pt = geom.position(event);
                     $body.off("mousemove.slider");
                     $body.off("mouseup.slider");
-                    // $overlay.remove();
-                    $this.slider('getval');
-                    $this.slider('destroy');
+                    // $this.slider('getval');
+                    // $this.slider('destroy');
                     // settings.callback(settings.val);
                     fn.redisplay(data);
                     return false;
@@ -456,7 +512,7 @@ digilib buttons plugin
                 return methods.init.apply( this, arguments );
                 }
             else {
-                $.error( 'Method ' +  method + ' does not exist on digilib.slider!' );
+                $.error( 'Method ' +  method + ' does not exist on digilib.handles.slider!' );
                 }
         };
     };
