@@ -38,7 +38,7 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.1.4b1',
+        'version' : 'jquery.digilib.js 2.1.5b1',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -456,6 +456,24 @@ if (typeof console === 'undefined') {
             return url;
         },
 
+        /** 
+         * Returns URL to the full digilib.html with the current parameters.
+         * Redirects immediately with mode=open.
+         * 
+         * @param data
+         * @param mode
+         */
+        digilibUrl : function (data, mode) {
+            var baseUrl = data.settings.digilibBaseUrl + '/jquery/digilib.html';
+            var url = getDigilibUrl(data, baseUrl);
+            if (mode === 'open') {
+                // redirect
+                window.location = url;
+            }
+            return url;
+        },
+        
+        
         /** set image quality
          * 
          * @param data
@@ -616,7 +634,7 @@ if (typeof console === 'undefined') {
     /** returns URL and query string for current digilib
      * 
      */
-    var getDigilibUrl = function (data) {
+    var getDigilibUrl = function (data, baseUrl) {
         packParams(data);
         var settings = data.settings;
         var paramList = settings.additionalParamNames.concat(settings.digilibParamNames);
@@ -631,13 +649,15 @@ if (typeof console === 'undefined') {
         	});
         }
         var queryString = getParamString(settings, paramList, defaults);
-        // take url from current location
-        var url = window.location.href;
-        var pos = url.indexOf('?');
-        if (pos > -1) {
-        	url = url.substring(0, pos);
+        if (baseUrl == null) {
+            // take url from current location
+            baseUrl = window.location.href;
+            var pos = baseUrl.indexOf('?');
+            if (pos > -1) {
+                baseUrl = baseUrl.substring(0, pos);
+            }
         }
-        return url + '?' + queryString;
+        return baseUrl + '?' + queryString;
     };
 
     /** loads image information from digilib server via HTTP
