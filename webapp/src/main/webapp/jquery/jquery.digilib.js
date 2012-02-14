@@ -38,7 +38,7 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.1.5b1',
+        'version' : 'jquery.digilib.js 2.1.5b2',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -450,8 +450,8 @@ if (typeof console === 'undefined') {
             var url = getDigilibUrl(data);
             if (noprompt == null) {
                 window.prompt("URL reference to the current view", url);
-                // return false so we can use is in javascript: url without reload
-                return false;
+                // return nothing so we can use is in javascript: url without reload
+                return;
             }
             return url;
         },
@@ -464,11 +464,14 @@ if (typeof console === 'undefined') {
          * @param mode
          */
         digilibUrl : function (data, mode) {
-            var baseUrl = data.settings.digilibBaseUrl + '/jquery/digilib.html';
-            var url = getDigilibUrl(data, baseUrl);
+            var url = getDigilibUrl(data, '/jquery/digilib.html');
             if (mode === 'open') {
                 // redirect
                 window.location = url;
+            } else if (mode === 'open_new') {
+                // open new window
+                window.open(url);
+                return;
             }
             return url;
         },
@@ -631,32 +634,38 @@ if (typeof console === 'undefined') {
         return url;
     };
 
-    /** returns URL and query string for current digilib
+    /** 
+     * returns URL and query string for current digilib.
+     * if digilibPage != null returns URL to page in digilib installation with digilib parameters,
+     * otherwise using current URL and parameters.
      * 
      */
-    var getDigilibUrl = function (data, baseUrl) {
+    var getDigilibUrl = function (data, digilibPage) {
         packParams(data);
         var settings = data.settings;
-        var paramList = settings.additionalParamNames.concat(settings.digilibParamNames);
-        if (settings.suppressParamNames != null) {
-        	// eliminate suppressed parameters from list
-        	paramList = $.map(paramList, function(e, idx) {
-        		if ($.inArray(e, settings.suppressParamNames) >= 0) {
-        			return null;
-        		} else {
-        			return e;
-        		}
-        	});
-        }
-        var queryString = getParamString(settings, paramList, defaults);
-        if (baseUrl == null) {
+        var paramList = settings.digilibParamNames;
+        if (digilibPage != null) {
+            var baseUrl = data.settings.digilibBaseUrl + digilibPage;
+        } else {
+            paramList = settings.additionalParamNames.concat(settings.digilibParamNames);
+            if (settings.suppressParamNames != null) {
+                // eliminate suppressed parameters from list
+                paramList = $.map(paramList, function(e, idx) {
+                    if ($.inArray(e, settings.suppressParamNames) >= 0) {
+                        return null;
+                    } else {
+                        return e;
+                    }
+                });
+            }
             // take url from current location
-            baseUrl = window.location.href;
+            var baseUrl = window.location.href;
             var pos = baseUrl.indexOf('?');
             if (pos > -1) {
                 baseUrl = baseUrl.substring(0, pos);
             }
         }
+        var queryString = getParamString(settings, paramList, defaults);
         return baseUrl + '?' + queryString;
     };
 

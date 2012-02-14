@@ -79,7 +79,7 @@ digilib buttons plugin
             },
         rot : {
             onclick : "rotate",
-            onclick : ["slider", "rot"],
+            //onclick : ["slider", "rot"],
             tooltip : "rotate image",
             icon : "rotate.png"
             },
