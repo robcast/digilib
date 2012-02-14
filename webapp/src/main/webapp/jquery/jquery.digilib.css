@@ -171,12 +171,23 @@ div.dl-digilib div.dl-slider {
 	}
 
 div.dl-digilib div.dl-sliderhandle {
-	border: 1px solid white;
-	background-color: blue;
+	border: 1px solid lightcyan;
+	background: url('img/blue.png');
 	position: absolute;
 	z-index: 10000;
 	}
 
+div.dl-digilib div.dl-sliderlabel,
+div.dl-digilib div.dl-slidernumber {
+	position: absolute;
+	background: url('img/blue.png');
+	padding: 2px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-weight: bold;
+	color: white;
+    }
+	
 div.dl-infobutton {
     background-color: white;
     color: grey;

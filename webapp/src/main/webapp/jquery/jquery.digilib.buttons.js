@@ -146,52 +146,58 @@ digilib buttons plugin
             label : "Rotation angle",
             tooltip : "rotate image",
             icon : "rotate.png",
+            okcancel : true,
             'min' : 0,
             'max' : 360,
-            'val' : 90
+            'start' : 90
             },
         brgt : {
-            label : "Brightness: Value to add",
-            tooltip : "set brightness",
+            label : "Brightness",
+            tooltip : "set numeric value to be added",
             icon : "brightness.png",
+            okcancel : true,
             'min' : -255,
             'max' : 255,
-            'val' : 0
+            'start' : 0
             },
         cont : {
-            label : "Contrast: Value to multiply",
-            tooltip : "set contrast",
+            label : "Contrast",
+            tooltip : "set numeric value to be multiplied",
             icon : "contrast.png",
+            okcancel : true,
             'min' : -8,
             'max' : 8,
-            'val' : 0
+            'start' : 0
         },
         red : {
             label : "Red value",
             tooltip : "set red value",
             icon : "rgb.png",
+            okcancel : false,
             'min' : 0,
             'max' : 255,
-            'val' : 127
+            'start' : 127
             },
 
         green : {
             label : "Green value",
             tooltip : "set green value",
             icon : "rgb.png",
+            okcancel : false,
             'min' : 0,
             'max' : 255,
-            'val' : 127
+            'start' : 127
             },
 
         blue : {
             label : "Blue value",
             tooltip : "set blue value",
             icon : "rgb.png",
+            okcancel : false,
             'min' : 0,
             'max' : 255,
-            'val' : 127
-            }
+            'start' : 127
+            },
         };
 
     var modes = [
@@ -268,9 +274,16 @@ digilib buttons plugin
             // single slider control for parameters
             slider : function (data, paramname) {
                 var $elem = data.$elem;
+                var id = paramname + "-slider";
+                var $test = $('#' + id);
+                // destroy if already on screen
+                if ($test.length > 0) {
+                    $test.slider('destroy');
+                    return;
+                    }
+                console.debug ('Creating slider #' + id, $div, options);
                 var $div = $('<div/>');
                 var options = sliders[paramname];
-                console.debug ('Creating slider', $div, options);
                 $div.attr('id', paramname + "-slider");
                 $div.slider(options);
                 $elem.append($div);
@@ -386,7 +399,10 @@ digilib buttons plugin
             'handlesize' : 16,
             'min' : 0,
             'max' : 100,
-            'val' : 33
+            'start' : 33,
+            'numberoffset' : -24,
+            'labeloffset' : 16,
+            'okcancel' : false
             };
         var methods = {
             init : function( options ) {
@@ -401,55 +417,69 @@ digilib buttons plugin
                     if (!data) {
                         $this.data('settings', settings);
                         $this.addClass(settings.cssclass);
-                        var $sliderhandle = $('<div class="'+settings.cssclass+'handle" />');
-                        settings.$handle = $sliderhandle;
-                        $this.append($sliderhandle);
+                        var $handle = $('<div class="'+settings.cssclass+'handle" />');
+                        var $label = $('<div class="'+settings.cssclass+'label">'
+                            +settings.label+': '+settings.start+'</div>');
+                        var $min = $('<div class="'+settings.cssclass+'number">'+settings.min+'</div>');
+                        var $max = $('<div class="'+settings.cssclass+'number">'+settings.max+'</div>');
+                        $this.append($handle);
+                        $this.append($label);
+                        $this.append($min);
+                        $this.append($max);
+                        $.extend(settings, {
+                            '$handle' : $handle,
+                            '$label' : $label,
+                            '$min' : $min,
+                            '$max' : $max
+                            });
                         }
-                });
-            },
-            setval : function(data, val) {
-                settings.val =
-                    val < settings.min ? settings.min :
-                    val > settings.max() ? settings.max :
-                    val;
-            },
-            setpos : function() {
-                var $this = this;
-                var settings = $this.data('settings');
-                var $sliderhandle = settings.$handle;
-                var delta = settings.val / Math.abs(settings.max - settings.min);
-                var r = geom.rectangle($this);
-                var s = geom.rectangle(0, 0, settings.handlesize, settings.handlesize);
-                var newpos;
-                if (settings.direction == 'y') {
-                    // s.width = r.width;
-                    newpos = geom.position(r.x + r.width / 2, r.y + delta * r.height);
-                    }
-                else {
-                    // s.height = r.height;
-                    newpos = geom.position(r.x + delta * r.width, r.y + r.height / 2);
-                    }
-                s.setCenter(newpos).adjustDiv($sliderhandle);
-                return $this;
+                    });
             },
             getval : function(data) {
                 var $this = this;
                 var settings = $this.data('settings');
+                return settings.result || settings.start;
             },
             show : function(data) {
                 var $this = this;
-                var settings = $this.data('settings');
-                var $sliderhandle = settings.$handle;
-                var $body = $('body');
                 $this.fadeIn();
-                $this.slider('setpos');
+                var settings = $this.data('settings');
+                // the jquery elements we need
+                var $body = $('body');
+                var $handle = settings.$handle;
+                // some variables for easier calculation
+                var vertical = settings.direction == 'y';
+                var tempval = settings.start;
+                var label = settings.label + ': ';
+                var diff = settings.max - settings.min; 
+                var ratio = (settings.start - settings.min) / diff;
                 var r = geom.rectangle($this);
-                var pt;
+                var factor = vertical
+                    ? diff / r.height
+                    : diff / r.width;
+                // calculate positions for the slider elements
+                var handlerect = geom.rectangle(0, 0, settings.handlesize, settings.handlesize);
+                var startpos = vertical
+                    ? geom.position(r.x + r.width / 2, r.y + ratio * r.height)
+                    : geom.position(r.x + ratio * r.width, r.y + r.height / 2);
+                var labelpos = geom.position(r.x, r.y + settings.labeloffset);
+                labelpos.adjustDiv(settings.$label);
+                var minpos = vertical
+                    ? geom.position(r.x + settings.numberoffset, r.y)
+                    : geom.position(r.x, r.y + settings.numberoffset);
+                minpos.adjustDiv(settings.$min);
+                var maxpos = vertical
+                    ? geom.position(r.x + settings.numberoffset, r.y + r.width)
+                    : geom.position(r.x + r.width - settings.$max.width(), r.y + settings.numberoffset);
+                maxpos.adjustDiv(settings.$max);
+
+                var moveHandle = function(pos) {
+                    handlerect.setCenter(pos);
+                    handlerect.adjustDiv($handle);
+                };
 
                 // mousedown handler: start sliding
                 var sliderStart = function (event) {
-                    // overlay prevents other elements from reacting to mouse events 
-                    // var $overlay = $('<div class="digilib-overlay" style="position:absolute"/>');
                     $body.on("mousemove.slider", sliderMove);
                     $body.on("mouseup.slider", sliderEnd);
                     return false;
@@ -457,43 +487,43 @@ digilib buttons plugin
 
                 // mousemove handler: move slider
                 var sliderMove = function (event) {
-                    pt = geom.position(event);
-                    var s = geom.rectangle($sliderhandle);
-                    var c = s.getCenter();
-                    var newpos;
-                    if (settings.direction == 'y') {
-                        newpos = geom.position(c.x, Math.min(Math.max(r.y, pt.y), r.y + r.height));
-                        }
-                    else {
-                        newpos = geom.position(Math.min(Math.max(r.x, pt.x), r.x + r.width), c.y);
-                        }
-                    s.setCenter(newpos).adjustDiv($sliderhandle);
+                    var pos = geom.position(event);
+                    var c = handlerect.getCenter();
+                    var newpos = vertical
+                        ? geom.position(c.x, Math.min(Math.max(r.y, pos.y), r.y + r.height))
+                        : geom.position(Math.min(Math.max(r.x, pos.x), r.x + r.width), c.y);
+                    moveHandle(newpos);
+                    var temp = vertical
+                        ? (c.y - r.y)
+                        : (c.x - r.x);
+                    tempval = fn.cropFloat(temp * factor + settings.min);
+                    settings.$label.text(label + tempval);
                     return false;
                 };
 
                 // mouseup handler: end sliding
                 var sliderEnd = function (event) {
-                    pt = geom.position(event);
                     $body.off("mousemove.slider");
                     $body.off("mouseup.slider");
-                    // $this.slider('getval');
-                    // $this.slider('destroy');
-                    // settings.callback(settings.val);
-                    fn.redisplay(data);
+                    settings['result'] = tempval;
                     return false;
                 };
 
-            // bind start handler
-            $body.one('mousedown.slider', sliderStart);
+                // bind mousedown handler to sliderhandle
+                $handle.on('mousedown.slider', sliderStart);
+                moveHandle(startpos);
             },
             destroy : function( ) {
                 var $this = this;
                 var settings = $this.data('settings');
+                var $handle = settings.$handle;
+                $handle.off('mousedown.slider');
                 $this.fadeOut(function(){
                     $this.remove()
                     });
             }
         };
+
         // TODO:
         // - take start value from a given param
         // - set the param after sliding
