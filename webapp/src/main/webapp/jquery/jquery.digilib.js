@@ -450,6 +450,8 @@ if (typeof console === 'undefined') {
             var url = getDigilibUrl(data);
             if (noprompt == null) {
                 window.prompt("URL reference to the current view", url);
+                // return false so we can use is in javascript: url without reload
+                return false;
             }
             return url;
         },
