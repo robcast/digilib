@@ -131,13 +131,13 @@ if (typeof console === 'undefined') {
             var isFullscreen = settings.interactionMode === 'fullscreen';
             var queryParams = {};
             if (isFullscreen) {
-            	queryParams = parseQueryParams();
-            	// filter additional parameters
-            	for (var p in queryParams) {
-            		if ($.inArray(p, settings.digilibParamNames) < 0) {
-            			settings.additionalParamNames.push(p);
-            		}
-            	}
+                queryParams = parseQueryParams();
+                // filter additional parameters
+                for (var p in queryParams) {
+                    if ($.inArray(p, settings.digilibParamNames) < 0) {
+                        settings.additionalParamNames.push(p);
+                    }
+                }
             }
             return this.each(function() {
                 var $elem = $(this);
@@ -177,8 +177,8 @@ if (typeof console === 'undefined') {
                     // store in jQuery data element
                     $elem.data('digilib', data);
                 } else {
-                	// data exists
-                	elemSettings = data.settings;
+                    // data exists
+                    elemSettings = data.settings;
                 }
                 unpackParams(data);
                 // list of current insets (dynamic for buttons etc.)
@@ -207,7 +207,7 @@ if (typeof console === 'undefined') {
                             elemSettings.digilibBaseUrl = url.substring(0, pos);
                         }
                     } else {
-                    	// may be we got the scaler URL from the img
+                        // may be we got the scaler URL from the img
                         var url = elemSettings.scalerBaseUrl;
                         if (url) {
                             // build it from scaler URL
@@ -218,9 +218,9 @@ if (typeof console === 'undefined') {
                 }
                 // check scaler base URL
                 if (elemSettings.scalerBaseUrl == null) {
-                	if (elemSettings.digilibBaseUrl) {
-                		elemSettings.scalerBaseUrl = elemSettings.digilibBaseUrl + '/servlet/Scaler';
-                	}
+                    if (elemSettings.digilibBaseUrl) {
+                        elemSettings.scalerBaseUrl = elemSettings.digilibBaseUrl + '/servlet/Scaler';
+                    }
                 }
                 // set up event handlers
                 $(data).on('update', handleUpdate); // handleUpdate needs to be the first handler for update
@@ -229,7 +229,7 @@ if (typeof console === 'undefined') {
                 for (n in plugins) {
                     var p = plugins[n];
                     if (typeof p.init === 'function') {
-                    	// call the plugins init() method
+                        // call the plugins init() method
                         p.init(data);
                     }
                 }
@@ -821,34 +821,34 @@ if (typeof console === 'undefined') {
                 // change url without reloading (stateObj, title, url)
                 // TODO: we really need to push the state in stateObj and listen to pop-events
                 try {
-                	history.replaceState({}, '', url);
-                	// show busy cursor
-                	$('body').css('cursor', 'progress');
-                	data.$scaler.css('cursor', 'progress');
-                	// change img src
-                	var $img = data.$img;
-                	var imgurl = getScalerUrl(data);
-                	$img.attr('src', imgurl);
-                	// trigger load event if image is cached. Doesn't work with Firefox!!
-                	if (data.hasCachedComplete && $img.prop('complete')) {
-                	    console.debug("cached img.load");
-                	    $img.trigger('load');
-                	}
-                	if (data.scalerFlags.clip != null || data.scalerFlags.osize != null) {
-                    	// we need image info, do we have it?
-                		if (data.imgInfo == null) {
-                			loadImageInfo(data);
-                		}
-                	}
-                	// update if we have a preview
-                	if (data.hasPreviewBg) {
-                	    $(data).trigger('update');
-                	}
-                	//FIXME: highlightButtons(data);
-                	// send event
-                	$(data).trigger('redisplay');
+                    history.replaceState({}, '', url);
+                    // show busy cursor
+                    $('body').css('cursor', 'progress');
+                    data.$scaler.css('cursor', 'progress');
+                    // change img src
+                    var $img = data.$img;
+                    var imgurl = getScalerUrl(data);
+                    $img.attr('src', imgurl);
+                    // trigger load event if image is cached. Doesn't work with Firefox!!
+                    if (data.hasCachedComplete && $img.prop('complete')) {
+                        console.debug("cached img.load");
+                        $img.trigger('load');
+                    }
+                    if (data.scalerFlags.clip != null || data.scalerFlags.osize != null) {
+                        // we need image info, do we have it?
+                        if (data.imgInfo == null) {
+                            loadImageInfo(data);
+                        }
+                    }
+                    // update if we have a preview
+                    if (data.hasPreviewBg) {
+                        $(data).trigger('update');
+                    }
+                    //FIXME: highlightButtons(data);
+                    // send event
+                    $(data).trigger('redisplay');
                 } catch (e) {
-                	console.error("replaceState("+url+") didn't work: "+e);
+                    console.error("replaceState("+url+") didn't work: "+e);
                     // reload window
                     window.location = url;
                 }
@@ -858,20 +858,20 @@ if (typeof console === 'undefined') {
             }
         } else {
             // embedded mode -- just change img src
-        	// show busy cursor
-        	$('body').css('cursor', 'progress');
-        	data.$scaler.css('cursor', 'progress');
-        	var $img = data.$img;
+            // show busy cursor
+            $('body').css('cursor', 'progress');
+            data.$scaler.css('cursor', 'progress');
+            var $img = data.$img;
             var url = getScalerUrl(data);
             $img.attr('src', url);
-        	// trigger load event if image is cached
-        	if ($img.prop('complete')) $img.trigger('load');
-        	if (data.scalerFlags.clip != null || data.scalerFlags.osize != null) {
-            	// we need image info, do we have it?
-        		if (data.imgInfo == null) {
-        			loadImageInfo(data);
-        		}
-        	}
+            // trigger load event if image is cached
+            if ($img.prop('complete')) $img.trigger('load');
+            if (data.scalerFlags.clip != null || data.scalerFlags.osize != null) {
+                // we need image info, do we have it?
+                if (data.imgInfo == null) {
+                    loadImageInfo(data);
+                }
+            }
             //FIXME: highlightButtons(data);
             // send event
             $(data).trigger('redisplay');
@@ -890,7 +890,7 @@ if (typeof console === 'undefined') {
      * updates image transform, etc.
      */
     var handleUpdate = function (evt) {
-    	var data = this;
+        var data = this;
         updateImgTrafo(data);
         setupZoomDrag(data);
     };
@@ -949,6 +949,7 @@ if (typeof console === 'undefined') {
             $img = $('<img/>');
         } else {
             // embedded mode -- try to keep img tag
+            data.maxImgSize = geom.rectangle($elem).getSize();
             $elem.addClass(cssPrefix+'embedded');
             scalerUrl = getScalerUrl(data);
             $img = $elem.find('img');
@@ -980,7 +981,7 @@ if (typeof console === 'undefined') {
         data.$img = $img;
         // set busy cursor
         $('body').css('cursor','progress');
-    	data.$scaler.css('cursor', 'progress');
+        data.$scaler.css('cursor', 'progress');
         // set up image load handler before setting the src attribute (IE bug)
         $img.load(scalerImgLoadedHandler(data));
         $img.error(function () {console.error("error loading scaler image");});
@@ -1006,7 +1007,7 @@ if (typeof console === 'undefined') {
         logoUrl = settings.logoUrl;
         // make relative logoUrl absolute
         if (logoUrl.charAt(0) !== '/' && logoUrl.substring(0,3) !== 'http') {
-        	logoUrl = settings.digilibBaseUrl + '/' + logoUrl;
+            logoUrl = settings.digilibBaseUrl + '/' + logoUrl;
         }
         $logo.attr('src', logoUrl);
         $link.attr('href', settings.homeUrl);
@@ -1105,12 +1106,12 @@ if (typeof console === 'undefined') {
             ? $img.prop('width') > 0
             : $img.prop('complete');
         if (imgLoaded || data.hasPreviewBg) {
-			// create Transform from current zoomArea and image size
-			data.imgTrafo = getImgTrafo($img, data.zoomArea, data.settings.rot,
-					data.scalerFlags.hmir, data.scalerFlags.vmir,
-					data.scaleMode, data);
-			console.debug("updateImgTrafo: ", data.imgTrafo);
-		}
+            // create Transform from current zoomArea and image size
+            data.imgTrafo = getImgTrafo($img, data.zoomArea, data.settings.rot,
+                    data.scalerFlags.hmir, data.scalerFlags.vmir,
+                    data.scaleMode, data);
+            console.debug("updateImgTrafo: ", data.imgTrafo);
+        }
     };
 
     /** return handler for load event of scaler img
@@ -1123,9 +1124,9 @@ if (typeof console === 'undefined') {
             var $scaler = data.$scaler;
             var imgRect = geom.rectangle($img);
             data.imgRect = imgRect;
-        	// reset busy cursor
-        	$('body').css('cursor', 'auto');
-        	$scaler.css('cursor', 'auto');
+            // reset busy cursor
+            $('body').css('cursor', 'auto');
+            $scaler.css('cursor', 'auto');
             // adjust scaler div size (beware: setting position makes the element relative)
             imgRect.getSize().adjustDiv($scaler);
             // show image in case it was hidden (for example in zoomDrag)
@@ -1141,7 +1142,7 @@ if (typeof console === 'undefined') {
      * 
      */
     var handleImageInfo = function (evt, json) {
-    	console.debug("handleImageInfo:", json);
+        console.debug("handleImageInfo:", json);
         var data = this;
         updateDisplay(data);
     };
@@ -1150,14 +1151,13 @@ if (typeof console === 'undefined') {
      * 
      */
     var handleChangeZoomArea = function (evt, newZa) {
-    	console.debug("handleChangeZoomArea:", newZa);
-    	var data = this;
-    	// hide all overlays (marks/regions)
+        console.debug("handleChangeZoomArea:", newZa);
+        var data = this;
+        // hide all overlays (marks/regions)
         data.$elem.find('.'+data.settings.cssPrefix+'overlay').hide();
-    	setPreviewBg(data, newZa);
+        setPreviewBg(data, newZa);
     };
-    
-    
+
     /** zoom by the given factor.
      * 
      */
@@ -1258,40 +1258,40 @@ if (typeof console === 'undefined') {
         $img.css('visibility', 'hidden');
         // use current image as first background
         var scalerCss = {
-        		'background-image' : 'url(' + $img.attr('src') + ')',
+                'background-image' : 'url(' + $img.attr('src') + ')',
                 'background-repeat' : 'no-repeat',
                 'background-position' : '0px 0px',
                 'opacity' : '0.7',
                 'cursor' : 'move'
         };
         if (newZoomArea != null) {
-        	// check if aspect ratio has changed
-        	if (Math.abs(newZoomArea.getAspect() - data.zoomArea.getAspect()) > 0.001 ) {
-        	    var newRect = data.imgTrafo.transform(newZoomArea);
-        	    var newAspect = newRect.getAspect();
-        		var newSize = data.maxImgSize.fitAspect(newAspect);
-        		// set scaler to presumed new size
-        		newSize.adjustDiv($scaler);
-        		console.debug("adjusting aspect ratio for preview", data.maxImgSize, newSize);
-        	}
-        	// get transform for new zoomArea (use 'screen' instead of data.scaleMode)
-        	imgTrafo = getImgTrafo($scaler, newZoomArea, data.settings.rot,
-					data.scalerFlags.hmir, data.scalerFlags.vmir,
-					'screen', data);
-        	// for new background coordinates transform old zoomArea with new Transform
-        	bgRect = imgTrafo.transform(data.zoomArea);
-        	// correct offset because background is relative
-        	bgRect.addPosition(scalerPos.neg());
-        	// position background
-        	scalerCss['background-position'] = Math.round(bgRect.x) + 'px '+ Math.round(bgRect.y) + 'px';
+            // check if aspect ratio has changed
+            if (Math.abs(newZoomArea.getAspect() - data.zoomArea.getAspect()) > 0.001 ) {
+                var newRect = data.imgTrafo.transform(newZoomArea);
+                var newAspect = newRect.getAspect();
+                var newSize = data.maxImgSize.fitAspect(newAspect);
+                // set scaler to presumed new size
+                newSize.adjustDiv($scaler);
+                console.debug("adjusting aspect ratio for preview", data.maxImgSize, newSize);
+            }
+            // get transform for new zoomArea (use 'screen' instead of data.scaleMode)
+            imgTrafo = getImgTrafo($scaler, newZoomArea, data.settings.rot,
+                data.scalerFlags.hmir, data.scalerFlags.vmir,
+                'screen', data);
+            // for new background coordinates transform old zoomArea with new Transform
+            bgRect = imgTrafo.transform(data.zoomArea);
+            // correct offset because background is relative
+            bgRect.addPosition(scalerPos.neg());
+            // position background
+            scalerCss['background-position'] = Math.round(bgRect.x) + 'px '+ Math.round(bgRect.y) + 'px';
         }
         if (data.hasBgSize) {
-        	// scale background using CSS3-background-size
-        	if (bgRect != null && (bgRect.height < data.settings.maxBgSize && bgRect.width < data.settings.maxBgSize)) {
-        		scalerCss[data.bgSizeName] = Math.round(bgRect.width) + 'px ' + Math.round(bgRect.height) + 'px';
-        	} else {
-        		scalerCss[data.bgSizeName] = 'auto';
-        	}
+            // scale background using CSS3-background-size
+            if (bgRect != null && (bgRect.height < data.settings.maxBgSize && bgRect.width < data.settings.maxBgSize)) {
+                scalerCss[data.bgSizeName] = Math.round(bgRect.width) + 'px ' + Math.round(bgRect.height) + 'px';
+            } else {
+                scalerCss[data.bgSizeName] = 'auto';
+            }
             // additional full-size background using CSS3
             fullRect = imgTrafo.transform(FULL_AREA);
             if (fullRect.height < data.settings.maxBgSize && fullRect.width < data.settings.maxBgSize) {
@@ -1307,7 +1307,7 @@ if (typeof console === 'undefined') {
         $scaler.css(scalerCss);
         data.hasPreviewBg = true;
     };
-    
+
     /** setup handlers for dragging the zoomed image.
      * 
      */
@@ -1321,8 +1321,8 @@ if (typeof console === 'undefined') {
 
         // drag the image and load a new detail on mouse up
         var dragStart = function (evt) {
-        	// cancel if not left-click
-        	if (evt.which != 1) return;
+            // cancel if not left-click
+            if (evt.which != 1) return;
             console.debug("dragstart at=", evt);
             // don't start dragging if not zoomed
             if (isFullArea(data.zoomArea)) return false;
@@ -1447,13 +1447,13 @@ if (typeof console === 'undefined') {
      * 
      */
     var getFitMode = function (data) {
-    	if (data.dlOpts.fitwidth != null) {
-    		return "width";
-    	} else if (data.dlOpts.fitheight != null) {
-    		return "height";
-    	}
-    	// "both" is default
-    	return "both";
+        if (data.dlOpts.fitwidth != null) {
+            return "width";
+        } else if (data.dlOpts.fitheight != null) {
+            return "height";
+        }
+        // "both" is default
+        return "both";
     };
 
     /** 
@@ -1462,32 +1462,32 @@ if (typeof console === 'undefined') {
     var setFitMode = function (data, mode) {
         var settings = data.settings;
         var imgSize = data.maxImgSize;
-    	if (mode === 'width') {
-    		data.dlOpts.fitwidth = 1;
-    		delete data.dlOpts.fitheight;
-    		if (imgSize != null) {
-    		    // fitwidth omits destination height
-    		    settings.dw = imgSize.width;
-    		    settings.dh = null;
-    		}
-    	} else if (mode === 'height') {
-    		data.dlOpts.fitheight = 1;
-    		delete data.dlOpts.fitwidth;
+        if (mode === 'width') {
+            data.dlOpts.fitwidth = 1;
+            delete data.dlOpts.fitheight;
+            if (imgSize != null) {
+                // fitwidth omits destination height
+                settings.dw = imgSize.width;
+                settings.dh = null;
+            }
+        } else if (mode === 'height') {
+            data.dlOpts.fitheight = 1;
+            delete data.dlOpts.fitwidth;
             if (imgSize != null) {
                 // fitheight omits destination width
                 settings.dw = null;
                 settings.dh = imgSize.height;
             }
-    	} else {
-    		delete data.dlOpts.fitwidth;
-    		delete data.dlOpts.fitheight;
+        } else {
+            delete data.dlOpts.fitwidth;
+            delete data.dlOpts.fitheight;
             if (imgSize != null) {
                 settings.dw = imgSize.width;
                 settings.dh = imgSize.height;
             }
-    	}
+        }
     };
-    	
+
     /** sets a key to a value (relative values with +/- if relative=true).
      * 
      */
