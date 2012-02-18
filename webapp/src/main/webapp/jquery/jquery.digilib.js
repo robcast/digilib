@@ -38,7 +38,7 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.1.5b2',
+        'version' : 'jquery.digilib.js 2.1.4b1',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -108,7 +108,7 @@ if (typeof console === 'undefined') {
     var buttons = {};
 
     var actions = {
-            
+
         /** init: digilib initialization
          * 
          * @param options
@@ -341,6 +341,8 @@ if (typeof console === 'undefined') {
             setFitMode(data, mode);
             // zoom full only works in screen mode
             setScaleMode(data, 'screen');
+            // bird's eye off for full zoom 
+            data.settings.isBirdDivVisible = false;
             redisplay(data);
         },
 
@@ -450,33 +452,10 @@ if (typeof console === 'undefined') {
             var url = getDigilibUrl(data);
             if (noprompt == null) {
                 window.prompt("URL reference to the current view", url);
-                // return nothing so we can use is in javascript: url without reload
-                return;
             }
             return url;
         },
 
-        /** 
-         * Returns URL to the full digilib.html with the current parameters.
-         * Redirects immediately with mode=open.
-         * 
-         * @param data
-         * @param mode
-         */
-        digilibUrl : function (data, mode) {
-            var url = getDigilibUrl(data, '/jquery/digilib.html');
-            if (mode === 'open') {
-                // redirect
-                window.location = url;
-            } else if (mode === 'open_new') {
-                // open new window
-                window.open(url);
-                return;
-            }
-            return url;
-        },
-        
-        
         /** set image quality
          * 
          * @param data
@@ -634,39 +613,31 @@ if (typeof console === 'undefined') {
         return url;
     };
 
-    /** 
-     * returns URL and query string for current digilib.
-     * if digilibPage != null returns URL to page in digilib installation with digilib parameters,
-     * otherwise using current URL and parameters.
+    /** returns URL and query string for current digilib
      * 
      */
-    var getDigilibUrl = function (data, digilibPage) {
+    var getDigilibUrl = function (data) {
         packParams(data);
         var settings = data.settings;
-        var paramList = settings.digilibParamNames;
-        if (digilibPage != null) {
-            var baseUrl = data.settings.digilibBaseUrl + digilibPage;
-        } else {
-            paramList = settings.additionalParamNames.concat(settings.digilibParamNames);
-            if (settings.suppressParamNames != null) {
-                // eliminate suppressed parameters from list
-                paramList = $.map(paramList, function(e, idx) {
-                    if ($.inArray(e, settings.suppressParamNames) >= 0) {
-                        return null;
-                    } else {
-                        return e;
-                    }
-                });
-            }
-            // take url from current location
-            var baseUrl = window.location.href;
-            var pos = baseUrl.indexOf('?');
-            if (pos > -1) {
-                baseUrl = baseUrl.substring(0, pos);
-            }
+        var paramList = settings.additionalParamNames.concat(settings.digilibParamNames);
+        if (settings.suppressParamNames != null) {
+        	// eliminate suppressed parameters from list
+        	paramList = $.map(paramList, function(e, idx) {
+        		if ($.inArray(e, settings.suppressParamNames) >= 0) {
+        			return null;
+        		} else {
+        			return e;
+        		}
+        	});
         }
         var queryString = getParamString(settings, paramList, defaults);
-        return baseUrl + '?' + queryString;
+        // take url from current location
+        var url = window.location.href;
+        var pos = url.indexOf('?');
+        if (pos > -1) {
+        	url = url.substring(0, pos);
+        }
+        return url + '?' + queryString;
     };
 
     /** loads image information from digilib server via HTTP
