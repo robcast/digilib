@@ -1266,8 +1266,9 @@ if (typeof console === 'undefined') {
         };
         if (newZoomArea != null) {
         	// check if aspect ratio has changed
-        	newAspect = newZoomArea.getAspect();
-        	if (newAspect !== data.zoomArea.getAspect()) {
+        	if (Math.abs(newZoomArea.getAspect() - data.zoomArea.getAspect()) > 0.001 ) {
+        	    var newRect = data.imgTrafo.transform(newZoomArea);
+        	    var newAspect = newRect.getAspect();
         		var newSize = data.maxImgSize.fitAspect(newAspect);
         		// set scaler to presumed new size
         		newSize.adjustDiv($scaler);
