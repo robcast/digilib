@@ -177,7 +177,9 @@ digilib bird's eye view plugin
             // create Transform from current area and picsize
             data.birdTrafo = digilib.fn.getImgTrafo(data.$birdImg, FULL_AREA);
             // update display (zoom area indicator)
-            $(data).trigger('update');
+            if (data.settings.isBirdDivVisible) {
+                renderBirdArea(data);
+                }
         };
     };
 
