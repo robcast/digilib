@@ -79,7 +79,7 @@ digilib buttons plugin
             },
         rot : {
             onclick : "rotate",
-            //onclick : ["slider", "rot"],
+            onclick : ["slider", "rot"],
             tooltip : "rotate image",
             icon : "rotate.png"
             },
@@ -146,7 +146,6 @@ digilib buttons plugin
             label : "Rotation angle",
             tooltip : "rotate image",
             icon : "rotate.png",
-            okcancel : true,
             'min' : 0,
             'max' : 360,
             'start' : 90
@@ -155,7 +154,6 @@ digilib buttons plugin
             label : "Brightness",
             tooltip : "set numeric value to be added",
             icon : "brightness.png",
-            okcancel : true,
             'min' : -255,
             'max' : 255,
             'start' : 0
@@ -164,7 +162,6 @@ digilib buttons plugin
             label : "Contrast",
             tooltip : "set numeric value to be multiplied",
             icon : "contrast.png",
-            okcancel : true,
             'min' : -8,
             'max' : 8,
             'start' : 0
@@ -173,7 +170,6 @@ digilib buttons plugin
             label : "Red value",
             tooltip : "set red value",
             icon : "rgb.png",
-            okcancel : false,
             'min' : 0,
             'max' : 255,
             'start' : 127
@@ -183,7 +179,6 @@ digilib buttons plugin
             label : "Green value",
             tooltip : "set green value",
             icon : "rgb.png",
-            okcancel : false,
             'min' : 0,
             'max' : 255,
             'start' : 127
@@ -193,7 +188,6 @@ digilib buttons plugin
             label : "Blue value",
             tooltip : "set blue value",
             icon : "rgb.png",
-            okcancel : false,
             'min' : 0,
             'max' : 255,
             'start' : 127
@@ -662,6 +656,10 @@ digilib buttons plugin
         	imagePath = settings.digilibBaseUrl + '/jquery/' + imagePath;
         }
         var buttonConfig = settings.buttons[buttonName];
+        if (buttonConfig == null) {
+            console.error('Could not create button: ' + buttonName);
+            return;
+            }
         // button properties
         var action = buttonConfig.onclick;
         var tooltip = buttonConfig.tooltip;
