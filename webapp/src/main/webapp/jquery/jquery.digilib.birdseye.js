@@ -170,14 +170,15 @@ digilib bird's eye view plugin
             var $birdImg = $(this);
             var birdRect = geom.rectangle($birdImg);
             console.debug("birdImg loaded!", $birdImg, "rect=", birdRect, "data=", data);
-            if (birdRect.width === 0) {
-                // malheureusement IE7 calls load handler when there is no size info yet 
-                setTimeout(function () { $birdImg.triggerHandler('load'); }, 200);
-                }
             // create Transform from current area and picsize
             data.birdTrafo = digilib.fn.getImgTrafo(data.$birdImg, FULL_AREA);
             // update display (zoom area indicator)
             if (data.settings.isBirdDivVisible) {
+                if (birdRect.width === 0) {
+                    // workaround: IE7 calls load handler when there is no size info yet 
+                    setTimeout(function () { $birdImg.triggerHandler('load'); }, 200);
+                    return;
+                    }
                 renderBirdArea(data);
                 }
         };
