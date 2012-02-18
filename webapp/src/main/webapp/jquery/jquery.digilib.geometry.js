@@ -9,7 +9,7 @@
     var size = function(w, h) {
         var that;
         if (typeof w === "object") {
-            // assume its size
+            // assume an object having width and height
             that = {
                 width : w.width,
                 height : w.height
@@ -20,8 +20,24 @@
                 height : parseFloat(h)
             };
         }
+        // returns true if both sizes are equal
         that.equals = function(other) {
             return (this.width === other.width && this.height === other.height);
+        };
+        // returns the aspect ratio of this size
+        that.getAspect = function() {
+            return (this.width / this.height);
+        };
+        // returns a size of a given aspect ratio that fits into this one 
+        that.fitAspect = function(aspect) {
+            var s = size(this);
+            if (aspect > this.getAspect()) {
+                // size is more horizontally stretched than this
+                s.height = s.width / aspect;
+            } else {
+                s.width = s.height * aspect;
+            }
+            return s;
         };
         // adjusts size of jQuery element "$elem" to this size
         that.adjustDiv = function($elem) {
@@ -301,6 +317,7 @@
             }
             return r.intersect(this);
         };
+
         // adjusts position and size of jQuery element "$elem" to this rectangle
         that.adjustDiv = function($elem) {
             $elem.offset({

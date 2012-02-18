@@ -937,7 +937,7 @@ if (typeof console === 'undefined') {
             // fullscreen
             $elem.addClass(cssPrefix+'fullscreen');
             var imgSize = getFullscreenImgSize(data);
-            data.fullscreenImgSize = imgSize;
+            data.maxImgSize = imgSize;
             // fitwidth/height omits destination height/width
             if (data.dlOpts.fitheight == null) {
                 settings.dw = imgSize.width;
@@ -1109,7 +1109,7 @@ if (typeof console === 'undefined') {
 			data.imgTrafo = getImgTrafo($img, data.zoomArea, data.settings.rot,
 					data.scalerFlags.hmir, data.scalerFlags.vmir,
 					data.scaleMode, data);
-			console.debug("imgTrafo=", data.imgTrafo);
+			console.debug("updateImgTrafo: ", data.imgTrafo);
 		}
     };
 
@@ -1266,12 +1266,15 @@ if (typeof console === 'undefined') {
         };
         if (newZoomArea != null) {
         	// check if aspect ratio has changed
-        	if (newZoomArea.getAspect() !== data.zoomArea.getAspect()) {
-        		console.debug("aspect ratio changed!");
-        		// what now?
+        	newAspect = newZoomArea.getAspect();
+        	if (newAspect !== data.zoomArea.getAspect()) {
+        		var newSize = data.maxImgSize.fitAspect(newAspect);
+        		// set scaler to presumed new size
+        		newSize.adjustDiv($scaler);
+        		console.debug("adjusting aspect ratio for preview", data.maxImgSize, newSize);
         	}
         	// get transform for new zoomArea (use 'screen' instead of data.scaleMode)
-        	imgTrafo = getImgTrafo($img, newZoomArea, data.settings.rot,
+        	imgTrafo = getImgTrafo($scaler, newZoomArea, data.settings.rot,
 					data.scalerFlags.hmir, data.scalerFlags.vmir,
 					'screen', data);
         	// for new background coordinates transform old zoomArea with new Transform
@@ -1387,7 +1390,7 @@ if (typeof console === 'undefined') {
         data.oldZoomArea = data.zoomArea;
         data.zoomArea = za;
     };
-    
+
     /** get image quality as a number (0..2).
      * 
      */
@@ -1451,13 +1454,13 @@ if (typeof console === 'undefined') {
     	// "both" is default
     	return "both";
     };
-    
+
     /** 
      * set screen fit mode (width, height, both).
      */
     var setFitMode = function (data, mode) {
         var settings = data.settings;
-        var imgSize = data.fullscreenImgSize;
+        var imgSize = data.maxImgSize;
     	if (mode === 'width') {
     		data.dlOpts.fitwidth = 1;
     		delete data.dlOpts.fitheight;
