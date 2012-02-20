@@ -399,13 +399,18 @@ if (typeof console === 'undefined') {
          * 
          * @param data
          * @param factor
+         * @param brightness : if given, adjust brightness along with contrast
          */
-        contrast : function (data, factor) {
+        contrast : function (data, factor, brightness) {
             var cont = data.settings.cont;
             if (factor == null) {
                 factor = window.prompt("Contrast (-8, 8)", cont);
             }
             data.settings.cont = factor;
+            if (brightness) {
+                var brgt = 127 - (127 * Math.pow(2, factor));
+                data.settings.brgt = brgt;
+            }
             redisplay(data);
         },
 

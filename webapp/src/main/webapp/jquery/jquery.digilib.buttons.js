@@ -78,26 +78,23 @@ digilib buttons plugin
             icon : "mirror-vertical.png"
             },
         rot : {
-            //onclick : "sliderRotate",
-            onclick : ["slider", "rot"],
+            onclick : "sliderRotate",
             tooltip : "rotate image",
             icon : "rotate.png"
             },
         brgt : {
-            onclick : "brightness",
-            //onclick : ["slider", "brgt"],
+            onclick : "sliderBrightness",
             tooltip : "set brightness",
             icon : "brightness.png"
             },
         cont : {
-            onclick : "contrast",
-            //onclick : ["slider", "cont"],
+            onclick : "sliderContrast",
             tooltip : "set contrast",
             icon : "contrast.png"
             },
         rgb : {
             onclick : "setRGB",
-            //onclick : ["multislider", "rgb"],
+            // onclick : sliderRGB,
             tooltip : "set rgb values",
             icon : "rgb.png"
             },
@@ -162,8 +159,8 @@ digilib buttons plugin
             label : "Contrast",
             tooltip : "set numeric value to be multiplied",
             icon : "contrast.png",
-            'min' : -8,
-            'max' : 8,
+            'min' : -4,
+            'max' : 4,
             'start' : 0
         },
         red : {
@@ -265,19 +262,61 @@ digilib buttons plugin
                 // persist setting
                 fn.storeOptions(data);
             },
-            // rotate Slider Div
+
+            // slider to set a rotation angle
             sliderRotate : function (data) {
                 var $elem = data.$elem;
                 var $panel = fn.setupPanel(data);
                 if ($panel == null) {
                     return;
                     };
-                var $slider = fn.setupSlider(data, 'rot');
-                var callback = function(d) {
+                var opts = { 'start' : parseFloat(data.settings.rot) };
+                var $slider = fn.setupSlider(data, 'rot', opts);
+                var ok = function(d) {
                     var angle = $slider.slider('getval');
                     digilib.actions.rotate(d, angle);
                     };
-                $panel.data['callback'] = callback;
+                $panel.data['ok'] = ok;
+                $panel.fadeIn();
+                $panel.prepend($slider);
+                centerOnScreen(data, $panel);
+                $slider.slider('show');
+            },
+
+            // slider to set a brightness value
+            sliderBrightness : function (data) {
+                var $elem = data.$elem;
+                var $panel = fn.setupPanel(data);
+                if ($panel == null) {
+                    return;
+                    };
+                var opts = { 'start' : parseFloat(data.settings.brgt) };
+                var $slider = fn.setupSlider(data, 'brgt', opts);
+                var ok = function(d) {
+                    var brgt = $slider.slider('getval');
+                    digilib.actions.brightness(d, brgt);
+                    };
+                $panel.data['ok'] = ok;
+                $panel.fadeIn();
+                $panel.prepend($slider);
+                centerOnScreen(data, $panel);
+                $slider.slider('show');
+            },
+
+            // slider to set a contrast value
+            sliderContrast : function (data) {
+                var $elem = data.$elem;
+                var $panel = fn.setupPanel(data);
+                if ($panel == null) {
+                    return;
+                    };
+                var opts = { 'start' : parseFloat(data.settings.cont) };
+                var $slider = fn.setupSlider(data, 'cont', opts);
+                var ok = function(d) {
+                    var cont = $slider.slider('getval');
+                    digilib.actions.contrast(d, cont, true);
+                    };
+                $panel.data['ok'] = ok;
                 $panel.fadeIn();
                 $panel.prepend($slider);
                 centerOnScreen(data, $panel);
@@ -570,36 +609,39 @@ digilib buttons plugin
 
     /** creates the HTML structure for a panel div
      */
-    var setupPanel = function (data, callback) {
+    var setupPanel = function (data) {
         var $elem = data.$elem;
         var panelClass = data.settings.cssPrefix + 'panel';
         var $panel = $elem.find('.' + panelClass);
+        // remove panel if it exists already
         if ($panel.length > 0) {
             $panel.fadeOut(function() {
                 $panel.remove();
                 });
             return null;
             }
-        var $div = $('<div/>');
-        $div.addClass(panelClass);
-        var $okcancel = setupOkCancel(data, callback);
-        $div.append($okcancel);
-        $elem.append($div);
-        return $div;
+        $panel = $('<div/>');
+        $panel.addClass(panelClass);
+        var $okcancel = setupOkCancel(data);
+        $panel.append($okcancel);
+        $elem.append($panel);
+        return $panel;
     };
 
     /** creates the HTML structure for a slider div
      */
-    var setupSlider = function (data, paramname) {
+    var setupSlider = function (data, paramname, opts) {
         var id = paramname + "-slider";
         var $div = $('#' + id);
         if ($div.length == 0) {
             // slider not yet created
             $div = $('<div/>');
             var options = sliders[paramname];
+            if (opts != null) {
+                $.extend(options, opts);
+                }
             $div.attr('id', paramname + "-slider");
             $div.slider(options);
-            console.debug ('new slider #' + id, $div, options);
             }
         return $div;
     };
@@ -617,15 +659,17 @@ digilib buttons plugin
         var $div = $(html);
         var handler = function(event) {
             var $panel = $(this).parents('.'+cssPrefix+'panel');
-            var callback = $panel.data['callback'];
             if (event.keyCode == 27 || event.target.id == cssPrefix+'Cancel') {
-                // return false;
-                }
-            if (event.keyCode == 13 || event.target.id == cssPrefix+'Ok') {
+                var callback = $panel.data['cancel'];
                 if (callback) {
                     callback(data);
                     }
-                // return false;
+                }
+            if (event.keyCode == 13 || event.target.id == cssPrefix+'Ok') {
+                var callback = $panel.data['ok'];
+                if (callback) {
+                    callback(data);
+                    }
                 }
             $panel.fadeOut(function() {
                 $panel.remove();
