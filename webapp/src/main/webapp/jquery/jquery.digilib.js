@@ -38,7 +38,7 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.1.5b2',
+        'version' : 'jquery.digilib.js 2.1.6a1',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -409,6 +409,32 @@ if (typeof console === 'undefined') {
             redisplay(data);
         },
 
+        /** change rgb contrast and brightness
+         * 
+         * @param data
+         * @param rgbm
+         * @param rgba
+         */
+        setRGB : function (data, rgbm, rgba) {
+            var oldRgbm = data.settings.rgbm;
+            var oldRgba = data.settings.rgba;
+            if (rgbm == null && rgba == null) {
+                var rgb = window.prompt("RGBm, RGBa (m_r/m_g/m_b, a_r/a_g/a_b)", oldRgbm+', '+oldRgba);
+                if (rgb != null) {
+                    rgbs = rgb.split(/,\s*/);
+                    if (rgbs.length == 2) {
+                        data.settings.rgbm = rgbs[0];
+                        data.settings.rgba = rgbs[1];
+                        redisplay(data);
+                    }
+                }
+            } else {
+                if (rgbm != null) data.settings.rgbm = rgbm;
+                if (rgba != null) data.settings.rgba = rgba;
+                redisplay(data);                
+            }
+        },
+
         /** reset image parameters to defaults 
          * TODO: improve this!
          * 
@@ -490,6 +516,23 @@ if (typeof console === 'undefined') {
             qual = parseInt(qual, 10);
             if (qual >= 0 && qual <= 2) {
                 setQuality(data, qual);
+                redisplay(data);
+            }
+        },
+
+        /** set image size
+         * 
+         * @param data
+         * @param size
+         */
+        setSize : function (data, size) {
+            var olds = data.settings.ws;
+            if (size == null) {
+                size = window.prompt("Image size (1=screen size)", olds);
+            }
+            size = parseFloat(size);
+            if (size > 0) {
+                data.settings.ws = size;
                 redisplay(data);
             }
         },
@@ -1130,7 +1173,7 @@ if (typeof console === 'undefined') {
             imgRect.getSize().adjustDiv($scaler);
             // show image in case it was hidden (for example in zoomDrag)
             $img.css('visibility', 'visible');
-            $scaler.css({'opacity' : '1', 'background' : 'transparent'});
+            $scaler.css({'opacity' : '1'});
             data.hasPreviewBg = false;
             // update display (render marks, etc.)
             updateDisplay(data);

@@ -78,8 +78,8 @@ digilib buttons plugin
             icon : "mirror-vertical.png"
             },
         rot : {
-            onclick : "sliderRotate",
-            // onclick : ["slider", "rot"],
+            //onclick : "sliderRotate",
+            onclick : ["slider", "rot"],
             tooltip : "rotate image",
             icon : "rotate.png"
             },
@@ -96,7 +96,7 @@ digilib buttons plugin
             icon : "contrast.png"
             },
         rgb : {
-            onclick : "javascript:setParamWin('rgb', '...')",
+            onclick : "setRGB",
             //onclick : ["multislider", "rgb"],
             tooltip : "set rgb values",
             icon : "rgb.png"
@@ -107,7 +107,7 @@ digilib buttons plugin
             icon : "quality.png"
             },
         size : {
-            onclick : "javascript:toggleSizeMenu()",
+            onclick : "setSize",
             tooltip : "set page size",
             icon : "size.png"
             },
