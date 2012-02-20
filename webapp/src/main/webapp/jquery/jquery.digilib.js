@@ -108,7 +108,6 @@ if (typeof console === 'undefined') {
     var buttons = {};
 
     var actions = {
-            
         /** init: digilib initialization
          * 
          * @param options

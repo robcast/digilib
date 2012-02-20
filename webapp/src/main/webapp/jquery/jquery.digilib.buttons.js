@@ -78,8 +78,8 @@ digilib buttons plugin
             icon : "mirror-vertical.png"
             },
         rot : {
-            onclick : "rotate",
-            onclick : ["slider", "rot"],
+            onclick : "sliderRotate",
+            // onclick : ["slider", "rot"],
             tooltip : "rotate image",
             icon : "rotate.png"
             },
@@ -265,25 +265,25 @@ digilib buttons plugin
                 // persist setting
                 fn.storeOptions(data);
             },
-            // single slider control for parameters
-            slider : function (data, paramname) {
+            // rotate Slider Div
+            sliderRotate : function (data) {
                 var $elem = data.$elem;
-                var id = paramname + "-slider";
-                var $test = $('#' + id);
-                // destroy if already on screen
-                if ($test.length > 0) {
-                    $test.slider('destroy');
+                var $panel = fn.setupPanel(data);
+                if ($panel == null) {
                     return;
-                    }
-                console.debug ('Creating slider #' + id, $div, options);
-                var $div = $('<div/>');
-                var options = sliders[paramname];
-                $div.attr('id', paramname + "-slider");
-                $div.slider(options);
-                $elem.append($div);
-                centerOnScreen(data, $div);
-                $div.slider('show');
+                    };
+                var $slider = fn.setupSlider(data, 'rot');
+                var callback = function(d) {
+                    var angle = $slider.slider('getval');
+                    digilib.actions.rotate(d, angle);
+                    };
+                $panel.data['callback'] = callback;
+                $panel.fadeIn();
+                $panel.prepend($slider);
+                centerOnScreen(data, $panel);
+                $slider.slider('show');
             },
+
             // shows Calibration Div
             showCalibrationDiv : function (data) {
                 var $elem = data.$elem;
@@ -338,6 +338,8 @@ digilib buttons plugin
         // export functions
         fn.createButton = createButton;
         fn.highlightButtons = highlightButtons;
+        fn.setupSlider = setupSlider;
+        fn.setupPanel = setupPanel;
     };
 
     // plugin initialization
@@ -386,7 +388,6 @@ digilib buttons plugin
     var sliderPlugin = function($, digilibdata) {
         var cssPrefix = digilibdata.settings.cssPrefix;
         var defaults = {
-            'id' : 'slider',
             'cssclass' : cssPrefix+'slider',
             'label' : 'Slider',
             'direction' : 'x',
@@ -396,7 +397,9 @@ digilib buttons plugin
             'start' : 33,
             'numberoffset' : -24,
             'labeloffset' : 16,
-            'okcancel' : false
+            'rect' : null,
+            'factor' : null,
+            'onmove' : null // callback function
             };
         var methods = {
             init : function( options ) {
@@ -405,7 +408,7 @@ digilib buttons plugin
                     var $this = $(this);
                     // var settings = data.settings;
                     var settings = $.extend( defaults, options);
-                    console.debug('New slider instance: ', $this, ' data:', settings);
+                    console.debug('new slider: ', $this, ' settings:', settings);
                     $this.data('digilib', digilibdata);
                     var data = $this.data('settings');
                     if (!data) {
@@ -424,15 +427,57 @@ digilib buttons plugin
                             '$handle' : $handle,
                             '$label' : $label,
                             '$min' : $min,
-                            '$max' : $max
+                            '$max' : $max,
+                            'diff' : settings.max - settings.min,
+                            'vertical' : settings.direction == 'y',
+                            'val' : settings.start,
+                            'handlerect' : geom.rectangle(0, 0, settings.handlesize, settings.handlesize)
                             });
                         }
                     });
             },
             getval : function(data) {
+                // returns the slider value
                 var $this = this;
                 var settings = $this.data('settings');
-                return settings.result || settings.start;
+                return settings.val;
+            },
+            setval : function(data, val) {
+                // sets the slider value and moves the handle acordingly
+                var $this = this;
+                var settings = $this.data('settings');
+                if (val != null) settings.val = val;
+                var ratio = (settings.val - settings.min) / settings.diff;
+                var r = settings.rect;
+                var newpos = settings.vertical
+                    ? geom.position(r.x + r.width / 2, r.y + ratio * r.height)
+                    : geom.position(r.x + ratio * r.width, r.y + r.height / 2);
+                $this.slider('moveto', newpos);
+            },
+            moveto : function(data, pos, calc) {
+                // move the handle in response to a mouse position
+                var $this = this;
+                var settings = $this.data('settings');
+                var r = settings.rect;
+                var h = settings.handlerect;
+                var handlepos = r.getCenter();
+                if (settings.vertical) {
+                    handlepos.y = Math.min(Math.max(r.y, pos.y), r.y + r.height)
+                } else {
+                    handlepos.x = Math.min(Math.max(r.x, pos.x), r.x + r.width)
+                    }
+                h.setCenter(handlepos);
+                h.adjustDiv(settings.$handle);
+                if (calc) {
+                    // calculate new slider value
+                    var temp = settings.vertical
+                        ? (handlepos.y - r.y)
+                        : (handlepos.x - r.x);
+                    settings.val = fn.cropFloat(temp * settings.factor + settings.min);
+                    }
+                if (settings.onmove) {
+                    settings.onmove($this);
+                    }
             },
             show : function(data) {
                 var $this = this;
@@ -440,37 +485,28 @@ digilib buttons plugin
                 var settings = $this.data('settings');
                 // the jquery elements we need
                 var $body = $('body');
-                var $handle = settings.$handle;
                 // some variables for easier calculation
-                var vertical = settings.direction == 'y';
-                var tempval = settings.start;
                 var label = settings.label + ': ';
-                var diff = settings.max - settings.min; 
-                var ratio = (settings.start - settings.min) / diff;
-                var r = geom.rectangle($this);
-                var factor = vertical
-                    ? diff / r.height
-                    : diff / r.width;
                 // calculate positions for the slider elements
-                var handlerect = geom.rectangle(0, 0, settings.handlesize, settings.handlesize);
-                var startpos = vertical
-                    ? geom.position(r.x + r.width / 2, r.y + ratio * r.height)
-                    : geom.position(r.x + ratio * r.width, r.y + r.height / 2);
+                var r = geom.rectangle($this);
+                settings.rect = r;
+                var v = settings.vertical;
+                settings.factor = v
+                    ? settings.diff / r.height
+                    : settings.diff / r.width;
                 var labelpos = geom.position(r.x, r.y + settings.labeloffset);
-                labelpos.adjustDiv(settings.$label);
-                var minpos = vertical
+                var minpos = v
                     ? geom.position(r.x + settings.numberoffset, r.y)
                     : geom.position(r.x, r.y + settings.numberoffset);
-                minpos.adjustDiv(settings.$min);
-                var maxpos = vertical
+                var maxpos = v
                     ? geom.position(r.x + settings.numberoffset, r.y + r.width)
                     : geom.position(r.x + r.width - settings.$max.width(), r.y + settings.numberoffset);
+                // adjust elements
+                labelpos.adjustDiv(settings.$label);
+                minpos.adjustDiv(settings.$min);
                 maxpos.adjustDiv(settings.$max);
-
-                var moveHandle = function(pos) {
-                    handlerect.setCenter(pos);
-                    handlerect.adjustDiv($handle);
-                };
+                // set the handle
+                $this.slider('setval');
 
                 // mousedown handler: start sliding
                 var sliderStart = function (event) {
@@ -482,16 +518,8 @@ digilib buttons plugin
                 // mousemove handler: move slider
                 var sliderMove = function (event) {
                     var pos = geom.position(event);
-                    var c = handlerect.getCenter();
-                    var newpos = vertical
-                        ? geom.position(c.x, Math.min(Math.max(r.y, pos.y), r.y + r.height))
-                        : geom.position(Math.min(Math.max(r.x, pos.x), r.x + r.width), c.y);
-                    moveHandle(newpos);
-                    var temp = vertical
-                        ? (c.y - r.y)
-                        : (c.x - r.x);
-                    tempval = fn.cropFloat(temp * factor + settings.min);
-                    settings.$label.text(label + tempval);
+                    $this.slider('moveto', pos, true);
+                    settings.$label.text(label + settings.val);
                     return false;
                 };
 
@@ -499,13 +527,12 @@ digilib buttons plugin
                 var sliderEnd = function (event) {
                     $body.off("mousemove.slider");
                     $body.off("mouseup.slider");
-                    settings['result'] = tempval;
                     return false;
                 };
 
                 // bind mousedown handler to sliderhandle
-                $handle.on('mousedown.slider', sliderStart);
-                moveHandle(startpos);
+                settings.$handle.on('mousedown.slider', sliderStart);
+                console.debug('show slider: ', $this, ' settings:', settings);
             },
             destroy : function( ) {
                 var $this = this;
@@ -541,6 +568,75 @@ digilib buttons plugin
         };
     };
 
+    /** creates the HTML structure for a panel div
+     */
+    var setupPanel = function (data, callback) {
+        var $elem = data.$elem;
+        var panelClass = data.settings.cssPrefix + 'panel';
+        var $panel = $elem.find('.' + panelClass);
+        if ($panel.length > 0) {
+            $panel.fadeOut(function() {
+                $panel.remove();
+                });
+            return null;
+            }
+        var $div = $('<div/>');
+        $div.addClass(panelClass);
+        var $okcancel = setupOkCancel(data, callback);
+        $div.append($okcancel);
+        $elem.append($div);
+        return $div;
+    };
+
+    /** creates the HTML structure for a slider div
+     */
+    var setupSlider = function (data, paramname) {
+        var id = paramname + "-slider";
+        var $div = $('#' + id);
+        if ($div.length == 0) {
+            // slider not yet created
+            $div = $('<div/>');
+            var options = sliders[paramname];
+            $div.attr('id', paramname + "-slider");
+            $div.slider(options);
+            console.debug ('new slider #' + id, $div, options);
+            }
+        return $div;
+    };
+
+    /** creates the HTML structure for a ok and cancel div
+     */
+    var setupOkCancel = function (data) {
+        var settings = data.settings;
+        var cssPrefix = settings.cssPrefix;
+        var html = '\
+            <div>\
+                <button class="'+cssPrefix+'button" id="'+cssPrefix+'Ok">OK</button>\
+                <button class="'+cssPrefix+'button" id="'+cssPrefix+'Cancel">Cancel</button>\
+            </div>';
+        var $div = $(html);
+        var handler = function(event) {
+            var $panel = $(this).parents('.'+cssPrefix+'panel');
+            var callback = $panel.data['callback'];
+            if (event.keyCode == 27 || event.target.id == cssPrefix+'Cancel') {
+                // return false;
+                }
+            if (event.keyCode == 13 || event.target.id == cssPrefix+'Ok') {
+                if (callback) {
+                    callback(data);
+                    }
+                // return false;
+                }
+            $panel.fadeOut(function() {
+                $panel.remove();
+                });
+            return false;
+            };
+        $div.children().on('click', handler);
+        return $div;
+    };
+
+
     /** creates HTML structure for the calibration div
      */
     var setupCalibrationDiv = function (data) {
@@ -553,8 +649,8 @@ digilib buttons plugin
                     <div class="'+cssPrefix+'cm">Please enter the length of this scale on your screen</div>\
                     <div>\
                         <input id="'+cssPrefix+'calibration-input" size="5"/> cm\
-                        <button class="'+cssPrefix+'calibration-button" id="'+cssPrefix+'calibrationOk">OK</button>\
-                        <button class="'+cssPrefix+'calibration-button" id="'+cssPrefix+'calibrationCancel">Cancel</button>\
+                        <button class="'+cssPrefix+'button" id="'+cssPrefix+'calibrationOk">OK</button>\
+                        <button class="'+cssPrefix+'button" id="'+cssPrefix+'calibrationCancel">Cancel</button>\
                     </div>\
                     <div class="'+cssPrefix+'calibration-error">Please enter a numeric value like this: 12.3</div>\
                 </div>\

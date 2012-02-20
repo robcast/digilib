@@ -141,16 +141,6 @@ div.dl-digilib div.dl-calibration-error {
 	display: none;
 	}
 
-div.dl-digilib button.dl-calibration-button {
-	margin: 0px 10px;
-	border: 1px solid lightcyan;
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	font-size: 12px;
-	font-weight: bold;
-	color: lightcyan;
-	background-color: transparent;
-	}
-
 div.dl-digilib input.dl-calibration-input {
 	margin: 0px 10px;
 	}
@@ -160,16 +150,33 @@ div.dl-digilib input.dl-error {
 	background-color: khaki;
 	}
 
+div.dl-digilib button.dl-button {
+	margin: 0px 10px 10px 10px;
+	border: 1px solid lightcyan;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-weight: bold;
+	color: white;
+	background: url('img/blue.png');
+	}
+
 div.dl-digilib div.dl-slider {
 	background: url('img/blue.png');
-	display: none;
 	border: 1px solid lightcyan;
-	position: absolute;
+	margin: 30px;
 	z-index: 9999;
-	width: 400px;
 	height: 6px;
 	}
 
+div.dl-digilib div.dl-panel {
+    position: absolute;
+	width: 500px;
+	text-align: center;
+	background: url('img/blue.png');
+	border: 1px solid lightcyan;
+	display: none;
+    }
+	
 div.dl-digilib div.dl-sliderhandle {
 	border: 1px solid lightcyan;
 	background: url('img/blue.png');
