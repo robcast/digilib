@@ -1607,6 +1607,13 @@ if (typeof console === 'undefined') {
         return cropFloat(x).toString();
     };
 
+    var centerOnScreen = function (data, $div) {
+        var r = geom.rectangle($div);
+        var s = fn.getFullscreenRect(data);
+        r.setCenter(s.getCenter());
+        r.adjustDiv($div);
+    };
+
     // fallback for console.log calls
     if (customConsole) {
         var logFunction = function(type) {
@@ -1657,7 +1664,8 @@ if (typeof console === 'undefined') {
             getFullscreenRect : getFullscreenRect,
             getBorderWidth : getBorderWidth,
             cropFloat : cropFloat,
-            cropFloatStr : cropFloatStr
+            cropFloatStr : cropFloatStr,
+            centerOnScreen : centerOnScreen
     };
 
     // hook digilib plugin into jquery
