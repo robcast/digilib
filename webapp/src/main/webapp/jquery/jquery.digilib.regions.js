@@ -1,9 +1,16 @@
 /** optional digilib regions plugin
 
-markup a digilib image with rectangular regions
+Mark up a digilib image with rectangular regions.
 
-TODO:
-    how to display regions correctly in embedded mode?
+If hasRegionInfo=true reads regions from page HTML.
+Element with regions has to be in digilib element, e.g.
+
+<div class="dl-keep dl-regioncontent">
+   <a href="http://www.mpiwg-berlin.mpg.de" coords="0.1,0.1,0.4,0.1">MPI fuer Wissenschaftsgeschichte</a>
+   <a href="http://www.biblhertz.it" coords="0.5,0.8,0.4,0.1">Bibliotheca Hertziana</a>
+   <a coords="0.3,0.5,0.15,0.1" />
+</div>
+
 */
 
 (function($) {
@@ -43,7 +50,7 @@ TODO:
         // are regions shown?
         'isRegionVisible' : true,
         // are region numbers shown?
-        'showRegionNumbers' : false,
+        'showRegionNumbers' : true,
         // is window with region HTML shown?
         'showRegionInfo' : false,
         // is there region content in the page?
@@ -51,7 +58,7 @@ TODO:
         // turn any region into a clickable link to its detail view
         'autoRegionLinks' : false,
         // class name for content divs (must additionally be marked with class "keep")
-        'regionContentSelector' : 'div.regioncontent',
+        'regionContentSelector' : 'div.dl-regioncontent',
         // buttonset of this plugin
         'regionSet' : ['regions', 'addregion', 'delregion', 'regionhtml', 'lessoptions'],
         // url param for regions
@@ -278,7 +285,7 @@ TODO:
             if (attributes) {
                 delete attributes.href;
                 $regionDiv.attr(attributes);
-                };
+            }
             $regionDiv.on('click.dlRegion', function() {
                  window.location = url;
             });
@@ -488,7 +495,7 @@ TODO:
         $data.on('update', handleUpdate);
         var settings = data.settings;
         var selector = settings.regionContentSelector;
-        settings.hasRegionContent = $elem.has(selector).length > 0;
+        //settings.hasRegionContent = $elem.has(selector).length > 0;
         // neither URL-defined regions nor buttons when regions are predefined in HTML
         if (!settings.hasRegionContent) {
             var mode = settings.interactionMode;
