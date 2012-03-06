@@ -5,11 +5,11 @@ Mark up a digilib image with rectangular regions.
 If hasRegionInfo=true reads regions from page HTML.
 Element with regions has to be in digilib element, e.g.
 
-<div class="dl-keep dl-regioncontent">
-   <a href="http://www.mpiwg-berlin.mpg.de" coords="0.1,0.1,0.4,0.1">MPI fuer Wissenschaftsgeschichte</a>
-   <a href="http://www.biblhertz.it" coords="0.5,0.8,0.4,0.1">Bibliotheca Hertziana</a>
-   <a coords="0.3,0.5,0.15,0.1" />
-</div>
+<map class="dl-keep dl-regioncontent">
+   <area href="http://www.mpiwg-berlin.mpg.de" coords="0.1,0.1,0.4,0.1" alt="MPI fuer Wissenschaftsgeschichte"/>
+   <area href="http://www.biblhertz.it" coords="0.5,0.8,0.4,0.1" alt="Bibliotheca Hertziana"/>
+   <area coords="0.3,0.5,0.15,0.1" />
+</map>
 
 */
 
@@ -54,9 +54,11 @@ Element with regions has to be in digilib element, e.g.
         // is there region content in the page?
         'hasRegionContent' : false,
         // turn any region into a clickable link to its detail view
-        'autoRegionLinks' : false,
-        // class name for content divs (must additionally be marked with class "keep")
-        'regionContentSelector' : 'div.dl-regioncontent',
+        'autoZoomRegionLinks' : false,
+        // use full region as klickable link (instead of only number and text)
+        'fullRegionLinks' : false,
+        // css selector for area elements (should additionally be marked with class "keep")
+        'regionContentSelector' : 'map.dl-regioncontent area',
         // buttonset of this plugin
         'regionSet' : ['regions', 'addregion', 'delregion', 'regionhtml', 'lessoptions'],
         // url param for regions
@@ -266,30 +268,39 @@ Element with regions has to be in digilib element, e.g.
 
     // add a region to data.$elem
     var addRegionDiv = function (data, index, attributes) {
-        var cssPrefix = data.settings.cssPrefix;
+        var settings = data.settings;
+        var cssPrefix = settings.cssPrefix;
         var nr = index + 1; // we count regions from 1
         var $regionDiv = $('<div class="'+cssPrefix+'region '+cssPrefix+'overlay" style="display:none"/>');
         data.$elem.append($regionDiv);
-        if (data.settings.showRegionNumbers) {
+        if (settings.showRegionNumbers) {
             var $regionLink = $('<a class="'+cssPrefix+'regionnumber">'+nr+'</a>');
             if (attributes) $regionLink.attr(attributes);
             $regionDiv.append($regionLink);
         }
-        if (data.settings.autoRegionLinks) {
-            var url = null;
-            if (attributes) {
-                if (attributes.href != null) {
-                    url = attributes.href;
-                }
-                delete attributes.href;
-                $regionDiv.attr(attributes);
+        var url = null;
+        if (attributes) {
+            $regionDiv.attr(attributes);
+            // UGLY: if we added href, remove it
+            if (attributes.href) {
+                url = attributes.href;
+                $regionDiv.removeAttr('href');
             }
+        }
+        if (settings.autoZoomRegionLinks || settings.fullRegionLinks) {
             var region = data.regions[index];
-            $regionDiv.on('click.dlRegion', function() {
-                if (url != null) {
+            $regionDiv.on('click.dlRegion', function(evt) {
+                if (settings.fullRegionLinks && url) {
+                    //TODO: how about target?
                     window.location = url;
-                } else {
-                    digilib.actions['zoomArea'](data, region);
+                } 
+                if (evt.target !== $regionDiv.get(0)) {
+                    // this was not our event
+                    return;
+                }
+                if (settings.autoZoomRegionLinks) {
+                    // zoom to region
+                    digilib.actions.zoomArea(data, region);
                 }
             });
         }
@@ -316,9 +327,8 @@ Element with regions has to be in digilib element, e.g.
     // create regions from HTML
     var createRegionsFromHTML = function (data) {
         var regions = data.regions;
-        var selector = data.settings.regionContentSelector;
-        // regions are defined in "a" tags
-        var $content = data.$elem.contents(selector).contents('a');
+        // regions are defined in "area" tags
+        var $content = data.$elem.find(data.settings.regionContentSelector);
         console.debug("createRegionsFromHTML. elems: ", $content);
         $content.each(function(index, a) {
             var $a = $(a); 
@@ -335,7 +345,17 @@ Element with regions has to be in digilib element, e.g.
             // create the div
             var $regionDiv = createRegionDiv(data, regions, index, attributes);
             var $contents = $a.contents().clone();
-            $regionDiv.append($contents);
+            if (attributes.href != null) {
+                // wrap contents in a-tag
+                var $ca = $('<a href="'+attributes.href+'"/>');
+                $ca.append($contents);
+                $ca.append($a.attr('alt'));
+                $regionDiv.append($ca);
+            } else {
+                $regionDiv.append($contents);
+                // alt attribute is also content (BTW: area-tag has no content())
+                $regionDiv.append($a.attr('alt'));
+            }
         });
     };
 

@@ -67,6 +67,11 @@ div.dl-digilib div.dl-region {
 	filter:progid:DXImageTransform.Microsoft.Alpha(opacity=30); 
 }
 
+div.dl-digilib div.dl-region a:link,
+div.dl-digilib div.dl-region a:visited {
+    color: white;
+}
+
 div.dl-digilib div.dl-region:hover {
 	background-color: transparent;
 	border: 2px solid red;
@@ -87,7 +92,7 @@ div.dl-digilib div.dl-region a.dl-regionnumber {
     display: inline-block;
 }
 
-div.dl-digilib div.dl-regioncontent {
+div.dl-digilib map.dl-regioncontent {
     display: none;
 }
 
