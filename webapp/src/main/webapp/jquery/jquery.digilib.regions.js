@@ -21,8 +21,6 @@ Element with regions has to be in digilib element, e.g.
     // affine geometry plugin
     var geom = null;
 
-    var ID_PREFIX = "digilib-region-";
-
     var buttons = {
         addregion : {
             onclick : "defineRegion",
@@ -270,24 +268,29 @@ Element with regions has to be in digilib element, e.g.
     var addRegionDiv = function (data, index, attributes) {
         var cssPrefix = data.settings.cssPrefix;
         var nr = index + 1; // we count regions from 1
-        // create a digilib URL for this detail
-        var url = attributes ? attributes.href : getRegionUrl(data, index);
         var $regionDiv = $('<div class="'+cssPrefix+'region '+cssPrefix+'overlay" style="display:none"/>');
-        $regionDiv.attr("id", ID_PREFIX + nr);
         data.$elem.append($regionDiv);
         if (data.settings.showRegionNumbers) {
-            var $regionLink = $('<a class="'+cssPrefix+'regionnumber"/>');
+            var $regionLink = $('<a class="'+cssPrefix+'regionnumber">'+nr+'</a>');
             if (attributes) $regionLink.attr(attributes);
-            $regionLink.text(nr);
             $regionDiv.append($regionLink);
         }
         if (data.settings.autoRegionLinks) {
+            var url = null;
             if (attributes) {
+                if (attributes.href != null) {
+                    url = attributes.href;
+                }
                 delete attributes.href;
                 $regionDiv.attr(attributes);
             }
+            var region = data.regions[index];
             $regionDiv.on('click.dlRegion', function() {
-                 window.location = url;
+                if (url != null) {
+                    window.location = url;
+                } else {
+                    digilib.actions['zoomArea'](data, region);
+                }
             });
         }
         return $regionDiv;
@@ -324,11 +327,11 @@ Element with regions has to be in digilib element, e.g.
             var pos = coords.split(",", 4);
             var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
             regions.push(rect);
-            // save the attributes
+            // copy some attributes
             var attributes = {};
-            if ($a.attr('id')) { attributes.id = $a.attr('id'); }
-            if ($a.attr('href')) { attributes.href = $a.attr('href'); }
-            if ($a.attr('title')) { attributes.title = $a.attr('title'); }
+            for (var n in {'id':1, 'href':1, 'title':1, 'target':1, 'style':1}) {
+                attributes[n] = $a.attr(n);
+            }
             // create the div
             var $regionDiv = createRegionDiv(data, regions, index, attributes);
             var $contents = $a.contents().clone();
@@ -361,7 +364,7 @@ Element with regions has to be in digilib element, e.g.
             } else{
                 $regionDiv.show();
             }
-            // for some reason adjustDiv sets wrong coords when called BEFORE show()?
+            // adjustDiv sets wrong coords when called BEFORE show()
             screenRect.adjustDiv($regionDiv);
         } else {
             if (anim) {
@@ -402,7 +405,7 @@ Element with regions has to be in digilib element, e.g.
         }
         var rg = '';
         for (var i = 0; i < regions.length; i++) {
-            region = regions[i];
+            var region = regions[i];
             if (i) {
                 rg += ',';
             }
@@ -422,23 +425,6 @@ Element with regions has to be in digilib element, e.g.
             packRegions(data);
         }
         fn.redisplay(data);
-    };
-
-    // for turning region numbers/region divs into links to zoomed details 
-    var getRegionUrl = function (data, index) {
-        var region = data.regions[index];
-        var settings = data.settings;
-        var params = {
-            "fn" : settings.fn,
-            "pn" : settings.pn
-            };
-        fn.packArea(params, region);
-        fn.packMarks(params, data.marks);
-        fn.packScalerFlags(params, data.scalerFlags);
-        var paramNames = digilib.defaults.digilibParamNames;
-        // build our own digilib URL without storing anything
-        var queryString = fn.getParamString(params, paramNames, digilib.defaults);
-        return settings.digilibBaseUrl + '?' + queryString;
     };
 
     // event handler, reads region parameter and creates region divs
@@ -494,8 +480,6 @@ Element with regions has to be in digilib element, e.g.
         $data.on('setup', handleSetup);
         $data.on('update', handleUpdate);
         var settings = data.settings;
-        var selector = settings.regionContentSelector;
-        //settings.hasRegionContent = $elem.has(selector).length > 0;
         // neither URL-defined regions nor buttons when regions are predefined in HTML
         if (!settings.hasRegionContent) {
             var mode = settings.interactionMode;

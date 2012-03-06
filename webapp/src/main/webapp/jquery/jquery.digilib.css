@@ -58,20 +58,21 @@ div.dl-digilib div.dl-about {
 
 div.dl-digilib div.dl-region {
 	position: absolute;
+    color: white;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 11px;
 	background-color: red;
     opacity: 0.3;
+    /* do we still need this IE6-stuff? */
 	filter:progid:DXImageTransform.Microsoft.Alpha(opacity=30); 
 }
 
 div.dl-digilib div.dl-region:hover {
-	opacity: 0.5;
+	background-color: transparent;
+	border: 2px solid red;
+	/* opacity: 0.5; */
+    /* do we still need this IE6-stuff? */
 	filter:progid:DXImageTransform.Microsoft.Alpha(opacity=50); 
-}
-
-div.dl-digilib div.dl-region {
-    color: white;
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size: 11px;
 }
 
 div.dl-digilib div.dl-region a.dl-regionnumber {
