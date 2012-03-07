@@ -52,7 +52,9 @@ Element with regions has to be in digilib element, e.g.
         // is window with region HTML shown?
         'showRegionInfo' : false,
         // is there region content in the page?
-        'hasRegionContent' : false,
+        'processHtmlRegions' : false,
+        // region defined by users and in the URL
+        'processUserRegions' : true,
         // turn any region into a clickable link to its detail view
         'autoZoomRegionLinks' : false,
         // use full region as klickable link (instead of only number and text)
@@ -217,16 +219,16 @@ Element with regions has to be in digilib element, e.g.
     var regionInfoHTML = function (data) {
         var cssPrefix = data.settings.cssPrefix;
         var $infoDiv = $('<div class="'+cssPrefix+'info '+cssPrefix+'html"/>');
-        $infoDiv.append($('<div/>').text('<div class="'+cssPrefix+'keep '+cssPrefix+'regioncontent">'));
+        $infoDiv.append($('<div/>').text('<map class="'+cssPrefix+'keep '+cssPrefix+'regioncontent">'));
         $.each(data.regions, function(index, r) {
             var area = [
                 fn.cropFloatStr(r.x),
                 fn.cropFloatStr(r.y),
                 fn.cropFloatStr(r.width),
                 fn.cropFloatStr(r.height)].join(',');
-            $infoDiv.append($('<div/>').text('<a coords="' + area + '" >'));
+            $infoDiv.append($('<div/>').text('<area coords="' + area + '"/>'));
             });
-        $infoDiv.append($('<div/>').text('</div>'));
+        $infoDiv.append($('<div/>').text('</map>'));
         return $infoDiv;
     };
 
@@ -280,14 +282,19 @@ Element with regions has to be in digilib element, e.g.
         }
         var url = null;
         if (attributes) {
-            $regionDiv.attr(attributes);
-            // UGLY: if we added href, remove it
+            // copy attributes to div except href
             if (attributes.href) {
                 url = attributes.href;
-                $regionDiv.removeAttr('href');
+                // copy attributes
+                var attrs = $.extend({}, attributes);
+                delete attrs.href;
+                $regionDiv.attr(attrs);
+            } else {
+                $regionDiv.attr(attributes);
             }
         }
         if (settings.autoZoomRegionLinks || settings.fullRegionLinks) {
+            // handle click events on div
             var region = data.regions[index];
             $regionDiv.on('click.dlRegion', function(evt) {
                 if (settings.fullRegionLinks && url) {
@@ -309,8 +316,11 @@ Element with regions has to be in digilib element, e.g.
 
     // create a region div from the data.regions array
     var createRegionDiv = function (data, regions, index, attributes) {
-        var $regionDiv = addRegionDiv(data, index, attributes);
         var region = regions[index];
+        // check if div exists
+        if (region.$div != null) return region.$div;
+        // create and add div
+        var $regionDiv = addRegionDiv(data, index, attributes);
         region.$div = $regionDiv;
         return $regionDiv;
     };
@@ -321,7 +331,7 @@ Element with regions has to be in digilib element, e.g.
         var regions = data.regions;
         $.each(regions, function(i) {
             createRegionDiv(data, regions, i);
-            });
+        });
     };
 
     // create regions from HTML
@@ -334,8 +344,9 @@ Element with regions has to be in digilib element, e.g.
             var $a = $(a); 
             // the "coords" attribute contains the region coords (0..1)
             var coords = $a.attr('coords');
-            var pos = coords.split(",", 4);
+            var pos = coords.split(',', 4);
             var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
+            rect.fromHtml = true;
             regions.push(rect);
             // copy some attributes
             var attributes = {};
@@ -349,6 +360,7 @@ Element with regions has to be in digilib element, e.g.
                 // wrap contents in a-tag
                 var $ca = $('<a href="'+attributes.href+'"/>');
                 $ca.append($contents);
+                // alt attribute is also content (BTW: area-tag has no content())
                 $ca.append($a.attr('alt'));
                 $regionDiv.append($ca);
             } else {
@@ -362,7 +374,6 @@ Element with regions has to be in digilib element, e.g.
     // show a region on top of the scaler image 
     var renderRegion = function (data, index, anim) {
         if (!data.imgTrafo) return;
-        var $elem = data.$elem;
         var regions = data.regions;
         var zoomArea = data.zoomArea;
         if (index > regions.length) return;
@@ -426,7 +437,9 @@ Element with regions has to be in digilib element, e.g.
         var rg = '';
         for (var i = 0; i < regions.length; i++) {
             var region = regions[i];
-            if (i) {
+            // skip regions from HTML
+            if (region.fromHtml != null) continue;
+            if (rg) {
                 rg += ',';
             }
             rg += [
@@ -441,7 +454,7 @@ Element with regions has to be in digilib element, e.g.
 
     // reload display after a region has been added or removed
     var redisplay = function (data) {
-        if (!data.settings.hasRegionContent) {
+        if (data.settings.processUserRegions) {
             packRegions(data);
         }
         fn.redisplay(data);
@@ -450,12 +463,14 @@ Element with regions has to be in digilib element, e.g.
     // event handler, reads region parameter and creates region divs
     var handleSetup = function (evt) {
         var data = this;
-        console.debug("regions: handleSetup", data.settings.rg);
-        // regions with content are given in HTML divs
-        if (data.settings.hasRegionContent) {
+        var settings = data.settings;
+        console.debug("regions: handleSetup", settings.rg);
+        if (settings.processHtmlRegions) {
+            // regions with content are given in HTML divs
             createRegionsFromHTML(data);
-        // regions are defined in the URL
-        } else {
+        }
+        if (settings.processUserRegions) {
+            // regions are defined in the URL
             createRegionsFromURL(data);
             fn.highlightButtons(data, 'regionhtml', data.settings.showRegionInfo);
         }
@@ -488,6 +503,7 @@ Element with regions has to be in digilib element, e.g.
     var init = function (data) {
         console.debug('initialising regions plugin. data:', data);
         var $elem = data.$elem;
+        var settings = data.settings;
         var cssPrefix = data.settings.cssPrefix;
         // regions array
         data.regions = [];
@@ -499,9 +515,7 @@ Element with regions has to be in digilib element, e.g.
         var $data = $(data);
         $data.on('setup', handleSetup);
         $data.on('update', handleUpdate);
-        var settings = data.settings;
-        // neither URL-defined regions nor buttons when regions are predefined in HTML
-        if (!settings.hasRegionContent) {
+        if (settings.processUserRegions) {
             var mode = settings.interactionMode;
             // add "rg" to digilibParamNames
             settings.digilibParamNames.push('rg');
