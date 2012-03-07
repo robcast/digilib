@@ -85,9 +85,6 @@ digilib sliders plugin
         sliderRotate : function (data) {
             var $elem = data.$elem;
             var $panel = fn.setupPanel(data);
-            if ($panel == null) {
-                return;
-                };
             var opts = { 'start' : parseFloat(data.settings.rot) };
             var $slider = fn.setupSlider(data, 'rot', opts);
             var ok = function(d) {
@@ -105,9 +102,6 @@ digilib sliders plugin
         sliderBrightness : function (data) {
             var $elem = data.$elem;
             var $panel = fn.setupPanel(data);
-            if ($panel == null) {
-                return;
-                };
             var opts = { 'start' : parseFloat(data.settings.brgt) };
             var $slider = fn.setupSlider(data, 'brgt', opts);
             var ok = function(d) {
@@ -115,7 +109,6 @@ digilib sliders plugin
                 digilib.actions.brightness(d, brgt);
                 };
             $panel.data['ok'] = ok;
-            $panel.fadeIn();
             $panel.prepend($slider);
             fn.centerOnScreen(data, $panel);
             $slider.slider('show');
@@ -125,9 +118,6 @@ digilib sliders plugin
         sliderContrast : function (data) {
             var $elem = data.$elem;
             var $panel = fn.setupPanel(data);
-            if ($panel == null) {
-                return;
-                };
             var opts = { 'start' : parseFloat(data.settings.cont) };
             var $slider = fn.setupSlider(data, 'cont', opts);
             var ok = function(d) {
@@ -140,42 +130,6 @@ digilib sliders plugin
             fn.centerOnScreen(data, $panel);
             $slider.slider('show');
         }
-    };
-
-    var init_ = function (options) {
-        // make a slider from each element
-        return this.each(function() {
-            var $this = $(this);
-            // var settings = data.settings;
-            var settings = $.extend( defaults, options);
-            console.debug('new slider: ', $this, ' settings:', settings);
-            $this.data('digilib', digilibdata);
-            var data = $this.data('settings');
-            if (!data) {
-                settings.cssclass = digilibdata.cssPrefix+'slider';
-                $this.data('settings', settings);
-                $this.addClass(settings.cssclass);
-                var $handle = $('<div class="'+settings.cssclass+'handle" />');
-                var $label = $('<div class="'+settings.cssclass+'label">'
-                    +settings.label+': '+settings.start+'</div>');
-                var $min = $('<div class="'+settings.cssclass+'number">'+settings.min+'</div>');
-                var $max = $('<div class="'+settings.cssclass+'number">'+settings.max+'</div>');
-                $this.append($handle);
-                $this.append($label);
-                $this.append($min);
-                $this.append($max);
-                $.extend(settings, {
-                    '$handle' : $handle,
-                    '$label' : $label,
-                    '$min' : $min,
-                    '$max' : $max,
-                    'diff' : settings.max - settings.min,
-                    'vertical' : settings.direction == 'y',
-                    'val' : settings.start,
-                    'handlerect' : geom.rectangle(0, 0, settings.handlesize, settings.handlesize)
-                    });
-                }
-            });
     };
 
     var getval = function (data) {
@@ -295,6 +249,7 @@ digilib sliders plugin
     var setButtonAction = function(buttons, buttonName, action) {
         var button = buttons[buttonName];
         if (button == null) {
+            // normally this means that jquery.digilib.buttons.js was not loaded
             console.log('could not attach slider action ' + action 
                 + ', button ' + buttonName + ' not available' );
             return;
@@ -331,16 +286,9 @@ digilib sliders plugin
         console.debug('initialising sliders plugin. data:', data);
         var settings = data.settings;
         var $data = $(data);
-        // install event handler
-        $data.bind('setup', handleSetup);
+        // we do setup at runtime
+        // $data.bind('setup', handleSetup);
     };
-
-    var handleSetup = function (evt) {
-        console.debug("sliders: handleSetup");
-        var data = this;
-        var settings = data.settings;
-    };
-
 
     /** creates the HTML structure for a panel div
      */
@@ -348,18 +296,18 @@ digilib sliders plugin
         var $elem = data.$elem;
         var panelClass = data.settings.cssPrefix + 'panel';
         var $panel = $elem.find('.' + panelClass);
-        // remove panel if it exists already
-        if ($panel.length > 0) {
-            $panel.fadeOut(function() {
-                $panel.remove();
-                });
-            return null;
-            }
-        $panel = $('<div/>');
-        $panel.addClass(panelClass);
+        if ($panel.length == 0) {
+            // new panel
+            $panel = $('<div/>');
+            $panel.addClass(panelClass);
+            $elem.append($panel);
+            $panel.fadeIn();
+        } else {
+            // panel exists, so empty it
+            $panel.empty();
+        }
         var $okcancel = setupOkCancel(data);
         $panel.append($okcancel);
-        $elem.append($panel);
         return $panel;
     };
 
@@ -368,16 +316,43 @@ digilib sliders plugin
     var setupSlider = function (data, paramname, opts) {
         var id = "slider-" + paramname;
         var $div = $('#' + id);
-        if ($div.length == 0) {
-            // slider not yet created
-            $div = $('<div/>');
-            var options = sliders[paramname];
-            if (opts != null) {
-                $.extend(options, opts);
-                }
-            $div.attr('id', id);
-            // $div.slider(options);
+        if ($div.length > 0) {
+            return $div;
             }
+        // slider not yet created
+        var cssClass = data.cssPrefix+'slider';
+        var html = '\
+            <div id="'+id+' class="'+cssClass+'">\
+                <div class="'+cssClass+'handle" />
+                <div class="'+cssClass+'number">'+options.min+'</div>\
+                <div class="'+cssClass+'number">'+options.max+'</div>\
+                <div class="'+cssClass+'label">\
+                    <span>'+options.label+'</span>\
+                    <input class="'+cssClass+'input">'+options.start+'</input>\
+                </div>\
+            </div>';
+        var $div = $(html);
+        var $handle = $div.find('div.'+cssClass+'handle');
+        var $label = $div.find('div.'+cssClass+'label');
+        var $input = $div.find('div.'+cssClass+'input');
+        var $numbers = $div.find('div.'+cssClass+'number') 
+        var $min = $numbers[0];
+        var $max = $numbers[1];
+        var options = defaults;
+        $.extend(options, sliders[paramname], opts);
+        $.extend(options, {
+            '$handle' : $handle,
+            '$label' : $label,
+            '$input' : $input,
+            '$min' : $min,
+            '$max' : $max,
+            'diff' : options.max - options.min,
+            'vertical' : options.direction == 'y',
+            'val' : options.start,
+            'handlerect' : geom.rectangle(0, 0, options.handlesize, options.handlesize)
+            });
+        $div.data(options);
+        console.debug('new slider: ', $div, ', options: ', options);
         return $div;
     };
 
