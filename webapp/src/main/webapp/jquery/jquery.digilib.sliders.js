@@ -275,7 +275,7 @@ digilib sliders plugin
         // add defaults, actions, buttons
         $.extend(true, digilib.defaults, defaults); // make deep copy
         $.extend(digilib.actions, actions);
-        setButtonActions(digilib.buttons);
+        //setButtonActions(digilib.buttons);
         // export functions
         fn.setupSlider = setupSlider;
         fn.setupPanel = setupPanel;
@@ -323,7 +323,7 @@ digilib sliders plugin
         var cssClass = data.cssPrefix+'slider';
         var html = '\
             <div id="'+id+' class="'+cssClass+'">\
-                <div class="'+cssClass+'handle" />
+                <div class="'+cssClass+'handle"/>\
                 <div class="'+cssClass+'number">'+options.min+'</div>\
                 <div class="'+cssClass+'number">'+options.max+'</div>\
                 <div class="'+cssClass+'label">\
@@ -335,7 +335,7 @@ digilib sliders plugin
         var $handle = $div.find('div.'+cssClass+'handle');
         var $label = $div.find('div.'+cssClass+'label');
         var $input = $div.find('div.'+cssClass+'input');
-        var $numbers = $div.find('div.'+cssClass+'number') 
+        var $numbers = $div.find('div.'+cssClass+'number');
         var $min = $numbers[0];
         var $max = $numbers[1];
         var options = defaults;
