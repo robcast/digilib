@@ -336,11 +336,11 @@ if (typeof console === 'undefined') {
          * @param mode
          */
         zoomFull : function (data, mode) {
+            var settings = data.settings;
             data.zoomArea = FULL_AREA.copy();
             setFitMode(data, mode);
             // zoom full only works in screen mode
             setScaleMode(data, 'screen');
-            data.settings.isBirdDivVisible = false;
             redisplay(data);
         },
 
@@ -459,7 +459,6 @@ if (typeof console === 'undefined') {
             var size = getFullscreenImgSize(data);
             settings.dw = params.dw || size.width;
             settings.dh = params.dh || size.height;
-            settings.isBirdDivVisible = false;
             settings.visibleButtonSets = 1; // FIXME
             // resets zoomArea, marks, scalerflags
             data.zoomArea = FULL_AREA.copy();
@@ -858,7 +857,10 @@ if (typeof console === 'undefined') {
      * 
      */
     var redisplay = function (data) {
-        var settings = data.settings; 
+        var settings = data.settings;
+        if (settings.autoBirdDiv) {
+            settings.isBirdDivVisible = !isFullArea(data.zoomArea);
+            }
         if (settings.interactionMode === 'fullscreen') {
             // update location.href (browser URL) in fullscreen mode
             var url = getDigilibUrl(data);

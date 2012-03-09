@@ -23,6 +23,8 @@ digilib bird's eye view plugin
     var defaults = {
             // is birdView shown?
             'isBirdDivVisible' : false,
+            // is birdView automatically shown for a zoomed image and hidden when not?
+            'autoBirdDiv' : false,
             // dimensions of bird's eye div
             'birdDivWidth' : 200, 
             'birdDivHeight' : 200,
