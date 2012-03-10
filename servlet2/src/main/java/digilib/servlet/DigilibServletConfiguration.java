@@ -72,6 +72,9 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
 			digilib.image.ImageLoaderDocuImage.class,
 			null,
 			's');
+	        // DocuImage version
+	        newParameter("servlet.docuimage.version",
+	                "?", null, 's');
 		// AuthOps instance for authentication
 		newParameter("servlet.auth.op", null, null, 's');
         // Executor for image operations
@@ -235,6 +238,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
         // initialise static DocuImage class instance
         DigilibServletConfiguration.docuImageClass = (Class<DocuImageImpl>) Class
                 .forName(getAsString("docuimage-class"));
+        setValue("servlet.docuimage.version", getDocuImageInstance().getVersion());
     }
 
 }

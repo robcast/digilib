@@ -31,7 +31,7 @@ public class Scaler extends HttpServlet {
     private static final long serialVersionUID = 5289386646192471549L;
 
     /** digilib servlet version (for all components) */
-    public static final String version = "2.1b1 async";
+    public static final String version = "2.1b2 async";
 
     /** servlet error codes */
     public static enum Error {
@@ -108,6 +108,8 @@ public class Scaler extends HttpServlet {
             // no Configuration
             throw new ServletException("No Configuration!");
         }
+        // log DocuImage version
+        logger.info("Scaler uses " + dlConfig.getValue("servlet.docuimage.version"));
         // set our AuthOps
         useAuthorization = dlConfig.getAsBoolean("use-authorization");
         authOp = (AuthOps) dlConfig.getValue("servlet.auth.op");

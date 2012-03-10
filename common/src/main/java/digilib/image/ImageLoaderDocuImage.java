@@ -59,117 +59,125 @@ import digilib.io.FileOps;
 import digilib.io.ImageInput;
 import digilib.util.ImageSize;
 
-/** Implementation of DocuImage using the ImageLoader API of Java 1.4 and Java2D. */
+/**
+ * Implementation of DocuImage using the ImageLoader API of Java 1.4 and Java2D.
+ */
 public class ImageLoaderDocuImage extends ImageInfoDocuImage {
+
+    /** DocuImage version */
+    public static final String version = "ImageLoaderDocuImage 2.1.2";
     
-	/** image object */
-	protected BufferedImage img;
-	
-	/** the reader object */
-	protected ImageReader reader = null;
-	
+    /** image object */
+    protected BufferedImage img;
+
+    /** the reader object */
+    protected ImageReader reader = null;
+
     /** try to reuse reader object */
     public boolean reuseReader = false;
-    
-	/** interpolation type */
-	protected RenderingHints renderHint = null;
 
-	/** convolution kernels for blur() */
-	protected static Kernel[] convolutionKernels = {
-	        null,
-	        new Kernel(1, 1, new float[] {1f}),
-            new Kernel(2, 2, new float[] {0.25f, 0.25f, 0.25f, 0.25f}),
-            new Kernel(3, 3, new float[] {1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f, 1f/9f})
-	};
+    /** interpolation type */
+    protected RenderingHints renderHint = null;
 
-	/* lookup tables for inverting images (byte) */
-	protected static LookupTable invertSingleByteTable;
+    /** convolution kernels for blur() */
+    protected static Kernel[] convolutionKernels = { 
+            null, new Kernel(1, 1, new float[] { 1f }),
+            new Kernel(2, 2, new float[] { 0.25f, 0.25f, 0.25f, 0.25f }),
+            new Kernel(3, 3, new float[] { 1f / 9f, 1f / 9f, 1f / 9f, 1f / 9f, 1f / 9f, 1f / 9f, 1f / 9f, 1f / 9f, 1f / 9f }) };
+
+    /* lookup tables for inverting images (byte) */
+    protected static LookupTable invertSingleByteTable;
     protected static LookupTable invertRgbaByteTable;
     protected static boolean needsInvertRgba = false;
-	/* RescaleOp for contrast/brightness operation */
+    /* RescaleOp for contrast/brightness operation */
     protected static boolean needsRescaleRgba = false;
     /* lookup table for false-color */
     protected static LookupTable mapBgrByteTable;
     protected static boolean needsMapBgr = false;
-    
-	static {
-	    /*
-	     * create static lookup tables
-	     */
-		byte[] invertByte = new byte[256];
-		byte[] orderedByte = new byte[256];
-		byte[] nullByte = new byte[256];
+
+    static {
+        /*
+         * create static lookup tables
+         */
+        byte[] invertByte = new byte[256];
+        byte[] orderedByte = new byte[256];
+        byte[] nullByte = new byte[256];
         byte[] mapR = new byte[256];
         byte[] mapG = new byte[256];
         byte[] mapB = new byte[256];
-		for (int i = 0; i < 256; ++i) {
-		    // counting down
-			invertByte[i] = (byte) (256 - i);
-			// counting up
-			orderedByte[i] = (byte) i;
-			// constant 0
-			nullByte[i] = 0;
-			// three overlapping slopes
-			if (i < 64) {
-			    mapR[i] = 0;
-			    mapG[i] = (byte) (4 * i);
-			    mapB[i] = (byte) 255;
-			} else if (i >= 64 && i < 192) {
+        for (int i = 0; i < 256; ++i) {
+            // counting down
+            invertByte[i] = (byte) (255 - i);
+            // counting up
+            orderedByte[i] = (byte) i;
+            // constant 0
+            nullByte[i] = 0;
+            // three overlapping slopes
+            if (i < 64) {
+                mapR[i] = 0;
+                mapG[i] = (byte) (4 * i);
+                mapB[i] = (byte) 255;
+            } else if (i >= 64 && i < 192) {
                 mapR[i] = (byte) (2 * (i - 64));
                 mapG[i] = (byte) 255;
                 mapB[i] = (byte) (255 - 2 * (i - 64));
-			} else {
+            } else {
                 mapR[i] = (byte) 255;
                 mapG[i] = (byte) (255 - (4 * (i - 192)));
                 mapB[i] = 0;
-			}
-		}
-		// should(!) work for all color models
-		invertSingleByteTable = new ByteLookupTable(0, invertByte);
-		// but doesn't work with alpha channel on all platforms
-		String ver = System.getProperty("java.version");
-		String os =  System.getProperty("os.name");
-		logger.debug("os="+os+" ver="+ver);
-		if (os.startsWith("Linux") && ver.startsWith("1.6")) {
-			// GRAB(WTF?) works in Linux JDK1.6 with transparency
-			invertRgbaByteTable = new ByteLookupTable(0, new byte[][] {
-					invertByte, invertByte, orderedByte, invertByte});
-			needsInvertRgba = true;
-			needsRescaleRgba = true;
-			needsMapBgr = true;
-		} else {
-			invertRgbaByteTable = invertSingleByteTable;
-		}
-		// this hopefully works for all
-        mapBgrByteTable = new ByteLookupTable(0, new byte[][] {
-                mapR, mapG, mapB});
-	}
-	
-	/** the size of the current image */
-    protected ImageSize imageSize;
-	
-	
-	/* loadSubimage is supported. */
-	public boolean isSubimageSupported() {
-		return true;
-	}
+            }
+        }
+        // should(!) work for all color models
+        invertSingleByteTable = new ByteLookupTable(0, invertByte);
+        // but doesn't work with alpha channel on all platforms
+        String ver = System.getProperty("java.version");
+        String os = System.getProperty("os.name");
+        String osver = System.getProperty("os.version");
+        logger.debug("os="+os+" ver="+osver+" java_version="+ver);
+        if ((os.startsWith("Linux")) || (os.startsWith("Mac OS X") && osver.startsWith("10.7"))) {
+            // GRAB(WTF?) works for Linux JDK1.6 with transparency
+            needsInvertRgba = true;
+            invertRgbaByteTable = new ByteLookupTable(0, new byte[][] { invertByte, invertByte, orderedByte, invertByte });
+            needsRescaleRgba = true;
+            needsMapBgr = true;
+        } else {
+            invertRgbaByteTable = invertSingleByteTable;
+        }
+        // this hopefully works for all
+        mapBgrByteTable = new ByteLookupTable(0, new byte[][] { mapR, mapG, mapB });
+        logger.debug("ImageIO Hacks: needsRescaleRgba="+needsRescaleRgba+" needsInvertRgba="+needsInvertRgba+
+                " needsMapBgr="+needsMapBgr);
+    }
 
-	public void setQuality(int qual) {
-		quality = qual;
-		renderHint = new RenderingHints(null);
-		// hint.put(RenderingHints.KEY_ANTIALIASING,
-		// RenderingHints.VALUE_ANTIALIAS_OFF);
-		// setup interpolation quality
-		if (qual > 0) {
-			logger.debug("quality q1");
-			renderHint.put(RenderingHints.KEY_INTERPOLATION,
-					RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-		} else {
-			logger.debug("quality q0");
-			renderHint.put(RenderingHints.KEY_INTERPOLATION,
-					RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-		}
-	}
+    /** the size of the current image */
+    protected ImageSize imageSize;
+
+    /**
+     * @return the version
+     */
+    public String getVersion() {
+        return version;
+    }
+
+    /* loadSubimage is supported. */
+    public boolean isSubimageSupported() {
+        return true;
+    }
+
+    public void setQuality(int qual) {
+        quality = qual;
+        renderHint = new RenderingHints(null);
+        // hint.put(RenderingHints.KEY_ANTIALIASING,
+        // RenderingHints.VALUE_ANTIALIAS_OFF);
+        // setup interpolation quality
+        if (qual > 0) {
+            logger.debug("quality q1");
+            renderHint.put(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        } else {
+            logger.debug("quality q0");
+            renderHint.put(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        }
+    }
 
     /* returns the size of the current image */
     public ImageSize getSize() {
@@ -195,11 +203,11 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         return imageSize;
     }
 
-	/* returns a list of supported image formats */
-	public Iterator<String> getSupportedFormats() {
-		String[] formats = ImageIO.getReaderFormatNames();
-		return Arrays.asList(formats).iterator();
-	}
+    /* returns a list of supported image formats */
+    public Iterator<String> getSupportedFormats() {
+        String[] formats = ImageIO.getReaderFormatNames();
+        return Arrays.asList(formats).iterator();
+    }
 
     /* Check image size and type and store in ImageInput */
     public ImageInput identify(ImageInput input) throws IOException {
@@ -242,183 +250,182 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             }
         }
     }
-    
-    /* load image file */
-	public void loadImage(ImageInput ii) throws FileOpException {
-		logger.debug("loadImage: " + ii);
-		this.input = ii;
-		try {
-		    if (ii.hasImageInputStream()) {
-                img = ImageIO.read(ii.getImageInputStream());
-		    } else if (ii.hasFile()) {
-		        img = ImageIO.read(ii.getFile());
-		    }
-		} catch (IOException e) {
-			throw new FileOpException("Error reading image!", e);
-		}
-		if (img == null) {
-		    throw new FileOpException("Unable to read image!");
-		}
-	}
 
-	/**
-	 * Get an ImageReader for the image file.
-	 * 
-	 * @return
-	 */
-	public ImageReader getReader(ImageInput input) throws IOException {
-		logger.debug("get ImageReader for " + input);
-		if (reuseReader && reader != null) {
-		    logger.debug("reuseing ImageReader");
-		    return reader;
-		}
-		ImageInputStream istream = null;
-		if (input.hasImageInputStream()) {
-			// ImageInputStream input
-			istream = input.getImageInputStream();
-		} else if (input.hasFile()) {
-			// file only input
-			RandomAccessFile rf = new RandomAccessFile(input.getFile(), "r");
-			istream = new FileImageInputStream(rf);
-		} else {
-			throw new FileOpException("Unable to get data from ImageInput");
-		}
-		Iterator<ImageReader> readers;
-		String mt = null;
-		if (input.hasMimetype()) {
-	        // check hasMimetype first or we might get into a loop
-		    mt = input.getMimetype();
-		} else {
-		    // try file extension
+    /* load image file */
+    public void loadImage(ImageInput ii) throws FileOpException {
+        logger.debug("loadImage: " + ii);
+        this.input = ii;
+        try {
+            if (ii.hasImageInputStream()) {
+                img = ImageIO.read(ii.getImageInputStream());
+            } else if (ii.hasFile()) {
+                img = ImageIO.read(ii.getFile());
+            }
+        } catch (IOException e) {
+            throw new FileOpException("Error reading image!", e);
+        }
+        if (img == null) {
+            throw new FileOpException("Unable to read image!");
+        }
+    }
+
+    /**
+     * Get an ImageReader for the image file.
+     * 
+     * @return
+     */
+    public ImageReader getReader(ImageInput input) throws IOException {
+        logger.debug("get ImageReader for " + input);
+        if (reuseReader && reader != null) {
+            logger.debug("reuseing ImageReader");
+            return reader;
+        }
+        ImageInputStream istream = null;
+        if (input.hasImageInputStream()) {
+            // ImageInputStream input
+            istream = input.getImageInputStream();
+        } else if (input.hasFile()) {
+            // file only input
+            RandomAccessFile rf = new RandomAccessFile(input.getFile(), "r");
+            istream = new FileImageInputStream(rf);
+        } else {
+            throw new FileOpException("Unable to get data from ImageInput");
+        }
+        Iterator<ImageReader> readers;
+        String mt = null;
+        if (input.hasMimetype()) {
+            // check hasMimetype first or we might get into a loop
+            mt = input.getMimetype();
+        } else {
+            // try file extension
             mt = FileOps.mimeForFile(input.getFile());
-		}
-		if (mt == null) {
-			logger.debug("No mime-type. Trying automagic.");
-			readers = ImageIO.getImageReaders(istream);
-		} else {
-			logger.debug("File type:" + mt);
-			readers = ImageIO.getImageReadersByMIMEType(mt);
-		}
-		if (!readers.hasNext()) {
-			throw new FileOpException("Can't find Reader to load File!");
-		}
-		ImageReader reader = readers.next();
-		/* are there more readers? */
-		logger.debug("ImageIO: this reader: " + reader.getClass());
-		/* while (readers.hasNext()) {
-			logger.debug("ImageIO: next reader: " + readers.next().getClass());
-		} */
-		reader.setInput(istream);
-		return reader;
-	}
+        }
+        if (mt == null) {
+            logger.debug("No mime-type. Trying automagic.");
+            readers = ImageIO.getImageReaders(istream);
+        } else {
+            logger.debug("File type:" + mt);
+            readers = ImageIO.getImageReadersByMIMEType(mt);
+        }
+        if (!readers.hasNext()) {
+            throw new FileOpException("Can't find Reader to load File!");
+        }
+        ImageReader reader = readers.next();
+        /* are there more readers? */
+        logger.debug("ImageIO: this reader: " + reader.getClass());
+        /*
+         * while (readers.hasNext()) { logger.debug("ImageIO: next reader: " +
+         * readers.next().getClass()); }
+         */
+        reader.setInput(istream);
+        return reader;
+    }
 
     /* Load an image file into the Object. */
-    public void loadSubimage(ImageInput ii, Rectangle region, int prescale)
-			throws FileOpException {
-		logger.debug("loadSubimage");
+    public void loadSubimage(ImageInput ii, Rectangle region, int prescale) throws FileOpException {
+        logger.debug("loadSubimage");
         this.input = ii;
-        //ImageReader reader = null;
-		try {
-		    reader = getReader(ii);
-			// set up reader parameters
-			ImageReadParam readParam = reader.getDefaultReadParam();
-			readParam.setSourceRegion(region);
-			if (prescale > 1) {
-				readParam.setSourceSubsampling(prescale, prescale, 0, 0);
-			}
-			// try to restrict target color space to sRGB
-			for (Iterator<ImageTypeSpecifier> i = reader.getImageTypes(0); i.hasNext(); ) {
-			    ImageTypeSpecifier type = (ImageTypeSpecifier) i.next();
-			    ColorModel cm = type.getColorModel();
-			    ColorSpace cs = cm.getColorSpace();
-                //logger.debug("loadSubimage: possible color model:"+cm+" color space:"+cs);
-			    if (cs.isCS_sRGB()) {
-	                logger.debug("loadSubimage: substituted sRGB destination type "+type);
-			        readParam.setDestinationType(type);
-			        //break;
-			    }
-			}
-			// read image
-			logger.debug("loadSubimage: loading..");
-			img = reader.read(0, readParam);
-			logger.debug("loadSubimage: loaded");
-			// invalidate image size
-			imageSize = null;
-			// downconvert highcolor images
-	        if (img.getColorModel().getComponentSize(0) > 8) {
-	            logger.debug("loadSubimage: converting to 8bit");
-	            int type = BufferedImage.TYPE_INT_RGB;
-	            if (img.getColorModel().hasAlpha()) {
-	                type = BufferedImage.TYPE_INT_ARGB;
-	            }
-	            BufferedImage dest = new BufferedImage(img.getWidth(), img.getHeight(), type);
-	            dest.createGraphics().drawImage(img, null, 0, 0);
-	            img = dest;
-	        }
-		} catch (IOException e) {
-			throw new FileOpException("Unable to load File!", e);
-		} finally {
-		    if (!reuseReader && reader != null) {
-		        reader.dispose();
-		    }
-		}
-	}
+        // ImageReader reader = null;
+        try {
+            reader = getReader(ii);
+            // set up reader parameters
+            ImageReadParam readParam = reader.getDefaultReadParam();
+            readParam.setSourceRegion(region);
+            if (prescale > 1) {
+                readParam.setSourceSubsampling(prescale, prescale, 0, 0);
+            }
+            // try to restrict target color space to sRGB
+            for (Iterator<ImageTypeSpecifier> i = reader.getImageTypes(0); i.hasNext();) {
+                ImageTypeSpecifier type = (ImageTypeSpecifier) i.next();
+                ColorModel cm = type.getColorModel();
+                ColorSpace cs = cm.getColorSpace();
+                // logger.debug("loadSubimage: possible color model:"+cm+" color space:"+cs);
+                if (cs.isCS_sRGB()) {
+                    logger.debug("loadSubimage: substituted sRGB destination type " + type);
+                    readParam.setDestinationType(type);
+                    // break;
+                }
+            }
+            // read image
+            logger.debug("loadSubimage: loading..");
+            img = reader.read(0, readParam);
+            logger.debug("loadSubimage: loaded");
+            // invalidate image size
+            imageSize = null;
+            // downconvert highcolor images
+            if (img.getColorModel().getComponentSize(0) > 8) {
+                logger.debug("loadSubimage: converting to 8bit");
+                int type = BufferedImage.TYPE_INT_RGB;
+                if (img.getColorModel().hasAlpha()) {
+                    type = BufferedImage.TYPE_INT_ARGB;
+                }
+                BufferedImage dest = new BufferedImage(img.getWidth(), img.getHeight(), type);
+                dest.createGraphics().drawImage(img, null, 0, 0);
+                img = dest;
+            }
+        } catch (IOException e) {
+            throw new FileOpException("Unable to load File!", e);
+        } finally {
+            if (!reuseReader && reader != null) {
+                reader.dispose();
+            }
+        }
+    }
 
-	/* write image of type mt to Stream */
-	public void writeImage(String mt, OutputStream ostream)
-			throws ImageOpException, FileOpException {
-		logger.debug("writeImage");
-		// setup output
-		ImageWriter writer = null;
-		ImageOutputStream imgout = null;
-		try {
-			imgout = ImageIO.createImageOutputStream(ostream);
-			if (mt == "image/jpeg") {
-				/*
-				 * JPEG doesn't do transparency so we have to convert any RGBA
-				 * image to RGB or we the client will think its CMYK :-( *Java2D BUG*
-				 */
-				if (img.getColorModel().hasAlpha()) {
-					logger.debug("BARF: JPEG with transparency!!");
-                    BufferedImage rgbImg = new BufferedImage(img.getWidth(),
-                            img.getHeight(), BufferedImage.TYPE_INT_RGB);
-					rgbImg.createGraphics().drawImage(img, null, 0, 0);
-					img = rgbImg;
-				}
-				writer = ImageIO.getImageWritersByFormatName("jpeg").next();
-				if (writer == null) {
-					throw new ImageOpException("Unable to get JPEG writer");
-				}
-				ImageWriteParam param = writer.getDefaultWriteParam();
-				if (quality > 1) {
-					// change JPEG compression quality
-					param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-					param.setCompressionQuality(0.9f);
-				}
-				writer.setOutput(imgout);
-				// render output
-				logger.debug("writing JPEG");
-				writer.write(null, new IIOImage(img, null, null), param);
-			} else if (mt == "image/png") {
-				// render output
-				writer = ImageIO.getImageWritersByFormatName("png").next();
-				if (writer == null) {
-					throw new ImageOpException("Unable to get PNG writer");
-				}
-				writer.setOutput(imgout);
-				logger.debug("writing PNG");
-				writer.write(img);
-			} else {
-				// unknown mime type
-				throw new ImageOpException("Unknown mime type: " + mt);
-			}
+    /* write image of type mt to Stream */
+    public void writeImage(String mt, OutputStream ostream) throws ImageOpException, FileOpException {
+        logger.debug("writeImage");
+        // setup output
+        ImageWriter writer = null;
+        ImageOutputStream imgout = null;
+        try {
+            imgout = ImageIO.createImageOutputStream(ostream);
+            if (mt == "image/jpeg") {
+                /*
+                 * JPEG doesn't do transparency so we have to convert any RGBA
+                 * image to RGB or we the client will think its CMYK :-( *Java2D
+                 * BUG*
+                 */
+                if (img.getColorModel().hasAlpha()) {
+                    logger.debug("BARF: JPEG with transparency!!");
+                    BufferedImage rgbImg = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
+                    rgbImg.createGraphics().drawImage(img, null, 0, 0);
+                    img = rgbImg;
+                }
+                writer = ImageIO.getImageWritersByFormatName("jpeg").next();
+                if (writer == null) {
+                    throw new ImageOpException("Unable to get JPEG writer");
+                }
+                ImageWriteParam param = writer.getDefaultWriteParam();
+                if (quality > 1) {
+                    // change JPEG compression quality
+                    param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                    param.setCompressionQuality(0.9f);
+                }
+                writer.setOutput(imgout);
+                // render output
+                logger.debug("writing JPEG");
+                writer.write(null, new IIOImage(img, null, null), param);
+            } else if (mt == "image/png") {
+                // render output
+                writer = ImageIO.getImageWritersByFormatName("png").next();
+                if (writer == null) {
+                    throw new ImageOpException("Unable to get PNG writer");
+                }
+                writer.setOutput(imgout);
+                logger.debug("writing PNG");
+                writer.write(img);
+            } else {
+                // unknown mime type
+                throw new ImageOpException("Unknown mime type: " + mt);
+            }
 
-		} catch (IOException e) {
-		    logger.error("Error writing image:", e);
-			throw new FileOpException("Error writing image!", e);
-		}
-		// TODO: should we: finally { writer.dispose(); }
-	}
+        } catch (IOException e) {
+            logger.error("Error writing image:", e);
+            throw new FileOpException("Error writing image!", e);
+        }
+        // TODO: should we: finally { writer.dispose(); }
+    }
 
     public void scale(double scaleX, double scaleY) throws ImageOpException {
         logger.debug("scale: " + scaleX);
@@ -428,24 +435,22 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             blur(bl);
         }
         /* then scaled */
-        AffineTransformOp scaleOp = new AffineTransformOp(
-                AffineTransform.getScaleInstance(scaleX, scaleY), renderHint);
+        AffineTransformOp scaleOp = new AffineTransformOp(AffineTransform.getScaleInstance(scaleX, scaleY), renderHint);
         img = scaleOp.filter(img, null);
-        logger.debug("scaled to " + img.getWidth() + "x" + img.getHeight()
-                + " img=" + img);
+        logger.debug("scaled to " + img.getWidth() + "x" + img.getHeight() + " img=" + img);
         // invalidate image size
         imageSize = null;
     }
 
-	public void blur(int radius) throws ImageOpException {
-		logger.debug("blur: " + radius);
-		// minimum radius is 2
-		int klen = Math.max(radius, 2);
-		Kernel blur = null;
-		if (klen < convolutionKernels.length) {
-		    // use precalculated Kernel
+    public void blur(int radius) throws ImageOpException {
+        logger.debug("blur: " + radius);
+        // minimum radius is 2
+        int klen = Math.max(radius, 2);
+        Kernel blur = null;
+        if (klen < convolutionKernels.length) {
+            // use precalculated Kernel
             blur = convolutionKernels[klen];
-		} else {
+        } else {
             // calculate our own kernel
             int ksize = klen * klen;
             // kernel is constant 1/k
@@ -455,90 +460,86 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
                 kern[i] = f;
             }
             blur = new Kernel(klen, klen, kern);
-		}
-		// blur with convolve operation
-		ConvolveOp blurOp = new ConvolveOp(blur, ConvolveOp.EDGE_NO_OP,
-				renderHint);
-		BufferedImage dest = null;
+        }
+        // blur with convolve operation
+        ConvolveOp blurOp = new ConvolveOp(blur, ConvolveOp.EDGE_NO_OP, renderHint);
+        BufferedImage dest = null;
         // blur needs explicit destination image type for 3BYTE_BGR *Java2D BUG*
-		if (img.getType() == BufferedImage.TYPE_3BYTE_BGR) {
-		    logger.debug("blur: fixing destination image type");
-		    dest = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
-		}
-		img = blurOp.filter(img, dest);
-		logger.debug("blurred: "+img);
-	}
+        if (img.getType() == BufferedImage.TYPE_3BYTE_BGR) {
+            logger.debug("blur: fixing destination image type");
+            dest = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+        }
+        img = blurOp.filter(img, dest);
+        logger.debug("blurred: " + img);
+    }
 
-	public void crop(int x_off, int y_off, int width, int height)
-			throws ImageOpException {
-		// setup Crop
-		img = img.getSubimage(x_off, y_off, width, height);
-		logger.debug("CROP:" + img.getWidth() + "x"
-				+ img.getHeight());
+    public void crop(int x_off, int y_off, int width, int height) throws ImageOpException {
+        // setup Crop
+        img = img.getSubimage(x_off, y_off, width, height);
+        logger.debug("CROP:" + img.getWidth() + "x" + img.getHeight());
         // invalidate image size
         imageSize = null;
-	}
+    }
 
-	public void rotate(double angle) throws ImageOpException {
+    public void rotate(double angle) throws ImageOpException {
         logger.debug("rotate: " + angle);
-		// setup rotation
-		double rangle = Math.toRadians(angle);
-		// center of rotation is center of image
+        // setup rotation
+        double rangle = Math.toRadians(angle);
+        // center of rotation is center of image
         double w = img.getWidth();
         double h = img.getHeight();
-		double x = (w / 2);
-		double y = (h / 2);
+        double x = (w / 2);
+        double y = (h / 2);
         AffineTransform trafo = AffineTransform.getRotateInstance(rangle, x, y);
-		AffineTransformOp rotOp = new AffineTransformOp(trafo, renderHint);
+        AffineTransformOp rotOp = new AffineTransformOp(trafo, renderHint);
         // rotate bounds to see how much of the image would be off screen
-		Rectangle2D rotbounds = rotOp.getBounds2D(img);
-		double xoff = rotbounds.getX();
-		double yoff = rotbounds.getY();
-		if (Math.abs(xoff) > epsilon || Math.abs(yoff) > epsilon) {
-		    // move image back on screen
-		    logger.debug("move rotation: xoff="+xoff+" yoff="+yoff);
-		    trafo.preConcatenate(AffineTransform.getTranslateInstance(-xoff, -yoff));
-	        rotOp = new AffineTransformOp(trafo, renderHint);
-		}
-		// transform image
-		img = rotOp.filter(img, null);
-		logger.debug("rotated: "+img);
+        Rectangle2D rotbounds = rotOp.getBounds2D(img);
+        double xoff = rotbounds.getX();
+        double yoff = rotbounds.getY();
+        if (Math.abs(xoff) > epsilon || Math.abs(yoff) > epsilon) {
+            // move image back on screen
+            logger.debug("move rotation: xoff=" + xoff + " yoff=" + yoff);
+            trafo.preConcatenate(AffineTransform.getTranslateInstance(-xoff, -yoff));
+            rotOp = new AffineTransformOp(trafo, renderHint);
+        }
+        // transform image
+        img = rotOp.filter(img, null);
+        logger.debug("rotated: " + img);
         // invalidate image size
         imageSize = null;
-	}
+    }
 
-	public void mirror(double angle) throws ImageOpException {
+    public void mirror(double angle) throws ImageOpException {
         logger.debug("mirror: " + angle);
-		// setup mirror
-		double mx = 1;
-		double my = 1;
-		double tx = 0;
-		double ty = 0;
-		if (Math.abs(angle - 0) < epsilon) { // 0 degree
-			mx = -1;
-			tx = img.getWidth();
-		} else if (Math.abs(angle - 90) < epsilon) { // 90 degree
-			my = -1;
-			ty = img.getHeight();
-		} else if (Math.abs(angle - 180) < epsilon) { // 180 degree
-			mx = -1;
-			tx = img.getWidth();
-		} else if (Math.abs(angle - 270) < epsilon) { // 270 degree
-			my = -1;
-			ty = img.getHeight();
-		} else if (Math.abs(angle - 360) < epsilon) { // 360 degree
-			mx = -1;
-			tx = img.getWidth();
-		} else {
-		    logger.error("invalid mirror angle "+angle);
-		    return;
-		}
-		AffineTransformOp mirOp = new AffineTransformOp(new AffineTransform(mx,
-				0, 0, my, tx, ty), renderHint);
-		img = mirOp.filter(img, null);
+        // setup mirror
+        double mx = 1;
+        double my = 1;
+        double tx = 0;
+        double ty = 0;
+        if (Math.abs(angle - 0) < epsilon) { // 0 degree
+            mx = -1;
+            tx = img.getWidth();
+        } else if (Math.abs(angle - 90) < epsilon) { // 90 degree
+            my = -1;
+            ty = img.getHeight();
+        } else if (Math.abs(angle - 180) < epsilon) { // 180 degree
+            mx = -1;
+            tx = img.getWidth();
+        } else if (Math.abs(angle - 270) < epsilon) { // 270 degree
+            my = -1;
+            ty = img.getHeight();
+        } else if (Math.abs(angle - 360) < epsilon) { // 360 degree
+            mx = -1;
+            tx = img.getWidth();
+        } else {
+            logger.error("invalid mirror angle " + angle);
+            return;
+        }
+        AffineTransformOp mirOp = new AffineTransformOp(new AffineTransform(mx, 0, 0, my, tx, ty), renderHint);
+        img = mirOp.filter(img, null);
         // invalidate image size
         imageSize = null;
-	}
+    }
 
     public void enhance(float mult, float add) throws ImageOpException {
         RescaleOp op = null;
@@ -567,21 +568,20 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     }
 
     public void enhanceRGB(float[] rgbm, float[] rgba) throws ImageOpException {
-        logger.debug("enhanceRGB: rgbm="+rgbm+" rgba="+rgba);
+        logger.debug("enhanceRGB: rgbm=" + rgbm + " rgba=" + rgba);
         /*
          * The number of constants must match the number of bands in the image.
          * We do only 3 (RGB) bands.
          */
         int ncol = img.getColorModel().getNumColorComponents();
         if ((ncol != 3) || (rgbm.length != 3) || (rgba.length != 3)) {
-            logger.error("enhanceRGB: unknown number of color bands or coefficients ("
-                            + ncol + ")");
+            logger.error("enhanceRGB: unknown number of color bands or coefficients (" + ncol + ")");
             return;
         }
         if (img.getColorModel().hasAlpha()) {
             // add constant for alpha
-            rgbm = new float[] {rgbm[0], rgbm[1], rgbm[2], 1};
-            rgba = new float[] {rgba[0], rgba[1], rgba[2], 0};
+            rgbm = new float[] { rgbm[0], rgbm[1], rgbm[2], 1 };
+            rgba = new float[] { rgba[0], rgba[1], rgba[2], 0 };
         }
         RescaleOp scaleOp = new RescaleOp(rgbm, rgba, renderHint);
         scaleOp.filter(img, img);
@@ -605,8 +605,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
                 logger.debug("Color op: not grayscaling");
                 return;
             }
-            ColorConvertOp op = new ColorConvertOp(
-                    ColorSpace.getInstance(ColorSpace.CS_GRAY), renderHint);
+            ColorConvertOp op = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_GRAY), renderHint);
             // let filter create new image
             img = op.filter(img, null);
         } else if (colop == ColorOp.NTSC_GRAY) {
@@ -615,7 +614,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
              * 0.5870*green + 0.1140*blue
              */
             logger.debug("Color op: NTSC gray");
-            logger.debug("img="+img);
+            logger.debug("img=" + img);
             ColorModel cm = img.getColorModel();
             if (cm.getNumColorComponents() < 3 || cm instanceof IndexColorModel) {
                 // grayscale already or not possible
@@ -627,8 +626,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             BandCombineOp op = new BandCombineOp(combineFn, renderHint);
             // BandCombineOp only works on Rasters so we create a
             // new image and use its Raster
-            BufferedImage dest = new BufferedImage(img.getWidth(),
-                    img.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+            BufferedImage dest = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
             op.filter(img.getRaster(), dest.getRaster());
             img = dest;
         } else if (colop == ColorOp.INVERT) {
@@ -659,16 +657,18 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
              */
             logger.debug("Color op: map_gray_bgr");
             // convert to grayscale
-            ColorConvertOp grayOp = new ColorConvertOp(
-                    ColorSpace.getInstance(ColorSpace.CS_GRAY), renderHint);
+            ColorConvertOp grayOp = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_GRAY), renderHint);
             // create new 3-channel image
             int destType = BufferedImage.TYPE_INT_RGB;
             if (needsMapBgr) {
-                // special case for broken Java2Ds
-                destType = BufferedImage.TYPE_3BYTE_BGR;
+                // special case for funny Java2D implementations
+                if (img.getColorModel().hasAlpha()) {
+                    destType = BufferedImage.TYPE_4BYTE_ABGR_PRE;
+                } else {
+                    destType = BufferedImage.TYPE_3BYTE_BGR;
+                }
             }
-            BufferedImage dest = new BufferedImage(img.getWidth(),
-                    img.getHeight(), destType);
+            BufferedImage dest = new BufferedImage(img.getWidth(), img.getHeight(), destType);
             img = grayOp.filter(img, dest);
             logger.debug("map_gray: image=" + img);
             // convert to false color
@@ -678,17 +678,16 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         }
     }
 
-	public void dispose() {
-	    if (reader != null) {
-	        reader.dispose();
-	    }
-	    // is this necessary?
-		img = null;
-	}
+    public void dispose() {
+        if (reader != null) {
+            reader.dispose();
+        }
+        // is this necessary?
+        img = null;
+    }
 
-	public Image getAwtImage(){
-		return (Image) img;
-	}
-	
-	
+    public Image getAwtImage() {
+        return (Image) img;
+    }
+
 }
