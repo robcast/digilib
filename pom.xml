@@ -34,11 +34,42 @@
   </build>
   <profiles>
   	<profile>
-  		<id>servlet2</id>
-  		<activation>
-  			<activeByDefault>true</activeByDefault>
-  		</activation>
+  	  <id>servlet2</id>
+  	  <activation>
+  	     <activeByDefault>true</activeByDefault>
+      </activation>
   	</profile>
+    <!-- optional modules with dependencies selected by profile -->
+    <profile>
+      <id>text</id>
+      <modules>
+        <module>text</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>pdf</id>
+      <modules>
+        <module>pdf</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>codec-jai</id>
+      <modules>
+        <module>common-jai</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>codec-imagej</id>
+      <modules>
+        <module>common-imagej</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>codec-bioformats</id>
+      <modules>
+        <module>common-bioformats</module>
+      </modules>
+    </profile>
   </profiles>
   <repositories>
   </repositories>
@@ -133,15 +164,11 @@
   </scm>
   <dependencies>
   </dependencies>
+  <!-- default modules -->
   <modules>
     <module>common</module>
-    <module>common-jai</module>
-    <module>common-imagej</module>
-    <module>common-bioformats</module>
     <module>servlet2</module>
     <module>servlet3</module>
-    <module>pdf</module>
-    <module>text</module>
     <module>webapp</module>
   </modules>
 </project>
