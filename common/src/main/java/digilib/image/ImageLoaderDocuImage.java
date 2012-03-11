@@ -561,8 +561,8 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             float[] dm = new float[ncol];
             float[] da = new float[ncol];
             for (int i = 0; i < ncol; i++) {
-                dm[i] = (float) mult;
-                da[i] = (float) add;
+                dm[i] = mult;
+                da[i] = add;
             }
             if (img.getColorModel().hasAlpha()) {
                 // alpha channel should not be scaled
