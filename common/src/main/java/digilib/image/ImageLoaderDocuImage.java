@@ -65,7 +65,7 @@ import digilib.util.ImageSize;
 public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
     /** DocuImage version */
-    public static final String version = "ImageLoaderDocuImage 2.1.2";
+    public static final String version = "ImageLoaderDocuImage 2.1.3";
     
     /** image object */
     protected BufferedImage img;
@@ -82,8 +82,11 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     /** convolution kernels for blur() */
     protected static Kernel[] convolutionKernels = { 
             null, new Kernel(1, 1, new float[] { 1f }),
-            new Kernel(2, 2, new float[] { 0.25f, 0.25f, 0.25f, 0.25f }),
-            new Kernel(3, 3, new float[] { 1f / 9f, 1f / 9f, 1f / 9f, 1f / 9f, 1f / 9f, 1f / 9f, 1f / 9f, 1f / 9f, 1f / 9f }) };
+            new Kernel(2, 2, new float[] { 0.25f, 0.25f, 
+                                           0.25f, 0.25f }),
+            new Kernel(3, 3, new float[] { 1f / 9f, 1f / 9f, 1f / 9f, 
+                                           1f / 9f, 1f / 9f, 1f / 9f, 
+                                           1f / 9f, 1f / 9f, 1f / 9f }) };
 
     /* lookup tables for inverting images (byte) */
     protected static LookupTable invertSingleByteTable;
@@ -129,6 +132,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         }
         // should(!) work for all color models
         invertSingleByteTable = new ByteLookupTable(0, invertByte);
+        invertRgbaByteTable = invertSingleByteTable;
         // but doesn't work with alpha channel on all platforms
         String ver = System.getProperty("java.version");
         String os = System.getProperty("os.name");
@@ -140,8 +144,8 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             invertRgbaByteTable = new ByteLookupTable(0, new byte[][] { invertByte, invertByte, orderedByte, invertByte });
             needsRescaleRgba = true;
             needsMapBgr = true;
-        } else {
-            invertRgbaByteTable = invertSingleByteTable;
+        } else if (os.startsWith("Mac OS X") && osver.startsWith("10.6")) {
+            needsRescaleRgba = true;
         }
         // this hopefully works for all
         mapBgrByteTable = new ByteLookupTable(0, new byte[][] { mapR, mapG, mapB });
@@ -560,7 +564,12 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
                 dm[i] = (float) mult;
                 da[i] = (float) add;
             }
-            op = new RescaleOp(dm, da, null);
+            if (img.getColorModel().hasAlpha()) {
+                // alpha channel should not be scaled
+                dm[ncol-1] = 1f;
+                da[ncol-1] = 0f;
+            }
+            op = new RescaleOp(dm, da, renderHint);
         } else {
             op = new RescaleOp(mult, add, renderHint);
         }
