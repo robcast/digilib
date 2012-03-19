@@ -298,9 +298,7 @@ digilib buttons plugin
                 });
                 $slider.fadeIn();
                 fn.centerOnScreen(data, $slider);
-            },
-
-
+            }
         };
 
     // plugin installation called by digilib on plugin object.
