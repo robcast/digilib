@@ -152,7 +152,7 @@
     
     var updateHandles = function(){
 
-      if (options.values){
+      if (options.values != null) {
         if (options.range){
           moveHandle($handle2, valueToPx(options.values[1]), false);
           moveHandle($handle, valueToPx(options.values[0]), false);
@@ -176,7 +176,9 @@
     
     var valueToPx = function(val){
       var w = $input.width();
-      var v = (val*(w/(options.max-options.min)))-options.min;
+      var valspan = options.max - options.min;
+      var valpos = val - options.min;
+      var v = valpos * w / valspan;
       
       return v;
     };
