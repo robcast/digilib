@@ -65,7 +65,7 @@ import digilib.util.ImageSize;
 public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
     /** DocuImage version */
-    public static final String version = "ImageLoaderDocuImage 2.1.4";
+    public static final String version = "ImageLoaderDocuImage 2.1.4b";
 
     /** image object */
     protected BufferedImage img;
@@ -139,14 +139,14 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         String osver = System.getProperty("os.version");
         logger.debug("os="+os+" ver="+osver+" java_version="+ver);
         if ((os.startsWith("Linux"))
-            || (os.startsWith("Windows"))
             || (os.startsWith("Mac OS X") && osver.startsWith("10.7"))) {
             // GRAB(WTF?) works for Linux JDK1.6 with transparency
             needsInvertRgba = true;
             invertRgbaByteTable = new ByteLookupTable(0, new byte[][] { invertByte, invertByte, orderedByte, invertByte });
             needsRescaleRgba = true;
             needsMapBgr = true;
-        } else if (os.startsWith("Mac OS X") && osver.startsWith("10.6")) {
+        } else if ((os.startsWith("Mac OS X") && osver.startsWith("10.6")) 
+            || (os.startsWith("Windows"))) {
             needsRescaleRgba = true;
         }
         // this hopefully works for all
