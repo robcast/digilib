@@ -180,6 +180,7 @@ digilib sliders plugin
                 $slider.remove();
             });
             $slider.fadeIn();
+            // $range.range('set', brgt);
             fn.centerOnScreen(data, $slider);
         }
     };

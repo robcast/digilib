@@ -65,8 +65,8 @@ import digilib.util.ImageSize;
 public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
     /** DocuImage version */
-    public static final String version = "ImageLoaderDocuImage 2.1.3";
-    
+    public static final String version = "ImageLoaderDocuImage 2.1.4";
+
     /** image object */
     protected BufferedImage img;
 
@@ -138,7 +138,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         String os = System.getProperty("os.name");
         String osver = System.getProperty("os.version");
         logger.debug("os="+os+" ver="+osver+" java_version="+ver);
-        if ((os.startsWith("Linux")) || (os.startsWith("Mac OS X") && osver.startsWith("10.7"))) {
+        if ((os.startsWith("Linux"))
+            || (os.startsWith("Windows"))
+            || (os.startsWith("Mac OS X") && osver.startsWith("10.7"))) {
             // GRAB(WTF?) works for Linux JDK1.6 with transparency
             needsInvertRgba = true;
             invertRgbaByteTable = new ByteLookupTable(0, new byte[][] { invertByte, invertByte, orderedByte, invertByte });
