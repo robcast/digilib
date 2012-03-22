@@ -27,7 +27,7 @@ digilib sliders plugin
         'onmove' : null // callback function
         };
 
-    var sliders = {
+    var sliderOptions = {
         rot : {
             label : "Rotation angle",
             tooltip : "rotate image",
@@ -132,56 +132,27 @@ digilib sliders plugin
         },
 
         // shows brightness slider
-        sliderBrgt : function (data) {
-            var $elem = data.$elem;
-            var brgt = data.settings.brgt;
-            var cssPrefix = data.settings.cssPrefix;
-            var cssClass = cssPrefix + 'sliderNeu';
-            var sliderHtml = '\
-            <div class="'+cssClass+'" style="width:300px; background-color:white; padding:10px;">\
-                <form class="'+cssClass+'">\
-                    <span>Brightness:</span>\
-                    <input type="range" class="'+cssClass+'range" name="brgt" min="-255" max="255" value="'+brgt+'"/>\
-                    <input type="text" class="'+cssClass+'text" name="brgt" size="3" value="'+brgt+'"/>\
-                    <br/>\
-                    <input class="'+cssClass+'cancel" type="button" value="Cancel"/><input type="submit" name="sub" value="Ok"/>\
-                </form>\
-            </div>';
-            var $slider = $(sliderHtml);
-            $elem.append($slider);
-            var $range = $slider.find('input.'+cssClass+'range');
-            var $text = $slider.find('input.'+cssClass+'text');
-            // fix non-HTML5 slider
-            if ($range.prop('type') !== 'range') {
-                console.debug('fix input type=range');
-                $range.range({change: function (val) {
-                    $range.trigger('change');
-                }});
-            }
-            // connect slider and input
-            $range.on('change', function () {
-                var val = $range.val();
-                $text.val(val);
-            });
-            $text.on('change', function () {
-                var val = $text.val();
-                $range.val(val);
-            });
-            // handle submit
-            $slider.find('form').on('submit', function () {
-                console.debug("brgt-form:", this, " sub=", this.sub);
-                brgt = $text.val();
-                digilib.actions.brightness(data, brgt);
-                $slider.remove();
-                return false;  
-            });
-            // handle cancel
-            $slider.find('.'+cssClass+'cancel').on('click', function () {
-                $slider.remove();
-            });
-            $slider.fadeIn();
-            // $range.range('set', brgt);
-            fn.centerOnScreen(data, $slider);
+        tinySliderBrgt : function (data) {
+            var callback = function(val) {
+                digilib.actions.brightness(data, val);
+                };
+            setupTinyRangeSlider(data, 'brgt', callback);
+        },
+
+        // shows contrast slider
+        tinySliderCont : function (data) {
+            var callback = function(val) {
+                digilib.actions.contrast(data, val, true);
+                };
+            setupTinyRangeSlider(data, 'cont', callback);
+        },
+
+        // shows rotate slider
+        tinySliderRot : function (data) {
+            var callback = function(val) {
+                digilib.actions.rotate(data, val);
+                };
+            setupTinyRangeSlider(data, 'rot', callback);
         }
     };
 
@@ -313,10 +284,9 @@ digilib sliders plugin
     // set standard button actions (rotate, brightness, contrast) to slider
     var setButtonActions = function (buttons) {
         console.debug('sliders: setting button acions. digilib:', digilib);
-        //setButtonAction(buttons, 'rot', 'sliderRotate');
-        //setButtonAction(buttons, 'brgt', 'sliderBrightness');
-        setButtonAction(buttons, 'brgt', 'sliderBrgt');
-        //setButtonAction(buttons, 'cont', 'sliderContrast');
+        setButtonAction(buttons, 'brgt', 'tinySliderBrgt');
+        setButtonAction(buttons, 'cont', 'tinySliderCont');
+        setButtonAction(buttons, 'rot', 'tinySliderRot');
     };
 
     // plugin installation called by digilib on plugin object.
@@ -393,7 +363,7 @@ digilib sliders plugin
         var $min = $numbers[0];
         var $max = $numbers[1];
         var options = defaults;
-        $.extend(options, sliders[paramname], opts);
+        $.extend(options, sliderOptions[paramname], opts);
         $.extend(options, {
             '$handle' : $handle,
             '$label' : $label,
@@ -442,6 +412,64 @@ digilib sliders plugin
             };
         $div.children().on('click', handler);
         return $div;
+    };
+
+    /** creates a TinyRangeSlider
+     */
+    var setupTinyRangeSlider = function (data, paramname, callback) {
+        var $elem = data.$elem;
+        var opts = sliderOptions[paramname];
+        var param = data.settings[paramname] || opts.start;
+        var cssPrefix = data.settings.cssPrefix;
+        var cssClass = cssPrefix + 'tinyslider';
+        var sliderHtml = '\
+            <div class="'+cssClass+'" style="width:300px; background-color:white; padding:10px;" title="'+opts.tooltip+'">\
+                <form class="'+cssClass+'">\
+                    <span>'+opts.label+'</span>\
+                    <input type="range" class="'+cssClass+'range" name="'+paramname+'" min="'+opts.min+'" max="'+opts.max+'" value="'+param+'"/>\
+                    <input type="text" class="'+cssClass+'text" name="'+paramname+'" size="3" value="'+param+'"/>\
+                    <br/>\
+                    <input class="'+cssClass+'cancel" type="button" value="Cancel"/><input type="submit" name="sub" value="Ok"/>\
+                </form>\
+            </div>';
+        var $slider = $(sliderHtml);
+        $elem.append($slider);
+        var $range = $slider.find('input.'+cssClass+'range');
+        var $text = $slider.find('input.'+cssClass+'text');
+        // fix non-HTML5 slider
+        var HTML5 = $range.prop('type') === 'range';
+        if (!HTML5) {
+            console.debug('fix input type=range');
+            $range.range({change: function (val) {
+                $range.trigger('change');
+            }});
+        }
+        // connect slider and input
+        $range.on('change', function () {
+            // TinyRange rounds to integer values, not always desired
+            var val = $range.val();
+            $text.val(val);
+        });
+        $text.on('change', function () {
+            var val = $text.val();
+            $range.val(val);
+            // val() doesn't update handle, but set changes value :-/
+            // $range.range('set', val);
+        });
+        // handle submit
+        $slider.find('form').on('submit', function () {
+            console.debug("brgt-form:", this, " sub=", this.sub);
+            callback($text.val());
+            // digilib.actions.brightness(data, brgt);
+            $slider.remove();
+            return false;
+        });
+        // handle cancel
+        $slider.find('.'+cssClass+'cancel').on('click', function () {
+            $slider.remove();
+        });
+        $slider.fadeIn();
+        fn.centerOnScreen(data, $slider);
     };
 
     // plugin object with name and init
