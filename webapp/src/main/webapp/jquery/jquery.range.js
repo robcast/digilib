@@ -177,7 +177,7 @@
     };
     
     var valueToPx = function(val){
-      var w = $input.width();
+      var w = $input.width()-size;
       var valspan = options.max - options.min;
       var valpos = val - options.min;
       var v = valpos * w / valspan;

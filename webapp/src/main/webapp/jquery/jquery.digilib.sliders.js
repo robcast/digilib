@@ -456,14 +456,14 @@ digilib sliders plugin
         $text.on('change', function () {
             var val = $text.val();
             $range.val(val);
-            // val() doesn't update handle, but set changes value :-/
-            // $range.range('set', val);
+            if (!HTML5) {
+                $range.range('set', val);
+            }
         });
         // handle submit
         $slider.find('form').on('submit', function () {
-            console.debug("brgt-form:", this, " sub=", this.sub);
+            // console.debug("brgt-form:", this, " sub=", this.sub);
             callback($text.val());
-            // digilib.actions.brightness(data, brgt);
             $slider.remove();
             return false;
         });
