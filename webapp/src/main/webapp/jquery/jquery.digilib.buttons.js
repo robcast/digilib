@@ -263,6 +263,7 @@ digilib buttons plugin
         // export functions
         fn.createButton = createButton;
         fn.highlightButtons = highlightButtons;
+        fn.setButtonAction = setButtonAction;
     };
 
     // plugin initialization
@@ -560,6 +561,17 @@ digilib buttons plugin
         highlight('quality', flags.q1 || flags.q2);
         highlight('zoomin', ! isFullArea(data.zoomArea));
         };
+
+    // set standard button "onclick" field to a new action
+    var setButtonAction = function(buttonName, action) {
+        var button = buttons[buttonName];
+        if (button == null) {
+            console.log('could not set button action ' + action 
+                + ', button ' + buttonName + ' not available' );
+            return;
+            }
+        button.onclick = action;
+    };
 
     // plugin object with name and init
     // shared objects filled by digilib on registration

@@ -271,25 +271,16 @@ digilib sliders plugin
             });
     };
 
-
-    // set standard button "onclick" field to slider action
-    var setButtonAction = function(buttons, buttonName, action) {
-        var button = buttons[buttonName];
-        if (button == null) {
-            // normally this means that jquery.digilib.buttons.js was not loaded
-            console.log('could not attach slider action ' + action 
-                + ', button ' + buttonName + ' not available' );
+    // assign button actions to sliders (rotate, brightness, contrast) 
+    var setButtonActions = function () {
+        if (fn.setButtonAction == null) {
+            console.debug('sliders: could not assign button actions. Maybe jquery.digilib.buttons.js was not loaded?');
             return;
             }
-        button.onclick = action;
-    };
-
-    // set standard button actions (rotate, brightness, contrast) to slider
-    var setButtonActions = function (buttons) {
-        console.debug('sliders: setting button acions. digilib:', digilib);
-        setButtonAction(buttons, 'brgt', 'tinySliderBrgt');
-        setButtonAction(buttons, 'cont', 'tinySliderCont');
-        setButtonAction(buttons, 'rot', 'tinySliderRot');
+        console.debug('sliders: assign new button actions. digilib:', digilib);
+        fn.setButtonAction('brgt', 'tinySliderBrgt');
+        fn.setButtonAction('cont', 'tinySliderCont');
+        fn.setButtonAction('rot', 'tinySliderRot');
     };
 
     // plugin installation called by digilib on plugin object.
