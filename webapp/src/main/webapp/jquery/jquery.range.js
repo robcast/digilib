@@ -70,10 +70,11 @@
         p = boundL;
       }
       
-      if(options.snap && p !== boundR){
-        var snapPx = valueToPx(options.snap);
-        p = Math.round(p/snapPx) * snapPx;
-      }
+// leads to erratic behaviour with "step" attribute
+//      if(options.snap && p !== boundR){
+//         var snapPx = valueToPx(options.snap);
+//         p = Math.round(p/snapPx) * snapPx;
+//      }
       
       $h.css({'left': p, 'position': 'absolute'});
       if(options.range) updateSelection();
@@ -126,15 +127,15 @@
       if(options.range){
       
         prev = options.values.slice(); // clone
-        options.values[0] = pxToValue($handle);
-        options.values[1] = pxToValue($handle2);
+        options.values[0] = pxToValue($handle.position().left);
+        options.values[1] = pxToValue($handle2.position().left);
         
         // set value on original element
         $original.val(options.values[0] +','+options.values[1]);
       } else {
       
         prev = options.values;
-        options.values = pxToValue($handle);
+        options.values = pxToValue($handle.position().left);
         
         // set value on original element
         $original.val(options.values);
@@ -164,13 +165,14 @@
       updateValues();
     };
     
-    var pxToValue = function($h){
+    var pxToValue = function(p){
       var w = $input.width()-size;
-      var p = $h.position().left;
       var v = (p/(w/(options.max-options.min)))+options.min;
 
-      if(options.snap) return Math.floor(v/options.snap) * options.snap;
-
+      if(options.snap) {
+        v = Math.floor(v/options.snap) * options.snap;
+        return v;
+        }
       return Math.round(v);
     };
     

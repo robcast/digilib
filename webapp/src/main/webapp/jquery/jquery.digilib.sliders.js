@@ -34,6 +34,7 @@ digilib sliders plugin
             icon : "rotate.png",
             'min' : 0,
             'max' : 360,
+            'step' : 0.1,
             'start' : 90
             },
         brgt : {
@@ -42,6 +43,7 @@ digilib sliders plugin
             icon : "brightness.png",
             'min' : -255,
             'max' : 255,
+            'step' : 10,
             'start' : 0
             },
         cont : {
@@ -50,6 +52,7 @@ digilib sliders plugin
             icon : "contrast.png",
             'min' : -4,
             'max' : 4,
+            'step' : 0.01,
             'start' : 0
         },
         red : {
@@ -426,7 +429,7 @@ digilib sliders plugin
             <div class="'+cssClass+'" style="width:300px; background-color:white; padding:10px;" title="'+opts.tooltip+'">\
                 <form class="'+cssClass+'">\
                     <span>'+opts.label+'</span>\
-                    <input type="range" class="'+cssClass+'range" name="'+paramname+'" min="'+opts.min+'" max="'+opts.max+'" value="'+param+'"/>\
+                    <input type="range" class="'+cssClass+'range" name="'+paramname+'" step="'+opts.step+'" min="'+opts.min+'" max="'+opts.max+'" value="'+param+'"/>\
                     <input type="text" class="'+cssClass+'text" name="'+paramname+'" size="3" value="'+param+'"/>\
                     <br/>\
                     <input class="'+cssClass+'cancel" type="button" value="Cancel"/><input type="submit" name="sub" value="Ok"/>\
