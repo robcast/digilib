@@ -165,36 +165,35 @@
       updateValues();
     };
     
-    var pxToValue = function(p){
-      var w = $input.width()-size;
-      var v = (p/(w/(options.max-options.min)))+options.min;
-
-      if(options.snap) {
-        v = Math.floor(v/options.snap) * options.snap;
-        return v;
+    var pxToValue = function (px) {
+      var w = $input.width() - size;
+      var valspan = options.max - options.min;
+      var v = px * valspan / w + options.min;
+      if (options.snap) {
+        var tmp = Math.round(v / options.snap) * options.snap;
+        // hack to cut off floating point imprecision
+        var result = parseFloat(tmp.toFixed(4));
+        return result;
         }
       return Math.round(v);
     };
-    
-    var valueToPx = function(val){
-      var w = $input.width()-size;
+
+    var valueToPx = function (val) {
+      var w = $input.width() - size;
       var valspan = options.max - options.min;
       var valpos = val - options.min;
       var v = valpos * w / valspan;
-      
       return v;
     };
-        
+
     var bound = function(input){
       return Math.max(Math.min(input, options.max), options.min);
     };
-    
+
     var methods = {
-      init : function(o){
-        
+      init : function (o) {
         // element already replaced
         if($(this).data('TinyRange')) return this;
-        
         // options 
         defaults.min = parseFloat($(this).attr('min'));
         defaults.max = parseFloat($(this).attr('max'));
@@ -202,7 +201,7 @@
 
         // options passed into plugin override input attributes
         options = $.extend(defaults, o);
-        
+
         if(options.values){
           //
         } else if(options.range){
@@ -210,32 +209,27 @@
         } else {
           options.values = parseFloat($(this).attr('value'));
         }
- 
         // how far do handles jump on click, default to step value
         jump = options.snap ? options.snap : options.max/10;
-
         // create dom elements
         $input  = $('<div/>', {'class': 'range-input'}).mousedown(jumpHandle);
         $rail   = $('<div/>', {'class': 'range-rail'}).appendTo($input);
         if(options.range) $selection = $('<div/>', {'class': 'range-selection'}).appendTo($input); 
         $handle = $('<a/>', {'class': 'range-handle'}).appendTo($input).mousedown(dragStart);
         if(options.range) $handle2 = $handle.clone(true).appendTo($input);
-        
         // replace dom element
         $(this).after($input);
         $(this).hide();
         $original = $(this);
-        
         // attach events
         $(document).bind('mouseup', dragEnd);
         $(document).bind('mousemove', drag);
-        
         // position handles
         size = $handle.width();
         updateHandles();
-        
         return this;
       },
+
       set: function(input){
 
         if(typeof input === 'string'){
@@ -244,16 +238,14 @@
           options.values[0] = bound(input[0]);
           options.values[1] = bound(input[1]);
         }
-        
         updateHandles();
       },
+
       destroy : function(){
-        
         $input.remove();
         $(this).show().data('TinyRange', false);
         $(document).unbind('mouseup', dragEnd);
         $(document).unbind('mousemove', drag);
-        
         return this;
       }
     };
