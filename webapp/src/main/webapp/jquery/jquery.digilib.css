@@ -3,6 +3,14 @@
  *
  * Martin Raspe, Robert Casties, 11.1.2011
  */
+
+div.dl-digilib,
+div.dl-digilib button,
+div.dl-digilib input {
+   font-family: Verdana, Arial, Helvetica, sans-serif;
+   font-size: 12px;
+}
+
 div.dl-digilib div.dl-scaler {
 	background-color: grey;
 	z-index: 0;
@@ -116,7 +124,7 @@ div.dl-digilib div.dl-regionHTML a {
 	font-weight: bold;
 }
 
-div.dl-digilib div.dl-calibration {
+div.dl-digilib #dl-calibration {
 	background: url('img/blue.png');
 	position: absolute;
 	border: 1px solid lightcyan;
@@ -125,7 +133,7 @@ div.dl-digilib div.dl-calibration {
 	z-index: 9999;
 	}
 
-div.dl-digilib div.dl-ruler {
+div.dl-digilib #dl-ruler {
 	width: 100%;
 	height: 100%;
 	padding-bottom: 10px;
@@ -137,23 +145,23 @@ div.dl-digilib div.dl-ruler {
 	background: url('img/ruler-top.gif') 0px -1px repeat-x;
 	}
 
-div.dl-digilib div.dl-cm {
+div.dl-digilib #dl-cm {
 	padding: 5px;
 	}
 
-div.dl-digilib div.dl-calibration-error {
+div.dl-digilib #dl-calibrationError {
 	color: red;
 	padding: 10px;
 	display: none;
 	}
 
-div.dl-digilib input.dl-calibration-input {
+div.dl-digilib #dl-calibrationInput {
 	margin: 0px 10px;
 	}
 
-div.dl-digilib input.dl-error {
+div.dl-digilib .dl-error {
 	color: red;
-	background-color: khaki;
+	background-color: darkred;
 	}
 
 div.dl-digilib button.dl-button {
@@ -164,6 +172,14 @@ div.dl-digilib button.dl-button {
 	color: white;
 	background: transparent;
 	}
+
+div.dl-digilib div.dl-tinyslider {
+    display: none;
+	border: 1px solid lightcyan;
+	background-color: lightgrey;
+	width: 300px;
+	padding:10px;	
+    }
 
 div.dl-digilib div.dl-slider {
 	border: 1px solid lightcyan;

@@ -266,9 +266,7 @@ digilib sliders plugin
         var settings = $this.data('settings');
         var $handle = settings.$handle;
         $handle.off('mousedown.slider');
-        $this.fadeOut(function(){
-            $this.remove()
-            });
+        fn.withdraw($this);
     };
 
     // assign button actions to sliders (rotate, brightness, contrast) 
@@ -399,9 +397,7 @@ digilib sliders plugin
                     callback(data);
                     }
                 }
-            $panel.fadeOut(function() {
-                $panel.remove();
-                });
+            fn.withdraw($panel);
             return false;
             };
         $div.children().on('click', handler);
@@ -417,17 +413,18 @@ digilib sliders plugin
         var cssPrefix = data.settings.cssPrefix;
         var cssClass = cssPrefix + 'tinyslider';
         var sliderHtml = '\
-            <div class="'+cssClass+'" style="width:300px; background-color:white; padding:10px;" title="'+opts.tooltip+'">\
+        <div class="'+cssClass+'" title="'+opts.tooltip+'">\
                 <form class="'+cssClass+'">\
                     <span>'+opts.label+'</span>\
                     <input type="range" class="'+cssClass+'range" name="'+paramname+'" step="'+opts.step+'" min="'+opts.min+'" max="'+opts.max+'" value="'+param+'"/>\
-                    <input type="text" class="'+cssClass+'text" name="'+paramname+'" size="3" value="'+param+'"/>\
+                    <input type="text" class="'+cssClass+'text" name="'+paramname+'" size="4" value="'+param+'"/>\
                     <br/>\
                     <input class="'+cssClass+'cancel" type="button" value="Cancel"/><input type="submit" name="sub" value="Ok"/>\
                 </form>\
             </div>';
         var $slider = $(sliderHtml);
         $elem.append($slider);
+        $slider.fadeIn();
         var $range = $slider.find('input.'+cssClass+'range');
         var $text = $slider.find('input.'+cssClass+'text');
         // fix non-HTML5 slider
@@ -455,14 +452,13 @@ digilib sliders plugin
         $slider.find('form').on('submit', function () {
             // console.debug("brgt-form:", this, " sub=", this.sub);
             callback($text.val());
-            $slider.remove();
+            fn.withdraw($slider);
             return false;
         });
         // handle cancel
         $slider.find('.'+cssClass+'cancel').on('click', function () {
-            $slider.remove();
+            fn.withdraw($slider);
         });
-        $slider.fadeIn();
         fn.centerOnScreen(data, $slider);
     };
 

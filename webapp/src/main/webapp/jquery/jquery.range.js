@@ -127,15 +127,15 @@
       if(options.range){
       
         prev = options.values.slice(); // clone
-        options.values[0] = pxToValue($handle.position().left);
-        options.values[1] = pxToValue($handle2.position().left);
+        options.values[0] = bound(pxToValue($handle.position().left));
+        options.values[1] = bound(pxToValue($handle2.position().left));
         
         // set value on original element
         $original.val(options.values[0] +','+options.values[1]);
       } else {
       
         prev = options.values;
-        options.values = pxToValue($handle.position().left);
+        options.values = bound(pxToValue($handle.position().left));
         
         // set value on original element
         $original.val(options.values);
@@ -170,7 +170,9 @@
       var valspan = options.max - options.min;
       var v = px * valspan / w + options.min;
       if (options.snap) {
-        var tmp = Math.round(v / options.snap) * options.snap;
+        var tmp = v < 0
+            ? Math.floor(v / options.snap) * options.snap
+            : Math.round(v / options.snap) * options.snap;
         // hack to cut off floating point imprecision
         var result = parseFloat(tmp.toFixed(4));
         return result;

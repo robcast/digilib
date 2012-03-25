@@ -1603,18 +1603,28 @@ if (typeof console === 'undefined') {
     };
 
     /** return string from number with reduced precision.
-     * 
      */
     var cropFloatStr = function (x) {
         return cropFloat(x).toString();
     };
 
+    /** center an item on the visible screen rect
+    */
     var centerOnScreen = function (data, $div) {
         var r = geom.rectangle($div);
         var s = fn.getFullscreenRect(data);
         r.setCenter(s.getCenter());
         r.adjustDiv($div);
     };
+
+    /** fade out and remove an item
+    */
+    var withdraw = function ($item) {
+        $item.fadeOut(function () {
+            $item.remove();
+        });
+    };
+
 
     // fallback for console.log calls
     if (customConsole) {
@@ -1667,7 +1677,8 @@ if (typeof console === 'undefined') {
             getBorderWidth : getBorderWidth,
             cropFloat : cropFloat,
             cropFloatStr : cropFloatStr,
-            centerOnScreen : centerOnScreen
+            centerOnScreen : centerOnScreen,
+            withdraw : withdraw
     };
 
     // hook digilib plugin into jquery
