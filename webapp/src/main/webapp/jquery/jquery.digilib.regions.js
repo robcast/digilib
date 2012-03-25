@@ -17,7 +17,12 @@ Element with regions has to be in digilib element, e.g.
     // the digilib object
     var digilib = null;
     // the functions made available by digilib
-    var fn = null;
+    var fn = {
+        // dummy function to avoid errors, gets overwritten by buttons plugin
+        highlightButtons : function () {
+            console.debug('regions: dummy function - highlightButtons');
+            }
+        };
     // affine geometry plugin
     var geom = null;
 
@@ -37,7 +42,7 @@ Element with regions has to be in digilib element, e.g.
             tooltip : "show or hide regions",
             icon : "regions.png"
             },
-        regionhtml : {
+        regioninfo : {
             onclick : "showRegionInfo",
             tooltip : "show information about regions",
             icon : "regioninfo.png"
@@ -49,8 +54,6 @@ Element with regions has to be in digilib element, e.g.
         'isRegionVisible' : true,
         // are region numbers shown?
         'showRegionNumbers' : true,
-        // is window with region HTML shown?
-        'showRegionInfo' : false,
         // is there region content in the page?
         'processHtmlRegions' : false,
         // region defined by users and in the URL
@@ -62,7 +65,7 @@ Element with regions has to be in digilib element, e.g.
         // css selector for area elements (should additionally be marked with class "keep")
         'regionContentSelector' : 'map.dl-regioncontent area',
         // buttonset of this plugin
-        'regionSet' : ['regions', 'addregion', 'delregion', 'regionhtml', 'lessoptions'],
+        'regionSet' : ['regions', 'addregion', 'delregion', 'regioninfo', 'lessoptions'],
         // url param for regions
         'rg' : null
         };
@@ -157,22 +160,43 @@ Element with regions has to be in digilib element, e.g.
             renderRegions(data, 1);
         },
 
-        // show/hide region HTML code 
+        // show region info in a window
         "showRegionInfo" : function (data) {
-            var show = !data.settings.showRegionInfo;
-            data.settings.showRegionInfo = show;
-            fn.highlightButtons(data, 'regionhtml', show);
-            var $html = data.$htmlDiv;
-            if (!show) {
-                // empty the div
-                $html.fadeOut(function () { 
-                    $html.contents().remove();
-                    });
+            var $elem = data.$elem;
+            var cssPrefix = data.settings.cssPrefix;
+            var $info = $elem.find('#'+cssPrefix+'regionInfo');
+            if ($info.length > 0) {
+                fn.withdraw($info);
                 return;
-            }
-            regionInfo(data);
+                }
+            var html = '\
+                <div id="'+cssPrefix+'regionInfo" class="'+cssPrefix+'keep '+cssPrefix+'regionInfo">\
+                    <div class="'+cssPrefix+'infoheader">\
+                        <div class="'+cssPrefix+'infobutton html">HTML</div>\
+                        <div class="'+cssPrefix+'infobutton svgattr">SVG</div>\
+                        <div class="'+cssPrefix+'infobutton digilib">Digilib</div>\
+                        <div class="'+cssPrefix+'infobutton x">X</div>\
+                    </div>\
+                </div>';
+            $info = $(html);
+            $info.appendTo($elem);
+            $info.append(regionInfoHTML(data));
+            $info.append(regionInfoSVG(data));
+            $info.append(regionInfoDigilib(data));
+            var bind = function(name) {
+                $info.find('div.'+name).on('click.regioninfo', function () {
+                    $info.find('div.'+cssPrefix+'info').hide();
+                    $info.find('div.'+cssPrefix+name).show();
+                    });
+                };
+            bind('html');
+            bind('svgattr');
+            bind('digilib');
+            $info.find('.x').on('click.regioninfo', function () {
+                fn.withdraw($info);
+                });
+            $info.fadeIn();
         }
-
     };
 
     // store a region div
@@ -183,36 +207,6 @@ Element with regions has to be in digilib element, e.g.
         regionRect.$div = $regionDiv;
         regions.push(regionRect);
         console.debug("regions", data.regions, "regionRect", regionRect);
-    };
-
-    // clickable header
-    var regionInfoHeader = function (data) {
-        var cssPrefix = data.settings.cssPrefix;
-        var $infoDiv = $('<div class="'+cssPrefix+'infoheader"/>');
-        var $h01 = $('<div class="'+cssPrefix+'infobutton">HTML</div>'); 
-        var $h02 = $('<div class="'+cssPrefix+'infobutton">SVG</div>'); 
-        var $h03 = $('<div class="'+cssPrefix+'infobutton">Digilib</div>'); 
-        var $h04 = $('<div class="'+cssPrefix+'infobutton">X</div>');
-        var bind = function($div, name) {
-            $div.on('click.regioninfo', function () {
-                var $top = $(this).parent().parent();
-                $top.find('.'+cssPrefix+'info').hide();
-                $top.find('.'+cssPrefix+ name).show();
-                });
-            };
-        bind($h01, 'html');
-        bind($h02, 'svgattr');
-        bind($h03, 'digilib');
-        var $html = data.$htmlDiv;
-        $h04.on('click.regioninfo', function () {
-            data.settings.showRegionInfo = false;
-            fn.highlightButtons(data, 'regionhtml', false);
-            $html.fadeOut(function () { 
-                $html.contents().remove();
-                });
-            });
-        $infoDiv.append($h01, $h02, $h03, $h04);
-        return $infoDiv;
     };
 
     // html for later insertion
@@ -256,16 +250,6 @@ Element with regions has to be in digilib element, e.g.
             $infoDiv.append($('<div/>').text(area));
             });
         return $infoDiv;
-    };
-
-    // show region info in a window
-    var regionInfo = function (data) {
-        var $html = data.$htmlDiv;
-        $html.append(regionInfoHeader(data));
-        $html.append(regionInfoHTML(data));
-        $html.append(regionInfoSVG(data));
-        $html.append(regionInfoDigilib(data));
-        $html.fadeIn();
     };
 
     // add a region to data.$elem
@@ -465,14 +449,13 @@ Element with regions has to be in digilib element, e.g.
         var data = this;
         var settings = data.settings;
         console.debug("regions: handleSetup", settings.rg);
+        // regions with content are given in HTML divs
         if (settings.processHtmlRegions) {
-            // regions with content are given in HTML divs
             createRegionsFromHTML(data);
         }
+        // regions are defined in the URL
         if (settings.processUserRegions) {
-            // regions are defined in the URL
             createRegionsFromURL(data);
-            fn.highlightButtons(data, 'regionhtml', data.settings.showRegionInfo);
         }
     };
 
@@ -482,15 +465,29 @@ Element with regions has to be in digilib element, e.g.
         console.debug("regions: handleUpdate");
         var settings = data.settings;
         fn.highlightButtons(data, 'regions' , settings.isRegionVisible);
-        fn.highlightButtons(data, 'regionhtml' , settings.showRegionInfo);
         renderRegions(data);
+    };
+
+    // additional buttons
+    var installButtons = function (data) {
+        var settings = data.settings;
+        var mode = settings.interactionMode;
+        var buttonSettings = settings.buttonSettings[mode];
+        // configure buttons through digilib "regionSet" option
+        var buttonSet = settings.regionSet || regionSet; 
+        // set regionSet to [] or '' for no buttons (when showing regions only)
+        if (buttonSet.length && buttonSet.length > 0) {
+            buttonSettings.regionSet = buttonSet;
+            buttonSettings.buttonSets.push('regionSet');
+            }
     };
 
     // plugin installation called by digilib on plugin object.
     var install = function(plugin) {
         digilib = plugin;
         console.debug('installing regions plugin. digilib:', digilib);
-        fn = digilib.fn;
+        // import digilib functions
+        $.extend(fn, digilib.fn);
         // import geometry classes
         geom = fn.geometry;
         // add defaults, actions, buttons
@@ -507,26 +504,16 @@ Element with regions has to be in digilib element, e.g.
         var cssPrefix = data.settings.cssPrefix;
         // regions array
         data.regions = [];
-        // regions div
-        var $html = $('<div class="'+cssPrefix+'keep '+cssPrefix+'regionHTML"/>');
-        $elem.append($html);
-        data.$htmlDiv = $html;
-        // install event handler
+        // install event handlers
         var $data = $(data);
         $data.on('setup', handleSetup);
         $data.on('update', handleUpdate);
+        // install buttons
         if (settings.processUserRegions) {
-            var mode = settings.interactionMode;
             // add "rg" to digilibParamNames
             settings.digilibParamNames.push('rg');
-            // additional buttons
-            var buttonSettings = settings.buttonSettings[mode];
-            // configure buttons through digilib "regionSet" option
-            var buttonSet = settings.regionSet || regionSet; 
-            // set regionSet to [] or '' for no buttons (when showing regions only)
-            if (buttonSet.length && buttonSet.length > 0) {
-                buttonSettings.regionSet = buttonSet;
-                buttonSettings.buttonSets.push('regionSet');
+            if (digilib.plugins.buttons != null) {
+                installButtons(data);
             }
         }
     };
@@ -534,7 +521,7 @@ Element with regions has to be in digilib element, e.g.
     // plugin object with name and install/init methods
     // shared objects filled by digilib on registration
     var pluginProperties = {
-            name : 'region',
+            name : 'regions',
             install : install,
             init : init,
             buttons : {},

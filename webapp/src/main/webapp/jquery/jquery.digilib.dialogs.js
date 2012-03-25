@@ -145,6 +145,17 @@ digilib dialogs plugin
         });
     };
 
+    var setButtonActions = function () {
+        if (fn.setButtonAction == null) {
+            console.debug('dialogs: could not assign button actions. Maybe jquery.digilib.buttons.js was not loaded?');
+            return;
+            }
+        console.debug('dialogs: assign new button actions. digilib:', digilib);
+        fn.setButtonAction('calibrationx', 'dialogCalibration');
+        fn.setButtonAction('scale', 'dialogScaleMode');
+    };
+
+
     // plugin installation called by digilib on plugin object.
     var install = function (plugin) {
         digilib = plugin;
@@ -155,8 +166,7 @@ digilib dialogs plugin
         // add defaults, actions, buttons
         $.extend(true, digilib.defaults, defaults); // make deep copy
         $.extend(digilib.actions, actions);
-        fn.setButtonAction('calibrationx', 'dialogCalibration');
-        fn.setButtonAction('scale', 'dialogScaleMode');
+        setButtonActions();
         // export functions
         fn.showCalibrationDialog = showCalibrationDialog;
         fn.showScaleModeDialog = showScaleModeDialog;
