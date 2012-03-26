@@ -4,39 +4,41 @@
     <head>
         <title>jQuery.digilibSVG test</title>
 
-        <style type="text/css">
-        </style>
-
         <script type="text/javascript" src="jquery.js"></script>
         <script type="text/javascript" src="jquery.cookie.js"></script>
         <script type="text/javascript" src="jquery.digilib.js"></script>
         <script type="text/javascript" src="jquery.digilib.geometry.js"></script>
+        <script type="text/javascript" src="jquery.digilib.arrows.js"></script>
+        <script type="text/javascript" src="jquery.range.js"></script>
+        <link rel="stylesheet" type="text/css" href="jquery.range.css" />
         <script type="text/javascript" src="jquery.digilib.buttons.js"></script>
+        <script type="text/javascript" src="jquery.digilib.dialogs.js"></script>
+        <script type="text/javascript" src="jquery.digilib.sliders.js"></script>
+        <script type="text/javascript" src="jquery.digilib.birdseye.js"></script>
+        <script type="text/javascript" src="jquery.digilib.marks.js"></script>
+        <script type="text/javascript" src="jquery.digilib.regions.js"></script>
+        <link rel="stylesheet" type="text/css" href="jquery.digilib.css" />
         <script type="text/javascript" src="svg/jquery.svg.js"></script>
         <script type="text/javascript" src="svg/jquery.digilibSVG.js"></script>
-        <link rel="stylesheet" type="text/css" href="jquery.digilib.css" />
         <link rel="stylesheet" type="text/css" href="svg/jquery.digilibSVG.css" />
-
 
         <script type="text/javascript">
             $(document).ready(function(){
                 var opts = {
                     interactionMode : 'fullscreen',
-                    scalerBaseUrl : 'http://digilib.biblhertz.it/digilib04/servlet/Scaler'
+                    showRegionNumbers : true
                     };
-                var $div = $('div.digilib');
+                var $div = $('div#digilib');
                 $div.digilib(opts);
-                var svgopts = {};
-                $div.digilibSVG(svgopts);
             });
-
         </script>
     </head>
 
     <body>
 
-        <div id="digilib-1" class="digilib">
-            <img src="http://digilib.biblhertz.it/digilib04/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/FransHals-WillemVanHeythuysen" />
+        <div id="digilib">
+            <p>digilib doesn't work! Please switch on Javascript or notify the server administrator!</p>
+            <img src="http://digilib.berlios.de/images/digilib-logo-big.png" />
         </div>
         <div id="debug">DEBUG</div>
     </body>

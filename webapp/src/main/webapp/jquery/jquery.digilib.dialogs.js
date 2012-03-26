@@ -69,7 +69,6 @@ digilib dialogs plugin
         var $error = $calDiv.find('#'+cssPrefix+'calibrationError');
         var handler = function(event) {
             // var _data = data;
-            console.log("HANDLER calibration");
             if (event.keyCode == 27 || event.target.id == cssPrefix+'calibrationCancel') {
                 fn.withdraw($calDiv);
                 return false;

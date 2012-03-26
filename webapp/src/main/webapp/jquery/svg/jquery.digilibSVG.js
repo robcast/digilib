@@ -36,10 +36,13 @@ if (typeof(console) === 'undefined') {
 }
 
 (function($) {
-    console.debug('installing jquery.digilibSVG');
 
-    var pluginName = 'digilibSVG';
-    var geom;
+    // plugin object with digilib data
+    var digilib = null;
+    // the functions made available by digilib
+    var fn = null;
+    // affine geometry plugin
+    var geom = null;
 
     var defaults = {
         // choice of colors offered by toolbar
@@ -97,6 +100,46 @@ if (typeof(console) === 'undefined') {
         keepOriginal : false,
         // number of copies when drawing grids
         gridCopies : 10
+        };
+
+    var actions = {
+        "test" : function(options) {
+            var onLoadXML = function (xml) {
+                settings.xml = xml;
+                settings.$toolBar = setupToolBar(settings);
+                $digilib.each(function() {
+                    var $elem = $(this);
+                    $elem.data(pluginName, settings);
+                    });
+                };
+            var onLoadScalerImg = function () {
+                var $svgDiv = $('<div id="svg" />');
+                $('body').append($svgDiv);
+                // size SVG div like scaler img
+                var $scalerImg = $digilib.find('img.pic');
+                var scalerImgRect = geom.rectangle($scalerImg);
+                scalerImgRect.adjustDiv($svgDiv);
+                console.debug('$svgDiv', scalerImgRect);
+                var $svg = $svgDiv.svg({
+                        'onLoad' : drawInitial
+                    });
+                settings.$elem = $digilib;
+                settings.$svgDiv = $svgDiv;
+                settings.$svg = $svg;
+                // set SVG data 
+                $svg.data('digilib', data);
+                $svg.data(pluginName, settings);
+                };
+            // fetch the XML measuring unit list
+            $.ajax({
+                type : "GET",
+                url : "svg/archimedes.xml",
+                dataType : "xml",
+                success : onLoadXML
+                });
+            data.$img.load(onLoadScalerImg);
+            return this;
+            }
         };
 
     // setup a div for accessing the main SVG functionality
@@ -174,72 +217,48 @@ if (typeof(console) === 'undefined') {
             {stroke: 'red', strokeWidth: 2});
         };
 
-    var actions = {
-        "init" : function(options) {
-            var $digilib = this;
-            var data = $digilib.data('digilib');
-            var plugins = data.plugins;
-            geom = plugins.geometry.init();
-            var settings = $.extend({}, defaults, options);
-            // prepare the AJAX callback
-            // TODO: return unless interactiveMode === 'fullscreen'?
-            var onLoadXML = function (xml) {
-                settings.xml = xml;
-                settings.$toolBar = setupToolBar(settings);
-                $digilib.each(function() {
-                    var $elem = $(this);
-                    $elem.data(pluginName, settings);
-                    });
-                };
-            var onLoadScalerImg = function () {
-                var $svgDiv = $('<div id="svg" />');
-                $('body').append($svgDiv);
-                // size SVG div like scaler img
-                var $scalerImg = $digilib.find('img.pic');
-                var scalerImgRect = geom.rectangle($scalerImg);
-                scalerImgRect.adjustDiv($svgDiv);
-                console.debug('$svgDiv', scalerImgRect);
-                var $svg = $svgDiv.svg({
-                        'onLoad' : drawInitial
-                    });
-                settings.$elem = $digilib;
-                settings.$svgDiv = $svgDiv;
-                settings.$svg = $svg;
-                // set SVG data 
-                $svg.data('digilib', data);
-                $svg.data(pluginName, settings);
-                };
-            // fetch the XML measuring unit list
-            $.ajax({
-                type : "GET",
-                url : "svg/archimedes.xml",
-                dataType : "xml",
-                success : onLoadXML
-                });
-            data.$img.load(onLoadScalerImg);
-            return this;
-            }
-        };
-
- // hook plugin into jquery
-    $.fn[pluginName] = function(action) {
-        if (actions[action]) {
-            // call action on this with the remaining arguments (inserting data as first argument)
-            var $elem = $(this);
-            var data = $elem.data('digilib');
-            if (!data) {
-                return $.error(pluginName + ' action ' + action + ' needs a digilib element');
-                }
-            var args = Array.prototype.slice.call(arguments, 1);
-            args.unshift(data);
-            return actions[action].apply(this, args);
-        } else if (typeof(action) === 'object' || !action) {
-            // call init on this
-            return actions.init.apply(this, arguments);
-        } else {
-            $.error('action ' + action + ' does not exist on jQuery.' + pluginName);
-        }
+    // plugin installation called by digilib on plugin object.
+    var install = function (plugin) {
+        digilib = plugin;
+        console.debug('installing digilibSVG plugin. digilib:', digilib);
+        fn = digilib.fn;
+        // import geometry classes
+        geom = fn.geometry;
+        // add defaults, actions, buttons
+        $.extend(true, digilib.defaults, defaults); // make deep copy
+        $.extend(digilib.actions, actions);
+        // export functions
+        // fn.test = test;
     };
 
-})(jQuery);
+    // plugin initialization
+    var init = function (data) {
+        console.debug('initialising digilibSVG plugin. data:', data);
+        var $data = $(data);
+        $data.bind('setup', handleSetup);
+    };
 
+    var handleSetup = function (evt) {
+        console.debug("digilibSVG: handleSetup");
+        var data = this;
+        var settings = data.settings;
+    };
+
+    // plugin object with name and init
+    // shared objects filled by digilib on registration
+    var plugin = {
+            name : 'digilibSVG',
+            install : install,
+            init : init,
+            buttons : {},
+            actions : {},
+            fn : {},
+            plugins : {}
+    };
+
+    if ($.fn.digilib == null) {
+        $.error("jquery.digilibSVG must be loaded after jquery.digilib!");
+    } else {
+        $.fn.digilib('plugin', plugin);
+    }
+})(jQuery);
