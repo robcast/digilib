@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-        <title>jQuery.digilibSVG test</title>
+        <title>jquery.digilib.svg.js test</title>
 
         <script type="text/javascript" src="jquery.js"></script>
         <script type="text/javascript" src="jquery.cookie.js"></script>
@@ -19,8 +19,8 @@
         <script type="text/javascript" src="jquery.digilib.regions.js"></script>
         <link rel="stylesheet" type="text/css" href="jquery.digilib.css" />
         <script type="text/javascript" src="svg/jquery.svg.js"></script>
-        <script type="text/javascript" src="svg/jquery.digilibSVG.js"></script>
-        <link rel="stylesheet" type="text/css" href="svg/jquery.digilibSVG.css" />
+        <script type="text/javascript" src="jquery.digilib.svg.js"></script>
+        <link rel="stylesheet" type="text/css" href="jquery.digilib.svg.css" />
 
         <script type="text/javascript">
             $(document).ready(function(){
@@ -30,6 +30,9 @@
                     };
                 var $div = $('div#digilib');
                 $div.digilib(opts);
+                DIGILIB = function (action) {
+                    return $div.digilib(action);
+                    };
             });
         </script>
     </head>
@@ -40,7 +43,13 @@
             <p>digilib doesn't work! Please switch on Javascript or notify the server administrator!</p>
             <img src="http://digilib.berlios.de/images/digilib-logo-big.png" />
         </div>
-        <div id="debug">DEBUG</div>
+
+        <a href="javascript: DIGILIB('about')">about</a>
+
+        <div id="dl_svgdiv">
+            <img src="test1.svg" />
+        </div>
+
     </body>
 </html>
 
