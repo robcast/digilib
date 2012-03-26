@@ -51,17 +51,13 @@ div.dl-digilib div.dl-mark {
 
 div.dl-digilib div.dl-about {
 	position: absolute;
-	width: 200px;
-	top: 100px;
-	left: 350px;
-	height: 200px;
-	padding: 0px 2px;
+	padding: 10px;	
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	border: 2px solid lightcyan;
 	background-color: lightgrey;
 	text-align: center;
 	display: none;
-	z-index: 1000;
+	z-index: 100;
 }
 
 div.dl-digilib div.dl-region {
@@ -175,10 +171,10 @@ div.dl-digilib button.dl-button {
 
 div.dl-digilib div.dl-tinyslider {
     display: none;
-	border: 1px solid lightcyan;
+	border: 2px solid lightcyan;
 	background-color: lightgrey;
 	width: 300px;
-	padding:10px;	
+	padding: 10px;	
     }
 
 div.dl-digilib div.dl-slider {

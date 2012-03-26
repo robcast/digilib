@@ -57,8 +57,8 @@ digilib buttons plugin
             tooltip : "goto image number",
             icon : "page.png"
             },
-        help : {
-            onclick : "showAboutDiv",
+        about : {
+            onclick : "about",
             tooltip : "about Digilib",
             icon : "help.png"
             },
@@ -163,14 +163,14 @@ digilib buttons plugin
                 // path to button images (must end with a slash)
                 'imagePath' : 'img/fullscreen/',
                 'buttonSetWidth' : 36,
-                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","help","reset","toggleoptions"],
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","about","reset","toggleoptions"],
                 'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","lessoptions"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 },
             'embedded' : {
                 'imagePath' : 'img/embedded/16/',
                 'buttonSetWidth' : 18,
-                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","help","reset","toggleoptions"],
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","about","reset","toggleoptions"],
                 'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","scale","lessoptions"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 }
@@ -418,7 +418,6 @@ digilib buttons plugin
         highlight('brgt', settings.brgt);
         highlight('cont', settings.cont);
         highlight('bird', settings.isBirdDivVisible);
-        highlight('help', settings.isAboutDivVisible);
         highlight('hmir', flags.hmir);
         highlight('vmir', flags.vmir);
         highlight('quality', flags.q1 || flags.q2);

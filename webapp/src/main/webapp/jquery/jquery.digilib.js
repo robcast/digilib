@@ -81,8 +81,6 @@ if (typeof console === 'undefined') {
         // fullscreen = take parameters from page URL, keep state in page URL
         // embedded = take parameters from Javascript options, keep state inside object 
         'interactionMode' : 'fullscreen',
-        // is the "about" window shown?
-        'isAboutDivVisible' : false,
         // default size of preview image for drag-scroll (preferrably same as Bird's Eye View image)
         'previewImgWidth' : 200,
         'previewImgHeight' : 200,
@@ -240,8 +238,6 @@ if (typeof console === 'undefined') {
                 }
                 // create HTML structure for scaler
                 setupScalerDiv(data);
-                // about window creation - TODO: could be deferred? restrict to only one item?
-                setupAboutDiv(data);
                 // send setup event
                 $(data).trigger('setup');
             });
@@ -261,15 +257,37 @@ if (typeof console === 'undefined') {
             });
         },
 
-        /** show or hide the 'about' window
+        /** show the 'about' window
          * 
          * @param data
-         * @param show
          */
-        showAboutDiv : function(data, show) {
-            var on = showDiv(data.settings.isAboutDivVisible, data.$aboutDiv, show);
-            data.settings.isAboutDivVisible = on;
-            //FIXME: highlightButtons(data, 'help', on);
+        about : function(data) {
+            //FIXME: highlightButtons(data, 'about', on);
+            var $elem = data.$elem;
+            var settings = data.settings;
+            var cssPrefix = settings.cssPrefix;
+            var $about = $elem.find('#'+cssPrefix+'about');
+            if ($about.length > 0) return; // already onscreen
+            // make relative logoUrl absolute
+            var logoUrl = settings.logoUrl;
+            if (logoUrl.charAt(0) !== '/' && logoUrl.substring(0,3) !== 'http') {
+                logoUrl = settings.digilibBaseUrl + '/' + logoUrl;
+            }
+            var html = '\
+                <div id="'+cssPrefix+'about" class="'+cssPrefix+'about" style="display:none">\
+                    <p>Digilib Image Viewer</p>\
+                    <a href="'+settings.homeUrl+'">\
+                        <img class="'+settings.cssPrefix+'logo" title="Digilib" src="'+logoUrl+'"/>\
+                    </a>\
+                    <p>Version: '+settings.version+'</p>\
+                </div>';
+            $about = $(html);
+            $about.appendTo($elem);
+            $about.on('click.digilib', function () {
+                withdraw($about);
+                });
+            $about.fadeIn();
+            centerOnScreen(data, $about);
         },
 
         /** goto given page nr (+/-: relative)
@@ -436,7 +454,7 @@ if (typeof console === 'undefined') {
             } else {
                 if (rgbm != null) data.settings.rgbm = rgbm;
                 if (rgba != null) data.settings.rgba = rgba;
-                redisplay(data);                
+                redisplay(data);
             }
         },
 
@@ -1037,38 +1055,7 @@ if (typeof console === 'undefined') {
         $img.attr('src', scalerUrl);
     };
 
-    /** creates HTML structure for the about view in elem
-     * 
-     */
-    var setupAboutDiv = function (data) {
-        var $elem = data.$elem;
-        var settings = data.settings;
-        var $aboutDiv = $('<div class="'+settings.cssPrefix+'about" style="display:none"/>');
-        var $header = $('<p>Digilib Image Viewer</p>');
-        var $link = $('<a/>');
-        var $logo = $('<img class="'+settings.cssPrefix+'logo" title="digilib"/>');
-        var $content = $('<p/>');
-        $elem.append($aboutDiv);
-        $aboutDiv.append($header);
-        $aboutDiv.append($link);
-        $aboutDiv.append($content);
-        $link.append($logo);
-        logoUrl = settings.logoUrl;
-        // make relative logoUrl absolute
-        if (logoUrl.charAt(0) !== '/' && logoUrl.substring(0,3) !== 'http') {
-            logoUrl = settings.digilibBaseUrl + '/' + logoUrl;
-        }
-        $logo.attr('src', logoUrl);
-        $link.attr('href', settings.homeUrl);
-        $content.text('Version: ' + settings.version);
-        data.$aboutDiv = $aboutDiv;
-        // click hides
-        $aboutDiv.on('click.digilib', function () {
-            actions['showAboutDiv'](data, false);
-            });
-    };
-
-    /** shows some window e.g. 'about' (toggle visibility if show is null)
+    /** shows some div (toggle visibility if show is null)
      * 
      */
     var showDiv = function (isVisible, $div, show) {
