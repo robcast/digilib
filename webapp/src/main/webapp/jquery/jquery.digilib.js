@@ -38,7 +38,7 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.1.6a1',
+        'version' : 'jquery.digilib.js 2.1.6a2',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
