@@ -4,7 +4,7 @@
  * Martin Raspe, Robert Casties, 26.3.2012
  */
 
-#dl_svgdiv img {
+#dl_svgdiv {
     width: 700px;
     height: 200px;
     position: absolute;
