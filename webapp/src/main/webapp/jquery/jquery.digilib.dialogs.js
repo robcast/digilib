@@ -132,16 +132,19 @@ digilib dialogs plugin
             fn.withdraw($scaleDiv);
             });
         // position the element next to the scale button
-        var $button = $elem.find('#'+cssPrefix+'button-scale');
-        // var $button = digilib.buttons['scale'].button;
-        var buttonRect = geom.rectangle($button);
         $scaleDiv.fadeIn();
         $select.focus();
-        var divRect = geom.rectangle($scaleDiv);
-        $scaleDiv.offset({
-            left : Math.abs(buttonRect.x - divRect.width - 4),
-            top : buttonRect.y + 4
-        });
+        if (digilib.plugins.buttons == null) {
+            fn.centerOnScreen($scaleDiv)
+        } else {
+            var $button = fn.findButtonByName(data, 'scale');
+            var buttonRect = geom.rectangle($button);
+            var divRect = geom.rectangle($scaleDiv);
+            $scaleDiv.offset({
+                left : Math.abs(buttonRect.x - divRect.width - 4),
+                top : buttonRect.y + 4
+            });
+        }
     };
 
     var setButtonActions = function () {

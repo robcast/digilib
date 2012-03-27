@@ -4,6 +4,10 @@
  * Martin Raspe, Robert Casties, 11.1.2011
  */
 
+div.dl-digilib .dl-disabled {
+    display: none;
+}
+
 div.dl-digilib,
 div.dl-digilib button,
 div.dl-digilib input {

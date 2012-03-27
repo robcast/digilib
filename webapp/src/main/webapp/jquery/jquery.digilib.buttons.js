@@ -157,6 +157,10 @@ digilib buttons plugin
     var defaults = {
         // buttons (reference added later)
         'buttons' : null,
+        // disabled buttons (should be an array of button names)
+        'buttonsDisabled' : [],
+        // show buttons needed for consecutive (book-like) consultation of image files
+        'showPageButtons' : true,
         // defaults for digilib buttons
         'buttonSettings' : {
             'fullscreen' : {
@@ -165,6 +169,7 @@ digilib buttons plugin
                 'buttonSetWidth' : 36,
                 'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","about","reset","toggleoptions"],
                 'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","lessoptions"],
+                'pageSet' : ["back","fwd","page"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 },
             'embedded' : {
@@ -172,6 +177,7 @@ digilib buttons plugin
                 'buttonSetWidth' : 18,
                 'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","about","reset","toggleoptions"],
                 'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","scale","lessoptions"],
+                'pageSet' : ["back","fwd","page"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 }
         },
@@ -229,13 +235,19 @@ digilib buttons plugin
         fn.createButton = createButton;
         fn.highlightButtons = highlightButtons;
         fn.setButtonAction = setButtonAction;
+        fn.findButtonByName = findButtonByName;
     };
 
     // plugin initialization
     var init = function (data) {
         console.debug('initialising buttons plugin. data:', data);
+        var settings = data.settings;
         // add insets
         data.currentInsets['buttons'] = getInsets(data);
+        if (!settings.showPageButtons) {
+            var pageSet = settings.buttonSettings[settings.interactionMode].pageSet;
+            $.merge(settings.buttonsDisabled, pageSet);
+        }
         // install event handler
         var $data = $(data);
         $data.bind('setup', handleSetup);
@@ -249,6 +261,7 @@ digilib buttons plugin
         for (var i = 0; i < settings.visibleButtonSets; ++i) {
             showButtons(data, true, i);
         }
+        disableButtons(data);
     };
 
     /** 
@@ -284,17 +297,14 @@ digilib buttons plugin
         var tooltip = buttonConfig.tooltip;
         var icon = imagePath + buttonConfig.icon;
         // construct the button html
-        var $button = $('<div class="'+cssPrefix+'button"></div>');
-        var $a = $('<a href=""/>');
-        var $img = $('<img class="'+cssPrefix+'button"/>');
-        $div.append($button);
-        $button.append($a);
-        $a.append($img);
-        // add attributes and bindings
-        $button.attr('title', tooltip);
-        $button.attr('id', cssPrefix+'button-'+buttonName);
-        $button.addClass(cssPrefix+'button-'+buttonName);
-        $img.attr('src', icon);
+        var html = '\
+            <div id="'+cssPrefix+'button-'+buttonName+'" class="'+cssPrefix+'button" title="'+tooltip+'">\
+                <a href="">\
+                    <img class="'+cssPrefix+'button" src="'+icon+'"/>\
+                </a>\
+            </div>';
+        var $button = $(html);
+        $button.appendTo($div);
         // create handler for the buttons
         $button.on('click.digilib', (function () {
             // we create a new closure to capture the value of action
@@ -402,7 +412,7 @@ digilib buttons plugin
         var $buttons = data.$elem.find('div.'+cssPrefix+'buttons:visible'); // include hidden?
         // add a class for highlighted button
         var highlight = function (name, on) {
-            var $button = $buttons.find('div.'+cssPrefix+'button-' + name);
+            var $button = findButtonByName(data, name);
             if (on) {
                 $button.addClass(cssPrefix+'button-on');
             } else {
@@ -423,6 +433,29 @@ digilib buttons plugin
         highlight('quality', flags.q1 || flags.q2);
         highlight('zoomin', ! isFullArea(data.zoomArea));
         };
+
+    // find a button
+    var findButtonByName = function (data, name) {
+        var $elem = data.$elem;
+        var cssPrefix = data.settings.cssPrefix;
+        var $button = $elem.find('#'+cssPrefix+'button-'+name);
+        console.debug("find button", name, $button);
+        return $button;
+    };
+
+    // hide disabled buttons
+    var disableButtons = function (data, buttonnames) {
+        // if present, buttonnames should be an array of button names
+        var $elem = data.$elem;
+        var settings = data.settings;
+        var cssPrefix = settings.cssPrefix;
+        var disabled = buttonnames || settings.buttonsDisabled;
+        $.each(disabled, function(index, name) {
+            var $button = findButtonByName(data, name);
+            $button.addClass(cssPrefix+'disabled');
+            });
+        console.debug('disabled buttons:', disabled);
+    };
 
     // set standard button "onclick" field to a new action
     var setButtonAction = function(buttonName, action) {
