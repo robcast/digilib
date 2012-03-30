@@ -173,7 +173,15 @@ div.dl-digilib button.dl-button {
 	background: transparent;
 	}
 
-div.dl-digilib div.dl-tinyslider {
+div.dl-digilib div.dl-rgbslider {
+    display: none;
+	border: 2px solid lightcyan;
+	background-color: lightgrey;
+	width: 400px;
+	padding: 10px;	
+    }
+
+div.dl-digilib div.dl-singleslider {
     display: none;
 	border: 2px solid lightcyan;
 	background-color: lightgrey;
@@ -248,6 +256,15 @@ div.dl-digilib table.dl-scalertable td.dl-arrow:hover {
 }
 div.dl-digilib table.dl-scalertable img.button {
     opacity: 1;
+}
+
+div.dl-digilib table.dl-rgbslider  {
+    width: 100%;
+}
+
+div.dl-digilib table.dl-rgbslider td.rgb {
+    width: 40%;
+    padding: 10px;
 }
 
 /* special definitions for fullscreen */

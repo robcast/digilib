@@ -13,19 +13,7 @@ digilib sliders plugin
     // affine geometry plugin
     var geom = null;
 
-    var defaults = {
-        'label' : 'Slider',
-        'direction' : 'x',
-        'handlesize' : 16,
-        'min' : 0,
-        'max' : 100,
-        'start' : 33,
-        'numberoffset' : -24,
-        'labeloffset' : 16,
-        'rect' : null,
-        'factor' : null,
-        'onmove' : null // callback function
-        };
+    var defaults = {};
 
     var sliderOptions = {
         rot : {
@@ -54,92 +42,30 @@ digilib sliders plugin
             'max' : 4,
             'step' : 0.01,
             'start' : 0
-        },
-        red : {
-            label : "Red value",
-            tooltip : "set red value",
-            icon : "rgb.png",
-            'min' : 0,
-            'max' : 255,
-            'start' : 127
-            },
-
-        green : {
-            label : "Green value",
-            tooltip : "set green value",
-            icon : "rgb.png",
-            'min' : 0,
-            'max' : 255,
-            'start' : 127
-            },
-
-        blue : {
-            label : "Blue value",
-            tooltip : "set blue value",
-            icon : "rgb.png",
-            'min' : 0,
-            'max' : 255,
-            'start' : 127
-            },
+        }
     };
 
+    var rgb = {
+        r : {
+            label : "red",
+            color : "#800000"
+            },
+        g : {
+            label : "green",
+            color : "#008000"
+            },
+        b : {
+            label : "blue",
+            color : "#000080"
+            }
+        }
     var actions = {
-        // slider to set a rotation angle
-        sliderRotate : function (data) {
-            var $elem = data.$elem;
-            var $panel = fn.setupPanel(data);
-            var opts = { 'start' : parseFloat(data.settings.rot) };
-            var $slider = fn.setupSlider(data, 'rot', opts);
-            var ok = function(d) {
-                var angle = $slider.slider('getval');
-                digilib.actions.rotate(d, angle);
-                };
-            $panel.data['ok'] = ok;
-            $panel.fadeIn();
-            $panel.prepend($slider);
-            fn.centerOnScreen(data, $panel);
-            $slider.slider('show');
-        },
-
-        // slider to set a brightness value
-        sliderBrightness : function (data) {
-            var $elem = data.$elem;
-            var $panel = fn.setupPanel(data);
-            var opts = { 'start' : parseFloat(data.settings.brgt) };
-            var $slider = fn.setupSlider(data, 'brgt', opts);
-            var ok = function(d) {
-                var brgt = $slider.slider('getval');
-                digilib.actions.brightness(d, brgt);
-                };
-            $panel.data['ok'] = ok;
-            $panel.prepend($slider);
-            fn.centerOnScreen(data, $panel);
-            $slider.slider('show');
-        },
-
-        // slider to set a contrast value
-        sliderContrast : function (data) {
-            var $elem = data.$elem;
-            var $panel = fn.setupPanel(data);
-            var opts = { 'start' : parseFloat(data.settings.cont) };
-            var $slider = fn.setupSlider(data, 'cont', opts);
-            var ok = function(d) {
-                var cont = $slider.slider('getval');
-                digilib.actions.contrast(d, cont, true);
-                };
-            $panel.data['ok'] = ok;
-            $panel.fadeIn();
-            $panel.prepend($slider);
-            fn.centerOnScreen(data, $panel);
-            $slider.slider('show');
-        },
-
         // shows brightness slider
         tinySliderBrgt : function (data) {
             var callback = function(val) {
                 digilib.actions.brightness(data, val);
                 };
-            setupTinyRangeSlider(data, 'brgt', callback);
+            singleSlider(data, 'brgt', callback);
         },
 
         // shows contrast slider
@@ -147,7 +73,7 @@ digilib sliders plugin
             var callback = function(val) {
                 digilib.actions.contrast(data, val, true);
                 };
-            setupTinyRangeSlider(data, 'cont', callback);
+            singleSlider(data, 'cont', callback);
         },
 
         // shows rotate slider
@@ -155,118 +81,16 @@ digilib sliders plugin
             var callback = function(val) {
                 digilib.actions.rotate(data, val);
                 };
-            setupTinyRangeSlider(data, 'rot', callback);
+            singleSlider(data, 'rot', callback);
+        },
+
+        // shows RGB sliders
+        tinySliderRGB : function (data) {
+            var callback = function(m, a) {
+                digilib.actions.setRGB(data, m, a);
+                };
+            rgbSlider(data, callback);
         }
-    };
-
-    var getval = function (data) {
-        // returns the slider value
-        var $this = this;
-        var settings = $this.data('settings');
-        return settings.val;
-    };
-
-    var setval = function (data, val) {
-        // sets the slider value and moves the handle acordingly
-        var $this = this;
-        var settings = $this.data('settings');
-        if (val != null) settings.val = val;
-        var ratio = (settings.val - settings.min) / settings.diff;
-        var r = settings.rect;
-        var newpos = settings.vertical
-            ? geom.position(r.x + r.width / 2, r.y + ratio * r.height)
-            : geom.position(r.x + ratio * r.width, r.y + r.height / 2);
-        $this.slider('moveto', newpos);
-    };
-
-    var moveto = function (data, pos, calc) {
-        // move the handle in response to a mouse position
-        var $this = this;
-        var settings = $this.data('settings');
-        var r = settings.rect;
-        var h = settings.handlerect;
-        var handlepos = r.getCenter();
-        if (settings.vertical) {
-            handlepos.y = Math.min(Math.max(r.y, pos.y), r.y + r.height)
-        } else {
-            handlepos.x = Math.min(Math.max(r.x, pos.x), r.x + r.width)
-            }
-        h.setCenter(handlepos);
-        h.adjustDiv(settings.$handle);
-        if (calc) {
-            // calculate new slider value
-            var temp = settings.vertical
-                ? (handlepos.y - r.y)
-                : (handlepos.x - r.x);
-            settings.val = fn.cropFloat(temp * settings.factor + settings.min);
-            }
-        if (settings.onmove) {
-            settings.onmove($this);
-            }
-    };
-
-    var show = function (data) {
-        var $this = this;
-        $this.fadeIn();
-        var settings = $this.data('settings');
-        // the jquery elements we need
-        var $body = $('body');
-        // some variables for easier calculation
-        var label = settings.label + ': ';
-        // calculate positions for the slider elements
-        var r = geom.rectangle($this);
-        settings.rect = r;
-        var v = settings.vertical;
-        settings.factor = v
-            ? settings.diff / r.height
-            : settings.diff / r.width;
-        var labelpos = geom.position(r.x, r.y + settings.labeloffset);
-        var minpos = v
-            ? geom.position(r.x + settings.numberoffset, r.y)
-            : geom.position(r.x, r.y + settings.numberoffset);
-        var maxpos = v
-            ? geom.position(r.x + settings.numberoffset, r.y + r.width)
-            : geom.position(r.x + r.width - settings.$max.width(), r.y + settings.numberoffset);
-        // adjust elements
-        labelpos.adjustDiv(settings.$label);
-        minpos.adjustDiv(settings.$min);
-        maxpos.adjustDiv(settings.$max);
-        // set the handle
-        $this.slider('setval');
-
-        // mousedown handler: start sliding
-        var sliderStart = function (event) {
-            $body.on("mousemove.slider", sliderMove);
-            $body.on("mouseup.slider", sliderEnd);
-            return false;
-        };
-
-        // mousemove handler: move slider
-        var sliderMove = function (event) {
-            var pos = geom.position(event);
-            $this.slider('moveto', pos, true);
-            settings.$label.text(label + settings.val);
-            return false;
-        };
-
-        // mouseup handler: end sliding
-        var sliderEnd = function (event) {
-            $body.off("mousemove.slider");
-            $body.off("mouseup.slider");
-            return false;
-        };
-
-        // bind mousedown handler to sliderhandle
-        settings.$handle.on('mousedown.slider', sliderStart);
-        console.debug('show slider: ', $this, ' settings:', settings);
-    };
-
-    var destroy = function() {
-        var $this = this;
-        var settings = $this.data('settings');
-        var $handle = settings.$handle;
-        $handle.off('mousedown.slider');
-        fn.withdraw($this);
     };
 
     // assign button actions to sliders (rotate, brightness, contrast) 
@@ -279,6 +103,7 @@ digilib sliders plugin
         fn.setButtonAction('brgt', 'tinySliderBrgt');
         fn.setButtonAction('cont', 'tinySliderCont');
         fn.setButtonAction('rot', 'tinySliderRot');
+        // fn.setButtonAction('rgb', 'tinySliderRGB');
     };
 
     // plugin installation called by digilib on plugin object.
@@ -293,141 +118,48 @@ digilib sliders plugin
         $.extend(digilib.actions, actions);
         setButtonActions(digilib.buttons);
         // export functions
-        fn.setupSlider = setupSlider;
-        fn.setupPanel = setupPanel;
     };
 
     // plugin initialization
     var init = function (data) {
         console.debug('initialising sliders plugin. data:', data);
-        var settings = data.settings;
-        var $data = $(data);
+        // var settings = data.settings;
+        // var $data = $(data);
         // we do setup at runtime
         // $data.bind('setup', handleSetup);
     };
 
-    /** creates the HTML structure for a panel div
+    /** creates a div with a form, setup events and callback
      */
-    var setupPanel = function (data) {
-        var $elem = data.$elem;
-        var panelClass = data.settings.cssPrefix + 'panel';
-        var $panel = $elem.find('.' + panelClass);
-        if ($panel.length == 0) {
-            // new panel
-            $panel = $('<div/>');
-            $panel.addClass(panelClass);
-            $elem.append($panel);
-            $panel.fadeIn();
-        } else {
-            // panel exists, so empty it
-            $panel.empty();
-        }
-        var $okcancel = setupOkCancel(data);
-        $panel.append($okcancel);
-        return $panel;
-    };
-
-    /** creates the HTML structure for a slider div
-     */
-    var setupSlider = function (data, paramname, opts) {
-        var id = "slider-" + paramname;
-        var $div = $('#' + id);
-        if ($div.length > 0) {
-            return $div;
-            }
-        // slider not yet created
-        var cssClass = data.cssPrefix+'slider';
-        var html = '\
-            <div id="'+id+' class="'+cssClass+'">\
-                <div class="'+cssClass+'handle"/>\
-                <div class="'+cssClass+'number">'+options.min+'</div>\
-                <div class="'+cssClass+'number">'+options.max+'</div>\
-                <div class="'+cssClass+'label">\
-                    <span>'+options.label+'</span>\
-                    <input class="'+cssClass+'input">'+options.start+'</input>\
-                </div>\
-            </div>';
-        var $div = $(html);
-        var $handle = $div.find('div.'+cssClass+'handle');
-        var $label = $div.find('div.'+cssClass+'label');
-        var $input = $div.find('div.'+cssClass+'input');
-        var $numbers = $div.find('div.'+cssClass+'number');
-        var $min = $numbers[0];
-        var $max = $numbers[1];
-        var options = defaults;
-        $.extend(options, sliderOptions[paramname], opts);
-        $.extend(options, {
-            '$handle' : $handle,
-            '$label' : $label,
-            '$input' : $input,
-            '$min' : $min,
-            '$max' : $max,
-            'diff' : options.max - options.min,
-            'vertical' : options.direction == 'y',
-            'val' : options.start,
-            'handlerect' : geom.rectangle(0, 0, options.handlesize, options.handlesize)
-            });
-        $div.data(options);
-        console.debug('new slider: ', $div, ', options: ', options);
-        return $div;
-    };
-
-    /** creates the HTML structure for a ok and cancel div
-     */
-    var setupOkCancel = function (data) {
-        var settings = data.settings;
-        var cssPrefix = settings.cssPrefix;
-        var html = '\
-            <div>\
-                <button class="'+cssPrefix+'button" id="'+cssPrefix+'Ok">OK</button>\
-                <button class="'+cssPrefix+'button" id="'+cssPrefix+'Cancel">Cancel</button>\
-            </div>';
-        var $div = $(html);
-        var handler = function(event) {
-            var $panel = $(this).parents('.'+cssPrefix+'panel');
-            if (event.keyCode == 27 || event.target.id == cssPrefix+'Cancel') {
-                var callback = $panel.data['cancel'];
-                if (callback) {
-                    callback(data);
-                    }
-                }
-            if (event.keyCode == 13 || event.target.id == cssPrefix+'Ok') {
-                var callback = $panel.data['ok'];
-                if (callback) {
-                    callback(data);
-                    }
-                }
-            fn.withdraw($panel);
-            return false;
-            };
-        $div.children().on('click', handler);
-        return $div;
-    };
-
-    /** creates a TinyRangeSlider
-     */
-    var setupTinyRangeSlider = function (data, paramname, callback) {
-        var $elem = data.$elem;
-        var opts = sliderOptions[paramname];
-        var param = data.settings[paramname] || opts.start;
+    var setupFormDiv = function (data, $content, cssSuffix, callback) {
         var cssPrefix = data.settings.cssPrefix;
-        var cssClass = cssPrefix + 'tinyslider';
-        var sliderHtml = '\
-        <div class="'+cssClass+'" title="'+opts.tooltip+'">\
-                <form class="'+cssClass+'">\
-                    <span>'+opts.label+'</span>\
-                    <input type="range" class="'+cssClass+'range" name="'+paramname+'" step="'+opts.step+'" min="'+opts.min+'" max="'+opts.max+'" value="'+param+'"/>\
-                    <input type="text" class="'+cssClass+'text" name="'+paramname+'" size="4" value="'+param+'"/>\
-                    <br/>\
-                    <input class="'+cssClass+'cancel" type="button" value="Cancel"/><input type="submit" name="sub" value="Ok"/>\
+        var cls = cssPrefix + cssSuffix;
+        var html = '\
+            <div class="'+cls+'">\
+                <form class="'+cls+'">\
+                    <input class="'+cls+'cancel" type="button" value="Cancel"/>\
+                    <input type="submit" name="sub" value="Ok"/>\
                 </form>\
             </div>';
-        var $slider = $(sliderHtml);
-        $elem.append($slider);
-        $slider.fadeIn();
-        var $range = $slider.find('input.'+cssClass+'range');
-        var $text = $slider.find('input.'+cssClass+'text');
+        var $elem = data.$elem;
+        var $div = $(html).appendTo($elem);
+        var $form = $div.find('form');
+        $form.prepend($content);
+        // handle submit
+        $form.on('submit', function () {
+            callback();
+            fn.withdraw($div);
+            return false;
+        });
+        // handle cancel
+        $form.find('.'+cls+'cancel').on('click', function () {
+            fn.withdraw($div);
+        });
+        // show div
+        $div.fadeIn();
         // fix non-HTML5 slider
+        var tiny = cssPrefix + 'tinyslider';
+        var $range = $form.find('input.'+tiny+'range');
         var HTML5 = $range.prop('type') === 'range';
         if (!HTML5) {
             console.debug('fix input type=range');
@@ -435,31 +167,77 @@ digilib sliders plugin
                 $range.trigger('change');
             }});
         }
+        fn.centerOnScreen(data, $div);
+        return $div;
+    };
+
+    /** creates a TinyRangeSlider
+     */
+    var tinySlider = function (data, paramname, startval) {
+        var $elem = data.$elem;
+        var opts = sliderOptions[paramname];
+        var param = startval || data.settings[paramname] || opts.start;
+        var cssPrefix = data.settings.cssPrefix;
+        var cls = cssPrefix + 'tinyslider';
+        var html = '\
+            <div class="'+cls+'frame">\
+                <span>'+opts.label+'</span>\
+                <input type="range" class="'+cls+'range" name="'+paramname+'" step="'+opts.step+'" min="'+opts.min+'" max="'+opts.max+'" value="'+param+'"/>\
+                <input type="text" class="'+cls+'text" name="'+paramname+'" size="4" value="'+param+'"/>\
+            </div>';
+        var $slider = $(html);
+        var $range = $slider.find('input.'+cls+'range');
+        var $text = $slider.find('input.'+cls+'text');
+        $slider.data({'$text' : $text, '$range' : $range});
         // connect slider and input
         $range.on('change', function () {
-            // TinyRange rounds to integer values, not always desired
             var val = $range.val();
             $text.val(val);
         });
         $text.on('change', function () {
             var val = $text.val();
             $range.val(val);
+            // val doesn't change the slider handle position in Tinyrange
+            // can't use a jQuery "valHook" here because input type is reported as "text" (???)
+            var HTML5 = $range.prop('type') === 'range';
             if (!HTML5) {
                 $range.range('set', val);
             }
         });
-        // handle submit
-        $slider.find('form').on('submit', function () {
-            // console.debug("brgt-form:", this, " sub=", this.sub);
-            callback($text.val());
-            fn.withdraw($slider);
-            return false;
-        });
-        // handle cancel
-        $slider.find('.'+cssClass+'cancel').on('click', function () {
-            fn.withdraw($slider);
-        });
-        fn.centerOnScreen(data, $slider);
+        return $slider;
+    };
+
+    /** creates a single TinyRangeSlider for param "paramname",
+        the new value is passed to the "callback" function.
+     */
+    var singleSlider = function (data, paramname, callback) {
+        var $slider = tinySlider(data, paramname);
+        var getValue = function () {
+            var val = $slider.data('$text').val();
+            callback(val);
+            };
+        setupFormDiv(data, $slider, 'singleslider', getValue);
+    };
+
+    /** creates a compound RGB slider
+        the new values are passed to the "callback" function.
+     */
+    var rgbSlider = function (data, callback) {
+        var cls = data.settings.cssPrefix + 'rgbslider';
+        var $table = $('<table class="'+cls+'" />');
+        var makeSliders = function(index, value) {
+            // TODO: set start values
+            var $tr = $('<tr/>').appendTo($table);
+            var $td = $('<td class="color">'+rgb[value].label+'</td>').appendTo($tr);
+            var $td = $('<td class="rgb"/>').append(tinySlider(data, 'brgt')).appendTo($tr);
+            var $td = $('<td class="rgb"/>').append(tinySlider(data, 'cont')).appendTo($tr);
+            }
+        $.each(['r','g','b'], makeSliders);
+        var getValue = function () {
+            // TODO: get values from sliders
+            callback(null, null);
+            };
+        setupFormDiv(data, $table, 'rgbslider', getValue);
     };
 
     // plugin object with name and init
