@@ -140,8 +140,8 @@ digilib sliders plugin
         var data = this;
         setStartValues(data, 'a');
         setStartValues(data, 'm');
-        var idSlider = '#'+ data.settings.cssPrefix + 'slider';
-        fn.centerOnScreen(data, fn.find(data, idSlider));
+        var sliderSelector = '#'+ data.settings.cssPrefix + 'slider';
+        fn.centerOnScreen(data, fn.find(data, sliderSelector));
     };
 
     // set m/a start values for sliders
@@ -251,21 +251,43 @@ digilib sliders plugin
         the new values are passed to the "callback" function.
      */
     var rgbSlider = function (data, callback) {
-        var cls = data.settings.cssPrefix + 'rgbslider';
-        var $table = $('<table class="'+cls+'" />');
+        var css = data.settings.cssPrefix;
+        var cls = css + 'rgbslider';
+        var html = '\
+            <div>\
+                <table class="'+cls+'" />\
+                <div class="'+cls+'grey">\
+                    <span/><span/><span/><span/><span/><span/><span/><span/><span/>\
+                </div>\
+                <div class="'+cls+'indicator">\
+                    <span/><span/><span/><span/><span/><span/><span/><span/><span/>\
+                </div>\
+            </div>';
+        var $div = $(html);
+        var $table = $div.find('table');
         var setupTableRow = function(index, value) {
             var color = rgb[value];
             // start values are set in "handleSetup"
+            var $tr = $('<tr/>').appendTo($table);
+            var html = '\
+                <td class="'+css+'color '+css+value+'">\
+                    <div>'+color.label+'</div>\
+                </td>';
+            $(html).appendTo($tr);
             var $brgt = tinySlider(data, 'brgt', color.a);
             var $cont = tinySlider(data, 'cont', color.m);
             $table.data(value+'a', $brgt.data('$text'));
             $table.data(value+'m', $cont.data('$text'));
-            var $tr = $('<tr/>').appendTo($table);
-            var $td = $('<td class="color">'+color.label+'</td>').appendTo($tr);
-            var $td = $('<td class="rgb"/>').append($brgt).appendTo($tr);
-            var $td = $('<td class="rgb"/>').append($cont).appendTo($tr);
+            $('<td class="'+css+'rgb"/>').append($brgt).appendTo($tr);
+            $('<td class="'+css+'rgb"/>').append($cont).appendTo($tr);
             }
         $.each(primaryColors, setupTableRow);
+        var greyValues = function (index) {
+            var val = index * 32;
+            $(this).css('background-color', 'rgb('+val+','+val+','+val+')');
+            };
+        $div.find('div.'+cls+'grey span').each(greyValues);
+        $div.find('div.'+cls+'indicator span').each(greyValues);
         var getValues = function () {
             // get values from sliders
             var input = $table.data();
@@ -273,7 +295,7 @@ digilib sliders plugin
             var rgbm = input['rm'].val() + '/' + input['gm'].val() + '/' + input['bm'].val();
             callback(rgbm, rgba);
             };
-        setupFormDiv(data, $table, 'rgbslider', getValues);
+        setupFormDiv(data, $div, 'rgbslider', getValues);
     };
 
     // plugin object with name and init

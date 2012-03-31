@@ -178,7 +178,34 @@ div.dl-digilib div.dl-rgbslider {
 	border: 2px solid lightcyan;
 	background-color: lightgrey;
 	width: 400px;
-	padding: 10px;	
+	padding: 10px;
+	position: absolute;
+    top: 0px;	
+    }
+
+div.dl-digilib div.dl-rgbslidergrey span,
+div.dl-digilib div.dl-rgbsliderindicator span {
+    padding: 0px 20px;
+    }
+
+div.dl-digilib td.dl-color div {
+    color: lightcyan;
+    border: 2px solid lightcyan;
+    text-align: center;
+    padding: 20px 0px;
+    margin: 10px;
+    }
+
+div.dl-digilib td.dl-r div {
+    background-color: #800000;
+    }
+
+div.dl-digilib td.dl-g div {
+    background-color: #008000;
+    }
+
+div.dl-digilib td.dl-b div {
+    background-color: #000080;
     }
 
 div.dl-digilib div.dl-singleslider {
@@ -186,7 +213,9 @@ div.dl-digilib div.dl-singleslider {
 	border: 2px solid lightcyan;
 	background-color: lightgrey;
 	width: 300px;
-	padding: 10px;	
+	padding: 10px;
+	position: absolute;
+    top: 0px;	
     }
 
 div.dl-digilib div.dl-slider {
@@ -262,9 +291,9 @@ div.dl-digilib table.dl-rgbslider  {
     width: 100%;
 }
 
-div.dl-digilib table.dl-rgbslider td.rgb {
+div.dl-digilib table.dl-rgbslider td.dl-rgb {
     width: 40%;
-    padding: 10px;
+    padding: 6px;
     border: 2px solid lightcyan;
 }
 
