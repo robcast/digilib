@@ -6,6 +6,10 @@
  * @version 1.0
  */
 
+/*
+ * minor bug fixes (c) 2012 Martin Raspe (hertzhaft@biblhertz.it)
+*/
+
 (function($){
 
   var TinyRange = function(){
