@@ -104,26 +104,6 @@ div.dl-digilib map.dl-regioncontent {
     display: none;
 }
 
-div.dl-digilib div.dl-regionInfo {
-    display: none;
-    position: absolute;
-	top: 100px;
-	padding: 10px;
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	font-size: 12px;
-	border: 2px solid lightcyan;
-	color: black;
-	background-color: lightgrey;
-	z-index: 1000;
-}
-
-div.dl-digilib div.dl-regionInfo a {
-    color: white;
-    text-decoration: none;
-    font-size: 11px;
-	font-weight: bold;
-}
-
 div.dl-digilib #dl-calibration {
 	background: url('img/blue.png');
 	position: absolute;
@@ -221,51 +201,44 @@ div.dl-digilib div.dl-singleslider {
 div.dl-digilib div.dl-slider {
 	border: 1px solid lightcyan;
 	margin: 30px;
-	z-index: 9999;
+	z-index: 100;
 	height: 6px;
 	}
 
-div.dl-digilib div.dl-panel {
+div.dl-digilib div.dl-regionInfo {
+    display: none;
     position: absolute;
-	width: 500px;
-	text-align: center;
-	background: url('img/blue.png');
-	border: 1px solid lightcyan;
-	display: none;
-    }
-	
-div.dl-digilib div.dl-sliderhandle {
-	border: 1px solid lightcyan;
-	background: url('img/blue.png');
-	position: absolute;
-	z-index: 10000;
-	}
-
-div.dl-digilib div.dl-sliderlabel,
-div.dl-digilib div.dl-slidernumber {
-	position: absolute;
-	padding: 2px;
+    overflow: visible;
+	padding: 10px;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-size: 12px;
-	color: white;
-    }
-	
-div.dl-infobutton {
-    background-color: white;
+	border: 2px solid lightcyan;
+	color: black;
+	background-color: lightgrey;
+    width: 300px;
+	z-index: 100;
+}
+
+div.dl-digilib div.dl-regionInfo a {
+    color: white;
+    text-decoration: none;
+    font-size: 11px;
+	font-weight: bold;
+	width: 300px;
+}
+
+.dl-infobutton {
+    background-color: lightcyan;
     color: grey;
     padding: 0px 4px;
-    margin: 0px 2px;
-    float: left;
 }
 
 div.dl-info {
-    clear: both;
     display: none;
     margin: 10px;
 }
 
 div.dl-infoheader {
-    width: 300px;
     margin-bottom: 20px;
 }
 

@@ -282,12 +282,12 @@ digilib sliders plugin
             $('<td class="'+css+'rgb"/>').append($cont).appendTo($tr);
             }
         $.each(primaryColors, setupTableRow);
-        var greyValues = function (index) {
+        var setGreyValue = function (index) {
             var val = index * 32;
             $(this).css('background-color', 'rgb('+val+','+val+','+val+')');
             };
-        $div.find('div.'+cls+'grey span').each(greyValues);
-        $div.find('div.'+cls+'indicator span').each(greyValues);
+        $div.find('div.'+cls+'grey span').each(setGreyValue);
+        $div.find('div.'+cls+'indicator span').each(setGreyValue);
         var getValues = function () {
             // get values from sliders
             var input = $table.data();

@@ -38,7 +38,7 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.1.6a3',
+        'version' : 'jquery.digilib.js 2.1.6a4',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -1602,7 +1602,7 @@ if (typeof console === 'undefined') {
         var r = geom.rectangle($div);
         var s = fn.getFullscreenRect(data);
         r.setCenter(s.getCenter());
-        r.adjustDiv($div);
+        r.getPosition().adjustDiv($div);
     };
 
     /** find an element in digilib $elem

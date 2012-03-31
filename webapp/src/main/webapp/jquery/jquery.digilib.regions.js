@@ -73,7 +73,7 @@ Element with regions has to be in digilib element, e.g.
     var actions = { 
 
         // define a region interactively with two clicked points
-        "defineRegion" : function(data) {
+        defineRegion : function(data) {
             if (!data.settings.isRegionVisible) {
                 alert("Please turn on regions visibility!");
                 return;
@@ -140,7 +140,7 @@ Element with regions has to be in digilib element, e.g.
         },
 
         // remove the last added region
-        "removeRegion" : function (data) {
+        removeRegion : function (data) {
             if (!data.settings.isRegionVisible) {
                 alert("Please turn on regions visibility!");
                 return;
@@ -153,7 +153,7 @@ Element with regions has to be in digilib element, e.g.
         },
 
         // show/hide regions 
-        "toggleRegions" : function (data) {
+        toggleRegions : function (data) {
             var show = !data.settings.isRegionVisible;
             data.settings.isRegionVisible = show;
             fn.highlightButtons(data, 'regions', show);
@@ -161,41 +161,48 @@ Element with regions has to be in digilib element, e.g.
         },
 
         // show region info in a window
-        "showRegionInfo" : function (data) {
+        showRegionInfo : function (data) {
             var $elem = data.$elem;
             var cssPrefix = data.settings.cssPrefix;
-            var $info = $elem.find('#'+cssPrefix+'regionInfo');
-            if ($info.length > 0) {
+            var infoselector = '#'+cssPrefix+'regionInfo';
+            if (fn.find(data, infoselector)) {
                 fn.withdraw($info);
                 return;
                 }
             var html = '\
                 <div id="'+cssPrefix+'regionInfo" class="'+cssPrefix+'keep '+cssPrefix+'regionInfo">\
-                    <div class="'+cssPrefix+'infoheader">\
-                        <div class="'+cssPrefix+'infobutton html">HTML</div>\
-                        <div class="'+cssPrefix+'infobutton svgattr">SVG</div>\
-                        <div class="'+cssPrefix+'infobutton digilib">Digilib</div>\
-                        <div class="'+cssPrefix+'infobutton x">X</div>\
-                    </div>\
+                    <table class="'+cssPrefix+'infoheader">\
+                        <tr>\
+                            <td class="'+cssPrefix+'infobutton html">HTML</td>\
+                            <td class="'+cssPrefix+'infobutton svgattr">SVG</td>\
+                            <td class="'+cssPrefix+'infobutton csv">CSV</td>\
+                            <td class="'+cssPrefix+'infobutton digilib">Digilib</td>\
+                            <td class="'+cssPrefix+'infobutton x">X</td>\
+                        </tr>\
+                    </table>\
                 </div>';
             $info = $(html);
             $info.appendTo($elem);
             $info.append(regionInfoHTML(data));
             $info.append(regionInfoSVG(data));
+            $info.append(regionInfoCSV(data));
             $info.append(regionInfoDigilib(data));
             var bind = function(name) {
-                $info.find('div.'+name).on('click.regioninfo', function () {
+                $info.find('.'+name).on('click.regioninfo', function () {
                     $info.find('div.'+cssPrefix+'info').hide();
                     $info.find('div.'+cssPrefix+name).show();
+                    fn.centerOnScreen(data, $info);
                     });
                 };
             bind('html');
             bind('svgattr');
+            bind('csv');
             bind('digilib');
             $info.find('.x').on('click.regioninfo', function () {
                 fn.withdraw($info);
                 });
             $info.fadeIn();
+            fn.centerOnScreen(data, $info);
         }
     };
 
@@ -241,6 +248,20 @@ Element with regions has to be in digilib element, e.g.
         return $infoDiv;
     };
 
+    // SVG-style
+    var regionInfoCSV = function (data) {
+        var cssPrefix = data.settings.cssPrefix;
+        var $infoDiv = $('<div class="'+cssPrefix+'info '+cssPrefix+'csv"/>');
+        $.each(data.regions, function(index, r) {
+            var area = [
+                fn.cropFloatStr(r.x),
+                fn.cropFloatStr(r.y),
+                fn.cropFloatStr(r.width),
+                fn.cropFloatStr(r.height)].join(',');
+                $infoDiv.append($('<div/>').text(index+1 + ": " + area));
+            });
+        return $infoDiv;
+    };
     // digilib-style
     var regionInfoDigilib = function (data) {
         var cssPrefix = data.settings.cssPrefix;
