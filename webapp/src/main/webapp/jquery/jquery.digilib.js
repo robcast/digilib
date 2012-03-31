@@ -38,7 +38,7 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.1.6a2',
+        'version' : 'jquery.digilib.js 2.1.6a3',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -266,8 +266,8 @@ if (typeof console === 'undefined') {
             var $elem = data.$elem;
             var settings = data.settings;
             var cssPrefix = settings.cssPrefix;
-            var $about = $elem.find('#'+cssPrefix+'about');
-            if ($about.length > 0) return; // already onscreen
+            var aboutSelector = '#'+cssPrefix+'about';
+            if (isOnScreen(data, aboutSelector)) return;
             // make relative logoUrl absolute
             var logoUrl = settings.logoUrl;
             if (logoUrl.charAt(0) !== '/' && logoUrl.substring(0,3) !== 'http') {
@@ -1598,10 +1598,25 @@ if (typeof console === 'undefined') {
     /** center an item on the visible screen rect
     */
     var centerOnScreen = function (data, $div) {
+        if ($div == null) return;
         var r = geom.rectangle($div);
         var s = fn.getFullscreenRect(data);
         r.setCenter(s.getCenter());
         r.adjustDiv($div);
+    };
+
+    /** find an element in digilib $elem
+    */
+    var find = function (data, selector) {
+        var $obj = data.$elem.find(selector);
+        return ($obj.length > 0) ? $obj : null;
+    };
+
+    /** does element exist in digilib?
+    */
+    var isOnScreen = function (data, selector) {
+        var $obj = find(data, selector);
+        return ($obj != null);
     };
 
     /** fade out and remove an item
@@ -1665,7 +1680,9 @@ if (typeof console === 'undefined') {
             cropFloat : cropFloat,
             cropFloatStr : cropFloatStr,
             centerOnScreen : centerOnScreen,
-            withdraw : withdraw
+            withdraw : withdraw,
+            isOnScreen : isOnScreen,
+            find : find
     };
 
     // hook digilib plugin into jquery

@@ -47,8 +47,8 @@ digilib dialogs plugin
         var $elem = data.$elem;
         var settings = data.settings;
         var cssPrefix = settings.cssPrefix;
-        var $calDiv = $elem.find('#'+cssPrefix+'calibration');
-        if ($calDiv.length > 0) return; // already onscreen
+        var calibrationSelector = '#'+cssPrefix+'calibration';
+        if (fn.isOnScreen(data, calibrationSelector)) return; // already onscreen
         var html = '\
             <div id="'+cssPrefix+'calibration" class="'+cssPrefix+'calibration">\
                 <div id="'+cssPrefix+'ruler">\
@@ -106,8 +106,8 @@ digilib dialogs plugin
         var $elem = data.$elem;
         var settings = data.settings;
         var cssPrefix = settings.cssPrefix;
-        var $scaleDiv = $elem.find('#'+cssPrefix+'scalemode');
-        if ($scaleDiv.length > 0) return; // already onscreen
+        var scaleModeSelector = '#'+cssPrefix+'scalemode';
+        if (fn.isOnScreen(data, scaleModeSelector)) return; // already onscreen
         var html = '\
             <div id="'+cssPrefix+'scalemode" style="display:none; z-index:1000; position:absolute">\
                 <select class="'+cssPrefix+'scalemode" />\

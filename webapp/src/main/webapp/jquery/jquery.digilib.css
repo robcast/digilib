@@ -127,7 +127,7 @@ div.dl-digilib div.dl-regionInfo a {
 div.dl-digilib #dl-calibration {
 	background: url('img/blue.png');
 	position: absolute;
-	border: 1px solid lightcyan;
+	border: 2px solid lightcyan;
 	width: 400px;
 	display: none;
 	z-index: 9999;
@@ -265,6 +265,7 @@ div.dl-digilib table.dl-rgbslider  {
 div.dl-digilib table.dl-rgbslider td.rgb {
     width: 40%;
     padding: 10px;
+    border: 2px solid lightcyan;
 }
 
 /* special definitions for fullscreen */
