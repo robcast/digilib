@@ -176,8 +176,7 @@ digilib sliders plugin
 
     // set m/a start values for sliders
     var setStartValues = function (data, code) {
-        var colorparts = data.settings['rgb'+code];
-        if (colorparts == null) return;
+        var colorparts = data.settings['rgb'+code] || '0/0/0';
         var values = colorparts.split("/");
         rgb.r[code] = values[0] || 0;
         rgb.g[code] = values[1] || 0;
