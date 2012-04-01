@@ -153,6 +153,12 @@ div.dl-digilib button.dl-button {
 	background: transparent;
 	}
 
+div.dl-digilib table.dl-rgbslider td.dl-rgb {
+    width: 40%;
+    padding: 6px;
+    border: 2px solid lightcyan;
+}
+
 div.dl-digilib div.dl-rgbslider {
     display: none;
 	border: 2px solid lightcyan;
@@ -163,9 +169,21 @@ div.dl-digilib div.dl-rgbslider {
     top: 0px;	
     }
 
-div.dl-digilib div.dl-rgbslidergrey span,
-div.dl-digilib div.dl-rgbsliderindicator span {
-    padding: 0px 20px;
+div.dl-digilib div.dl-rgbsliderindicator {
+	border: 2px solid lightcyan;
+	margin: 10px 0px;
+    }
+
+div.dl-digilib table.dl-rgbslider,
+div.dl-digilib table.dl-rgbslidergrey,
+div.dl-digilib table.dl-rgbsliderindicator {
+    width: 100%;
+    border-collapse: collapse;
+    }
+
+div.dl-digilib table.dl-rgbslidergrey td,
+div.dl-digilib table.dl-rgbsliderindicator td {
+    height: 20px;
     }
 
 div.dl-digilib td.dl-color div {
@@ -173,7 +191,7 @@ div.dl-digilib td.dl-color div {
     border: 2px solid lightcyan;
     text-align: center;
     padding: 20px 0px;
-    margin: 10px;
+    margin: 0px 20px 20px 0px;
     }
 
 div.dl-digilib td.dl-r div {
@@ -258,16 +276,6 @@ div.dl-digilib table.dl-scalertable td.dl-arrow:hover {
 }
 div.dl-digilib table.dl-scalertable img.button {
     opacity: 1;
-}
-
-div.dl-digilib table.dl-rgbslider  {
-    width: 100%;
-}
-
-div.dl-digilib table.dl-rgbslider td.dl-rgb {
-    width: 40%;
-    padding: 6px;
-    border: 2px solid lightcyan;
 }
 
 /* special definitions for fullscreen */
