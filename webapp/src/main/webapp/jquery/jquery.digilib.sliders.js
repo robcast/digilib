@@ -20,6 +20,7 @@ digilib sliders plugin
             label : "Rotation angle",
             tooltip : "rotate image",
             icon : "rotate.png",
+            indicator : false,
             'min' : 0,
             'max' : 360,
             'step' : 0.1,
@@ -29,6 +30,7 @@ digilib sliders plugin
             label : "Brightness",
             tooltip : "set numeric value to be added",
             icon : "brightness.png",
+            indicator : true,
             'min' : -255,
             'max' : 255,
             'step' : 10,
@@ -38,6 +40,7 @@ digilib sliders plugin
             label : "Contrast",
             tooltip : "set numeric value to be multiplied",
             icon : "contrast.png",
+            indicator : true,
             'min' : -4,
             'max' : 4,
             'step' : 0.01,
@@ -100,6 +103,34 @@ digilib sliders plugin
         }
     };
 
+    var indicators = {
+        brgt : function ($slider, value) {
+            var brgt = parseFloat(value);
+            var cls = $slider.data('cls');
+            var $ind = $slider.data('indicator');
+            var $td = $ind.find('table.'+cls+'indicator td');
+            var setBgColor = function (index) {
+                var val = index * 32;
+                var grey = Math.min(Math.max(Math.round(val + brgt), 0), 255);
+                console.debug('brgt', index, val, brgt, "=", val+brgt)
+                $(this).css('background-color', 'rgb('+grey+','+grey+','+grey+')');
+                };
+            $td.each(setBgColor);
+            },
+
+        cont : function ($slider, value) { 
+            var cont = parseFloat(value);
+            var cls = $slider.data('cls');
+            var $ind = $slider.data('indicator');
+            var $td = $ind.find('table.'+cls+'indicator td');
+            var setBgColor = function (index) {
+                var val = index * 32;
+                var grey = Math.min(Math.max(Math.round(Math.pow(2, cont) * val), 0), 255);
+                $(this).css('background-color', 'rgb('+grey+','+grey+','+grey+')');
+                };
+            $td.each(setBgColor);
+            }
+    };
     // assign button actions to sliders (rotate, brightness, contrast) 
     var setButtonActions = function () {
         if (fn.setButtonAction == null) {
@@ -187,7 +218,6 @@ digilib sliders plugin
                 var reset = $(this).data('reset');
                 reset();
                 });
-                // TODO: update indicator
         });
         // handle cancel
         $form.find('.'+cls+'cancel').on('click', function () {
@@ -210,17 +240,16 @@ digilib sliders plugin
 
     /** creates a TinyRangeSlider
      */
-    var tinySlider = function (data, paramname, onChange, startval) {
+    var tinySlider = function (data, paramname, startvalue) {
         var $elem = data.$elem;
         var opts = sliderOptions[paramname];
-        var param = startval || data.settings[paramname] || opts.start;
         var cssPrefix = data.settings.cssPrefix;
         var cls = cssPrefix + 'tinyslider';
         var html = '\
             <div class="'+cls+'">\
                 <span>'+opts.label+'</span>\
-                <input type="range" class="'+cls+'range" name="'+paramname+'" step="'+opts.step+'" min="'+opts.min+'" max="'+opts.max+'" value="'+param+'"/>\
-                <input type="text" class="'+cls+'text" name="'+paramname+'" size="4" value="'+param+'"/>\
+                <input type="range" class="'+cls+'range" name="'+paramname+'" step="'+opts.step+'" min="'+opts.min+'" max="'+opts.max+'" value="'+startvalue+'"/>\
+                <input type="text" class="'+cls+'text" name="'+paramname+'" size="4" value="'+startvalue+'"/>\
             </div>';
         var $slider = $(html);
         var $range = $slider.find('input.'+cls+'range');
@@ -229,8 +258,9 @@ digilib sliders plugin
             // crop floating point imprecision
             var val = parseFloat($range.val()).toFixed(4);
             $text.val(parseFloat(val));
-            if ($.isFunction(onChange)) {
-                onChange($slider, val);
+            var update = $slider.data('update');
+            if ($.isFunction(update)) {
+                update($slider, val);
             }
         };
         var textChange = function () {
@@ -242,12 +272,13 @@ digilib sliders plugin
             if (!HTML5) {
                 $range.range('set', val);
             }
-            if ($.isFunction(onChange)) {
-                onChange($slider, val);
+            var update = $slider.data('update');
+            if ($.isFunction(update)) {
+                update($slider, val);
             }
         };
         var reset = function () {
-            $text.val(param);
+            $text.val(startvalue);
             textChange();
         };
         // connect slider and input
@@ -256,7 +287,8 @@ digilib sliders plugin
         $slider.data({
             '$text' : $text,
             '$range' : $range,
-            'reset' : reset
+            'reset' : reset,
+            'update' : null
         });
         return $slider;
     };
@@ -265,14 +297,31 @@ digilib sliders plugin
         the new value is passed to the "onSubmit" function.
      */
     var singleSlider = function (data, paramname, onSubmit) {
-        var onChange = null;
-        var $slider = tinySlider(data, paramname, onChange);
+        var classname = 'singleslider';
+        var $div = $('<div/>');
+        var opts = sliderOptions[paramname];
+        var startvalue = data.settings[paramname] || opts.start;
+        var $slider = tinySlider(data, paramname, startvalue);
         var getValue = function () {
             // get the new value and do something with it
             var val = $slider.data('$text').val();
             onSubmit(val);
             };
-        setupFormDiv(data, $slider, 'singleslider', getValue);
+        $div.append($slider);
+        setupFormDiv(data, $div, classname, getValue);
+        var hasIndicator = opts.indicator;
+        if (hasIndicator) {
+            var cls = data.settings.cssPrefix + classname;
+            var $ind = indicator(cls);
+            $div.append($ind);
+            update = indicators[paramname];
+            $slider.data({
+                'cls' : cls,
+                'indicator' : $ind,
+                'update' : update
+                });
+            update($slider, startvalue);
+        }
     };
 
     /** creates a compound RGB slider
@@ -281,25 +330,35 @@ digilib sliders plugin
     var rgbSlider = function (data, onSubmit) {
         var css = data.settings.cssPrefix;
         var cls = css + 'rgbslider';
-        var html = '\
-            <div>\
-                <table class="'+cls+'" />\
-                <div  class="'+cls+'indicator">\
-                    <table class="'+cls+'grey">\
-                        <tr>\
-                        <td/><td/><td/><td/><td/><td/><td/><td/><td/>\
-                        </tr>\
-                    </table>\
-                    <table class="'+cls+'indicator">\
-                        <tr>\
-                        <td/><td/><td/><td/><td/><td/><td/><td/><td/>\
-                        </tr>\
-                    </table>\
-                </div>\
-            </div>';
-        var $div = $(html);
-        var $table = $div.find('table.'+cls);
-        var onChange = function () {
+        var $div = $('<div/>');
+        var $table = $('<table class="'+cls+'" />');
+        var $ind = indicator(cls);
+        $div.append($table);
+        $div.append($ind);
+        var insertTableRow = function(index, value) {
+            var color = rgb[value];
+            // start values are set in "handleSetup"
+            var $tr = $('<tr/>').appendTo($table);
+            var html = '\
+                <td class="'+css+'color '+css+value+'">\
+                    <div>'+color.label+'</div>\
+                </td>';
+            $(html).appendTo($tr);
+            var $brgt = tinySlider(data, 'brgt', color.a);
+            var $cont = tinySlider(data, 'cont', color.m);
+            $table.data(value+'a', $brgt.data('$text'));
+            $table.data(value+'m', $cont.data('$text'));
+            $('<td class="'+css+'rgb"/>').append($brgt).appendTo($tr);
+            $('<td class="'+css+'rgb"/>').append($cont).appendTo($tr);
+            };
+        var getSliderValues = function () {
+            // get values from sliders
+            var input = $table.data();
+            var rgba = input['ra'].val() + '/' + input['ga'].val() + '/' + input['ba'].val();
+            var rgbm = input['rm'].val() + '/' + input['gm'].val() + '/' + input['bm'].val();
+            onSubmit(rgbm, rgba);
+            };
+        var update = function () {
             // show effects of color brightness/contrast on a grey scale
             var input = $table.data();
             var ra = parseFloat(input['ra'].val());
@@ -315,40 +374,35 @@ digilib sliders plugin
                 var b = Math.min(Math.max(Math.round(Math.pow(2, bm) * val + ba), 0), 255);
                 $(this).css('background-color', 'rgb('+r+','+g+','+b+')');
                 };
-            $div.find('table.'+cls+'indicator td').each(setRGBValue);
+            $ind.find('table.'+cls+'indicator td').each(setRGBValue);
             };
-        var insertTableRow = function(index, value) {
-            var color = rgb[value];
-            // start values are set in "handleSetup"
-            var $tr = $('<tr/>').appendTo($table);
-            var html = '\
-                <td class="'+css+'color '+css+value+'">\
-                    <div>'+color.label+'</div>\
-                </td>';
-            $(html).appendTo($tr);
-            var $brgt = tinySlider(data, 'brgt', onChange, color.a);
-            var $cont = tinySlider(data, 'cont', onChange, color.m);
-            $table.data(value+'a', $brgt.data('$text'));
-            $table.data(value+'m', $cont.data('$text'));
-            $('<td class="'+css+'rgb"/>').append($brgt).appendTo($tr);
-            $('<td class="'+css+'rgb"/>').append($cont).appendTo($tr);
-            };
+        $.each(primaryColors, insertTableRow);
+        setupFormDiv(data, $div, 'rgbslider', getSliderValues);
+        $div.find('div.'+css+'tinyslider').data('update', update);
+        update();
+    };
+
+    /** creates an indicator div with 2 x 9 cells in scaled grey values
+     */
+    var indicator = function (cls) {
+        var td = new Array(10).join('<td/>');
+        var html = '\
+            <div class="'+cls+'indicator">\
+                <table class="'+cls+'grey">\
+                    <tr>'+td+'</tr>\
+                </table>\
+                <table class="'+cls+'indicator">\
+                    <tr>'+td+'</tr>\
+                </table>\
+            </div>';
+        var $div = $(html);
         var setGreyScale = function (index) {
-            // set a series of grey values
+            // sets a series of grey values
             var val = index * 32;
             $(this).css('background-color', 'rgb('+val+','+val+','+val+')');
             };
-        var getValues = function () {
-            // get values from sliders
-            var input = $table.data();
-            var rgba = input['ra'].val() + '/' + input['ga'].val() + '/' + input['ba'].val();
-            var rgbm = input['rm'].val() + '/' + input['gm'].val() + '/' + input['bm'].val();
-            onSubmit(rgbm, rgba);
-            };
-        $.each(primaryColors, insertTableRow);
         $div.find('table.'+cls+'grey td').each(setGreyScale);
-        setupFormDiv(data, $div, 'rgbslider', getValues);
-        onChange();
+        return $div;
     };
 
     // plugin object with name and init
