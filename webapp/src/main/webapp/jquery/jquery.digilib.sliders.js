@@ -112,7 +112,6 @@ digilib sliders plugin
             var setBgColor = function (index) {
                 var val = index * 32;
                 var grey = Math.min(Math.max(Math.round(val + brgt), 0), 255);
-                console.debug('brgt', index, val, brgt, "=", val+brgt)
                 $(this).css('background-color', 'rgb('+grey+','+grey+','+grey+')');
                 };
             $td.each(setBgColor);
