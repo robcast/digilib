@@ -105,6 +105,7 @@ digilib sliders plugin
 
     var indicators = {
         brgt : function ($slider, value) {
+            // TODO: replace with call to setIndicatorValues()
             var brgt = parseFloat(value);
             var cls = $slider.data('cls');
             var $ind = $slider.data('indicator');
@@ -115,9 +116,10 @@ digilib sliders plugin
                 $(this).css('background-color', 'rgb('+grey+','+grey+','+grey+')');
                 };
             $td.each(setBgColor);
-            },
+        },
 
         cont : function ($slider, value) { 
+            // TODO: replace with call to setIndicatorValues()
             var cont = parseFloat(value);
             var cls = $slider.data('cls');
             var $ind = $slider.data('indicator');
@@ -128,8 +130,48 @@ digilib sliders plugin
                 $(this).css('background-color', 'rgb('+grey+','+grey+','+grey+')');
                 };
             $td.each(setBgColor);
-            }
+        },
+
+        rgb : function ($slider, value) { 
+            // TODO: replace with call to setIndicatorValues()
+            var val = parseFloat(value);
+            var cls = $slider.data('cls');
+            var $ind = $slider.data('indicator');
+            var $td = $ind.find('table.'+cls+'indicator td');
+            var setRGBValue = function (index) {
+                var val = index * 32;
+                var r = Math.min(Math.max(Math.round(Math.pow(2, rm) * val + ra), 0), 255);
+                var g = Math.min(Math.max(Math.round(Math.pow(2, gm) * val + ga), 0), 255);
+                var b = Math.min(Math.max(Math.round(Math.pow(2, bm) * val + ba), 0), 255);
+                $(this).css('background-color', 'rgb('+r+','+g+','+b+')');
+                };
+            $td.each(setRGBValue);
+        }
     };
+
+    // set indicator values 
+    var setIndicatorValues = function ($slider) {
+        var cls = $slider.data('cls');
+        var $ind = $slider.data('indicator');
+        var $td1 = $div.find('table.'+cls+'grey td');
+        var $td2 = $ind.find('table.'+cls+'indicator td');
+        var setGreyScale = function (index) {
+            // sets a series of grey values
+            var val = index * 32;
+            $(this).css('background-color', 'rgb('+val+','+val+','+val+')');
+            };
+        // TODO: account for current brgt/cont/rgbm/rgba values
+        var setRGBValue = function (index) {
+            var val = index * 32;
+            var r = Math.min(Math.max(Math.round(Math.pow(2, rm) * val + ra), 0), 255);
+            var g = Math.min(Math.max(Math.round(Math.pow(2, gm) * val + ga), 0), 255);
+            var b = Math.min(Math.max(Math.round(Math.pow(2, bm) * val + ba), 0), 255);
+            $(this).css('background-color', 'rgb('+r+','+g+','+b+')');
+            };
+            $td1.each(setGreyScale);
+            $td2.each(setRGBValue);
+    };
+
     // assign button actions to sliders (rotate, brightness, contrast) 
     var setButtonActions = function () {
         if (fn.setButtonAction == null) {
@@ -394,6 +436,7 @@ digilib sliders plugin
                 </table>\
             </div>';
         var $div = $(html);
+        // TODO: replace with setRGBValue
         var setGreyScale = function (index) {
             // sets a series of grey values
             var val = index * 32;
