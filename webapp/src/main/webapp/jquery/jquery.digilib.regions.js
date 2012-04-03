@@ -11,6 +11,20 @@ Element with regions has to be in digilib element, e.g.
    <area coords="0.3,0.5,0.15,0.1" />
 </map>
 
+According to the HTML specs, "area" and "a" elements are allowed inside of a "map".
+Both can have a "coords" attribute, but "area" elements can't contain child nodes.
+To have regions with content use "a" tags, e.g.
+
+<map class="dl-keep dl-regioncontent">
+   <a href="http://www.mpiwg-berlin.mpg.de" coords="0.4907,0.3521,0.1458,0.107">
+       MPI fuer Wissenschaftsgeschichte
+   </a>
+   <a href="http://www.biblhertz.it" coords="0.3413,0.2912,0.4345,0.2945">
+       Bibliotheca Hertziana
+   </a>
+   <area coords="0.3,0.5,0.15,0.1" />
+</map>
+
 */
 
 (function($) {
@@ -37,6 +51,11 @@ Element with regions has to be in digilib element, e.g.
             tooltip : "delete the last region",
             icon : "delregion.png"
             },
+        delallregions : {
+            onclick : "removeAllRegions",
+            tooltip : "delete all regions",
+            icon : "delallregions.png"
+            },
         regions : {
             onclick : "toggleRegions",
             tooltip : "show or hide regions",
@@ -62,10 +81,10 @@ Element with regions has to be in digilib element, e.g.
         'autoZoomRegionLinks' : false,
         // use full region as klickable link (instead of only number and text)
         'fullRegionLinks' : false,
-        // css selector for area elements (should additionally be marked with class "keep")
-        'regionContentSelector' : 'map.dl-regioncontent area',
+        // css selector for area elements (must also be marked with class "dl-keep")
+        'htmlRegionsSelector' : 'map.dl-regioncontent area, map.dl-regioncontent a',
         // buttonset of this plugin
-        'regionSet' : ['regions', 'addregion', 'delregion', 'regioninfo', 'lessoptions'],
+        'regionSet' : ['regions', 'addregion', 'delregion', 'delallregions', 'regioninfo', 'lessoptions'],
         // url param for regions
         'rg' : null
         };
@@ -152,6 +171,19 @@ Element with regions has to be in digilib element, e.g.
             redisplay(data);
         },
 
+        // remove the last added region
+        removeAllRegions : function (data) {
+            if (!data.settings.isRegionVisible) {
+                alert("Please turn on regions visibility!");
+                return;
+            }
+            var cssPrefix = data.settings.cssPrefix;
+            var $regions = data.$elem.find('div.'+cssPrefix+'region');
+            $regions.remove();
+            data.regions = [];
+            redisplay(data);
+        },
+
         // show/hide regions 
         toggleRegions : function (data) {
             var show = !data.settings.isRegionVisible;
@@ -222,7 +254,8 @@ Element with regions has to be in digilib element, e.g.
         var $infoDiv = $('<div class="'+cssPrefix+'info '+cssPrefix+'html"/>');
         $infoDiv.append($('<div/>').text('<map class="'+cssPrefix+'keep '+cssPrefix+'regioncontent">'));
         $.each(data.regions, function(index, r) {
-            var area = [
+                if (r.fromHtml) return;
+                var area = [
                 fn.cropFloatStr(r.x),
                 fn.cropFloatStr(r.y),
                 fn.cropFloatStr(r.width),
@@ -238,6 +271,7 @@ Element with regions has to be in digilib element, e.g.
         var cssPrefix = data.settings.cssPrefix;
         var $infoDiv = $('<div class="'+cssPrefix+'info '+cssPrefix+'svgattr"/>');
         $.each(data.regions, function(index, r) {
+            if (r.fromHtml) return;
             var area = [
                 fn.cropFloatStr(r.x),
                 fn.cropFloatStr(r.y),
@@ -253,6 +287,7 @@ Element with regions has to be in digilib element, e.g.
         var cssPrefix = data.settings.cssPrefix;
         var $infoDiv = $('<div class="'+cssPrefix+'info '+cssPrefix+'csv"/>');
         $.each(data.regions, function(index, r) {
+            if (r.fromHtml) return;
             var area = [
                 fn.cropFloatStr(r.x),
                 fn.cropFloatStr(r.y),
@@ -267,6 +302,7 @@ Element with regions has to be in digilib element, e.g.
         var cssPrefix = data.settings.cssPrefix;
         var $infoDiv = $('<div class="'+cssPrefix+'info '+cssPrefix+'digilib"/>');
         $.each(data.regions, function(index, r) {
+            if (r.fromHtml) return;
             var area = r.toString();
             $infoDiv.append($('<div/>').text(area));
             });
@@ -343,7 +379,7 @@ Element with regions has to be in digilib element, e.g.
     var createRegionsFromHTML = function (data) {
         var regions = data.regions;
         // regions are defined in "area" tags
-        var $content = data.$elem.find(data.settings.regionContentSelector);
+        var $content = data.$elem.find(data.settings.htmlRegionsSelector);
         console.debug("createRegionsFromHTML. elems: ", $content);
         $content.each(function(index, a) {
             var $a = $(a); 
@@ -391,10 +427,10 @@ Element with regions has to be in digilib element, e.g.
         }
         var regionRect = region.copy();
         var show = data.settings.isRegionVisible;
-        if (show && zoomArea.overlapsRect(regionRect)) {
+        if (show && zoomArea.overlapsRect(regionRect) && !regionRect.containsRect(zoomArea)) {
             regionRect.clipTo(zoomArea);
             var screenRect = data.imgTrafo.transform(regionRect);
-            console.debug("renderRegion: pos=",geom.position(screenRect));
+            // console.debug("renderRegion: pos=",geom.position(screenRect));
             if (anim) {
                 $regionDiv.fadeIn();
             } else{

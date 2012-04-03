@@ -83,9 +83,9 @@ div.dl-digilib div.dl-region a:visited {
 div.dl-digilib div.dl-region:hover {
 	background-color: transparent;
 	border: 2px solid red;
-	/* opacity: 0.5; */
+	opacity: 0.6;
     /* do we still need this IE6-stuff? */
-	filter:progid:DXImageTransform.Microsoft.Alpha(opacity=50); 
+	filter:progid:DXImageTransform.Microsoft.Alpha(opacity=60); 
 }
 
 div.dl-digilib div.dl-region a.dl-regionnumber {
