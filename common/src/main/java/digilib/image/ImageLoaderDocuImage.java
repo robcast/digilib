@@ -65,7 +65,7 @@ import digilib.util.ImageSize;
 public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
     /** DocuImage version */
-    public static final String version = "ImageLoaderDocuImage 2.1.4b";
+    public static final String version = "ImageLoaderDocuImage 2.1.5";
 
     /** image object */
     protected BufferedImage img;
@@ -145,7 +145,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             invertRgbaByteTable = new ByteLookupTable(0, new byte[][] { invertByte, invertByte, orderedByte, invertByte });
             needsRescaleRgba = true;
             needsMapBgr = true;
-        } else if ((os.startsWith("Mac OS X") && osver.startsWith("10.6")) 
+        } else if ((os.startsWith("Mac OS X") && (osver.startsWith("10.5") || osver.startsWith("10.6"))) 
             || (os.startsWith("Windows"))) {
             needsRescaleRgba = true;
         }
