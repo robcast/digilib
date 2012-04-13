@@ -126,7 +126,8 @@ digilib sliders plugin
             var $td = $ind.find('table.'+cls+'indicator td');
             var setBgColor = function (index) {
                 var val = index * 32;
-                var grey = Math.min(Math.max(Math.round(Math.pow(2, cont) * val), 0), 255);
+                var m = Math.pow(2, cont);
+                var grey = Math.min(Math.max(Math.round(m * val + (127 - 127 * m)), 0), 255);
                 $(this).css('background-color', 'rgb('+grey+','+grey+','+grey+')');
                 };
             $td.each(setBgColor);
