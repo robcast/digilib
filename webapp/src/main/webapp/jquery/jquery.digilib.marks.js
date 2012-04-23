@@ -81,7 +81,7 @@
     var handleUpdate = function(evt) {
         console.debug("marks: handleUpdate");
         var data = this;
-        if (data.marks != null && data.marks.length > 0) {
+        if (data.marks != null) {
             renderMarks(data);
         }
     };
