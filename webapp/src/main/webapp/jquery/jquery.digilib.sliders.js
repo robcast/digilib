@@ -1,9 +1,9 @@
 /**
 digilib sliders plugin
  */
-// TODO:
-// - steps
-// - additional input element for numeric value
+
+// TODO: add a "default" button that resets slider to the default value
+// (not to the current URL param)
 
 (function($) {
     // plugin object with digilib data
@@ -20,7 +20,7 @@ digilib sliders plugin
             label : "Rotation angle",
             tooltip : "rotate image",
             icon : "rotate.png",
-            indicator : false,
+            preview : false,
             'min' : 0,
             'max' : 360,
             'step' : 0.1,
@@ -30,7 +30,7 @@ digilib sliders plugin
             label : "Brightness",
             tooltip : "set numeric value to be added",
             icon : "brightness.png",
-            indicator : true,
+            preview : true,
             'min' : -255,
             'max' : 255,
             'step' : 10,
@@ -40,7 +40,7 @@ digilib sliders plugin
             label : "Contrast",
             tooltip : "set numeric value to be multiplied",
             icon : "contrast.png",
-            indicator : true,
+            preview : true,
             'min' : -4,
             'max' : 4,
             'step' : 0.01,
@@ -49,7 +49,7 @@ digilib sliders plugin
     };
 
     var primaryColors = ['r', 'g', 'b'];
-    var rgb = {
+    var colorVals = {
         r : {
             label : "red",
             color : "#800000",
@@ -67,35 +67,49 @@ digilib sliders plugin
             color : "#000080",
             a : 0,
             m : 0
-            }
+            },
+        brgt : 0,
+        cont : 0
         }
+
     var actions = {
         // shows brightness slider
-        tinySliderBrgt : function (data) {
+        sliderBrgt : function (data) {
+            var onChange = function($slider, val) {
+                colorVals['brgt'] = parseFloat(val);
+                updatePreview($slider);
+                };
             var onSubmit = function(val) {
                 digilib.actions.brightness(data, val);
                 };
-            singleSlider(data, 'brgt', onSubmit);
+            singleSlider(data, 'brgt', onChange, onSubmit);
         },
 
         // shows contrast slider
-        tinySliderCont : function (data) {
+        sliderCont : function (data) {
+            var onChange = function($slider, val) {
+                var m = Math.pow(2, parseFloat(val));
+                colorVals['cont'] = val;
+                colorVals['brgt'] = 127 - (127 * m);
+                updatePreview($slider);
+                };
             var onSubmit = function(val) {
                 digilib.actions.contrast(data, val, true);
                 };
-            singleSlider(data, 'cont', onSubmit);
+            singleSlider(data, 'cont', onChange, onSubmit);
         },
 
         // shows rotate slider
-        tinySliderRot : function (data) {
+        sliderRot : function (data) {
+            var onChange = null;
             var onSubmit = function(val) {
                 digilib.actions.rotate(data, val);
                 };
-            singleSlider(data, 'rot', onSubmit);
+            singleSlider(data, 'rot', onChange, onSubmit);
         },
 
         // shows RGB sliders
-        tinySliderRGB : function (data) {
+        sliderRGB : function (data) {
             var onSubmit = function(m, a) {
                 digilib.actions.setRGB(data, m, a);
                 };
@@ -103,74 +117,31 @@ digilib sliders plugin
         }
     };
 
-    var indicators = {
-        brgt : function ($slider, value) {
-            // TODO: replace with call to setIndicatorValues()
-            var brgt = parseFloat(value);
-            var cls = $slider.data('cls');
-            var $ind = $slider.data('indicator');
-            var $td = $ind.find('table.'+cls+'indicator td');
-            var setBgColor = function (index) {
-                var val = index * 32;
-                var grey = Math.min(Math.max(Math.round(val + brgt), 0), 255);
-                $(this).css('background-color', 'rgb('+grey+','+grey+','+grey+')');
-                };
-            $td.each(setBgColor);
-        },
-
-        cont : function ($slider, value) { 
-            // TODO: replace with call to setIndicatorValues()
-            var cont = parseFloat(value);
-            var cls = $slider.data('cls');
-            var $ind = $slider.data('indicator');
-            var $td = $ind.find('table.'+cls+'indicator td');
-            var setBgColor = function (index) {
-                var val = index * 32;
-                var m = Math.pow(2, cont);
-                var grey = Math.min(Math.max(Math.round(m * val + (127 - 127 * m)), 0), 255);
-                $(this).css('background-color', 'rgb('+grey+','+grey+','+grey+')');
-                };
-            $td.each(setBgColor);
-        },
-
-        rgb : function ($slider, value) { 
-            // TODO: replace with call to setIndicatorValues()
-            var val = parseFloat(value);
-            var cls = $slider.data('cls');
-            var $ind = $slider.data('indicator');
-            var $td = $ind.find('table.'+cls+'indicator td');
-            var setRGBValue = function (index) {
-                var val = index * 32;
-                var r = Math.min(Math.max(Math.round(Math.pow(2, rm) * val + ra), 0), 255);
-                var g = Math.min(Math.max(Math.round(Math.pow(2, gm) * val + ga), 0), 255);
-                var b = Math.min(Math.max(Math.round(Math.pow(2, bm) * val + ba), 0), 255);
-                $(this).css('background-color', 'rgb('+r+','+g+','+b+')');
-                };
-            $td.each(setRGBValue);
-        }
-    };
-
-    // set indicator values 
-    var setIndicatorValues = function ($slider) {
+    // update preview values for a given slider
+    var updatePreview = function ($slider) {
+        if ($slider == null) return;
         var cls = $slider.data('cls');
-        var $ind = $slider.data('indicator');
-        var $td1 = $div.find('table.'+cls+'grey td');
-        var $td2 = $ind.find('table.'+cls+'indicator td');
-        var setGreyScale = function (index) {
-            // sets a series of grey values
+        var $preview = $slider.data('preview');
+        var $td2 = $preview.find('table.'+cls+'preview td');
+        // account for current brgt/cont/rgbm/rgba values
+        var calcRGBValue = function (code, val) {
+            var c = colorVals[code];
+            var cm = Math.pow(2, c.m) * val;
+            var colorVal = cm + c.a;
+            var cont = Math.pow(2, colorVals.cont) * colorVal;
+            var brgt = colorVals.brgt;
+            var resultVal = cont + brgt;
+            return Math.min(Math.max(Math.round(resultVal), 0), 255);
+           };
+        // color one table cell according to index position
+        var setRGBValues = function (index) {
             var val = index * 32;
-            $(this).css('background-color', 'rgb('+val+','+val+','+val+')');
-            };
-        // TODO: account for current brgt/cont/rgbm/rgba values
-        var setRGBValue = function (index) {
-            var val = index * 32;
-            var r = Math.min(Math.max(Math.round(Math.pow(2, rm) * val + ra), 0), 255);
-            var g = Math.min(Math.max(Math.round(Math.pow(2, gm) * val + ga), 0), 255);
-            var b = Math.min(Math.max(Math.round(Math.pow(2, bm) * val + ba), 0), 255);
+            var r = calcRGBValue('r', val);
+            var g = calcRGBValue('g', val);
+            var b = calcRGBValue('b', val);
             $(this).css('background-color', 'rgb('+r+','+g+','+b+')');
             };
-            $td1.each(setGreyScale);
-            $td2.each(setRGBValue);
+        $td2.each(setRGBValues);
     };
 
     // assign button actions to sliders (rotate, brightness, contrast) 
@@ -180,10 +151,10 @@ digilib sliders plugin
             return;
             }
         console.debug('sliders: assign new button actions. digilib:', digilib);
-        fn.setButtonAction('brgt', 'tinySliderBrgt');
-        fn.setButtonAction('cont', 'tinySliderCont');
-        fn.setButtonAction('rot', 'tinySliderRot');
-        fn.setButtonAction('rgb', 'tinySliderRGB');
+        fn.setButtonAction('brgt', 'sliderBrgt');
+        fn.setButtonAction('cont', 'sliderCont');
+        fn.setButtonAction('rot', 'sliderRot');
+        fn.setButtonAction('rgb', 'sliderRGB');
     };
 
     // plugin installation called by digilib on plugin object.
@@ -207,23 +178,28 @@ digilib sliders plugin
         $data.bind('update', handleUpdate);
     };
 
-    // get rgba/rgbm params (color brightness/contrast) 
+    // get brgt/cont/rgba/rgbm params (brightness/contrast/color)
     var handleUpdate = function (evt) {
         console.debug("sliders: handleUpdate");
         var data = this;
-        setStartValues(data, 'a');
-        setStartValues(data, 'm');
-        var sliderSelector = '#'+ data.settings.cssPrefix + 'slider';
-        fn.centerOnScreen(data, fn.find(data, sliderSelector));
+        var settings = data.settings;
+        colorVals.brgt = parseFloat(settings.brgt) || 0;
+        colorVals.cont = parseFloat(settings.cont) || 0;
+        setRGBcolorVals(data, 'a');
+        setRGBcolorVals(data, 'm');
+        var sliderSelector = '#'+ settings.cssPrefix + 'slider';
+        var $slider = fn.find(data, sliderSelector);
+        fn.centerOnScreen(data, $slider);
+        updatePreview($slider);
     };
 
-    // set m/a start values for sliders
-    var setStartValues = function (data, code) {
+    // read rgb m/a parameters and set start values for sliders
+    var setRGBcolorVals = function (data, code) {
         var colorparts = data.settings['rgb'+code] || '0/0/0';
         var values = colorparts.split("/");
-        rgb.r[code] = values[0] || 0;
-        rgb.g[code] = values[1] || 0;
-        rgb.b[code] = values[2] || 0;
+        colorVals.r[code] = parseFloat(values[0]) || 0;
+        colorVals.g[code] = parseFloat(values[1]) || 0;
+        colorVals.b[code] = parseFloat(values[2]) || 0;
         };
 
     /** creates a div with a form, setup events and callback
@@ -279,7 +255,7 @@ digilib sliders plugin
         return $div;
     };
 
-    /** creates a TinyRangeSlider
+    /** creates a TinyRange slider
      */
     var tinySlider = function (data, paramname, startvalue) {
         var $elem = data.$elem;
@@ -337,7 +313,7 @@ digilib sliders plugin
     /** creates a single TinyRangeSlider for param "paramname",
         the new value is passed to the "onSubmit" function.
      */
-    var singleSlider = function (data, paramname, onSubmit) {
+    var singleSlider = function (data, paramname, onChange, onSubmit) {
         var classname = 'singleslider';
         var $div = $('<div/>');
         var opts = sliderOptions[paramname];
@@ -350,18 +326,17 @@ digilib sliders plugin
             };
         $div.append($slider);
         setupFormDiv(data, $div, classname, getValue);
-        var hasIndicator = opts.indicator;
-        if (hasIndicator) {
+        var hasPreview = opts.preview;
+        if (hasPreview) {
             var cls = data.settings.cssPrefix + classname;
-            var $ind = indicator(cls);
-            $div.append($ind);
-            update = indicators[paramname];
+            var $preview = preview(cls);
+            $div.append($preview);
             $slider.data({
                 'cls' : cls,
-                'indicator' : $ind,
-                'update' : update
+                'preview' : $preview,
+                'update' : onChange
                 });
-            update($slider, startvalue);
+            onChange($slider, startvalue);
         }
     };
 
@@ -373,11 +348,12 @@ digilib sliders plugin
         var cls = css + 'rgbslider';
         var $div = $('<div/>');
         var $table = $('<table class="'+cls+'" />');
-        var $ind = indicator(cls);
+        var $preview = preview(cls);
         $div.append($table);
-        $div.append($ind);
+        $div.append($preview);
+        // create slider rows for the 3 primary colors
         var insertTableRow = function(index, value) {
-            var color = rgb[value];
+            var color = colorVals[value];
             // start values are set in "handleSetup"
             var $tr = $('<tr/>').appendTo($table);
             var html = '\
@@ -392,54 +368,50 @@ digilib sliders plugin
             $('<td class="'+css+'rgb"/>').append($brgt).appendTo($tr);
             $('<td class="'+css+'rgb"/>').append($cont).appendTo($tr);
             };
-        var getSliderValues = function () {
+        var onChange = function ($slider) {
+            // show effects of color brightness/contrast on a grey scale
+            var input = $table.data();
+            $.each(primaryColors, function (index, value) {
+                colorVals[value].a = parseFloat(input[value+'a'].val());
+                colorVals[value].m = parseFloat(input[value+'m'].val());
+                });
+            updatePreview($slider);
+            };
+        var submitSliderValues = function () {
             // get values from sliders
             var input = $table.data();
             var rgba = input['ra'].val() + '/' + input['ga'].val() + '/' + input['ba'].val();
             var rgbm = input['rm'].val() + '/' + input['gm'].val() + '/' + input['bm'].val();
             onSubmit(rgbm, rgba);
             };
-        var update = function () {
-            // show effects of color brightness/contrast on a grey scale
-            var input = $table.data();
-            var ra = parseFloat(input['ra'].val());
-            var ga = parseFloat(input['ga'].val());
-            var ba = parseFloat(input['ba'].val());
-            var rm = parseFloat(input['rm'].val());
-            var gm = parseFloat(input['gm'].val());
-            var bm = parseFloat(input['bm'].val());
-            var setRGBValue = function (index) {
-                var val = index * 32;
-                var r = Math.min(Math.max(Math.round(Math.pow(2, rm) * val + ra), 0), 255);
-                var g = Math.min(Math.max(Math.round(Math.pow(2, gm) * val + ga), 0), 255);
-                var b = Math.min(Math.max(Math.round(Math.pow(2, bm) * val + ba), 0), 255);
-                $(this).css('background-color', 'rgb('+r+','+g+','+b+')');
-                };
-            $ind.find('table.'+cls+'indicator td').each(setRGBValue);
-            };
         $.each(primaryColors, insertTableRow);
-        setupFormDiv(data, $div, 'rgbslider', getSliderValues);
-        $div.find('div.'+css+'tinyslider').data('update', update);
-        update();
+        setupFormDiv(data, $div, 'rgbslider', submitSliderValues);
+        // update callback is made known to each slider
+        var $sliders = $div.find('div.'+css+'tinyslider');
+        $sliders.data({
+                'cls' : cls,
+                'preview' : $preview,
+                'update' : onChange
+                });
+        onChange($sliders);
     };
 
-    /** creates an indicator div with 2 x 9 cells in scaled grey values
+    /** creates a new preview div with 2 x 9 cells in scaled grey values
      */
-    var indicator = function (cls) {
+    var preview = function (cls) {
         var td = new Array(10).join('<td/>');
         var html = '\
-            <div class="'+cls+'indicator">\
+            <div class="'+cls+'preview">\
                 <table class="'+cls+'grey">\
                     <tr>'+td+'</tr>\
                 </table>\
-                <table class="'+cls+'indicator">\
+                <table class="'+cls+'preview">\
                     <tr>'+td+'</tr>\
                 </table>\
             </div>';
         var $div = $(html);
-        // TODO: replace with setRGBValue
+        // creates a table with a series of scaled grey values
         var setGreyScale = function (index) {
-            // sets a series of grey values
             var val = index * 32;
             $(this).css('background-color', 'rgb('+val+','+val+','+val+')');
             };
