@@ -2,8 +2,8 @@
 digilib sliders plugin
  */
 
-// TODO: add a "default" button that resets slider to the default value
-// (not to the current URL param)
+// TODO:
+// IE sets rgb contrast sliders initially to 0.4 instead of 0 - ???
 
 (function($) {
     // plugin object with digilib data
@@ -21,30 +21,30 @@ digilib sliders plugin
             tooltip : "rotate image",
             icon : "rotate.png",
             preview : false,
-            'min' : 0,
-            'max' : 360,
-            'step' : 0.1,
-            'start' : 90
+            min : 0,
+            max : 360,
+            step : 0.1,
+            start : 90
             },
         brgt : {
             label : "Brightness",
             tooltip : "set numeric value to be added",
             icon : "brightness.png",
             preview : true,
-            'min' : -255,
-            'max' : 255,
-            'step' : 10,
-            'start' : 0
+            min : -255,
+            max : 255,
+            step : 10,
+            start : 0
             },
         cont : {
             label : "Contrast",
             tooltip : "set numeric value to be multiplied",
             icon : "contrast.png",
             preview : true,
-            'min' : -4,
-            'max' : 4,
-            'step' : 0.01,
-            'start' : 0
+            min : -4,
+            max : 4,
+            step : 0.1,
+            start : 0
         }
     };
 
@@ -216,6 +216,7 @@ digilib sliders plugin
                 <form class="'+cls+'">\
                     <input class="'+cls+'cancel" type="button" value="Cancel"/>\
                     <input class="'+cls+'reset" type="button" value="Reset"/>\
+                    <input class="'+cls+'default" type="button" value="Default"/>\
                     <input type="submit" name="sub" value="Ok"/>\
                 </form>\
             </div>';
@@ -233,6 +234,14 @@ digilib sliders plugin
             var sliders = $form.find('div.'+tiny);
             sliders.each(function () {
                 var reset = $(this).data('reset');
+                reset();
+                });
+        });
+        // handle default
+        $form.find('.'+cls+'default').on('click', function () {
+            var sliders = $form.find('div.'+tiny);
+            sliders.each(function () {
+                var reset = $(this).data('default');
                 reset();
                 });
         });
@@ -298,6 +307,10 @@ digilib sliders plugin
             $text.val(startvalue);
             textChange();
         };
+        var resetdefault = function () {
+            $text.val(opts.start);
+            textChange();
+        };
         // connect slider and input
         $range.on('change', rangeChange); 
         $text.on('change', textChange);
@@ -305,6 +318,7 @@ digilib sliders plugin
             '$text' : $text,
             '$range' : $range,
             'reset' : reset,
+            'default' : resetdefault,
             'update' : null
         });
         return $slider;
