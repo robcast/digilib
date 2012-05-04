@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:cc="http://creativecommons.org/ns#"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://inkscape.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="64px"
    height="64px"
    id="svg1307"
    sodipodi:version="0.32"
-   inkscape:version="0.43"
-   sodipodi:docbase="C:\temp"
-   sodipodi:docname="Digilib-logo-2.svg">
+   inkscape:version="0.48.2 r9819"
+   sodipodi:docname="digilib-logo.svg"
+   version="1.1"
+   inkscape:export-filename="/Volumes/Schlachteplatte/Users/casties/Library/Eclipse/digilib/webapp/src/main/webapp/jquery/img/fullscreen/svg/16/digilib-logo.png"
+   inkscape:export-xdpi="22.996834"
+   inkscape:export-ydpi="22.996834">
   <defs
      id="defs1309" />
   <sodipodi:namedview
@@ -25,7 +29,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="8.2782051"
-     inkscape:cx="34.898932"
+     inkscape:cx="20.282237"
      inkscape:cy="35.775981"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -50,6 +54,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -80,13 +85,6 @@
        x="-63.894802"
        y="44.831184"
        transform="matrix(-0.85293,0.522025,1.174035e-2,0.999931,0,0)" />
-    <rect
-       style="fill:#c5c5c5;fill-opacity:1"
-       id="rect10365"
-       width="10"
-       height="7.5454545"
-       x="-43"
-       y="11.454545" />
     <rect
        style="fill:#000080;fill-opacity:1;stroke:#000000;stroke-opacity:1"
        id="rect16478"
