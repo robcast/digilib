@@ -14,7 +14,7 @@
     var defaults = {
         // arrow bars for moving the zoomed area
         'showZoomArrows' : true,
-        // by what percentage should the arrows move the zoomed area?
+        // by what fraction should the arrows move the zoomed area?
         'zoomArrowMoveFactor' : 0.5,
         // defaults for digilib buttons
         'buttonSettings' : {
@@ -66,8 +66,16 @@
         moveZoomArea : function(data, dx, dy) {
             var za = data.zoomArea.copy();
             var factor = data.settings.zoomArrowMoveFactor;
-            var deltaX = dx * factor * za.width;
-            var deltaY = dy * factor * za.height;
+            // rotate and mirror change direction of cooordinate system
+            var trafo = data.imgTrafo;
+            var tdx = (trafo.m00 > 0) ? dx : -dx;
+            var tdy = (trafo.m11 > 0) ? dy : -dy;
+            if (Math.abs(trafo.m00) < Math.abs(trafo.m01)) {
+                tdx = (trafo.m01 > 0) ? -dy : dy;
+                tdy = (trafo.m10 > 0) ? -dx : dx;
+            }
+            var deltaX = tdx * factor * za.width;
+            var deltaY = tdy * factor * za.height;
             var delta = geom.position(deltaX, deltaY);
             za.addPosition(delta);
             za = FULL_AREA.fit(za);

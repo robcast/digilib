@@ -368,8 +368,7 @@
         }
         ;
         that.concat = function(trafA) {
-            // add Transform trafA to this Transform (i.e. this = trafC = trafA
-            // * this)
+            // add Transform trafA to this Transform (i.e. this = trafC = trafA * this)
             var trafC = {};
             for ( var i = 0; i < 3; i++) {
                 for ( var j = 0; j < 3; j++) {

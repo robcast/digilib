@@ -38,7 +38,7 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.1.6a4',
+        'version' : 'jquery.digilib.js 2.1.7a0',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -1558,14 +1558,24 @@ if (typeof console === 'undefined') {
      * 
      */
     var canMove = function(data, movx, movy) {
+
         var za = data.zoomArea;
         if (isFullArea(za)) return false;
+        var dx = movx;
+        var dy = movy;
+        // rotate and mirror change direction of cooordinate system
+        var trafo = data.imgTrafo;
+        if (trafo != null) {
+            dx = (trafo.m00 > 0) ? movx : -movx;
+            dy = (trafo.m11 > 0) ? movy : -movy;
+            if (Math.abs(trafo.m00) < Math.abs(trafo.m01)) {
+                dx = (trafo.m01 > 0) ? -movy : movy;
+                dy = (trafo.m10 > 0) ? -movx : movx;
+            }
+        }
         var x2 = za.x + za.width;
         var y2 = za.y + za.height;
-        return (((movx < 0) && (za.x > 0))
-            || ((movx > 0) && (x2 < 1.0))
-            || ((movy < 0) && (za.y > 0))
-            || ((movy > 0) && (y2 < 1.0)));
+        return (((dx < 0) && (za.x > 0)) || ((dx > 0) && (x2 < 1.0)) || ((dy < 0) && (za.y > 0)) || ((dy > 0) && (y2 < 1.0)));
     };
 
     /** return if area is maximal.
