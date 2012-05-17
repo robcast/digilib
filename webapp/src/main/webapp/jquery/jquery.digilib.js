@@ -38,7 +38,7 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.1.7a0',
+        'version' : 'jquery.digilib.js 2.1.7a1',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -51,7 +51,7 @@ if (typeof console === 'undefined') {
         'cssPrefix' : 'dl-',
         // list of Scaler parameters
         'scalerParamNames' : ['fn','pn','dw','dh','ww','wh','wx','wy','ws','mo',
-                              'rot','cont','brgt','rgbm','rgba','ddpi','ddpix','ddpiy'],
+                              'rot','cont','brgt','rgbm','rgba','ddpi','ddpix','ddpiy','colop'],
         // Scaler parameter defaults
         'pn' : 1,
         'ww' : 1.0,
@@ -68,8 +68,9 @@ if (typeof console === 'undefined') {
         'ddpi' : null,
         'ddpix' : null,
         'ddpiy' : null,
+        'colop' : null,
         // list of digilib parameters
-        'digilibParamNames' : ['fn','pn','ww','wh','wx','wy','ws','mo','rot','cont','brgt','rgbm','rgba','ddpi','mk','clop'],
+        'digilibParamNames' : ['fn','pn','ww','wh','wx','wy','ws','mo','rot','cont','brgt','rgbm','rgba','ddpi','colop','mk','clop'],
         // digilib parameter defaults
         'mk' : '',
         'clop' : '',
