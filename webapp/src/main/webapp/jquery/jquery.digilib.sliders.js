@@ -24,7 +24,7 @@ digilib sliders plugin
             min : 0,
             max : 360,
             step : 0.1,
-            start : 90
+            start : 0
             },
         brgt : {
             label : "Brightness",
