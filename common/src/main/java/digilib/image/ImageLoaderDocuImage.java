@@ -65,7 +65,7 @@ import digilib.util.ImageSize;
 public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
     /** DocuImage version */
-    public static final String version = "ImageLoaderDocuImage 2.1.5";
+    public static final String version = "ImageLoaderDocuImage 2.1.6a";
 
     /** image object */
     protected BufferedImage img;
@@ -97,6 +97,8 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     /* lookup table for false-color */
     protected static LookupTable mapBgrByteTable;
     protected static boolean needsMapBgr = false;
+    /* set destination type to sRGB if available, even for non-RGB images */
+    protected static boolean alwaysSetDestSrgb = false;
 
     static {
         /*
@@ -317,7 +319,6 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             throw new FileOpException("Can't find Reader to load File!");
         }
         ImageReader reader = readers.next();
-        /* are there more readers? */
         logger.debug("ImageIO: this reader: " + reader.getClass());
         /*
          * while (readers.hasNext()) { logger.debug("ImageIO: next reader: " +
@@ -340,23 +341,28 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             if (prescale > 1) {
                 readParam.setSourceSubsampling(prescale, prescale, 0, 0);
             }
-            // try to restrict target color space to sRGB
+            // try to set target color space to sRGB
             for (Iterator<ImageTypeSpecifier> i = reader.getImageTypes(0); i.hasNext();) {
                 ImageTypeSpecifier type = (ImageTypeSpecifier) i.next();
                 ColorModel cm = type.getColorModel();
                 ColorSpace cs = cm.getColorSpace();
-                // logger.debug("loadSubimage: possible color model:"+cm+" color space:"+cs);
+                logger.debug("loadSubimage: possible color model:"+cm+" color space:"+cs);
+                if (cs.getNumComponents() < 3 && ! ImageLoaderDocuImage.alwaysSetDestSrgb) {
+                    // if the first type is not RGB do nothing
+                    logger.debug("loadSubimage: image is not RGB " + type);
+                    break;
+                }
                 if (cs.isCS_sRGB()) {
                     logger.debug("loadSubimage: substituted sRGB destination type " + type);
                     readParam.setDestinationType(type);
-                    // break;
+                    break;
                 }
             }
             // read image
             logger.debug("loadSubimage: loading..");
             img = reader.read(0, readParam);
             logger.debug("loadSubimage: loaded");
-            // invalidate image size
+            // invalidate image size if it was set
             imageSize = null;
             // downconvert highcolor images
             if (img.getColorModel().getComponentSize(0) > 8) {
@@ -365,9 +371,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
                 if (img.getColorModel().hasAlpha()) {
                     type = BufferedImage.TYPE_INT_ARGB;
                 }
-                BufferedImage dest = new BufferedImage(img.getWidth(), img.getHeight(), type);
-                dest.createGraphics().drawImage(img, null, 0, 0);
-                img = dest;
+                BufferedImage lcImg = new BufferedImage(img.getWidth(), img.getHeight(), type);
+                lcImg.createGraphics().drawImage(img, null, 0, 0);
+                img = lcImg;
             }
         } catch (IOException e) {
             throw new FileOpException("Unable to load File!", e);
