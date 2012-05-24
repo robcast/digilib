@@ -23,7 +23,7 @@ digilib sliders plugin
             preview : false,
             min : 0,
             max : 360,
-            step : 0.1,
+            step : 5,
             start : 0
             },
         brgt : {
@@ -70,11 +70,15 @@ digilib sliders plugin
             },
         brgt : 0,
         cont : 0
-        }
+    };
 
     var actions = {
         // shows brightness slider
         sliderBrgt : function (data) {
+            // adjust min and max for contrast value (not nice to change sliderOptions)
+            var maxBrgt = Math.max(Math.round(255 * Math.pow(2, data.settings.cont)), 255);
+            sliderOptions.brgt.min = -maxBrgt;
+            sliderOptions.brgt.max = maxBrgt;
             var onChange = function($slider, val) {
                 colorVals['brgt'] = parseFloat(val);
                 updatePreview($slider);
@@ -122,6 +126,10 @@ digilib sliders plugin
         if ($slider == null) return;
         var cls = $slider.data('cls');
         var $preview = $slider.data('preview');
+        if ($preview == null) {
+            console.error("slider updatePreview without preview!");
+            return;
+        }
         var $td2 = $preview.find('table.'+cls+'preview td');
         // account for current brgt/cont/rgbm/rgba values
         var calcRGBValue = function (code, val) {
