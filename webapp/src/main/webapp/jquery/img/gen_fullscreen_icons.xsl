@@ -25,7 +25,7 @@ the hidden layers just once per SVG file. -->
 
 <xsl:template match="svg:g">
     <xsl:variable name="name" select="@inkscape:label"/>
-    <xsl:variable name="file" select="concat('fullscreen/svg/',$name,'.svg')"/>
+    <xsl:variable name="file" select="concat('fullscreen/svg_gen/',$name,'.svg')"/>
     <xsl:result-document href="{$file}">
     <svg:svg>
         <xsl:copy-of select="/svg:svg/@*"/>

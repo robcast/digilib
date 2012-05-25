@@ -60,7 +60,7 @@ digilib buttons plugin
         about : {
             onclick : "about",
             tooltip : "about Digilib",
-            icon : "help.png"
+            icon : "info.png"
             },
         reset : {
             onclick : "reset",
@@ -105,13 +105,13 @@ digilib buttons plugin
         size : {
             onclick : "setSize",
             tooltip : "set page size",
-            icon : "size.png"
+            icon : "size-bigger.png"
             },
         calibrationx : {
             // onclick : "showCalibrationDiv",
             onclick : "calibrate",
             tooltip : "calibrate screen resolution",
-            icon : "calibration-x.png"
+            icon : "calibration.png"
             },
         scale : {
             // onclick : "showScaleModeSelector",

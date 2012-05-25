@@ -4,7 +4,7 @@
 
 SVGFILE="fullscreen2.svg"
 XSLTFILE="fullscreen_icons.xsl"
-SVGDIR="fullscreen/svg"
+SVGDIR="fullscreen/svg_gen"
 # PNG directory relative to SVGDIR
 PNGDIR="32"
 
@@ -22,6 +22,7 @@ mkdir -p $PNGDIR
 ls *.svg | while read fx
 do 
     f=`basename "$fx" svg`
-    $INKSCAPE --file="$fx" --export-area-drawing --export-width=32 --export-png="$PNGDIR/${f}png"
+    $INKSCAPE --file="$fx" --export-area-drawing --export-height=32 --export-png="$PNGDIR/${f}png"
+    #$INKSCAPE --file="$fx" --export-height=32 --export-png="$PNGDIR/${f}png"
 done
 echo "done."
