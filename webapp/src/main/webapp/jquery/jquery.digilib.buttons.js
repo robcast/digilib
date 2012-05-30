@@ -127,12 +127,12 @@ digilib buttons plugin
         moreoptions : {
             onclick : ["moreButtons", "+1"],
             tooltip : "more options",
-            icon : "options.png"
+            icon : "buttons-more.png"
             },
         lessoptions : {
             onclick : ["moreButtons", "-1"],
             tooltip : "less options",
-            icon : "options.png"
+            icon : "buttons-less.png"
             },
         SEP : {
             icon : "sep.png"
@@ -165,9 +165,9 @@ digilib buttons plugin
         'buttonSettings' : {
             'fullscreen' : {
                 // path to button images (must end with a slash)
-                'imagePath' : 'img/fullscreen/',
+                'imagePath' : 'img/fullscreen/32/',
                 'buttonSetWidth' : 36,
-                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","about","reset","toggleoptions"],
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","about","reset","moreoptions"],
                 'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","lessoptions"],
                 'pageSet' : ["back","fwd","page"],
                 'buttonSets' : ['standardSet', 'specialSet']
@@ -175,7 +175,7 @@ digilib buttons plugin
             'embedded' : {
                 'imagePath' : 'img/embedded/16/',
                 'buttonSetWidth' : 18,
-                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","about","reset","toggleoptions"],
+                'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","about","reset","moreoptions"],
                 'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","scale","lessoptions"],
                 'pageSet' : ["back","fwd","page"],
                 'buttonSets' : ['standardSet', 'specialSet']

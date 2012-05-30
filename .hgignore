@@ -90,3 +90,5 @@ syntax: regexp
 ^common-bioformats/target$
 syntax: regexp
 ^common-bioformats/\.settings$
+syntax: regexp
+^webapp/src/main/webapp/jquery/img/fullscreen/svg_gen$
