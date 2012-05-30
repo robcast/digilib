@@ -1,5 +1,5 @@
 /**
- * digilib plugin stub
+ * digilib marks plugin
  */
 
 (function($) {
@@ -38,7 +38,7 @@
                 setMark(data);
             } else {
                 // use position
-                data.marks.push(pos);
+                data.marks.push(mpos);
                 digilib.fn.redisplay(data);
             }
         },
