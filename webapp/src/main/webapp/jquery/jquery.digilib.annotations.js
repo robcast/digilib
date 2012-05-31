@@ -91,7 +91,6 @@
         url += digilib.fn.getParamString(data.settings, ['fn', 'pn'], digilib.defaults);
         return url;
     }
-
     /**
      * add a mark-annotation where clicked.
      *
@@ -160,8 +159,7 @@
     var loadAnnotations = function(data) {
         var settings = data.settings;
         var url = settings.annotationServerUrl + '/search';
-        var pageUrl = data.digilibBaseUrl + '/jquery/digilib.html?';
-        pageUrl += digilib.fn.getParamString(settings, ['fn', 'pn'], digilib.defaults);
+        var pageUrl = getAnnotationPageUrl(data);
         // send authentication token in header
         headers = {
             'x-annotator-auth-token' : data.annotationToken
@@ -198,8 +196,9 @@
 
     var parseAnnotation = function(ann) {
         // TODO: check validity of annotation data
-        if (ann.area != null) {
-            var pos = geom.position(ann.area.x, ann.area.y);
+        if (ann.areas != null && ann.areas.length > 0) {
+            var area = ann.areas[0];
+            var pos = geom.position(area.x, area.y);
             return newAnnotation(pos, ann.text, ann.id, ann.uri, ann.user);
         }
         return null;
@@ -216,7 +215,10 @@
         };
         // create annotation object to send
         var annotData = {
-            area : {x : annotation.pos.x, y : annotation.pos.y},
+            areas : [{
+                x : annotation.pos.x,
+                y : annotation.pos.y
+            }],
             text : annotation.text,
             uri : pageUrl,
             user : settings.annotationUser
@@ -229,7 +231,7 @@
             data : dataString,
             headers : headers,
             success : function(annotData, annotStatus) {
-                console.debug("sent annotation data, got=", annotData, " status="+annotStatus);
+                console.debug("sent annotation data, got=", annotData, " status=" + annotStatus);
                 var annot = parseAnnotation(annotData);
                 // TODO: we have to add the returned data to the real annotation!
                 //renderAnnotations(data);
