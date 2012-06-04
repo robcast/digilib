@@ -1,7 +1,9 @@
 /**
  digilib plugin for annotations.
 
- currently only point-like (like marks).
+ currently only point-like annotations (like marks).
+ 
+ Annotations are stored on a Annotator http://annotateit.org compatible server.
 
  */
 
@@ -72,6 +74,9 @@
         },
     };
 
+    /**
+     * create a new annotation object
+     */
     var newAnnotation = function(mpos, text, id, uri, user) {
         var annot = {
             pos : mpos,
@@ -90,10 +95,10 @@
         var url = data.settings.digilibBaseUrl + '/jquery/digilib.html?';
         url += digilib.fn.getParamString(data.settings, ['fn', 'pn'], digilib.defaults);
         return url;
-    }
+    };
+    
     /**
      * add a mark-annotation where clicked.
-     *
      */
     var setAnnotationMark = function(data) {
         var $scaler = data.$scaler;
@@ -105,6 +110,7 @@
             console.log("setAnnotationMark at=", evt);
             var mpos = geom.position(evt);
             var pos = data.imgTrafo.invtransform(mpos);
+            // Annotation text entered in JS-prompt
             var text = window.prompt("Annotation text:");
             if (text == null)
                 return false;
@@ -118,7 +124,6 @@
 
     /**
      * place annotations on the image
-     *
      */
     var renderAnnotations = function(data) {
         if (data.annotations == null || data.$img == null || data.imgTrafo == null)
@@ -145,6 +150,11 @@
         }
     };
 
+    /**
+     * Get an authentication token from the token server.
+     * 
+     * Stores the token and loads annotations on success.
+     */
     var loadAnnotationToken = function(data) {
         var settings = data.settings;
         var url = settings.annotationTokenUrl;
@@ -156,15 +166,19 @@
         });
     };
 
+    /**
+     * loads all annotations for this url from the annotation server.
+     */
     var loadAnnotations = function(data) {
         var settings = data.settings;
+        // we use the search API
         var url = settings.annotationServerUrl + '/search';
         var pageUrl = getAnnotationPageUrl(data);
         // send authentication token in header
         headers = {
             'x-annotator-auth-token' : data.annotationToken
         };
-        // get only annotations with this url
+        // get only 20 annotations with this url
         var query = {
             limit : 20,
             uri : pageUrl
@@ -182,6 +196,9 @@
         });
     };
 
+    /**
+     * parse all JSON-annotations in annotationData.rows and put in data.annotations
+     */
     var parseAnnotations = function(data, annotationData) {
         var annotations = [];
         for (var i = 0; i < annotationData.rows.length; ++i) {
@@ -194,16 +211,25 @@
         data.annotations = annotations;
     };
 
+    /**
+     * Parse a JSON-annotation.
+     * 
+     * Returns an annotation object.
+     */
     var parseAnnotation = function(ann) {
         // TODO: check validity of annotation data
         if (ann.areas != null && ann.areas.length > 0) {
             var area = ann.areas[0];
+            // currently only point annotations
             var pos = geom.position(area.x, area.y);
             return newAnnotation(pos, ann.text, ann.id, ann.uri, ann.user);
         }
         return null;
     };
 
+    /**
+     * Store an annotation on the annotation server.
+     */
     var storeAnnotation = function(data, annotation) {
         console.debug("storeAnnotation:", annotation);
         var settings = data.settings;
@@ -238,8 +264,11 @@
             }
         });
 
-    }
-    /** install additional buttons */
+    };
+    
+    /** 
+     * install additional buttons 
+     */
     var installButtons = function(data) {
         var settings = data.settings;
         var mode = settings.interactionMode;
@@ -253,7 +282,9 @@
         }
     };
 
-    /** plugin installation called by digilib on plugin object. */
+    /** 
+     * plugin installation. called by digilib on plugin object. 
+     */
     var install = function(plugin) {
         digilib = plugin;
         console.debug('installing annotations plugin. digilib:', digilib);
@@ -280,6 +311,9 @@
         $data.bind('update', handleUpdate);
     };
 
+    /**
+     * setup loads all annotations.
+     */
     var handleSetup = function(evt) {
         console.debug("annotations: handleSetup");
         var data = this;
@@ -287,6 +321,9 @@
         loadAnnotationToken(data);
     };
 
+    /**
+     * update renders all annotations.
+     */
     var handleUpdate = function(evt) {
         console.debug("annotations: handleUpdate");
         var data = this;
