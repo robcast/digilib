@@ -21,12 +21,12 @@
             'fullscreen' : {
                 // path to button images (must end with a slash)
                 'imagePath' : 'img/fullscreen/',
-                'arrowSetSize' : 18,
+                'arrowSetSize' : 16,
                 'arrowSet' : [ "up", "down", "left", "right" ]
             },
             'embedded' : {
                 'imagePath' : 'img/embedded/16/',
-                'arrowSetSize' : 9,
+                'arrowSetSize' : 8,
                 'arrowSet' : [ "up", "down", "left", "right" ]
             }
         }
