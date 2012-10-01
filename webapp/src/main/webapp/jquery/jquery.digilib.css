@@ -42,15 +42,30 @@ div.dl-digilib div.dl-birdzoom {
 div.dl-digilib div.dl-mark {
 	position: absolute;
 	color: white;
-	background: url('../greyskin/mark-bg-16.png');
+	background: url('img/mark-bg-16.png');
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	font-size: 11px;
-	height: 15px;
+	height: 16px;
 	width: 16px;
 	padding-top: 1px;
 	text-align: center;
 	z-index: 10;
+}
+
+div.dl-digilib div.dl-annotationmark {
+    position: absolute;
+    color: black;
+    background: url('img/annotationmark-bg-16.png');
+    /* background-color: yellow; */
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    font-size: 11px;
+    height: 16px;
+    width: 16px;
+    padding-top: 1px;
+    text-align: center;
+    z-index: 10;
 }
 
 div.dl-digilib div.dl-about {
