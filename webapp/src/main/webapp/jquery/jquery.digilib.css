@@ -42,30 +42,15 @@ div.dl-digilib div.dl-birdzoom {
 div.dl-digilib div.dl-mark {
 	position: absolute;
 	color: white;
-	background: url('img/mark-bg-16.png');
+	background: url('../greyskin/mark-bg-16.png');
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	font-size: 11px;
-	height: 16px;
+	height: 15px;
 	width: 16px;
 	padding-top: 1px;
 	text-align: center;
 	z-index: 10;
-}
-
-div.dl-digilib div.dl-annotationmark {
-    position: absolute;
-    color: black;
-    background: url('img/annotationmark-bg-16.png');
-    /* background-color: yellow; */
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-weight: bold;
-    font-size: 11px;
-    height: 16px;
-    width: 16px;
-    padding-top: 1px;
-    text-align: center;
-    z-index: 10;
 }
 
 div.dl-digilib div.dl-about {
@@ -101,6 +86,10 @@ div.dl-digilib div.dl-region:hover {
 	opacity: 0.6;
     /* do we still need this IE6-stuff? */
 	filter:progid:DXImageTransform.Microsoft.Alpha(opacity=60); 
+}
+
+div.dl-digilib div.dl-regionHTML {
+	background-color: purple;
 }
 
 div.dl-digilib div.dl-region a.dl-regionnumber {
@@ -183,27 +172,26 @@ div.dl-digilib div.dl-rgbslider {
 	position: absolute;
     top: 0px;	
     }
-
-div.dl-digilib div.dl-rgbsliderpreview,
-div.dl-digilib div.dl-singlesliderpreview {
+div.dl-digilib div.dl-rgbsliderindicator,
+div.dl-digilib div.dl-singlesliderindicator {
 	border: 2px solid lightcyan;
 	margin: 10px 0px;
     }
 
 div.dl-digilib table.dl-rgbslider,
 div.dl-digilib table.dl-rgbslidergrey,
-div.dl-digilib table.dl-rgbsliderpreview,
+div.dl-digilib table.dl-rgbsliderindicator,
 div.dl-digilib table.dl-singleslider,
 div.dl-digilib table.dl-singleslidergrey,
-div.dl-digilib table.dl-singlesliderpreview {
+div.dl-digilib table.dl-singlesliderindicator {
     width: 100%;
     border-collapse: collapse;
     }
 
 div.dl-digilib table.dl-rgbslidergrey td,
-div.dl-digilib table.dl-rgbsliderpreview td,
+div.dl-digilib table.dl-rgbsliderindicator td,
 div.dl-digilib table.dl-singleslidergrey td,
-div.dl-digilib table.dl-singlesliderpreview td {
+div.dl-digilib table.dl-singlesliderindicator td {
     height: 20px;
     }
 
