@@ -187,26 +187,26 @@ div.dl-digilib div.dl-rgbslider {
 	position: absolute;
     top: 0px;	
     }
-div.dl-digilib div.dl-rgbsliderindicator,
-div.dl-digilib div.dl-singlesliderindicator {
+div.dl-digilib div.dl-rgbsliderpreview,
+div.dl-digilib div.dl-singlesliderpreview {
 	border: 2px solid lightcyan;
 	margin: 10px 0px;
     }
 
 div.dl-digilib table.dl-rgbslider,
 div.dl-digilib table.dl-rgbslidergrey,
-div.dl-digilib table.dl-rgbsliderindicator,
+div.dl-digilib table.dl-rgbsliderpreview,
 div.dl-digilib table.dl-singleslider,
 div.dl-digilib table.dl-singleslidergrey,
-div.dl-digilib table.dl-singlesliderindicator {
+div.dl-digilib table.dl-singlesliderpreview {
     width: 100%;
     border-collapse: collapse;
     }
 
 div.dl-digilib table.dl-rgbslidergrey td,
-div.dl-digilib table.dl-rgbsliderindicator td,
+div.dl-digilib table.dl-rgbsliderpreview td,
 div.dl-digilib table.dl-singleslidergrey td,
-div.dl-digilib table.dl-singlesliderindicator td {
+div.dl-digilib table.dl-singlesliderpreview td {
     height: 20px;
     }
 
