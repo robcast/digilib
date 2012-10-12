@@ -41,19 +41,19 @@ To have regions with content use "a" tags, e.g.
     var geom = null;
 
     var buttons = {
-        defineurlregion : {
-            onclick : "defineURLRegion",
+        defineregion : {
+            onclick : "defineUserRegion",
             tooltip : "define a region",
             icon : "addregion.png"
             },
-        removeurlregion : {
-            onclick : "removeURLRegion",
-            tooltip : "delete the last region",
+        removeregion : {
+            onclick : "removeUserRegion",
+            tooltip : "delete the last user defined region",
             icon : "delregion.png"
             },
-        removeallurlregions : {
-            onclick : "removeAllURLRegions",
-            tooltip : "delete all regions",
+        removeallregions : {
+            onclick : "removeAllUserRegions",
+            tooltip : "delete all user defined regions",
             icon : "delallregions.png"
             },
         regions : {
@@ -63,7 +63,7 @@ To have regions with content use "a" tags, e.g.
             },
         regioninfo : {
             onclick : "showRegionInfo",
-            tooltip : "show information about regions",
+            tooltip : "show information about user defined regions",
             icon : "regioninfo.png"
             }
         };
@@ -81,12 +81,14 @@ To have regions with content use "a" tags, e.g.
         'processUserRegions' : true,
         // callback for click on region
         'onClickRegion' : null,
+        // callback when new user region is defined
+        'onNewRegion' : null,
         // turn any region into a clickable link to its detail view (DEPRECATED)
         'autoZoomOnClick' : false,
-        // css selector for area elements (must also be marked with class "dl-keep")
+        // css selector for area/a elements (must also be marked with class "dl-keep")
         'htmlRegionsSelector' : 'map.dl-regioncontent area, map.dl-regioncontent a',
         // buttonset of this plugin
-        'regionSet' : ['regions', 'defineurlregion', 'removeurlregion', 'removeallurlregions', 'regioninfo', 'lessoptions'],
+        'regionSet' : ['regions', 'defineregion', 'removeregion', 'removeallregions', 'regioninfo', 'lessoptions'],
         // url param for regions
         'rg' : null,
         // region attributes to copy from HTML
@@ -103,7 +105,7 @@ To have regions with content use "a" tags, e.g.
     var actions = { 
 
         // define a region interactively with two clicked points
-        defineURLRegion : function(data) {
+        defineUserRegion : function(data) {
             if (!data.settings.isRegionVisible) {
                 alert("Please turn on regions visibility!");
                 return;
@@ -120,7 +122,7 @@ To have regions with content use "a" tags, e.g.
             $body.append($overlay);
             bodyRect.adjustDiv($overlay);
             var attr = {'class' : cssPrefix+"regionURL"};
-            var $regionDiv = addRegionDiv(data, data.regionsURL, data.regionsURL.length, attr);
+            var $regionDiv = addRegionDiv(data, data.userRegions, data.userRegions.length, attr);
 
             // mousedown handler: start sizing
             var regionStart = function (evt) {
@@ -158,25 +160,26 @@ To have regions with content use "a" tags, e.g.
                 // clip region
                 clickRect.clipTo(scalerRect);
                 clickRect.adjustDiv($regionDiv);
-                storeURLRegion(data, $regionDiv);
+                var region = storeUserRegion(data, $regionDiv);
                 // fn.redisplay(data);
-                fn.highlightButtons(data, 'addregion', 0);
+                fn.highlightButtons(data, 'defineregion', 0);
                 redisplay(data);
+                $(data).trigger('newRegion', region);
                 return false;
             };
 
             // bind start zoom handler
             $overlay.one('mousedown.dlRegion', regionStart);
-            fn.highlightButtons(data, 'addregion', 1);
+            fn.highlightButtons(data, 'defineregion', 1);
         },
 
         // remove the last added URL region
-        removeURLRegion : function (data) {
+        removeUserRegion : function (data) {
             if (!data.settings.isRegionVisible) {
                 alert("Please turn on regions visibility!");
                 return;
             }
-            var r = data.regionsURL.pop();
+            var r = data.userRegions.pop();
             // no more URL regions to delete
             if (r == null) return;
             var $regionDiv = r.$div;
@@ -185,7 +188,7 @@ To have regions with content use "a" tags, e.g.
         },
 
         // remove all manually added regions (defined through URL "rg" parameter)
-        removeAllURLRegions : function (data) {
+        removeAllUserRegions : function (data) {
             if (!data.settings.isRegionVisible) {
                 alert("Please turn on regions visibility!");
                 return;
@@ -193,7 +196,7 @@ To have regions with content use "a" tags, e.g.
             var cssPrefix = data.settings.cssPrefix;
             var $regions = data.$elem.find('div.'+cssPrefix+'regionURL');
             $regions.remove();
-            data.regionsURL = []; // remove only URL regions
+            data.userRegions = []; // remove only URL regions
             redisplay(data);
         },
 
@@ -250,46 +253,49 @@ To have regions with content use "a" tags, e.g.
             fn.centerOnScreen(data, $info);
         },
 
-        // show region coordinates in an edit line
-        showRegionCoords : function (data) {
+        // display region coordinates in an edit line
+        showRegionCoords : function (data, region) {
             var $elem = data.$elem;
             var cssPrefix = data.settings.cssPrefix;
-            var infoselector = '#'+cssPrefix+'regionInfo';
-            if (fn.find(data, infoselector)) {
-                fn.withdraw($info);
-                return;
-                }
+            // var infoselector = '#'+cssPrefix+'regionInfo';
+            // var $info = fn.find(data, infoselector);
+            var coords = regionCoordsString(region, ',');
             var html = '\
                 <div id="'+cssPrefix+'regionInfo" class="'+cssPrefix+'keep '+cssPrefix+'regionInfo">\
-                    <input name="coords" type="text" size="30" maxlength="40"/>\
-                    <input type="button" name="close" />\
+                    <input name="coords" type="text" size="30" maxlength="40" value="'+coords+'"/>\
                 </div>';
-            $info = $(html);
+            var $info = $(html);
             $info.appendTo($elem);
-            var bind = function(name) {
-                $info.find('.'+name).on('click.regioninfo', function () {
-                    $info.find('div.'+cssPrefix+'info').hide();
-                    $info.find('div.'+cssPrefix+name).show();
-                    fn.centerOnScreen(data, $info);
-                    });
-                };
-            $info.bind('button').on('click.regioninfo', function () {
-                fn.withdraw($info);
+            $input = $info.find('input');
+            $input.on('focus.regioninfo', function (event) {
+                this.select();
                 });
+            $input.on('blur.regioninfo', function (event) {
+                fn.withdraw($info);
+                return false;
+                });
+            $input.on('keypress.regioninfo', function (event) {
+                fn.withdraw($info);
+                return false;
+                });
+            $input.prop("readonly",true);
             $info.fadeIn();
             fn.centerOnScreen(data, $info);
-        }
+            $input.focus();
+            console.debug('showRegionCoords', coords);
 
+        }
     };
 
     // store a region div
-    var storeURLRegion = function (data, $regionDiv) {
-        var regions = data.regionsURL;
+    var storeUserRegion = function (data, $regionDiv) {
+        var regions = data.userRegions;
         var rect = geom.rectangle($regionDiv);
         var rectangle = data.imgTrafo.invtransform(rect);
         rectangle.$div = $regionDiv;
         regions.push(rectangle);
-        console.debug("storeURLregion", data.regionsURL, "rectangle", rectangle);
+        console.debug("storeUserRegion", data.userRegions, "rectangle", rectangle);
+        return rectangle;
     };
 
     // open region as detail
@@ -299,6 +305,7 @@ To have regions with content use "a" tags, e.g.
 
     // make a coords string
     var regionCoordsString = function (rect, sep) {
+        if (sep == null) sep = ','; // comma as default separator
         return [
         fn.cropFloatStr(rect.x),
         fn.cropFloatStr(rect.y),
@@ -312,7 +319,7 @@ To have regions with content use "a" tags, e.g.
         var cssPrefix = data.settings.cssPrefix;
         var $infoDiv = $('<div class="'+cssPrefix+'info '+cssPrefix+'html"/>');
         $infoDiv.append($('<div/>').text('<map class="'+cssPrefix+'keep '+cssPrefix+'regioncontent">'));
-        $.each(data.regionsURL, function(index, r) {
+        $.each(data.userRegions, function(index, r) {
             var coords = regionCoordsString(r, ',');
             $infoDiv.append($('<div/>').text('<area coords="' + coords + '"/>'));
             });
@@ -324,7 +331,7 @@ To have regions with content use "a" tags, e.g.
     var regionInfoSVG = function (data) {
         var cssPrefix = data.settings.cssPrefix;
         var $infoDiv = $('<div class="'+cssPrefix+'info '+cssPrefix+'svgattr"/>');
-        $.each(data.regionsURL, function(index, r) {
+        $.each(data.userRegions, function(index, r) {
             var coords = regionCoordsString(r, ' ');
             $infoDiv.append($('<div/>').text('"' + coords + '"'));
             });
@@ -335,7 +342,7 @@ To have regions with content use "a" tags, e.g.
     var regionInfoCSV = function (data) {
         var cssPrefix = data.settings.cssPrefix;
         var $infoDiv = $('<div class="'+cssPrefix+'info '+cssPrefix+'csv"/>');
-        $.each(data.regionsURL, function(index, r) {
+        $.each(data.userRegions, function(index, r) {
             var coords = regionCoordsString(r, ',');
             $infoDiv.append($('<div/>').text(index+1 + ": " + coords));
             });
@@ -346,7 +353,7 @@ To have regions with content use "a" tags, e.g.
     var regionInfoDigilib = function (data) {
         var cssPrefix = data.settings.cssPrefix;
         var $infoDiv = $('<div class="'+cssPrefix+'info '+cssPrefix+'digilib"/>');
-        $.each(data.regionsURL, function(index, r) {
+        $.each(data.userRegions, function(index, r) {
             if (r.fromHtml) return;
             var coords = r.toString();
             $infoDiv.append($('<div/>').text(coords));
@@ -371,11 +378,10 @@ To have regions with content use "a" tags, e.g.
             if (attributes) $regionLink.attr(attributes);
             $regionDiv.append($regionLink);
         }
-        var url = null;
         if (attributes) {
             // copy attributes to div except href
             if (attributes.href) {
-                url = attributes.href;
+                region.href = attributes.href;
                 // copy attributes
                 var attrs = $.extend({}, attributes);
                 delete attrs.href;
@@ -391,18 +397,7 @@ To have regions with content use "a" tags, e.g.
         // handle click events on div
         var region = regions[index];
         $regionDiv.on('click.dlRegion', function(evt) {
-            if (settings.fullRegionLinks && url) {
-                //TODO: how about target?
-                window.location = url;
-            } 
-            if (evt.target !== $regionDiv.get(0)) {
-                // this was not our event
-                return;
-            }
-            if (typeof settings.onClickRegion === 'function') {
-                // execute callback
-                settings.onClickRegion(data, region);
-            }
+            $(data).trigger('regionClick', region);
         });
         return $regionDiv;
     };
@@ -423,7 +418,7 @@ To have regions with content use "a" tags, e.g.
         var cssPrefix = data.settings.cssPrefix;
         var attr = {'class' : cssPrefix+"regionURL"};
         unpackRegions(data);
-        var regions = data.regionsURL;
+        var regions = data.userRegions;
         $.each(regions, function(index, region) {
             createRegionDiv(data, regions, index, attr);
         });
@@ -432,7 +427,7 @@ To have regions with content use "a" tags, e.g.
     // create regions from HTML
     var createRegionsFromHTML = function (data) {
         var cssPrefix = data.settings.cssPrefix;
-        var regions = data.regionsHTML;
+        var regions = data.htmlRegions;
         // regions are defined in "area" tags
         var $content = data.$elem.find(data.settings.htmlRegionsSelector);
         console.debug("createRegionsFromHTML. Number of elems: ", $content.length);
@@ -508,19 +503,19 @@ To have regions with content use "a" tags, e.g.
 
     // show regions 
     var renderRegions = function (data, anim) {
-        $.each(data.regionsHTML, function(index, region) {
+        $.each(data.htmlRegions, function(index, region) {
             renderRegion(data, region, anim);
             });
-        $.each(data.regionsURL, function(index, region) {
+        $.each(data.userRegions, function(index, region) {
             renderRegion(data, region, anim);
             });
     };
 
+    // read region data from URL parameters
     var unpackRegions = function (data) { 
-        // create regions from parameters
         var rg = data.settings.rg;
         if (rg == null) return;
-        var regions = data.regionsURL;
+        var regions = data.userRegions;
         var rs = rg.split(",");
         for (var i = 0; i < rs.length; i++) {
             var r = rs[i];
@@ -530,9 +525,9 @@ To have regions with content use "a" tags, e.g.
             }
     };
 
-    // pack regions array into a parameter string
+    // pack user regions array into a URL parameter string
     var packRegions = function (data) {
-        var regions = data.regionsURL;
+        var regions = data.userRegions;
         if (!regions.length) {
             data.settings.rg = null;
             return;
@@ -555,6 +550,40 @@ To have regions with content use "a" tags, e.g.
             packRegions(data);
         }
         fn.redisplay(data);
+    };
+
+    // event handler, gets called when a newRegion event is triggered
+    var handleNewRegion = function (evt, region) {
+        var data = this;
+        var settings = data.settings;
+        console.debug("regions: handleNewRegion", region);
+        if (typeof settings.onNewRegion === 'function') {
+            // execute callback
+            return settings.onNewRegion(data, region);
+            }
+        if (typeof settings.onNewRegion === 'string') {
+            // execute action
+            return actions[settings.onNewRegion](data, region);
+        }
+    };
+
+    // event handler, gets called when a regionClick event is triggered
+    var handleRegionClick = function (evt, region) {
+        var data = this;
+        var settings = data.settings;
+        console.debug("regions: handleRegionClick", region);
+        if (region.href) {
+            // follow the href attribute of the region area
+            window.location = region.href; //TODO: how about target?
+        }
+        if (typeof settings.onClickRegion === 'function') {
+            // execute callback
+            return settings.onClickRegion(data, region);
+        }
+        if (typeof settings.onClickRegion === 'string') {
+            // execute action
+            return actions[settings.onClickRegion](data, region);
+        }
     };
 
     // event handler, reads region parameter and creates region divs
@@ -616,16 +645,20 @@ To have regions with content use "a" tags, e.g.
         var settings = data.settings;
         var cssPrefix = data.settings.cssPrefix;
         // region arrays
-        data.regionsURL = [];
-        data.regionsHTML = [];
+        data.userRegions = [];
+        data.htmlRegions = [];
         // install event handlers
         var $data = $(data);
         $data.on('setup', handleSetup);
         $data.on('update', handleUpdate);
+        $data.on('newRegion', handleNewRegion);
+        $data.on('regionClick', handleRegionClick);
         // install buttons
         if (settings.processUserRegions) {
-            // add "rg" to digilibParamNames: TODO - check with settings.additionalParamNames?
+            // add "rg" to digilibParamNames
             // settings.digilibParamNames.push('rg');
+            // TODO: this leads double params, because
+            // settings.additionalParamNames is created earlier than this plugin's init() action 
             if (digilib.plugins.buttons != null) {
                 installButtons(data);
             }
