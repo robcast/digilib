@@ -123,6 +123,12 @@ div.dl-digilib map.dl-regioncontent {
     display: none;
 }
 
+div.dl-digilib div.dl-findregion {
+	background-color: transparent;
+	border: 2px solid lightcyan;
+	opacity: 1.0;
+}
+
 div.dl-digilib #dl-calibration {
 	background: url('img/blue.png');
 	position: absolute;

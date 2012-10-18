@@ -61,6 +61,11 @@ To have regions with content use "a" tags, e.g.
             tooltip : "show or hide regions",
             icon : "regions.png"
             },
+        findcoords : {
+            onclick : "findCoords",
+            tooltip : "find coords and display as a new region",
+            icon : "regions.png"
+            },
         regioninfo : {
             onclick : "showRegionInfo",
             tooltip : "show information about user defined regions",
@@ -88,7 +93,7 @@ To have regions with content use "a" tags, e.g.
         // css selector for area/a elements (must also be marked with class "dl-keep")
         'htmlRegionsSelector' : 'map.dl-regioncontent area, map.dl-regioncontent a',
         // buttonset of this plugin
-        'regionSet' : ['regions', 'defineregion', 'removeregion', 'removeallregions', 'regioninfo', 'lessoptions'],
+        'regionSet' : ['regions', 'defineregion', 'removeregion', 'removeallregions', 'regioninfo', 'findcoords', 'lessoptions'],
         // url param for regions
         'rg' : null,
         // region attributes to copy from HTML
@@ -275,16 +280,51 @@ To have regions with content use "a" tags, e.g.
                 return false;
                 });
             $input.on('keypress.regioninfo', function (event) {
-                fn.withdraw($info);
-                return false;
+                fn.withdraw($info);  // OBS: "return false" disables copy!
                 });
             $input.prop("readonly",true);
             $info.fadeIn();
             fn.centerOnScreen(data, $info);
             $input.focus();
             console.debug('showRegionCoords', coords);
+        },
 
-        }
+        // find coordinates and display as new region
+        findCoords : function (data) {
+            var $elem = data.$elem;
+            var cssPrefix = data.settings.cssPrefix;
+            var html = '\
+                <div id="'+cssPrefix+'regionInfo" class="'+cssPrefix+'keep '+cssPrefix+'regionInfo">\
+                    <form class="'+cssPrefix+'form">\
+                        <div>\
+                            <input class="'+cssPrefix+'input" name="coords" type="text" size="30" maxlength="40"/> \
+                        </div>\
+                        <input class="'+cssPrefix+'submit" type="submit" name="sub" value="Ok"/>\
+                        <input class="'+cssPrefix+'cancel" type="button" value="Cancel"/>\
+                    </form>\
+                </div>';
+            var $info = $(html);
+            $info.appendTo($elem);
+            var $form = $info.find('form');
+            var $input = $info.find('input.'+cssPrefix+'input');
+            // handle submit
+            $form.on('submit', function () {
+                var coords = $input.val();
+                var attr = { 'class' : cssPrefix+'regionURL '+cssPrefix+'findregion' };
+                console.debug('findCoords', coords);
+                createRegionFromCoords(data, data.userRegions, coords, attr);
+                fn.withdraw($info);
+                redisplay(data);
+                return false;
+            });
+            // handle cancel
+            $form.find('.'+cssPrefix+'cancel').on('click', function () {
+                fn.withdraw($info);
+            });
+            $info.fadeIn();
+            fn.centerOnScreen(data, $info);
+            $input.focus();
+        },
     };
 
     // store a region div
@@ -413,6 +453,20 @@ To have regions with content use "a" tags, e.g.
         return $regionDiv;
     };
 
+    // create regions from a string with coordinates
+    var createRegionFromCoords = function (data, regions, coords, attributes) {
+        var pos = coords.split(/[,\/ ]+/, 4); // TODO: check validity?
+        var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
+        if (rect == null) {
+            console.debug('createRegionsFromCoords: bad coords:', coords);
+            return null;
+        }
+        var index = regions.length;
+        regions.push(rect);
+        var $regionDiv = createRegionDiv(data, regions, index, attributes);
+        return rect;
+    };
+
     // create regions from URL parameters
     var createRegionsFromURL = function (data) {
         var cssPrefix = data.settings.cssPrefix;
@@ -435,10 +489,6 @@ To have regions with content use "a" tags, e.g.
             var $area = $(area); 
             // the "coords" attribute contains the region coords (0..1)
             var coords = $area.attr('coords');
-            var pos = coords.split(',', 4);
-            var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
-            rect.fromHtml = true;
-            regions.push(rect);
             // copy some attributes
             var attributes = {};
             for (var n in data.settings.regionAttributes) {
@@ -451,8 +501,11 @@ To have regions with content use "a" tags, e.g.
             } else {
                 attributes['class'] = regionClass
             }
-            // create the div
-            var $regionDiv = createRegionDiv(data, regions, index, attributes);
+            // create the region
+            var rect = createRegionFromCoords(data, regions, coords, attributes);
+            if (rect == null) return;
+            rect.fromHtml = true;
+            var $regionDiv = rect.$div;
             var $contents = $area.contents().clone();
             if (attributes.href != null) {
                 // wrap contents in a-tag
