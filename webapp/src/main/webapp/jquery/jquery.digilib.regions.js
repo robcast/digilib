@@ -31,6 +31,7 @@ To have regions with content use "a" tags, e.g.
     // the digilib object
     var digilib = null;
     // the functions made available by digilib
+    var FULL_AREA = null;
     var fn = {
         // dummy function to avoid errors, gets overwritten by buttons plugin
         highlightButtons : function () {
@@ -312,7 +313,17 @@ To have regions with content use "a" tags, e.g.
                 var coords = $input.val();
                 var attr = { 'class' : cssPrefix+'regionURL '+cssPrefix+'findregion' };
                 console.debug('findCoords', coords);
-                createRegionFromCoords(data, data.userRegions, coords, attr);
+                var rect = createRegionFromCoords(data, data.userRegions, coords, attr);
+                var za = data.zoomArea;
+                if (!fn.isFullArea(za)) {
+                    za.setCenter(rect.getCenter());
+                    za.clipTo(FULL_AREA);
+                    if (!za.containsRect(rect)) {
+                        fn.setZoomArea(data, FULL_AREA.copy());
+                    } else {
+                        fn.setZoomArea(data, za);
+                    }
+                }
                 fn.withdraw($info);
                 redisplay(data);
                 return false;
@@ -697,6 +708,7 @@ To have regions with content use "a" tags, e.g.
         var $elem = data.$elem;
         var settings = data.settings;
         var cssPrefix = data.settings.cssPrefix;
+        FULL_AREA  = geom.rectangle(0, 0, 1, 1);
         // region arrays
         data.userRegions = [];
         data.htmlRegions = [];
