@@ -95,7 +95,7 @@ To have regions with content use "a" tags, e.g.
         // turn any region into a clickable link to its detail view (DEPRECATED)
         'autoZoomOnClick' : false,
         // css selector for area/a elements (must also be marked with class "dl-keep")
-        'htmlRegionsSelector' : 'map.dl-regioncontent area, map.dl-regioncontent a',
+        'areaSelector' : 'map.dl-regioncontent area, map.dl-regioncontent a',
         // buttonset of this plugin
         'regionSet' : ['regions', 'defineregion', 'removeregion', 'removeallregions', 'regioninfo', 'findcoords', 'lessoptions'],
         // url param for regions
@@ -131,7 +131,7 @@ To have regions with content use "a" tags, e.g.
             $body.append($overlay);
             bodyRect.adjustDiv($overlay);
             var $regionDiv = newRegionDiv(data);
-            copyRegionAttributes(data, $regionDiv, {'class' : cssPrefix+"regionURL"});
+            addRegionAttributes(data, $regionDiv, {'class' : cssPrefix+"regionURL"});
 
             // mousedown handler: start sizing
             var regionStart = function (evt) {
@@ -169,8 +169,7 @@ To have regions with content use "a" tags, e.g.
                 // clip region
                 clickRect.clipTo(scalerRect);
                 clickRect.adjustDiv($regionDiv);
-                storeRegionDiv(data, $regionDiv);
-                // fn.redisplay(data);
+                regionTrafo(data, $regionDiv);
                 fn.highlightButtons(data, 'defineregion', 0);
                 redisplay(data);
                 $(data).trigger('newRegion', [$regionDiv]);
@@ -188,10 +187,8 @@ To have regions with content use "a" tags, e.g.
                 alert("Please turn on regions visibility!");
                 return;
             }
-            var r = data.userRegions.pop();
-            // no more URL regions to delete
-            if (r == null) return;
-            var $regionDiv = r.$div; // DEPRECATED
+            var selector = 'div.'+data.settings.cssPrefix+'regionURL';
+            var $regionDiv = data.$elem.find(selector).last();
             $regionDiv.remove();
             redisplay(data);
         },
@@ -202,10 +199,9 @@ To have regions with content use "a" tags, e.g.
                 alert("Please turn on regions visibility!");
                 return;
             }
-            var cssPrefix = data.settings.cssPrefix;
-            var $regions = data.$elem.find('div.'+cssPrefix+'regionURL');
-            $regions.remove();
-            data.userRegions = []; // remove only URL regions
+            var selector = 'div.'+data.settings.cssPrefix+'regionURL';
+            var $regionDivs = data.$elem.find(selector);
+            $regionDivs.remove();
             redisplay(data);
         },
 
@@ -240,10 +236,11 @@ To have regions with content use "a" tags, e.g.
                 </div>';
             $info = $(html);
             $info.appendTo($elem);
-            $info.append(regionInfoHTML(data));
-            $info.append(regionInfoSVG(data));
-            $info.append(regionInfoCSV(data));
-            $info.append(regionInfoDigilib(data));
+            var $regions = getRegions(data, 'regionURL');
+            $info.append(regionInfoHTML(data, $regions));
+            $info.append(regionInfoSVG(data, $regions));
+            $info.append(regionInfoCSV(data, $regions));
+            $info.append(regionInfoDigilib(data, $regions));
             var bind = function(name) {
                 $info.find('.'+name).on('click.regioninfo', function () {
                     $info.find('div.'+cssPrefix+'info').hide();
@@ -267,13 +264,17 @@ To have regions with content use "a" tags, e.g.
             var $elem = data.$elem;
             var cssPrefix = data.settings.cssPrefix;
             var rect = $regionDiv.data('rect');
-            var coords = packCoords(rect, ',');
+            var text = $regionDiv.data('text');
+            var coordString = packCoords(rect, ',');
             var html = '\
                 <div id="'+cssPrefix+'regionInfo" class="'+cssPrefix+'keep '+cssPrefix+'regionInfo">\
-                    <input name="coords" type="text" size="30" maxlength="40" value="'+coords+'"/>\
+                    <div/>\
+                    <input name="coords" type="text" size="30" maxlength="40" value="'+coordString+'"/>\
                 </div>';
             var $info = $(html);
             $info.appendTo($elem);
+            $div = $info.find('div');
+            $div.text(text);
             $input = $info.find('input');
             $input.on('focus.regioninfo', function (event) {
                 this.select();
@@ -289,7 +290,7 @@ To have regions with content use "a" tags, e.g.
             $info.fadeIn();
             fn.centerOnScreen(data, $info);
             $input.focus();
-            console.debug('showRegionCoords', coords);
+            console.debug('showRegionCoords', coordString);
         },
 
         // draw a find region from coords and move into view
@@ -301,7 +302,7 @@ To have regions with content use "a" tags, e.g.
                 }
             var cssPrefix = data.settings.cssPrefix;
             var attr = { 'class' : cssPrefix+'regionURL '+cssPrefix+'findregion' };
-            createRegion(data, data.userRegions, rect, attr);
+            addRegionDiv(data, rect, attr);
             var za = data.zoomArea;
             if (!fn.isFullArea(za)) {
                 za.setCenter(rect.getCenter()).stayInside(FULL_AREA);
@@ -390,29 +391,31 @@ To have regions with content use "a" tags, e.g.
         return $regionDiv;
     };
 
-    // push the digilib coordinates of a completed user-defined region onto the stack
-    var storeRegionDiv = function (data, $regionDiv) {
-        var regions = data.userRegions;
-        var rectangle = geom.rectangle($regionDiv);
-        var rect = data.imgTrafo.invtransform(rectangle);
+    // calculate the digilib coordinates of a completed user-defined region
+    var regionTrafo = function (data, $regionDiv) {
+        var screenRect = geom.rectangle($regionDiv);
+        var rect = data.imgTrafo.invtransform(screenRect);
         $regionDiv.data('rect', rect);
-        rect.$div = $regionDiv; // DEPRECATED
-        regions.push(rect);
-        console.debug("storeRegionDiv", data.userRegions, "rect", rect);
+        console.debug("regionTrafo", $regionDiv, rect);
         return rect;
     };
 
     // copy attributes to a region div
-    var copyRegionAttributes = function (data, $regionDiv, attributes) {
+    var addRegionAttributes = function (data, $regionDiv, attributes) {
         if (attributes == null) return;
         var settings = data.settings;
         var cssPrefix = settings.cssPrefix;
         if (attributes['class']) {
             $regionDiv.addClass(attributes['class']);
             delete attributes['class'];
-            }
-        $regionDiv.data('href', attributes.href); // TODO: href from HTML?
-        delete attributes.href; 
+        }
+        if (attributes['href']) {
+            $regionDiv.data('href', attributes['href']); // TODO: href from HTML?
+            delete attributes['href'];
+        }
+        if (attributes['title']) {
+            $regionDiv.data('text', attributes['title']);
+        }
         $regionDiv.attr(attributes);
     };
 
@@ -420,20 +423,21 @@ To have regions with content use "a" tags, e.g.
     var addRegionNumber = function (data, $regionDiv, index) {
         var settings = data.settings;
         var cssPrefix = settings.cssPrefix;
-        if (!settings.showRegionNumbers) return;
         var $number = $('<a class="'+cssPrefix+'regionnumber">'+index+'</a>');
         $regionDiv.append($number);
         return $regionDiv;
     };
 
-    // add a region to data.$elem
-    var addRegionDiv = function (data, regions, index, attributes) {
+    // construct a region from a rectangle
+    var addRegionDiv = function (data, rect, attributes, number) { // ###
         var settings = data.settings;
         var cssPrefix = settings.cssPrefix;
         var $regionDiv = newRegionDiv(data);
-        copyRegionAttributes(data, $regionDiv, attributes);
-        addRegionNumber(data, $regionDiv, index);
-
+        addRegionAttributes(data, $regionDiv, attributes);
+        if (settings.showRegionNumbers && number) {
+            addRegionNumber(data, $regionDiv, number);
+        }
+        $regionDiv.data('rect', rect);
         // handle click events on div
         $regionDiv.on('click.dlRegion', function(evt) {
                 $(data).trigger('regionClick', [$regionDiv]);
@@ -441,46 +445,24 @@ To have regions with content use "a" tags, e.g.
         return $regionDiv;
     };
 
-    // create a region div from the data.regions array
-    var createRegionDiv = function (data, regions, index, attributes) {
-        var rect = regions[index];
-        // check if div exists, DEPRECATED
-        if (rect.$div != null) return rect.$div;
-        // create and add div
-        var $regionDiv = addRegionDiv(data, regions, index, attributes);
-        $regionDiv.data('rect', rect);
-        rect.$div = $regionDiv; // DEPRECATED
-        return $regionDiv;
-    };
-
-    // create a region from a rectangle
-    var createRegion = function (data, regions, rect, attributes) {
-        var index = regions.length;
-        regions.push(rect);
-        var $regionDiv = createRegionDiv(data, regions, index, attributes);
-        return $regionDiv;
-    };
-
     // create regions from URL parameters
     var createRegionsFromURL = function (data) {
         var cssPrefix = data.settings.cssPrefix;
         var attr = {'class' : cssPrefix+"regionURL"};
-        var regions = unpackRegions(data);
-        data.userRegions = regions;
-        $.each(regions, function(index, region) {
-            createRegionDiv(data, regions, index, attr);
+        var userRegions = unpackRegions(data);
+        $.each(userRegions, function(index, rect) {
+            addRegionDiv(data, rect, attr, index+1);
         });
     };
 
     // create regions from HTML
     var createRegionsFromHTML = function (data) {
-        var cssPrefix = data.settings.cssPrefix;
-        var regions = data.htmlRegions;
         // regions are defined in "area" tags
-        var $content = data.$elem.find(data.settings.htmlRegionsSelector);
-        console.debug("createRegionsFromHTML. Number of elems: ", $content.length);
+        var $content = data.$elem.find(data.settings.areaSelector);
+        var cssPrefix = data.settings.cssPrefix;
+        console.debug("createRegionsFromHTML. elems found: ", $content.length);
         $content.each(function(index, area) {
-            var $area = $(area); 
+            var $area = $(area);
             // the "coords" attribute contains the region coords (0..1)
             var coords = $area.attr('coords');
             var title = $area.attr('title');
@@ -494,14 +476,9 @@ To have regions with content use "a" tags, e.g.
             for (var n in data.settings.regionAttributes) {
                 attributes[n] = $area.attr(n);
             }
+            var $regionDiv = addRegionDiv(data, rect, attributes);
             // mark div as regionHTML
-            regionClass = cssPrefix+'regionHTML';
-            if (attributes['class']) {
-                attributes['class'] += ' ' + regionClass
-            } else {
-                attributes['class'] = regionClass
-            }
-            var $regionDiv = createRegion(data, regions, rect, attributes);
+            $regionDiv.addClass(cssPrefix+'regionHTML');
             var $contents = $area.contents().clone();
             if (attributes.href != null) { // TODO: href set in region???
                 // wrap contents in a-tag
@@ -518,22 +495,30 @@ To have regions with content use "a" tags, e.g.
         });
     };
 
+    // select region divs (HTML or URL)
+    var getRegions = function (data, selector) {
+        var cssPrefix = data.settings.cssPrefix;
+        var $regions = data.$elem.find('div.'+cssPrefix+selector);
+        return $regions;
+    };
+
     // list of HTML regions matching text in its title attribute
     var matchRegionText = function (data, text) {
-        var regions = data.htmlRegions;
+        var $regions = getRegions(data, 'regionsHTML');
         var re = new RegExp(text);
-        return $.grep(regions, function(item, index) {
-            return re.match(item.text);
+        return $.grep($regions, function($item, index) {
+            return re.match($item.data('text'));
             });
     };
 
     // html for later insertion
-    var regionInfoHTML = function (data) {
+    var regionInfoHTML = function (data, $regions) {
         var cssPrefix = data.settings.cssPrefix;
         var $infoDiv = $('<div class="'+cssPrefix+'info '+cssPrefix+'html"/>');
         $infoDiv.append($('<div/>').text('<map class="'+cssPrefix+'keep '+cssPrefix+'regioncontent">'));
-        $.each(data.userRegions, function(index, r) {
-            var coords = packCoords(r, ',');
+        $regions.each(function(index, region) {
+            var rect = $(region).data('rect');
+            var coords = packCoords(rect, ',');
             $infoDiv.append($('<div/>').text('<area coords="' + coords + '"/>'));
             });
         $infoDiv.append($('<div/>').text('</map>'));
@@ -541,53 +526,50 @@ To have regions with content use "a" tags, e.g.
     };
 
     // SVG-style
-    var regionInfoSVG = function (data) {
+    var regionInfoSVG = function (data, $regions) {
         var cssPrefix = data.settings.cssPrefix;
         var $infoDiv = $('<div class="'+cssPrefix+'info '+cssPrefix+'svgattr"/>');
-        $.each(data.userRegions, function(index, r) {
-            var coords = packCoords(r, ' ');
+        $regions.each(function(index, region) {
+            var rect = $(region).data('rect');
+            var coords = packCoords(rect, ',');
             $infoDiv.append($('<div/>').text('"' + coords + '"'));
             });
         return $infoDiv;
     };
 
     // CSV-style
-    var regionInfoCSV = function (data) {
+    var regionInfoCSV = function (data, $regions) {
         var cssPrefix = data.settings.cssPrefix;
         var $infoDiv = $('<div class="'+cssPrefix+'info '+cssPrefix+'csv"/>');
-        $.each(data.userRegions, function(index, r) {
-            var coords = packCoords(r, ',');
+        $regions.each(function(index, region) {
+            var rect = $(region).data('rect');
+            var coords = packCoords(rect, ',');
             $infoDiv.append($('<div/>').text(index+1 + ": " + coords));
             });
         return $infoDiv;
     };
 
     // digilib-style (h,w@x,y)
-    var regionInfoDigilib = function (data) {
+    var regionInfoDigilib = function (data, $regions) {
         var cssPrefix = data.settings.cssPrefix;
         var $infoDiv = $('<div class="'+cssPrefix+'info '+cssPrefix+'digilib"/>');
-        $.each(data.userRegions, function(index, r) {
-            var coords = r.toString();
+        $regions.each(function(index, region) {
+            var rect = $(region).data('rect');
+            var coords = packCoords(rect, ',');
             $infoDiv.append($('<div/>').text(coords));
             });
         return $infoDiv;
     };
 
     // show a region on top of the scaler image 
-    var renderRegion = function (data, rect, anim) {
+    var renderRegion = function (data, $regionDiv, anim) {
         if (!data.imgTrafo) return;
         var zoomArea = data.zoomArea;
-        var $regionDiv = rect.$div; // DEPRECATED
-        if (!$regionDiv) {
-            console.error("renderRegion: rect has no $div", rect);
-            // alert("renderRegion: region has no $div to show");
-            return;
-        }
-        var regionRect = rect.copy();
+        var rect = $regionDiv.data('rect').copy();
         var show = data.settings.isRegionVisible;
-        if (show && zoomArea.overlapsRect(regionRect) && !regionRect.containsRect(zoomArea)) {
-            regionRect.clipTo(zoomArea);
-            var screenRect = data.imgTrafo.transform(regionRect);
+        if (show && zoomArea.overlapsRect(rect) && !rect.containsRect(zoomArea)) {
+            rect.clipTo(zoomArea);
+            var screenRect = data.imgTrafo.transform(rect);
             // console.debug("renderRegion: pos=",geom.position(screenRect));
             if (anim) {
                 $regionDiv.fadeIn();
@@ -607,12 +589,11 @@ To have regions with content use "a" tags, e.g.
 
     // show regions 
     var renderRegions = function (data, anim) {
-        $.each(data.htmlRegions, function(index, region) {
-            renderRegion(data, region, anim);
-            });
-        $.each(data.userRegions, function(index, region) {
-            renderRegion(data, region, anim);
-            });
+        var render = function(index, region) {
+            renderRegion(data, $(region), anim);
+            };
+        var $regions = getRegions(data, 'region')
+        $regions.each(render);
     };
 
     // read region data from URL parameters
@@ -630,13 +611,13 @@ To have regions with content use "a" tags, e.g.
 
     // pack user regions array into a URL parameter string
     var packRegions = function (data) {
-        var regions = data.userRegions;
-        if (!regions.length) {
+        var $regions = getRegions(data, 'regionsURL');
+        if ($regions.length == 0) {
             data.settings.rg = null;
             return;
         }
-        var coords = $.map(regions, function(region, index) {
-            packCoords(region, '/');
+        var coords = $.map($regions, function($region, index) {
+            packCoords($region, '/');
             });
         var rg = coords.join(',');
         data.settings.rg = rg;
@@ -749,9 +730,6 @@ To have regions with content use "a" tags, e.g.
         var settings = data.settings;
         var cssPrefix = data.settings.cssPrefix;
         FULL_AREA  = geom.rectangle(0, 0, 1, 1);
-        // region arrays
-        data.userRegions = [];
-        data.htmlRegions = [];
         // install event handlers
         var $data = $(data);
         $data.on('setup', handleSetup);
