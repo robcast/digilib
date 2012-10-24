@@ -49,7 +49,7 @@
         toggleAnnotations : function(data) {
             var show = !data.settings.isAnnotationsVisible;
             data.settings.isAnnotationsVisible = show;
-            fn.highlightButtons(data, 'annotations', show);
+            digilib.fn.highlightButtons(data, 'annotations', show);
             renderAnnotations(data);
         },
 
@@ -134,6 +134,7 @@
         console.debug("renderAnnotations: annotations=" + annotations);
         // clear annotations
         $elem.find('div.' + cssPrefix + 'annotationmark').remove();
+        if (!data.settings.isAnnotationsVisible) return;
         for (var i = 0; i < annotations.length; i++) {
             var annotation = annotations[i];
             if (data.zoomArea.containsPosition(annotation.pos)) {
