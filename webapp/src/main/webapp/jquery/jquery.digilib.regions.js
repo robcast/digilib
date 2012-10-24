@@ -681,9 +681,12 @@ To have regions with content use "a" tags, e.g.
             data.settings.rg = null;
             return;
         }
-        var coords = $.map($regions, function($region, index) {
-            packCoords($region, '/');
-            });
+        var packRegion = function(region, index) {
+            var $region = $(region);
+            var rect = $region.data('rect');
+            packCoords(rect, '/');
+            };
+        var coords = $.map($regions, packRegion);
         var rg = coords.join(',');
         data.settings.rg = rg;
         console.debug('pack regions:', rg);
