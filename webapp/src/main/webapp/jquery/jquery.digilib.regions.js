@@ -65,7 +65,12 @@ To have regions with content use "a" tags, e.g.
             },
         findcoords : {
             onclick : "findCoords",
-            tooltip : "find coords and display as a new region",
+            tooltip : "find a region by entering its relative coordinates",
+            icon : "regions.png"
+            },
+        finddata : {
+            onclick : "findData",
+            tooltip : "find a region by entering text",
             icon : "regions.png"
             },
         regioninfo : {
@@ -97,7 +102,7 @@ To have regions with content use "a" tags, e.g.
         // css selector for area/a elements (must also be marked with class "dl-keep")
         'areaSelector' : 'map.dl-regioncontent area, map.dl-regioncontent a',
         // buttonset of this plugin
-        'regionSet' : ['regions', 'defineregion', 'removeregion', 'removeallregions', 'regioninfo', 'findcoords', 'lessoptions'],
+        'regionSet' : ['regions', 'defineregion', 'removeregion', 'removeallregions', 'regioninfo', 'findcoords', 'finddata', 'lessoptions'],
         // url param for regions
         'rg' : null,
         // region attributes to copy from HTML
@@ -217,11 +222,8 @@ To have regions with content use "a" tags, e.g.
         showRegionInfo : function (data) {
             var $elem = data.$elem;
             var cssPrefix = data.settings.cssPrefix;
-            var infoselector = '#'+cssPrefix+'regionInfo';
-            if (fn.find(data, infoselector)) {
-                fn.withdraw($info);
-                return;
-                }
+            var infoSelector = '#'+cssPrefix+'regionInfo';
+            if (fn.isOnScreen(data, infoSelector)) return; // already onscreen
             var html = '\
                 <div id="'+cssPrefix+'regionInfo" class="'+cssPrefix+'keep '+cssPrefix+'regionInfo">\
                     <table class="'+cssPrefix+'infoheader">\
@@ -268,7 +270,7 @@ To have regions with content use "a" tags, e.g.
             var coordString = packCoords(rect, ',');
             var html = '\
                 <div id="'+cssPrefix+'regionInfo" class="'+cssPrefix+'keep '+cssPrefix+'regionInfo">\
-                    <div/>\
+                    <div>'+text+'</div>\
                     <input name="coords" type="text" size="30" maxlength="40" value="'+coordString+'"/>\
                 </div>';
             var $info = $(html);
@@ -319,8 +321,10 @@ To have regions with content use "a" tags, e.g.
         findCoords : function (data) {
             var $elem = data.$elem;
             var cssPrefix = data.settings.cssPrefix;
+            var findSelector = '#'+cssPrefix+'regionFindCoords';
+            if (fn.isOnScreen(data, findSelector)) return; // already onscreen
             var html = '\
-                <div id="'+cssPrefix+'regionInfo" class="'+cssPrefix+'keep '+cssPrefix+'regionInfo">\
+                <div id="'+cssPrefix+'regionFindCoords" class="'+cssPrefix+'keep '+cssPrefix+'regionInfo">\
                     <div>coordinates to find:</div>\
                     <form class="'+cssPrefix+'form">\
                         <div>\
@@ -341,6 +345,50 @@ To have regions with content use "a" tags, e.g.
                 fn.withdraw($info);
                 return false;
             });
+            // handle cancel
+            $form.find('.'+cssPrefix+'cancel').on('click', function () {
+                fn.withdraw($info);
+            });
+            $info.fadeIn();
+            fn.centerOnScreen(data, $info);
+            $input.focus();
+        },
+
+        // find text data and display as new region
+        findData : function (data) {
+            var $elem = data.$elem;
+            var cssPrefix = data.settings.cssPrefix;
+            var findSelector = '#'+cssPrefix+'regionFindData';
+            if (fn.isOnScreen(data, findSelector)) return; // already onscreen
+            var textOptions = getTextOptions(data, 'regionHTML');
+            var html = '\
+                <div id="'+cssPrefix+'regionFindData" class="'+cssPrefix+'keep '+cssPrefix+'regionInfo">\
+                    <div>text to find:</div>\
+                    <form class="'+cssPrefix+'form">\
+                        <div>\
+                            <select class="'+cssPrefix+'findData">\
+                            '+textOptions+'\
+                            </select>\
+                        </div>\
+                        <input class="'+cssPrefix+'input" name="data" type="text" size="30" maxlength="40"/> \
+                        <input class="'+cssPrefix+'submit" type="submit" name="sub" value="Ok"/>\
+                        <input class="'+cssPrefix+'cancel" type="button" value="Cancel"/>\
+                    </form>\
+                </div>';
+            var $info = $(html);
+            $info.appendTo($elem);
+            var $form = $info.find('form');
+            var $input = $info.find('input.'+cssPrefix+'input');
+            var $select = $info.find('select');
+            var findRegion = function () {
+                var coords = $select.val();
+                actions.regionFromCoords(data, coords);
+                fn.withdraw($info);
+                return false;
+                };
+            // handle submit
+            $form.on('submit', findRegion);
+            $select.on('change', findRegion);
             // handle cancel
             $form.find('.'+cssPrefix+'cancel').on('click', function () {
                 fn.withdraw($info);
@@ -502,9 +550,26 @@ To have regions with content use "a" tags, e.g.
         return $regions;
     };
 
+    // make text data options html
+    var getTextOptions = function (data, selector) {
+        var cssPrefix = data.settings.cssPrefix;
+        var makeOptionHTML = function(item, index) {
+            var $item = $(item);
+            var rect = $item.data('rect');
+            if (rect == null)
+                return null;
+            var coords = packCoords(rect, ',');
+            var text = $item.data('text');
+            return '<option value="'+coords+'">'+text+'</option>';
+            };
+        var $regions = getRegions(data, selector);
+        var options = $.map($regions, makeOptionHTML);
+        return options.join('');
+    };
+
     // list of HTML regions matching text in its title attribute
     var matchRegionText = function (data, text) {
-        var $regions = getRegions(data, 'regionsHTML');
+        var $regions = getRegions(data, 'regionHTML');
         var re = new RegExp(text);
         return $.grep($regions, function($item, index) {
             return re.match($item.data('text'));
@@ -601,7 +666,7 @@ To have regions with content use "a" tags, e.g.
         var rg = data.settings.rg;
         if (rg == null) return [];
         var coords = rg.split(",");
-        var regions = $map(coords, function(coord, index) {
+        var regions = $.map(coords, function(coord, index) {
             var pos = coord.split("/", 4);
             var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
             return rect;
