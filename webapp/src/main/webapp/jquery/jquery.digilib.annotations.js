@@ -22,6 +22,11 @@
             tooltip : "show or hide annotations",
             icon : "annotations.png"
         },
+        annotationuser : {
+            onclick : "setAnnotationUser",
+            tooltip : "set user account for annotations",
+            icon : "annotation-user.png"
+        },
         annotationmark : {
             onclick : "setAnnotationMark",
             tooltip : "create an annotation for a point",
@@ -33,11 +38,11 @@
         // are annotations active?
         'isAnnotationsVisible' : true,
         // buttonset of this plugin
-        'annotationSet' : ['annotations', 'annotationmark', 'lessoptions'],
+        'annotationSet' : ['annotations', 'annotationuser', 'annotationmark', 'lessoptions'],
         // URL of annotation server
         'annotationServerUrl' : 'http://virtuoso.mpiwg-berlin.mpg.de:8080/AnnotationManager/annotator',
         // URL of authentication token server
-        'annotationTokenUrl' : 'http://localhost:8080/test/annotator/token?user=anonymous',
+        'annotationTokenUrl' : 'http://localhost:8080/test/annotator/token',
         // annotation user name
         'annotationUser' : 'anonymous'
     };
@@ -46,11 +51,27 @@
         /**
          * show/hide annotations
          */
-        toggleAnnotations : function(data) {
+        toggleAnnotations : function (data) {
             var show = !data.settings.isAnnotationsVisible;
             data.settings.isAnnotationsVisible = show;
             digilib.fn.highlightButtons(data, 'annotations', show);
             renderAnnotations(data);
+        },
+        
+        /**
+         * set user account for annotations
+         */
+        setAnnotationUser : function (data, user) {
+            var settings = data.settings;
+            if (user == null) {
+                // user name entered in JS-prompt
+                user = window.prompt("User name:", settings.annotationUser);
+                if (user != null) {
+                    settings.annotationUser = user;
+                }
+            } else {
+                settings.annotationUser = user;
+            }
         },
 
         /**
@@ -60,7 +81,7 @@
          * @param mpos
          * @param text
          */
-        setAnnotationMark : function(data, mpos, text) {
+        setAnnotationMark : function (data, mpos, text) {
             if (mpos == null) {
                 // interactive
                 setAnnotationMark(data);
@@ -77,7 +98,7 @@
     /**
      * create a new annotation object
      */
-    var newAnnotation = function(mpos, text, id, uri, user) {
+    var newAnnotation = function (mpos, text, id, uri, user) {
         var annot = {
             pos : mpos,
             text : text,
@@ -112,8 +133,7 @@
             var pos = data.imgTrafo.invtransform(mpos);
             // Annotation text entered in JS-prompt
             var text = window.prompt("Annotation text:");
-            if (text == null)
-                return false;
+            if (text == null) return false;
             var annotation = newAnnotation(pos, text);
             storeAnnotation(data, annotation);
             data.annotations.push(annotation);

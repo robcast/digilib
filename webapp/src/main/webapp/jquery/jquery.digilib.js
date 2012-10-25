@@ -1606,6 +1606,13 @@ if (typeof console === 'undefined') {
         return cropFloat(x).toString();
     };
 
+    /**
+     * returns if str ends with suffix.
+     */
+    var endsWith = function (str, suffix) {
+        return str.indexOf(suffix, str.length - suffix.length) !== -1;
+    };
+    
     /** center an item on the visible screen rect
     */
     var centerOnScreen = function (data, $div) {
@@ -1690,6 +1697,7 @@ if (typeof console === 'undefined') {
             getBorderWidth : getBorderWidth,
             cropFloat : cropFloat,
             cropFloatStr : cropFloatStr,
+            endsWith : endsWith,
             centerOnScreen : centerOnScreen,
             withdraw : withdraw,
             isOnScreen : isOnScreen,

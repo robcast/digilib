@@ -135,7 +135,7 @@ digilib dialogs plugin
         $scaleDiv.fadeIn();
         $select.focus();
         if (digilib.plugins.buttons == null) {
-            fn.centerOnScreen($scaleDiv)
+            fn.centerOnScreen($scaleDiv);
         } else {
             var $button = fn.findButtonByName(data, 'scale');
             var buttonRect = geom.rectangle($button);
