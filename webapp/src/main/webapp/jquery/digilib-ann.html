@@ -12,6 +12,7 @@
         </style>
 
         <script type="text/javascript" src="jquery.js"></script>
+        <script type="text/javascript" src="jquery.tools.min.js"></script>
         <script type="text/javascript" src="jquery.cookie.js"></script>
         <script type="text/javascript" src="jquery.digilib.js"></script>
         <script type="text/javascript" src="jquery.digilib.geometry.js"></script>
@@ -34,9 +35,9 @@
                     showRegionNumbers : true,
                     // URL of annotation server
                     //'annotationServerUrl' : 'http://localhost:18080/AnnotationManager/annotator',
-                    'annotationServerUrl' : 'http://virtuoso.mpiwg-berlin.mpg.de:8080/AnnotationManager/annotator',
+                    'annotationServerUrl' : 'http://tuxserve03.mpiwg-berlin.mpg.de/AnnotationManager/annotator',
                     // URL of authentication token server
-                    'annotationTokenUrl' : 'http://r583-1.mpiwg-berlin.mpg.de:8080/test/annotator/token?user=anonymous',
+                    'annotationTokenUrl' : 'http://r583-1.mpiwg-berlin.mpg.de:8080/test/annotator/token',
                     };
                 var $div = $('div#digilib');
                 $div.digilib(opts);

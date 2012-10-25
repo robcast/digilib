@@ -44,7 +44,15 @@
         // URL of authentication token server
         'annotationTokenUrl' : 'http://localhost:8080/test/annotator/token',
         // annotation user name
-        'annotationUser' : 'anonymous'
+        'annotationUser' : 'anonymous',
+        // function to translate user name from annotation server format 
+        'annotationServerUserString' : function() {
+            if (this.user && this.user.name) {
+                return this.user.name;
+            }
+            return this.user;
+        },
+
     };
 
     var actions = {
@@ -87,7 +95,7 @@
                 setAnnotationMark(data);
             } else {
                 // use position and text
-                var annotation = newAnnotation(mpos, text);
+                var annotation = newAnnotation(data, mpos, text);
                 storeAnnotation(data, annotation);
                 data.annotations.push(annotation);
                 digilib.fn.redisplay(data);
@@ -98,14 +106,18 @@
     /**
      * create a new annotation object
      */
-    var newAnnotation = function (mpos, text, id, uri, user) {
+    var newAnnotation = function (data, mpos, text, id, uri, user, permissions, tags) {
         var annot = {
             pos : mpos,
             text : text,
             id : id,
             uri : uri,
-            user : user
+            user : user,
+            permissions : permissions,
+            tags : tags
         };
+        // TODO: use prototype?
+        annot.getUserName = data.settings.annotationServerUserString;
         return annot;
     };
 
@@ -134,7 +146,7 @@
             // Annotation text entered in JS-prompt
             var text = window.prompt("Annotation text:");
             if (text == null) return false;
-            var annotation = newAnnotation(pos, text);
+            var annotation = newAnnotation(data, pos, text);
             storeAnnotation(data, annotation);
             data.annotations.push(annotation);
             digilib.fn.redisplay(data);
@@ -151,7 +163,7 @@
         var cssPrefix = data.settings.cssPrefix;
         var $elem = data.$elem;
         var annotations = data.annotations;
-        console.debug("renderAnnotations: annotations=" + annotations);
+        console.debug("renderAnnotations: annotations=", annotations);
         // clear annotations
         $elem.find('div.' + cssPrefix + 'annotationmark').remove();
         if (!data.settings.isAnnotationsVisible) return;
@@ -162,13 +174,29 @@
                 console.debug("renderannotations: pos=", mpos);
                 // create annotation
                 var html = '<div class="' + cssPrefix + 'annotationmark ' + cssPrefix + 'overlay">' + (i + 1) + '</div>';
-                var $annotation = $(html);
-                // set text as tooltip TODO: have real popup with editing
-                $annotation.attr('title', "Annotation: " + annotation.text);
+                // set text as tooltip
+                if ($.fn.tooltip != null) {
+                    html += '<div class="tooltip '+cssPrefix+'annotationbody" style="display:none">'
+                          // + '<h3>Annotation</h3>'
+                          + '<div class="'+cssPrefix+'text">'+annotation.text+'</div>'
+                          + '<div class="'+cssPrefix+'creator">Creator: '+annotation.getUserName()+'</div>';
+                    if (annotation.tags != null && annotation.tags.length > 0) {
+                        html +=  '<div class="'+cssPrefix+'tags">Tags: '+annotation.tags+'</div>';
+                    }
+                    html += '</div>';
+                    var $annotation = $(html);
+                } else {
+                    // default browser tooltip
+                    var $annotation = $(html);
+                    $annotation.attr('title', "Annotation: " + annotation.text);
+                }
                 $elem.append($annotation);
                 mpos.adjustDiv($annotation);
             }
         }
+        if ($.fn.tooltip != null) {
+            $('div.'+cssPrefix+'annotationmark').tooltip();
+        }                
     };
 
     /**
@@ -224,7 +252,7 @@
         var annotations = [];
         for (var i = 0; i < annotationData.rows.length; ++i) {
             var ann = annotationData.rows[i];
-            var annot = parseAnnotation(ann)
+            var annot = parseAnnotation(data, ann);
             if (annot != null) {
                 annotations.push(annot);
             }
@@ -237,13 +265,13 @@
      * 
      * Returns an annotation object.
      */
-    var parseAnnotation = function(ann) {
+    var parseAnnotation = function(data, ann) {
         // TODO: check validity of annotation data
         if (ann.areas != null && ann.areas.length > 0) {
             var area = ann.areas[0];
             // currently only point annotations
             var pos = geom.position(area.x, area.y);
-            return newAnnotation(pos, ann.text, ann.id, ann.uri, ann.user);
+            return newAnnotation(data, pos, ann.text, ann.id, ann.uri, ann.user, ann.permissions, ann.tags);
         }
         return null;
     };
@@ -279,7 +307,7 @@
             headers : headers,
             success : function(annotData, annotStatus) {
                 console.debug("sent annotation data, got=", annotData, " status=" + annotStatus);
-                var annot = parseAnnotation(annotData);
+                var annot = parseAnnotation(data, annotData);
                 // TODO: we have to add the returned data to the real annotation!
                 //renderAnnotations(data);
             }

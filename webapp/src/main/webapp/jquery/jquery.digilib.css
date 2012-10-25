@@ -290,6 +290,20 @@ div.dl-infoheader {
     margin-bottom: 20px;
 }
 
+/* annotations */
+div.dl-digilib div.dl-annotationbody {
+     background-color: yellow;
+     border-radius: 5px;  
+}
+div.dl-digilib div.dl-annotationbody div.dl-text {
+    padding: 10px;
+}
+div.dl-digilib div.dl-annotationbody div.dl-creator {
+    color: gray;
+    padding: 5px;
+    border-top: 1px solid silver;
+}
+
 /* scroll arrows */
 div.dl-digilib table.dl-scalertable {
 	border: 0;
