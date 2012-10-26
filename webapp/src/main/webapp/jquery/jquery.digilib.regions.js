@@ -116,8 +116,10 @@ inner (optional)
         'autoZoomOnClick' : false,
         // css selector for area/a elements (must also be marked with class "dl-keep")
         'areaSelector' : 'map.dl-regioncontent area, map.dl-regioncontent a',
-        // buttonset of this plugin
-        'regionSet' : ['regions', 'defineregion', 'removeregion', 'removeallregions', 'regioninfo', 'findcoords', 'finddata', 'lessoptions'],
+        // general buttonset of this plugin
+        'regionSet' : ['regions', 'findcoords', 'finddata', 'lessoptions'],
+        // buttonset for region editing by user
+        'userRegionSet' : ['defineregion', 'removeregion', 'removeallregions', 'regioninfo'],
         // url param for regions
         'rg' : null,
         // array with region data
@@ -781,8 +783,12 @@ inner (optional)
         var settings = data.settings;
         var mode = settings.interactionMode;
         var buttonSettings = settings.buttonSettings[mode];
-        // configure buttons through digilib "regionSet" option
-        var buttonSet = settings.regionSet || regionSet; 
+        var buttonSet = settings.regionSet;
+        if (settings.processUserRegions) {
+            var first = buttonSet.slice(0,1);
+            var rest = buttonSet.slice(1);
+            buttonSet = first.concat(settings.userRegionSet, rest);
+            }
         // set regionSet to [] or '' for no buttons (when showing regions only)
         if (buttonSet.length && buttonSet.length > 0) {
             buttonSettings.regionSet = buttonSet;
@@ -824,7 +830,7 @@ inner (optional)
             settings.onClickRegion = zoomToRegion;
         }
         // install region buttons if user defined regions are allowed
-        if (settings.processUserRegions && digilib.plugins.buttons != null) {
+        if (digilib.plugins.buttons != null) {
             installButtons(data);
         }
     };
