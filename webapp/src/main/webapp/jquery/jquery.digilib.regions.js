@@ -192,6 +192,8 @@ inner (optional)
                 clickRect.clipTo(scalerRect);
                 clickRect.adjustDiv($regionDiv);
                 regionTrafo(data, $regionDiv);
+                var count = getRegions(data, 'regionURL').length;
+                addRegionNumber(data, $regionDiv, count);
                 fn.highlightButtons(data, 'defineregion', 0);
                 redisplay(data);
                 $(data).trigger('newRegion', [$regionDiv]);
@@ -479,6 +481,8 @@ inner (optional)
 
     // set region number
     var addRegionNumber = function (data, $regionDiv, index) {
+        if (!data.settings.showRegionNumbers) return;
+        if (!fn.isNumber(index)) return;
         var $number = $('<a class="'+CSS+'regionnumber">'+index+'</a>');
         $regionDiv.append($number);
         return $regionDiv;
@@ -489,9 +493,7 @@ inner (optional)
         var $regionDiv = newRegionDiv(data, item.attributes);
         var settings = data.settings;
         // add region number
-        if (settings.showRegionNumbers && item.index) {
-            addRegionNumber(data, $regionDiv, item.index);
-        }
+        addRegionNumber(data, $regionDiv, item.index);
         // add inner HTML
         if (item.inner) {
             $regionDiv.append(item.inner);
@@ -685,7 +687,7 @@ inner (optional)
     // pack user regions array into a URL parameter string
     var packRegions = function (data) {
         var $regions = getRegions(data, 'regionURL');
-        if ($regions.length == 0) {
+        if ($regions.length == 0 || !data.settings.processUserRegions) {
             data.settings.rg = null;
             return;
         }
@@ -708,9 +710,7 @@ inner (optional)
 
     // reload display after a region has been added or removed
     var redisplay = function (data) {
-        if (data.settings.processUserRegions) {
-            packRegions(data);
-        }
+        packRegions(data);
         fn.redisplay(data);
     };
 
@@ -802,6 +802,8 @@ inner (optional)
         $.extend(digilib.defaults, defaults);
         $.extend(digilib.actions, actions);
         $.extend(digilib.buttons, buttons);
+        // add "rg" to digilibParamNames
+        digilib.defaults.digilibParamNames.push('rg');
     };
 
     // plugin initialization
@@ -822,14 +824,8 @@ inner (optional)
             settings.onClickRegion = zoomToRegion;
         }
         // install region buttons if user defined regions are allowed
-        if (settings.processUserRegions) {
-            // add "rg" to digilibParamNames
-            // settings.digilibParamNames.push('rg');
-            // TODO: this leads double params, because
-            // settings.additionalParamNames is created earlier than this plugin's init() action 
-            if (digilib.plugins.buttons != null) {
-                installButtons(data);
-            }
+        if (settings.processUserRegions && digilib.plugins.buttons != null) {
+            installButtons(data);
         }
     };
 
