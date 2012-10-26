@@ -94,9 +94,10 @@
                 // interactive
                 setAnnotationMark(data);
             } else {
-                // use position and text
-                var annotation = newAnnotation(data, mpos, text);
+                // use position and text (and user-id)
+                var annotation = newAnnotation(data, mpos, text, null, null, data.settings.annotationUser);
                 storeAnnotation(data, annotation);
+                // TODO: replace with annotation returned by server
                 data.annotations.push(annotation);
                 digilib.fn.redisplay(data);
             }
@@ -146,7 +147,7 @@
             // Annotation text entered in JS-prompt
             var text = window.prompt("Annotation text:");
             if (text == null) return false;
-            var annotation = newAnnotation(data, pos, text);
+            var annotation = newAnnotation(data, pos, text, null, null, data.settings.annotationUser);
             storeAnnotation(data, annotation);
             data.annotations.push(annotation);
             digilib.fn.redisplay(data);
