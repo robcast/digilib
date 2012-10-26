@@ -38,7 +38,7 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.1.8a1',
+        'version' : 'jquery.digilib.js 2.1.9',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -342,7 +342,15 @@ if (typeof console === 'undefined') {
         zoomArea : function (data, area) {
             if (area == null) {
                 // interactively
-                zoomArea(data);
+                var onComplete = function(data, rect) {
+                    if (rect == null) return;
+                    setZoomArea(data, rect);
+                    // reset modes
+                    setFitMode(data, 'both');
+                    setScaleMode(data, 'screen');
+                    redisplay(data);
+                    };
+                defineArea(data, onComplete);
             } else {
                 data.zoomArea = geom.rectangle(area);
                 redisplay(data);
@@ -1215,71 +1223,75 @@ if (typeof console === 'undefined') {
         redisplay(data);
     };
 
-    /** zoom to the area around two clicked points.
+    /** define an area by click and drag
      * 
      */
-    var zoomArea = function(data) {
-        $elem = data.$elem;
-        $scaler = data.$scaler;
-        var pt1, pt2;
-        var $zoomDiv = $('<div class="'+data.settings.cssPrefix+'zoomrect" style="display:none"/>');
-        $elem.append($zoomDiv);
-        // $zoomDiv.css(data.settings.zoomrectStyle);
+    var defineArea = function(data, onComplete, cls) {
+        var CSS = data.settings.cssPrefix;
+        var $elem = data.$elem;
+        var $scaler = data.$scaler;
         var picRect = geom.rectangle($scaler);
-        // FIX ME: is there a way to query the border width from CSS info?
-        // rect.x -= 2; // account for overlay borders
-        // rect.y -= 2;
+        var $body = $('body');
+        var bodyRect = geom.rectangle($body);
+        var pt1, pt2;
+        // overlay div prevents other elements from reacting to mouse events 
+        var $overlayDiv = $('<div class="'+CSS+'areaoverlay"/>');
+        $body.append($overlayDiv);
+        bodyRect.adjustDiv($overlayDiv);
+        // area div 
+        var $areaDiv = $('<div class="'+CSS+'area"/>');
+        if (cls) {
+            $areaDiv.addClass(cls); // individual styling
+        }
+        $elem.append($areaDiv);
 
-        var zoomStart = function (evt) {
+        var areaStart = function (evt) {
             pt1 = geom.position(evt);
-            // setup and show zoom div
-            pt1.adjustDiv($zoomDiv);
-            $zoomDiv.width(0).height(0);
-            $zoomDiv.show();
+            // setup and show area div
+            pt1.adjustDiv($areaDiv);
+            $areaDiv.width(0).height(0);
+            $areaDiv.show();
             // register events
-            $elem.on("mousemove.dlZoomArea", zoomMove);
-            $elem.on("mouseup.dlZoomArea", zoomEnd);
+            $overlayDiv.on("mousemove.dlArea", areaMove);
+            $overlayDiv.on("mouseup.dlArea", areaEnd);
             return false;
         };
 
         // mouse move handler
-        var zoomMove = function (evt) {
+        var areaMove = function (evt) {
             pt2 = geom.position(evt);
             var rect = geom.rectangle(pt1, pt2);
             rect.clipTo(picRect);
-            // update zoom div
-            rect.adjustDiv($zoomDiv);
+            // update area div
+            rect.adjustDiv($areaDiv);
             return false;
         };
 
         // mouseup handler: end moving
-        var zoomEnd = function (evt) {
+        var areaEnd = function (evt) {
             pt2 = geom.position(evt);
             // assume a click and continue if the area is too small
             var clickRect = geom.rectangle(pt1, pt2);
-            if (clickRect.getArea() <= 5) return false;
-            // hide zoom div
-            $zoomDiv.remove();
+            if (clickRect.getArea() <= 5) {
+                onComplete(data, null);
+                return false;
+                };
             // unregister events
-            $elem.off("mousemove.dlZoomArea", zoomMove);
-            $elem.off("mouseup.dlZoomArea", zoomEnd);
+            $overlayDiv.off("mousemove.dlArea", areaMove);
+            $overlayDiv.off("mouseup.dlArea", areaEnd);
             // clip and transform
             clickRect.clipTo(picRect);
-            var area = data.imgTrafo.invtransform(clickRect);
-            setZoomArea(data, area);
-            // reset modes
-            setFitMode(data, 'both');
-            setScaleMode(data, 'screen');
-            redisplay(data);
+            var rect = data.imgTrafo.invtransform(clickRect);
+            // execute callback
+            onComplete(data, rect);
+            // destroy area div
+            withdraw($areaDiv);
+            withdraw($overlayDiv);
             return false;
         };
 
-        // clear old handler (also ZoomDrag)
-        $scaler.off('.dlZoomArea');
-        $scaler.off(".dlZoomDrag");
-        $elem.off('.dlZoomArea');
-        // bind start zoom handler
-        $scaler.one('mousedown.dlZoomArea', zoomStart);
+        // start by clicking
+        $overlayDiv.one('mousedown.dlArea', areaStart);
     };
 
     /** set preview background.
@@ -1363,7 +1375,7 @@ if (typeof console === 'undefined') {
             console.debug("dragstart at=", evt);
             // don't start dragging if not zoomed
             if (isFullArea(data.zoomArea)) return false;
-            $elem.find(".overlay").hide(); // hide all overlays (marks/regions)
+            $elem.find('.'+data.settings.cssPrefix+'overlay').hide(); // hide all overlays (marks/regions)
             startPos = geom.position(evt);
             delta = null;
             // set low res background immediately on mousedown
@@ -1612,7 +1624,7 @@ if (typeof console === 'undefined') {
     var endsWith = function (str, suffix) {
         return str.indexOf(suffix, str.length - suffix.length) !== -1;
     };
-    
+
     /** center an item on the visible screen rect
     */
     var centerOnScreen = function (data, $div) {
@@ -1681,6 +1693,7 @@ if (typeof console === 'undefined') {
             redisplay : redisplay,
             updateDisplay : updateDisplay,
             showDiv : showDiv,
+            defineArea : defineArea,
             setZoomArea : setZoomArea,
             setPreviewBg : setPreviewBg,
             getImgTrafo : getImgTrafo,

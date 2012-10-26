@@ -96,8 +96,6 @@ inner (optional)
         };
 
     var defaults = {
-        // are regions being edited?
-        'editRegions' : false,
         // are regions shown?
         'isRegionVisible' : true,
         // are region numbers shown?
@@ -144,67 +142,18 @@ inner (optional)
                 alert("Please turn on regions visibility!");
                 return;
             }
-            var $elem = data.$elem;
-            var $body = $('body');
-            var bodyRect = geom.rectangle($body);
-            var $scaler = data.$scaler;
-            var scalerRect = geom.rectangle($scaler);
-            var pt1, pt2;
-            // overlay prevents other elements from reacting to mouse events 
-            var $overlay = $('<div class="'+CSS+'overlay" style="position:absolute"/>');
-            $body.append($overlay);
-            bodyRect.adjustDiv($overlay);
-            var attr = {'class' : CSS+"regionURL"};
-            var $regionDiv = newRegionDiv(data, attr);
-
-            // mousedown handler: start sizing
-            var regionStart = function (evt) {
-                pt1 = geom.position(evt);
-                // setup and show zoom div
-                pt1.adjustDiv($regionDiv);
-                $regionDiv.width(0).height(0);
-                $regionDiv.show();
-                // register mouse events
-                $overlay.on("mousemove.dlRegion", regionMove);
-                $overlay.on("mouseup.dlRegion", regionEnd);
-                return false;
-            };
-
-            // mousemove handler: size region
-            var regionMove = function (evt) {
-                pt2 = geom.position(evt);
-                var rect = geom.rectangle(pt1, pt2);
-                rect.clipTo(scalerRect);
-                // update region
-                rect.adjustDiv($regionDiv);
-                return false;
-            };
-
-            // mouseup handler: end sizing
-            var regionEnd = function (evt) {
-                pt2 = geom.position(evt);
-                // assume a click and continue if the area is too small
-                var clickRect = geom.rectangle(pt1, pt2);
-                if (clickRect.getArea() <= 5) return false;
-                // unregister mouse events and get rid of overlay
-                $overlay.off("mousemove.dlRegion", regionMove);
-                $overlay.off("mouseup.dlRegion", regionEnd);
-                $overlay.remove();
-                // clip region
-                clickRect.clipTo(scalerRect);
-                clickRect.adjustDiv($regionDiv);
-                regionTrafo(data, $regionDiv);
+            var onComplete = function(data, rect) {
+                if (rect == null) return;
                 var count = getRegions(data, 'regionURL').length;
-                addRegionNumber(data, $regionDiv, count);
+                var attr = {'class' : CSS+'regionURL '+CSS+'overlay'};
+                var item = {'rect' : rect, 'index' : count, 'attributes' : attr};
+                var $regionDiv = addRegionDiv(data, item);
                 fn.highlightButtons(data, 'defineregion', 0);
                 redisplay(data);
                 $(data).trigger('newRegion', [$regionDiv]);
-                return false;
-            };
-
-            // bind start zoom handler
-            $overlay.one('mousedown.dlRegion', regionStart);
+                };
             fn.highlightButtons(data, 'defineregion', 1);
+            fn.defineArea(data, onComplete, CSS+'regionArea');
         },
 
         // remove the last added URL region
@@ -215,6 +164,7 @@ inner (optional)
             }
             var selector = 'div.'+CSS+'regionURL';
             var $regionDiv = data.$elem.find(selector).last();
+            if ($regionDiv.length == 0) return;
             $regionDiv.remove();
             redisplay(data);
         },
@@ -227,6 +177,7 @@ inner (optional)
             }
             var selector = 'div.'+CSS+'regionURL';
             var $regionDivs = data.$elem.find(selector);
+            if ($regionDivs.length == 0) return;
             $regionDivs.remove();
             redisplay(data);
         },
@@ -268,12 +219,16 @@ inner (optional)
                     $info.find('div.'+CSS+'info').hide();
                     $info.find('div.'+CSS+name).show();
                     fn.centerOnScreen(data, $info);
+                    return false;
                     });
                 };
             bind('html');
             bind('svgattr');
             bind('csv');
             bind('digilib');
+            $info.on('click.regioninfo', function () {
+                fn.withdraw($info);
+                });
             $info.find('.x').on('click.regioninfo', function () {
                 fn.withdraw($info);
                 });
@@ -321,7 +276,7 @@ inner (optional)
                 alert('invalid coordinates: ' + coords);
                 return;
                 }
-            var attr = { 'class' : CSS+'regionURL '+CSS+'findregion' };
+            var attr = { 'class' : CSS+'findregion' };
             var item = { 'rect' : rect, 'attributes' : attr };
             var $regionDiv = addRegionDiv(data, item);
             var za = data.zoomArea;
@@ -362,6 +317,10 @@ inner (optional)
                 actions.regionFromCoords(data, coords);
                 fn.withdraw($info);
                 return false;
+                });
+            // handle blur
+            $input.on('blur', function () {
+                fn.withdraw($info);
                 });
             // handle cancel
             $form.find('.'+CSS+'cancel').on('click', function () {
@@ -449,19 +408,10 @@ inner (optional)
     // create a new regionDiv and add it to data.$elem
     var newRegionDiv = function (data, attr) {
         var cls = CSS+'region';
-        var $regionDiv = $('<div class="'+cls+'" style="display:none"/>');
+        var $regionDiv = $('<div class="'+cls+'"/>');
         addRegionAttributes(data, $regionDiv, attr);
         data.$elem.append($regionDiv);
         return $regionDiv;
-    };
-
-    // calculate the digilib coordinates of a completed user-defined region
-    var regionTrafo = function (data, $regionDiv) {
-        var screenRect = geom.rectangle($regionDiv);
-        var rect = data.imgTrafo.invtransform(screenRect);
-        $regionDiv.data('rect', rect);
-        console.debug("regionTrafo", $regionDiv, rect);
-        return rect;
     };
 
     // copy attributes to a region div
@@ -541,7 +491,7 @@ inner (optional)
             }
             // mark div class as regionHTML
             var cls = $area.attr('class') || '';
-            cls += ' '+CSS+'regionHTML';
+            cls += ' '+CSS+'regionHTML '+CSS+'overlay';
             var attr = {'class' : cls};
             // copy attributes
             for (var n in data.settings.regionAttributes) {
@@ -679,7 +629,7 @@ inner (optional)
         var regions = $.map(coords, function(coord, index) {
             var pos = coord.split("/", 4);
             var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
-            var attr = {'class' : CSS+"regionURL"};
+            var attr = {'class' : CSS+"regionURL "+CSS+"overlay"};
             var item = {'rect' : rect, 'index' : index+1, 'attributes' : attr};
             return item;
             });

@@ -14,26 +14,16 @@ You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
  
 Authors:
-  Martin Raspe, Robert Casties, 9.2.2011
+  Martin Raspe, Robert Casties, 9.2.2011 - 26.3.2012
+
 */
 
 /**
  * digilib SVG plugin (measuring tool for use within the digilib jQuery plugin)
 **/ 
 
-
 /* jslint browser: true, debug: true, forin: true
 */
-
-// fallback for console.log calls
-if (typeof(console) === 'undefined') {
-    var console = {
-        log : function(){}, 
-        debug : function(){}, 
-        error : function(){}
-        };
-    var customConsole = true;
-}
 
 (function($) {
 

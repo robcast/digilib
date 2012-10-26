@@ -22,15 +22,20 @@ div.dl-digilib div.dl-scaler {
 	height: 0px;
 }
 
+div.dl-digilib div.dl-area {
+    display: none;
+	position: absolute;
+	border: 2px solid #ff0000;
+}
+
+div.dl-digilib div.dl-areaoverlay {
+	position: absolute;
+	z-index: 100;
+}
+
 div.dl-digilib div.dl-birdview {
 	border: 1px solid white;
 	z-index: 10;
-}
-
-div.dl-digilib div.dl-zoomrect {
-	position: absolute;
-	border: 2px solid #ff0000;
-	z-index: 100;
 }
 
 div.dl-digilib div.dl-birdzoom {
@@ -81,6 +86,7 @@ div.dl-digilib div.dl-about {
 
 div.dl-digilib div.dl-region {
 	position: absolute;
+	border: none;
     color: white;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size: 11px;
@@ -101,6 +107,12 @@ div.dl-digilib div.dl-region:hover {
 	opacity: 0.6;
     /* do we still need this IE6-stuff? */
 	filter:progid:DXImageTransform.Microsoft.Alpha(opacity=60); 
+}
+
+div.dl-digilib div.dl-regionArea {
+	background-color: red;
+	border: none;
+    opacity: 0.3;
 }
 
 div.dl-digilib div.dl-regionHTML {
@@ -125,8 +137,8 @@ div.dl-digilib map.dl-regioncontent {
 
 div.dl-digilib div.dl-findregion {
 	background-color: transparent;
-	border: 2px solid lightcyan;
-	opacity: 1.0;
+	border: 5px solid orange;
+	opacity: 0.8;
 }
 
 div.dl-digilib #dl-calibration {
@@ -135,7 +147,7 @@ div.dl-digilib #dl-calibration {
 	border: 2px solid lightcyan;
 	width: 400px;
 	display: none;
-	z-index: 9999;
+	z-index: 100;
 	}
 
 div.dl-digilib #dl-ruler {
@@ -288,20 +300,6 @@ div.dl-info {
 
 div.dl-infoheader {
     margin-bottom: 20px;
-}
-
-/* annotations */
-div.dl-digilib div.dl-annotationbody {
-     background-color: yellow;
-     border-radius: 5px;  
-}
-div.dl-digilib div.dl-annotationbody div.dl-text {
-    padding: 10px;
-}
-div.dl-digilib div.dl-annotationbody div.dl-creator {
-    color: gray;
-    padding: 5px;
-    border-top: 1px solid silver;
 }
 
 /* scroll arrows */
