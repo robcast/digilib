@@ -29,23 +29,23 @@
         </load-on-startup>
   </servlet>
   <!-- The Texter servlet -->
-  <servlet>
+<!--  <servlet>
         <servlet-name>
             Texter
         </servlet-name>
         <servlet-class>
             digilib.servlet.Texter
         </servlet-class>
-  </servlet>
+</servlet> -->
   <!-- The PDFCache servlet -->
-  <servlet>
+<!--  <servlet>
         <servlet-name>
             PDFCache
         </servlet-name>
         <servlet-class>
             digilib.servlet.PDFCache
         </servlet-class>
-  </servlet>
+  </servlet> -->
   <!-- The mapping for the Scaler servlet -->
   <servlet-mapping>
         <servlet-name>
@@ -72,7 +72,7 @@
         </url-pattern>
   </servlet-mapping>
   <!-- The mapping for the Texter servlet -->
-  <servlet-mapping>
+<!--  <servlet-mapping>
         <servlet-name>
             Texter
         </servlet-name>
@@ -87,9 +87,9 @@
         <url-pattern>
             /authenticated/servlet/Texter/*
         </url-pattern>
-  </servlet-mapping>
+  </servlet-mapping> -->
   <!-- The mapping for the Texter servlet -->
-  <servlet-mapping>
+<!--  <servlet-mapping>
         <servlet-name>
             PDFCache
         </servlet-name>
@@ -104,7 +104,7 @@
         <url-pattern>
             /authenticated/servlet/PDFCache/*
         </url-pattern>
-  </servlet-mapping>
+  </servlet-mapping> -->
   <!-- region for authenticated access -->
   <security-constraint>
         <web-resource-collection>
