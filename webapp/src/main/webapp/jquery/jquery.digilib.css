@@ -162,6 +162,20 @@ div.dl-digilib #dl-ruler {
 	background: url('img/ruler-top.gif') 0px -1px repeat-x;
 	}
 
+/* annotations */
+div.dl-digilib div.dl-annotationbody {
+     background-color: yellow;
+     border-radius: 5px;
+}
+div.dl-digilib div.dl-annotationbody div.dl-text {
+    padding: 10px;
+}
+div.dl-digilib div.dl-annotationbody div.dl-creator {
+    color: gray;
+    padding: 5px;
+    border-top: 1px solid silver;
+}
+	
 div.dl-digilib #dl-cm {
 	padding: 5px;
 	}
