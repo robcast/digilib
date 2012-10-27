@@ -3,6 +3,11 @@
  *
  * Martin Raspe, Robert Casties, 11.1.2011
  */
+* {
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
 
 div.dl-digilib .dl-disabled {
     display: none;
@@ -135,10 +140,19 @@ div.dl-digilib map.dl-regioncontent {
     display: none;
 }
 
+div.dl-digilib div.dl-highlightregion {
+	border: 5px solid orange;
+	opacity: 0.8;
+}
+
 div.dl-digilib div.dl-findregion {
 	background-color: transparent;
 	border: 5px solid orange;
 	opacity: 0.8;
+}
+
+div.dl-digilib select.dl-finddata {
+    font-size: 11px;
 }
 
 div.dl-digilib #dl-calibration {

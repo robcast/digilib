@@ -40,7 +40,7 @@ inner (optional)
 
 */
 
-(function($) {
+(function ($) {
     // the digilib object
     var digilib = null;
     // the normal zoom area
@@ -122,6 +122,8 @@ inner (optional)
         'rg' : null,
         // array with region data
         'regions' : null,
+        // function for extracting the sort string (for the region search window)
+        'regionSortString' : null,
         // region attributes to copy from HTML
         'regionAttributes' : {
             'id'    :1,
@@ -137,12 +139,12 @@ inner (optional)
     var actions = { 
 
         // define a region interactively with two clicked points
-        defineUserRegion : function(data) {
+        defineUserRegion : function (data) {
             if (!data.settings.isRegionVisible) {
                 alert("Please turn on regions visibility!");
                 return;
             }
-            var onComplete = function(data, rect) {
+            var onComplete = function (data, rect) {
                 if (rect == null) return;
                 var count = getRegions(data, 'regionURL').length;
                 var attr = {'class' : CSS+'regionURL '+CSS+'overlay'};
@@ -156,17 +158,26 @@ inner (optional)
             fn.defineArea(data, onComplete, CSS+'regionArea');
         },
 
-        // remove the last added URL region
+        // remove all findregions or the last added user-defined region
         removeUserRegion : function (data) {
             if (!data.settings.isRegionVisible) {
                 alert("Please turn on regions visibility!");
                 return;
             }
-            var selector = 'div.'+CSS+'regionURL';
-            var $regionDiv = data.$elem.find(selector).last();
-            if ($regionDiv.length == 0) return;
-            $regionDiv.remove();
-            redisplay(data);
+            var selector = 'div.'+CSS+'findregion';
+            var $regions = data.$elem.find(selector);
+            if ($regions.length > 0) {
+                $regions.remove();
+                redisplay(data);
+                return;
+            }
+            selector = 'div.'+CSS+'regionURL';
+            var $region = data.$elem.find(selector).last();
+            if ($region.length > 0) {
+                $regionDiv.remove();
+                redisplay(data);
+                return;
+            }
         },
 
         // remove all manually added regions (defined through URL "rg" parameter)
@@ -175,7 +186,7 @@ inner (optional)
                 alert("Please turn on regions visibility!");
                 return;
             }
-            var selector = 'div.'+CSS+'regionURL';
+            var selector = 'div.'+CSS+'regionURL, div.'+CSS+'findregion';
             var $regionDivs = data.$elem.find(selector);
             if ($regionDivs.length == 0) return;
             $regionDivs.remove();
@@ -195,6 +206,8 @@ inner (optional)
             var $elem = data.$elem;
             var infoSelector = '#'+CSS+'regionInfo';
             if (fn.isOnScreen(data, infoSelector)) return; // already onscreen
+            var $regions = getRegions(data, 'regionURL');
+            if ($regions.length == 0) return; // no user regions available
             var html = '\
                 <div id="'+CSS+'regionInfo" class="'+CSS+'keep '+CSS+'regionInfo">\
                     <table class="'+CSS+'infoheader">\
@@ -209,12 +222,11 @@ inner (optional)
                 </div>';
             $info = $(html);
             $info.appendTo($elem);
-            var $regions = getRegions(data, 'regionURL');
             $info.append(regionInfoHTML(data, $regions));
             $info.append(regionInfoSVG(data, $regions));
             $info.append(regionInfoCSV(data, $regions));
             $info.append(regionInfoDigilib(data, $regions));
-            var bind = function(name) {
+            var bind = function (name) {
                 $info.find('.'+name).on('click.regioninfo', function () {
                     $info.find('div.'+CSS+'info').hide();
                     $info.find('div.'+CSS+name).show();
@@ -301,7 +313,7 @@ inner (optional)
                     <div>coordinates to find:</div>\
                     <form class="'+CSS+'form">\
                         <div>\
-                            <input class="'+CSS+'input" name="coords" type="text" size="30" maxlength="40"/> \
+                            <input class="'+CSS+'input" name="coords" type="text" size="30"/> \
                         </div>\
                         <input class="'+CSS+'submit" type="submit" name="sub" value="Ok"/>\
                         <input class="'+CSS+'cancel" type="button" value="Cancel"/>\
@@ -342,11 +354,12 @@ inner (optional)
                     <div>text to find:</div>\
                     <form class="'+CSS+'form">\
                         <div>\
-                            <select class="'+CSS+'findData">\
+                            <select class="'+CSS+'finddata">\
+                            <option/>\
                             '+textOptions+'\
                             </select>\
                         </div>\
-                        <input class="'+CSS+'input" name="data" type="text" size="30" maxlength="40"/> \
+                        <input class="'+CSS+'input" name="data" type="text" size="30" /> \
                         <input class="'+CSS+'submit" type="submit" name="sub" value="Ok"/>\
                         <input class="'+CSS+'cancel" type="button" value="Cancel"/>\
                     </form>\
@@ -356,15 +369,46 @@ inner (optional)
             var $form = $info.find('form');
             var $input = $info.find('input.'+CSS+'input');
             var $select = $info.find('select');
+            var $options = $select.find('option');
+            // callback if a region is selected by name
             var findRegion = function () {
                 var coords = $select.val();
                 actions.regionFromCoords(data, coords);
                 fn.withdraw($info);
                 return false;
                 };
+            // adapt dropdown, show only matching entries 
+            var filterOptions = function (text) {
+                if (!text) {
+                    $options.show();
+                    $select.prop("selectedIndex", 0);
+                    return;
+                    }
+                var first = true;
+                $options.each(function (index) {
+                    var $option = $(this);
+                    // TODO: more sophisticated matching
+                    if ($option.text().indexOf(text) > 1) {
+                        $option.show();
+                        if (first) {
+                            $select.prop("selectedIndex", index);
+                            first = false;
+                        }
+                    } else {
+                        if (index > 0) $option.hide();
+                    }
+                    if (first) {
+                        $select.prop("selectedIndex", 0);
+                        }
+                    });
+                };
             // handle submit
             $form.on('submit', findRegion);
             $select.on('change', findRegion);
+            $input.on('keyup', function (event) {
+                // ugly: we need setTimeout here to get an updated val();
+                window.setTimeout(filterOptions, 50, $input.val());
+                });
             // handle cancel
             $form.find('.'+CSS+'cancel').on('click', function () {
                 fn.withdraw($info);
@@ -453,7 +497,7 @@ inner (optional)
         // store the coordinates in data
         $regionDiv.data('rect', item.rect);
         // trigger a region event on click
-        $regionDiv.on('click.dlRegion', function(evt) {
+        $regionDiv.on('click.dlRegion', function (event) {
             $(data).trigger('regionClick', [$regionDiv]);
             });
         return $regionDiv;
@@ -461,7 +505,7 @@ inner (optional)
 
     // create regions from a Javascript array of items
     var createRegionsFromJS = function (data, items) {
-        $.each(items, function(index, item) {
+        $.each(items, function (index, item) {
             addRegionDiv(data, item);
             });
     };
@@ -478,7 +522,7 @@ inner (optional)
         // regions are defined in "area" tags
         var $areas = data.$elem.find(data.settings.areaSelector);
         console.debug("createRegionsFromHTML - elems found: ", $areas.length);
-        $areas.each(function(index, area) {
+        $areas.each(function (index, area) {
             var $area = $(area);
             // the "title" attribute contains the text for the tooltip
             var title = $area.attr('title');
@@ -515,36 +559,41 @@ inner (optional)
         return $regions;
     };
 
-    // make text data options html
+    // make HTML option from regions text data
     var getTextOptions = function (data, selector) {
-        var createOption = function(item, index) {
-            var $item = $(item);
-            var rect = $item.data('rect');
+        var sortfunc = data.settings.regionSortString;
+        var options = [];
+        var createOption = function (index, region) {
+            var $region = $(region);
+            var rect = $region.data('rect');
             if (rect == null)
                 return null;
             var coords = packCoords(rect, ',');
-            var text = $item.data('text');
-            return '<option value="'+coords+'">'+text+'</option>';
+            var text = $region.data('text');
+            var sortstring = $region.data('sort')
+                || (typeof sortfunc === 'function')
+                ? sortfunc(text)
+                : text;
+            var option = '<option value="'+coords+'">'+text+'</option>';
+            options.push([sortstring, option]);
             };
         var $regions = getRegions(data, selector);
-        var options = $.map($regions, createOption);
-        return options.join('');
-    };
-
-    // list of HTML regions matching text in its title attribute
-    var matchRegionText = function (data, text) {
-        var $regions = getRegions(data, 'regionHTML');
-        var re = new RegExp(text);
-        return $.grep($regions, function($item, index) {
-            return re.match($item.data('text'));
+        $.each($regions, createOption);
+        options.sort(function (a, b) {
+            return a[0].localeCompare(b[0]);
             });
+        var sorted = $.map(options, function (str, index) {
+            return str[1];
+            });
+        // prepend an empty option
+        return sorted.join('');
     };
 
     // html for later insertion
     var regionInfoHTML = function (data, $regions) {
         var $infoDiv = $('<div class="'+CSS+'info '+CSS+'html"/>');
         $infoDiv.append($('<div/>').text('<map class="'+CSS+'keep '+CSS+'regioncontent">'));
-        $regions.each(function(index, region) {
+        $regions.each(function (index, region) {
             var rect = $(region).data('rect');
             var coords = packCoords(rect, ',');
             $infoDiv.append($('<div/>').text('<area coords="' + coords + '"/>'));
@@ -556,7 +605,7 @@ inner (optional)
     // SVG-style
     var regionInfoSVG = function (data, $regions) {
         var $infoDiv = $('<div class="'+CSS+'info '+CSS+'svgattr"/>');
-        $regions.each(function(index, region) {
+        $regions.each(function (index, region) {
             var rect = $(region).data('rect');
             var coords = packCoords(rect, ',');
             $infoDiv.append($('<div/>').text('"' + coords + '"'));
@@ -567,7 +616,7 @@ inner (optional)
     // CSV-style
     var regionInfoCSV = function (data, $regions) {
         var $infoDiv = $('<div class="'+CSS+'info '+CSS+'csv"/>');
-        $regions.each(function(index, region) {
+        $regions.each(function (index, region) {
             var rect = $(region).data('rect');
             var coords = packCoords(rect, ',');
             $infoDiv.append($('<div/>').text(index+1 + ": " + coords));
@@ -578,7 +627,7 @@ inner (optional)
     // digilib-style (h,w@x,y)
     var regionInfoDigilib = function (data, $regions) {
         var $infoDiv = $('<div class="'+CSS+'info '+CSS+'digilib"/>');
-        $regions.each(function(index, region) {
+        $regions.each(function (index, region) {
             var rect = $(region).data('rect');
             var coords = packCoords(rect, ',');
             $infoDiv.append($('<div/>').text(coords));
@@ -614,7 +663,7 @@ inner (optional)
 
     // show regions 
     var renderRegions = function (data, anim) {
-        var render = function(index, region) {
+        var render = function (index, region) {
             renderRegion(data, $(region), anim);
             };
         var $regions = getRegions(data, 'region')
@@ -626,7 +675,7 @@ inner (optional)
         var rg = data.settings.rg;
         if (rg == null) return [];
         var coords = rg.split(",");
-        var regions = $.map(coords, function(coord, index) {
+        var regions = $.map(coords, function (coord, index) {
             var pos = coord.split("/", 4);
             var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
             var attr = {'class' : CSS+"regionURL "+CSS+"overlay"};
@@ -643,7 +692,7 @@ inner (optional)
             data.settings.rg = null;
             return;
         }
-        var pack = function(region, index) {
+        var pack = function (region, index) {
             var $region = $(region);
             var rect = $region.data('rect');
             var packed = packCoords(rect, '/');
@@ -656,8 +705,8 @@ inner (optional)
     };
 
     // zoom to the region coordinates
-    var zoomToRegion = function (data, region) {
-        digilib.actions.zoomArea(data, region);
+    var zoomToRegion = function (data, rect) {
+        digilib.actions.zoomArea(data, rect);
     };
 
     // reload display after a region has been added or removed
@@ -747,7 +796,7 @@ inner (optional)
     };
 
     // plugin installation called by digilib on plugin object.
-    var install = function(plugin) {
+    var install = function (plugin) {
         digilib = plugin;
         console.debug('installing regions plugin. digilib:', digilib);
         // import digilib functions
