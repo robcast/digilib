@@ -141,6 +141,7 @@ div.dl-digilib map.dl-regioncontent {
 }
 
 div.dl-digilib div.dl-highlightregion {
+	background-color: transparent;
 	border: 5px solid orange;
 	opacity: 0.8;
 }

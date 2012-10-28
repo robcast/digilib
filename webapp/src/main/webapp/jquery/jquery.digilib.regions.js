@@ -56,6 +56,8 @@ inner (optional)
     var geom = null;
     // convenience variable, set in init()
     var CSS = '';
+    // generate ids
+    var IDCOUNT = 20000;
 
     var buttons = {
         defineregion : {
@@ -112,6 +114,8 @@ inner (optional)
         'onNewRegion' : null,
         // turn any region into a clickable link to its detail view (DEPRECATED)
         'autoZoomOnClick' : false,
+        // zoom in when displaying the found region
+        'autoZoomOnFind' : false,
         // css selector for area/a elements (must also be marked with class "dl-keep")
         'areaSelector' : 'map.dl-regioncontent area, map.dl-regioncontent a',
         // general buttonset of this plugin
@@ -164,13 +168,22 @@ inner (optional)
                 alert("Please turn on regions visibility!");
                 return;
             }
-            var selector = 'div.'+CSS+'findregion';
-            var $regions = data.$elem.find(selector);
-            if ($regions.length > 0) {
-                $regions.remove();
+            // remove highlights
+            var selector = 'div.'+CSS+'highlightregion';
+            var $highlights = data.$elem.find(selector);
+            if ($highlights.length > 0) {
+                $highlights.removeClass(CSS+'highlightregion');
+                return;
+            }
+            // remove findregion divs
+            selector = 'div.'+CSS+'findregion';
+            var $findregions = data.$elem.find(selector);
+            if ($findregions.length > 0) {
+                $findregions.remove();
                 redisplay(data);
                 return;
             }
+            // remove most recently added user region
             selector = 'div.'+CSS+'regionURL';
             var $region = data.$elem.find(selector).last();
             if ($region.length > 0) {
@@ -248,7 +261,7 @@ inner (optional)
             fn.centerOnScreen(data, $info);
         },
 
-        // display region coordinates in an edit line
+        // display region coordinates in a selected edit line (for copying)
         showRegionCoords : function (data, $regionDiv) {
             var $elem = data.$elem;
             var rect = $regionDiv.data('rect');
@@ -303,6 +316,14 @@ inner (optional)
             redisplay(data);
             },
 
+        // highlight regions by id
+        highlightRegions : function (data, ids) {
+            if (ids == null || ids.length < 1) return;
+            var selector = '#'+ids.join(',#');
+            var $regions = data.$elem.find(selector);
+            $regions.addClass(CSS+'highlightregion');
+            },
+
         // find coordinates and display as new region
         findCoords : function (data) {
             var $elem = data.$elem;
@@ -343,7 +364,7 @@ inner (optional)
             $input.focus();
         },
 
-        // find text data and display as new region
+        // find a region by text data and higlight it
         findData : function (data) {
             var $elem = data.$elem;
             var findSelector = '#'+CSS+'regionFindData';
@@ -372,14 +393,15 @@ inner (optional)
             var $options = $select.find('option');
             // callback if a region is selected by name
             var findRegion = function () {
-                var coords = $select.val();
-                actions.regionFromCoords(data, coords);
+                var id = [$select.val()];
+                actions.highlightRegions(data, id);
                 fn.withdraw($info);
                 return false;
                 };
             // adapt dropdown, show only matching entries 
             var filterOptions = function (text) {
                 if (!text) {
+                    // not text, display all options, select first (empty)
                     $options.show();
                     $select.prop("selectedIndex", 0);
                     return;
@@ -388,7 +410,7 @@ inner (optional)
                 $options.each(function (index) {
                     var $option = $(this);
                     // TODO: more sophisticated matching
-                    if ($option.text().indexOf(text) > 1) {
+                    if (matchText($option.text(), text)) {
                         $option.show();
                         if (first) {
                             $select.prop("selectedIndex", index);
@@ -397,7 +419,7 @@ inner (optional)
                     } else {
                         if (index > 0) $option.hide();
                     }
-                    if (first) {
+                    if (first) { // no hit, display and select empty option
                         $select.prop("selectedIndex", 0);
                         }
                     });
@@ -407,7 +429,10 @@ inner (optional)
             $select.on('change', findRegion);
             $input.on('keyup', function (event) {
                 // ugly: we need setTimeout here to get an updated val();
-                window.setTimeout(filterOptions, 50, $input.val());
+                window.setTimeout(filterOptions, 100, $input.val());
+                if (event.keyCode == '38' || event.keyCode == '40') { // arrows
+                    $select.focus();
+                }
                 });
             // handle cancel
             $form.find('.'+CSS+'cancel').on('click', function () {
@@ -418,6 +443,19 @@ inner (optional)
             $input.focus();
         }
     };
+
+    // match search text
+    var matchText = function (optiontext, text) {
+        // sanitize and split
+        var parts = text.replace(/([\\\(\)\-\!.+?*])/g, '\\$1').split(/\s+/);
+        // match all parts anywhere in optiontext
+        var regexparts = $.map(parts, function(part) {
+            return '(?=.*'+part+')'; // one lookahead for each part
+            });
+        var RE = new RegExp(regexparts.join(''), 'i');
+        var result = optiontext.match(RE);
+        return result;
+        };
 
     // make a coords string
     var packCoords = function (rect, sep) {
@@ -471,6 +509,11 @@ inner (optional)
         }
         if (attributes['title']) {
             $regionDiv.data('text', attributes['title']);
+        }
+        // create an ID if none exists
+        if (!attributes['id']) {
+            attributes['id'] = CSS+IDCOUNT.toString(16);
+            IDCOUNT += 1;
         }
         $regionDiv.attr(attributes);
     };
@@ -568,13 +611,14 @@ inner (optional)
             var rect = $region.data('rect');
             if (rect == null)
                 return null;
-            var coords = packCoords(rect, ',');
+            // var coords = packCoords(rect, ',');
+            var id = $region.attr('id');
             var text = $region.data('text');
             var sortstring = $region.data('sort')
                 || (typeof sortfunc === 'function')
                 ? sortfunc(text)
                 : text;
-            var option = '<option value="'+coords+'">'+text+'</option>';
+            var option = '<option value="'+id+'">'+text+'</option>';
             options.push([sortstring, option]);
             };
         var $regions = getRegions(data, selector);
