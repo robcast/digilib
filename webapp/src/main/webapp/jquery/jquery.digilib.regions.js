@@ -304,15 +304,8 @@ inner (optional)
             var attr = { 'class' : CSS+'findregion' };
             var item = { 'rect' : rect, 'attributes' : attr };
             var $regionDiv = addRegionDiv(data, item);
-            var za = data.zoomArea;
-            if (!fn.isFullArea(za)) {
-                za.setCenter(rect.getCenter()).stayInside(FULL_AREA);
-                if (!za.containsRect(rect)) {
-                    za = FULL_AREA.copy();
-                    }
-                fn.setZoomArea(data, za);
-                }
-            console.debug('regionFromCoords', coords, rect, za);
+            var newZoomArea = fn.centerZoomArea(data, rect);
+            console.debug('regionFromCoords', coords, rect, newZoomArea);
             redisplay(data);
             },
 
@@ -322,6 +315,11 @@ inner (optional)
             var selector = '#'+ids.join(',#');
             var $regions = data.$elem.find(selector);
             $regions.addClass(CSS+'highlightregion');
+            if (ids.length == 1) {
+                var rect = $regions.data('rect');
+                fn.centerZoomArea(data, rect);
+                redisplay(data);
+            }
             },
 
         // find coordinates and display as new region
@@ -394,8 +392,8 @@ inner (optional)
             // callback if a region is selected by name
             var findRegion = function () {
                 var id = [$select.val()];
-                actions.highlightRegions(data, id);
                 fn.withdraw($info);
+                actions.highlightRegions(data, id);
                 return false;
                 };
             // adapt dropdown, show only matching entries 
@@ -594,6 +592,8 @@ inner (optional)
             var item = {'rect' : rect, 'attributes' : attr, 'inner' : $inner};
             var $regionDiv = addRegionDiv(data, item);
         });
+        // $areas.removeAttr('id');
+        $areas.remove();
     };
 
     // select region divs (HTML or URL)

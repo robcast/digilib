@@ -1441,6 +1441,18 @@ if (typeof console === 'undefined') {
         data.zoomArea = za;
     };
 
+    /** move the zoom area and center it on rectangle "rect"
+     */
+    var centerZoomArea = function(data, rect) {
+        var za = data.zoomArea;
+        if (isFullArea(za)) return;
+        za.setCenter(rect.getCenter()).stayInside(FULL_AREA);
+        if (!za.containsRect(rect)) {
+            za = FULL_AREA.copy();
+            }
+        setZoomArea(data, za);
+    };
+
     /** get image quality as a number (0..2).
      * 
      */
@@ -1695,6 +1707,7 @@ if (typeof console === 'undefined') {
             showDiv : showDiv,
             defineArea : defineArea,
             setZoomArea : setZoomArea,
+            centerZoomArea : centerZoomArea,
             setPreviewBg : setPreviewBg,
             getImgTrafo : getImgTrafo,
             getQuality : getQuality,
