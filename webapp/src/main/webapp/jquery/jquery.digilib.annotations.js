@@ -69,16 +69,24 @@
         /**
          * set user account for annotations
          */
-        setAnnotationUser : function (data, user) {
+        setAnnotationUser : function (data, user, password) {
             var settings = data.settings;
             if (user == null) {
                 // user name entered in JS-prompt
                 user = window.prompt("User name:", settings.annotationUser);
                 if (user != null) {
+                    // password entered in JS-prompt
+                    password = window.prompt("Password:", '');
                     settings.annotationUser = user;
+                    data.dlOpts.annotationUser = user;
+                    digilib.fn.storeOptions(data);
+                    loadAnnotationToken(data, password);
                 }
             } else {
                 settings.annotationUser = user;
+                data.dlOpts.annotationUser = user;
+                digilib.fn.storeOptions(data);
+                loadAnnotationToken(data, password);
             }
         },
 
@@ -163,6 +171,8 @@
             return;
         var cssPrefix = data.settings.cssPrefix;
         var $elem = data.$elem;
+        // try to show annotation user state
+        $elem.find('div#'+cssPrefix+'button-annotationuser').attr('title', 'annotation user: '+data.settings.annotationUser);
         var annotations = data.annotations;
         console.debug("renderAnnotations: annotations=", annotations);
         // clear annotations
@@ -205,15 +215,28 @@
      * 
      * Stores the token and loads annotations on success.
      */
-    var loadAnnotationToken = function(data) {
+    var loadAnnotationToken = function(data, password) {
         var settings = data.settings;
         var url = settings.annotationTokenUrl;
+        var params = {'user': settings.annotationUser};
+        if (password != null) {
+            params.password = password;
+        }
         // TODO: better error handling
-        $.get(url, function(authToken, authStatus) {
-            console.debug("got auth token data=", authToken);
-            data.annotationToken = authToken;
-            loadAnnotations(data);
-        });
+        $.post(url, params)
+            .done(function (authToken, authStatus) {
+                console.debug("got auth token data=", authToken);
+                data.annotationToken = authToken;
+                data.dlOpts.annotationToken = authToken;
+                digilib.fn.storeOptions(data);
+                loadAnnotations(data);
+            })
+            .fail(function (xhr, status) {
+                console.error("got auth token error:", xhr);
+                data.annotationToken = null;
+                data.settings.annotationUser = "anonymous";
+                loadAnnotations(data);
+            });
     };
 
     /**
@@ -225,9 +248,10 @@
         var url = settings.annotationServerUrl + '/search';
         var pageUrl = getAnnotationPageUrl(data);
         // send authentication token in header
-        headers = {
-            'x-annotator-auth-token' : data.annotationToken
-        };
+        headers = {};
+        if (data.annotationToken != null) {
+            headers['x-annotator-auth-token'] = data.annotationToken;
+        }
         // get only 20 annotations with this url
         var query = {
             limit : 20,
@@ -356,6 +380,14 @@
         if (digilib.plugins.buttons != null) {
             installButtons(data);
         }
+        if (data.dlOpts.annotationUser != null) {
+            // get annotation user from cookie
+            data.settings.annotationUser = data.dlOpts.annotationUser;
+        }
+        if (data.dlOpts.annotationToken != null) {
+            // get annotation token from cookie
+            data.annotationToken = data.dlOpts.annotationToken;
+        }
         // install event handler
         $data.bind('setup', handleSetup);
         $data.bind('update', handleUpdate);
@@ -368,7 +400,11 @@
         console.debug("annotations: handleSetup");
         var data = this;
         // load annotations from server
-        loadAnnotationToken(data);
+        if (data.annotationToken !=  null) {
+            loadAnnotations(data);
+        } else {
+            loadAnnotationToken(data);        
+        }
     };
 
     /**
