@@ -126,6 +126,13 @@
             var dy = pos.y - this.y;
             return Math.sqrt(dx * dx + dy * dy);
         };
+        // returns position in css-compatible format
+        that.getAsCss = function() {
+            return {
+                left : this.x,
+                top : this.y,
+            };
+        };
         that.toString = function() {
             return (this.x + "," + this.y);
         };
