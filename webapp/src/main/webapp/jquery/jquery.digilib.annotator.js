@@ -177,7 +177,7 @@
     /**
      * place annotations on the image
      */
-    var renderAnnotations = function(data) {
+    var renderAnnotations = function (data) {
         console.debug("renderAnnotations: annotator=", annotator);
         if (annotator == null || data.$img == null || data.imgTrafo == null)
             return;
@@ -191,19 +191,20 @@
         if (!data.settings.isAnnotationsVisible) return;
         for (var i = 0; i < annotations.length; i++) {
             var annotation = annotations[i];
-            renderAnnotation(data, annotation);
+            renderAnnotation(data, annotation, i+1);
         }
     };
 
     /**
      * place annotation on the image
      */
-    var renderAnnotation = function(data, annotation) {
+    var renderAnnotation = function (data, annotation, idx) {
         console.debug("renderAnnotation: annotation=", annotation);
         if (annotation == null || data.$img == null || data.imgTrafo == null)
             return;
         var cssPrefix = data.settings.cssPrefix;
         var $elem = data.$elem;
+        if (idx == null) idx = '?';
         // try to show annotation user state
         $elem.find('div#'+cssPrefix+'button-annotationuser').attr('title', 'annotation user: '+data.settings.annotationUser);
         if (!data.settings.isAnnotationsVisible) return;
@@ -212,11 +213,14 @@
             var mpos = data.imgTrafo.transform(pos);
             console.debug("renderannotations: pos=", mpos);
             // create annotation
-            var html = '<div class="' + cssPrefix + 'annotationmark ' + cssPrefix + 'overlay">?</div>';
-            // set text as tooltip
+            var html = '<div class="'+cssPrefix+'annotationmark '+cssPrefix+'overlay annotator-hl">'+idx+'</div>';
             var $annotation = $(html);
-            $annotation.attr('title', "Annotation: " + annotation.text);
+            $annotation.data('annotation', annotation);
+            // set text as tooltip
+            //$annotation.attr('title', "Annotation: " + annotation.text);
             $elem.append($annotation);
+            $annotation.on("mouseover", annotator.onHighlightMouseover);
+            $annotation.on("mouseout", annotator.startViewerHideTimer);
             mpos.adjustDiv($annotation);
         }
     };
