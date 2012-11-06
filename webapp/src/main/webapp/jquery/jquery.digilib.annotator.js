@@ -51,13 +51,18 @@
             return this.user;
         },
 
-        // Annotator plugin settings
+        // Annotator plugin settings (some values provided in handleSetup)
         'annotatorPlugins' : {
 	        //'Tags' : {},
 	        'Auth' : {
 	        	//token : data.annotationToken
 	            //tokenUrl: data.settings.annotationTokenUrl
-	            //autoFetch: false
+	            autoFetch: true,
+	            requestMethod: 'POST',
+	            requestData: {
+	            	//'user': data.settings.annotationUser,
+	            	//'password': data.annotationPassword
+	            }
             },
             'Permissions' : { 
             	//user: data.settings.annotationUser,
@@ -136,11 +141,7 @@
                 setAnnotationMark(data);
             } else {
                 // use position and text (and user-id)
-                var annotation = newAnnotation(data, mpos, text, null, null, data.settings.annotationUser);
-                storeAnnotation(data, annotation);
-                // TODO: replace with annotation returned by server
-                data.annotations.push(annotation);
-                digilib.fn.redisplay(data);
+                console.error("Currently only interactive annotations!");
             }
         },
     };
@@ -358,9 +359,9 @@
     var handleSetup = function(evt) {
         console.debug("annotations: handleSetup");
         var data = this;
-        if (data.annotationToken ==  null) {
+        /* if (data.annotationToken ==  null) {
             loadAnnotationToken(data);        
-        }
+        } */
         // set up annotator (after html has been set up)
         var uri = getAnnotationPageUrl(data);
         var annotator = new Annotator(data.$elem.get(0));
@@ -369,7 +370,7 @@
         	'Auth' : {
         		'token' : data.annotationToken,
         		'tokenUrl' : data.settings.annotationTokenUrl,
-        		'autoFetch' : false
+        		'autoFetch' : true
         	},
         	'Permissions' : {
         		'user' : data.settings.annotationUser
