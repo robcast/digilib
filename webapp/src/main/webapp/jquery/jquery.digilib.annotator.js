@@ -108,24 +108,26 @@
          * set user account for annotations
          */
         setAnnotationUser : function (data, user, password) {
-            var settings = data.settings;
-            if (user == null) {
-                // user name entered in JS-prompt
-                user = window.prompt("User name:", settings.annotationUser);
-                if (user != null) {
-                    // password entered in JS-prompt
-                    password = window.prompt("Password:", '');
-                    settings.annotationUser = user;
-                    data.dlOpts.annotationUser = user;
-                    digilib.fn.storeOptions(data);
-                    loadAnnotationToken(data, password);
-                }
-            } else {
-                settings.annotationUser = user;
-                data.dlOpts.annotationUser = user;
-                digilib.fn.storeOptions(data);
-                loadAnnotationToken(data, password);
-            }
+        	var annotator = data.annotator;
+        	var auth = annotator.plugins.Auth;
+        	if (auth == null) {
+        		console.error("setAnnotationUser: No Auth plugin!!");
+        		return;
+        	}
+        	setAnnotationUser(data, auth, user, password);
+        	// get new token
+        	auth.token = null;
+        	auth._unsafeToken = null;
+        	auth.requestToken();
+        	// save new token in cookie
+        	auth.withToken(function (tkn) {
+        		data.dlOpts.annotationToken = auth.token;
+		        digilib.fn.storeOptions(data);
+	        	// reload annotations
+        		data.annotations = [];
+        		renderAnnotations(data);
+        		annotator.plugins.Store.pluginInit();
+        	});
         },
 
         /**
@@ -155,6 +157,39 @@
         return url;
     };
     
+    /**
+     * sets annotation user and password in digilib and Annotator.Auth plugin.
+     * auth is Auth plugin instance.
+     */
+	var setAnnotationUser = function (data, auth, user, password) {
+		if (user == null) {
+	        // user name entered in JS-prompt
+	        user = window.prompt("Please authenticate: User name", data.settings.annotationUser);
+	        if (user != null && user != 'anonymous') {
+	            // password entered in JS-prompt
+	            password = window.prompt("Please authenticate: Password", '');
+	            // set params for Auth plugin
+	         	auth.options.requestData.password = password;   
+	        } else {
+	        	// use anonymous user
+	        	user = 'anonymous';
+	         	delete auth.options.requestData.password; 
+	        }
+        }
+        // set user in digilib
+        data.settings.annotationUser = user;
+        data.dlOpts.annotationUser = user;
+        digilib.fn.storeOptions(data);
+        // set params for Auth plugin
+        auth.options.requestData.user = user;
+        // set params for Permissions plugin
+        var perms = data.annotator.plugins.Permissions;
+        if (perms != null) {
+        	perms.options.user = user;
+        }
+   	};
+
+
     /**
      * add a mark-annotation where clicked.
      */
@@ -270,37 +305,19 @@
 			}
 		};
 	};
-			
-    /**
-     * Get an authentication token from the token server.
-     * 
-     * Stores the token and loads annotations on success.
-     */
-    var loadAnnotationToken = function(data, password) {
-    	return;
-        var settings = data.settings;
-        var url = settings.annotationTokenUrl;
-        var params = {'user': settings.annotationUser};
-        if (password != null) {
-            params.password = password;
-        }
-        // TODO: better error handling
-        $.post(url, params)
-            .done(function (authToken, authStatus) {
-                console.debug("got auth token data=", authToken);
-                data.annotationToken = authToken;
-                data.dlOpts.annotationToken = authToken;
-                digilib.fn.storeOptions(data);
-                //loadAnnotations(data);
-            })
-            .fail(function (xhr, status) {
-                console.error("got auth token error:", xhr);
-                data.annotationToken = null;
-                data.settings.annotationUser = "anonymous";
-                //loadAnnotations(data);
-            });
+		
+	/**
+	 * returns handleUnauthorized function for Annotator.Auth plugin.  
+	 */
+    var getHandleUnauthorized = function (data) {
+    	return function (auth) {
+    		// prompt for user name and set user
+    		setAnnotationUser(data, auth);
+            // then try again
+            return true;
+       	};
     };
-
+	
     /** 
      * install additional buttons 
      */
@@ -345,10 +362,6 @@
             // get annotation user from cookie
             data.settings.annotationUser = data.dlOpts.annotationUser;
         }
-        if (data.dlOpts.annotationToken != null) {
-            // get annotation token from cookie
-            data.annotationToken = data.dlOpts.annotationToken;
-        }
         // install event handler
         $data.bind('setup', handleSetup);
         $data.bind('update', handleUpdate);
@@ -360,27 +373,20 @@
     var handleSetup = function(evt) {
         console.debug("annotations: handleSetup");
         var data = this;
-        /* if (data.annotationToken ==  null) {
-            loadAnnotationToken(data);        
-        } */
         // set up annotator (after html has been set up)
         var uri = getAnnotationPageUrl(data);
         var annotator = new Annotator(data.$elem.get(0));
         // set plugin parameters
         var pluginParams = {
         	'Auth' : {
-        		'token' : data.annotationToken,
+        		'token' : data.dlOpts.annotationToken,
         		'tokenUrl' : data.settings.annotationTokenUrl,
         		'autoFetch' : true,
 	            'requestMethod' : 'POST',
 	            'requestData' : {
 	            	'user': data.settings.annotationUser,
-	            	'password': data.annotationPassword
 	            },
-	            'unauthorizedCallback' : function (that) {
-	            	window.alert("401");
-	            	return false;
-	            }
+	            'unauthorizedCallback' : getHandleUnauthorized(data)
         	},
         	'Permissions' : {
         		'user' : data.settings.annotationUser
@@ -410,6 +416,13 @@
         });
 		// save annotator reference		
         data.annotator = annotator;
+    	// save annotation token in cookie
+    	var auth = annotator.plugins.Auth;
+    	// save new token in cookie
+    	auth.withToken(function (tkn) {
+    		data.dlOpts.annotationToken = auth.token;
+	        digilib.fn.storeOptions(data);
+    	});
     };
 
     /**
