@@ -277,6 +277,7 @@
      * Stores the token and loads annotations on success.
      */
     var loadAnnotationToken = function(data, password) {
+    	return;
         var settings = data.settings;
         var url = settings.annotationTokenUrl;
         var params = {'user': settings.annotationUser};
@@ -370,7 +371,16 @@
         	'Auth' : {
         		'token' : data.annotationToken,
         		'tokenUrl' : data.settings.annotationTokenUrl,
-        		'autoFetch' : true
+        		'autoFetch' : true,
+	            'requestMethod' : 'POST',
+	            'requestData' : {
+	            	'user': data.settings.annotationUser,
+	            	'password': data.annotationPassword
+	            },
+	            'unauthorizedCallback' : function (that) {
+	            	window.alert("401");
+	            	return false;
+	            }
         	},
         	'Permissions' : {
         		'user' : data.settings.annotationUser
