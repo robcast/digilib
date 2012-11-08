@@ -178,17 +178,12 @@ div.dl-digilib #dl-ruler {
 	}
 
 /* annotations */
-div.dl-digilib div.dl-annotationbody {
-     background-color: yellow;
-     border-radius: 5px;
-}
-div.dl-digilib div.dl-annotationbody div.dl-text {
-    padding: 10px;
-}
-div.dl-digilib div.dl-annotationbody div.dl-creator {
-    color: gray;
-    padding: 5px;
-    border-top: 1px solid silver;
+div.dl-digilib div.dl-annotationregion {
+    background-color: rgba(255, 255, 10, 0.3);
+    border-radius: 5px;
+    border: 1px solid black;
+    padding: 2px 4px;
+    font-weight: bold;
 }
 	
 div.dl-digilib #dl-cm {

@@ -29,6 +29,11 @@
             onclick : "setAnnotationMark",
             tooltip : "create an annotation for a point",
             icon : "annotation-mark.png"
+        },
+        annotationregion : {
+            onclick : "setAnnotationRegion",
+            tooltip : "create an annotation for a region",
+            icon : "annotation-region.png"
         }
     };
 
@@ -36,7 +41,7 @@
         // are annotations active?
         'isAnnotationsVisible' : true,
         // buttonset of this plugin
-        'annotationSet' : ['annotations', 'annotationuser', 'annotationmark', 'lessoptions'],
+        'annotationSet' : ['annotations', 'annotationuser', 'annotationmark', 'annotationregion', 'lessoptions'],
         // URL of annotation server
         'annotationServerUrl' : 'http://virtuoso.mpiwg-berlin.mpg.de:8080/AnnotationManager/annotator',
         // URL of authentication token server
@@ -146,6 +151,23 @@
                 console.error("Currently only interactive annotations!");
             }
         },
+
+        /**
+         * set a region-annotation by clicking (or giving a position and a text)
+         *
+         * @param data
+         * @param mpos
+         * @param text
+         */
+        setAnnotationRegion : function (data, rect, text) {
+            if (rect == null) {
+                // interactive
+                setAnnotationRegion(data);
+            } else {
+                // use position and text (and user-id)
+                console.error("Currently only interactive annotations!");
+            }
+        }
     };
 
     /**
@@ -214,6 +236,25 @@
     };
 
     /**
+     * add a region-annotation where clicked.
+     */
+    var setAnnotationRegion = function(data) {
+        var annotator = data.annotator;
+        digilib.fn.defineArea(data, function (data, rect) {
+        	if (rect == null) return;
+            // event handler adding a new mark
+            console.log("setAnnotationRegion at=", rect);
+            // mark selected areas
+            annotator.selectedAreas = [rect];
+            // create and edit new annotation
+            var mpos = rect.getPt1();
+            var pos = data.imgTrafo.transform(mpos);
+            var annotation = annotator.createAnnotation();
+            annotator.showEditor(annotation, pos.getAsCss());
+        });
+    };
+
+    /**
      * place annotations on the image
      */
     var renderAnnotations = function (data) {
@@ -247,23 +288,34 @@
         var annotator = data.annotator;
         var annotation = annot.annotation;
         var idx = annot.idx ? annot.idx : '?';
-        var pos = geom.position(annotation.areas[0]);
-        if (data.zoomArea.containsPosition(pos)) {
-            var mpos = data.imgTrafo.transform(pos);
-            console.debug("renderannotations: pos=", mpos);
+        var area = geom.rectangle(annotation.areas[0]);
+        var screenRect = null;
+        var $annotation = null;
+        if (area.isRectangle()) {
+        	var clippedArea = data.zoomArea.intersect(area);
+        	if (clippedArea == null) return;
+            screenRect = data.imgTrafo.transform(clippedArea);
+            // console.debug("renderRegion: pos=",geom.position(screenRect));
+	        $annotation = $('<div class="'+cssPrefix+'annotationregion '+cssPrefix+'overlay annotator-hl">'+idx+'</div>');
+        	//addRegionAttributes(data, $regionDiv, attr);
+        } else {
+	        var pos = area.getPosition();
+	        if (!data.zoomArea.containsPosition(pos)) return;
+            var screenRect = data.imgTrafo.transform(pos);
+            console.debug("renderannotations: pos=", pos);
             // create annotation
             var html = '<div class="'+cssPrefix+'annotationmark '+cssPrefix+'overlay annotator-hl">'+idx+'</div>';
-            var $annotation = $(html);
-            // save annotation in data for Annotator
-            $annotation.data('annotation', annotation);
-            // save reference to div
-            annot.$div = $annotation;
-            $elem.append($annotation);
-            // hook up Annotator events
-            $annotation.on("mouseover", annotator.onHighlightMouseover);
-            $annotation.on("mouseout", annotator.startViewerHideTimer);
-            mpos.adjustDiv($annotation);
-        }
+            $annotation = $(html);
+	    }
+        // save annotation in data for Annotator
+        $annotation.data('annotation', annotation);
+        // save reference to div
+        annot.$div = $annotation;
+        $elem.append($annotation);
+        // hook up Annotator events
+        $annotation.on("mouseover", annotator.onHighlightMouseover);
+        $annotation.on("mouseout", annotator.startViewerHideTimer);
+        screenRect.adjustDiv($annotation);
     };
 
 	/**

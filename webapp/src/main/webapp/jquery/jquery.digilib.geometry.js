@@ -66,8 +66,8 @@
                 if (x.x != null) {
                     // position object
                     that = {
-                        x : x.x,
-                        y : x.y
+                        x : parseFloat(x.x),
+                        y : parseFloat(x.y)
                     };
                 }
                 if (x.pageX != null) {
@@ -156,10 +156,10 @@
             } else if (y == null) {
                 // assume x is rectangle
                 that = {
-                    x : x.x || 0,
-                    y : x.y || 0,
-                    width : x.width || 0,
-                    height : x.height || 0
+                    x : parseFloat(x.x) || 0,
+                    y : parseFloat(x.y) || 0,
+                    width : parseFloat(x.width) || 0,
+                    height : parseFloat(x.height) || 0
                 };
             } else {
                 // assume x and y are Position
@@ -345,6 +345,10 @@
         // returns position and size of this rectangle formatted for SVG attributes
         that.getAsSvg = function() {
             return [this.x, this.y, this.width, this.height].join(" ");
+        };
+        // returns if this rectangle is a rectangle
+        that.isRectangle = function () {
+        	return this.width > 0 && this.height > 0;
         };
         // returns size and position of this rectangle formatted for ??? (w x h@x,y)
         that.toString = function() {
