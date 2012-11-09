@@ -56,9 +56,10 @@
             return this.user;
         },
 
+		// list of Annotator plugins
+		'annotatorPlugins' : ['Auth', 'Permissions', 'Store', 'DigilibIntegrator'],
         // Annotator plugin settings (some values provided in handleSetup)
-        'annotatorPlugins' : {
-	        //'Tags' : {},
+        'annotatorPluginSettings' : {
 	        'Auth' : {
 	        	//token : data.annotationToken
 	            //tokenUrl: data.settings.annotationTokenUrl
@@ -359,7 +360,7 @@
 	};
 		
 	/**
-	 * returns handleUnauthorized function for Annotator.Auth plugin.  
+	 * returns unauthorizedCallback function for Annotator authlogin plugin.  
 	 */
     var getHandleUnauthorized = function (data) {
     	return function (auth) {
@@ -425,6 +426,7 @@
     var handleSetup = function(evt) {
         console.debug("annotations: handleSetup");
         var data = this;
+        var settings = data.settings;
         // set up annotator (after html has been set up)
         var uri = getAnnotationPageUrl(data);
         var annotator = new Annotator(data.$elem.get(0));
@@ -432,19 +434,19 @@
         var pluginParams = {
         	'Auth' : {
         		'token' : data.dlOpts.annotationToken,
-        		'tokenUrl' : data.settings.annotationTokenUrl,
+        		'tokenUrl' : settings.annotationTokenUrl,
         		'autoFetch' : true,
 	            'requestMethod' : 'POST',
 	            'requestData' : {
-	            	'user': data.settings.annotationUser,
+	            	'user': settings.annotationUser,
 	            },
 	            'unauthorizedCallback' : getHandleUnauthorized(data)
         	},
         	'Permissions' : {
-        		'user' : data.settings.annotationUser
+        		'user' : settings.annotationUser
         	},
         	'Store' : {
-              	'prefix' : data.settings.annotationServerUrl,
+              	'prefix' : settings.annotationServerUrl,
                 'annotationData' : {
                   'uri': uri
                 },
@@ -460,9 +462,10 @@
         	}
         };
         // merge with settings
-        $.extend(true, pluginParams, data.settings.annotatorPlugins);
+        $.extend(true, pluginParams, data.settings.annotatorPluginSettings);
         // add plugins
-        $.each(pluginParams, function (name, params) {
+        $.each(settings.annotatorPlugins, function (idx, name) {
+        	var params = pluginParams[name];
         	console.debug("plugin:", name, params);
         	annotator.addPlugin(name, params);
         });

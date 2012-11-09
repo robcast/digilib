@@ -41,24 +41,8 @@
                     //'annotationServerUrl' : 'http://tuxserve03.mpiwg-berlin.mpg.de/AnnotationManager/annotator',
                     // URL of authentication token server
                     'annotationTokenUrl' : 'http://localhost:8080/test/docuviewa/template/token/getLoginToken',
-                    'annotatorPlugins' : {
-                		'Markdown' : {},
-                        'Permissions' : { 
-                        	//user: data.settings.annotationUser,
-                            userString : function(user) {
-                                if (user && user.name) {
-                                    return user.name;
-                                }
-                                return user;
-                            }, 
-                            userId: function (user) {
-                                if (user && user.id) {
-                                    return user.id;
-                                }
-                                return user;
-                            }
-                        }
-                    }
+                    // list of Annotator plugins
+                    'annotatorPlugins' : ['Auth', 'Permissions', 'Store', 'Markdown', 'DigilibIntegrator'],
                 };
                 var $div = $('div#digilib');
                 $div.digilib(opts);
