@@ -207,7 +207,7 @@
         // set params for Permissions plugin
         var perms = data.annotator.plugins.Permissions;
         if (perms != null) {
-        	perms.options.user = user;
+        	perms.setUser(user);
         }
    	};
 

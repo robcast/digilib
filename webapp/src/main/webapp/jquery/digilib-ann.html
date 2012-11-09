@@ -12,7 +12,6 @@
         </style>
 
         <script type="text/javascript" src="jquery.js"></script>
-        <script type="text/javascript" src="jquery.tools.min.js"></script>
         <script type="text/javascript" src="jquery.cookie.js"></script>
         <script type="text/javascript" src="jquery.digilib.js"></script>
         <script type="text/javascript" src="jquery.digilib.geometry.js"></script>
@@ -25,7 +24,10 @@
         <script type="text/javascript" src="jquery.digilib.birdseye.js"></script>
         <script type="text/javascript" src="jquery.digilib.marks.js"></script>
         <script type="text/javascript" src="jquery.digilib.regions.js"></script>
-        <script type="text/javascript" src="jquery.digilib.annotations.js"></script>
+        <script type="text/javascript" src="showdown.js"></script>
+        <script type="text/javascript" src="annotator-dl.js"></script>
+        <link rel="stylesheet" type="text/css" href="annotator.min.css" />
+        <script type="text/javascript" src="jquery.digilib.annotator.js"></script>
         <link rel="stylesheet" type="text/css" href="jquery.digilib.css" />
 
         <script type="text/javascript">
@@ -34,11 +36,30 @@
                     interactionMode : 'fullscreen',
                     showRegionNumbers : true,
                     // URL of annotation server
+                    //'annotationServerUrl' : 'http://tuxserve03.mpiwg-berlin.mpg.de/AnnotationManager/annotator',
                     'annotationServerUrl' : 'http://localhost:18080/AnnotationManager/annotator',
                     //'annotationServerUrl' : 'http://tuxserve03.mpiwg-berlin.mpg.de/AnnotationManager/annotator',
                     // URL of authentication token server
-                    'annotationTokenUrl' : 'http://r583-1.mpiwg-berlin.mpg.de:8080/test/annotator/token/getLoginToken',
-                    };
+                    'annotationTokenUrl' : 'http://localhost:8080/test/docuviewa/template/token/getLoginToken',
+                    'annotatorPlugins' : {
+                		'Markdown' : {},
+                        'Permissions' : { 
+                        	//user: data.settings.annotationUser,
+                            userString : function(user) {
+                                if (user && user.name) {
+                                    return user.name;
+                                }
+                                return user;
+                            }, 
+                            userId: function (user) {
+                                if (user && user.id) {
+                                    return user.id;
+                                }
+                                return user;
+                            }
+                        }
+                    }
+                };
                 var $div = $('div#digilib');
                 $div.digilib(opts);
             });
