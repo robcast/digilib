@@ -130,7 +130,7 @@
         that.getAsCss = function() {
             return {
                 left : this.x,
-                top : this.y,
+                top : this.y
             };
         };
         that.toString = function() {

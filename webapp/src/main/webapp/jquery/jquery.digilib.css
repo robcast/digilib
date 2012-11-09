@@ -111,8 +111,6 @@ div.dl-digilib div.dl-region {
     font-size: 11px;
 	background-color: red;
     opacity: 0.3;
-    /* do we still need this IE6-stuff? */
-	filter:progid:DXImageTransform.Microsoft.Alpha(opacity=30); 
 }
 
 div.dl-digilib div.dl-region a:link,
@@ -124,8 +122,6 @@ div.dl-digilib div.dl-region:hover {
 	background-color: transparent;
 	border: 2px solid red;
 	opacity: 0.6;
-    /* do we still need this IE6-stuff? */
-	filter:progid:DXImageTransform.Microsoft.Alpha(opacity=60); 
 }
 
 div.dl-digilib div.dl-regionArea {
