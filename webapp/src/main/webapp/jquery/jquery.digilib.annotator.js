@@ -86,7 +86,7 @@
                 	//'uri': getAnnotationPageUrl()
                 }, 
                 loadFromSearch: {
-                    'limit': 20,
+                    'limit': 20
                     //'uri': getAnnotationPageUrl()
                 }
             }
@@ -434,7 +434,7 @@
         		'autoFetch' : true,
 	            'requestMethod' : 'POST',
 	            'requestData' : {
-	            	'user': settings.annotationUser,
+	            	'user': settings.annotationUser
 	            },
 	            'unauthorizedCallback' : getHandleUnauthorized(data)
         	},
