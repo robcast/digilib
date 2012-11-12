@@ -45,6 +45,8 @@ if (typeof console === 'undefined') {
         'homeUrl' : 'http://digilib.berlios.de',
         // base URL to digilib (e.g. 'http://digilib.mpiwg-berlin.mpg.de/digitallibrary')
         'digilibBaseUrl' : null,
+        // path to digilib frontend page (inside digilibBaseUrl)
+        'digilibFrontendPath' : '/jquery/digilib.html',
         // base URL to Scaler servlet (usually digilibBaseUrl+'/servlet/Scaler')
         'scalerBaseUrl' : null,
         // prefix of digilib classes in CSS styles
@@ -521,7 +523,7 @@ if (typeof console === 'undefined') {
          * @param mode
          */
         digilibUrl : function (data, mode) {
-            var url = getDigilibUrl(data, '/jquery/digilib.html');
+            var url = getDigilibUrl(data, data.settings.digilibFrontendPath);
             if (mode === 'open') {
                 // redirect
                 window.location = url;
