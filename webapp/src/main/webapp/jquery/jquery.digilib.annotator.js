@@ -184,7 +184,7 @@
 	var setAnnotationUser = function (data, auth, user, password) {
 		if (user == null) {
 	        // user name entered in JS-prompt
-	        user = window.prompt("Please authenticate: User name", data.settings.annotationUser);
+	        user = window.prompt("Please authenticate (Cancel to log out): User name", data.settings.annotationUser);
 	        if (user != null && user != 'anonymous') {
 	            // password entered in JS-prompt
 	            password = window.prompt("Please authenticate: Password", '');
