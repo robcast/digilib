@@ -1238,7 +1238,7 @@ if (typeof console === 'undefined') {
         var pt1, pt2;
         // overlay div prevents other elements from reacting to mouse events 
         var $overlayDiv = $('<div class="'+CSS+'areaoverlay"/>');
-        $body.append($overlayDiv);
+        $elem.append($overlayDiv);
         bodyRect.adjustDiv($overlayDiv);
         // area div 
         var $areaDiv = $('<div class="'+CSS+'area"/>');

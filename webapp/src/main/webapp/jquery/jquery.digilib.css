@@ -36,6 +36,7 @@ div.dl-digilib div.dl-area {
 div.dl-digilib div.dl-areaoverlay {
 	position: absolute;
 	z-index: 100;
+	background-image:url('.');
 }
 
 div.dl-digilib div.dl-birdview {
@@ -111,6 +112,8 @@ div.dl-digilib div.dl-region {
     font-size: 11px;
 	background-color: red;
     opacity: 0.3;
+	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
+	filter: alpha(opacity=30);
 }
 
 div.dl-digilib div.dl-region a:link,
@@ -122,12 +125,16 @@ div.dl-digilib div.dl-region:hover {
 	background-color: transparent;
 	border: 2px solid red;
 	opacity: 0.6;
+	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=60)";
+	filter: alpha(opacity=60);
 }
 
 div.dl-digilib div.dl-regionArea {
 	background-color: red;
 	border: none;
     opacity: 0.3;
+	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
+	filter: alpha(opacity=30);
 }
 
 div.dl-digilib div.dl-regionHTML {
@@ -154,12 +161,16 @@ div.dl-digilib div.dl-highlightregion {
 	background-color: transparent;
 	border: 5px solid orange;
 	opacity: 0.8;
+	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
+	filter: alpha(opacity=80);
 }
 
 div.dl-digilib div.dl-findregion {
 	background-color: transparent;
 	border: 5px solid orange;
 	opacity: 0.8;
+	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
+	filter: alpha(opacity=80);
 }
 
 div.dl-digilib select.dl-finddata {
@@ -340,7 +351,10 @@ div.dl-digilib table.dl-scalertable td.dl-arrow {
 div.dl-digilib table.dl-scalertable td.dl-arrow:hover {
     background-color: black;
 	opacity: 0.3;
+	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
+	filter: alpha(opacity=30);
 }
+
 div.dl-digilib table.dl-scalertable img.button {
     opacity: 1;
 }
@@ -388,6 +402,8 @@ div.dl-digilib.dl-embedded div.dl-buttons {
 	padding: 1px;
 	background-color: gray;
 	opacity: 0.5;
+	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+	filter: alpha(opacity=50);
 	z-index: 100;
 }
 
