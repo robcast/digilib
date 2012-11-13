@@ -127,7 +127,7 @@ if (typeof console === 'undefined') {
             FULL_AREA  = geom.rectangle(0, 0, 1, 1);
 
             // settings for this digilib instance are merged from defaults and options
-            var settings = $.extend({}, defaults, options);
+            var settings = $.extend(true, {}, defaults, options);
             var isFullscreen = settings.interactionMode === 'fullscreen';
             var queryParams = {};
             if (isFullscreen) {

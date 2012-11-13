@@ -20,7 +20,7 @@
         'buttonSettings' : {
             'fullscreen' : {
                 // path to button images (must end with a slash)
-                'imagePath' : 'img/fullscreen/',
+                'imagePath' : 'img/fullscreen/32/',
                 'arrowSetSize' : 16,
                 'arrowSet' : [ "up", "down", "left", "right" ]
             },
