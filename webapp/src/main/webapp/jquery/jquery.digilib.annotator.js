@@ -49,6 +49,8 @@
         'annotationsReadOnly' : false,
         // URL of authentication token server e.g. 'http://libcoll.mpiwg-berlin.mpg.de/libviewa/template/token'
         'annotationTokenUrl' : null,
+        // URL of safe authentication token server e.g. 'https://libcoll.mpiwg-berlin.mpg.de/libviewa/template/token'
+        'annotationSafeTokenUrl' : null,
         // annotation user name
         'annotationUser' : 'anonymous',
 		// list of Annotator plugins
@@ -188,10 +190,20 @@
 	            password = window.prompt("Please authenticate: Password", '');
 	            // set params for Auth plugin
 	         	auth.options.requestData.password = password;   
+	    		// try to use the safe url for the password
+    			if (data.settings.annotationSafeTokenUrl != null) {
+    				auth.options.tokenUrl = data.settings.annotationSafeTokenUrl;
+    			} else {
+    				console.warn("Sending token password over standard-URL!");
+    			}
 	        } else {
 	        	// use anonymous user
 	        	user = 'anonymous';
 	         	delete auth.options.requestData.password; 
+    			if (data.settings.annotationSafeTokenUrl != null) {
+    				// reset url to unsafe
+    				auth.options.tokenUrl = data.settings.annotationTokenUrl;
+    			}
 	        }
         }
         // set user in digilib
