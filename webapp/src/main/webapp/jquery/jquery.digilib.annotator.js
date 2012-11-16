@@ -88,7 +88,6 @@
                 	//'uri': getAnnotationPageUrl()
                 }, 
                 loadFromSearch: {
-                    'limit': 20
                     //'uri': getAnnotationPageUrl()
                 }
             }
