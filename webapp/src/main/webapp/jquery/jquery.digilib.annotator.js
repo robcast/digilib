@@ -37,64 +37,7 @@
         }
     };
 
-    var defaults = {
-        // are annotations active?
-        'isAnnotationsVisible' : true,
-        // buttonset of this plugin
-        'annotationSet' : ['annotations', 'annotationuser', 'annotationmark', 'annotationregion', 'lessoptions'],
-        'annotationReadOnlySet' : ['annotations', 'lessoptions'],
-        // URL of annotation server .e.g. 'http://tuxserve03.mpiwg-berlin.mpg.de/AnnotationManager/annotator'
-        'annotationServerUrl' : null,
-        // are the annotations read-only
-        'annotationsReadOnly' : false,
-        // URL of authentication token server e.g. 'http://libcoll.mpiwg-berlin.mpg.de/libviewa/template/token'
-        'annotationTokenUrl' : null,
-        // URL of safe authentication token server e.g. 'https://libcoll.mpiwg-berlin.mpg.de/libviewa/template/token'
-        'annotationSafeTokenUrl' : null,
-        // annotation user name
-        'annotationUser' : 'anonymous',
-		// list of Annotator plugins
-		'annotatorPlugins' : ['Auth', 'Permissions', 'Store', 'DigilibIntegrator'],
-        // Annotator plugin settings (some values provided by handleSetup)
-        'annotatorPluginSettings' : {
-	        'Auth' : {
-	        	//token : data.annotationToken
-	            //tokenUrl: data.settings.annotationTokenUrl
-	            autoFetch: true,
-	            requestMethod: 'POST',
-	            requestData: {
-	            	//'user': data.settings.annotationUser,
-	            	//'password': data.annotationPassword
-	            }
-            },
-            'Permissions' : { 
-            	//user: data.settings.annotationUser,
-                userString : function(user) {
-                    if (user && user.name) {
-                        return user.name;
-                    }
-                    return user;
-                }, 
-                userId: function (user) {
-                    if (user && user.id) {
-                        return user.id;
-                    }
-                    return user;
-                }
-            },
-            'Store' : { 
-            	//prefix : data.settings.annotationServerUrl,
-                annotationData: {
-                	// if uri is a function it will be replaced by the result of fn(data)
-                	'uri': getAnnotationPageUrl
-                }, 
-                loadFromSearch: {
-                	// if uri is a function it will be replaced by the result of fn(data)
-                    'uri': getAnnotationPageUrl
-                }
-            }
-        }
-    };
+    // for defaults see below (we need to define the functions used in annotatorPluginSettings first)
 
     var actions = {
         /**
@@ -375,6 +318,34 @@
        	};
     };
 	
+	/**
+	 * returns the annotation server URL.
+	 */
+	var getAnnotationServerUrl = function (data) {
+		return data.settings.annotationServerUrl;
+	};
+	
+	/**
+	 * returns the annotation token URL.
+	 */
+	var getAnnotationTokenUrl = function (data) {
+		return data.settings.annotationTokenUrl;
+	};
+	
+    /**
+     * returns the cached annotation token.
+     */
+    var getAnnotationToken = function (data) {
+        return data.dlOpts.annotationToken;
+    };
+    
+	/**
+	 * returns the annotation user.
+	 */
+	var getAnnotationUser = function (data) {
+		return data.settings.annotationUser;
+	};
+	
     /** 
      * install additional buttons 
      */
@@ -386,6 +357,75 @@
         if (buttonSet.length && buttonSet.length > 0) {
             buttonSettings.annotationSet = buttonSet;
             buttonSettings.buttonSets.push('annotationSet');
+        }
+    };
+
+    var defaults = {
+        // are annotations active?
+        'isAnnotationsVisible' : true,
+        // buttonset of this plugin
+        'annotationSet' : ['annotations', 'annotationuser', 'annotationmark', 'annotationregion', 'lessoptions'],
+        'annotationReadOnlySet' : ['annotations', 'lessoptions'],
+        // URL of annotation server .e.g. 'http://tuxserve03.mpiwg-berlin.mpg.de/AnnotationManager/annotator'
+        'annotationServerUrl' : null,
+        // are the annotations read-only
+        'annotationsReadOnly' : false,
+        // URL of authentication token server e.g. 'http://libcoll.mpiwg-berlin.mpg.de/libviewa/template/token'
+        'annotationTokenUrl' : null,
+        // URL of safe authentication token server e.g. 'https://libcoll.mpiwg-berlin.mpg.de/libviewa/template/token'
+        'annotationSafeTokenUrl' : null,
+        // annotation user name
+        'annotationUser' : 'anonymous',
+        // list of Annotator plugins
+        'annotatorPlugins' : ['Auth', 'Permissions', 'Store', 'DigilibIntegrator'],
+        // Annotator plugin settings (values that are functions are replaced by fn(data))
+        'annotatorPluginSettings' : {
+            'Auth' : {
+                'token' : getAnnotationToken,
+                'tokenUrl' : getAnnotationTokenUrl,
+                'autoFetch' : true,
+                'requestMethod' : 'POST',
+                'requestData' : {
+                    'user': getAnnotationUser
+                },
+                'unauthorizedCallback' : getHandleUnauthorized
+            },
+            'Permissions' : { 
+                'user' : getAnnotationUser,
+                // userString and userId have to remain functions after evaluation
+                'userString' : function (data) {
+                    return function(user) {
+                        if (user && user.name) {
+                            return user.name;
+                        }
+                        return user;
+                    };
+                }, 
+                'userId' : function (data) {
+                    return function(user) {
+                        if (user && user.id) {
+                            return user.id;
+                        }
+                        return user;
+                    };
+                }
+            },
+            'Store' : { 
+                'prefix' : getAnnotationServerUrl,
+                'annotationData': {
+                    'uri': getAnnotationPageUrl
+                }, 
+                'loadFromSearch': {
+                    'uri': getAnnotationPageUrl
+                }
+            },
+            'DigilibIntegrator' : {
+                'hooks' : {
+                    'setupAnnotation' : getSetupAnnotation,
+                    'annotationDeleted' : getAnnotationDeleted
+                }
+            }
+
         }
     };
 
@@ -440,49 +480,32 @@
         var opts = {'readOnly' : data.settings.annotationsReadOnly};
         var annotator = new Annotator(elem, opts);
         // set plugin parameters
-        var pluginParams = {
-        	'Auth' : {
-        		'token' : data.dlOpts.annotationToken,
-        		'tokenUrl' : settings.annotationTokenUrl,
-        		'autoFetch' : true,
-	            'requestMethod' : 'POST',
-	            'requestData' : {
-	            	'user': settings.annotationUser
-	            },
-	            'unauthorizedCallback' : getHandleUnauthorized(data)
-        	},
-        	'Permissions' : {
-        		'user' : settings.annotationUser
-        	},
-        	'Store' : {
-              	'prefix' : settings.annotationServerUrl
-        	},
-        	'DigilibIntegrator' : {
-        		'hooks' : {
-        			'setupAnnotation' : getSetupAnnotation(data),
-        			'annotationDeleted' : getAnnotationDeleted(data)
-        		}
-        	}
-        };
-        // merge with settings 
-        // (deep copy of local params with defaults from plugin and options from HTML)
+        var def = defaults.annotatorPluginSettings;
+        var pluginParams = {};
+        // merge settings 
+        // (deep copy of defaults from plugin and options from HTML)
         $.extend(true, pluginParams, defaults.annotatorPluginSettings, data.options.annotatorPluginSettings);
+        // function to evaluate plugin settings
+        var evalParams = function (params) {
+            if (params == null) return;
+        	// eval functions in params
+        	$.each(params, function (idx, param) {
+        		if (typeof param === 'function') {
+        		    // replace function by value
+        			params[idx] = param(data);
+        		} else if (param == null) {
+        		    // delete value null
+        			delete params[idx];
+                } else if (typeof param === 'object') {
+                    // evaluate sub-objects
+                    evalParams(param);
+        		}
+        	});
+        };
         // add plugins
         $.each(settings.annotatorPlugins, function (idx, name) {
-        	var params = pluginParams[name];
-        	// fix uri in store params
-        	if (name === "Store") {
-        		if (typeof params.annotationData.uri === 'function') {
-        			params.annotationData.uri = params.annotationData.uri(data);
-        		} else if (params.annotationData.uri == null) {
-        			delete params.annotationData.uri;
-        		}
-        		if (typeof params.loadFromSearch.uri === 'function') {
-        			params.loadFromSearch.uri = params.loadFromSearch.uri(data);
-        		} else if (params.loadFromSearch.uri == null) {
-        			delete params.loadFromSearch.uri;
-        		}
-        	}
+            var params = pluginParams[name];
+            evalParams(params);
         	console.debug("plugin:", name, params);
         	annotator.addPlugin(name, params);
         });
