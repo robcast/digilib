@@ -55,7 +55,7 @@
         'annotationUser' : 'anonymous',
 		// list of Annotator plugins
 		'annotatorPlugins' : ['Auth', 'Permissions', 'Store', 'DigilibIntegrator'],
-        // Annotator plugin settings (some values provided in handleSetup)
+        // Annotator plugin settings (some values provided by handleSetup)
         'annotatorPluginSettings' : {
 	        'Auth' : {
 	        	//token : data.annotationToken
@@ -85,10 +85,12 @@
             'Store' : { 
             	//prefix : data.settings.annotationServerUrl,
                 annotationData: {
-                	//'uri': getAnnotationPageUrl()
+                	// if uri is a function it will be replaced by the result of fn(data)
+                	'uri': getAnnotationPageUrl
                 }, 
                 loadFromSearch: {
-                    //'uri': getAnnotationPageUrl()
+                	// if uri is a function it will be replaced by the result of fn(data)
+                    'uri': getAnnotationPageUrl
                 }
             }
         }
@@ -453,13 +455,7 @@
         		'user' : settings.annotationUser
         	},
         	'Store' : {
-              	'prefix' : settings.annotationServerUrl,
-                'annotationData' : {
-                  'uri': uri
-                },
-                'loadFromSearch' : {
-                  'uri': uri
-                }
+              	'prefix' : settings.annotationServerUrl
         	},
         	'DigilibIntegrator' : {
         		'hooks' : {
@@ -474,6 +470,19 @@
         // add plugins
         $.each(settings.annotatorPlugins, function (idx, name) {
         	var params = pluginParams[name];
+        	// fix uri in store params
+        	if (name === "Store") {
+        		if (typeof params.annotationData.uri === 'function') {
+        			params.annotationData.uri = params.annotationData.uri(data);
+        		} else if (params.annotationData.uri == null) {
+        			delete params.annotationData.uri;
+        		}
+        		if (typeof params.loadFromSearch.uri === 'function') {
+        			params.loadFromSearch.uri = params.loadFromSearch.uri(data);
+        		} else if (params.loadFromSearch.uri == null) {
+        			delete params.loadFromSearch.uri;
+        		}
+        	}
         	console.debug("plugin:", name, params);
         	annotator.addPlugin(name, params);
         });
