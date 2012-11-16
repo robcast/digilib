@@ -469,8 +469,9 @@
         		}
         	}
         };
-        // merge with settings
-        $.extend(true, pluginParams, data.settings.annotatorPluginSettings);
+        // merge with settings 
+        // (deep copy of local params with defaults from plugin and options from HTML)
+        $.extend(true, pluginParams, defaults.annotatorPluginSettings, data.options.annotatorPluginSettings);
         // add plugins
         $.each(settings.annotatorPlugins, function (idx, name) {
         	var params = pluginParams[name];

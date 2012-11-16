@@ -125,9 +125,9 @@ if (typeof console === 'undefined') {
                 geom = fn.geometry;
             }
             FULL_AREA  = geom.rectangle(0, 0, 1, 1);
-
             // settings for this digilib instance are merged from defaults and options
-            var settings = $.extend(true, {}, defaults, options);
+            // (no deep copy because lists would be joined)
+            var settings = $.extend({}, defaults, options);
             var isFullscreen = settings.interactionMode === 'fullscreen';
             var queryParams = {};
             if (isFullscreen) {
@@ -144,7 +144,7 @@ if (typeof console === 'undefined') {
                 var data = $elem.data('digilib');
                 var params, elemSettings;
                 // if the plugin hasn't been initialized yet
-                if (!data) {
+                if (data == null) {
                     // merge query parameters
                     if (isFullscreen) {
                         params = queryParams;
@@ -171,6 +171,8 @@ if (typeof console === 'undefined') {
                             $elem : $elem,
                             // let $elem have its own copy of settings
                             settings : elemSettings,
+		               		// keep options
+							options : options,
                             // and of the URL query parameters
                             queryParams : params
                     };
