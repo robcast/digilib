@@ -73,27 +73,22 @@ inner (optional)
         removeallregions : {
             onclick : "removeAllUserRegions",
             tooltip : "delete all user defined regions",
-            icon : "delallregions.png"
+            icon : "delregions.png"
             },
         regions : {
             onclick : "toggleRegions",
             tooltip : "show or hide regions",
-            icon : "regions.png"
+            icon : "showregions.png"
             },
         findcoords : {
             onclick : "findCoords",
             tooltip : "find a region by entering its relative coordinates",
-            icon : "regions.png"
+            icon : "findcoords.png"
             },
         finddata : {
             onclick : "findData",
             tooltip : "find a region by entering text",
-            icon : "regions.png"
-            },
-        regioninfo : {
-            onclick : "showRegionInfo",
-            tooltip : "show information about user defined regions",
-            icon : "regioninfo.png"
+            icon : "findregion.png"
             }
         };
 
@@ -104,6 +99,8 @@ inner (optional)
         'showRegionNumbers' : true,
         // default width for region when only point is given
         'regionWidth' : 0.005,
+        // zoomfactor for displaying larger area around region (for autoZoomOnClick)
+        'regionAutoZoomFactor' : 3,
         // is there region content in the page?
         'processHtmlRegions' : false,
         // region defined by users and in the URL
@@ -112,16 +109,16 @@ inner (optional)
         'onClickRegion' : null,
         // callback when new user region is defined
         'onNewRegion' : null,
-        // turn any region into a clickable link to its detail view (DEPRECATED)
-        'autoZoomOnClick' : false,
+        // turn any region into a clickable link to its detail view
+        'autoZoomOnClick' : true,
         // zoom in when displaying the found region
         'autoZoomOnFind' : false,
         // css selector for area/a elements (must also be marked with class "dl-keep")
         'areaSelector' : 'map.dl-regioncontent area, map.dl-regioncontent a',
         // general buttonset of this plugin
-        'regionSet' : ['regions', 'findcoords', 'finddata', 'lessoptions'],
+        'regionSet' : ['regions', 'finddata', 'findcoords', 'lessoptions'],
         // buttonset for region editing by user
-        'userRegionSet' : ['defineregion', 'removeregion', 'removeallregions', 'regioninfo'],
+        'userRegionSet' : ['defineregion', 'removeregion', 'removeallregions'],
         // url param for regions
         'rg' : null,
         // array with region data
@@ -187,7 +184,7 @@ inner (optional)
             selector = 'div.'+CSS+'regionURL';
             var $region = data.$elem.find(selector).last();
             if ($region.length > 0) {
-                $regionDiv.remove();
+                $region.remove();
                 redisplay(data);
                 return;
             }
@@ -212,53 +209,6 @@ inner (optional)
             data.settings.isRegionVisible = show;
             fn.highlightButtons(data, 'regions', show);
             renderRegions(data, 1);
-        },
-
-        // show region info in a window
-        showRegionInfo : function (data) {
-            var $elem = data.$elem;
-            var infoSelector = '#'+CSS+'regionInfo';
-            if (fn.isOnScreen(data, infoSelector)) return; // already onscreen
-            var $regions = getRegions(data, 'regionURL');
-            if ($regions.length == 0) return; // no user regions available
-            var html = '\
-                <div id="'+CSS+'regionInfo" class="'+CSS+'keep '+CSS+'regionInfo">\
-                    <table class="'+CSS+'infoheader">\
-                        <tr>\
-                            <td class="'+CSS+'infobutton html">HTML</td>\
-                            <td class="'+CSS+'infobutton svgattr">SVG</td>\
-                            <td class="'+CSS+'infobutton csv">CSV</td>\
-                            <td class="'+CSS+'infobutton digilib">Digilib</td>\
-                            <td class="'+CSS+'infobutton x">X</td>\
-                        </tr>\
-                    </table>\
-                </div>';
-            $info = $(html);
-            $info.appendTo($elem);
-            $info.append(regionInfoHTML(data, $regions));
-            $info.append(regionInfoSVG(data, $regions));
-            $info.append(regionInfoCSV(data, $regions));
-            $info.append(regionInfoDigilib(data, $regions));
-            var bind = function (name) {
-                $info.find('.'+name).on('click.regioninfo', function () {
-                    $info.find('div.'+CSS+'info').hide();
-                    $info.find('div.'+CSS+name).show();
-                    fn.centerOnScreen(data, $info);
-                    return false;
-                    });
-                };
-            bind('html');
-            bind('svgattr');
-            bind('csv');
-            bind('digilib');
-            $info.on('click.regioninfo', function () {
-                fn.withdraw($info);
-                });
-            $info.find('.x').on('click.regioninfo', function () {
-                fn.withdraw($info);
-                });
-            $info.fadeIn();
-            fn.centerOnScreen(data, $info);
         },
 
         // display region coordinates in a selected edit line (for copying)
@@ -400,7 +350,7 @@ inner (optional)
             var filterOptions = function (text) {
                 if (!text) {
                     // not text, display all options, select first (empty)
-                    $options.show();
+                    // $options.show();
                     $select.prop("selectedIndex", 0);
                     return;
                     }
@@ -633,52 +583,6 @@ inner (optional)
         return sorted.join('');
     };
 
-    // html for later insertion
-    var regionInfoHTML = function (data, $regions) {
-        var $infoDiv = $('<div class="'+CSS+'info '+CSS+'html"/>');
-        $infoDiv.append($('<div/>').text('<map class="'+CSS+'keep '+CSS+'regioncontent">'));
-        $regions.each(function (index, region) {
-            var rect = $(region).data('rect');
-            var coords = packCoords(rect, ',');
-            $infoDiv.append($('<div/>').text('<area coords="' + coords + '"/>'));
-            });
-        $infoDiv.append($('<div/>').text('</map>'));
-        return $infoDiv;
-    };
-
-    // SVG-style
-    var regionInfoSVG = function (data, $regions) {
-        var $infoDiv = $('<div class="'+CSS+'info '+CSS+'svgattr"/>');
-        $regions.each(function (index, region) {
-            var rect = $(region).data('rect');
-            var coords = packCoords(rect, ',');
-            $infoDiv.append($('<div/>').text('"' + coords + '"'));
-            });
-        return $infoDiv;
-    };
-
-    // CSV-style
-    var regionInfoCSV = function (data, $regions) {
-        var $infoDiv = $('<div class="'+CSS+'info '+CSS+'csv"/>');
-        $regions.each(function (index, region) {
-            var rect = $(region).data('rect');
-            var coords = packCoords(rect, ',');
-            $infoDiv.append($('<div/>').text(index+1 + ": " + coords));
-            });
-        return $infoDiv;
-    };
-
-    // digilib-style (h,w@x,y)
-    var regionInfoDigilib = function (data, $regions) {
-        var $infoDiv = $('<div class="'+CSS+'info '+CSS+'digilib"/>');
-        $regions.each(function (index, region) {
-            var rect = $(region).data('rect');
-            var coords = packCoords(rect, ',');
-            $infoDiv.append($('<div/>').text(coords));
-            });
-        return $infoDiv;
-    };
-
     // show a region on top of the scaler image 
     var renderRegion = function (data, $regionDiv, anim) {
         if (!data.imgTrafo) return;
@@ -748,9 +652,19 @@ inner (optional)
         console.debug('pack regions:', rg);
     };
 
-    // zoom to the region coordinates
-    var zoomToRegion = function (data, rect) {
-        digilib.actions.zoomArea(data, rect);
+    // zoom in, displaying the region in the middle of the screen
+    var zoomToRegion = function (data, $regionDiv) {
+        var settings = data.settings;
+        var rect = $regionDiv.data('rect');
+        var za = rect.copy();
+        var factor = settings.regionAutoZoomFactor;
+        za.width  *= factor;
+        za.height *= factor;
+        // var screen = fn.getFullscreenRect(data);
+        za.setProportion(1, true); // avoid extreme zoomArea proportions
+        za.setCenter(rect.getCenter()).stayInside(FULL_AREA);
+        fn.setZoomArea(data, za);
+        fn.redisplay(data);
     };
 
     // reload display after a region has been added or removed
@@ -868,7 +782,7 @@ inner (optional)
         $data.on('update', handleUpdate);
         $data.on('newRegion', handleNewRegion);
         $data.on('regionClick', handleRegionClick);
-        // default: autoZoom to region, when clicked - DEPRECATED
+        // default: autoZoom to region, when clicked
         if (settings.autoZoomOnClick && settings.onClickRegion == null) {
             settings.onClickRegion = zoomToRegion;
         }

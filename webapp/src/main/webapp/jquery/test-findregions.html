@@ -33,13 +33,15 @@
         <script type="text/javascript">
             $(document).ready(function(){
                 var opts = {
-                    digilibBaseUrl : 'http://img.biblhertz.it/digilib',
                     interactionMode : 'fullscreen',
+                    previewImgWidth : 1200,
+                    previewImgHeight : 800,
+                    maxBgSize : 30000,
                     editRegions : true,
                     processHtmlRegions : true,
                     showRegionNumbers : true,
+
                     fn : 'piantediroma/00030-1577_Duperac_Stefano_BL_Map_Room_Maps_23805',
-                    onClickRegion : 'showRegionCoords',
                     onNewRegion : 'showRegionCoords',
                     regionSortString : function(s) {
                         var a = s.match(/[A-Z]\w\w.*$/i);

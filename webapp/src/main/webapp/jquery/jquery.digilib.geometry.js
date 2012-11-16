@@ -280,6 +280,20 @@
         that.overlapsRect = function(rect) {
             return this.intersect(rect) != null;
         };
+        // returns the ratio of height to width
+        that.getProportion = function() {
+            return this.height/this.width;
+        };
+        // shrink/grow rectangle until it has the given proportion
+        that.setProportion = function(ratio, canGrow) {
+            var prop = this.getProportion();
+            if (ratio < prop == canGrow) {
+                this.width = this.height / ratio;
+            } else {
+                this.height = this.width * ratio;
+            }
+            return this;
+        };
         // changes this rectangle's x/y values so it stays inside of rectangle
         // "rect", keeping the proportions
         that.stayInside = function(rect) {
