@@ -124,9 +124,6 @@ div.dl-digilib div.dl-region a:visited {
 div.dl-digilib div.dl-region:hover {
 	background-color: transparent;
 	border: 2px solid red;
-	opacity: 0.6;
-	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=60)";
-	filter: alpha(opacity=60);
 }
 
 div.dl-digilib div.dl-regionArea {
@@ -138,7 +135,12 @@ div.dl-digilib div.dl-regionArea {
 }
 
 div.dl-digilib div.dl-regionHTML {
-	background-color: purple;
+	background-color: blue;
+}
+
+div.dl-digilib div.dl-regionHTML:hover {
+	background-color: transparent;
+	border: 2px solid blue;
 }
 
 div.dl-digilib div.dl-region a.dl-regionnumber {
@@ -159,7 +161,7 @@ div.dl-digilib map.dl-regioncontent {
 
 div.dl-digilib div.dl-highlightregion {
 	background-color: transparent;
-	border: 5px solid orange;
+	border: 5px solid aqua;
 	opacity: 0.8;
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
 	filter: alpha(opacity=80);
@@ -167,14 +169,15 @@ div.dl-digilib div.dl-highlightregion {
 
 div.dl-digilib div.dl-findregion {
 	background-color: transparent;
-	border: 5px solid orange;
+	border: 5px solid aqua;
 	opacity: 0.8;
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
 	filter: alpha(opacity=80);
 }
 
 div.dl-digilib select.dl-finddata {
-    font-size: 11px;
+    border: 1px solid black;
+    width: 240px;
 }
 
 div.dl-digilib #dl-calibration {

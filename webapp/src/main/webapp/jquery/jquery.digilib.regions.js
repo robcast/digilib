@@ -317,15 +317,15 @@ inner (optional)
             var $elem = data.$elem;
             var findSelector = '#'+CSS+'regionFindData';
             if (fn.isOnScreen(data, findSelector)) return; // already onscreen
-            var textOptions = getTextOptions(data, 'regionHTML');
+            var options = filteredOptions(data, 'regionHTML');
             var html = '\
                 <div id="'+CSS+'regionFindData" class="'+CSS+'keep '+CSS+'regionInfo">\
-                    <div>text to find:</div>\
+                    <div>Find object:</div>\
                     <form class="'+CSS+'form">\
                         <div>\
                             <select class="'+CSS+'finddata">\
                             <option/>\
-                            '+textOptions+'\
+                            '+options+'\
                             </select>\
                         </div>\
                         <input class="'+CSS+'input" name="data" type="text" size="30" /> \
@@ -347,30 +347,10 @@ inner (optional)
                 return false;
                 };
             // adapt dropdown, show only matching entries 
-            var filterOptions = function (text) {
-                if (!text) {
-                    // not text, display all options, select first (empty)
-                    // $options.show();
-                    $select.prop("selectedIndex", 0);
-                    return;
-                    }
-                var first = true;
-                $options.each(function (index) {
-                    var $option = $(this);
-                    // TODO: more sophisticated matching
-                    if (matchText($option.text(), text)) {
-                        $option.show();
-                        if (first) {
-                            $select.prop("selectedIndex", index);
-                            first = false;
-                        }
-                    } else {
-                        if (index > 0) $option.hide();
-                    }
-                    if (first) { // no hit, display and select empty option
-                        $select.prop("selectedIndex", 0);
-                        }
-                    });
+            var filterOptions = function (filter) {
+                var options = filteredOptions(data, 'regionHTML', filter);
+                $select.empty();
+                $select.append($(options));
                 };
             // handle submit
             $form.on('submit', findRegion);
@@ -391,19 +371,6 @@ inner (optional)
             $input.focus();
         }
     };
-
-    // match search text
-    var matchText = function (optiontext, text) {
-        // sanitize and split
-        var parts = text.replace(/([\\\(\)\-\!.+?*])/g, '\\$1').split(/\s+/);
-        // match all parts anywhere in optiontext
-        var regexparts = $.map(parts, function(part) {
-            return '(?=.*'+part+')'; // one lookahead for each part
-            });
-        var RE = new RegExp(regexparts.join(''), 'i');
-        var result = optiontext.match(RE);
-        return result;
-        };
 
     // make a coords string
     var packCoords = function (rect, sep) {
@@ -552,24 +519,40 @@ inner (optional)
         return $regions;
     };
 
+    // create a filter text matcher
+    var getFilterRE = function (filter) {
+        if (!filter) return null;
+        // sanitize and split
+        var parts = filter.replace(/([\\\(\)\-\!.+?*])/g, '\\$1').split(/\s+/);
+        // match all parts anywhere in optiontext
+        var regexparts = $.map(parts, function(part) {
+            // one lookahead for each filter part
+            return '(?=.*'+part+')';
+            });
+        var RE = new RegExp(regexparts.join(''), 'i');
+        return RE;
+        };
+
     // make HTML option from regions text data
-    var getTextOptions = function (data, selector) {
-        var sortfunc = data.settings.regionSortString;
+    var filteredOptions = function (data, selector, filter) {
         var options = [];
+        var sort = data.settings.regionSortString;
+        var RE = getFilterRE(filter);
         var createOption = function (index, region) {
             var $region = $(region);
             var rect = $region.data('rect');
-            if (rect == null)
-                return null;
+            if (rect == null) return;
             // var coords = packCoords(rect, ',');
-            var id = $region.attr('id');
             var text = $region.data('text');
-            var sortstring = $region.data('sort')
-                || (typeof sortfunc === 'function')
-                ? sortfunc(text)
-                : text;
-            var option = '<option value="'+id+'">'+text+'</option>';
-            options.push([sortstring, option]);
+            if (RE == null || text.match(RE)) {
+                var id = $region.attr('id');
+                var sortstring = $region.data('sort')
+                    || (typeof sort === 'function')
+                        ? sort(text)
+                        : text;
+                var option = '<option value="'+id+'">'+text+'</option>';
+                options.push([sortstring, option]);
+                }
             };
         var $regions = getRegions(data, selector);
         $.each($regions, createOption);
