@@ -1,9 +1,10 @@
 /**
  digilib plugin for annotations.
 
- currently only point-like annotations (like marks).
+ Currently supported are point annotations (like marks) and region annotations.
  
- Annotations are stored on a Annotator http://annotateit.org compatible server.
+ Annotations are displayed using code from the Annotator (http://annotateit.org) project
+and stored on a Annotator-API compatible server.
 
  */
 
@@ -113,12 +114,20 @@
     };
 
     /**
-     * returns an annotatable url to this digilib image
+     * returns an annotatable uri to this digilib image
      */
-    var getAnnotationPageUrl = function(data) {
-        var url = data.settings.digilibBaseUrl + '/jquery/digilib.html?';
-        url += digilib.fn.getParamString(data.settings, ['fn', 'pn'], digilib.defaults);
-        return url;
+    var getAnnotationPageUri = function(data) {
+        var settings = data.settings;
+        var uri = settings.annotationPageUri; 
+        if (uri == null) {
+            // default uri with digilibBaseUrl
+            uri = settings.digilibBaseUrl + settings.digilibFrontendPath;
+            uri += '?' + digilib.fn.getParamString(data.settings, ['fn', 'pn'], digilib.defaults);
+        } else if (typeof uri === 'function') {
+            // call function
+            uri = uri(data);
+        }
+        return uri;
     };
     
     /**
@@ -246,7 +255,6 @@
             screenRect = data.imgTrafo.transform(clippedArea);
             // console.debug("renderRegion: pos=",geom.position(screenRect));
 	        $annotation = $('<div class="'+cssPrefix+'annotationregion '+cssPrefix+'overlay annotator-hl">'+idx+'</div>');
-        	//addRegionAttributes(data, $regionDiv, attr);
         } else {
 	        var pos = area.getPosition();
 	        if (!data.zoomArea.containsPosition(pos)) return;
@@ -257,6 +265,10 @@
 	    }
         // save annotation in data for Annotator
         $annotation.data('annotation', annotation);
+        // add css class from annotation
+        if (annotation.cssclass != null) {
+            $annotation.addClass(annotation.cssclass);
+        }
         // save reference to div
         annot.$div = $annotation;
         $elem.append($annotation);
@@ -376,6 +388,8 @@
         'annotationSafeTokenUrl' : null,
         // annotation user name
         'annotationUser' : 'anonymous',
+        // string or function that returns the uri of the page being annotated
+        'annotationPageUri' : null,
         // list of Annotator plugins
         'annotatorPlugins' : ['Auth', 'Permissions', 'Store', 'DigilibIntegrator'],
         // Annotator plugin settings (values that are functions are replaced by fn(data))
@@ -413,10 +427,10 @@
             'Store' : { 
                 'prefix' : getAnnotationServerUrl,
                 'annotationData': {
-                    'uri': getAnnotationPageUrl
+                    'uri': getAnnotationPageUri
                 }, 
                 'loadFromSearch': {
-                    'uri': getAnnotationPageUrl
+                    'uri': getAnnotationPageUri
                 }
             },
             'DigilibIntegrator' : {
@@ -475,7 +489,7 @@
         var data = this;
         var settings = data.settings;
         // set up annotator (after html has been set up)
-        var uri = getAnnotationPageUrl(data);
+        var uri = getAnnotationPageUri(data);
         var elem = data.$elem.get(0);
         var opts = {'readOnly' : data.settings.annotationsReadOnly};
         var annotator = new Annotator(elem, opts);
