@@ -237,8 +237,7 @@ and stored on a Annotator-API compatible server.
      * place single annotation on the image
      */
     var renderAnnotation = function (data, annot) {
-        if (annot == null || annot.annotation == null || annot.annotation.areas == null 
-        	|| data.$img == null || data.imgTrafo == null)
+        if (annot == null || annot.annotation == null || data.$img == null || data.imgTrafo == null)
             return;
         if (!data.settings.isAnnotationsVisible) return;
         var cssPrefix = data.settings.cssPrefix;
@@ -246,16 +245,43 @@ and stored on a Annotator-API compatible server.
         var annotator = data.annotator;
         var annotation = annot.annotation;
         var idx = annot.idx ? annot.idx : '?';
-        var area = geom.rectangle(annotation.areas[0]);
+        var area = null;
+        var type = null;
+        if (annotation.shapes != null) {
+            // annotation shape
+            var shape = annotation.shapes[0];
+            type = shape.type;
+            if (type === "point") {
+                area = geom.position(shape.geometry);
+            } else if (type === "rectangle") {
+                area = geom.rectangle(shape.geometry);
+            } else {
+                console.error("Unsupported shape type="+type);
+                return;
+            }
+        } else if (annotation.areas != null) {
+            // legacy annotation areas
+            area = geom.rectangle(annotation.areas[0]);
+            if (area.isRectangle()) {
+                type = 'rectangle';
+            } else {
+                type = 'point';
+            }
+        } else {
+            console.error("Unable to render this annotation!");
+            return;
+        }
         var screenRect = null;
         var $annotation = null;
-        if (area.isRectangle()) {
+        if (type === 'rectangle') {
+            // render rectangle
         	var clippedArea = data.zoomArea.intersect(area);
         	if (clippedArea == null) return;
             screenRect = data.imgTrafo.transform(clippedArea);
             // console.debug("renderRegion: pos=",geom.position(screenRect));
 	        $annotation = $('<div class="'+cssPrefix+'annotationregion '+cssPrefix+'overlay annotator-hl">'+idx+'</div>');
         } else {
+            // render point
 	        var pos = area.getPosition();
 	        if (!data.zoomArea.containsPosition(pos)) return;
             var screenRect = data.imgTrafo.transform(pos);
