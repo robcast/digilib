@@ -185,8 +185,9 @@ and stored on a Annotator-API compatible server.
             var annotator = data.annotator;
             var mpos = geom.position(evt);
             var pos = data.imgTrafo.invtransform(mpos);
-            // mark selected areas
-            annotator.selectedAreas = [geom.rectangle(pos)];
+            // mark selection shape
+            var shape = {'type' : 'point', 'units' : 'fraction', 'geometry' : geom.position(pos)};
+            annotator.selectedShapes = [shape];
             // create and edit new annotation
             var annotation = annotator.createAnnotation();
             annotator.showEditor(annotation, mpos.getAsCss());
@@ -203,8 +204,9 @@ and stored on a Annotator-API compatible server.
         	if (rect == null) return;
             // event handler adding a new mark
             console.log("setAnnotationRegion at=", rect);
-            // mark selected areas
-            annotator.selectedAreas = [rect];
+            // mark selection shape
+            var shape = {'type' : 'rectangle', 'units' : 'fraction', 'geometry' : rect};
+            annotator.selectedShapes = [shape];
             // create and edit new annotation
             var pos = rect.getPt1();
             var mpos = data.imgTrafo.transform(pos);
@@ -282,9 +284,8 @@ and stored on a Annotator-API compatible server.
 	        $annotation = $('<div class="'+cssPrefix+'annotationregion '+cssPrefix+'overlay annotator-hl">'+idx+'</div>');
         } else {
             // render point
-	        var pos = area.getPosition();
-	        if (!data.zoomArea.containsPosition(pos)) return;
-            var screenRect = data.imgTrafo.transform(pos);
+	        if (!data.zoomArea.containsPosition(area)) return;
+            var screenRect = data.imgTrafo.transform(area);
             // create annotation
             var html = '<div class="'+cssPrefix+'annotationmark '+cssPrefix+'overlay annotator-hl">'+idx+'</div>';
             $annotation = $(html);
