@@ -280,7 +280,10 @@ and stored on a Annotator-API compatible server.
         	var clippedArea = data.zoomArea.intersect(area);
         	if (clippedArea == null) return;
             screenRect = data.imgTrafo.transform(clippedArea);
-            // console.debug("renderRegion: pos=",geom.position(screenRect));
+            if (!data.settings.showAnnotationNumbers) {
+                // suppress annotation number
+                idx = '';
+            }
 	        $annotation = $('<div class="'+cssPrefix+'annotationregion '+cssPrefix+'overlay annotator-hl">'+idx+'</div>');
         } else {
             // render point
@@ -407,6 +410,8 @@ and stored on a Annotator-API compatible server.
         'annotationReadOnlySet' : ['annotations', 'lessoptions'],
         // URL of annotation server .e.g. 'http://tuxserve03.mpiwg-berlin.mpg.de/AnnotationManager/annotator'
         'annotationServerUrl' : null,
+        // show numbers in rectangle annotations
+        'showAnnotationNumbers' : true,
         // are the annotations read-only
         'annotationsReadOnly' : false,
         // URL of authentication token server e.g. 'http://libcoll.mpiwg-berlin.mpg.de/libviewa/template/token'
