@@ -246,7 +246,11 @@ and stored on a Annotator-API compatible server.
         var $elem = data.$elem;
         var annotator = data.annotator;
         var annotation = annot.annotation;
-        var idx = annot.idx ? annot.idx : '?';
+        var idx = '';
+        if (data.settings.showAnnotationNumbers) {
+            // show annotation number
+            idx = annot.idx ? annot.idx : '?';
+        }
         var area = null;
         var type = null;
         if (annotation.shapes != null) {
@@ -280,10 +284,6 @@ and stored on a Annotator-API compatible server.
         	var clippedArea = data.zoomArea.intersect(area);
         	if (clippedArea == null) return;
             screenRect = data.imgTrafo.transform(clippedArea);
-            if (!data.settings.showAnnotationNumbers) {
-                // suppress annotation number
-                idx = '';
-            }
 	        $annotation = $('<div class="'+cssPrefix+'annotationregion '+cssPrefix+'overlay annotator-hl">'+idx+'</div>');
         } else {
             // render point
