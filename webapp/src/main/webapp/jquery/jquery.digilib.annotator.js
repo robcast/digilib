@@ -50,7 +50,7 @@ and stored on a Annotator-API compatible server.
             digilib.fn.highlightButtons(data, 'annotations', show);
             renderAnnotations(data);
         },
-        
+
         /**
          * set user account for annotations
          */
@@ -191,7 +191,7 @@ and stored on a Annotator-API compatible server.
             // create and edit new annotation
             var annotation = annotator.createAnnotation();
             annotator.showEditor(annotation, mpos.getAsCss());
-            return false;            
+            return false;
         });
     };
 
@@ -251,11 +251,12 @@ and stored on a Annotator-API compatible server.
             // show annotation number
             idx = annot.idx ? annot.idx : '?';
         }
+        var shape = null;
         var area = null;
         var type = null;
         if (annotation.shapes != null) {
             // annotation shape
-            var shape = annotation.shapes[0];
+            shape = annotation.shapes[0];
             type = shape.type;
             if (type === "point") {
                 area = geom.position(shape.geometry);
@@ -267,7 +268,8 @@ and stored on a Annotator-API compatible server.
             }
         } else if (annotation.areas != null) {
             // legacy annotation areas
-            area = geom.rectangle(annotation.areas[0]);
+            shape = annotation.areas[0]
+            area = geom.rectangle(shape);
             if (area.isRectangle()) {
                 type = 'rectangle';
             } else {
@@ -295,9 +297,13 @@ and stored on a Annotator-API compatible server.
 	    }
         // save annotation in data for Annotator
         $annotation.data('annotation', annotation);
-        // add css class from annotation
+        // add css class from annotations collection
         if (annotation.cssclass != null) {
             $annotation.addClass(annotation.cssclass);
+        }
+        // add individual css class for this annotation
+        if (shape.cssclass != null) {
+            $annotation.addClass(shape.cssclass);
         }
         // save reference to div
         annot.$div = $annotation;
@@ -380,7 +386,7 @@ and stored on a Annotator-API compatible server.
     var getAnnotationToken = function (data) {
         return data.dlOpts.annotationToken;
     };
-    
+
 	/**
 	 * returns the annotation user.
 	 */
