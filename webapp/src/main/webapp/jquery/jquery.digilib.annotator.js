@@ -14,6 +14,10 @@ and stored on a Annotator-API compatible server.
     var geom = null;
     // plugin object with digilib data
     var digilib = null;
+    // the functions made available by digilib
+    var fn = {};
+    // the normal zoom area
+    var FULL_AREA = null;
 
     var buttons = {
         annotations : {
@@ -47,7 +51,7 @@ and stored on a Annotator-API compatible server.
         toggleAnnotations : function (data) {
             var show = !data.settings.isAnnotationsVisible;
             data.settings.isAnnotationsVisible = show;
-            digilib.fn.highlightButtons(data, 'annotations', show);
+            fn.highlightButtons(data, 'annotations', show);
             renderAnnotations(data);
         },
 
@@ -69,7 +73,7 @@ and stored on a Annotator-API compatible server.
         	// save new token in cookie
         	auth.withToken(function (tkn) {
         		data.dlOpts.annotationToken = auth.token;
-		        digilib.fn.storeOptions(data);
+		        fn.storeOptions(data);
 		        // clear annotations
         		data.annotations = [];
         		renderAnnotations(data);
@@ -122,14 +126,14 @@ and stored on a Annotator-API compatible server.
         if (uri == null) {
             // default uri with digilibBaseUrl
             uri = settings.digilibBaseUrl + settings.digilibFrontendPath;
-            uri += '?' + digilib.fn.getParamString(data.settings, ['fn', 'pn'], digilib.defaults);
+            uri += '?' + fn.getParamString(data.settings, ['fn', 'pn'], digilib.defaults);
         } else if (typeof uri === 'function') {
             // call function
             uri = uri(data);
         }
         return uri;
     };
-    
+
     /**
      * sets annotation user and password in digilib and Annotator.Auth plugin.
      * auth is Auth plugin instance.
@@ -162,7 +166,7 @@ and stored on a Annotator-API compatible server.
         // set user in digilib
         data.settings.annotationUser = user;
         data.dlOpts.annotationUser = user;
-        digilib.fn.storeOptions(data);
+        fn.storeOptions(data);
         // set params for Auth plugin
         auth.options.requestData.user = user;
         // set params for Permissions plugin
@@ -200,7 +204,7 @@ and stored on a Annotator-API compatible server.
      */
     var setAnnotationRegion = function(data) {
         var annotator = data.annotator;
-        digilib.fn.defineArea(data, function (data, rect) {
+        fn.defineArea(data, function (data, rect) {
         	if (rect == null) return;
             // event handler adding a new mark
             console.log("setAnnotationRegion at=", rect);
@@ -297,11 +301,12 @@ and stored on a Annotator-API compatible server.
 	    }
         // save annotation in data for Annotator
         $annotation.data('annotation', annotation);
-        // add css class from annotations collection
+        $annotation.data('rect', area);
+        // add shared css class from annotations collection
         if (annotation.cssclass != null) {
             $annotation.addClass(annotation.cssclass);
         }
-        // add individual css class for this annotation
+        // add individual css class from this annotation
         if (shape.cssclass != null) {
             $annotation.addClass(shape.cssclass);
         }
@@ -311,6 +316,9 @@ and stored on a Annotator-API compatible server.
         // hook up Annotator events
         $annotation.on("mouseover", annotator.onHighlightMouseover);
         $annotation.on("mouseout", annotator.startViewerHideTimer);
+        $annotation.on('click.dlAnnotation', function (event) {
+            $(data).trigger('annotationClick', [$annotation]);
+            });
         screenRect.adjustDiv($annotation);
     };
 
@@ -394,6 +402,41 @@ and stored on a Annotator-API compatible server.
 		return data.settings.annotationUser;
 	};
 	
+	/**
+	 * zoom in, display the annotation in the middle of the screen.
+	 */
+    // 
+    var zoomToAnnotation = function (data, $div) {
+        var settings = data.settings;
+        var rect = $div.data('rect');
+        var za = rect.copy();
+        var w = settings.annotationAutoWidth;
+        if (za.width == null || za.width == 0) za.width = w; 
+        if (za.height == null || za.height == 0) za.height = w; 
+        var factor = settings.annotationAutoZoomFactor;
+        za.width  *= factor;
+        za.height *= factor;
+        za.setProportion(1, true); // avoid extreme zoomArea proportions
+        za.setCenter(rect.getCenter()).stayInside(FULL_AREA);
+        fn.setZoomArea(data, za);
+        fn.redisplay(data);
+    };
+
+    // event handler, gets called when a annotationClick event is triggered
+    var handleAnnotationClick = function (evt, $div) {
+        var data = this;
+        var settings = data.settings;
+        console.debug("annotations: handleAnnotationClick", $div);
+        if (typeof settings.annotationOnClick === 'function') {
+            // execute callback
+            return settings.annotationOnClick(data, $div);
+        }
+        if (typeof settings.annotationOnClick === 'string') {
+            // execute action
+            return actions[settings.annotationOnClick](data, $div);
+        }
+    };
+
     /** 
      * install additional buttons 
      */
@@ -418,6 +461,12 @@ and stored on a Annotator-API compatible server.
         'annotationServerUrl' : null,
         // show numbers in rectangle annotations
         'showAnnotationNumbers' : true,
+        // default width for annotation when only point is given
+        'annotationAutoWidth' : 0.005,
+        // zoomfactor for displaying larger area around region (for autoZoomOnClick)
+        'annotationAutoZoomFactor' : 3,
+        // zoom in and center on click on the annotation area
+        'annotationOnClick' : zoomToAnnotation,
         // are the annotations read-only
         'annotationsReadOnly' : false,
         // URL of authentication token server e.g. 'http://libcoll.mpiwg-berlin.mpg.de/libviewa/template/token'
@@ -487,8 +536,10 @@ and stored on a Annotator-API compatible server.
     var install = function(plugin) {
         digilib = plugin;
         console.debug('installing annotator plugin. digilib:', digilib);
+        // import digilib functions
+        $.extend(fn, digilib.fn);
         // import geometry classes
-        geom = digilib.fn.geometry;
+        geom = fn.geometry;
         // add defaults, actions, buttons
         $.extend(digilib.defaults, defaults);
         $.extend(digilib.actions, actions);
@@ -500,6 +551,7 @@ and stored on a Annotator-API compatible server.
         console.debug('initialising annotator plugin. data:', data);
         var $data = $(data);
         var settings = data.settings;
+        FULL_AREA  = geom.rectangle(0, 0, 1, 1);
         // set up list of annotation wrappers
         data.annotations = [];
         // set up buttons
@@ -514,9 +566,11 @@ and stored on a Annotator-API compatible server.
             // get annotation user from cookie
             settings.annotationUser = data.dlOpts.annotationUser;
         }
+
         // install event handler
         $data.bind('setup', handleSetup);
         $data.bind('update', handleUpdate);
+        $data.on('annotationClick', handleAnnotationClick);
     };
 
     /**
@@ -568,7 +622,7 @@ and stored on a Annotator-API compatible server.
     	if (auth != null) {
 	    	auth.withToken(function (tkn) {
     			data.dlOpts.annotationToken = auth.token;
-	    	    digilib.fn.storeOptions(data);
+	    	    fn.storeOptions(data);
     		});
     	}
     };
