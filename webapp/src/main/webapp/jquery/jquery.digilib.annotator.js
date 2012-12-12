@@ -272,7 +272,7 @@ and stored on a Annotator-API compatible server.
             }
         } else if (annotation.areas != null) {
             // legacy annotation areas
-            shape = annotation.areas[0]
+            shape = annotation.areas[0];
             area = geom.rectangle(shape);
             if (area.isRectangle()) {
                 type = 'rectangle';
@@ -294,7 +294,7 @@ and stored on a Annotator-API compatible server.
         } else {
             // render point
 	        if (!data.zoomArea.containsPosition(area)) return;
-            var screenRect = data.imgTrafo.transform(area);
+            screenRect = data.imgTrafo.transform(area);
             // create annotation
             var html = '<div class="'+cssPrefix+'annotationmark '+cssPrefix+'overlay annotator-hl">'+idx+'</div>';
             $annotation = $(html);
@@ -316,9 +316,9 @@ and stored on a Annotator-API compatible server.
         // hook up Annotator events
         $annotation.on("mouseover", annotator.onHighlightMouseover);
         $annotation.on("mouseout", annotator.startViewerHideTimer);
-        $annotation.on('click.dlAnnotation', function (event) {
+        $annotation.on('click.dlAnnotation', function(event) {
             $(data).trigger('annotationClick', [$annotation]);
-            });
+        }); 
         screenRect.adjustDiv($annotation);
     };
 
