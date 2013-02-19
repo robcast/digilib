@@ -18,21 +18,23 @@
   </properties>
 
   <repositories>
-  	<!-- This provides the required versions of JAI-ImageIO -->
+    <!-- This provides Stian Soiland-Reyes re-packaged version of JAI-ImageIO -->
     <repository>
-        <id>geotools.osgeo.org</id>
-        <name>Geotools repository</name>
-        <url>http://download.osgeo.org/webdav/geotools/</url>
+      <releases />
+       <snapshots>
+           <enabled>false</enabled>
+       </snapshots>
+       <id>mygrid-repository</id>
+       <name>myGrid Repository</name>
+       <url>http://www.mygrid.org.uk/maven/repository</url>
     </repository>
   </repositories>
   <dependencies>
-    <dependency>
-      <groupId>javax.media</groupId>
-      <artifactId>jai_imageio</artifactId>
-        <type>jar</type>
-      	<version>1.1</version>
-        <scope>compile</scope>
-    </dependency>
+	<dependency>
+	    <groupId>net.java.dev.jai-imageio</groupId> 
+	    <artifactId>jai-imageio-core-standalone</artifactId> 
+	    <version>1.2-pre-dr-b04-2011-07-04</version> 
+	</dependency>
   	<dependency>
   		<groupId>org.devlib.schmidt</groupId>
   		<artifactId>imageinfo</artifactId>
