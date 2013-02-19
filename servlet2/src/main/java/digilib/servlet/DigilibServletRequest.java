@@ -160,10 +160,6 @@ public class DigilibServletRequest extends DigilibRequest {
 		newParameter("img.pix_y", new Integer(0), null, 'c');
 		// total number of pages
 		newParameter("pt", new Integer(0), null, 'c');
-		// display level of digilib (0 = just image, 1 = one HTML page
-		// 2 = in frameset, 3 = XUL-'frameset'
-		// 4 = XUL-Sidebar )
-		newParameter("lv", new Integer(2), null, 'c');
 		// marks
 		newParameter("mk", "", null, 'c');
 	}
@@ -193,7 +189,8 @@ public class DigilibServletRequest extends DigilibRequest {
 			} else if (qs.indexOf(";") > -1) {
 				// ; separator
 				setWithParamString(qs, ";");
-			} else if (request.getParameter("fn") != null) {
+			} else if (request.getParameter("fn") != null || 
+			        request.getParameter("dw") != null || request.getParameter("dh") != null) {
 				// standard '&' parameters
 				setWithParamRequest(request);
 			} else {
