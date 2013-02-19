@@ -296,7 +296,12 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
 				if (meta == null) {
 					return;
 				}
+				// file meta should be inside file tag
 				fileMeta = meta.get(name);
+				if (fileMeta == null) {
+				    // or there is only a meta tag
+				    fileMeta = meta.get("");
+				}
 			} catch (Exception e) {
 				Logger.getLogger(this.getClass()).warn("error reading file .meta", e);
 			}
