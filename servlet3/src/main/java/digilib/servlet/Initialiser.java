@@ -54,7 +54,7 @@ public class Initialiser implements ServletContextListener, ServletRequestListen
 
 
 	/** servlet version */
-	public static final String version = "0.3";
+	public static final String version = "0.4";
 
 	/** gengeral logger for this class */
 	private static Logger logger = Logger.getLogger("digilib.init");
@@ -97,8 +97,10 @@ public class Initialiser implements ServletContextListener, ServletRequestListen
 				// set up the logger
 				File logConf = ServletOps.getConfigFile((File) dlConfig
 						.getValue("log-config-file"), context);
-				DOMConfigurator.configure(logConf.getAbsolutePath());
-				dlConfig.setValue("log-config-file", logConf);
+				if (logConf.canRead()) {
+				    DOMConfigurator.configure(logConf.getAbsolutePath());
+				    dlConfig.setValue("log-config-file", logConf);
+				}
 				// say hello in the log file
 				logger
 						.info("***** Digital Image Library Initialiser (version "

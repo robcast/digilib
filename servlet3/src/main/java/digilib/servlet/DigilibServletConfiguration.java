@@ -27,7 +27,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 
 import digilib.image.DocuImageImpl;
 import digilib.io.FileOps;
@@ -53,7 +52,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
 
     /** time the webapp (i.e. this class) was loaded */
     public final Long webappStartTime = System.currentTimeMillis();
-    
+
     /** counter for HttpRequests (mostly for debugging) */
     public AtomicInteger webappRequestCnt = new AtomicInteger(0);
 
@@ -70,18 +69,15 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
          */
 
         // digilib servlet version
-        newParameter("servlet.version", digilib.servlet.Scaler.getVersion(),
-                null, 's');
+        newParameter("servlet.version", digilib.servlet.Scaler.getVersion(), null, 's');
         // configuration file location
         newParameter("servlet.config.file", null, null, 's');
         // DocuDirCache instance
         newParameter("servlet.dir.cache", null, null, 's');
         // DocuImage class instance
-        newParameter("servlet.docuimage.class",
-                digilib.image.ImageLoaderDocuImage.class, null, 's');
+        newParameter("servlet.docuimage.class", digilib.image.ImageLoaderDocuImage.class, null, 's');
         // DocuImage version
-        newParameter("servlet.docuimage.version",
-                "?", null, 's');
+        newParameter("servlet.docuimage.version", "?", null, 's');
         // AuthOps instance for authentication
         newParameter("servlet.auth.op", null, null, 's');
         // Executor for image operations
@@ -96,16 +92,13 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
          */
 
         // image file to send in case of error
-        newParameter("error-image", new File("img/digilib-error.png"), null,
-                'f');
+        newParameter("error-image", new File("img/digilib-error.png"), null, 'f');
         // image file to send if access is denied
-        newParameter("denied-image", new File("img/digilib-denied.png"), null,
-                'f');
+        newParameter("denied-image", new File("img/digilib-denied.png"), null, 'f');
         // image file to send if image file not found
-        newParameter("notfound-image", new File("img/digilib-notfound.png"),
-                null, 'f');
+        newParameter("notfound-image", new File("img/digilib-notfound.png"), null, 'f');
         // base directories in order of preference (prescaled versions last)
-        String[] bd = { "/docuserver/images", "/docuserver/scaled/small" };
+        String[] bd = { "sample-images" };
         newParameter("basedir-list", bd, null, 'f');
         // use authentication information
         newParameter("use-authorization", Boolean.FALSE, null, 'f');
@@ -120,7 +113,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
         // degree of subsampling on image load
         newParameter("subsample-minimum", new Float(2f), null, 'f');
         // default scaling quality
-        newParameter("default-quality", new Integer(1), null, 'f');
+        newParameter("default-quality", new Integer(2), null, 'f');
         // use mapping file to translate paths
         newParameter("use-mapping", Boolean.FALSE, null, 'f');
         // mapping file location
@@ -142,8 +135,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
         // number of pdf-image generation threads
         newParameter("pdf-image-worker-threads", new Integer(1), null, 'f');
         // max number of waiting pdf-image generation threads
-        newParameter("pdf-image-max-waiting-threads", new Integer(10), null,
-                'f');
+        newParameter("pdf-image-max-waiting-threads", new Integer(10), null, 'f');
         // PDF generation temp directory
         newParameter("pdf-temp-dir", "pdf_temp", null, 'f');
         // PDF generation cache directory
@@ -182,59 +174,66 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
         }
         String fn = c.getInitParameter("config-file");
         if (fn == null) {
+            logger.debug("readConfig: no param config-file");
             fn = ServletOps.getConfigFile("digilib-config.xml", c);
-            if (fn == null) {
-                logger.fatal("readConfig: no param config-file");
-                throw new ServletException("ERROR: no digilib config file!");
-            }
         }
         File f = new File(fn);
-        // setup config file list reader
-        XMLListLoader lilo = new XMLListLoader("digilib-config", "parameter",
-                "name", "value");
-        // read config file into HashMap
-        Map<String, String> confTable = lilo.loadURL(f.toURL().toString());
+        if (f.canRead()) {
+            // setup config file list reader
+            XMLListLoader lilo = new XMLListLoader("digilib-config", "parameter", "name", "value");
+            // read config file into HashMap
+            Map<String, String> confTable = lilo.loadURL(f.toURL().toString());
 
-        // set config file path parameter
-        setValue("servlet.config.file", f.getCanonicalPath());
+            // set config file path parameter
+            setValue("servlet.config.file", f.getCanonicalPath());
 
-        /*
-         * read parameters
-         */
+            /*
+             * read parameters
+             */
 
-        for (Entry<String, String> confEntry : confTable.entrySet()) {
-            Parameter p = get(confEntry.getKey());
-            if (p != null) {
-                if (p.getType() == 's') {
-                    // type 's' Parameters are not overwritten.
-                    continue;
-                }
-                if (!p.setValueFromString(confEntry.getValue())) {
-                    /*
-                     * automatic conversion failed -- try special cases
-                     */
+            for (Entry<String, String> confEntry : confTable.entrySet()) {
+                Parameter p = get(confEntry.getKey());
+                if (p != null) {
+                    if (p.getType() == 's') {
+                        // type 's' Parameters are not overwritten.
+                        continue;
+                    }
+                    if (!p.setValueFromString(confEntry.getValue())) {
+                        /*
+                         * automatic conversion failed -- try special cases
+                         */
 
-                    // basedir-list
-                    if (confEntry.getKey().equals("basedir-list")) {
-                        // split list into directories
-                        String[] dirs = FileOps.pathToArray(confEntry.getValue());
-                        for (int j = 0; j < dirs.length; j++) {
-                            // make relative directory paths be inside the webapp
-                            dirs[j] = ServletOps.getFile(dirs[j], c);
-                        }
-                        if (dirs != null) {
-                            p.setValue(dirs);
+                        // basedir-list
+                        if (confEntry.getKey().equals("basedir-list")) {
+                            // split list into directories
+                            String[] dirs = FileOps.pathToArray(confEntry.getValue());
+                            for (int j = 0; j < dirs.length; j++) {
+                                // make relative directory paths be inside the
+                                // webapp
+                                dirs[j] = ServletOps.getFile(dirs[j], c);
+                            }
+                            if (dirs != null) {
+                                p.setValue(dirs);
+                            }
                         }
                     }
+                } else {
+                    // parameter unknown -- just add
+                    newParameter(confEntry.getKey(), null, confEntry.getValue(), 'f');
                 }
-            } else {
-                // parameter unknown -- just add
-                newParameter(confEntry.getKey(), null, confEntry.getValue(), 'f');
+            }
+        } else {
+            logger.warn("No digilib config file! Using defaults!");
+            // update basedir-list
+            String[] dirs = (String[]) this.getValue("basedir-list");
+            for (int j = 0; j < dirs.length; j++) {
+                // make relative directory paths be inside the
+                // webapp
+                dirs[j] = ServletOps.getFile(dirs[j], c);
             }
         }
         // initialise static DocuImage class instance
-        DigilibServletConfiguration.docuImageClass = (Class<DocuImageImpl>) Class
-                .forName(getAsString("docuimage-class"));
+        DigilibServletConfiguration.docuImageClass = (Class<DocuImageImpl>) Class.forName(getAsString("docuimage-class"));
         setValue("servlet.docuimage.version", getDocuImageInstance().getVersion());
     }
 
