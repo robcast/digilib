@@ -53,7 +53,6 @@ syntax: regexp
 ^text/\.project$
 syntax: regexp
 ^common/\.project$
-
 syntax: regexp
 ^\.settings$
 syntax: regexp
@@ -92,3 +91,11 @@ syntax: regexp
 ^common-bioformats/\.settings$
 syntax: regexp
 ^webapp/src/main/webapp/jquery/img/fullscreen/svg_gen$
+syntax: regexp
+^webapp/src/main/webapp/WEB-INF/digilib-config\.xml$
+syntax: regexp
+^webapp/src/main/webapp/WEB-INF/digilib-auth\.xml$
+syntax: regexp
+^webapp/src/main/webapp/WEB-INF/digilib-map\.xml$
+syntax: regexp
+^webapp/src/main/webapp/WEB-INF/log4j-config\.xml$
