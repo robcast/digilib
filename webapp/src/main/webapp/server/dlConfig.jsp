@@ -1,6 +1,4 @@
-<%@page import="digilib.util.DigilibJobCenter"%>
-<%@ page language="java" %>
-
+<%@page language="java" import="digilib.util.DigilibJobCenter"%>
 <%!
 // authentication stuff - robert
 // -----------------------------

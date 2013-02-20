@@ -189,8 +189,7 @@ public class DigilibServletRequest extends DigilibRequest {
 			} else if (qs.indexOf(";") > -1) {
 				// ; separator
 				setWithParamString(qs, ";");
-			} else if (request.getParameter("fn") != null || 
-			        request.getParameter("dw") != null || request.getParameter("dh") != null) {
+            } else if (qs.indexOf('=') > -1) {
 				// standard '&' parameters
 				setWithParamRequest(request);
 			} else {

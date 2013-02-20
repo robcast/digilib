@@ -1097,7 +1097,7 @@ if (typeof console === 'undefined') {
             var imgInfo = data.imgInfo;
             if (mode === 'pixel') {
                 // scaler mo=clip - image area size does not come from ww, wh
-                if (imgInfo != null) {
+                if (imgInfo != null && imgInfo.width != null) {
                     area.width = picrect.width / imgInfo.width;
                     area.height = picrect.height / imgInfo.height;
                 } else {
@@ -1106,7 +1106,7 @@ if (typeof console === 'undefined') {
             }
             if (mode === 'size') {
                 // scaler mo=osize - image area size does not come from ww, wh
-                if (imgInfo != null) {
+                if (imgInfo != null && imgInfo.dpi_x != null) {
                     var ddpi = parseFloat(data.settings.ddpi);
                     area.width = (picrect.width / ddpi) / (imgInfo.width / imgInfo.dpi_x);
                     area.height = (picrect.height / ddpi) / (imgInfo.height / imgInfo.dpi_y);
