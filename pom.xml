@@ -39,6 +39,9 @@
   	     <activeByDefault>true</activeByDefault>
       </activation>
   	</profile>
+    <profile>
+      <id>servlet3</id>
+    </profile>
     <!-- optional modules with dependencies selected by profile -->
     <profile>
       <id>text</id>
