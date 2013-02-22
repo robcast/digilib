@@ -28,24 +28,6 @@
             5
         </load-on-startup>
   </servlet>
-  <!-- The Texter servlet -->
-<!--  <servlet>
-        <servlet-name>
-            Texter
-        </servlet-name>
-        <servlet-class>
-            digilib.servlet.Texter
-        </servlet-class>
-</servlet> -->
-  <!-- The PDFCache servlet -->
-<!--  <servlet>
-        <servlet-name>
-            PDFCache
-        </servlet-name>
-        <servlet-class>
-            digilib.servlet.PDFCache
-        </servlet-class>
-  </servlet> -->
   <!-- The mapping for the Scaler servlet -->
   <servlet-mapping>
         <servlet-name>
@@ -63,80 +45,4 @@
             /Scaler
         </url-pattern>
   </servlet-mapping>
-  <servlet-mapping>
-        <servlet-name>
-            Scaler
-        </servlet-name>
-        <url-pattern>
-            /authenticated/servlet/Scaler/*
-        </url-pattern>
-  </servlet-mapping>
-  <!-- The mapping for the Texter servlet -->
-<!--  <servlet-mapping>
-        <servlet-name>
-            Texter
-        </servlet-name>
-        <url-pattern>
-            /servlet/Texter/*
-        </url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-        <servlet-name>
-            Texter
-        </servlet-name>
-        <url-pattern>
-            /authenticated/servlet/Texter/*
-        </url-pattern>
-  </servlet-mapping> -->
-  <!-- The mapping for the Texter servlet -->
-<!--  <servlet-mapping>
-        <servlet-name>
-            PDFCache
-        </servlet-name>
-        <url-pattern>
-            /servlet/PDFCache/*
-        </url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-        <servlet-name>
-            PDFCache
-        </servlet-name>
-        <url-pattern>
-            /authenticated/servlet/PDFCache/*
-        </url-pattern>
-  </servlet-mapping> -->
-  <!-- region for authenticated access -->
-  <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>
-                Authenticated Digilib
-            </web-resource-name>
-            <url-pattern>
-                /authenticated/*
-            </url-pattern>
-        </web-resource-collection>
-        <!-- we need a default user -->
-<!--         <auth-constraint>
-            <role-name>
-                user
-            </role-name>
-        </auth-constraint>  -->
-  </security-constraint>
-  <login-config>
-  <!--
-        <auth-method>BASIC</auth-method>
-        <realm-name>digilib</realm-name> 
-   -->
-        <auth-method>
-            FORM
-        </auth-method>
-        <form-login-config>
-            <form-login-page>
-                /digilib-login.html
-            </form-login-page>
-            <form-error-page>
-                /digilib-fail.html
-            </form-error-page>
-        </form-login-config>
-  </login-config>
 </web-app>
