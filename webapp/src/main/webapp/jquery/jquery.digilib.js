@@ -761,7 +761,7 @@ if (typeof console === 'undefined') {
         // bind default function (only once)
         $(data).off('imageInfo', handleImageInfo);
         $(data).on('imageInfo', handleImageInfo);
-        var url = settings.digilibBaseUrl + '/spi/ImgInfo-json.jsp';
+        var url = settings.digilibBaseUrl + '/api/ImgInfo-json.jsp';
         url += '?' + getParamString(settings, ['fn', 'pn'], defaults);
         // TODO: better error handling
         $.getJSON(url, function (json) {
