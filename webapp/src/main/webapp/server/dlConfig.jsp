@@ -45,15 +45,26 @@ DigilibJobCenter imageProcessor =  (DigilibJobCenter)dlConfig.getValue("servlet.
     int l = keys.length;
     for (int i = 0; i < l; i++) {
         String key = (String) keys[i];
-       	String val = dlConfig.getAsString(key);
+       	digilib.util.Parameter param = dlConfig.get(key);
+        String val;
         if (key.equals("basedir-list")) {
-            String[] bd = (String[]) dlConfig.getValue("basedir-list");
+            String[] bd = (String[]) param.getValue();
             val = "";
             if (bd != null) {
                 for (int j = 0; j < bd.length; j++) {
                     val += bd[j] + "<br> ";
                 }
             }
+        } else if (param.getValue() instanceof java.io.File) {
+            java.io.File f = (java.io.File) param.getValue();
+            if (!f.isAbsolute()) {
+                // relative path -> use getRealPath to resolve
+                val = pageContext.getServletContext().getRealPath(f.getPath());
+            } else {
+                val = f.toString();
+            }
+        } else {
+            val = param.getAsString();
         }
         if (val.length() == 0) {
             val = "(none)";
