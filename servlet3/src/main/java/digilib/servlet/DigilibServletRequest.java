@@ -494,14 +494,16 @@ public class DigilibServletRequest extends DigilibRequest {
      */
     public void setBaseURL(javax.servlet.http.HttpServletRequest request) {
         String baseURL = null;
-        // calculate base URL string from request (minus last part)
+        // calculate base URL string from request until webapp
         String s = request.getRequestURL().toString();
-        int eop = s.lastIndexOf("/");
+        // get name of webapp 
+        String wn = request.getContextPath();
+        int eop = s.lastIndexOf(wn);
         if (eop > 0) {
-            baseURL = s.substring(0, eop);
+            baseURL = s.substring(0, eop + wn.length());
         } else {
             // fall back
-            baseURL = "http://" + request.getServerName() + "/docuserver/digitallibrary";
+            baseURL = "http://" + request.getServerName() + "/digitallibrary";
         }
         setValue("base.url", baseURL);
     }
