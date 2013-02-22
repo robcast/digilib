@@ -18,23 +18,22 @@ public void jspInit() {
 // parsing the query
 // -----------------
 
-digilib.servlet.DigilibServletRequest dlRequest = new digilib.servlet.DigilibServletRequest(request);
+digilib.servlet.DigilibServletRequest dcRequest = new digilib.servlet.DigilibServletRequest(request);
 // check if authentication is needed and redirect if necessary
-docBean.doAuthentication(dlRequest, response);
-    
-String digiURL = "digimage.jsp?" + dlRequest.getAsString();
+docBean.doAuthentication(dcRequest, response);
 
-%><html>
+// set number of pages  
+dcRequest.setValue("pt", docBean.getNumPages(dcRequest));
+String baseUrl = dcRequest.getAsString("base.url");
+%>
+<html>
 <head>
-<title>Digital Document Library</title>
+<title>Digital Document Library - Digicat</title>
 </head>
 
-<frameset cols="*,90" border="0" onload="pageFrame.show()">
-  <frame name="mainFrame" src="<%= digiURL %>" scrolling="auto">
-  <frameset rows="25,*" border="0">
-    <frame name="pageFrame" src="oldskin/pageWin.html" scrolling="no" noresize>
-    <frame name="rightFrame" src="oldskin/dlMenu.html" scrolling="no" noresize>
-  </frameset>
+<frameset cols="*,90" border="0">
+  <frame name="mainFrame" src="dcMain.jsp?<%= dcRequest.getAsString() %>" scrolling="auto">
+  <frame name="rightFrame" src="dcMenu.html" scrolling="no" noresize>
 </frameset>
 
 </html>

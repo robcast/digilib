@@ -38,7 +38,7 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.1.11',
+        'version' : 'jquery.digilib.js 2.1.12',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -207,6 +207,12 @@ if (typeof console === 'undefined') {
                         var pos = url.indexOf('/jquery/');
                         if (pos > 0) {
                             elemSettings.digilibBaseUrl = url.substring(0, pos);
+                        } else {
+                            // then maybe its the root-digilib.html
+                            pos = url.indexOf('/digilib.html');
+                            if (pos > 0) {
+                                elemSettings.digilibBaseUrl = url.substring(0, pos);
+                            }                    
                         }
                     } else {
                         // may be we got the scaler URL from the img
@@ -755,7 +761,7 @@ if (typeof console === 'undefined') {
         // bind default function (only once)
         $(data).off('imageInfo', handleImageInfo);
         $(data).on('imageInfo', handleImageInfo);
-        var url = settings.digilibBaseUrl + '/ImgInfo-json.jsp';
+        var url = settings.digilibBaseUrl + '/spi/ImgInfo-json.jsp';
         url += '?' + getParamString(settings, ['fn', 'pn'], defaults);
         // TODO: better error handling
         $.getJSON(url, function (json) {

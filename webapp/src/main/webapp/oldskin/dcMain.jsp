@@ -25,14 +25,14 @@ docBean.doAuthentication(dcRequest, response);
 dcRequest.setValue("pt", docBean.getNumPages(dcRequest));
 // chop off /oldskin -- ugly ;-(
 String baseUrl = dcRequest.getAsString("base.url");
-int p = baseUrl.lastIndexOf("/oldskin");
+/* int p = baseUrl.lastIndexOf("/oldskin");
 if (p > 0) {
    baseUrl = baseUrl.substring(0, p);
-}
+} */
 %>
 <html>
 <head>
-<script type="text/javascript" src="../baselib.js"></script>
+<script type="text/javascript" src="baselib.js"></script>
 <script type="text/javascript" src="dclib.js"></script>
 <script type="text/javascript">
 base_init();
