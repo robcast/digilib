@@ -99,3 +99,6 @@ syntax: regexp
 ^webapp/src/main/webapp/WEB-INF/digilib-map\.xml$
 syntax: regexp
 ^webapp/src/main/webapp/WEB-INF/log4j-config\.xml$
+
+syntax: regexp
+^target$
