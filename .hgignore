@@ -102,3 +102,5 @@ syntax: regexp
 
 syntax: regexp
 ^target$
+syntax: regexp
+^webapp/bin$
