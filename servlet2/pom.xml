@@ -10,7 +10,6 @@
   <artifactId>digilib-servlet2</artifactId>
   <name>digilib-servlet2</name>
   <description>The Digital Image Library - Servlet with version 2 API</description>
-  <url>http://maven.apache.org</url>
   <packaging>jar</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
