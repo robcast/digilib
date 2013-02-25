@@ -1,25 +1,29 @@
-/* Copyright (C) 2003-2006 IT-Group MPIWG, WTWG Uni Bern and others
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
- 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
- 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
- 
-Authors: 
-  Christian Luginbuehl, 01.05.2003 (first version)
-  DW 24.03.2004 (Changed for digiLib in Zope)
-  Robert Casties, 2.11.2004 (almost complete rewrite)
-  Martin Raspe, 12.12.2005 (changes for Digilib NG)
-  Robert Casties, 3.9.2009
+/*
+ * #%L
+ * digilib-webapp
+ * %%
+ * Copyright (C) 2003 - 2013 IT-Group MPIWG, WTWG Uni Bern and others
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 3 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-3.0.html>.
+ * #L%
+ * Authors:
+ *  Christian Luginbuehl, 01.05.2003 (first version)
+ *  DW 24.03.2004 (Changed for digiLib in Zope)
+ *  Robert Casties, 2.11.2004 (almost complete rewrite)
+ *  Martin Raspe, 12.12.2005 (changes for Digilib NG)
+ *  Robert Casties, 3.9.2009
 */
 
 // was: function base_init() {
