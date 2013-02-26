@@ -7,7 +7,7 @@ package digilib.util;
  * Digital Image Library servlet components
  * 
  * %%
- * Copyright (C) 2001 - 2013 Robert Casties (robcast@mail.berlios.de)
+ * Copyright (C) 2002 - 2013 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,6 +23,7 @@ package digilib.util;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
+ * Author: Robert Casties (robcast@berlios.de)
  */
 
 import java.util.LinkedList;

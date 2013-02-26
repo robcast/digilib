@@ -6,8 +6,8 @@ package digilib.servlet;
  *
  * lightweight class carrying all parameters for a request to digilib
  * %%
- * Copyright (C) 2002 - 2013 Robert Casties (robcast@mail.berlios.de),
- *                           Christian Luginbuehl
+ * Copyright (C) 2002 - 2013 MPIWG Berlin, WTWG Uni Bern
+ *                           
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,6 +23,9 @@ package digilib.servlet;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
+ * Authors: Robert Casties (robcast@berlios.de),
+ *          Christian Luginbuehl
+ *          
  * Created on 27. August 2002
  */
 

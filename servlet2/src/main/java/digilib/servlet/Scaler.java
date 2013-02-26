@@ -6,7 +6,7 @@ package digilib.servlet;
  * Scaler servlet that uses a thread pool but only synchronous servlet 2.3 API.
  *  
  * %%
- * Copyright (C) 2004 - 2013 Robert Casties (robcast@berlios.de)
+ * Copyright (C) 2004 - 2013 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -22,6 +22,7 @@ package digilib.servlet;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
+ * Author: Robert Casties (robcast@berlios.de)
  */
 
 import java.io.File;

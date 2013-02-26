@@ -7,7 +7,7 @@ package digilib.servlet;
  * Worker class for the asynchronous Servlet API.
  * 
  * %%
- * Copyright (C) 2011 - 2013 Robert Casties (robcast@berlios.de)
+ * Copyright (C) 2011 - 2013 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,7 +24,7 @@ package digilib.servlet;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  * 
- * created 19.2.2011
+ * Author: Robert Casties (robcast@berlios.de) 19.2.2011
  */
 
 import java.io.IOException;

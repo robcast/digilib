@@ -7,7 +7,7 @@ package digilib.io;
  * Digital Image Library servlet components
  * 
  * %%
- * Copyright (C) 2003 - 2013 Robert Casties (robcast@mail.berlios.de)
+ * Copyright (C) 2003 - 2013 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,6 +23,7 @@ package digilib.io;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
+ * Author: Robert Casties (robcast@berlios.de)
  * Created on 25.11.2003 by casties
  */
 

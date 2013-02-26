@@ -23,6 +23,7 @@ package digilib.image;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
+ * Author: Robert Casties (robcast@berlios.de)
  */
 
 import java.awt.Image;

@@ -4,7 +4,7 @@ package digilib.image;
  * #%L
  * Implementation of DocuImage using ImageJ version 1.
  * %%
- * Copyright (C) 2012 - 2013 Robert Casties (robcast@berlios.de)
+ * Copyright (C) 2012 - 2013 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -20,6 +20,7 @@ package digilib.image;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
+ * Author: Robert Casties (robcast@berlios.de)
  */
 
 import ij.IJ;

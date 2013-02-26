@@ -5,8 +5,7 @@ package digilib.servlet;
  * A container class for storing a set of instruction parameters 
  * used for content generator classes like MakePDF.  
  * %%
- * Copyright (C) 2009 - 2013 Christopher Mielack,
- *                           Robert Casties (robcast@berlios.de)
+ * Copyright (C) 2009 - 2013 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -22,6 +21,8 @@ package digilib.servlet;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
+ * Authors: Christopher Mielack,
+ *          Robert Casties (robcast@berlios.de)
  */
 
 import java.io.UnsupportedEncodingException;
