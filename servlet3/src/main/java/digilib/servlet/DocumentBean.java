@@ -6,7 +6,7 @@ package digilib.servlet;
  * DocumentBean -- Access control bean for JSP
  *
  * Digital Image Library servlet components
- *
+ * 
  * %%
  * Copyright (C) 2001 - 2013 MPIWG Berlin
  * %%
@@ -166,6 +166,13 @@ public class DocumentBean {
 			// shortcut if no authentication
 			return true;
 		}
+		// quick fix: add auth-url-path to base.url
+        if (isAuthRequired(request)) {
+            String baseUrl = request.getAsString("base.url");
+            if (!baseUrl.endsWith(authURLPath)) {
+                request.setValue("base.url", baseUrl + "/" + authURLPath);
+            }
+        }
 		// check if we are already authenticated
 		if (((HttpServletRequest) request.getServletRequest()).getRemoteUser() == null) {
 			logger.debug("unauthenticated so far");
@@ -173,7 +180,7 @@ public class DocumentBean {
 			if (isAuthRequired(request)) {
 				logger.debug("auth required, redirect");
 				// we are not yet authenticated -> redirect
-				response.sendRedirect(authURLPath
+				response.sendRedirect(request.getAsString("base.url")
 						+ ((HttpServletRequest) request.getServletRequest())
 								.getServletPath()
 						+ "?"
