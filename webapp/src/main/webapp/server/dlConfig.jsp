@@ -19,7 +19,7 @@
   <http://www.gnu.org/licenses/lgpl-3.0.html>.
   #L%
   Author: Robert Casties (robcast@berlios.de)
-  --%><%@page language="java" import="digilib.util.DigilibJobCenter"%>
+  --%><%@page language="java" import="digilib.util.DigilibJobCenter,java.io.File"%>
 <%!
 // authentication stuff - robert
 // -----------------------------
@@ -80,15 +80,18 @@ DigilibJobCenter imageProcessor =  (DigilibJobCenter)dlConfig.getValue("servlet.
             java.io.File f = (java.io.File) param.getValue();
             if (!f.isAbsolute()) {
                 // relative path -> use getRealPath to resolve
-                val = pageContext.getServletContext().getRealPath(f.getPath());
-            } else {
+                f = new File(pageContext.getServletContext().getRealPath(f.getPath()));
+            }
+            if (f.canRead()) {
                 val = f.toString();
+            } else {
+                val = "[missing file] "+f.toString();
             }
         } else {
             val = param.getAsString();
         }
         if (val.length() == 0) {
-            val = "(none)";
+            val = "[none]";
         }
 %>
   <tr>

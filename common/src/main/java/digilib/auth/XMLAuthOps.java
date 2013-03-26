@@ -32,7 +32,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import digilib.servlet.DigilibRequest;
 import digilib.util.HashTree;
 import digilib.util.XMLListLoader;
 
@@ -82,11 +81,11 @@ public class XMLAuthOps extends AuthOpsImpl {
 			// load authPaths
 			XMLListLoader pathLoader =
 				new XMLListLoader("digilib-paths", "path", "name", "role");
-			pathList = pathLoader.loadURL(configFile.toURL().toString());
+			pathList = pathLoader.loadUri(configFile.toURI());
 			// load authIPs
 			XMLListLoader ipLoader =
 				new XMLListLoader("digilib-addresses", "address", "ip", "role");
-			ipList = ipLoader.loadURL(configFile.toURL().toString());
+			ipList = ipLoader.loadUri(configFile.toURI());
 		} catch (Exception e) {
 			throw new AuthOpException(
 				"ERROR loading authorization config file: " + e);
@@ -128,37 +127,6 @@ public class XMLAuthOps extends AuthOpsImpl {
 		}
 		// which roles are required?
 		List<String> required = authPaths.match(filepath);
-		// do any provided roles match?
-		if ((provided != null) && (required != null)) {
-			for (int i = 0; i < provided.size(); i++) {
-				if (required.contains(provided.get(i))) {
-					// satisfied
-					return null;
-				}
-			}
-		}
-		return required;
-	}
-
-	/**
-	 * @see digilib.auth.AuthOps#rolesForPath(digilib.servlet.DigilibRequest)
-	 */
-	public List<String> rolesForPath(DigilibRequest request) throws AuthOpException {
-		logger.debug("rolesForPath ("
-				+ request.getFilePath()
-				+ ") by ["
-				+ request.getServletRequest().getRemoteAddr()
-				+ "]");
-
-		// check if the requests address provides a role
-		List<String> provided =
-			authIPs.match(request.getServletRequest().getRemoteAddr());
-		if ((provided != null) && (provided.contains("ALL"))) {
-			// ALL switches off checking;
-			return null;
-		}
-		// which roles are required?
-		List<String> required = authPaths.match(request.getFilePath());
 		// do any provided roles match?
 		if ((provided != null) && (required != null)) {
 			for (int i = 0; i < provided.size(); i++) {

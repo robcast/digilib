@@ -28,6 +28,8 @@ package digilib.util;
 
 // JAXP packages
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -105,7 +107,7 @@ public class XMLListLoader {
 			// open a new namespace
 			tagSpace.addLast(qName);
 
-			// ist it an entry tag?
+			// is it an entry tag?
 			if (qName.equals(entryTag)) {
 				// is it inside a list tag?
 				if ((listTag.length() > 0) && (!tagSpace.contains(listTag))) {
@@ -154,10 +156,24 @@ public class XMLListLoader {
 	}
 
 	/**
+     *  load and parse a file (as URL)
+     *    returns HashMap with list data
+     * @deprecated Use {@link #loadUri(URI)} instead
+     */
+    public Map<String, String> loadURL(String uri) throws SAXException, IOException {
+        try {
+            return loadUri(new URI(uri));
+        } catch (URISyntaxException e) {
+            logger.error("Unable to convert URI!");
+            throw new IOException(e);
+        }
+    }
+
+    /**
 	 *  load and parse a file (as URL)
 	 *    returns HashMap with list data
 	 */
-	public Map<String, String> loadURL(String path) throws SAXException, IOException {
+	public Map<String, String> loadUri(URI uri) throws SAXException, IOException {
 		//System.out.println("loadurl ("+path+")");
 		// Create a JAXP SAXParserFactory and configure it
 		SAXParserFactory spf = SAXParserFactory.newInstance();
@@ -176,7 +192,7 @@ public class XMLListLoader {
 		XMLListParser listParser = new XMLListParser();
 
 		// Tell the SAXParser to parse the XML document
-		parser.parse(path, listParser);
+		parser.parse(uri.toString(), listParser);
 
 		return listParser.getData();
 	}

@@ -54,7 +54,6 @@
     <login-config>
         <auth-method>BASIC</auth-method>
         <realm-name>digilib</realm-name>
-        <auth-method>FORM</auth-method>
         <form-login-config>
             <form-login-page>/digilib-login.html</form-login-page>
             <form-error-page>/digilib-fail.html</form-error-page>

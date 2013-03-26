@@ -103,7 +103,7 @@ public class Scaler extends HttpServlet {
     protected DigilibConfiguration dlConfig;
 
     /** use authorization database */
-    protected boolean useAuthorization = true;
+    protected boolean useAuthorization = false;
 
     /** AuthOps instance */
     protected AuthOps authOp;
@@ -115,6 +115,7 @@ public class Scaler extends HttpServlet {
      * 
      * @see javax.servlet.Servlet#init(javax.servlet.ServletConfig)
      */
+    @SuppressWarnings("unchecked")
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
 

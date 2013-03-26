@@ -188,7 +188,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
             // setup config file list reader
             XMLListLoader lilo = new XMLListLoader("digilib-config", "parameter", "name", "value");
             // read config file into HashMap
-            Map<String, String> confTable = lilo.loadURL(f.toURL().toString());
+            Map<String, String> confTable = lilo.loadUri(f.toURI());
 
             // set config file path parameter
             setValue("servlet.config.file", f.getCanonicalPath());
