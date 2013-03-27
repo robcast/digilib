@@ -27,6 +27,7 @@ package digilib.util;
  * Created on 02.09.2003 by casties
  */
 
+import java.io.File;
 import java.util.HashMap;
 
 
@@ -171,6 +172,18 @@ public class ParameterMap {
 		Parameter p = params.get(key);
 		return (p != null) ? p.getAsBoolean() : false;
 	}
+
+    /** Get the Parameter with the corresponding key.
+     * 
+     * Returns null if no element is associated with key.
+     * 
+     * @param key
+     * @return
+     */
+    public File getAsFile(String key) {
+        Parameter p = params.get(key);
+        return (p != null) ? p.getAsFile() : null;
+    }
 
 	/** Returns if the Parameter's value has been set.
 	 * 

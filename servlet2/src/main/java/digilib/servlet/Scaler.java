@@ -59,7 +59,7 @@ public class Scaler extends HttpServlet {
     private static final long serialVersionUID = -5439198888139362735L;
 
     /** digilib servlet version (for all components) */
-    public static final String version = "2.1b4 noasync";
+    public static final String version = "2.1.4 noasync";
 
     /** servlet error codes */
     public static enum Error {UNKNOWN, AUTH, FILE, IMAGE};
@@ -110,6 +110,7 @@ public class Scaler extends HttpServlet {
      * 
      * @see javax.servlet.Servlet#init(javax.servlet.ServletConfig)
      */
+    @SuppressWarnings("unchecked")
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
 
@@ -142,12 +143,9 @@ public class Scaler extends HttpServlet {
         imageJobCenter = (DigilibJobCenter<DocuImage>) dlConfig
                 .getValue("servlet.worker.imageexecutor");
 
-        denyImgFile = ServletOps.getFile(
-                (File) dlConfig.getValue("denied-image"), context);
-        errorImgFile = ServletOps.getFile(
-                (File) dlConfig.getValue("error-image"), context);
-        notfoundImgFile = ServletOps.getFile(
-                (File) dlConfig.getValue("notfound-image"), context);
+        denyImgFile = ServletOps.getFile(dlConfig.getAsFile("denied-image"), context);
+        errorImgFile = ServletOps.getFile(dlConfig.getAsFile("error-image"), context);
+        notfoundImgFile = ServletOps.getFile(dlConfig.getAsFile("notfound-image"), context);
         sendFileAllowed = dlConfig.getAsBoolean("sendfile-allowed");
     }
 

@@ -392,7 +392,8 @@ public class DigilibServletRequest extends DigilibRequest {
     public void setWithParamRequest(ServletRequest request) {
         setValue("servlet.request", request);
         // go through all request parameters
-        for (Enumeration<String> i = request.getParameterNames(); i.hasMoreElements();) {
+        for (@SuppressWarnings("unchecked")
+        Enumeration<String> i = request.getParameterNames(); i.hasMoreElements();) {
             String name = (String) i.nextElement();
             // is this a known parameter?
             if (params.containsKey(name)) {

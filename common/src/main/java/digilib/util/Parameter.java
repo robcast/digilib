@@ -178,22 +178,44 @@ public class Parameter {
 		return (value != null) ? value : defval;
 	}
 
+    /**
+     * Get the value as Object.
+     * 
+     * Returns the default if the value is not set.
+     * 
+     * @return
+     */
 	public int getAsInt() {
 		Integer i = (Integer) getValue();
 		return (i != null) ? i.intValue() : 0;
 	}
 
+    /**
+     * Get the value as float.
+     * 
+     * Returns the default if the value is not set.
+     * 
+     * @return
+     */
 	public float getAsFloat() {
 		Float f = (Float) getValue();
 		return (f != null) ? f.floatValue() : 0f;
 	}
 
+    /**
+     * Get the value as String.
+     * 
+     * Returns the default if the value is not set.
+     * 
+     * @return
+     */
 	public String getAsString() {
 		Object s = getValue();
 		if (s == null) {
 			return "";
 		}
 		if (s.getClass() == File.class) {
+		    // get Files as CanonicalPath
 			try {
 				return ((File) s).getCanonicalPath();
 			} catch (IOException e) {
@@ -203,10 +225,29 @@ public class Parameter {
 		return s.toString();
 	}
 
+    /**
+     * Get the value as boolean.
+     * 
+     * Returns the default if the value is not set.
+     * 
+     * @return
+     */
 	public boolean getAsBoolean() {
 		Boolean b = (Boolean) getValue();
 		return (b != null) ? b.booleanValue() : false;
 	}
+
+    /**
+     * Get the value as File.
+     * 
+     * Returns the default if the value is not set.
+     * 
+     * @return
+     */
+    public File getAsFile() {
+        File f = (File) getValue();
+        return f;
+    }
 
 	public String[] parseAsArray(String separator) {
 		String s = getAsString();

@@ -59,7 +59,7 @@ public class AliasingDocuDirCache extends DocuDirCache {
 			// load into pathMap
 			XMLListLoader mapLoader = new XMLListLoader("digilib-aliases",
 					"mapping", "link", "dir");
-			pathMap = mapLoader.loadURL(confFile.toURL().toString());
+			pathMap = mapLoader.loadUri(confFile.toURI());
 		} catch (Exception e) {
 			throw new FileOpException("ERROR loading mapping file: " + e);
 		}

@@ -57,7 +57,7 @@ public class Scaler extends HttpServlet {
     private static final long serialVersionUID = 5289386646192471549L;
 
     /** digilib servlet version (for all components) */
-    public static final String version = "2.1b4 async";
+    public static final String version = "2.1.4 async";
 
     /** servlet error codes */
     public static enum Error {
@@ -148,12 +148,9 @@ public class Scaler extends HttpServlet {
         imageJobCenter = (DigilibJobCenter<DocuImage>) dlConfig
                 .getValue("servlet.worker.imageexecutor");
 
-        denyImgFile = ServletOps.getFile(
-                (File) dlConfig.getValue("denied-image"), context);
-        errorImgFile = ServletOps.getFile(
-                (File) dlConfig.getValue("error-image"), context);
-        notfoundImgFile = ServletOps.getFile(
-                (File) dlConfig.getValue("notfound-image"), context);
+        denyImgFile = ServletOps.getFile(dlConfig.getAsFile("denied-image"), context);
+        errorImgFile = ServletOps.getFile(dlConfig.getAsFile("error-image"), context);
+        notfoundImgFile = ServletOps.getFile(dlConfig.getAsFile("notfound-image"), context);
         sendFileAllowed = dlConfig.getAsBoolean("sendfile-allowed");
         try {
             defaultErrMsgType = ErrMsg.valueOf(dlConfig

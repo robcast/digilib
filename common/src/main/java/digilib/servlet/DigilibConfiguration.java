@@ -72,6 +72,7 @@ public class DigilibConfiguration extends ParameterMap {
     /** Definition of parameters and default values.
 	 * 
 	 */
+    @SuppressWarnings("unchecked")
     protected void initParams() {
         /*
          * Definition of parameters and default values. System parameters that

@@ -53,7 +53,7 @@ public class ServletOps {
 
     /**
      * convert a string with a list of pathnames into an array of strings using
-     * the system's path seperator string
+     * the system's path separator string
      */
     public static String[] getPathArray(String paths) {
         // split list into directories
@@ -86,6 +86,10 @@ public class ServletOps {
         if (!f.isAbsolute()) {
             // relative path -> use getRealPath to resolve in WEB-INF
             String fn = sc.getRealPath(f.getPath());
+            if (fn == null) {
+                // TODO: use getResourceAsStream?
+                return null;
+            }
             f = new File(fn);
         }
         return f;
@@ -136,6 +140,10 @@ public class ServletOps {
         }
         // relative path -> use getRealPath to resolve in WEB-INF
         String newfn = sc.getRealPath("WEB-INF/" + fn);
+        if (fn == null) {
+            // TODO: use getResourceAsStream?
+            return null;
+        }
         f = new File(newfn);
         return f;
     }
