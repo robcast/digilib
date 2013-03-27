@@ -31,6 +31,7 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
+import digilib.conf.DigilibConfiguration;
 import digilib.image.DocuImage.ColorOp;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
@@ -39,7 +40,6 @@ import digilib.io.FileOps;
 import digilib.io.FileOps.FileClass;
 import digilib.io.ImageInput;
 import digilib.io.ImageSet;
-import digilib.servlet.DigilibConfiguration;
 import digilib.util.ImageSize;
 import digilib.util.OptionsSet;
 import digilib.util.Parameter;

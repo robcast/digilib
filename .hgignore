@@ -104,3 +104,11 @@ syntax: regexp
 ^target$
 syntax: regexp
 ^webapp/bin$
+syntax: regexp
+^servlet/target$
+syntax: regexp
+^servlet/\.settings$
+syntax: regexp
+^servlet/\.classpath$
+syntax: regexp
+^servlet/\.project$

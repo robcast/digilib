@@ -20,7 +20,13 @@
   #L%
   Author: Robert Casties (robcast@berlios.de)
   --%><%@page language="java" 
-	import="digilib.io.FileOps, digilib.io.ImageFileSet, digilib.io.ImageFile, digilib.util.ImageSize, digilib.servlet.DigilibConfiguration"
+  import="digilib.io.FileOps, 
+          digilib.io.ImageFileSet, 
+          digilib.io.ImageFile, 
+          digilib.util.ImageSize,
+          digilib.io.DocuDirCache,
+          digilib.conf.DigilibServletRequest,
+          digilib.conf.DigilibServletConfiguration"
 	contentType="application/json"%><%!
 // create DocumentBean instance for all JSP requests
 digilib.servlet.DocumentBean docBean = new digilib.servlet.DocumentBean();
@@ -36,11 +42,11 @@ public void jspInit() {
 }
 %><%
 // parsing the query
-digilib.servlet.DigilibServletRequest dlRequest = new digilib.servlet.DigilibServletRequest(request);
+DigilibServletRequest dlRequest = new DigilibServletRequest(request);
 docBean.setRequest(dlRequest);
 // dir cache
-digilib.servlet.DigilibConfiguration dlConfig = docBean.getDlConfig();
-digilib.io.DocuDirCache dirCache = (digilib.io.DocuDirCache) dlConfig.getValue("servlet.dir.cache");
+DigilibServletConfiguration dlConfig = docBean.getDlConfig();
+DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 // get file
 FileOps.FileClass fc = FileOps.FileClass.IMAGE;
 ImageFileSet imgFile = (ImageFileSet) dirCache.getFile(dlRequest.getFilePath(), dlRequest.getAsInt("pn"), fc);

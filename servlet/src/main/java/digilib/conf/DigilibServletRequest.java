@@ -1,14 +1,13 @@
-package digilib.servlet;
+package digilib.conf;
 
 /*
  * #%L
- * 
- * DigilibServletRequest.java
+ * DigilibRequest.java
  *
  * lightweight class carrying all parameters for a request to digilib
- * 
  * %%
- * Copyright (C) 2002 - 2013 MPIWG Berlin, WTWG Uni Bern
+ * Copyright (C) 2001 - 2013 MPIWG Berlin, WTWG Uni Bern
+ *                           
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,10 +23,8 @@ package digilib.servlet;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
- * Authors: Robert Casties (robcast@berlios.de),
- *          Christian Luginbuehl
- * 
- * Created on 27. August 2002, 19:43
+ * Author: Robert Casties (robcast@berlios.de),
+ *         Christian Luginbuehl
  */
 
 import java.io.UnsupportedEncodingException;
@@ -38,6 +35,7 @@ import java.util.StringTokenizer;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
+import digilib.conf.DigilibRequest;
 import digilib.image.DocuImage;
 import digilib.io.FileOps;
 import digilib.util.OptionsSet;
@@ -395,7 +393,8 @@ public class DigilibServletRequest extends DigilibRequest {
     public void setWithParamRequest(ServletRequest request) {
         setValue("servlet.request", request);
         // go through all request parameters
-        for (Enumeration<String> i = request.getParameterNames(); i.hasMoreElements();) {
+        for (@SuppressWarnings("unchecked")
+        Enumeration<String> i = request.getParameterNames(); i.hasMoreElements();) {
             String name = (String) i.nextElement();
             // is this a known parameter?
             if (params.containsKey(name)) {

@@ -19,9 +19,11 @@
   <http://www.gnu.org/licenses/lgpl-3.0.html>.
   #L%
   Author: Robert Casties (robcast@berlios.de)
-  --%><%@ page language="java" %><%!
+  --%><%@ page language="java" 
+    import="digilib.servlet.DocumentBean,
+          digilib.conf.DigilibServletRequest"%><%!
 // create DocumentBean instance for all JSP requests
-digilib.servlet.DocumentBean docBean = new digilib.servlet.DocumentBean();
+DocumentBean docBean = new DocumentBean();
 
 // initialize DocumentBean instance in JSP init
 public void jspInit() {
@@ -35,10 +37,8 @@ public void jspInit() {
 %><?xml version="1.0" encoding="UTF-8" ?>
 <%
 // process request
-// get digilib config
-digilib.servlet.DigilibConfiguration dlConfig = docBean.getDlConfig();
 // parsing the query
-digilib.servlet.DigilibServletRequest dlRequest = new digilib.servlet.DigilibServletRequest(request);
+DigilibServletRequest dlRequest = new DigilibServletRequest(request);
 docBean.setRequest(dlRequest);
 
 %><!-- Automatically generated XML snippet with document parameters -->

@@ -36,8 +36,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 
+import digilib.conf.DigilibConfiguration;
 import digilib.io.FileOps.FileClass;
-import digilib.servlet.DigilibConfiguration;
 
 /**
  * @author casties

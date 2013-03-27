@@ -1,10 +1,10 @@
-package digilib.servlet;
+package digilib.conf;
 
 /*
  * #%L
- * DigilibServletConfiguration.java
+ * DigilibConfiguration -- Holding all parameters for digilib servlet.
  * 
- * Class holding all parameters for digilib servlet.
+ * Digital Image Library servlet components
  * 
  * %%
  * Copyright (C) 2001 - 2013 MPIWG Berlin
@@ -24,7 +24,6 @@ package digilib.servlet;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  * Author: Robert Casties (robcast@berlios.de)
- * 
  */
 
 import java.io.File;
@@ -36,6 +35,7 @@ import javax.servlet.ServletContext;
 
 import digilib.image.DocuImageImpl;
 import digilib.io.FileOps;
+import digilib.servlet.ServletOps;
 import digilib.util.Parameter;
 import digilib.util.XMLListLoader;
 
@@ -74,8 +74,6 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
          * are not read from config file have a type 's'.
          */
 
-        // digilib servlet version
-        newParameter("servlet.version", digilib.servlet.Scaler.getVersion(), null, 's');
         // configuration file location
         newParameter("servlet.config.file", null, null, 's');
         // DocuDirCache instance

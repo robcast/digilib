@@ -42,6 +42,8 @@ import org.apache.log4j.Logger;
 
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthOps;
+import digilib.conf.DigilibServletConfiguration;
+import digilib.conf.DigilibServletRequest;
 import digilib.image.DocuImage;
 import digilib.image.ImageJobDescription;
 import digilib.image.ImageOpException;
@@ -59,7 +61,7 @@ public class Scaler extends HttpServlet {
     private static final long serialVersionUID = -5439198888139362735L;
 
     /** digilib servlet version (for all components) */
-    public static final String version = "2.1.4 noasync";
+    public static final String version = "2.1.5 noasync";
 
     /** servlet error codes */
     public static enum Error {UNKNOWN, AUTH, FILE, IMAGE};
@@ -236,13 +238,12 @@ public class Scaler extends HttpServlet {
             // check permissions
             if (useAuthorization) {
                 // get a list of required roles (empty if no restrictions)
-                List<String> rolesRequired = authOp.rolesForPath(
-                        jobTicket.getFilePath(), request);
+                List<String> rolesRequired = authOp.rolesForPath(dlRequest);
                 if (rolesRequired != null) {
                     authlog.debug("Role required: " + rolesRequired);
                     authlog.debug("User: " + request.getRemoteUser());
                     // is the current request/user authorized?
-                    if (!authOp.isRoleAuthorized(rolesRequired, request)) {
+                    if (!authOp.isRoleAuthorized(rolesRequired, dlRequest)) {
                         // send deny answer and abort
                         throw new AuthOpException();
                     }

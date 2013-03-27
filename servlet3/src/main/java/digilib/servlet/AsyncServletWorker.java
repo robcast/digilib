@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
+import digilib.conf.DigilibConfiguration;
 import digilib.image.DocuImage;
 import digilib.image.ImageJobDescription;
 import digilib.image.ImageOpException;
@@ -90,11 +91,6 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
      */
     @Override
     public void run() {
-        // get fresh response
-        HttpServletResponse response = (HttpServletResponse) asyncContext
-                .getResponse();
-        logger.debug("working on response: ("
-                + ServletOps.headersToString(response) + ")");
         try {
             // render the image
             DocuImage img = imageWorker.call();

@@ -32,8 +32,8 @@ import java.io.File;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import digilib.conf.DigilibConfiguration;
 import digilib.io.FileOps.FileClass;
-import digilib.servlet.DigilibConfiguration;
 import digilib.util.XMLListLoader;
 
 /**

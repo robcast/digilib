@@ -1,4 +1,4 @@
-package digilib.servlet;
+package digilib.conf;
 
 /*
  * #%L

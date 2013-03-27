@@ -41,7 +41,7 @@ public void jspInit() {
 // parsing the query
 // -----------------
 
-digilib.servlet.DigilibServletRequest dlRequest = new digilib.servlet.DigilibServletRequest(request);
+digilib.conf.DigilibServletRequest dlRequest = new digilib.conf.DigilibServletRequest(request);
 // check if authentication is needed and redirect if necessary
 docBean.doAuthentication(dlRequest, response);
     

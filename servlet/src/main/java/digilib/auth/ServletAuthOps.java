@@ -32,7 +32,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 
-import digilib.servlet.DigilibRequest;
+import digilib.conf.DigilibRequest;
+import digilib.conf.DigilibServletRequest;
 
 /**
  * Basic implementation of AuthOps interface.
@@ -40,13 +41,13 @@ import digilib.servlet.DigilibRequest;
  * Provides basic implementations. Only rolesForPath needs to be implemented by
  * specific implementations.
  */
-public abstract class AuthOpsImpl implements AuthOps {
+public abstract class ServletAuthOps implements AuthOps {
 
     /** general logger for this class */
     protected Logger logger = Logger.getLogger(this.getClass());
 
     /** Default constructor. */
-    public AuthOpsImpl() {
+    public ServletAuthOps() {
         try {
             init();
         } catch (AuthOpException e) {
@@ -71,7 +72,7 @@ public abstract class AuthOpsImpl implements AuthOps {
     }
 
     /**
-     * @see digilib.auth.AuthOps#isAuthRequired(digilib.servlet.DigilibRequest)
+     * @see digilib.auth.AuthOps#isAuthRequired(digilib.conf.DigilibRequest)
      */
     public boolean isAuthRequired(DigilibRequest request) throws AuthOpException {
         // check permissions
@@ -100,7 +101,7 @@ public abstract class AuthOpsImpl implements AuthOps {
     }
 
     /**
-     * @see digilib.auth.AuthOps#isAuthorized(digilib.servlet.DigilibRequest)
+     * @see digilib.auth.AuthOps#isAuthorized(digilib.conf.DigilibRequest)
      */
     public boolean isAuthorized(DigilibRequest request) throws AuthOpException {
         List<String> rolesAllowed = rolesForPath(request);
@@ -130,12 +131,12 @@ public abstract class AuthOpsImpl implements AuthOps {
 
     /**
      * @see digilib.auth.AuthOps#isRoleAuthorized(java.util.List,
-     *      digilib.servlet.DigilibRequest)
+     *      digilib.conf.DigilibRequest)
      */
     public boolean isRoleAuthorized(List<String> roles, DigilibRequest request) {
         for (String s : roles) {
             logger.debug("Testing role: " + s);
-            if (request.getServletRequest().isUserInRole(s)) {
+            if (((DigilibServletRequest) request).getServletRequest().isUserInRole(s)) {
                 logger.debug("Role Authorized");
                 return true;
             }
@@ -148,10 +149,10 @@ public abstract class AuthOpsImpl implements AuthOps {
     public abstract List<String> rolesForPath(String filepath, HttpServletRequest request) throws AuthOpException;
 
     /**
-     * @see digilib.auth.AuthOps#rolesForPath(digilib.servlet.DigilibRequest)
+     * @see digilib.auth.AuthOps#rolesForPath(digilib.conf.DigilibRequest)
      */
     public List<String> rolesForPath(DigilibRequest request) throws AuthOpException {
-        return rolesForPath(request.getFilePath(), request.getServletRequest());
+        return rolesForPath(request.getFilePath(), ((DigilibServletRequest) request).getServletRequest());
     }
 
 }

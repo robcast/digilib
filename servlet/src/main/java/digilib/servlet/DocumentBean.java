@@ -39,6 +39,8 @@ import org.apache.log4j.Logger;
 
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthOps;
+import digilib.conf.DigilibServletConfiguration;
+import digilib.conf.DigilibServletRequest;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
 import digilib.io.FileOps.FileClass;

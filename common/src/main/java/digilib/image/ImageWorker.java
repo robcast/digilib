@@ -29,8 +29,8 @@ import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 
+import digilib.conf.DigilibConfiguration;
 import digilib.io.FileOpException;
-import digilib.servlet.DigilibConfiguration;
 
 /**
  * Worker that renders an image.

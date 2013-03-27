@@ -40,7 +40,7 @@ import digilib.util.XMLListLoader;
  * The configuration file is read by an XMLListLoader into HashTree objects for 
  * authentication paths and IP numbers.
  */
-public class XMLAuthOps extends AuthOpsImpl {
+public class XMLAuthOps extends ServletAuthOps {
 
 	private File configFile;
 	private HashTree authPaths;

@@ -19,11 +19,18 @@
   <http://www.gnu.org/licenses/lgpl-3.0.html>.
   #L%
   Author: Robert Casties (robcast@berlios.de)
-  --%><%@ page language="java" %><%!
+  --%><%@ page language="java"
+          import="digilib.util.DigilibJobCenter,
+          digilib.servlet.DocumentBean,
+          digilib.conf.DigilibServletConfiguration,
+          digilib.conf.DigilibServletRequest,
+          digilib.io.DocuDirCache,
+          java.io.File"%>
+<%!
 // authentication stuff - robert
 // -----------------------------
 // create DocumentBean instance for all JSP requests
-digilib.servlet.DocumentBean docBean = new digilib.servlet.DocumentBean();
+DocumentBean docBean = new DocumentBean();
 
 // initialize DocumentBean instance in JSP init
 public void jspInit() {
@@ -38,13 +45,13 @@ public void jspInit() {
 
 <%
 // get digilib config
-digilib.servlet.DigilibConfiguration dlConfig = docBean.getDlConfig();
+DigilibServletConfiguration dlConfig = docBean.getDlConfig();
 // parsing the query
-digilib.servlet.DigilibServletRequest dlRequest = new digilib.servlet.DigilibServletRequest(request);
+DigilibServletRequest dlRequest = new DigilibServletRequest(request);
 // add number of pages
 dlRequest.setValue("pt", docBean.getNumPages(dlRequest));
 // dir cache
-digilib.io.DocuDirCache dirCache = (digilib.io.DocuDirCache) dlConfig.getValue("servlet.dir.cache");
+DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 %>
 
 <html>

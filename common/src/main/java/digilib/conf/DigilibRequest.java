@@ -1,4 +1,4 @@
-package digilib.servlet;
+package digilib.conf;
 
 /*
  * #%L
@@ -32,8 +32,6 @@ package digilib.servlet;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.StringTokenizer;
-
-import javax.servlet.http.HttpServletRequest;
 
 import digilib.image.DocuImage;
 import digilib.io.FileOps;
@@ -306,10 +304,5 @@ public class DigilibRequest extends ParameterMap {
 		this.image = image;
 		setValue("docu.image", image);
 	}
-
-    public HttpServletRequest getServletRequest() {
-        // TODO Auto-generated method stub
-        return null;
-    }
 
 }

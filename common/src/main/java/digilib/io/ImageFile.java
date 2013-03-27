@@ -34,7 +34,7 @@ import java.io.RandomAccessFile;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 
-import digilib.servlet.DigilibConfiguration;
+import digilib.conf.DigilibConfiguration;
 import digilib.util.ImageSize;
 
 /**

@@ -43,6 +43,7 @@ import org.apache.log4j.xml.DOMConfigurator;
 
 import digilib.auth.AuthOps;
 import digilib.auth.XMLAuthOps;
+import digilib.conf.DigilibServletConfiguration;
 import digilib.image.DocuImage;
 import digilib.io.AliasingDocuDirCache;
 import digilib.io.DocuDirCache;
@@ -95,6 +96,8 @@ public class Initialiser implements ServletContextListener {
 			// create new Configuration
 			try {
 				dlConfig = new DigilibServletConfiguration(context);
+				// add servlet version
+				dlConfig.newParameter("servlet.version", Scaler.getVersion(), null, 's');
 
 				/*
 				 * further initialization

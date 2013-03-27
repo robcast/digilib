@@ -19,9 +19,18 @@
   <http://www.gnu.org/licenses/lgpl-3.0.html>.
   #L%
   Author: Robert Casties (robcast@berlios.de)
-  --%><%@page import="digilib.io.FileOps"%><%@ page language="java" %><%!
+  --%><%@ page language="java"
+    import="digilib.servlet.DocumentBean,
+          digilib.conf.DigilibServletConfiguration,
+          digilib.conf.DigilibServletRequest,
+          digilib.io.DocuDirCache,
+          digilib.io.DocuDirectory,
+          digilib.io.DocuDirent,
+          java.io.File"%>
+   
+<%!
 // create DocumentBean instance for all JSP requests
-digilib.servlet.DocumentBean docBean = new digilib.servlet.DocumentBean();
+DocumentBean docBean = new DocumentBean();
 
 // initialize DocumentBean instance in JSP init
 public void jspInit() {
@@ -36,13 +45,13 @@ public void jspInit() {
 <%
 // process request
 // get digilib config
-digilib.servlet.DigilibConfiguration dlConfig = docBean.getDlConfig();
+DigilibServletConfiguration dlConfig = docBean.getDlConfig();
 // parsing the query
-digilib.servlet.DigilibServletRequest dlRequest = new digilib.servlet.DigilibServletRequest(request);
+DigilibServletRequest dlRequest = new DigilibServletRequest(request);
 // dir cache
-digilib.io.DocuDirCache dirCache = (digilib.io.DocuDirCache) dlConfig.getValue("servlet.dir.cache");
+DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 // get directory
-digilib.io.DocuDirectory dir = dirCache.getDirectory(dlRequest.getFilePath());
+DocuDirectory dir = dirCache.getDirectory(dlRequest.getFilePath());
 FileOps.FileClass fc = FileOps.FileClass.IMAGE;
 int dirSize = dir != null ? dir.size(fc) : 0;
 
@@ -54,7 +63,7 @@ int dirSize = dir != null ? dir.size(fc) : 0;
 <%
     if (!dlRequest.hasOption("mo", "dir")) {
       for (int i = 0; i < dirSize; i++) {
-        digilib.io.DocuDirent f = dir.get(i, fc);
+        DocuDirent f = dir.get(i, fc);
         String fn = (f != null) ? f.getName() : "null";
 %>  <file>
     <index><%= i+1 %></index>

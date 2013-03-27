@@ -19,9 +19,14 @@
   <http://www.gnu.org/licenses/lgpl-3.0.html>.
   #L%
   Author: Robert Casties (robcast@berlios.de)
-  --%><%@ page language="java" %><%!
+  --%><%@ page language="java"
+    import="digilib.servlet.DocumentBean,
+          digilib.conf.DigilibServletConfiguration,
+          digilib.conf.DigilibServletRequest,
+          digilib.io.DocuDirCache,
+          java.io.File"%><%!
 // create DocumentBean instance for all JSP requests
-digilib.servlet.DocumentBean docBean = new digilib.servlet.DocumentBean();
+DocumentBean docBean = new DocumentBean();
 
 // initialize DocumentBean instance in JSP init
 public void jspInit() {
@@ -36,12 +41,11 @@ public void jspInit() {
 <%
 // process request
 // get digilib config
-digilib.servlet.DigilibConfiguration dlConfig = docBean.getDlConfig();
+DigilibServletConfiguration dlConfig = docBean.getDlConfig();
 // parsing the query
-digilib.servlet.DigilibServletRequest dlRequest = new digilib.servlet.DigilibServletRequest(request);
+DigilibServletRequest dlRequest = new DigilibServletRequest(request);
 // dir cache
-digilib.io.DocuDirCache dirCache = (digilib.io.DocuDirCache) dlConfig.getValue("servlet.dir.cache");
-
+DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 %><!-- Automatically generated XML snippet with document context -->
 <result>
 <%
@@ -54,10 +58,10 @@ if (f != null) {
     f.checkMeta();
     java.util.HashMap meta = f.getFileMeta();
     if (meta != null) {
-	//ctx = "JSP:hasmeta!";
-	if (meta.containsKey("context")) {
-	    ctx = (String) meta.get("context");
-	}
+    	//ctx = "JSP:hasmeta!";
+    	if (meta.containsKey("context")) {
+    	    ctx = (String) meta.get("context");
+    	}
     }
 }
 %><%= ctx %>

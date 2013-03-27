@@ -28,23 +28,10 @@ package digilib.auth;
 
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
-import digilib.servlet.DigilibRequest;
+import digilib.conf.DigilibRequest;
 
 /** Class of operations requiring authentication. */
 public interface AuthOps {
-
-	/** Test if the request must be authorized to access the filepath.
-	 *
-	 * Information about the user is taken from the ServletRequest.
-	 * @param filepath filepath to be accessed.
-	 * @param request ServletRequest with user information.
-	 * @throws AuthOpException Exception thrown on error.
-	 * @return true if the user request must be authorized.
-	 */
-	public boolean isAuthRequired(String filepath, HttpServletRequest request)
-		throws AuthOpException;
 
 	/** Test if the request must be authorized to access the filepath.
 	 *
@@ -54,16 +41,6 @@ public interface AuthOps {
 	 * @return true if the user request must be authorized.
 	 */
 	public boolean isAuthRequired(DigilibRequest request)
-		throws AuthOpException;
-
-	/** Test if the request is allowed to access filepath.
-	 * 
-	 * @param filepath filepath to be acessed.
-	 * @param request Request with user information.
-	 * @throws AuthOpException Exception thrown on error.
-	 * @return true if the request is allowed.
-	 */
-	public boolean isAuthorized(String filepath, HttpServletRequest request)
 		throws AuthOpException;
 
 	/** Test if the request is allowed to access filepath.
@@ -82,34 +59,12 @@ public interface AuthOps {
 	 *
 	 * The location information of the request is also considered.
 	 *
-	 * @param filepath filepath to be accessed.
-	 * @param request ServletRequest with address information.
-	 * @throws AuthOpException Exception thrown on error.
-	 * @return List of Strings with role names.
-	 */
-	public List<String> rolesForPath(String filepath, HttpServletRequest request)
-		throws AuthOpException;
-
-	/** Authorization roles needed for request.
-	 *
-	 * Returns the list of authorization roles that are needed to access the
-	 * specified path. No list means the path is free.
-	 *
-	 * The location information of the request is also considered.
-	 *
 	 * @param request DigilibRequest with address information.
 	 * @throws AuthOpException Exception thrown on error.
 	 * @return List of Strings with role names.
 	 */
 	public List<String> rolesForPath(DigilibRequest request)
 		throws AuthOpException;
-
-	/** Test request authorization against a list of roles.
-	 * @param roles List of Strings with role names.
-	 * @param request ServletRequest with address information.
-	 * @return true if the user information in the request authorizes one of the roles.
-	 */
-	public boolean isRoleAuthorized(List<String> roles, HttpServletRequest request);
 
 	/** Test request authorization against a list of roles.
 	 * @param roles List of Strings with role names.

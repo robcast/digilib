@@ -44,6 +44,8 @@ import org.apache.log4j.xml.DOMConfigurator;
 
 import digilib.auth.AuthOps;
 import digilib.auth.XMLAuthOps;
+import digilib.conf.DigilibConfiguration;
+import digilib.conf.DigilibServletConfiguration;
 import digilib.image.DocuImage;
 import digilib.io.AliasingDocuDirCache;
 import digilib.io.DocuDirCache;
@@ -51,7 +53,7 @@ import digilib.io.FileOps.FileClass;
 import digilib.util.DigilibJobCenter;
 
 /**
- * Singleton initalisation listener for setup tasks and resources.
+ * Singleton initialisation listener for setup tasks and resources.
  * 
  * @author casties
  *  
@@ -96,6 +98,8 @@ public class Initialiser implements ServletContextListener, ServletRequestListen
 			// create new Configuration
 			try {
 				dlConfig = new DigilibServletConfiguration(context);
+                // add servlet version
+                dlConfig.newParameter("servlet.version", Scaler.getVersion(), null, 's');
 
 				/*
 				 * further initialization
