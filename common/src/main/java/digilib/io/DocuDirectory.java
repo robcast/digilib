@@ -38,7 +38,7 @@ import org.xml.sax.SAXException;
 
 import digilib.io.FileOps.FileClass;
 import digilib.meta.MetadataMap;
-import digilib.meta.XMLMetaLoader;
+import digilib.meta.IndexMetaLoader;
 
 /**
  * @author casties
@@ -266,10 +266,10 @@ public class DocuDirectory extends Directory {
 		// check for directory metadata...
 		File mf = new File(dir, "index.meta");
 		if (mf.canRead()) {
-			XMLMetaLoader ml = new XMLMetaLoader();
+			IndexMetaLoader ml = new IndexMetaLoader();
 			try {
 				// read directory meta file
-				Map<String, MetadataMap> fileMeta = ml.loadURL(mf.getAbsolutePath());
+				Map<String, MetadataMap> fileMeta = ml.loadUri(mf.toURI());
 				if (fileMeta == null) {
 					return;
 				}

@@ -12,10 +12,20 @@
   <description>The Digital Image Library - common library</description>
   <url>http://digilib.berlios.de</url>
   <packaging>jar</packaging>
-
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+  <build>
+  	<pluginManagement>
+  		<plugins>
+  			<plugin>
+  				<groupId>org.apache.maven.plugins</groupId>
+  				<artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target> 
+                </configuration>
+  			</plugin>
+  		</plugins>
+  	</pluginManagement>
+  </build>
 
   <repositories>
     <!-- This provides Stian Soiland-Reyes re-packaged version of JAI-ImageIO -->
@@ -39,12 +49,6 @@
   		<groupId>org.devlib.schmidt</groupId>
   		<artifactId>imageinfo</artifactId>
         <version>1.9</version>
-  		<type>jar</type>
-  		<scope>compile</scope>
-  	</dependency>
-  	<dependency>
-  		<groupId>org.jdom</groupId>
-  		<artifactId>jdom</artifactId>
   		<type>jar</type>
   		<scope>compile</scope>
   	</dependency>

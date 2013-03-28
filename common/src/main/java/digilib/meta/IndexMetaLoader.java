@@ -2,7 +2,7 @@ package digilib.meta;
 
 /*
  * #%L
- * XMLMetaLoader -- Load an XML format metadata into a Hashtable
+ * XMLMetaLoader -- Load XML format metadata into MetadataMaps
  * 
  * Digital Image Library servlet components
  * 
@@ -27,6 +27,8 @@ package digilib.meta;
  */
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -40,7 +42,16 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-public class XMLMetaLoader {
+/**
+ * Class loading index.meta files with metadata extracting some image file related information.
+ * Extracts into the MetadataMap all tags in the meta/img tag as key-value pairs and the content of the meta/context tag as XML.
+ * Returns a map with filenames and MetadataMaps. 
+ * 
+ * @see <a href="http://intern.mpiwg-berlin.mpg.de/digitalhumanities/mpiwg-metadata-documentation/formate/indexmeta-standard">index.meta spec</a>
+ * @author Robert Casties
+ *
+ */
+public class IndexMetaLoader {
 
 	private Logger logger = Logger.getLogger(this.getClass());
 	private String metaTag = "meta";
@@ -50,7 +61,7 @@ public class XMLMetaLoader {
 	private String imgTag = "img";
 	private String collectTag = "context";
 
-	public XMLMetaLoader() {
+	public IndexMetaLoader() {
 	}
 
 	/**
@@ -101,6 +112,9 @@ public class XMLMetaLoader {
 
 			
 		// Parser calls this once at the beginning of a document
+		/* (non-Javadoc)
+		 * @see org.xml.sax.helpers.DefaultHandler#startDocument()
+		 */
 		public void startDocument() throws SAXException {
 			tags = new LinkedList<String>();
 			files = new HashMap<String, MetadataMap>();
@@ -109,6 +123,9 @@ public class XMLMetaLoader {
 		}
 
 		// Parser calls this for each element in a document
+		/* (non-Javadoc)
+		 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
+		 */
 		public void startElement(
 			String namespaceURI,
 			String localName,
@@ -149,6 +166,9 @@ public class XMLMetaLoader {
 		}
 
 		// parser calls this for all tag content (possibly more than once)
+		/* (non-Javadoc)
+		 * @see org.xml.sax.helpers.DefaultHandler#characters(char[], int, int)
+		 */
 		public void characters(char[] ch, int start, int length)
 			throws SAXException {
 			// append data to current string buffer
@@ -159,6 +179,9 @@ public class XMLMetaLoader {
 		}
 
 		// parser calls this at the end of each element
+		/* (non-Javadoc)
+		 * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
+		 */
 		public void endElement(
 			String namespaceURI,
 			String localName,
@@ -263,11 +286,25 @@ public class XMLMetaLoader {
 	}
 
 	/**
-	 *  load and parse a file (as URL)
+     *  load and parse a file (as URL)
+     *    returns HashMap with list data
+     * @deprecated Use {@link #loadUri(URI)} instead
+     */
+    public Map<String, MetadataMap> loadURL(String path) throws SAXException, IOException {
+        try {
+            return loadUri(new URI(path));
+        } catch (URISyntaxException e) {
+            logger.error("Unable to convert URI!");
+            throw new IOException(e);
+        }
+    }
+
+    /**
+	 *  Load and parse a file (as URI).
 	 *    returns HashMap with list data
 	 */
-	public Map<String, MetadataMap> loadURL(String path) throws SAXException, IOException {
-		logger.debug("loading meta: "+path);
+	public Map<String, MetadataMap> loadUri(URI uri) throws SAXException, IOException {
+		logger.debug("loading meta: "+uri);
 		// Create a JAXP SAXParserFactory and configure it
 		SAXParserFactory spf = SAXParserFactory.newInstance();
 		spf.setNamespaceAware(true);
@@ -285,7 +322,7 @@ public class XMLMetaLoader {
 		XMLMetaParser listParser = new XMLMetaParser();
 
 		// Tell the SAXParser to parse the XML document
-		parser.parse(path, listParser);
+		parser.parse(uri.toString(), listParser);
 
 		return listParser.files;
 	}

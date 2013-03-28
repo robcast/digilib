@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
 
 import digilib.io.FileOps.FileClass;
 import digilib.meta.MetadataMap;
-import digilib.meta.XMLMetaLoader;
+import digilib.meta.IndexMetaLoader;
 
 /**
  * @author casties
@@ -309,10 +309,10 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
 		String fn = file.getAbsolutePath();
 		File mf = new File(fn + ".meta");
 		if (mf.canRead()) {
-			XMLMetaLoader ml = new XMLMetaLoader();
+			IndexMetaLoader ml = new IndexMetaLoader();
 			try {
 				// read meta file
-				Map<String, MetadataMap> meta = ml.loadURL(mf.getAbsolutePath());
+				Map<String, MetadataMap> meta = ml.loadUri(mf.toURI());
 				if (meta == null) {
 					return;
 				}
