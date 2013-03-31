@@ -84,14 +84,18 @@ DigilibJobCenter imageProcessor =  (DigilibJobCenter)dlConfig.getValue("servlet.
             }
         } else if (param.getValue() instanceof java.io.File) {
             java.io.File f = (java.io.File) param.getValue();
-            if (!f.isAbsolute()) {
-                // relative path -> use getRealPath to resolve
-                f = new File(pageContext.getServletContext().getRealPath(f.getPath()));
-            }
-            if (f.canRead()) {
-                val = f.toString();
+            if (f == null) {
+                val = "[null]";
             } else {
-                val = "[missing file] "+f.toString();
+                if (!f.isAbsolute()) {
+                    // relative path -> use getRealPath to resolve
+                    f = new File(pageContext.getServletContext().getRealPath(f.getPath()));
+                }
+                if (f.canRead()) {
+                    val = f.toString();
+                } else {
+                    val = "[missing file] "+f.toString();
+                }
             }
         } else {
             val = param.getAsString();

@@ -112,3 +112,5 @@ syntax: regexp
 ^servlet/\.classpath$
 syntax: regexp
 ^servlet/\.project$
+syntax: regexp
+^servlet/bin$
