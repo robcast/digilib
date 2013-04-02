@@ -42,7 +42,7 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.1.12',
+        'version' : 'jquery.digilib.js 2.1.13',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -88,6 +88,8 @@ if (typeof console === 'undefined') {
         // fullscreen = take parameters from page URL, keep state in page URL
         // embedded = take parameters from Javascript options, keep state inside object 
         'interactionMode' : 'fullscreen',
+        // save digilib state in cookie for embedded mode
+        'saveStateInCookie' : true,
         // default size of preview image for drag-scroll (preferrably same as Bird's Eye View image)
         'previewImgWidth' : 200,
         'previewImgHeight' : 200,
@@ -154,7 +156,7 @@ if (typeof console === 'undefined') {
                         params = queryParams;
                     } else {
                         params = parseImgParams($elem);
-                        if ($.cookie) {
+                        if ($.cookie && settings.saveStateInCookie) {
                             // retrieve params from cookie
                             var ck = "digilib-embed:fn:" + escape(params.fn) + ":pn:" + (params.pn || '1');
                             var cs = $.cookie(ck);
@@ -859,7 +861,7 @@ if (typeof console === 'undefined') {
                 $.cookie(ck, clop);
                 }
         }
-        if (settings.interactionMode !== 'fullscreen' && $.cookie) {
+        if (settings.interactionMode !== 'fullscreen' && $.cookie && settings.saveStateInCookie) {
             // store normal parameters in cookie for embedded mode
             var qs = getParamString(settings, settings.digilibParamNames, defaults);
             var ck = "digilib-embed:fn:" + escape(settings.fn) + ":pn:" + settings.pn;
@@ -954,13 +956,20 @@ if (typeof console === 'undefined') {
             var $img = data.$img;
             var url = getScalerUrl(data);
             $img.attr('src', url);
-            // trigger load event if image is cached
-            if ($img.prop('complete')) $img.trigger('load');
+            // trigger load event if image is cached. Doesn't work with Firefox!!
+            if (data.hasCachedComplete && $img.prop('complete')) {
+                console.debug("cached img.load");
+                $img.trigger('load');
+            }
             if (data.scalerFlags.clip != null || data.scalerFlags.osize != null) {
                 // we need image info, do we have it?
                 if (data.imgInfo == null) {
                     loadImageInfo(data);
                 }
+            }
+            // update if we have a preview
+            if (data.hasPreviewBg) {
+                $(data).trigger('update');
             }
             //FIXME: highlightButtons(data);
             // send event
