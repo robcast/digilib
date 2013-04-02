@@ -57,34 +57,54 @@ import org.apache.log4j.Logger;
 public class IndexMetaAuthLoader {
 
     private Logger logger = Logger.getLogger(this.getClass());
-    
+
     protected String metaTag = "meta";
     protected String fileTag = "file";
     protected String fileNameTag = "name";
     protected String filePathTag = "path";
     protected String imgTag = "img";
+    protected String accessTag = "access";
+    protected String accessConditionsTag = "access-conditions";
 
     private XMLStreamReader reader;
     private LinkedList<String> tags;
     private String filename;
     private String filepath;
 
+    protected boolean matchesPath(LinkedList<String> tags, String[] path) {
+        try {
+            for (int i = path.length - 1; i >= 0; --i) {
+                if (!path[i].equals(tags.get(i))) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (IndexOutOfBoundsException e) {
+            // nothing to do
+        }
+        return false;
+    }
+
     protected boolean readToMetaTag() throws XMLStreamException {
         String thisTag = null;
         String lastTag = null;
-        StringBuffer text = null;
+        StringBuffer text = new StringBuffer();
         for (int event = reader.next(); event != XMLStreamConstants.END_DOCUMENT; event = reader.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
+                // save last tag
                 lastTag = thisTag;
+                // init text content
                 text = new StringBuffer();
-                // TODO: make namespace aware
+                // get tag TODO: make namespace aware
                 thisTag = reader.getLocalName();
+                // save on stack
+                tags.push(thisTag);
                 if (thisTag.equals(metaTag)) {
                     return true;
                 }
-                // save on stack
-                tags.push(thisTag);
             } else if (event == XMLStreamConstants.END_ELEMENT) {
+                // get tag TODO: make namespace aware
+                thisTag = reader.getLocalName();
                 tags.pop();
                 if (thisTag.equals(fileNameTag) && lastTag != null && lastTag.equals(fileTag)) {
                     // name inside file tag -> record name
@@ -92,12 +112,114 @@ public class IndexMetaAuthLoader {
                 } else if (thisTag.equals(filePathTag) && lastTag != null && lastTag.equals(fileTag)) {
                     // path inside file tag -> record path
                     filepath = text.toString();
-                } 
+                }
             } else if (event == XMLStreamConstants.CHARACTERS) {
                 text.append(reader.getText());
             }
         }
         return false;
+    }
+
+    protected MetadataMap readTagToMap(MetadataMap map) throws XMLStreamException {
+        String thisTag = null;
+        String outerTag = tags.peek();
+        StringBuffer text = new StringBuffer();
+        for (int event = reader.next(); event != XMLStreamConstants.END_DOCUMENT; event = reader.next()) {
+            if (event == XMLStreamConstants.START_ELEMENT) {
+                // init text content
+                text = new StringBuffer();
+                // get tag TODO: make namespace aware
+                thisTag = reader.getLocalName();
+                // save on stack
+                tags.push(thisTag);
+            } else if (event == XMLStreamConstants.CHARACTERS) {
+                text.append(reader.getText());
+            } else if (event == XMLStreamConstants.END_ELEMENT) {
+                // get tag TODO: make namespace aware
+                thisTag = reader.getLocalName();
+                tags.pop();
+                if (thisTag.equals(outerTag)) {
+                    // close outer tag
+                    return map;
+                }
+                // put text in map under tag name
+                map.put(thisTag, text.toString());
+            }
+        }
+        return map;
+    }
+
+    protected MetadataMap readAccessConditionsToMap(MetadataMap map) throws XMLStreamException {
+        String thisTag = null;
+        String outerTag = tags.peek();
+        StringBuffer text = new StringBuffer();
+        String accType = null;
+        String accName = null;
+        for (int event = reader.next(); event != XMLStreamConstants.END_DOCUMENT; event = reader.next()) {
+            if (event == XMLStreamConstants.START_ELEMENT) {
+                // init text content
+                text = new StringBuffer();
+                // get tag TODO: make namespace aware
+                thisTag = reader.getLocalName();
+                // save on stack
+                tags.push(thisTag);
+                // save type attribute of access tag
+                if (thisTag.equals(accessTag)) {
+                    accType = reader.getAttributeValue(null, "type");
+                }
+            } else if (event == XMLStreamConstants.CHARACTERS) {
+                text.append(reader.getText());
+            } else if (event == XMLStreamConstants.END_ELEMENT) {
+                // get tag TODO: make namespace aware
+                thisTag = reader.getLocalName();
+                tags.pop();
+                if (thisTag.equals(outerTag)) {
+                    // close outer tag
+                    return map;
+                } else if (thisTag.equals("name") && tags.size() > 0 && tags.peek().equals(accessTag)) {
+                    // access/name
+                    accName = text.toString();
+                } else if (thisTag.equals(accessTag)) {
+                    // end of access tag
+                    if (accType == null) {
+                        // no access type
+                        return map;
+                    }
+                    
+                }
+
+                // put text in map under tag name
+                map.put(thisTag, text.toString());
+            }
+        }
+        return map;
+    }
+
+    protected MetadataMap readMetaTag(MetadataMap map) throws XMLStreamException {
+        String thisTag = null;
+        for (int event = reader.next(); event != XMLStreamConstants.END_DOCUMENT; event = reader.next()) {
+            if (event == XMLStreamConstants.START_ELEMENT) {
+                // get tag TODO: make namespace aware
+                thisTag = reader.getLocalName();
+                // save on stack
+                tags.push(thisTag);
+                if (thisTag.equals(imgTag)) {
+                    map = readTagToMap(map);
+                }
+                if (thisTag.equals(this.accessConditionsTag)) {
+                    map = readAccessConditionsToMap(map);
+                }
+            } else if (event == XMLStreamConstants.END_ELEMENT) {
+                // get tag TODO: make namespace aware
+                thisTag = reader.getLocalName();
+                tags.pop();
+                if (thisTag.equals(metaTag)) {
+                    // close meta tag
+                    return map;
+                }
+            }
+        }
+        return map;
     }
 
     /**
@@ -115,9 +237,19 @@ public class IndexMetaAuthLoader {
             // start reading
             tags = new LinkedList<String>();
             if (readToMetaTag()) {
-                
+                String fn = "";
+                if (filename != null) {
+                    if (filepath != null) {
+                        fn = filepath + "/" + filename;
+                    } else {
+                        fn = filename;
+                    }
+                }
+                MetadataMap meta = new MetadataMap();
+                meta = readMetaTag(meta);
+                // save meta in file list
+                files.put(fn, meta);
             }
-            
         } catch (MalformedURLException e) {
             logger.error("Malformed URL!");
             throw new IOException(e);

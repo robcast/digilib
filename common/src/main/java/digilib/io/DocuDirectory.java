@@ -37,8 +37,9 @@ import java.util.Map;
 import org.xml.sax.SAXException;
 
 import digilib.io.FileOps.FileClass;
-import digilib.meta.MetadataMap;
+import digilib.meta.IndexMetaAuthLoader;
 import digilib.meta.IndexMetaLoader;
+import digilib.meta.MetadataMap;
 
 /**
  * @author casties
@@ -266,7 +267,7 @@ public class DocuDirectory extends Directory {
 		// check for directory metadata...
 		File mf = new File(dir, "index.meta");
 		if (mf.canRead()) {
-			IndexMetaLoader ml = new IndexMetaLoader();
+			IndexMetaAuthLoader ml = new IndexMetaAuthLoader();
 			try {
 				// read directory meta file
 				Map<String, MetadataMap> fileMeta = ml.loadUri(mf.toURI());
@@ -281,8 +282,6 @@ public class DocuDirectory extends Directory {
 				if (fileMeta.size() > 0) {
 					unresolvedFileMeta = fileMeta;
 				}
-			} catch (SAXException e) {
-				logger.warn("error parsing index.meta", e);
 			} catch (IOException e) {
 				logger.warn("error reading index.meta", e);
 			}
