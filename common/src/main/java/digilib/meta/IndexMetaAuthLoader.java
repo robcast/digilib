@@ -101,7 +101,13 @@ public class IndexMetaAuthLoader {
                 tags.push(thisTag);
                 if (thisTag.equals(metaTag)) {
                     return true;
+                } else if (thisTag.equals(fileTag)) {
+                    // reset filenames
+                    filename = null;
+                    filepath = null;
                 }
+            } else if (event == XMLStreamConstants.CHARACTERS) {
+                text.append(reader.getText());
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 // get tag TODO: make namespace aware
                 thisTag = reader.getLocalName();
@@ -113,8 +119,6 @@ public class IndexMetaAuthLoader {
                     // path inside file tag -> record path
                     filepath = text.toString();
                 }
-            } else if (event == XMLStreamConstants.CHARACTERS) {
-                text.append(reader.getText());
             }
         }
         return false;
@@ -185,11 +189,18 @@ public class IndexMetaAuthLoader {
                         // no access type
                         return map;
                     }
-                    
+                    String access = null;
+                    if (accType.equals("free")) {
+                        access = accType;
+                    } else if (accName != null) {
+                        access = accType + ":" + accName;
+                    } else {
+                        // type != free but no name
+                        logger.error("access type="+accType+" but no name!");
+                        return map;
+                    }
+                    map.put("access", access);
                 }
-
-                // put text in map under tag name
-                map.put(thisTag, text.toString());
             }
         }
         return map;
@@ -206,7 +217,7 @@ public class IndexMetaAuthLoader {
                 if (thisTag.equals(imgTag)) {
                     map = readTagToMap(map);
                 }
-                if (thisTag.equals(this.accessConditionsTag)) {
+                if (thisTag.equals(accessConditionsTag)) {
                     map = readAccessConditionsToMap(map);
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
@@ -236,7 +247,7 @@ public class IndexMetaAuthLoader {
             reader = factory.createXMLStreamReader(in);
             // start reading
             tags = new LinkedList<String>();
-            if (readToMetaTag()) {
+            while (readToMetaTag()) {
                 String fn = "";
                 if (filename != null) {
                     if (filepath != null) {
