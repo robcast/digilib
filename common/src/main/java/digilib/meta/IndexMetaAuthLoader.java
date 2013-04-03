@@ -317,8 +317,7 @@ public class IndexMetaAuthLoader {
             reader = factory.createXMLStreamReader(in);
             // start reading
             tags = new LinkedList<String>();
-            while (readAll()) {
-            }
+            readAll();
         } catch (MalformedURLException e) {
             logger.error("Malformed URL!");
             throw new IOException(e);

@@ -89,11 +89,6 @@ public interface DocuDirent extends Comparable<Object> {
      */
     public abstract void setMeta(FileMeta fileMeta);
 
-    /**
-     * @return
-     */
-    public abstract boolean isMetaChecked();
-
     /** Comparator using the file name.
      * Compares to a String (for binarySearch)
      * or to another DocuDirent (for sort)

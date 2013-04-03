@@ -12,18 +12,31 @@ import digilib.io.DocuDirent;
 public interface FileMeta {
 
     /**
+     * read and store metadata for this file.
+     * 
+     * @param dirent
+     */
+    public void readMeta(DocuDirent file);
+
+    /**
+     * check and process metadata for this file.
+     * 
+     * @param dirent
+     */
+    public void checkMeta(DocuDirent file);
+
+    /**
      * returns a MetadataMap with metadata for this File.
      * 
      * @param file
      * @return
      */
-    void readMeta(DocuDirent dirent);
+    public MetadataMap getFileMeta();
 
-    MetadataMap getFileMeta();
+    /**
+     * set metadata for this file.
+     * @param fileMeta
+     */
+    public void setFileMeta(MetadataMap fileMeta);
 
-    void setFileMeta(MetadataMap fileMeta);
-
-    boolean isChecked();
-
-    void checkMeta(DocuDirent dirent);
 }

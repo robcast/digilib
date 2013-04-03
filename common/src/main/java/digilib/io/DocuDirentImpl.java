@@ -101,13 +101,6 @@ public abstract class DocuDirentImpl implements DocuDirent {
 		this.parent = parent;
 	} 
 	
-	/* (non-Javadoc)
-     * @see digilib.io.DocuDirent#isMetaChecked()
-     */
-	public boolean isMetaChecked() {
-		return meta.isChecked();
-	} 
-	
 	/**
 	 * @return
 	 */

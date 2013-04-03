@@ -11,14 +11,31 @@ import digilib.io.DocuDirectory;
  */
 public interface DirMeta {
 
-    public boolean isChecked();
+    /**
+     * read and store metadata for this directory.
+     * @param dir
+     */
+    public void readMeta(DocuDirectory dir);
 
-    public void readMeta(DocuDirectory docuDirectory);
+    /**
+     * check and process metadata for this directory.
+     * 
+     * @param docuDirectory
+     */
+    public void checkMeta(DocuDirectory dir);
 
-    public void checkMeta(DocuDirectory docuDirectory);
-
+    /**
+     * returns metadata for this directory
+     * 
+     * @return
+     */
     public MetadataMap getDirMeta();
 
+    /**
+     * sets the metadata for this directory.
+     * 
+     * @param dirMeta
+     */
     public void setDirMeta(MetadataMap dirMeta);
 
 }

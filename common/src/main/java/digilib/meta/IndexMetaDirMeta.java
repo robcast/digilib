@@ -156,12 +156,4 @@ public class IndexMetaDirMeta implements DirMeta {
         return this.unresolvedFileMeta;
     }
 
-    @Override
-    public boolean isChecked() {
-        return this.metaChecked;
-    }
-
-
-
-
 }

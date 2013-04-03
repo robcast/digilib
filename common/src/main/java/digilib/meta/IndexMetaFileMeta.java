@@ -98,10 +98,4 @@ public class IndexMetaFileMeta implements FileMeta {
         this.fileMeta = fileMeta;
     }
 
-    @Override
-    public boolean isChecked() {
-        // TODO Auto-generated method stub
-        return this.metaChecked;
-    }
-
 }
