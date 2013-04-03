@@ -4,12 +4,14 @@
     <img>
       <original-dpi>370</original-dpi>
     </img>
-    <copyright resource="digital-image">
-      <owner>
-        <name>Max Planck Institute for the History of Science, Library</name>
-        <url>http://www.mpiwg-berlin.mpg.de/</url>
-      </owner>
-      <license type="cc-by-sa"/>
-    </copyright>
+    <access-conditions>
+      <copyright resource="digital-image">
+	<owner>
+          <name>Max Planck Institute for the History of Science, Library</name>
+          <url>http://www.mpiwg-berlin.mpg.de/</url>
+	</owner>
+	<license type="cc-by-sa"/>
+      </copyright>
+    </access-conditions>
   </meta>
 </resource>

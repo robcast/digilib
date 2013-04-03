@@ -26,14 +26,11 @@ package digilib.io;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
 
 import digilib.io.FileOps.FileClass;
-import digilib.meta.IndexMetaAuthLoader;
+import digilib.meta.FileMeta;
+import digilib.meta.MetaFactory;
 import digilib.meta.MetadataMap;
-import digilib.meta.IndexMetaLoader;
 
 /**
  * @author casties
@@ -47,9 +44,9 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
     protected File file = null;
     /** the file name */
     protected String name = null;
-	/** HashMap with metadata */
-	protected MetadataMap fileMeta = null;
-	/** Is the Metadata valid */
+    /** the FileMeta intance */
+    protected FileMeta meta = null;
+	/** is our metadata valid */
 	protected boolean metaChecked = false;
 	/** the parent directory */
 	protected Directory parentDir = null;
@@ -66,7 +63,8 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
         // first dir is our parent
         parentDir = scaleDirs[0];
         this.file = file;
-        this.name = file.getName();
+        name = file.getName();
+        meta = MetaFactory.getFileMetaInstance();
         fill(scaleDirs, file);
     }
 
@@ -89,20 +87,6 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
      */
     public void setParent(Directory parent) {
     	this.parentDir = parent;
-    }
-
-    /* (non-Javadoc)
-     * @see digilib.io.DocuDirent#getFileMeta()
-     */
-    public MetadataMap getFileMeta() {
-    	return this.fileMeta;
-    }
-
-    /* (non-Javadoc)
-     * @see digilib.io.DocuDirent#setFileMeta(digilib.io.MetadataMap)
-     */
-    public void setFileMeta(MetadataMap fileMeta) {
-    	this.fileMeta = fileMeta;
     }
 
     /* (non-Javadoc)
@@ -213,32 +197,13 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
         if (metaChecked) {
             return;
         }
-        if (fileMeta == null) {
-            // try to read metadata file
-            readMeta();
-            if (fileMeta == null) {
-                // try directory metadata
-                ((DocuDirectory) parentDir).checkMeta();
-                if (((DocuDirectory) parentDir).getDirMeta() != null) {
-                    fileMeta = ((DocuDirectory) parentDir).getDirMeta();
-                } else {
-                    // try parent directory metadata
-                    DocuDirectory gp = (DocuDirectory) parentDir.getParent();
-                    if (gp != null) {
-                        gp.checkMeta();
-                        if (gp.getDirMeta() != null) {
-                            fileMeta = gp.getDirMeta();
-                        }
-                    }
-                }
-            }
-        }
-        if (fileMeta == null) {
-            // no metadata available
-            metaChecked = true;
-            return;
-        }
+        // have the FileMeta class load and check
+        meta.checkMeta(this);
         metaChecked = true;
+        // take the metadata
+        MetadataMap fileMeta = meta.getFileMeta();
+        if (fileMeta == null) return;
+        // process the metadata
         float dpi = 0;
         float dpix = 0;
         float dpiy = 0;
@@ -302,32 +267,24 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
      * @see digilib.io.DocuDirent#readMeta()
      */
 	public void readMeta() {
-		if ((fileMeta != null) || (file == null)) {
-			// there is already metadata or there is no file
-			return;
-		}
-		// metadata is in the file {filename}.meta
-		String fn = file.getAbsolutePath();
-		File mf = new File(fn + ".meta");
-		if (mf.canRead()) {
-			IndexMetaAuthLoader ml = new IndexMetaAuthLoader();
-			try {
-				// read meta file
-				Map<String, MetadataMap> meta = ml.loadUri(mf.toURI());
-				if (meta == null) {
-					return;
-				}
-				// file meta should be inside file tag
-				fileMeta = meta.get(name);
-				if (fileMeta == null) {
-				    // or there is only a meta tag
-				    fileMeta = meta.get("");
-				}
-			} catch (Exception e) {
-				Logger.getLogger(this.getClass()).warn("error reading file .meta", e);
-			}
-		}
+	    meta.readMeta(this);
 	}
+
+    /* (non-Javadoc)
+     * @see digilib.io.DocuDirent#getMeta()
+     */
+    @Override
+    public FileMeta getMeta() {
+        return this.meta;
+    }
+
+    /* (non-Javadoc)
+     * @see digilib.io.DocuDirent#setMeta(digilib.meta.FileMeta)
+     */
+    @Override
+    public void setMeta(FileMeta fileMeta) {
+        this.meta = fileMeta;
+    }
 
 
 }

@@ -28,18 +28,13 @@ package digilib.io;
  */
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-
-import org.xml.sax.SAXException;
 
 import digilib.io.FileOps.FileClass;
-import digilib.meta.IndexMetaAuthLoader;
-import digilib.meta.IndexMetaLoader;
-import digilib.meta.MetadataMap;
+import digilib.meta.DirMeta;
+import digilib.meta.MetaFactory;
 
 /**
  * @author casties
@@ -62,13 +57,7 @@ public class DocuDirectory extends Directory {
 	private Directory[] dirs = null;
 
 	/** directory metadata */
-	private MetadataMap dirMeta = null;
-
-	/** state of metadata is valid */
-	private boolean metaChecked = false;
-
-	/** unresolved file metadata */
-	private Map<String, MetadataMap> unresolvedFileMeta = null;
+	protected DirMeta meta = null;
 
 	/** time of last access of this object (not the filesystem) */
 	private long objectATime = 0;
@@ -104,6 +93,7 @@ public class DocuDirectory extends Directory {
 		// the first directory has to exist
 		dir = new File(baseDirName, path);
 		isValid = dir.isDirectory();
+		meta = MetaFactory.getDirMetaInstance();
 	}
 
 	/**
@@ -264,96 +254,18 @@ public class DocuDirectory extends Directory {
 	 *  
 	 */
 	public void readMeta() {
-		// check for directory metadata...
-		File mf = new File(dir, "index.meta");
-		if (mf.canRead()) {
-			IndexMetaAuthLoader ml = new IndexMetaAuthLoader();
-			try {
-				// read directory meta file
-				Map<String, MetadataMap> fileMeta = ml.loadUri(mf.toURI());
-				if (fileMeta == null) {
-					return;
-				}
-				// meta for the directory itself is in the "" bin
-				dirMeta = fileMeta.remove("");
-				// read meta for files in this directory
-				readFileMeta(fileMeta, null);
-				// is there meta for other files left?
-				if (fileMeta.size() > 0) {
-					unresolvedFileMeta = fileMeta;
-				}
-			} catch (IOException e) {
-				logger.warn("error reading index.meta", e);
-			}
-		}
-		readParentMeta();
-		metaChecked = true;
+	    meta.readMeta(this);
 	}
 
-	/**
-	 * Read metadata from all known parent directories.
-	 *  
-	 */
-	public void readParentMeta() {
-		// check the parent directories for additional file meta
-		Directory dd = parent;
-		String path = dir.getName();
-		while (dd != null) {
-			if (((DocuDirectory) dd).hasUnresolvedFileMeta()) {
-				readFileMeta(((DocuDirectory) dd).unresolvedFileMeta, path);
-			}
-			// prepend parent dir path
-			path = dd.dir.getName() + "/" + path;
-			// become next parent
-			dd = dd.parent;
-		}
-	}
 
-	/**
-	 * Read metadata for the files in this directory.
-	 * 
-	 * Takes a Map with meta-information, adding the relative path before the
-	 * lookup.
-	 * 
-	 * @param fileMeta
-	 * @param relPath
-	 * @param fc
-	 *            fileClass
-	 */
-	protected void readFileMeta(Map<String,MetadataMap> fileMeta, String relPath) {
-		if (list == null) {
-			// there are no files
-			return;
-		}
-		String path = (relPath != null) ? (relPath + "/") : "";
-		// go through all file classes
-		for (FileClass fc: FileClass.values()) {
-			if (list.get(fc.ordinal()) == null) {
-				continue;
-			}
-			// iterate through the list of files in this directory
-			for (DocuDirent f: list.get(fc.ordinal())) {
-				// prepend path to the filename
-				String fn = path + f.getName();
-				// look up meta for this file and remove from dir
-				MetadataMap meta = fileMeta.remove(fn);
-				if (meta != null) {
-					// store meta in file
-					f.setFileMeta(meta);
-				}
-			}
-		}
-	}
+    /**
+     * check directory metadata.
+     *  
+     */
+    public void checkMeta() {
+        meta.checkMeta(this);
+    }
 
-	protected void notifyChildMeta(MetadataMap childmeta) {
-		List<DocuDirectory> children = cache.getChildren(this.dirName, true);
-		if (children.size() > 0) {
-			/*for (DocuDirectory d: children) {
-				// TODO: finish this!
-				//((DocuDirectory) i.next()).readFileMeta()
-			}*/
-		}
-	}
 
 	/**
 	 * Update access time.
@@ -512,43 +424,14 @@ public class DocuDirectory extends Directory {
 	}
 
 	/**
-	 * @return Hashtable
-	 */
-	public MetadataMap getDirMeta() {
-		return dirMeta;
-	}
-
-	/**
-	 * Checks metadata
-	 *  
-	 */
-	public void checkMeta() {
-		if (metaChecked) {
-			return;
-		} else {
-			readMeta();
-		}
-	}
-
-	/**
 	 * @return long
 	 */
 	public long getDirMTime() {
 		return dirMTime;
 	}
 
-	/**
-	 * Sets the dirMeta.
-	 * 
-	 * @param dirMeta
-	 *            The dirMeta to set
-	 */
-	public void setDirMeta(MetadataMap dirMeta) {
-		this.dirMeta = dirMeta;
-	}
-
-	public boolean hasUnresolvedFileMeta() {
-		return (this.unresolvedFileMeta != null);
-	}
+    public DirMeta getMeta() {
+        return meta;
+    }
 
 }

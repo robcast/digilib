@@ -42,10 +42,11 @@ import org.apache.log4j.Logger;
  */
 
 /**
- * Class loading index.meta files with metadata extracting some image file
+ * Class loading index.meta files extracting some image file
  * related information.
  * Extracts into the MetadataMap all tags in the meta/img tag as key-value
- * pairs.
+ * pairs and access conditions under the access key.
+ * 
  * Returns a map with filenames and MetadataMaps.
  * 
  * @see <a
@@ -60,21 +61,29 @@ public class IndexMetaAuthLoader {
 
     protected String metaTag = "meta";
     protected String fileTag = "file";
-    protected String fileNameTag = "name";
-    protected String filePathTag = "path";
+    protected String[] fileNameTag = {"file", "name"};
+    protected String[] filePathTag = {"file", "path"};
+    protected String[] fileMetaTag = {"file", "meta"};
     protected String imgTag = "img";
-    protected String accessTag = "access";
-    protected String accessConditionsTag = "access-conditions";
+    protected String[] accessTag = {"access-conditions", "access"};
+    protected String[] accessNameTag = {"access", "name"};
 
     private XMLStreamReader reader;
     private LinkedList<String> tags;
-    private String filename;
-    private String filepath;
 
-    protected boolean matchesPath(LinkedList<String> tags, String[] path) {
+    protected Map<String, MetadataMap> files;
+
+    /**
+     * Returns if the tag names in path match the current stack of tag names in tags.
+     * @param path
+     *   
+     * @return
+     */
+    protected boolean tagsMatchPath(String[] path) {
         try {
-            for (int i = path.length - 1; i >= 0; --i) {
-                if (!path[i].equals(tags.get(i))) {
+            int pl = path.length;
+            for (int i = pl - 1; i >= 0; --i) {
+                if (!path[i].equals(tags.get(pl-i-1))) {
                     return false;
                 }
             }
@@ -85,88 +94,139 @@ public class IndexMetaAuthLoader {
         return false;
     }
 
-    protected boolean readToMetaTag() throws XMLStreamException {
-        String thisTag = null;
-        String lastTag = null;
+    protected boolean readAll() throws XMLStreamException {
         StringBuffer text = new StringBuffer();
+        MetadataMap fileMeta = new MetadataMap();
+        MetadataMap otherMeta = new MetadataMap();
+        String filename = null;
+        String filepath = null;
         for (int event = reader.next(); event != XMLStreamConstants.END_DOCUMENT; event = reader.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
-                // save last tag
-                lastTag = thisTag;
-                // init text content
-                text = new StringBuffer();
                 // get tag TODO: make namespace aware
-                thisTag = reader.getLocalName();
+                String thisTag = reader.getLocalName();
                 // save on stack
                 tags.push(thisTag);
+                // new text content
+                text = new StringBuffer();
+                // look at tag
                 if (thisTag.equals(metaTag)) {
-                    return true;
+                    /*
+                     * meta tag - read contents in new meta map
+                     */
+                    if (tagsMatchPath(fileMetaTag)) {
+                        fileMeta = readMetaTag(new MetadataMap());
+                    } else {
+                        otherMeta = readMetaTag(new MetadataMap());
+                    }
                 } else if (thisTag.equals(fileTag)) {
-                    // reset filenames
-                    filename = null;
-                    filepath = null;
+                    /*
+                     * file tag - reset filenames
+                     */
+                    filename  = null;
+                    filepath  = null;
                 }
             } else if (event == XMLStreamConstants.CHARACTERS) {
+                // append text nodes
                 text.append(reader.getText());
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 // get tag TODO: make namespace aware
-                thisTag = reader.getLocalName();
-                tags.pop();
-                if (thisTag.equals(fileNameTag) && lastTag != null && lastTag.equals(fileTag)) {
-                    // name inside file tag -> record name
+                String thisTag = reader.getLocalName();
+                if (thisTag.equals(fileTag)) {
+                    /*
+                     * file tag - save file meta
+                     */
+                    if (!fileMeta.isEmpty()) {
+                        String fn = "";
+                        if (filename != null) {
+                            if (filepath != null) {
+                                fn = filepath + "/" + filename;
+                            } else {
+                                fn = filename;
+                            }
+                        }
+                        // save meta in file list
+                        files.put(fn, fileMeta);
+                    }                    
+                } else if (tagsMatchPath(fileNameTag)) {
+                    /*
+                     * file/name tag - record name
+                     */
                     filename = text.toString();
-                } else if (thisTag.equals(filePathTag) && lastTag != null && lastTag.equals(fileTag)) {
-                    // path inside file tag -> record path
+                } else if (tagsMatchPath(filePathTag)) {
+                    /*
+                     * file/path tag - record path
+                     */
                     filepath = text.toString();
                 }
+                tags.pop();
             }
+        }
+        if (!otherMeta.isEmpty()) {
+            // non-file meta put under key ""
+            files.put("", otherMeta);
         }
         return false;
     }
 
+    /**
+     * Reads contents of current tag into map with the tag name as key and the content as value.
+     *   
+     * @param map
+     * @return
+     * @throws XMLStreamException
+     */
     protected MetadataMap readTagToMap(MetadataMap map) throws XMLStreamException {
-        String thisTag = null;
         String outerTag = tags.peek();
         StringBuffer text = new StringBuffer();
         for (int event = reader.next(); event != XMLStreamConstants.END_DOCUMENT; event = reader.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
-                // init text content
-                text = new StringBuffer();
                 // get tag TODO: make namespace aware
-                thisTag = reader.getLocalName();
+                String thisTag = reader.getLocalName();
                 // save on stack
                 tags.push(thisTag);
+                // new text content
+                text = new StringBuffer();
             } else if (event == XMLStreamConstants.CHARACTERS) {
                 text.append(reader.getText());
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 // get tag TODO: make namespace aware
-                thisTag = reader.getLocalName();
-                tags.pop();
+                String thisTag = reader.getLocalName();
                 if (thisTag.equals(outerTag)) {
                     // close outer tag
+                    tags.pop();
                     return map;
                 }
                 // put text in map under tag name
                 map.put(thisTag, text.toString());
+                tags.pop();
             }
         }
         return map;
     }
 
-    protected MetadataMap readAccessConditionsToMap(MetadataMap map) throws XMLStreamException {
-        String thisTag = null;
-        String outerTag = tags.peek();
+    /**
+     * Reads access tag into map.
+     * 
+     * @param map
+     * @return
+     * @throws XMLStreamException
+     */
+    protected MetadataMap readAccessToMap(MetadataMap map) throws XMLStreamException {
         StringBuffer text = new StringBuffer();
         String accType = null;
         String accName = null;
+        if (tagsMatchPath(accessTag)) {
+            // read attribute from current access tag
+            accType = reader.getAttributeValue(null, "type");
+        }
         for (int event = reader.next(); event != XMLStreamConstants.END_DOCUMENT; event = reader.next()) {
             if (event == XMLStreamConstants.START_ELEMENT) {
-                // init text content
-                text = new StringBuffer();
                 // get tag TODO: make namespace aware
-                thisTag = reader.getLocalName();
+                String thisTag = reader.getLocalName();
                 // save on stack
                 tags.push(thisTag);
+                // new text content
+                text = new StringBuffer();
                 // save type attribute of access tag
                 if (thisTag.equals(accessTag)) {
                     accType = reader.getAttributeValue(null, "type");
@@ -175,16 +235,16 @@ public class IndexMetaAuthLoader {
                 text.append(reader.getText());
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 // get tag TODO: make namespace aware
-                thisTag = reader.getLocalName();
-                tags.pop();
-                if (thisTag.equals(outerTag)) {
-                    // close outer tag
-                    return map;
-                } else if (thisTag.equals("name") && tags.size() > 0 && tags.peek().equals(accessTag)) {
-                    // access/name
+                String thisTag = reader.getLocalName();
+                if (tagsMatchPath(accessNameTag)) {
+                    /*
+                     * access/name tag
+                     */
                     accName = text.toString();
-                } else if (thisTag.equals(accessTag)) {
-                    // end of access tag
+                } else if (tagsMatchPath(accessTag)) {
+                    /*
+                     * access tag - we're done
+                     */
                     if (accType == null) {
                         // no access type
                         return map;
@@ -197,10 +257,14 @@ public class IndexMetaAuthLoader {
                     } else {
                         // type != free but no name
                         logger.error("access type="+accType+" but no name!");
+                        tags.pop();
                         return map;
                     }
                     map.put("access", access);
+                    tags.pop();
+                    return map;
                 }
+                tags.pop();
             }
         }
         return map;
@@ -215,19 +279,25 @@ public class IndexMetaAuthLoader {
                 // save on stack
                 tags.push(thisTag);
                 if (thisTag.equals(imgTag)) {
+                    /*
+                     * img tag
+                     */
                     map = readTagToMap(map);
-                }
-                if (thisTag.equals(accessConditionsTag)) {
-                    map = readAccessConditionsToMap(map);
+                } else if (tagsMatchPath(accessTag)) {
+                    /*
+                     * access tag
+                     */
+                    map = readAccessToMap(map);
                 }
             } else if (event == XMLStreamConstants.END_ELEMENT) {
                 // get tag TODO: make namespace aware
                 thisTag = reader.getLocalName();
-                tags.pop();
                 if (thisTag.equals(metaTag)) {
                     // close meta tag
+                    tags.pop();
                     return map;
                 }
+                tags.pop();
             }
         }
         return map;
@@ -240,26 +310,14 @@ public class IndexMetaAuthLoader {
      * @throws IOException
      */
     public Map<String, MetadataMap> loadUri(URI uri) throws IOException {
-        Map<String, MetadataMap> files = new HashMap<String, MetadataMap>();
+        files = new HashMap<String, MetadataMap>();
         try {
             InputStream in = uri.toURL().openStream();
             XMLInputFactory factory = XMLInputFactory.newInstance();
             reader = factory.createXMLStreamReader(in);
             // start reading
             tags = new LinkedList<String>();
-            while (readToMetaTag()) {
-                String fn = "";
-                if (filename != null) {
-                    if (filepath != null) {
-                        fn = filepath + "/" + filename;
-                    } else {
-                        fn = filename;
-                    }
-                }
-                MetadataMap meta = new MetadataMap();
-                meta = readMetaTag(meta);
-                // save meta in file list
-                files.put(fn, meta);
+            while (readAll()) {
             }
         } catch (MalformedURLException e) {
             logger.error("Malformed URL!");

@@ -27,15 +27,9 @@ package digilib.io;
 
 import java.io.File;
 
-import digilib.meta.MetadataMap;
+import digilib.meta.FileMeta;
 
 public interface DocuDirent extends Comparable<Object> {
-
-    /**
-     * Checks metadata and does something with it.
-     *  
-     */
-    public abstract void checkMeta();
 
     /**
      * gets the (default) File
@@ -43,12 +37,6 @@ public interface DocuDirent extends Comparable<Object> {
      * @return
      */
     public abstract File getFile();
-
-    /**
-     * Reads meta-data for this Fileset if there is any.
-     *  
-     */
-    public abstract void readMeta();
 
     /**
      * The name of the file.
@@ -76,11 +64,22 @@ public interface DocuDirent extends Comparable<Object> {
     public abstract void setParent(Directory parent);
 
     /**
-     * Returns the meta-data for this file(set).
-     * 
-     * @return HashMap
+     * Reads meta-data for this Fileset if there is any.
+     *  
      */
-    public abstract MetadataMap getFileMeta();
+    public abstract void readMeta();
+
+    /**
+     * Checks metadata and does something with it.
+     *  
+     */
+    public abstract void checkMeta();
+
+    /**
+     * Returns the meta-data for this file(set).
+     * @return
+     */
+    public abstract FileMeta getMeta();
 
     /**
      * Sets the meta-data for this file(set) .
@@ -88,7 +87,7 @@ public interface DocuDirent extends Comparable<Object> {
      * @param fileMeta
      *            The fileMeta to set
      */
-    public abstract void setFileMeta(MetadataMap fileMeta);
+    public abstract void setMeta(FileMeta fileMeta);
 
     /**
      * @return

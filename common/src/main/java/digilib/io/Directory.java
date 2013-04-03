@@ -116,14 +116,14 @@ public class Directory {
 	/**
 	 * @return
 	 */
-	Directory getParent() {
+	public Directory getParent() {
 		return parent;
 	}
 
 	/**
 	 * @param parent
 	 */
-	void setParent(Directory parent) {
+	public void setParent(Directory parent) {
 		this.parent = parent;
 	}
 

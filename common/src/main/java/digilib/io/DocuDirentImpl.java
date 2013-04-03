@@ -26,14 +26,9 @@ package digilib.io;
  */
 
 import java.io.File;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
 
 import digilib.io.FileOps.FileClass;
-import digilib.meta.IndexMetaAuthLoader;
-import digilib.meta.MetadataMap;
-import digilib.meta.IndexMetaLoader;
+import digilib.meta.FileMeta;
 
 /**
  * Abstract directory entry in a DocuDirectory.
@@ -45,12 +40,15 @@ public abstract class DocuDirentImpl implements DocuDirent {
 
 	/** the file class of this file */
 	protected static FileClass fileClass = FileClass.NONE;
-	/** HashMap with metadata */
-	protected MetadataMap fileMeta = null;
-	/** Is the Metadata valid */
-	protected boolean metaChecked = false;
+	/** metadata for this file */
+	protected FileMeta meta;
 	/** the parent directory */
 	protected Directory parent = null;
+
+    /* (non-Javadoc)
+     * @see digilib.io.DocuDirent#getInput()
+     */
+    public abstract File getFile();
 
 	/* (non-Javadoc)
      * @see digilib.io.DocuDirent#checkMeta()
@@ -58,34 +56,27 @@ public abstract class DocuDirentImpl implements DocuDirent {
 	public abstract void checkMeta();
 
 	/* (non-Javadoc)
-     * @see digilib.io.DocuDirent#getInput()
+     * @see digilib.io.DocuDirent#getMeta()
      */
-	public abstract File getFile();
+    @Override
+    public FileMeta getMeta() {
+        // TODO Auto-generated method stub
+        return meta;
+    }
+
+    /* (non-Javadoc)
+     * @see digilib.io.DocuDirent#setMeta(digilib.meta.FileMeta)
+     */
+    @Override
+    public void setMeta(FileMeta fileMeta) {
+        this.meta = fileMeta;        
+    }
 
 	/* (non-Javadoc)
      * @see digilib.io.DocuDirent#readMeta()
      */
 	public void readMeta() {
-		if ((fileMeta != null) || (getFile() == null)) {
-			// there is already metadata or there is no file
-			return;
-		}
-		// metadata is in the file {filename}.meta
-		String fn = getFile().getAbsolutePath();
-		File mf = new File(fn + ".meta");
-		if (mf.canRead()) {
-			IndexMetaAuthLoader ml = new IndexMetaAuthLoader();
-			try {
-				// read meta file
-				Map<String, MetadataMap> meta = ml.loadUri(mf.toURI());
-				if (meta == null) {
-					return;
-				}
-				fileMeta = meta.get(getName());
-			} catch (Exception e) {
-				Logger.getLogger(this.getClass()).warn("error reading file .meta", e);
-			}
-		}
+	    meta.readMeta(this);
 	}
 
 	/* (non-Javadoc)
@@ -111,24 +102,10 @@ public abstract class DocuDirentImpl implements DocuDirent {
 	} 
 	
 	/* (non-Javadoc)
-     * @see digilib.io.DocuDirent#getFileMeta()
-     */
-	public MetadataMap getFileMeta() {
-		return fileMeta;
-	} 
-	
-	/* (non-Javadoc)
-     * @see digilib.io.DocuDirent#setFileMeta(digilib.io.MetadataMap)
-     */
-	public void setFileMeta(MetadataMap fileMeta) {
-		this.fileMeta = fileMeta;
-	} 
-	
-	/* (non-Javadoc)
      * @see digilib.io.DocuDirent#isMetaChecked()
      */
 	public boolean isMetaChecked() {
-		return metaChecked;
+		return meta.isChecked();
 	} 
 	
 	/**

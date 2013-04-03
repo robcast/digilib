@@ -45,16 +45,16 @@ import digilib.io.FileOps.FileClass;
 public class DocuDirCache {
 
 	/** general logger for this class */
-	Logger logger = Logger.getLogger(this.getClass());
+	protected static Logger logger = Logger.getLogger(DocuDirCache.class);
 
 	/** HashMap of directories */
-	ConcurrentMap<String, DocuDirectory> map = new ConcurrentHashMap<String, DocuDirectory>();
+	protected ConcurrentMap<String, DocuDirectory> map = new ConcurrentHashMap<String, DocuDirectory>();
 
 	/** names of base directories */
-	String[] baseDirNames = null;
+	protected String[] baseDirNames = null;
 
 	/** array of allowed file classes (image/text) */
-	private FileClass[] fileClasses = null;
+	protected FileClass[] fileClasses = null;
 
 	/** number of files in the whole cache (approximate) */
 	protected AtomicInteger numImgFiles = new AtomicInteger(0);

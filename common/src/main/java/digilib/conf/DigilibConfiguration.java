@@ -69,20 +69,20 @@ public class DigilibConfiguration extends ParameterMap {
         initParams();
     }
 
-    /** Definition of parameters and default values.
-	 * 
-	 */
+    /**
+     * Definition of parameters and default values.
+     * 
+     */
     @SuppressWarnings("unchecked")
     protected void initParams() {
         /*
          * Definition of parameters and default values. System parameters that
          * are not read from config file have a type 's'.
          */
-        // digilib servlet version
-        newParameter("digilib.version", "2.0b1", null, 's');
+        // digilib version
+        newParameter("digilib.version", "2.1.3", null, 's');
         // DocuImage class instance
-        newParameter("servlet.docuimage.class",
-                digilib.image.ImageLoaderDocuImage.class, null, 's');
+        newParameter("servlet.docuimage.class", digilib.image.ImageLoaderDocuImage.class, null, 's');
         // sending image files as-is allowed
         newParameter("sendfile-allowed", Boolean.TRUE, null, 'f');
         // Type of DocuImage instance
@@ -129,8 +129,7 @@ public class DigilibConfiguration extends ParameterMap {
      * @return
      * @throws IOException
      */
-    public static ImageInput identifyDocuImage(ImageInput imgf)
-            throws IOException {
+    public static ImageInput identifyDocuImage(ImageInput imgf) throws IOException {
         // use fresh DocuImage instance
         DocuImage di = getDocuImageInstance();
         return di.identify(imgf);

@@ -35,6 +35,9 @@ import javax.servlet.ServletContext;
 
 import digilib.image.DocuImageImpl;
 import digilib.io.FileOps;
+import digilib.meta.DirMeta;
+import digilib.meta.FileMeta;
+import digilib.meta.MetaFactory;
 import digilib.servlet.ServletOps;
 import digilib.util.Parameter;
 import digilib.util.XMLListLoader;
@@ -132,6 +135,16 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
         newParameter("max-waiting-threads", new Integer(20), null, 'f');
         // timeout for worker threads (ms)
         newParameter("worker-timeout", new Integer(60000), null, 'f');
+        // allow image toolkit to use disk cache
+        newParameter("img-diskcache-allowed", Boolean.TRUE, null, 'f');
+        // default type of error message (image, text, code)
+        newParameter("default-errmsg-type", "image", null, 'f');
+        // FileMeta implementation
+        newParameter("filemeta-class", "digilib.meta.IndexMetaFileMeta", null, 'f');
+        // DirMeta implementation
+        newParameter("dirmeta-class", "digilib.meta.IndexMetaDirMeta", null, 'f');
+        
+        // TODO: move pdf-stuff to its own config
         // number of pdf-generation threads
         newParameter("pdf-worker-threads", new Integer(1), null, 'f');
         // max number of waiting pdf-generation threads
@@ -144,10 +157,6 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
         newParameter("pdf-temp-dir", "pdf_temp", null, 'f');
         // PDF generation cache directory
         newParameter("pdf-cache-dir", "pdf_cache", null, 'f');
-        // allow image toolkit to use disk cache
-        newParameter("img-diskcache-allowed", Boolean.TRUE, null, 'f');
-        // default type of error message (image, text, code)
-        newParameter("default-errmsg-type", "image", null, 'f');
     }
 
     /**
@@ -238,7 +247,15 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
         }
         // initialise static DocuImage class instance
         DigilibServletConfiguration.docuImageClass = (Class<DocuImageImpl>) Class.forName(getAsString("docuimage-class"));
+        setValue("servlet.docuimage.class", DigilibServletConfiguration.docuImageClass);
         setValue("servlet.docuimage.version", getDocuImageInstance().getVersion());
+        // initialise MetaFactory
+        Class<FileMeta> fileMetaClass = (Class<FileMeta>) Class.forName(getAsString("filemeta-class"));
+        newParameter("servlet.filemeta.class", fileMetaClass, null, 's');
+        MetaFactory.setFileMetaClass(fileMetaClass);
+        Class<DirMeta> dirMetaClass = (Class<DirMeta>) Class.forName(getAsString("dirmeta-class"));
+        newParameter("servlet.dirmeta.class", dirMetaClass, null, 's');
+        MetaFactory.setDirMetaClass(dirMetaClass);
     }
 
 }
