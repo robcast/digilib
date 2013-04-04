@@ -1,4 +1,4 @@
-package digilib.servlet;
+package digilib.conf;
 
 /*
  * #%L
@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 
+import digilib.conf.DigilibConfiguration;
 import digilib.image.ImageJobDescription;
 import digilib.io.DocuDirectory;
 import digilib.io.FileOpException;

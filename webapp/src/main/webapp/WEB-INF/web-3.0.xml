@@ -15,7 +15,7 @@
   <!-- The Intialisation Listener (also configured by annotation) -->
   <listener>
         <listener-class>
-            digilib.servlet.Initialiser
+            digilib.conf.DigilibServlet3Configuration
         </listener-class>
   </listener>
   <!-- The Scaler servlet (also configured by annotation) -->

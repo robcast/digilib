@@ -27,20 +27,30 @@ package digilib.conf;
  */
 
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+
+import org.apache.log4j.xml.DOMConfigurator;
+import org.xml.sax.SAXException;
 
 import digilib.auth.AuthOps;
 import digilib.auth.AuthOpsFactory;
-import digilib.image.DocuImageImpl;
+import digilib.image.DocuImage;
+import digilib.io.AliasingDocuDirCache;
+import digilib.io.DocuDirCache;
 import digilib.io.FileOps;
+import digilib.io.FileOps.FileClass;
 import digilib.meta.DirMeta;
 import digilib.meta.FileMeta;
 import digilib.meta.MetaFactory;
 import digilib.servlet.ServletOps;
+import digilib.util.DigilibJobCenter;
 import digilib.util.Parameter;
 import digilib.util.XMLListLoader;
 
@@ -59,21 +69,23 @@ import digilib.util.XMLListLoader;
  * @author casties
  * 
  */
-public class DigilibServletConfiguration extends DigilibConfiguration {
+public class DigilibServletConfiguration extends DigilibConfiguration implements ServletContextListener {
 
     /** time the webapp (i.e. this class) was loaded */
     public final Long webappStartTime = System.currentTimeMillis();
 
-    /** counter for HttpRequests (mostly for debugging) */
-    public AtomicInteger webappRequestCnt = new AtomicInteger(0);
+    private DigilibJobCenter<DocuImage> imageExecutor;
 
-    /** counter for open HttpRequests (mostly for debugging) */
-    public AtomicInteger openRequestCnt = new AtomicInteger(0);
-
+    public String getVersion() {
+        return "2.2.0 srv";
+    }
+    
     /**
-     * Definition of parameters and default values.
+     * Constructs DigilibServletConfiguration and defines all parameters and their default values.
      */
-    protected void initParams() {
+    public DigilibServletConfiguration() {
+        super();
+
         /*
          * Definition of parameters and default values. System parameters that
          * are not read from config file have a type 's'.
@@ -83,18 +95,8 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
         newParameter("servlet.config.file", null, null, 's');
         // DocuDirCache instance
         newParameter("servlet.dir.cache", null, null, 's');
-        // DocuImage class instance
-        newParameter("servlet.docuimage.class", digilib.image.ImageLoaderDocuImage.class, null, 's');
-        // DocuImage version
-        newParameter("servlet.docuimage.version", "?", null, 's');
-        // AuthOps instance for authentication
-        newParameter("servlet.auth.op", null, null, 's');
         // Executor for image operations
         newParameter("servlet.worker.imageexecutor", null, null, 's');
-        // Executor for PDF operations
-        newParameter("servlet.worker.pdfexecutor", null, null, 's');
-        // Executor for PDF-image operations
-        newParameter("servlet.worker.pdfimageexecutor", null, null, 's');
 
         /*
          * parameters that can be read from config file have a type 'f'
@@ -113,73 +115,34 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
         newParameter("use-authorization", Boolean.FALSE, null, 'f');
         // authentication configuration file
         newParameter("auth-file", new File("digilib-auth.xml"), null, 'f');
-        // sending image files as-is allowed
-        newParameter("sendfile-allowed", Boolean.TRUE, null, 'f');
-        // Type of DocuImage instance
-        newParameter("docuimage-class", "digilib.image.ImageLoaderDocuImage", null, 'f');
         // part of URL used to indicate authorized access
         newParameter("auth-url-path", "authenticated/", null, 'f');
-        // degree of subsampling on image load
-        newParameter("subsample-minimum", new Float(2f), null, 'f');
-        // default scaling quality
-        newParameter("default-quality", new Integer(2), null, 'f');
         // use mapping file to translate paths
         newParameter("use-mapping", Boolean.FALSE, null, 'f');
         // mapping file location
         newParameter("mapping-file", new File("digilib-map.xml"), null, 'f');
         // log4j config file location
         newParameter("log-config-file", new File("log4j-config.xml"), null, 'f');
-        // maximum destination image size (0 means no limit)
-        newParameter("max-image-size", new Integer(0), null, 'f');
         // number of working threads
-        newParameter("worker-threads", new Integer(1), null, 'f');
+        newParameter("worker-threads", new Integer(2), null, 'f');
         // max number of waiting threads
         newParameter("max-waiting-threads", new Integer(20), null, 'f');
-        // timeout for worker threads (ms)
-        newParameter("worker-timeout", new Integer(60000), null, 'f');
-        // allow image toolkit to use disk cache
-        newParameter("img-diskcache-allowed", Boolean.TRUE, null, 'f');
-        // default type of error message (image, text, code)
-        newParameter("default-errmsg-type", "image", null, 'f');
         // FileMeta implementation
         newParameter("filemeta-class", "digilib.meta.IndexMetaFileMeta", null, 'f');
         // DirMeta implementation
         newParameter("dirmeta-class", "digilib.meta.IndexMetaDirMeta", null, 'f');
         // AuthOps implementation
         newParameter("authops-class", "digilib.auth.PathServletAuthOps", null, 'f');
-        
-        // TODO: move pdf-stuff to its own config
-        // number of pdf-generation threads
-        newParameter("pdf-worker-threads", new Integer(1), null, 'f');
-        // max number of waiting pdf-generation threads
-        newParameter("pdf-max-waiting-threads", new Integer(20), null, 'f');
-        // number of pdf-image generation threads
-        newParameter("pdf-image-worker-threads", new Integer(1), null, 'f');
-        // max number of waiting pdf-image generation threads
-        newParameter("pdf-image-max-waiting-threads", new Integer(10), null, 'f');
-        // PDF generation temp directory
-        newParameter("pdf-temp-dir", "pdf_temp", null, 'f');
-        // PDF generation cache directory
-        newParameter("pdf-cache-dir", "pdf_cache", null, 'f');
-    }
 
-    /**
-     * Constructor taking a ServletConfig. Reads the config file location from
-     * an init parameter and loads the config file. Calls
-     * <code>readConfig()</code>.
-     * 
-     * @see readConfig()
-     */
-    public DigilibServletConfiguration(ServletContext c) throws Exception {
-        readConfig(c);
     }
 
     /**
      * read parameter list from the XML file in init parameter "config-file" or
      * file digilib-config.xml
+     * @throws IOException 
+     * @throws SAXException 
      */
-    @SuppressWarnings("unchecked")
-    public void readConfig(ServletContext c) throws Exception {
+    public void readConfig(ServletContext c) throws SAXException, IOException  {
 
         /*
          * Get config file name. The file name is first looked for as an init
@@ -249,21 +212,126 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
                 dirs[j] = ServletOps.getFile(dirs[j], c);
             }
         }
-        // initialise static DocuImage class instance
-        DigilibServletConfiguration.docuImageClass = (Class<DocuImageImpl>) Class.forName(getAsString("docuimage-class"));
-        setValue("servlet.docuimage.class", DigilibServletConfiguration.docuImageClass);
-        setValue("servlet.docuimage.version", getDocuImageInstance().getVersion());
-        // initialise MetaFactory
-        Class<FileMeta> fileMetaClass = (Class<FileMeta>) Class.forName(getAsString("filemeta-class"));
-        newParameter("servlet.filemeta.class", fileMetaClass, null, 's');
-        MetaFactory.setFileMetaClass(fileMetaClass);
-        Class<DirMeta> dirMetaClass = (Class<DirMeta>) Class.forName(getAsString("dirmeta-class"));
-        newParameter("servlet.dirmeta.class", dirMetaClass, null, 's');
-        MetaFactory.setDirMetaClass(dirMetaClass);
-        // initialise AuthOpsFactory
-        Class<AuthOps> authOpsClass = (Class<AuthOps>) Class.forName(getAsString("authops-class"));
-        newParameter("servlet.authops.class", authOpsClass, null, 's');
-        AuthOpsFactory.setAuthOpsClass(authOpsClass);
+
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see digilib.conf.DigilibConfiguration#configure()
+     */
+    @SuppressWarnings("unchecked")
+    public void configure(ServletContext context) {
+        super.configure();
+        /*
+         * configure factories
+         */
+        try {
+            // initialise MetaFactory
+            Class<FileMeta> fileMetaClass = (Class<FileMeta>) Class.forName(getAsString("filemeta-class"));
+            newParameter("servlet.filemeta.class", fileMetaClass, null, 's');
+            MetaFactory.setFileMetaClass(fileMetaClass);
+            Class<DirMeta> dirMetaClass = (Class<DirMeta>) Class.forName(getAsString("dirmeta-class"));
+            newParameter("servlet.dirmeta.class", dirMetaClass, null, 's');
+            MetaFactory.setDirMetaClass(dirMetaClass);
+        } catch (ClassNotFoundException e) {
+            logger.error("Error setting Metadata classes!");
+        }
+        try {
+            // initialise AuthOpsFactory
+            Class<AuthOps> authOpsClass = (Class<AuthOps>) Class.forName(getAsString("authops-class"));
+            newParameter("servlet.authops.class", authOpsClass, null, 's');
+            AuthOpsFactory.setAuthOpsClass(authOpsClass);
+        } catch (ClassNotFoundException e) {
+            logger.error("Error setting AuthOps class!");
+        }
+        /*
+         * configure singletons
+         */
+        // set up the logger
+        File logConf = ServletOps.getConfigFile((File) this.getValue("log-config-file"), context);
+        if (logConf.canRead()) {
+            DOMConfigurator.configure(logConf.getAbsolutePath());
+            this.setValue("log-config-file", logConf);
+        }
+        // say hello in the log file
+        logger.info("***** Digital Image Library Configuration (version " + getVersion() + ") *****");
+        try {
+            // directory cache
+            String[] bd = (String[]) this.getValue("basedir-list");
+            FileClass[] fcs = { FileClass.IMAGE, FileClass.TEXT };
+            DocuDirCache dirCache;
+            if (this.getAsBoolean("use-mapping")) {
+                // with mapping file
+                File mapConf = ServletOps.getConfigFile((File) this.getValue("mapping-file"), context);
+                dirCache = new AliasingDocuDirCache(bd, fcs, mapConf, this);
+                this.setValue("mapping-file", mapConf);
+            } else {
+                // without mapping
+                dirCache = new DocuDirCache(bd, fcs, this);
+            }
+            this.setValue("servlet.dir.cache", dirCache);
+            // useAuthentication
+            if (this.getAsBoolean("use-authorization")) {
+                AuthOps authOp = AuthOpsFactory.getAuthOpsInstance();
+                // get config file
+                File authConf = ServletOps.getConfigFile((File) this.getValue("auth-file"), context);
+                if (authConf != null) {
+                    authOp.setConfig(authConf);
+                }
+                this.setValue("servlet.auth.op", authOp);
+                this.setValue("auth-file", authConf);
+            }
+            // digilib worker threads
+            int nt = this.getAsInt("worker-threads");
+            int mt = this.getAsInt("max-waiting-threads");
+            imageExecutor = new DigilibJobCenter<DocuImage>(nt, mt, false, "servlet.worker.imageexecutor");
+            this.setValue("servlet.worker.imageexecutor", imageExecutor);
+            /*
+             * set as the servlets main config
+             */
+            context.setAttribute("digilib.servlet.configuration", this);
+        } catch (Exception e) {
+            logger.error("Error configuring digilib servlet:", e);
+        }
+    }
+
+    /**
+     * Initialisation on first run.
+     */
+    public void contextInitialized(ServletContextEvent cte) {
+        ServletContext context = cte.getServletContext();
+        context.log("***** Digital Image Library Configuration (version " + getVersion() + ") *****");
+
+        // see if there is a Configuration instance
+        DigilibServletConfiguration dlConfig = (DigilibServletConfiguration) context.getAttribute("digilib.servlet.configuration");
+        if (dlConfig == null) {
+            try {
+                readConfig(context);
+                configure(context);
+            } catch (Exception e) {
+                logger.error("Error reading digilib servlet configuration:", e);
+            }
+        } else {
+            // say hello in the log file
+            logger.warn("DigilibServletConfiguration already configured!");
+        }
+    }
+
+    /**
+     * clean up local resources
+     * 
+     */
+    public void contextDestroyed(ServletContextEvent arg0) {
+        logger.info("DigilibServletConfiguration shutting down.");
+        if (imageExecutor != null) {
+            // shut down image thread pool
+            List<Runnable> rj = imageExecutor.shutdownNow();
+            int nrj = rj.size();
+            if (nrj > 0) {
+                logger.error("Still running threads when shutting down image job queue: " + nrj);
+            }
+        }
     }
 
 }

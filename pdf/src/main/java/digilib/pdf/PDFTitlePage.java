@@ -39,9 +39,9 @@ import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.Paragraph;
 
+import digilib.conf.PDFRequest;
 import digilib.io.FileOpException;
 import digilib.servlet.PDFCache;
-import digilib.servlet.PDFRequest;
 
 /** A class for the generation of title pages for the generated pdf documents.
  * 

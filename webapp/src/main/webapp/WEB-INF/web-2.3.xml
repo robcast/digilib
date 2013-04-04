@@ -12,7 +12,7 @@
   <!-- The Intialisation Listener -->
   <listener>
         <listener-class>
-            digilib.servlet.Initialiser
+            digilib.conf.DigilibServletConfig
         </listener-class>
   </listener>
   <!-- The Scaler servlet -->

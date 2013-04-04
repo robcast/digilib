@@ -41,8 +41,8 @@ import com.itextpdf.text.pdf.PdfWriter;
 import digilib.image.DocuImage;
 import digilib.image.ImageJobDescription;
 import digilib.image.ImageWorker;
-import digilib.servlet.DigilibConfiguration;
-import digilib.servlet.PDFRequest;
+import digilib.conf.DigilibConfiguration;
+import digilib.conf.PDFRequest;
 import digilib.util.DigilibJobCenter;
 import digilib.util.NumRange;
 

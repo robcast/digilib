@@ -31,8 +31,8 @@ import java.io.OutputStream;
 import java.util.concurrent.Callable;
 
 import digilib.image.DocuImage;
-import digilib.servlet.DigilibConfiguration;
-import digilib.servlet.PDFRequest;
+import digilib.conf.DigilibConfiguration;
+import digilib.conf.PDFRequest;
 import digilib.util.DigilibJobCenter;
 
 /**

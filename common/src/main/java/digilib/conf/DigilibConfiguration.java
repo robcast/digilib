@@ -25,64 +25,36 @@ package digilib.conf;
  * Author: Robert Casties (robcast@berlios.de)
  */
 
-import java.io.IOException;
+import javax.imageio.ImageIO;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 import digilib.image.DocuImage;
-import digilib.image.DocuImageImpl;
-import digilib.io.ImageInput;
+import digilib.image.DocuImageFactory;
 import digilib.util.ParameterMap;
 
 /**
- * Class to hold the digilib servlet configuration parameters. The parameters
- * can be read from the digilib-config file and be passed to other servlets or
- * beans. <br>
- * errorImgFileName: image file to send in case of error. <br>
- * denyImgFileName: image file to send if access is denied. <br>
- * baseDirs: array of base directories in order of preference (prescaled
- * versions first). <br>
- * useAuth: use authentication information. <br>
- * authConfPath: authentication configuration file. <br>
- * ... <br>
- * 
+ * Class to hold the digilib servlet configuration parameters.
  * @author casties
  * 
  */
 public class DigilibConfiguration extends ParameterMap {
 
-    /** DocuImage class instance */
-    protected static Class<DocuImageImpl> docuImageClass = null;
-
     /** Log4J logger */
-    protected Logger logger = Logger.getLogger("digilib.config");
+    protected static Logger logger = Logger.getLogger(DigilibConfiguration.class);
 
     /**
      * Default constructor defines all parameters and their default values.
-     * 
      */
     public DigilibConfiguration() {
         super(20);
-        // we start with a default logger config
-        BasicConfigurator.configure();
-        initParams();
-    }
-
-    /**
-     * Definition of parameters and default values.
-     * 
-     */
-    @SuppressWarnings("unchecked")
-    protected void initParams() {
         /*
          * Definition of parameters and default values. System parameters that
          * are not read from config file have a type 's'.
          */
         // digilib version
-        newParameter("digilib.version", "2.1.3", null, 's');
-        // DocuImage class instance
-        newParameter("servlet.docuimage.class", digilib.image.ImageLoaderDocuImage.class, null, 's');
+        newParameter("digilib.version", "2.2.0", null, 's');
         // sending image files as-is allowed
         newParameter("sendfile-allowed", Boolean.TRUE, null, 'f');
         // Type of DocuImage instance
@@ -90,7 +62,7 @@ public class DigilibConfiguration extends ParameterMap {
         // degree of subsampling on image load
         newParameter("subsample-minimum", new Float(2f), null, 'f');
         // default scaling quality
-        newParameter("default-quality", new Integer(1), null, 'f');
+        newParameter("default-quality", new Integer(2), null, 'f');
         // maximum destination image size (0 means no limit)
         newParameter("max-image-size", new Integer(0), null, 'f');
         // allow image toolkit to use disk cache
@@ -98,55 +70,33 @@ public class DigilibConfiguration extends ParameterMap {
         // default type of error message (image, text, code)
         newParameter("default-errmsg-type", "image", null, 'f');
 
-        // initialise static DocuImage class instance
+    }
+
+    /**
+     * Configure digilib.
+     * 
+     * Sets up Factories and Singletons using the configuration. 
+     */
+    @SuppressWarnings("unchecked")
+    public void configure() {
+        // we start log4j with a default logger config TODO: is this the right place?
+        BasicConfigurator.configure();
+        /*
+         * initialise static DocuImage class instance
+         */
         try {
-            DigilibConfiguration.docuImageClass = (Class<DocuImageImpl>) Class.forName(getAsString("docuimage-class"));
+            Class<DocuImage> docuImageClass = (Class<DocuImage>) Class.forName(getAsString("docuimage-class"));
+            DocuImageFactory.setDocuImageClass(docuImageClass);
+            // DocuImage class instance
+            newParameter("servlet.docuimage.class", docuImageClass, null, 's');
+            newParameter("servlet.docuimage.version", DocuImageFactory.getInstance().getVersion(), null, 's');
         } catch (ClassNotFoundException e) {
-            logger.error("Unable to set docuImageClass!");
+            logger.error("Error setting DocuImage class!");
         }
+        // disk cache for image toolkit
+        boolean dc = getAsBoolean("img-diskcache-allowed");
+        // TODO: methods for all toolkits?
+        ImageIO.setUseCache(dc);
     }
 
-    /**
-     * Creates a new DocuImage instance.
-     * 
-     * The type of DocuImage is specified by docuimage-class.
-     * 
-     * @return DocuImage
-     */
-    public static DocuImage getDocuImageInstance() {
-        DocuImageImpl di = null;
-        try {
-            di = docuImageClass.newInstance();
-        } catch (Exception e) {
-        }
-        return di;
-    }
-
-    /**
-     * Check image size and type and store in ImageFile imgf
-     * 
-     * @param imgf
-     * @return
-     * @throws IOException
-     */
-    public static ImageInput identifyDocuImage(ImageInput imgf) throws IOException {
-        // use fresh DocuImage instance
-        DocuImage di = getDocuImageInstance();
-        return di.identify(imgf);
-    }
-
-    /**
-     * @return Returns the docuImageClass.
-     */
-    public static Class<DocuImageImpl> getDocuImageClass() {
-        return docuImageClass;
-    }
-
-    /**
-     * @param docuImageClass
-     *            The docuImageClass to set.
-     */
-    public static void setDocuImageClass(Class<DocuImageImpl> dic) {
-        docuImageClass = dic;
-    }
 }

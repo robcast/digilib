@@ -34,7 +34,8 @@ import java.io.RandomAccessFile;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 
-import digilib.conf.DigilibConfiguration;
+import digilib.image.DocuImage;
+import digilib.image.DocuImageFactory;
 import digilib.util.ImageSize;
 
 /**
@@ -82,7 +83,8 @@ public class ImageFile extends ImageInput {
 	    if (pixelSize == null) {
 	        try {
 	            // use the configured toolkit to identify the image
-                DigilibConfiguration.identifyDocuImage(this);
+                DocuImage di = DocuImageFactory.getInstance();
+                di.identify(this);
             } catch (IOException e) {
                 // nothing much to do...
             }

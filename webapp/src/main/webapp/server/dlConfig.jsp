@@ -25,6 +25,7 @@
           digilib.conf.DigilibServletConfiguration,
           digilib.conf.DigilibServletRequest,
           digilib.io.DocuDirCache,
+          digilib.image.DocuImageFactory,
           java.io.File"%>
 <%!
 // authentication stuff - robert
@@ -130,16 +131,7 @@ DigilibJobCenter imageProcessor =  (DigilibJobCenter)dlConfig.getValue("servlet.
 
 <table>
   <tr>
-    <td>currently open requests</td><td><b><%= dlConfig.openRequestCnt.get() %></b></td>
-    <td>(including this)</td>
-  </tr>
-  <tr>
-    <td>total requests</td><td><b><%= dlConfig.webappRequestCnt.get() %></b></td>
-    <td></td>
-  </tr>
-  <tr>
     <td>total runtime </td><td><b><%= (System.currentTimeMillis() - dlConfig.webappStartTime)/1000 %></b></td>
-    <td>s (<%= dlConfig.webappRequestCnt.get() / (float)((System.currentTimeMillis() - dlConfig.webappStartTime)/1000) %> req/s)</td>
   </tr>
 </table>
 
@@ -202,7 +194,7 @@ DigilibJobCenter imageProcessor =  (DigilibJobCenter)dlConfig.getValue("servlet.
 <p>Supported image types</p>
 <ul>
 <% 
-  java.util.Iterator dlfs = dlConfig.getDocuImageInstance().getSupportedFormats();
+  java.util.Iterator dlfs = DocuImageFactory.getInstance().getSupportedFormats();
   for (Object f = dlfs.next(); dlfs.hasNext(); f = dlfs.next()) {
 %>
   <li><%= (String)f %></li>

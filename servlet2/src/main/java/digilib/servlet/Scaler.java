@@ -132,6 +132,8 @@ public class Scaler extends HttpServlet {
             // no Configuration
             throw new ServletException("No Configuration!");
         }
+        // add servlet version
+        dlConfig.newParameter("servlet.version", Scaler.getVersion(), null, 's');
         // log DocuImage version
         logger.info("Scaler uses " + dlConfig.getValue("servlet.docuimage.version"));
         // set our AuthOps

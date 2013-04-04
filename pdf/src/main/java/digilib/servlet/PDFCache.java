@@ -39,6 +39,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
+import digilib.conf.DigilibConfiguration;
+import digilib.conf.PDFRequest;
 import digilib.image.DocuImage;
 import digilib.pdf.PDFFileWorker;
 import digilib.util.DigilibJobCenter;
@@ -56,7 +58,7 @@ import digilib.util.DigilibJobCenter;
 @SuppressWarnings("serial")
 public class PDFCache extends HttpServlet {
 
-    public static String version = "0.3a";
+    public static String version = "2.2.0";
 
     /** logger for accounting requests */
     protected static Logger accountlog = Logger.getLogger("account.pdf.request");
@@ -92,7 +94,8 @@ public class PDFCache extends HttpServlet {
 	public static enum PDFStatus {DONE, WIP, NONEXISTENT, ERROR};
 
 	
-	public void init(ServletConfig config) throws ServletException {
+	@SuppressWarnings("unchecked")
+    public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		
         System.out.println("***** Digital Image Library Image PDF-Cache Servlet (version "

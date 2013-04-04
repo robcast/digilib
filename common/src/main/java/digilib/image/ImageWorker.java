@@ -69,7 +69,7 @@ public class ImageWorker implements Callable<DocuImage> {
 
         DocuImage docuImage = jobinfo.getDocuImage();
         if (docuImage == null) {
-            docuImage = DigilibConfiguration.getDocuImageInstance();
+            docuImage = DocuImageFactory.getInstance();
             if (docuImage == null) {
                 throw new ImageOpException("Unable to load DocuImage class!");
             }

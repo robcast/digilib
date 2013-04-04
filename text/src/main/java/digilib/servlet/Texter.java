@@ -39,6 +39,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
 import digilib.auth.AuthOps;
+import digilib.conf.DigilibServletConfiguration;
+import digilib.conf.DigilibServletRequest;
 import digilib.image.ImageOpException;
 import digilib.io.DocuDirCache;
 import digilib.io.FileOps;
@@ -57,7 +59,7 @@ public class Texter extends HttpServlet {
     private static final long serialVersionUID = 6678666342141409867L;
 
     /** Servlet version */
-	public static String tlVersion = "0.1b3";
+	public static String tlVersion = "2.2.0";
 
 	/** DigilibConfiguration instance */
 	DigilibServletConfiguration dlConfig = null;
