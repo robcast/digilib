@@ -132,24 +132,6 @@ public class DocumentBean {
 	}
 
 	/**
-	 * return a list of authorization roles needed for request to access the
-	 * specified path
-	 */
-	public List<String> rolesForPath(DigilibServletRequest request) throws AuthOpException {
-		logger.debug("rolesForPath");
-		return useAuthentication ? authOp.rolesForPath(request) : null;
-	}
-
-	/**
-	 * check request authorization against a list of roles
-	 */
-	public boolean isRoleAuthorized(List<String> roles, DigilibServletRequest request) {
-		logger.debug("isRoleAuthorized");
-		return useAuthentication ? authOp.isRoleAuthorized(roles, request)
-				: true;
-	}
-
-	/**
 	 * check for authenticated access and redirect if necessary
 	 */
 	public boolean doAuthentication(HttpServletResponse response)

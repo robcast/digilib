@@ -27,7 +27,6 @@ package digilib.servlet;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -54,21 +53,26 @@ import digilib.io.ImageInput;
 import digilib.util.DigilibJobCenter;
 
 /**
- * Version of Scaler servlet that uses a thread pool but not Servlet 3.0 async API. 
+ * Version of Scaler servlet that uses a thread pool but not Servlet 3.0 async
+ * API.
  */
 public class Scaler extends HttpServlet {
 
     private static final long serialVersionUID = -5439198888139362735L;
 
     /** digilib servlet version (for all components) */
-    public static final String version = "2.1.5 noasync";
+    public static final String version = "2.1.6 noasync";
 
     /** servlet error codes */
-    public static enum Error {UNKNOWN, AUTH, FILE, IMAGE};
-    
+    public static enum Error {
+        UNKNOWN, AUTH, FILE, IMAGE
+    };
+
     /** type of error message */
-    public static enum ErrMsg {IMAGE, TEXT, CODE};
-    
+    public static enum ErrMsg {
+        IMAGE, TEXT, CODE
+    };
+
     /** logger for accounting requests */
     protected static Logger accountlog = Logger.getLogger("account.request");
 
@@ -116,18 +120,14 @@ public class Scaler extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
 
-        System.out
-                .println("***** Digital Image Library Image Scaler Servlet (version "
-                        + version + ") *****");
+        System.out.println("***** Digital Image Library Image Scaler Servlet (version " + version + ") *****");
         // say hello in the log file
-        logger.info("***** Digital Image Library Image Scaler Servlet (version "
-                + version + ") *****");
+        logger.info("***** Digital Image Library Image Scaler Servlet (version " + version + ") *****");
 
         // get our ServletContext
         ServletContext context = config.getServletContext();
         // see if there is a Configuration instance
-        dlConfig = (DigilibServletConfiguration) context
-                .getAttribute("digilib.servlet.configuration");
+        dlConfig = (DigilibServletConfiguration) context.getAttribute("digilib.servlet.configuration");
         if (dlConfig == null) {
             // no Configuration
             throw new ServletException("No Configuration!");
@@ -142,8 +142,7 @@ public class Scaler extends HttpServlet {
         dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 
         // Executor
-        imageJobCenter = (DigilibJobCenter<DocuImage>) dlConfig
-                .getValue("servlet.worker.imageexecutor");
+        imageJobCenter = (DigilibJobCenter<DocuImage>) dlConfig.getValue("servlet.worker.imageexecutor");
 
         denyImgFile = ServletOps.getFile(dlConfig.getAsFile("denied-image"), context);
         errorImgFile = ServletOps.getFile(dlConfig.getAsFile("error-image"), context);
@@ -151,13 +150,13 @@ public class Scaler extends HttpServlet {
         sendFileAllowed = dlConfig.getAsBoolean("sendfile-allowed");
     }
 
-    /** Returns modification time relevant to the request for caching.
+    /**
+     * Returns modification time relevant to the request for caching.
      * 
      * @see javax.servlet.http.HttpServlet#getLastModified(javax.servlet.http.HttpServletRequest)
      */
     public long getLastModified(HttpServletRequest request) {
-        accountlog.debug("GetLastModified from " + request.getRemoteAddr()
-                + " for " + request.getQueryString());
+        accountlog.debug("GetLastModified from " + request.getRemoteAddr() + " for " + request.getQueryString());
         long mtime = -1;
         // create new request
         DigilibServletRequest dlReq = new DigilibServletRequest(request);
@@ -165,47 +164,52 @@ public class Scaler extends HttpServlet {
         if (dd != null) {
             mtime = dd.getDirMTime() / 1000 * 1000;
         }
-        logger.debug("  returns "+mtime);
+        logger.debug("  returns " + mtime);
         return mtime;
     }
 
-    /* (non-Javadoc)
-     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest
+     * , javax.servlet.http.HttpServletResponse)
      */
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException {
         accountlog.info("GET from " + request.getRemoteAddr());
         this.processRequest(request, response);
     }
 
-
-    /* (non-Javadoc)
-     * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest
+     * , javax.servlet.http.HttpServletResponse)
      */
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException {
         accountlog.info("POST from " + request.getRemoteAddr());
         this.processRequest(request, response);
     }
-    
 
-	protected void doHead(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
-		logger.debug("HEAD from "+req.getRemoteAddr());
-		super.doHead(req, resp);
-	}
+    protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        logger.debug("HEAD from " + req.getRemoteAddr());
+        super.doHead(req, resp);
+    }
 
-	protected void doOptions(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
-		logger.debug("OPTIONS from "+req.getRemoteAddr());
-		super.doOptions(req, resp);
-	}
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        logger.debug("OPTIONS from " + req.getRemoteAddr());
+        super.doOptions(req, resp);
+    }
 
-	/** Service this request using the response.
+    /**
+     * Service this request using the response.
+     * 
      * @param request
      * @param response
-     * @throws ServletException 
+     * @throws ServletException
      */
-    public void processRequest(HttpServletRequest request,
-            HttpServletResponse response) throws ServletException {
+    public void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException {
 
         if (dlConfig == null) {
             logger.error("ERROR: No Configuration!");
@@ -224,29 +228,23 @@ public class Scaler extends HttpServlet {
         // type of error reporting
         ErrMsg errMsgType = ErrMsg.IMAGE;
         if (dlRequest.hasOption("errtxt")) {
-        	errMsgType = ErrMsg.TEXT;
+            errMsgType = ErrMsg.TEXT;
         } else if (dlRequest.hasOption("errcode")) {
-        	errMsgType = ErrMsg.CODE;
+            errMsgType = ErrMsg.CODE;
         }
-        
+
         try {
-        	/*
-        	 *  check if we can fast-track without scaling
-        	 */
+            /*
+             * check if we can fast-track without scaling
+             */
             ImageInput fileToLoad = (ImageInput) jobTicket.getInput();
 
             // check permissions
             if (useAuthorization) {
-                // get a list of required roles (empty if no restrictions)
-                List<String> rolesRequired = authOp.rolesForPath(dlRequest);
-                if (rolesRequired != null) {
-                    authlog.debug("Role required: " + rolesRequired);
-                    authlog.debug("User: " + request.getRemoteUser());
-                    // is the current request/user authorized?
-                    if (!authOp.isRoleAuthorized(rolesRequired, dlRequest)) {
-                        // send deny answer and abort
-                        throw new AuthOpException();
-                    }
+                // is the current request/user authorized?
+                if (!authOp.isAuthorized(dlRequest)) {
+                    // send deny answer and abort
+                    throw new AuthOpException();
                 }
             }
 
@@ -262,8 +260,9 @@ public class Scaler extends HttpServlet {
                 return;
             }
 
-            // if possible, send the image without actually having to transform it
-            if (! jobTicket.isTransformRequired()) {
+            // if possible, send the image without actually having to transform
+            // it
+            if (!jobTicket.isTransformRequired()) {
                 logger.debug("Sending File as is.");
                 ServletOps.sendFile(fileToLoad.getFile(), null, null, response, logger);
                 logger.info("Done in " + (System.currentTimeMillis() - startTime) + "ms");
@@ -285,14 +284,13 @@ public class Scaler extends HttpServlet {
             // forced destination image type
             String mt = null;
             if (jobTicket.hasOption("jpg")) {
-            	mt = "image/jpeg";
+                mt = "image/jpeg";
             } else if (jobTicket.hasOption("png")) {
-            	mt = "image/png";
+                mt = "image/png";
             }
             // send image
             ServletOps.sendImage(img, mt, response, logger);
-            logger.debug("Job Processing Time: "
-                    + (System.currentTimeMillis() - startTime) + "ms");
+            logger.debug("Job Processing Time: " + (System.currentTimeMillis() - startTime) + "ms");
 
         } catch (ImageOpException e) {
             logger.error(e.getClass() + ": " + e.getMessage());
@@ -322,8 +320,7 @@ public class Scaler extends HttpServlet {
      * @param msg
      * @param response
      */
-    public static void digilibError(ErrMsg type, Error error, String msg,
-            HttpServletResponse response) {
+    public static void digilibError(ErrMsg type, Error error, String msg, HttpServletResponse response) {
         try {
             File img = null;
             int status = 0;

@@ -26,8 +26,6 @@ package digilib.auth;
  * Author: Robert Casties (robcast@berlios.de)
  */
 
-import java.util.List;
-
 import digilib.conf.DigilibRequest;
 
 /** Class of operations requiring authentication. */
@@ -51,26 +49,5 @@ public interface AuthOps {
 	 */
 	public boolean isAuthorized(DigilibRequest request)
 		throws AuthOpException;
-
-	/** Authorization roles needed for request.
-	 *
-	 * Returns the list of authorization roles that are needed to access the
-	 * specified path. No list means the path is free.
-	 *
-	 * The location information of the request is also considered.
-	 *
-	 * @param request DigilibRequest with address information.
-	 * @throws AuthOpException Exception thrown on error.
-	 * @return List of Strings with role names.
-	 */
-	public List<String> rolesForPath(DigilibRequest request)
-		throws AuthOpException;
-
-	/** Test request authorization against a list of roles.
-	 * @param roles List of Strings with role names.
-	 * @param request ServletRequest with address information.
-	 * @return true if the user information in the request authorizes one of the roles.
-	 */
-	public boolean isRoleAuthorized(List<String> roles, DigilibRequest request);
 
 }

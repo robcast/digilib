@@ -33,7 +33,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.StringTokenizer;
 
-import digilib.image.DocuImage;
+import digilib.image.ImageJobDescription;
 import digilib.io.FileOps;
 import digilib.util.OptionsSet;
 import digilib.util.Parameter;
@@ -63,7 +63,7 @@ import digilib.util.ParameterMap;
  */
 public class DigilibRequest extends ParameterMap {
 
-	protected DocuImage image; // internal DocuImage instance for this request
+	protected ImageJobDescription ticket; // ImageJobDescription for this request
 
 	public DigilibRequest() {
 		super(30);
@@ -128,9 +128,6 @@ public class DigilibRequest extends ParameterMap {
 		newParameter("request.path", "", null, 'i');
 		// base URL (from http:// to below /servlet)
 		newParameter("base.url", null, null, 'i');
-		// DocuImage instance for this request
-		newParameter("docu.image", image, null, 'i');
-		image = null;
 		/*
 		 * Parameters of type 'c' are for the clients use
 		 */
@@ -285,24 +282,18 @@ public class DigilibRequest extends ParameterMap {
 		return FileOps.normalName(s);
 	}
 
-	/**
-	 * Returns the image.
-	 * 
-	 * @return DocuImage
-	 */
-	public DocuImage getImage() {
-		return image;
-	}
+    /**
+     * @return the ticket
+     */
+    public ImageJobDescription getJobDescription() {
+        return ticket;
+    }
 
-	/**
-	 * Sets the image.
-	 * 
-	 * @param image
-	 *            The image to set
-	 */
-	public void setImage(DocuImage image) {
-		this.image = image;
-		setValue("docu.image", image);
-	}
+    /**
+     * @param ticket the ticket to set
+     */
+    public void setJobDescription(ImageJobDescription ticket) {
+        this.ticket = ticket;
+    }
 
 }

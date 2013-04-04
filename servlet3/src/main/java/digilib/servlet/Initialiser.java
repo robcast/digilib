@@ -43,7 +43,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
 
 import digilib.auth.AuthOps;
-import digilib.auth.XMLAuthOps;
+import digilib.auth.PathServletAuthOps;
 import digilib.conf.DigilibConfiguration;
 import digilib.conf.DigilibServletConfiguration;
 import digilib.image.DocuImage;
@@ -138,7 +138,7 @@ public class Initialiser implements ServletContextListener, ServletRequestListen
 					// XML version
 					File authConf = ServletOps.getConfigFile((File) dlConfig
 							.getValue("auth-file"), context);
-					AuthOps authOp = new XMLAuthOps(authConf);
+					AuthOps authOp = new PathServletAuthOps(authConf);
 					dlConfig.setValue("servlet.auth.op", authOp);
 					dlConfig.setValue("auth-file", authConf);
 				}

@@ -32,6 +32,7 @@ import java.io.IOException;
 import org.apache.log4j.Logger;
 
 import digilib.conf.DigilibConfiguration;
+import digilib.conf.DigilibRequest;
 import digilib.image.DocuImage.ColorOp;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
@@ -142,18 +143,33 @@ public class ImageJobDescription extends ParameterMap {
 	}
 
 
-	/** Creates new ImageJobDescription by merging Parameters from another ParameterMap.
-	 * @param pm
+	/** Creates new ImageJobDescription by merging Parameters from a DigilibRequest.
+	 * @param dlReq
 	 * @param dlcfg
 	 * @return
 	 */
-	public static ImageJobDescription getInstance(ParameterMap pm, DigilibConfiguration dlcfg) {
+	public static ImageJobDescription getInstance(DigilibRequest dlReq, DigilibConfiguration dlcfg) {
 		ImageJobDescription newMap = new ImageJobDescription(dlcfg);
 		// add all params to this map
-		newMap.params.putAll(pm.getParams());
+		newMap.params.putAll(dlReq.getParams());
 		newMap.initOptions();
+		// add ImageJobDescription back into DigilibRequest
+		dlReq.setJobDescription(newMap);
 		return newMap;
 	}
+
+    /** Creates new ImageJobDescription by merging Parameters from another ParameterMap.
+     * @param pm
+     * @param dlcfg
+     * @return
+     */
+    public static ImageJobDescription getInstance(ParameterMap pm, DigilibConfiguration dlcfg) {
+        ImageJobDescription newMap = new ImageJobDescription(dlcfg);
+        // add all params to this map
+        newMap.params.putAll(pm.getParams());
+        newMap.initOptions();
+        return newMap;
+    }
 
 	
 	/** Returns the mime-type (of the input). 
