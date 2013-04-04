@@ -26,28 +26,43 @@ package digilib.auth;
  * Author: Robert Casties (robcast@berlios.de)
  */
 
+import java.io.File;
+
 import digilib.conf.DigilibRequest;
 
 /** Class of operations requiring authentication. */
 public interface AuthOps {
 
-	/** Test if the request must be authorized to access the filepath.
-	 *
-	 * Information about the user is taken from the DigilibRequest.
-	 * @param request DigilibRequest with user information.
-	 * @throws AuthOpException Exception thrown on error.
-	 * @return true if the user request must be authorized.
-	 */
-	public boolean isAuthRequired(DigilibRequest request)
-		throws AuthOpException;
+    /**
+     * Test if the request must be authorized to access the filepath.
+     * 
+     * Information about the user is taken from the DigilibRequest.
+     * 
+     * @param request
+     *            DigilibRequest with user information.
+     * @throws AuthOpException
+     *             Exception thrown on error.
+     * @return true if the user request must be authorized.
+     */
+    public boolean isAuthRequired(DigilibRequest request) throws AuthOpException;
 
-	/** Test if the request is allowed to access filepath.
-	 * 
-	 * @param request Request with user information.
-	 * @throws AuthOpException Exception thrown on error.
-	 * @return true if the request is allowed.
-	 */
-	public boolean isAuthorized(DigilibRequest request)
-		throws AuthOpException;
+    /**
+     * Test if the request is allowed to access filepath.
+     * 
+     * @param request
+     *            Request with user information.
+     * @throws AuthOpException
+     *             Exception thrown on error.
+     * @return true if the request is allowed.
+     */
+    public boolean isAuthorized(DigilibRequest request) throws AuthOpException;
 
+
+    /**
+     * Configure this AuthOps instance.
+     * 
+     * @param confFile
+     * @throws AuthOpException
+     */
+    public void setConfig(File confFile) throws AuthOpException;
 }

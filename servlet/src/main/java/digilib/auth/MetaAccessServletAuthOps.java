@@ -2,12 +2,13 @@ package digilib.auth;
 
 /*
  * #%L
- * XMLAuthOps -- Authentication class implementation using XML files
+ * Authentication class implementation using access information from 
+ * file metadata.
  * 
  * Digital Image Library servlet components
  * 
  * %%
- * Copyright (C) 2001 - 2013 MPIWG Berlin
+ * Copyright (C) 2013 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 

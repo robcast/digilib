@@ -33,6 +33,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.ServletContext;
 
+import digilib.auth.AuthOps;
+import digilib.auth.AuthOpsFactory;
 import digilib.image.DocuImageImpl;
 import digilib.io.FileOps;
 import digilib.meta.DirMeta;
@@ -143,6 +145,8 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
         newParameter("filemeta-class", "digilib.meta.IndexMetaFileMeta", null, 'f');
         // DirMeta implementation
         newParameter("dirmeta-class", "digilib.meta.IndexMetaDirMeta", null, 'f');
+        // AuthOps implementation
+        newParameter("authops-class", "digilib.auth.PathServletAuthOps", null, 'f');
         
         // TODO: move pdf-stuff to its own config
         // number of pdf-generation threads
@@ -256,6 +260,10 @@ public class DigilibServletConfiguration extends DigilibConfiguration {
         Class<DirMeta> dirMetaClass = (Class<DirMeta>) Class.forName(getAsString("dirmeta-class"));
         newParameter("servlet.dirmeta.class", dirMetaClass, null, 's');
         MetaFactory.setDirMetaClass(dirMetaClass);
+        // initialise AuthOpsFactory
+        Class<AuthOps> authOpsClass = (Class<AuthOps>) Class.forName(getAsString("authops-class"));
+        newParameter("servlet.authops.class", authOpsClass, null, 's');
+        AuthOpsFactory.setAuthOpsClass(authOpsClass);
     }
 
 }

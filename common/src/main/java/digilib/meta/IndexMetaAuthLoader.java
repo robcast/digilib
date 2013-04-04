@@ -234,8 +234,6 @@ public class IndexMetaAuthLoader {
             } else if (event == XMLStreamConstants.CHARACTERS) {
                 text.append(reader.getText());
             } else if (event == XMLStreamConstants.END_ELEMENT) {
-                // get tag TODO: make namespace aware
-                String thisTag = reader.getLocalName();
                 if (tagsMatchPath(accessNameTag)) {
                     /*
                      * access/name tag

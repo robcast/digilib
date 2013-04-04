@@ -27,8 +27,6 @@ package digilib.servlet;
  * Author: Robert Casties (robcast@berlios.de)
  */
 
-import java.util.List;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
