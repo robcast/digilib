@@ -97,6 +97,12 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         newParameter("servlet.dir.cache", null, null, 's');
         // Executor for image operations
         newParameter("servlet.worker.imageexecutor", null, null, 's');
+        // AuthOps instance
+        newParameter("servlet.auth.op", null, null, 's');
+        // classes TODO: do we need this?
+        newParameter("servlet.filemeta.class", null, null, 's');
+        newParameter("servlet.dirmeta.class", null, null, 's');
+        newParameter("servlet.authops.class", null, null, 's');
 
         /*
          * parameters that can be read from config file have a type 'f'
@@ -229,10 +235,10 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         try {
             // initialise MetaFactory
             Class<FileMeta> fileMetaClass = (Class<FileMeta>) Class.forName(getAsString("filemeta-class"));
-            newParameter("servlet.filemeta.class", fileMetaClass, null, 's');
+            setValue("servlet.filemeta.class", fileMetaClass);
             MetaFactory.setFileMetaClass(fileMetaClass);
             Class<DirMeta> dirMetaClass = (Class<DirMeta>) Class.forName(getAsString("dirmeta-class"));
-            newParameter("servlet.dirmeta.class", dirMetaClass, null, 's');
+            setValue("servlet.dirmeta.class", dirMetaClass);
             MetaFactory.setDirMetaClass(dirMetaClass);
         } catch (ClassNotFoundException e) {
             logger.error("Error setting Metadata classes!");
@@ -240,7 +246,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         try {
             // initialise AuthOpsFactory
             Class<AuthOps> authOpsClass = (Class<AuthOps>) Class.forName(getAsString("authops-class"));
-            newParameter("servlet.authops.class", authOpsClass, null, 's');
+            setValue("servlet.authops.class", authOpsClass);
             AuthOpsFactory.setAuthOpsClass(authOpsClass);
         } catch (ClassNotFoundException e) {
             logger.error("Error setting AuthOps class!");

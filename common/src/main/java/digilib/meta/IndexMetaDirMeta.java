@@ -1,6 +1,3 @@
-/**
- * 
- */
 package digilib.meta;
 
 /*
@@ -91,17 +88,19 @@ public class IndexMetaDirMeta implements DirMeta {
      */
     public void readParentMeta(DocuDirectory dir) {
         // check the parent directories for additional file meta
-        Directory dd = dir.getParent();
+        Directory pd = dir.getParent();
         String path = dir.getDir().getName();
-        while (dd != null) {
-            IndexMetaDirMeta dm = (IndexMetaDirMeta) ((DocuDirectory) dd).getMeta();
+        while (pd != null) {
+            DocuDirectory dd = (DocuDirectory) pd;
+            dd.checkMeta();
+            IndexMetaDirMeta dm = (IndexMetaDirMeta) dd.getMeta();
             if (dm.hasUnresolvedFileMeta()) {
                 readFileMeta(dir, dm.getUnresolvedFileMeta(), path);
             }
             // prepend parent dir path
-            path = dd.getDir().getName() + "/" + path;
+            path = pd.getDir().getName() + "/" + path;
             // become next parent
-            dd = dd.getParent();
+            pd = pd.getParent();
         }
     }
 
@@ -118,13 +117,9 @@ public class IndexMetaDirMeta implements DirMeta {
      *            fileClass
      */
     protected void readFileMeta(DocuDirectory dir, Map<String,MetadataMap> fileMeta, String relPath) {
-        if (dir.size() == 0) {
-            // there are no files
-            return;
-        }
         String path = (relPath != null) ? (relPath + "/") : "";
         // go through all file classes
-        for (FileClass fc: FileClass.values()) {
+        for (FileClass fc: dir.getCache().getFileClasses()) {
             int ds = dir.size(fc);
             if (ds == 0) {
                 continue;

@@ -49,21 +49,6 @@ public class PathServletAuthOps extends ServletAuthOpsImpl {
     private HashTree authIPs;
 
     /**
-     * Constructor taking an XML config file.
-     * 
-     * @param u
-     *            utils object
-     * @param confFile
-     *            Configuration file.
-     * @throws AuthOpException
-     *             Exception thrown on error.
-     */
-    public PathServletAuthOps(File confFile) throws AuthOpException {
-        configFile = confFile;
-        init();
-    }
-
-    /**
      * Set configuration file.
      * 
      * @param confFile

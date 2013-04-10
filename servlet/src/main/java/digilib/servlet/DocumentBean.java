@@ -200,7 +200,7 @@ public class DocumentBean {
 		DocuDirectory dd = dirCache.getDirectory(fn);
 		if (dd != null) {
 			// add pt
-			dlRequest.setValue("pt", dd.size());
+			dlRequest.setValue("pt", dd.size(FileClass.IMAGE));
 		}
 		// get original pixel size
 		ImageInput origfile = fileset.getBiggest();

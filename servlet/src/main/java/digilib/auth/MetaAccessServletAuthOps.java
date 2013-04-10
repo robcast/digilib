@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import digilib.conf.DigilibServletRequest;
 import digilib.io.DocuDirent;
+import digilib.io.FileOpException;
 import digilib.meta.MetadataMap;
 import digilib.util.HashTree;
 import digilib.util.XMLListLoader;
@@ -53,19 +54,6 @@ public class MetaAccessServletAuthOps extends ServletAuthOpsImpl {
     private File configFile;
     private HashTree authIPs;
     private Map<String, List<String>> rolesMap;
-
-    /**
-     * Constructor taking an XML config file.
-     * 
-     * @param confFile
-     *            Configuration file.
-     * @throws AuthOpException
-     *             Exception thrown on error.
-     */
-    public MetaAccessServletAuthOps(File confFile) throws AuthOpException {
-        configFile = confFile;
-        init();
-    }
 
     /**
      * Set configuration file.
@@ -133,13 +121,19 @@ public class MetaAccessServletAuthOps extends ServletAuthOpsImpl {
     @Override
     public List<String> rolesForPath(DigilibServletRequest dlRequest) throws AuthOpException {
         HttpServletRequest request = dlRequest.getServletRequest();
-        logger.debug("rolesForPath (" + dlRequest.getFilePath() + ") by [" + request.getRemoteAddr() + "]");
+        DocuDirent imgs;
+        try {
+            imgs = (DocuDirent) dlRequest.getJobDescription().getImageSet();
+        } catch (FileOpException e) {
+            throw new AuthOpException("No file for auth check!");
+        }
         /*
          * check if the requests address provides a role
          */
         List<String> provided = authIPs.match(request.getRemoteAddr());
         if ((provided != null) && (provided.contains("ALL"))) {
             // ALL switches off checking;
+            logger.debug("rolesForPath (" + imgs.getName() + ") by [" + request.getRemoteAddr() + "]: (ip-all)");
             return null;
         }
         /*
@@ -147,15 +141,15 @@ public class MetaAccessServletAuthOps extends ServletAuthOpsImpl {
          */
         String access = null;
         try {
-            DocuDirent imgs = (DocuDirent) dlRequest.getJobDescription().getImageSet();
+            imgs.checkMeta();
             MetadataMap meta = imgs.getMeta().getFileMeta();
             access = meta.get("access");
         } catch (Exception e) {
-            logger.error("Error getting meta for file!", e);
-            throw new AuthOpException("Error getting meta for file access!");
+            logger.error("Error getting access meta for file!");
         }
         if (access == null) {
             // no access restriction - allow
+            logger.debug("rolesForPath (" + imgs.getName() + ") by [" + request.getRemoteAddr() + "]: (none)");
             return null;
         }
         // check provided against required roles
@@ -165,10 +159,12 @@ public class MetaAccessServletAuthOps extends ServletAuthOpsImpl {
             for (String prov : provided) {
                 if (required.contains(prov)) {
                     // satisfied
+                    logger.debug("rolesForPath (" + imgs.getName() + ") by [" + request.getRemoteAddr() + "]: (provided)");
                     return null;
                 }
             }
         }
+        logger.debug("rolesForPath (" + imgs.getName() + ") by [" + request.getRemoteAddr() + "]: "+required);
         return required;
     }
 

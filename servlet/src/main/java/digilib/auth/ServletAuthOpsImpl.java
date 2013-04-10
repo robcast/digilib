@@ -44,14 +44,6 @@ public abstract class ServletAuthOpsImpl implements AuthOps {
     /** general logger for this class */
     protected Logger logger = Logger.getLogger(this.getClass());
 
-    /** Default constructor. */
-    public ServletAuthOpsImpl() {
-        try {
-            init();
-        } catch (AuthOpException e) {
-        }
-    }
-
     public abstract void init() throws AuthOpException;
 
     /**
@@ -67,22 +59,24 @@ public abstract class ServletAuthOpsImpl implements AuthOps {
      * @see digilib.auth.AuthOps#isAuthorized(digilib.conf.DigilibRequest)
      */
     public boolean isAuthorized(DigilibRequest request) throws AuthOpException {
-        List<String> rolesAllowed = rolesForPath((DigilibServletRequest) request);
-        return isRoleAuthorized(rolesAllowed, (DigilibServletRequest) request);
+        List<String> rolesRequired = rolesForPath((DigilibServletRequest) request);
+        if (rolesRequired == null) return true;
+        return isRoleAuthorized(rolesRequired, (DigilibServletRequest) request);
     }
 
     /**
      * Test request authorization against a list of roles.
      * 
-     * @param roles
+     * @param rolesRequired
      *            List of Strings with role names.
      * @param request
      *            ServletRequest with address information.
      * @return true if the user information in the request authorizes one of the
      *         roles.
      */
-    public boolean isRoleAuthorized(List<String> roles, DigilibServletRequest request) {
-        for (String s : roles) {
+    public boolean isRoleAuthorized(List<String> rolesRequired, DigilibServletRequest request) {
+        if (rolesRequired == null) return true;
+        for (String s : rolesRequired) {
             logger.debug("Testing role: " + s);
             if (request.getServletRequest().isUserInRole(s)) {
                 logger.debug("Role Authorized");

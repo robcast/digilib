@@ -97,8 +97,9 @@ public class DocuDirectory extends Directory {
 	}
 
 	/**
-	 * number of DocuFiles in this directory.
-	 *  
+	 * number of DocuFiles in this directory. 
+	 * Warning: this does mostly not give the right result!  
+	 * @deprecated Use {@link #size(FileClass)} instead.
 	 */
 	public int size() {
 		return ((list != null) && (list.get(0) != null)) ? list.get(0).size() : 0;
@@ -432,6 +433,13 @@ public class DocuDirectory extends Directory {
 
     public DirMeta getMeta() {
         return meta;
+    }
+
+    /**
+     * @return the cache
+     */
+    public DocuDirCache getCache() {
+        return cache;
     }
 
 }

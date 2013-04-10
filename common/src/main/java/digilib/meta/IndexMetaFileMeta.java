@@ -102,7 +102,7 @@ public class IndexMetaFileMeta implements FileMeta {
                         DocuDirectory pdd = (DocuDirectory) dd.getParent();
                         if (pdd != null) {
                             pdd.checkMeta();
-                            if (pdd.getMeta().getDirMeta() != null) {
+                            if (fileMeta == null) {
                                 fileMeta = pdd.getMeta().getDirMeta();
                             }
                         }
