@@ -400,4 +400,14 @@ public class FileOps {
 		return m;
 	}
 
+    /**
+     * clean up any broken and unfinished files from the temporary directory.
+     */
+    public static void emptyDirectory(File dir) {
+        File[] temp_files = dir.listFiles();
+        for (File f : temp_files) {
+            f.delete();
+        }
+    }
+
 }

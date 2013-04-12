@@ -41,18 +41,20 @@ import org.apache.log4j.Logger;
 
 import digilib.conf.DigilibConfiguration;
 import digilib.conf.PDFRequest;
+import digilib.conf.PDFServletConfiguration;
 import digilib.image.DocuImage;
 import digilib.pdf.PDFFileWorker;
 import digilib.util.DigilibJobCenter;
 
 /**
- * A class for handling user requests for pdf documents made from digilib images.  
+ * A class for handling user requests for pdf documents made from digilib
+ * images.
  * 
- * If a document does not already exist, it will be enqueued for generation; if it does exist, it is sent
- * to the user.
+ * If a document does not already exist, it will be enqueued for generation; if
+ * it does exist, it is sent to the user.
  * 
  * @author cmielack
- *
+ * 
  */
 
 @SuppressWarnings("serial")
@@ -69,109 +71,84 @@ public class PDFCache extends HttpServlet {
     /** logger for authentication related */
     protected static Logger authlog = Logger.getLogger("digilib.pdf.auth");
 
-	private DigilibConfiguration dlConfig = null;
-	
-	public static String instanceKey = "digilib.servlet.PDFCache";
-	
-	private DigilibJobCenter<File> pdfJobCenter = null;
-	
-	private DigilibJobCenter<DocuImage> pdfImageJobCenter = null;
-	
-	private File cache_directory = new File("cache");  
-	
-	private File temp_directory = new File("pdf_temp");
-	
-	private static String JSP_WIP = "/pdf/wip.jsp";
-	
-	private static String JSP_ERROR = "/pdf/error.jsp";
-	
-	/** document status.
-	 *  DONE: document exists in cache
-	 *  WIP: document is "work in progress"
-	 *  NONEXISTENT: document does not exist in cache and is not in progress
-	 *  ERROR: an error occurred while processing the request
-	 */
-	public static enum PDFStatus {DONE, WIP, NONEXISTENT, ERROR};
+    private DigilibConfiguration dlConfig = null;
 
-	
-	@SuppressWarnings("unchecked")
+    public static String instanceKey = "digilib.servlet.PDFCache";
+
+    private DigilibJobCenter<File> pdfJobCenter = null;
+
+    private DigilibJobCenter<DocuImage> pdfImageJobCenter = null;
+
+    private File cacheDir = new File("cache");
+
+    private File workDir = new File("pdf_temp");
+
+    private static String JSP_WIP = "/pdf/wip.jsp";
+
+    private static String JSP_ERROR = "/pdf/error.jsp";
+
+    /**
+     * document status. DONE: document exists in cache WIP: document is
+     * "work in progress" NONEXISTENT: document does not exist in cache and is
+     * not in progress ERROR: an error occurred while processing the request
+     */
+    public static enum PDFStatus {
+        DONE, WIP, NONEXISTENT, ERROR
+    };
+
+    @SuppressWarnings("unchecked")
     public void init(ServletConfig config) throws ServletException {
-		super.init(config);
-		
-        System.out.println("***** Digital Image Library Image PDF-Cache Servlet (version "
-                + version + ") *****");
+        super.init(config);
+
+        System.out.println("***** Digital Image Library Image PDF-Cache Servlet (version " + version + ") *****");
         // say hello in the log file
-        logger.info("***** Digital Image Library Image PDF-Cache Servlet (version "
-                + version + ") *****");
+        logger.info("***** Digital Image Library Image PDF-Cache Servlet (version " + version + ") *****");
 
-		ServletContext context = getServletContext();
-		dlConfig = (DigilibConfiguration) context.getAttribute("digilib.servlet.configuration");
-		if (dlConfig == null) {
-			// no Configuration
-			throw new ServletException("No Configuration!");
-		}
-	
-		String temp_fn = dlConfig.getAsString("pdf-temp-dir");
-		temp_directory = new File(temp_fn);
-		if (!temp_directory.exists()) {
-			// try to create
-			temp_directory.mkdirs();
-		} else {
-	        // rid the temporary directory of possible incomplete document files
-	        emptyDirectory(temp_directory);
-		}
-		if (!temp_directory.isDirectory()) {
-		    throw new ServletException("Configuration error: problem with pdf-temp-dir="+temp_fn);
-		}
-        
-		String cache_fn = dlConfig.getAsString("pdf-cache-dir");
-       	cache_directory = new File(cache_fn);
-		if (!cache_directory.exists()) {
-			// try to create
-			cache_directory.mkdirs();
-		}
-        if (!cache_directory.isDirectory()) {
-            throw new ServletException("Configuration error: problem with pdf-cache-dir="+cache_fn);
+        ServletContext context = getServletContext();
+        dlConfig = PDFServletConfiguration.getCurrentConfig(context);
+        if (dlConfig == null) {
+            // no Configuration
+            throw new ServletException("No Configuration!");
         }
+        workDir = dlConfig.getAsFile(PDFServletConfiguration.PDFWORKDIR_KEY);
+        cacheDir = dlConfig.getAsFile(PDFServletConfiguration.PDFCACHEDIR_KEY);
+        if (!workDir.isDirectory()) {
+            throw new ServletException("Configuration error: problem with pdf-temp-dir=" + workDir);
+        }
+        if (!cacheDir.isDirectory()) {
+            throw new ServletException("Configuration error: problem with pdf-cache-dir=" + cacheDir);
+        }
+        pdfJobCenter = (DigilibJobCenter<File>) dlConfig.getValue(PDFServletConfiguration.PDFEXECUTOR_KEY);
+        pdfImageJobCenter = (DigilibJobCenter<DocuImage>) dlConfig.getValue(PDFServletConfiguration.PDFIMAGEEXECUTOR_KEY);
+        // register this instance globally
+        context.setAttribute(instanceKey, this);
+    }
 
-        pdfJobCenter = (DigilibJobCenter<File>) dlConfig.getValue("servlet.worker.pdfexecutor");
-        pdfImageJobCenter = (DigilibJobCenter<DocuImage>) dlConfig.getValue("servlet.worker.pdfimageexecutor");
-        
-		// register this instance globally
-		context.setAttribute(instanceKey, this);
-		
-	}
-	
-    /* (non-Javadoc)
-     * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest
+     * , javax.servlet.http.HttpServletResponse)
      */
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException {
         accountlog.info("GET from " + request.getRemoteAddr());
         this.processRequest(request, response);
     }
 
-
-    /* (non-Javadoc)
-     * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest
+     * , javax.servlet.http.HttpServletResponse)
      */
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException {
         accountlog.info("POST from " + request.getRemoteAddr());
         this.processRequest(request, response);
     }
-    
-	/** 
-	 * clean up any broken and unfinished files from the temporary directory.
-	 */
-	public void emptyDirectory(File dir){
-		File[] temp_files = dir.listFiles();
-		for (File f: temp_files){
-			f.delete();
-		}
-	}
-	
-	
-	public void processRequest(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException {
+
+    public void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException {
 
         if (dlConfig == null) {
             logger.error("ERROR: No Configuration!");
@@ -179,54 +156,54 @@ public class PDFCache extends HttpServlet {
         }
 
         String docid = "";
-	    try {
-		// evaluate request ( make a PDFJobDeclaration , get the DocumentId)
-		PDFRequest pdfji = new PDFRequest(request, dlConfig); 
-		
-		docid = pdfji.getDocumentId();
-		
-		// if some invalid data has been entered ...
-		if(!pdfji.checkValidity()) {
-			notifyUser(PDFStatus.ERROR, docid, request, response);
-			return;
-		}
-		
-		PDFStatus status = getStatus(docid);
-		
-        if (status == PDFStatus.NONEXISTENT) {
-        	// not there -- start creation
-            try {
-				createNewPdfDocument(pdfji, docid);
-	            notifyUser(status, docid, request, response);
-	            return;
-			} catch (FileNotFoundException e) {
-				// error in pdf creation
-                logger.error(e.getMessage());
-				notifyUser(PDFStatus.ERROR, docid, request, response);
-				return;
-			}
-        } else if (status == PDFStatus.DONE) {
-        	// pdf created -- send it
-            try {
-                ServletOps.sendFile(getCacheFile(docid), "application/pdf", getDownloadFilename(pdfji), response, logger);
-                return;
-            } catch (Exception e) {
-            	// sending didn't work
-                logger.error(e.getMessage());
+        try {
+            // evaluate request ( make a PDFJobDeclaration , get the DocumentId)
+            PDFRequest pdfji = new PDFRequest(request, dlConfig);
+
+            docid = pdfji.getDocumentId();
+
+            // if some invalid data has been entered ...
+            if (!pdfji.checkValidity()) {
+                notifyUser(PDFStatus.ERROR, docid, request, response);
                 return;
             }
-        } else {
-        	// should be work in progress
-            notifyUser(status, docid, request, response);
-            return;
-        }
-	    } catch (Exception e) {
+
+            PDFStatus status = getStatus(docid);
+
+            if (status == PDFStatus.NONEXISTENT) {
+                // not there -- start creation
+                try {
+                    createNewPdfDocument(pdfji, docid);
+                    notifyUser(status, docid, request, response);
+                    return;
+                } catch (FileNotFoundException e) {
+                    // error in pdf creation
+                    logger.error(e.getMessage());
+                    notifyUser(PDFStatus.ERROR, docid, request, response);
+                    return;
+                }
+            } else if (status == PDFStatus.DONE) {
+                // pdf created -- send it
+                try {
+                    ServletOps.sendFile(getCacheFile(docid), "application/pdf", getDownloadFilename(pdfji), response, logger);
+                    return;
+                } catch (Exception e) {
+                    // sending didn't work
+                    logger.error(e.getMessage());
+                    return;
+                }
+            } else {
+                // should be work in progress
+                notifyUser(status, docid, request, response);
+                return;
+            }
+        } catch (Exception e) {
             // error in pdf creation
             logger.error(e.getMessage());
             notifyUser(PDFStatus.ERROR, docid, request, response);
             return;
-	    }
-	}
+        }
+    }
 
     /**
      * depending on the documents status, redirect the user to the appropriate
@@ -237,8 +214,7 @@ public class PDFCache extends HttpServlet {
      * @param request
      * @param response
      */
-    public void notifyUser(PDFStatus status, String documentid,
-            HttpServletRequest request, HttpServletResponse response) {
+    public void notifyUser(PDFStatus status, String documentid, HttpServletRequest request, HttpServletResponse response) {
 
         String jsp = null;
 
@@ -275,80 +251,81 @@ public class PDFCache extends HttpServlet {
 
     }
 
-	
-	/** check the status of the document corresponding to the documentid */
-	public PDFStatus getStatus(String documentid){
-		// looks into the cache and temp directory in order to find out the status of the document
-		File cached = getCacheFile(documentid);
-		File wip = getTempFile(documentid);
-		if(cached.exists()){
-			return PDFStatus.DONE;
-		} else if (wip.exists()){
-			return PDFStatus.WIP;
-		} else {
-			return PDFStatus.NONEXISTENT;
-		}
-	}
+    /** check the status of the document corresponding to the documentid */
+    public PDFStatus getStatus(String documentid) {
+        // looks into the cache and temp directory in order to find out the
+        // status of the document
+        File cached = getCacheFile(documentid);
+        File wip = getTempFile(documentid);
+        if (cached.exists()) {
+            return PDFStatus.DONE;
+        } else if (wip.exists()) {
+            return PDFStatus.WIP;
+        } else {
+            return PDFStatus.NONEXISTENT;
+        }
+    }
 
-	/** 
-	 * create new thread for pdf generation.
-	 * 
-	 * @param pdfji
-	 * @param filename
-	 * @return 
-	 * @throws FileNotFoundException 
-	 */
-	public Future<File> createNewPdfDocument(PDFRequest pdfji, String filename) throws FileNotFoundException{
-		// start new worker
-		File tempf = this.getTempFile(filename);
-		File finalf = this.getCacheFile(filename);
-		PDFFileWorker job = new PDFFileWorker(dlConfig, tempf, finalf, pdfji, pdfImageJobCenter);
-		// start job
-		Future<File> jobTicket = pdfJobCenter.submit(job);
-		return jobTicket;
-	}
-	
-	
-	/**
-	 * generate the filename the user is going to receive the pdf as
-	 * 
-	 * @param pdfji
-	 * @return
-	 */
-	public String getDownloadFilename(PDFRequest pdfji){
-		// filename example: digilib_example_pgs1-3.pdf
-		String filename;
-		filename =  "digilib_";
-		filename += pdfji.getAsString("fn");
-		filename += "_pgs" + pdfji.getAsString("pgs");
-		filename += ".pdf";
-		
-		return filename;
-	}
-		
-	public File getCacheDirectory(){
-		return cache_directory;
-	}
-	
-	public File getTempDirectory(){
-		return temp_directory;
-	}
-	
-	/** 
-	 * returns a File object based on filename in the temp directory.
-	 * @param filename
-	 * @return
-	 */
-	public File getTempFile(String filename) {
-	    return new File(temp_directory, filename);
-	}
+    /**
+     * create new thread for pdf generation.
+     * 
+     * @param pdfji
+     * @param filename
+     * @return
+     * @throws FileNotFoundException
+     */
+    public Future<File> createNewPdfDocument(PDFRequest pdfji, String filename) throws FileNotFoundException {
+        // start new worker
+        File tempf = this.getTempFile(filename);
+        File finalf = this.getCacheFile(filename);
+        PDFFileWorker job = new PDFFileWorker(dlConfig, tempf, finalf, pdfji, pdfImageJobCenter);
+        // start job
+        Future<File> jobTicket = pdfJobCenter.submit(job);
+        return jobTicket;
+    }
 
-	/** 
+    /**
+     * generate the filename the user is going to receive the pdf as
+     * 
+     * @param pdfji
+     * @return
+     */
+    public String getDownloadFilename(PDFRequest pdfji) {
+        // filename example: digilib_example_pgs1-3.pdf
+        String filename;
+        filename = "digilib_";
+        filename += pdfji.getAsString("fn");
+        filename += "_pgs" + pdfji.getAsString("pgs");
+        filename += ".pdf";
+
+        return filename;
+    }
+
+    public File getCacheDirectory() {
+        return cacheDir;
+    }
+
+    public File getTempDirectory() {
+        return workDir;
+    }
+
+    /**
+     * returns a File object based on filename in the temp directory.
+     * 
+     * @param filename
+     * @return
+     */
+    public File getTempFile(String filename) {
+        return new File(workDir, filename);
+    }
+
+    /**
      * returns a File object based on filename in the cache directory.
+     * 
      * @param filename
      * @return
      */
     public File getCacheFile(String filename) {
-        return new File(cache_directory, filename);
+        return new File(cacheDir, filename);
     }
 }

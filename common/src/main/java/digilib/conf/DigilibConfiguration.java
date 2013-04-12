@@ -49,10 +49,12 @@ public class DigilibConfiguration extends ParameterMap {
      */
     public DigilibConfiguration() {
         super(20);
+        
         /*
          * Definition of parameters and default values. System parameters that
          * are not read from config file have a type 's'.
          */
+        
         // digilib version
         newParameter("digilib.version", "2.2.0", null, 's');
         // sending image files as-is allowed
@@ -79,17 +81,18 @@ public class DigilibConfiguration extends ParameterMap {
      */
     @SuppressWarnings("unchecked")
     public void configure() {
+        DigilibConfiguration config = this;
         // we start log4j with a default logger config TODO: is this the right place?
         BasicConfigurator.configure();
         /*
          * initialise static DocuImage class instance
          */
         try {
-            Class<DocuImage> docuImageClass = (Class<DocuImage>) Class.forName(getAsString("docuimage-class"));
+            Class<DocuImage> docuImageClass = (Class<DocuImage>) Class.forName(config.getAsString("docuimage-class"));
             DocuImageFactory.setDocuImageClass(docuImageClass);
             // DocuImage class instance
-            newParameter("servlet.docuimage.class", docuImageClass, null, 's');
-            newParameter("servlet.docuimage.version", DocuImageFactory.getInstance().getVersion(), null, 's');
+            config.newParameter("servlet.docuimage.class", docuImageClass, null, 's');
+            config.newParameter("servlet.docuimage.version", DocuImageFactory.getInstance().getVersion(), null, 's');
         } catch (ClassNotFoundException e) {
             logger.error("Error setting DocuImage class!");
         }

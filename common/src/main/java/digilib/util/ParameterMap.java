@@ -315,7 +315,8 @@ public class ParameterMap {
 		return false;
 	}
 	
-	/** Returns of the option has been set.
+	/** 
+	 * Returns if the option has been set.
 	 * @param opt
 	 * @return
 	 */
@@ -323,18 +324,50 @@ public class ParameterMap {
 		return options.hasOption(opt);
 	}
 
+	/**
+	 * Returns a map with all Parameters of a type.
+	 * @param type
+	 * @return
+	 */
+	public HashMap<String, Parameter> getParameters(int type) {
+	    HashMap<String, Parameter> map = new HashMap<String, Parameter>();
+	    for (String k : params.keySet()) {
+	        Parameter p = params.get(k);
+	        if (p.getType() == type) {
+	            map.put(k, p);
+	        }
+	    }
+	    return map;
+	}
+	
+	/**
+	 * Returns the parameter Map.
+	 * @return
+	 */
 	public HashMap<String, Parameter> getParams() {
 		return params;
 	}
 
+    /**
+     * Sets the parameter Map.
+	 * @param params
+	 */
 	public void setParams(HashMap<String, Parameter> params) {
 		this.params = params;
 	}
 
+	/**
+	 * Returns the options Set.
+	 * @return
+	 */
 	public OptionsSet getOptions() {
 		return options;
 	}
 
+	/**
+	 * Sets the options Set.
+	 * @param options
+	 */
 	public void setOptions(OptionsSet options) {
 		this.options = options;
 	}

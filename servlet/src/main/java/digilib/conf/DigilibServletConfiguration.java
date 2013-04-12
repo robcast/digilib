@@ -71,10 +71,16 @@ import digilib.util.XMLListLoader;
  */
 public class DigilibServletConfiguration extends DigilibConfiguration implements ServletContextListener {
 
-    /** time the webapp (i.e. this class) was loaded */
-    public final Long webappStartTime = System.currentTimeMillis();
+    public static final String AUTH_OP_KEY = "servlet.auth.op";
 
-    private DigilibJobCenter<DocuImage> imageExecutor;
+    public static final String IMAGEEXECUTOR_KEY = "servlet.worker.imageexecutor";
+
+    public static final String SERVLET_CONFIG_KEY = "digilib.servlet.configuration";
+
+    public static final String DIR_CACHE_KEY = "servlet.dir.cache";
+
+    /** the time the webapp (i.e. this class) was loaded */
+    public final Long webappStartTime = System.currentTimeMillis();
 
     public String getVersion() {
         return "2.2.0 srv";
@@ -94,12 +100,12 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         // configuration file location
         newParameter("servlet.config.file", null, null, 's');
         // DocuDirCache instance
-        newParameter("servlet.dir.cache", null, null, 's');
+        newParameter(DIR_CACHE_KEY, null, null, 's');
         // Executor for image operations
-        newParameter("servlet.worker.imageexecutor", null, null, 's');
+        newParameter(IMAGEEXECUTOR_KEY, null, null, 's');
         // AuthOps instance
-        newParameter("servlet.auth.op", null, null, 's');
-        // classes TODO: do we need this?
+        newParameter(AUTH_OP_KEY, null, null, 's');
+        // classes TODO: do we need these as parameters?
         newParameter("servlet.filemeta.class", null, null, 's');
         newParameter("servlet.dirmeta.class", null, null, 's');
         newParameter("servlet.authops.class", null, null, 's');
@@ -151,7 +157,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
     public void readConfig(ServletContext c) throws SAXException, IOException  {
 
         /*
-         * Get config file name. The file name is first looked for as an init
+         * Get config file. The file name is first looked for as an init
          * parameter, then in a fixed location in the webapp.
          */
         if (c == null) {
@@ -178,13 +184,13 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
              */
 
             for (Entry<String, String> confEntry : confTable.entrySet()) {
-                Parameter p = get(confEntry.getKey());
-                if (p != null) {
-                    if (p.getType() == 's') {
+                Parameter param = get(confEntry.getKey());
+                if (param != null) {
+                    if (param.getType() == 's') {
                         // type 's' Parameters are not overwritten.
                         continue;
                     }
-                    if (!p.setValueFromString(confEntry.getValue())) {
+                    if (!param.setValueFromString(confEntry.getValue())) {
                         /*
                          * automatic conversion failed -- try special cases
                          */
@@ -194,18 +200,17 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
                             // split list into directories
                             String[] dirs = FileOps.pathToArray(confEntry.getValue());
                             for (int j = 0; j < dirs.length; j++) {
-                                // make relative directory paths be inside the
-                                // webapp
+                                // make relative directory paths be inside the webapp
                                 dirs[j] = ServletOps.getFile(dirs[j], c);
                             }
                             if (dirs != null) {
-                                p.setValue(dirs);
+                                param.setValue(dirs);
                             }
                         }
                     }
                 } else {
                     // parameter unknown -- just add
-                    newParameter(confEntry.getKey(), null, confEntry.getValue(), 'f');
+                    newParameter(confEntry.getKey(), null, confEntry.getValue(), 'u');
                 }
             }
         } else {
@@ -213,8 +218,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
             // update basedir-list
             String[] dirs = (String[]) this.getValue("basedir-list");
             for (int j = 0; j < dirs.length; j++) {
-                // make relative directory paths be inside the
-                // webapp
+                // make relative directory paths be inside the webapp
                 dirs[j] = ServletOps.getFile(dirs[j], c);
             }
         }
@@ -228,25 +232,26 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
      */
     @SuppressWarnings("unchecked")
     public void configure(ServletContext context) {
+        DigilibServletConfiguration config = this;
         super.configure();
         /*
          * configure factories
          */
         try {
             // initialise MetaFactory
-            Class<FileMeta> fileMetaClass = (Class<FileMeta>) Class.forName(getAsString("filemeta-class"));
-            setValue("servlet.filemeta.class", fileMetaClass);
+            Class<FileMeta> fileMetaClass = (Class<FileMeta>) Class.forName(config.getAsString("filemeta-class"));
+            config.setValue("servlet.filemeta.class", fileMetaClass);
             MetaFactory.setFileMetaClass(fileMetaClass);
-            Class<DirMeta> dirMetaClass = (Class<DirMeta>) Class.forName(getAsString("dirmeta-class"));
-            setValue("servlet.dirmeta.class", dirMetaClass);
+            Class<DirMeta> dirMetaClass = (Class<DirMeta>) Class.forName(config.getAsString("dirmeta-class"));
+            config.setValue("servlet.dirmeta.class", dirMetaClass);
             MetaFactory.setDirMetaClass(dirMetaClass);
         } catch (ClassNotFoundException e) {
             logger.error("Error setting Metadata classes!");
         }
         try {
             // initialise AuthOpsFactory
-            Class<AuthOps> authOpsClass = (Class<AuthOps>) Class.forName(getAsString("authops-class"));
-            setValue("servlet.authops.class", authOpsClass);
+            Class<AuthOps> authOpsClass = (Class<AuthOps>) Class.forName(config.getAsString("authops-class"));
+            config.setValue("servlet.authops.class", authOpsClass);
             AuthOpsFactory.setAuthOpsClass(authOpsClass);
         } catch (ClassNotFoundException e) {
             logger.error("Error setting AuthOps class!");
@@ -255,48 +260,48 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
          * configure singletons
          */
         // set up the logger
-        File logConf = ServletOps.getConfigFile((File) this.getValue("log-config-file"), context);
+        File logConf = ServletOps.getConfigFile((File) config.getValue("log-config-file"), context);
         if (logConf.canRead()) {
             DOMConfigurator.configure(logConf.getAbsolutePath());
-            this.setValue("log-config-file", logConf);
+            config.setValue("log-config-file", logConf);
         }
         // say hello in the log file
         logger.info("***** Digital Image Library Configuration (version " + getVersion() + ") *****");
         try {
             // directory cache
-            String[] bd = (String[]) this.getValue("basedir-list");
+            String[] bd = (String[]) config.getValue("basedir-list");
             FileClass[] fcs = { FileClass.IMAGE, FileClass.TEXT };
             DocuDirCache dirCache;
-            if (this.getAsBoolean("use-mapping")) {
+            if (config.getAsBoolean("use-mapping")) {
                 // with mapping file
-                File mapConf = ServletOps.getConfigFile((File) this.getValue("mapping-file"), context);
-                dirCache = new AliasingDocuDirCache(bd, fcs, mapConf, this);
-                this.setValue("mapping-file", mapConf);
+                File mapConf = ServletOps.getConfigFile((File) config.getValue("mapping-file"), context);
+                dirCache = new AliasingDocuDirCache(bd, fcs, mapConf, config);
+                config.setValue("mapping-file", mapConf);
             } else {
                 // without mapping
                 dirCache = new DocuDirCache(bd, fcs, this);
             }
-            this.setValue("servlet.dir.cache", dirCache);
+            config.setValue(DIR_CACHE_KEY, dirCache);
             // useAuthentication
-            if (this.getAsBoolean("use-authorization")) {
+            if (config.getAsBoolean("use-authorization")) {
                 AuthOps authOp = AuthOpsFactory.getAuthOpsInstance();
                 // get config file
-                File authConf = ServletOps.getConfigFile((File) this.getValue("auth-file"), context);
+                File authConf = ServletOps.getConfigFile((File) config.getValue("auth-file"), context);
                 if (authConf != null) {
                     authOp.setConfig(authConf);
                 }
-                this.setValue("servlet.auth.op", authOp);
-                this.setValue("auth-file", authConf);
+                config.setValue(AUTH_OP_KEY, authOp);
+                config.setValue("auth-file", authConf);
             }
             // digilib worker threads
-            int nt = this.getAsInt("worker-threads");
-            int mt = this.getAsInt("max-waiting-threads");
-            imageExecutor = new DigilibJobCenter<DocuImage>(nt, mt, false, "servlet.worker.imageexecutor");
-            this.setValue("servlet.worker.imageexecutor", imageExecutor);
+            int nt = config.getAsInt("worker-threads");
+            int mt = config.getAsInt("max-waiting-threads");
+            DigilibJobCenter<DocuImage> imageExecutor = new DigilibJobCenter<DocuImage>(nt, mt, false, IMAGEEXECUTOR_KEY);
+            config.setValue(IMAGEEXECUTOR_KEY, imageExecutor);
             /*
              * set as the servlets main config
              */
-            context.setAttribute("digilib.servlet.configuration", this);
+            context.setAttribute(SERVLET_CONFIG_KEY, this);
         } catch (Exception e) {
             logger.error("Error configuring digilib servlet:", e);
         }
@@ -307,12 +312,12 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
      */
     public void contextInitialized(ServletContextEvent cte) {
         ServletContext context = cte.getServletContext();
-        context.log("***** Digital Image Library Configuration (version " + getVersion() + ") *****");
-
+        context.log("***** Digital Image Library Configuration (" + getVersion() + ") *****");
         // see if there is a Configuration instance
-        DigilibServletConfiguration dlConfig = (DigilibServletConfiguration) context.getAttribute("digilib.servlet.configuration");
+        DigilibServletConfiguration dlConfig = getCurrentConfig(context);
         if (dlConfig == null) {
             try {
+                // initialise this instance
                 readConfig(context);
                 configure(context);
             } catch (Exception e) {
@@ -325,11 +330,16 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
     }
 
     /**
-     * clean up local resources
+     * Clean up local resources
      * 
      */
-    public void contextDestroyed(ServletContextEvent arg0) {
+    public void contextDestroyed(ServletContextEvent cte) {
         logger.info("DigilibServletConfiguration shutting down.");
+        // get current config from servlet context
+        ServletContext context = cte.getServletContext();
+        DigilibServletConfiguration config = getCurrentConfig(context);
+        @SuppressWarnings("unchecked")
+        DigilibJobCenter<DocuImage> imageExecutor = (DigilibJobCenter<DocuImage>) config.getValue(IMAGEEXECUTOR_KEY);
         if (imageExecutor != null) {
             // shut down image thread pool
             List<Runnable> rj = imageExecutor.shutdownNow();
@@ -338,6 +348,17 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
                 logger.error("Still running threads when shutting down image job queue: " + nrj);
             }
         }
+    }
+
+    /**
+     * Returns the current DigilibConfiguration from the context.
+     * 
+     * @param context
+     * @return
+     */
+    public static DigilibServletConfiguration getCurrentConfig(ServletContext context) {
+        DigilibServletConfiguration config = (DigilibServletConfiguration) context.getAttribute(DigilibServletConfiguration.SERVLET_CONFIG_KEY);
+        return config;
     }
 
 }
