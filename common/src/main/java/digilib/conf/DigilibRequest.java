@@ -63,13 +63,27 @@ import digilib.util.ParameterMap;
  */
 public class DigilibRequest extends ParameterMap {
 
-	protected ImageJobDescription ticket; // ImageJobDescription for this request
+    /**  ImageJobDescription for this request */
+	protected ImageJobDescription ticket;
+	
+	/** DigilibConfiguration for this request */
+	protected DigilibConfiguration config;
 
 	public DigilibRequest() {
 		super(30);
 	}
 
-	/** set up parameters.
+	/**
+	 * Create DigilibRequest with DigilibConfiguration.
+	 * 
+     * @param config
+     */
+    public DigilibRequest(DigilibConfiguration config) {
+        super();
+        this.config = config;
+    }
+
+    /** set up parameters.
 	 * 
 	 */
 	protected void initParams() {
@@ -294,6 +308,20 @@ public class DigilibRequest extends ParameterMap {
      */
     public void setJobDescription(ImageJobDescription ticket) {
         this.ticket = ticket;
+    }
+
+    /**
+     * @return the config
+     */
+    public DigilibConfiguration getDigilibConfig() {
+        return config;
+    }
+
+    /**
+     * @param config the config to set
+     */
+    public void setDigilibConfig(DigilibConfiguration config) {
+        this.config = config;
     }
 
 }

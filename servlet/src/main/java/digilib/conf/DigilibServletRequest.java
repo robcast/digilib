@@ -35,9 +35,7 @@ import java.util.StringTokenizer;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
-import digilib.conf.DigilibRequest;
 import digilib.image.DocuImage;
-import digilib.io.FileOps;
 import digilib.util.OptionsSet;
 import digilib.util.Parameter;
 
@@ -76,6 +74,18 @@ public class DigilibServletRequest extends DigilibRequest {
      * @param request
      */
     public DigilibServletRequest(HttpServletRequest request) {
+        setWithRequest(request);
+        initOptions();
+    }
+
+    /**
+     * Creates a new instance of DigilibRequest with parameters from a
+     * ServletRequest. All undefined parameters are set to default values.
+     * 
+     * @param request
+     */
+    public DigilibServletRequest(HttpServletRequest request, DigilibConfiguration config) {
+        this.config = config;
         setWithRequest(request);
         initOptions();
     }
@@ -470,20 +480,6 @@ public class DigilibServletRequest extends DigilibRequest {
             }
         }
         return false;
-    }
-
-    /**
-     * The image file path to be accessed.
-     * 
-     * The mage file path is assembled from the servlets RequestPath and
-     * Parameter fn and normalized.
-     * 
-     * @return String the effective filepath.
-     */
-    public String getFilePath() {
-        String s = getAsString("request.path");
-        s += getAsString("fn");
-        return FileOps.normalName(s);
     }
 
     /* Property getter and setter */

@@ -42,10 +42,10 @@ public void jspInit() {
 }
 %><%
 // parsing the query
-DigilibServletRequest dlRequest = new DigilibServletRequest(request);
+DigilibServletConfiguration dlConfig = docBean.getDlConfig();
+DigilibServletRequest dlRequest = new DigilibServletRequest(request, dlConfig);
 docBean.setRequest(dlRequest);
 // dir cache
-DigilibServletConfiguration dlConfig = docBean.getDlConfig();
 DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 // get file
 FileOps.FileClass fc = FileOps.FileClass.IMAGE;
@@ -65,7 +65,8 @@ ImageFileSet imgFile = (ImageFileSet) dirCache.getFile(dlRequest.getFilePath(), 
         if (imgSize != null) { 
             %>,
   "width" : <%= imgSize.getWidth() %>,
-  "height" : <%= imgSize.getHeight() %>
+  "height" : <%= imgSize.getHeight() %>,
+  "authentication_required" : <%= docBean.isAuthRequired(dlRequest) %>
 <% 		}
   	} 
 %>}

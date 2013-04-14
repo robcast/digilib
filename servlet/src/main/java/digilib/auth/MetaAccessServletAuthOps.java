@@ -35,9 +35,14 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import digilib.conf.DigilibConfiguration;
+import digilib.conf.DigilibServletConfiguration;
 import digilib.conf.DigilibServletRequest;
+import digilib.image.ImageJobDescription;
+import digilib.io.DocuDirCache;
 import digilib.io.DocuDirent;
 import digilib.io.FileOpException;
+import digilib.io.FileOps;
 import digilib.meta.MetadataMap;
 import digilib.util.HashTree;
 import digilib.util.XMLListLoader;
@@ -123,7 +128,16 @@ public class MetaAccessServletAuthOps extends ServletAuthOpsImpl {
         HttpServletRequest request = dlRequest.getServletRequest();
         DocuDirent imgs;
         try {
-            imgs = (DocuDirent) dlRequest.getJobDescription().getImageSet();
+            // try to get image file from JobDescription
+            ImageJobDescription ticket = dlRequest.getJobDescription();
+            if (ticket != null) {
+                imgs = (DocuDirent) ticket.getImageSet();
+            } else {
+                // try to get image file from DirCache
+                DigilibConfiguration config = dlRequest.getDigilibConfig();
+                DocuDirCache cache = (DocuDirCache) config.getValue(DigilibServletConfiguration.DIR_CACHE_KEY);
+                imgs = cache.getFile(dlRequest.getFilePath(), dlRequest.getAsInt("pn"), FileOps.FileClass.IMAGE);
+            }
         } catch (FileOpException e) {
             throw new AuthOpException("No file for auth check!");
         }
