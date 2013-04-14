@@ -42,12 +42,12 @@ if (typeof console === 'undefined') {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.1.13',
+        'version' : 'jquery.digilib.js 2.2.0a',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
         'homeUrl' : 'http://digilib.berlios.de',
-        // base URL to digilib (e.g. 'http://digilib.mpiwg-berlin.mpg.de/digitallibrary')
+        // base URL to digilib webapp (e.g. 'http://digilib.mpiwg-berlin.mpg.de/digitallibrary')
         'digilibBaseUrl' : null,
         // path to digilib frontend page (inside digilibBaseUrl)
         'digilibFrontendPath' : '/jquery/digilib.html',
@@ -1081,9 +1081,9 @@ if (typeof console === 'undefined') {
         // set busy cursor
         $('body').css('cursor','progress');
         data.$scaler.css('cursor', 'progress');
-        // set up image load handler before setting the src attribute (IE bug)
-        $img.load(scalerImgLoadedHandler(data));
-        $img.error(function () {console.error("error loading scaler image");});
+        // set up image load handler before setting the src attribute
+        $img.on('load', scalerImgLoadedHandler(data));
+        $img.on('error', function (evt, a, b) { handleScalerImgError(data, evt, a, b); });
         $img.attr('src', scalerUrl);
     };
 
@@ -1204,6 +1204,11 @@ if (typeof console === 'undefined') {
             // update display (render marks, etc.)
             updateDisplay(data);
         };
+    };
+
+    var handleScalerImgError = function (data, evt, a, b) {
+        console.error("error loading scaler image:", evt);
+        $(data).trigger('imgerror');
     };
 
     /** handle imageInfo loaded event
