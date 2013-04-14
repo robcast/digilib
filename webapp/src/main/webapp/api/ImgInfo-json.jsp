@@ -58,6 +58,7 @@ ImageFileSet imgFile = (ImageFileSet) dirCache.getFile(dlRequest.getFilePath(), 
 		ImageSize imgSize = img.getSize(); 
 		%>
   "filename" : "<%= imgFile.getName() %>",
+  "authentication_required" : <%= docBean.isAuthRequired(dlRequest) %>,
   "aspect" : <%= imgFile.getAspect() %>,
   "dpi_x" : <%= imgFile.getResX() %>,
   "dpi_y" : <%= imgFile.getResY() %><%
@@ -65,8 +66,7 @@ ImageFileSet imgFile = (ImageFileSet) dirCache.getFile(dlRequest.getFilePath(), 
         if (imgSize != null) { 
             %>,
   "width" : <%= imgSize.getWidth() %>,
-  "height" : <%= imgSize.getHeight() %>,
-  "authentication_required" : <%= docBean.isAuthRequired(dlRequest) %>
+  "height" : <%= imgSize.getHeight() %>
 <% 		}
   	} 
 %>}

@@ -20,8 +20,12 @@
  * #L%
  * Authors: Robert Casties
  */
+
 /**
-digilib authentication plugin
+ * digilib authentication plugin.
+ * 
+ * Switches Scaler into error-code mode and listens for image load errors.
+ * When an error occurs, switches the Scaler URL to the authScalerBaseUrl.
  */
 
 (function($) {
@@ -35,16 +39,11 @@ digilib authentication plugin
             // URL of Scaler servlet that does not do authentication
             'unauthScalerBaseUrl' : null
     };
-
-    var actions = {
-            // action code goes here 
-            doStub : function (data, param) {
-                var settings = data.settings;
-                console.log("doStub");
-                // do some useful stuff ...
-            }
-    };
-
+    
+    /**
+     * Handle parameter unpacking event.
+     * Make sure the errcode flag is set.
+     */
     var handleUnpack = function (evt) {
         console.debug("auth: handleUnpack");
         var data = this;
@@ -59,6 +58,11 @@ digilib authentication plugin
         flags['errcode'] = 'errcode';
     };
 
+    /** 
+     * Handle image load error.
+     * Assume that it was an authentication error and try to use the authenticated Scaler url.
+     * @param {Object} evt
+     */
     var handleImgerror = function (evt) {
         console.debug("auth: handleImgerror");
         var data = this;
@@ -78,7 +82,7 @@ digilib authentication plugin
         console.debug('installing auth plugin. digilib:', digilib);
         // add defaults, actions, buttons
         $.extend(digilib.defaults, defaults);
-        $.extend(digilib.actions, actions);
+        //$.extend(digilib.actions, actions);
         //$.extend(digilib.buttons, buttons);
     };
 
