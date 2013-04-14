@@ -37,7 +37,9 @@
             // URL of Scaler servlet that does authentication
             'authScalerBaseUrl' : null,
             // URL of Scaler servlet that does not do authentication
-            'unauthScalerBaseUrl' : null
+            'unauthScalerBaseUrl' : null,
+            // try to switch back to error image mode after authentication
+            'returnToErrorImgMode' : true
     };
     
     /**
@@ -67,12 +69,21 @@
         console.debug("auth: handleImgerror");
         var data = this;
         var settings = data.settings;
-        if (settings.scalerBaseUrl != settings.authScalerBaseUrl && settings.authScalerBaseUrl != null) {
-            // not using authScalerBaseUrl -- change
+        if (settings.authScalerBaseUrl == null) return;
+        if (settings.scalerBaseUrl != settings.authScalerBaseUrl) {
+            // not using authScalerBaseUrl -- change URL
             console.debug("auth: switching to authenticated scaler.");
             settings.noauthScalerBaseUrl = settings.scalerBaseUrl;
             settings.scalerBaseUrl = settings.authScalerBaseUrl;
             digilib.fn.redisplay(data);            
+        } else {
+            // we are authenticated, it must be a different kind of error
+            if (settings.returnToErrorImgMode && settings.noauthScalerBaseUrl != null) {
+                // remove error code flag and switch to noauth URL
+                delete data.scalerFlags['errcode'];
+                settings.scalerBaseUrl = settings.noauthScalerBaseUrl;
+                digilib.fn.redisplay(data);
+            }
         }
     };
 
