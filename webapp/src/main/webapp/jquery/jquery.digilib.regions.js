@@ -566,6 +566,9 @@ inner (optional)
             if (rect == null) return;
             // var coords = packCoords(rect, ',');
             var text = $region.data('text');
+            if (text == null) {
+                text = $region.text();
+                }
             if (RE == null || text.match(RE)) {
                 var id = $region.attr('id');
                 var sortstring = $region.data('sort')
