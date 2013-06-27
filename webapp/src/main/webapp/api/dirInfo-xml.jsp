@@ -26,6 +26,7 @@
           digilib.io.DocuDirCache,
           digilib.io.DocuDirectory,
           digilib.io.DocuDirent,
+          digilib.io.FileOps,
           java.io.File"%>
    
 <%!
