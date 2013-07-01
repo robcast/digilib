@@ -27,9 +27,7 @@
           digilib.io.DocuDirectory,
           digilib.io.DocuDirent,
           digilib.io.FileOps,
-          java.io.File"%>
-   
-<%!
+          java.io.File"%><%!
 // create DocumentBean instance for all JSP requests
 DocumentBean docBean = new DocumentBean();
 
