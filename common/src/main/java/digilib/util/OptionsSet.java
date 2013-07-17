@@ -60,6 +60,22 @@ public class OptionsSet extends HashSet<String> {
 		}
 	}
 	
+	/**
+	 * Set the option opt.
+	 * 
+	 * @param opt
+	 * @return
+	 */
+	public boolean setOption(String opt) {
+	    return this.add(opt);
+	}
+	
+	/**
+	 * Return if the option opt is set.
+	 * 
+	 * @param opt
+	 * @return
+	 */
 	public boolean hasOption(String opt) {
 		return this.contains(opt);
 	}

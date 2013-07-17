@@ -336,8 +336,20 @@ public class DigilibRequest extends ParameterMap {
         if (query.hasMoreTokens()) {
             token = query.nextToken();
             if (!token.equals("/")) {
-                // TODO
-                setValueFromString("mo", token);
+                if (token.equals("full")) {
+                    // full: size of original
+                    options.setOption("ascale");
+                    setValue("scale", 1f);
+                } else if (token.startsWith("pct:")){
+                    // pct:n n% size of original
+                    try {
+                        float pct = Float.parseFloat(token.substring(4));
+                        options.setOption("ascale");
+                        setValue("scale", pct / 100);
+                    } catch (NumberFormatException e) {
+                        logger.error("Error parsing size parameter in IIIF path!");
+                    }
+                }
                 // skip /
                 if (query.hasMoreTokens()) {
                     query.nextToken();
