@@ -388,7 +388,13 @@ public class ImageJobDescription extends ParameterMap {
 					// currently only same scale -- mean value
 					scaleXY = (sx + sy) / 2f;
 				} else {
+				    // absolute scale factor
 					scaleXY = getAsFloat("scale");
+					// use original size if no destination size given
+					if (getDw() == 0 && getDh() == 0) {
+					    paramDW = (int) userImgArea.getWidth();
+                        paramDH = (int) userImgArea.getHeight();
+					}
 				}
 				// we need to correct the factor if we use a pre-scaled image
 				ImageSize hiresSize = getHiresSize();
@@ -585,7 +591,7 @@ public class ImageJobDescription extends ParameterMap {
                             || mimeType.equals("image/gif"))
                     && !(hasOption("hmir")
                     || hasOption("vmir") || (getAsFloat("rot") != 0.0)
-                    || (getRGBM() != null) || (getRGBA() != null)
+                    || (getRGBM() != null) || (getRGBA() != null) || (this.getColOp() != null)
                     || (getAsFloat("cont") != 0.0) || (getAsFloat("brgt") != 0.0)));
         }
         return imageSendable;

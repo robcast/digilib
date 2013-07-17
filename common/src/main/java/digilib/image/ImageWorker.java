@@ -63,7 +63,7 @@ public class ImageWorker implements Callable<DocuImage> {
         logger.debug("ImageWorker starting");
         long startTime = System.currentTimeMillis();
         if (stopNow) {
-            logger.debug("ImageWorker stopping (at the start)");
+            logger.debug("ImageWorker stopping (at the beginning)");
             return null;
         }
 
@@ -71,7 +71,7 @@ public class ImageWorker implements Callable<DocuImage> {
         if (docuImage == null) {
             docuImage = DocuImageFactory.getInstance();
             if (docuImage == null) {
-                throw new ImageOpException("Unable to load DocuImage class!");
+                throw new ImageOpException("Unable to get DocuImage instance!");
             }
         }
 

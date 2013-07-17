@@ -38,12 +38,17 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpUtils;
 
 import org.apache.log4j.Logger;
 
+import digilib.conf.DigilibServletRequest;
 import digilib.image.DocuImage;
 import digilib.image.ImageOpException;
 import digilib.io.FileOps;
+import digilib.io.ImageInput;
+import digilib.io.ImageSet;
+import digilib.util.ImageSize;
 
 public class ServletOps {
 
@@ -342,6 +347,36 @@ public class ServletOps {
         }
         // TODO: should we: finally { img.dispose(); }
     }
+
+
+    public static void sendInfo(DigilibServletRequest dlReq, HttpServletResponse response, Logger logger) throws ImageOpException,
+            ServletException {
+        if (response == null) {
+            logger.error("No response!");
+            return;
+        }
+        try {
+            // get original image size
+            ImageInput img = dlReq.getJobDescription().getImageSet().getBiggest();
+            ImageSize size = img.getSize();
+            StringBuffer url = dlReq.getServletRequest().getRequestURL();
+            PrintWriter writer = response.getWriter();
+            response.setContentType("application/json");
+            writer.println("{");
+            writer.println("\"@context\" : \"http://library.stanford.edu/iiif/image-api/1.1/context.json\",");
+            writer.println("\"@id\" : \""+url+"\",");
+            writer.println("\"width\" : \""+size.width+"\",");
+            writer.println("\"height\" : \""+size.height+"\",");
+            writer.println("\"formats\" : [\"jpg\", \"png\"],");
+            writer.println("\"qualities\" : [\"native\", \"color\", \"grey\"],");
+            writer.println("\"profile\" : \"http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2\",");
+            writer.println("}");
+        } catch (IOException e) {
+            throw new ServletException("Error sending image:", e);
+        }
+        // TODO: should we: finally { img.dispose(); }
+    }
+
 
     /** Returns text representation of headers for debuggging purposes.
      * @param req
