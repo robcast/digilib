@@ -38,7 +38,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpUtils;
 
 import org.apache.log4j.Logger;
 
@@ -47,7 +46,6 @@ import digilib.image.DocuImage;
 import digilib.image.ImageOpException;
 import digilib.io.FileOps;
 import digilib.io.ImageInput;
-import digilib.io.ImageSet;
 import digilib.util.ImageSize;
 
 public class ServletOps {
@@ -349,8 +347,7 @@ public class ServletOps {
     }
 
 
-    public static void sendInfo(DigilibServletRequest dlReq, HttpServletResponse response, Logger logger) throws ImageOpException,
-            ServletException {
+    public static void sendInfo(DigilibServletRequest dlReq, HttpServletResponse response, Logger logger) throws ServletException {
         if (response == null) {
             logger.error("No response!");
             return;
@@ -372,7 +369,7 @@ public class ServletOps {
             writer.println("\"profile\" : \"http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2\",");
             writer.println("}");
         } catch (IOException e) {
-            throw new ServletException("Error sending image:", e);
+            throw new ServletException("Error sending info:", e);
         }
         // TODO: should we: finally { img.dispose(); }
     }

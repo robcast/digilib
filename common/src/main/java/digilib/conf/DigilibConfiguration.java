@@ -56,7 +56,7 @@ public class DigilibConfiguration extends ParameterMap {
          */
         
         // digilib version
-        newParameter("digilib.version", "2.2.0", null, 's');
+        newParameter("digilib.version", "2.2.1", null, 's');
         // sending image files as-is allowed
         newParameter("sendfile-allowed", Boolean.TRUE, null, 'f');
         // Type of DocuImage instance
