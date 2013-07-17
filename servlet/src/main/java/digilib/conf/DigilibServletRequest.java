@@ -27,8 +27,6 @@ package digilib.conf;
  *         Christian Luginbuehl
  */
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 
@@ -171,10 +169,13 @@ public class DigilibServletRequest extends DigilibRequest {
         newParameter("img.pix_x", new Integer(0), null, 'c');
         // hires image size y
         newParameter("img.pix_y", new Integer(0), null, 'c');
-        // total number of pages
-        newParameter("pt", new Integer(0), null, 'c');
-        // marks
-        newParameter("mk", "", null, 'c');
+        /*
+         * TODO: check if we can remove these
+         * // total number of pages
+         * newParameter("pt", new Integer(0), null, 'c');
+         * // marks
+         * newParameter("mk", "", null, 'c');
+         */
     }
 
     /*
@@ -195,25 +196,32 @@ public class DigilibServletRequest extends DigilibRequest {
      */
     public void setWithRequest(HttpServletRequest request) {
         servletRequest = request;
-        // decide if it's old-style or new-style
-        String qs = ((HttpServletRequest) request).getQueryString();
-        if (qs != null) {
-            if (qs.indexOf("&amp;") > -1) {
-                // &amp; separator
-                setWithParamString(qs, "&amp;");
-            } else if (qs.indexOf(";") > -1) {
-                // ; separator
-                setWithParamString(qs, ";");
-            } else if (qs.indexOf('=') > -1) {
-                // standard '&' parameters
-                setWithParamRequest(request);
-            } else {
-                setWithOldString(qs);
-            }
-        }
         setValue("servlet.request", request);
-        // add path from request
-        setValue("request.path", ((HttpServletRequest) request).getPathInfo());
+        // request path (after servlet, before "?")
+        String path = ((HttpServletRequest) request).getPathInfo();
+        // decide if its IIIF API
+        if (path != null && path.startsWith(iiifPrefix, 1)) {
+            setWithIiifPath(path.substring(1));
+        } else {
+            // decide if it's old-style or new-style digilib
+            String qs = ((HttpServletRequest) request).getQueryString();
+            if (qs != null) {
+                if (qs.indexOf("&amp;") > -1) {
+                    // &amp; separator
+                    setWithParamString(qs, "&amp;");
+                } else if (qs.indexOf(";") > -1) {
+                    // ; separator
+                    setWithParamString(qs, ";");
+                } else if (qs.indexOf('=') > -1) {
+                    // standard '&' parameters
+                    setWithParamRequest(request);
+                } else {
+                    setWithOldString(qs);
+                }
+            }
+            // add path from request
+            setValue("request.path", path);
+        }
         // set the baseURL
         setBaseURL((HttpServletRequest) request);
     }
@@ -423,65 +431,6 @@ public class DigilibServletRequest extends DigilibRequest {
         setValue("request.path", ((HttpServletRequest) request).getPathInfo());
     }
 
-    /**
-     * Set request parameters from query string. Uses the separator string qs to
-     * get 'fn=foo' style parameters.
-     * 
-     * @param qs
-     *            query string
-     * @param sep
-     *            parameter-separator string
-     */
-    public void setWithParamString(String qs, String sep) {
-        // go through all request parameters
-        String[] qa = qs.split(sep);
-        for (int i = 0; i < qa.length; i++) {
-            // split names and values on "="
-            String[] nv = qa[i].split("=");
-            try {
-                String name = URLDecoder.decode(nv[0], "UTF-8");
-                String val = URLDecoder.decode(nv[1], "UTF-8");
-                // is this a known parameter?
-                if (params.containsKey(name)) {
-                    Parameter p = (Parameter) this.get(name);
-                    // internal parameters are not set
-                    if (p.getType() == 'i') {
-                        continue;
-                    }
-                    p.setValueFromString(val);
-                    continue;
-                }
-                // unknown parameters are just added with type 'r'
-                newParameter(name, null, val, 'r');
-            } catch (UnsupportedEncodingException e) {
-                // this shouldn't happen anyway
-                e.printStackTrace();
-            }
-        }
-    }
-
-    /**
-     * Test if option string <code>opt</code> is set. Checks if the substring
-     * <code>opt</code> is contained in the options string <code>param</code>.
-     * Deprecated! use hasOption(String opt) for "mo"-options.
-     * 
-     * @param opt
-     *            Option string to be tested.
-     * @return boolean
-     */
-    public boolean hasOption(String param, String opt) {
-        String s = getAsString(param);
-        if (s != null) {
-            StringTokenizer i = new StringTokenizer(s, ",");
-            while (i.hasMoreTokens()) {
-                if (i.nextToken().equals(opt)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     /* Property getter and setter */
 
     /**
@@ -495,7 +444,7 @@ public class DigilibServletRequest extends DigilibRequest {
         String baseURL = null;
         // calculate base URL string from request until webapp
         String s = request.getRequestURL().toString();
-        // get name of webapp 
+        // get name of webapp
         String wn = request.getContextPath();
         int eop = s.lastIndexOf(wn);
         if (eop > 0) {
