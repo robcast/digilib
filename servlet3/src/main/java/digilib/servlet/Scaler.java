@@ -43,6 +43,7 @@ import org.apache.log4j.Logger;
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthOps;
 import digilib.conf.DigilibConfiguration;
+import digilib.conf.DigilibServlet3Configuration;
 import digilib.conf.DigilibServletRequest;
 import digilib.image.DocuImage;
 import digilib.image.ImageJobDescription;
@@ -58,7 +59,7 @@ public class Scaler extends HttpServlet {
     private static final long serialVersionUID = 5289386646192471549L;
 
     /** digilib servlet version (for all components) */
-    public static final String version = "2.2.1 async";
+    public static final String version = DigilibServlet3Configuration.getVersion();
 
     /** servlet error codes */
     public static enum Error {

@@ -198,9 +198,17 @@ public class DigilibServletRequest extends DigilibRequest {
         servletRequest = request;
         setValue("servlet.request", request);
         // request path (after servlet, before "?")
-        String path = ((HttpServletRequest) request).getPathInfo();
+        String path = request.getPathInfo();
         // decide if its IIIF API
         if (path != null && path.startsWith(iiifPrefix, 1)) {
+            // for IIIF we need the undecoded path :-(
+            String uri = request.getRequestURI();
+            String ms = request.getServletPath();
+            // we try to match servlet name + iiifPrefix in the uri
+            int mp = uri.indexOf(ms+"/"+iiifPrefix+"/");
+            if (mp > -1) {
+                path = uri.substring(mp + ms.length());
+            }
             setWithIiifPath(path.substring(1));
         } else {
             // decide if it's old-style or new-style digilib

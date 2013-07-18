@@ -82,7 +82,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
     /** the time the webapp (i.e. this class) was loaded */
     public final Long webappStartTime = System.currentTimeMillis();
 
-    public String getVersion() {
+    public static String getVersion() {
         return "2.2.0 srv";
     }
     
@@ -109,6 +109,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         newParameter("servlet.filemeta.class", null, null, 's');
         newParameter("servlet.dirmeta.class", null, null, 's');
         newParameter("servlet.authops.class", null, null, 's');
+        newParameter("servlet.version", DigilibServletConfiguration.getVersion(), null, 's');
 
         /*
          * parameters that can be read from config file have a type 'f'

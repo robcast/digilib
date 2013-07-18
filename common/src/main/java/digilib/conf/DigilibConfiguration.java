@@ -44,6 +44,10 @@ public class DigilibConfiguration extends ParameterMap {
     /** Log4J logger */
     protected static Logger logger = Logger.getLogger(DigilibConfiguration.class);
 
+    public static String getVersion() {
+        return "2.2.1";
+    }
+    
     /**
      * Default constructor defines all parameters and their default values.
      */
@@ -56,7 +60,7 @@ public class DigilibConfiguration extends ParameterMap {
          */
         
         // digilib version
-        newParameter("digilib.version", "2.2.1", null, 's');
+        newParameter("digilib.version", DigilibConfiguration.getVersion(), null, 's');
         // sending image files as-is allowed
         newParameter("sendfile-allowed", Boolean.TRUE, null, 'f');
         // Type of DocuImage instance

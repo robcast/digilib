@@ -347,6 +347,15 @@ public class ServletOps {
     }
 
 
+    /**
+     * Returns IIIF compatible image information as application/json response.
+     * 
+     * @param dlReq
+     * @param response
+     * @param logger
+     * @throws ServletException
+     * @see <a href="http://www-sul.stanford.edu/iiif/image-api/1.1/#info">IIIF Image Information Request</a>
+     */
     public static void sendInfo(DigilibServletRequest dlReq, HttpServletResponse response, Logger logger) throws ServletException {
         if (response == null) {
             logger.error("No response!");
@@ -356,7 +365,12 @@ public class ServletOps {
             // get original image size
             ImageInput img = dlReq.getJobDescription().getImageSet().getBiggest();
             ImageSize size = img.getSize();
-            StringBuffer url = dlReq.getServletRequest().getRequestURL();
+            String url = dlReq.getServletRequest().getRequestURL().toString();
+            if (url.endsWith("/info.json")) {
+                url = url.substring(0, url.lastIndexOf("/info.json"));
+            } else if (url.endsWith("/")) {
+                url = url.substring(0, url.lastIndexOf("/"));
+            }
             PrintWriter writer = response.getWriter();
             response.setContentType("application/json");
             writer.println("{");
@@ -366,7 +380,7 @@ public class ServletOps {
             writer.println("\"height\" : \""+size.height+"\",");
             writer.println("\"formats\" : [\"jpg\", \"png\"],");
             writer.println("\"qualities\" : [\"native\", \"color\", \"grey\"],");
-            writer.println("\"profile\" : \"http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2\",");
+            writer.println("\"profile\" : \"http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2\"");
             writer.println("}");
         } catch (IOException e) {
             throw new ServletException("Error sending info:", e);

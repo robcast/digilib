@@ -261,7 +261,7 @@ public class DigilibRequest extends ParameterMap {
     /**
      * Populate a request from a string with an IIIF Image API path.
      * 
-     * path should have no leading slash.
+     * path should be non-URL-decoded and have no leading slash.
      * 
      * @param path
      *            String with IIIF Image API path.

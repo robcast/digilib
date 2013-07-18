@@ -41,8 +41,8 @@ import digilib.servlet.AsyncServletWorker;
 @WebListener
 public class DigilibServlet3Configuration extends DigilibServletConfiguration {
 
-    public String getVersion() {
-        return "2.2.0 srv3";
+    public static String getVersion() {
+        return "2.2.1 async";
     }
 
     /**
@@ -61,6 +61,9 @@ public class DigilibServlet3Configuration extends DigilibServletConfiguration {
     @Override
     public void configure(ServletContext context) {
         super.configure(context);
+        
+        // set version
+        setValue("servlet.version", DigilibServlet3Configuration.getVersion());
         
         // digilib worker timeout
         long to = getAsInt("worker-timeout");
