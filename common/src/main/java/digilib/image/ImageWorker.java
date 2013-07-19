@@ -94,10 +94,7 @@ public class ImageWorker implements Callable<DocuImage> {
                 subf = 1 / scaleXY;
                 // for higher quality reduce subsample factor by minSubsample
                 if (jobinfo.getScaleQual() > 0) {
-                    subsamp = (float) Math
-                            .max(Math.floor(subf
-                                    / dlConfig.getAsFloat("subsample-minimum")),
-                                    1d);
+                    subsamp = (float) Math.max(Math.floor(subf / dlConfig.getAsFloat("subsample-minimum")), 1d);
                 } else {
                     subsamp = (float) Math.floor(subf);
                 }

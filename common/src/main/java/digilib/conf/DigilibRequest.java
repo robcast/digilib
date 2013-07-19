@@ -55,7 +55,7 @@ import digilib.util.ParameterMap;
  * wh: height of image area(float from 0 to 1). <br>
  * ws: scale factor. <br>
  * mo: special options like 'fit'. <br>
- * ...et alii
+ * ...et al
  * 
  * @author casties
  * 
@@ -88,8 +88,7 @@ public class DigilibRequest extends ParameterMap {
     }
 
     /**
-     * set up parameters.
-     * 
+     * Define and set up parameters with default values.
      */
     protected void initParams() {
         /*
@@ -266,7 +265,7 @@ public class DigilibRequest extends ParameterMap {
     }
 
     /**
-     * Populate a request from a string with an IIIF Image API path.
+     * Populate a request from a string with an IIIF image API path.
      * 
      * path should be non-URL-decoded and have no leading slash.
      * 
@@ -285,7 +284,9 @@ public class DigilibRequest extends ParameterMap {
         // enable passing of delimiter to get empty parameters
         StringTokenizer query = new StringTokenizer(path, "/", true);
         String token;
-        // first parameter prefix
+        /*
+         * first parameter prefix
+         */
         if (query.hasMoreTokens()) {
             token = query.nextToken();
             if (!token.equals(iiifPrefix)) {
@@ -297,7 +298,9 @@ public class DigilibRequest extends ParameterMap {
                 query.nextToken();
             }
         }
-        // second parameter FN (encoded)
+        /*
+         * second parameter FN (encoded)
+         */
         if (query.hasMoreTokens()) {
             token = query.nextToken();
             if (!token.equals("/")) {
@@ -312,7 +315,9 @@ public class DigilibRequest extends ParameterMap {
                 }
             }
         }
-        // third parameter region
+        /*
+         * third parameter region
+         */
         if (query.hasMoreTokens()) {
             token = query.nextToken();
             if (!token.equals("/")) {
@@ -323,7 +328,7 @@ public class DigilibRequest extends ParameterMap {
                 } else if (token.equals("full")) {
                     // full region -- default
                 } else if (token.startsWith("pct:")){
-                    // region in % of original image
+                    // pct:x,y,w,h -- region in % of original image
                     String[] parms = token.substring(4).split(",");
                     try {
                         float x = Float.parseFloat(parms[0]);
@@ -338,8 +343,17 @@ public class DigilibRequest extends ParameterMap {
                         logger.error("Error parsing range parameter in IIIF path!", e);
                     }
                 } else {
-                    // region in pixel of original image :-(
-                    logger.error("pixel region not yet implemented");
+                    // x,y,w,h -- region in pixel of original image :-(
+                    String[] parms = token.split(",");
+                    if (parms.length != 4) {
+                        logger.error("Error parsing range parameter in IIIF path!");
+                    } else {
+                        options.setOption("pxarea");
+                        setValueFromString("wx", parms[0]);                            
+                        setValueFromString("wy", parms[1]);                            
+                        setValueFromString("ww", parms[2]);                            
+                        setValueFromString("wh", parms[3]);                            
+                    }
                 }
                 // skip /
                 if (query.hasMoreTokens()) {
@@ -351,7 +365,9 @@ public class DigilibRequest extends ParameterMap {
             options.setOption("info");
             return;
         }
-        // fourth parameter size
+        /*
+         * fourth parameter size
+         */
         if (query.hasMoreTokens()) {
             token = query.nextToken();
             if (!token.equals("/")) {
@@ -401,7 +417,9 @@ public class DigilibRequest extends ParameterMap {
             setValue("scale", 1f);
             return;
         }
-        // fifth parameter rotation
+        /*
+         * fifth parameter rotation
+         */
         if (query.hasMoreTokens()) {
             token = query.nextToken();
             if (!token.equals("/")) {
@@ -412,7 +430,9 @@ public class DigilibRequest extends ParameterMap {
                 }
             }
         }
-        // sixth parameter quality.format
+        /*
+         * sixth parameter quality.format
+         */
         if (query.hasMoreTokens()) {
             token = query.nextToken();
             // quality.format -- color depth and output format
