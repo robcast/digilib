@@ -42,7 +42,7 @@
             Scaler
         </servlet-name>
         <url-pattern>
-            /Scaler
+            /Scaler/*
         </url-pattern>
   </servlet-mapping>
 </web-app>
