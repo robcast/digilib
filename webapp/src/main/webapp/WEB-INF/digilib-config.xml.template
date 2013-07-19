@@ -75,4 +75,7 @@
   <!-- is the image toolkit allowed to use a disk cache -->
   <parameter name="img-diskcache-allowed" value="false"/>
   
+  <!-- IIIF image API path prefix -->
+  <parameter name="iiif-prefix" value="IIIF"/>
+  
 </digilib-config>

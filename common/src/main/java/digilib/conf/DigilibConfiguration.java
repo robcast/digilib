@@ -75,7 +75,8 @@ public class DigilibConfiguration extends ParameterMap {
         newParameter("img-diskcache-allowed", Boolean.TRUE, null, 'f');
         // default type of error message (image, text, code)
         newParameter("default-errmsg-type", "image", null, 'f');
-
+        // prefix for IIIF image API paths
+        newParameter("iiif-prefix", "IIIF", null, 'f');
     }
 
     /**

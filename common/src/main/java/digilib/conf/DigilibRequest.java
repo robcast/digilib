@@ -64,8 +64,8 @@ public class DigilibRequest extends ParameterMap {
 
     private static Logger logger = Logger.getLogger("digilib.request");
 
-    // TODO: make prefix configurable
-    public static final String iiifPrefix = "iiif";
+    /** IIIF path prefix (taken from config) */
+    protected String iiifPrefix = "IIIF";
 
     /** ImageJobDescription for this request */
     protected ImageJobDescription ticket;
@@ -161,6 +161,13 @@ public class DigilibRequest extends ParameterMap {
         newParameter("img.pix_x", new Integer(0), null, 'c');
         // hires image size y
         newParameter("img.pix_y", new Integer(0), null, 'c');
+        
+        /*
+         * set local variables from config
+         */
+        if (config != null) {
+            iiifPrefix = config.getAsString("iiif-prefix");
+        }
     }
 
     /*
