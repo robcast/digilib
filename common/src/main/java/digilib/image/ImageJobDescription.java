@@ -628,12 +628,14 @@ public class ImageJobDescription extends ParameterMap {
         if (imageSendable == null) {
             String mimeType = getMimeType();
             imageSendable = (mimeType != null
-                    && (mimeType.equals("image/jpeg") || mimeType.equals("image/png") || mimeType.equals("image/gif")) && !(hasOption("hmir")
-                    || hasOption("vmir")
+                    && (mimeType.equals("image/jpeg") || mimeType.equals("image/png") || mimeType.equals("image/gif")) 
+                    && !(getAsFloat("wx") > 0f || getAsFloat("wy") > 0f || getAsFloat("ww") < 1f || getAsFloat("wh") < 1f                            
+                    || hasOption("vmir") || hasOption("hmir")
                     || (getAsFloat("rot") != 0.0)
                     || (getRGBM() != null)
                     || (getRGBA() != null)
-                    || (this.getColOp() != null) || (getAsFloat("cont") != 0.0) || (getAsFloat("brgt") != 0.0)));
+                    || (this.getColOp() != null) 
+                    || (getAsFloat("cont") != 0.0) || (getAsFloat("brgt") != 0.0)));
         }
         return imageSendable;
     }
