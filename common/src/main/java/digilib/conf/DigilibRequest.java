@@ -409,15 +409,18 @@ public class DigilibRequest extends ParameterMap {
                             if (parms[0].startsWith("!")) {
                                 // width (in digilib-like bounding box)
                                 setValueFromString("dw", parms[0].substring(1));
-                            } else {
-                                // according to spec, we should distort the
-                                // image to match ;-(
+                            } else if (parms[1].length() == 0) {
+                                // width only
                                 setValueFromString("dw", parms[0]);
+                            } else {
+                                // w,h -- according to spec, we should distort the image to match ;-(
+                                errorMessage = "Non-uniform-scale size parameter in IIIF path not supported!";
+                                logger.error(errorMessage);
+                                return false;
                             }
                         }
                         if (parms[1].length() > 0) {
-                            // height param (according to spec, we should
-                            // distort the image to match ;-()
+                            // height param
                             setValueFromString("dh", parms[1]);
                         }
                     } catch (Exception e) {
