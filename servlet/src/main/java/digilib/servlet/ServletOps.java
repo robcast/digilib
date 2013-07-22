@@ -371,13 +371,13 @@ public class ServletOps {
             } else if (url.endsWith("/")) {
                 url = url.substring(0, url.lastIndexOf("/"));
             }
+            response.setContentType("application/json;charset=UTF-8");
             PrintWriter writer = response.getWriter();
-            response.setContentType("application/json");
             writer.println("{");
             writer.println("\"@context\" : \"http://library.stanford.edu/iiif/image-api/1.1/context.json\",");
             writer.println("\"@id\" : \""+url+"\",");
-            writer.println("\"width\" : \""+size.width+"\",");
-            writer.println("\"height\" : \""+size.height+"\",");
+            writer.println("\"width\" : "+size.width+",");
+            writer.println("\"height\" : "+size.height+",");
             writer.println("\"formats\" : [\"jpg\", \"png\"],");
             writer.println("\"qualities\" : [\"native\", \"color\", \"grey\"],");
             writer.println("\"profile\" : \"http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2\"");

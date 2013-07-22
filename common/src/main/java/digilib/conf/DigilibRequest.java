@@ -66,6 +66,9 @@ public class DigilibRequest extends ParameterMap {
 
     /** IIIF path prefix (taken from config) */
     protected String iiifPrefix = "IIIF";
+    
+    /** error message while configuring */
+    public String errorMessage = null;
 
     /** ImageJobDescription for this request */
     protected ImageJobDescription ticket;
@@ -160,7 +163,7 @@ public class DigilibRequest extends ParameterMap {
         newParameter("img.pix_x", new Integer(0), null, 'c');
         // hires image size y
         newParameter("img.pix_y", new Integer(0), null, 'c');
-        
+
         /*
          * set local variables from config
          */
@@ -275,9 +278,9 @@ public class DigilibRequest extends ParameterMap {
      * @see <a href="http://www-sul.stanford.edu/iiif/image-api/1.1/">IIIF Image
      *      API</a>
      */
-    public void setWithIiifPath(String path) {
+    public boolean setWithIiifPath(String path) {
         if (path == null) {
-            return;
+            return false;
         }
         // alway set HTTP status code error reporting
         options.setOption("errcode");
@@ -288,10 +291,11 @@ public class DigilibRequest extends ParameterMap {
          * first parameter prefix
          */
         if (query.hasMoreTokens()) {
-            token = query.nextToken();
+            token = getNextDecodedToken(query);
             if (!token.equals(iiifPrefix)) {
-                logger.error("IIIF path doesn't start with prefix!");
-                // what now?
+                errorMessage = "IIIF path doesn't start with prefix!";
+                logger.error(errorMessage);
+                return false;
             }
             // skip /
             if (query.hasMoreTokens()) {
@@ -302,12 +306,18 @@ public class DigilibRequest extends ParameterMap {
          * second parameter FN (encoded)
          */
         if (query.hasMoreTokens()) {
-            token = query.nextToken();
+            token = getNextDecodedToken(query);
             if (!token.equals("/")) {
                 try {
-                    setValueFromString("fn", URLDecoder.decode(token, "UTF-8"));
+                    if (token.contains("%")) {
+                        // still escape chars -- decode again
+                        token = URLDecoder.decode(token, "UTF-8");
+                    }
+                    setValueFromString("fn", token);
                 } catch (UnsupportedEncodingException e) {
-                    logger.error("Error decoding identifier in IIIF path!");
+                    errorMessage = "Error decoding identifier in IIIF path!";
+                    logger.error(errorMessage);
+                    return false;
                 }
                 // skip /
                 if (query.hasMoreTokens()) {
@@ -319,15 +329,15 @@ public class DigilibRequest extends ParameterMap {
          * third parameter region
          */
         if (query.hasMoreTokens()) {
-            token = query.nextToken();
+            token = getNextDecodedToken(query);
             if (!token.equals("/")) {
                 if (token.equals("info.json")) {
                     // info request
                     options.setOption("info");
-                    return;
+                    return true;
                 } else if (token.equals("full")) {
                     // full region -- default
-                } else if (token.startsWith("pct:")){
+                } else if (token.startsWith("pct:")) {
                     // pct:x,y,w,h -- region in % of original image
                     String[] parms = token.substring(4).split(",");
                     try {
@@ -340,19 +350,23 @@ public class DigilibRequest extends ParameterMap {
                         float h = Float.parseFloat(parms[3]);
                         setValue("wh", h / 100f);
                     } catch (Exception e) {
-                        logger.error("Error parsing range parameter in IIIF path!", e);
+                        errorMessage = "Error parsing range parameter in IIIF path!";
+                        logger.error(errorMessage, e);
+                        return false;
                     }
                 } else {
                     // x,y,w,h -- region in pixel of original image :-(
                     String[] parms = token.split(",");
                     if (parms.length != 4) {
-                        logger.error("Error parsing range parameter in IIIF path!");
+                        errorMessage = "Error parsing range parameter in IIIF path!";
+                        logger.error(errorMessage);
+                        return false;
                     } else {
                         options.setOption("pxarea");
-                        setValueFromString("wx", parms[0]);                            
-                        setValueFromString("wy", parms[1]);                            
-                        setValueFromString("ww", parms[2]);                            
-                        setValueFromString("wh", parms[3]);                            
+                        setValueFromString("wx", parms[0]);
+                        setValueFromString("wy", parms[1]);
+                        setValueFromString("ww", parms[2]);
+                        setValueFromString("wh", parms[3]);
                     }
                 }
                 // skip /
@@ -363,47 +377,53 @@ public class DigilibRequest extends ParameterMap {
         } else {
             // region omitted -- assume info request
             options.setOption("info");
-            return;
+            return true;
         }
         /*
          * fourth parameter size
          */
         if (query.hasMoreTokens()) {
-            token = query.nextToken();
+            token = getNextDecodedToken(query);
             if (!token.equals("/")) {
                 if (token.equals("full")) {
                     // full -- size of original
                     options.setOption("ascale");
                     setValue("scale", 1f);
-                } else if (token.startsWith("pct:")){
+                } else if (token.startsWith("pct:")) {
                     // pct:n -- n% size of original
                     try {
                         float pct = Float.parseFloat(token.substring(4));
                         options.setOption("ascale");
                         setValue("scale", pct / 100);
                     } catch (NumberFormatException e) {
-                        logger.error("Error parsing size parameter in IIIF path!", e);
+                        errorMessage = "Error parsing size parameter in IIIF path!";
+                        logger.error(errorMessage, e);
+                        return false;
                     }
                 } else {
                     // w,h -- pixel size
                     try {
-                        String[] parms = token.split(",");
-                        if (parms[0] != "") {
+                        String[] parms = token.split(",", 2);
+                        if (parms[0].length() > 0) {
                             // width param
                             if (parms[0].startsWith("!")) {
                                 // width (in digilib-like bounding box)
                                 setValueFromString("dw", parms[0].substring(1));
                             } else {
-                                // according to spec, we should distort the image to match ;-(
-                                setValueFromString("dw", parms[0]);                            
+                                // according to spec, we should distort the
+                                // image to match ;-(
+                                setValueFromString("dw", parms[0]);
                             }
                         }
-                        if (parms[1] != "") {
-                            // height param (according to spec, we should distort the image to match ;-()
+                        if (parms[1].length() > 0) {
+                            // height param (according to spec, we should
+                            // distort the image to match ;-()
                             setValueFromString("dh", parms[1]);
                         }
                     } catch (Exception e) {
-                        logger.error("Error parsing size parameter in IIIF path!", e);
+                        errorMessage = "Error parsing size parameter in IIIF path!";
+                        logger.error(errorMessage, e);
+                        return false;
                     }
                 }
                 // skip /
@@ -415,15 +435,22 @@ public class DigilibRequest extends ParameterMap {
             // size omitted -- assume "full"
             options.setOption("ascale");
             setValue("scale", 1f);
-            return;
+            return true;
         }
         /*
          * fifth parameter rotation
          */
         if (query.hasMoreTokens()) {
-            token = query.nextToken();
+            token = getNextDecodedToken(query);
             if (!token.equals("/")) {
-                setValueFromString("rot", token);
+                try {
+                    float rot = Float.parseFloat(token);
+                    setValue("rot", rot);
+                } catch (NumberFormatException e) {
+                    errorMessage = "Error parsing rotation parameter in IIIF path!";
+                    logger.error(errorMessage, e);
+                    return false;
+                }
                 // skip /
                 if (query.hasMoreTokens()) {
                     query.nextToken();
@@ -434,26 +461,50 @@ public class DigilibRequest extends ParameterMap {
          * sixth parameter quality.format
          */
         if (query.hasMoreTokens()) {
-            token = query.nextToken();
+            token = getNextDecodedToken(query);
             // quality.format -- color depth and output format
             try {
                 String[] parms = token.split("\\.");
-                // quality param (native is default anyway)
-                if (parms[0].equals("grey")) {
+                // quality param
+                if (parms[0].equals("native")||parms[0].equals("color")) {
+                    // native is default anyway
+                } else if (parms[0].equals("grey")) {
                     setValueFromString("colop", "grayscale");
+                } else {
+                    errorMessage = "Invalid quality parameter in IIIF path!";
+                    logger.error(errorMessage);
+                    return false;
                 }
                 // format param (we only support jpg and png)
-                if (parms[1].equals("jpg")) {
+                if (parms.length > 1 && parms[1].equals("jpg")) {
                     // force jpg
                     options.setOption("jpg");
-                } else if (parms[1].equals("png")) {
+                } else if (parms.length > 1 && parms[1].equals("png")) {
                     // force png
                     options.setOption("png");
+                } else if (parms.length > 1) {
+                    errorMessage = "Invalid format parameter in IIIF path!";
+                    logger.error(errorMessage);
+                    return false;
                 }
             } catch (Exception e) {
-                logger.error("Error parsing quality and format parameters in IIIF path!", e);
+                errorMessage = "Error parsing quality and format parameters in IIIF path!";
+                logger.error(errorMessage, e);
+                return false;
             }
         }
+        return true;
+    }
+
+    private String getNextDecodedToken(StringTokenizer tokens) {
+        String token = tokens.nextToken();
+        try {
+            token = URLDecoder.decode(token, "UTF-8");
+            return token;
+        } catch (UnsupportedEncodingException e) {
+            // this shouldn't happen
+        }
+        return null;
     }
 
     /**

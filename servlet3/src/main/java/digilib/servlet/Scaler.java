@@ -254,6 +254,12 @@ public class Scaler extends HttpServlet {
             errMsgType = ErrMsg.CODE;
         }
 
+        // error out if request was bad
+        if (dlRequest.errorMessage != null) {
+            digilibError(errMsgType, Error.UNKNOWN, dlRequest.errorMessage, response);
+            return;
+        }
+        
         try {
             /*
              * check if we can fast-track without scaling

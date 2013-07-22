@@ -34,6 +34,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
 import digilib.image.DocuImage;
+import digilib.image.ImageOpException;
 import digilib.util.OptionsSet;
 import digilib.util.Parameter;
 
@@ -72,6 +73,7 @@ public class DigilibServletRequest extends DigilibRequest {
      * ServletRequest. All undefined parameters are set to default values.
      * 
      * @param request
+     * @throws ImageOpException 
      */
     public DigilibServletRequest(HttpServletRequest request) {
         setWithRequest(request);
@@ -83,6 +85,7 @@ public class DigilibServletRequest extends DigilibRequest {
      * ServletRequest. All undefined parameters are set to default values.
      * 
      * @param request
+     * @throws ImageOpException 
      */
     public DigilibServletRequest(HttpServletRequest request, DigilibConfiguration config) {
         this.config = config;
@@ -197,6 +200,7 @@ public class DigilibServletRequest extends DigilibRequest {
      * Recognizes digilib API (old and new) and IIIF API style requests. 
      * 
      * @param request
+     * @throws ImageOpException 
      */
     public void setWithRequest(HttpServletRequest request) {
         servletRequest = request;
@@ -214,7 +218,10 @@ public class DigilibServletRequest extends DigilibRequest {
                 // replace path with part of uri
                 path = uri.substring(mp + ms.length());
             }
-            setWithIiifPath(path.substring(1));
+            if (!setWithIiifPath(path.substring(1))) {
+                // there was an error -- set dw=-1 to indicate, Servlet should check .errorMessage anyway
+                setValue("dw", -1);
+            }
         } else {
             // decide if it's old-style or new-style digilib
             String qs = ((HttpServletRequest) request).getQueryString();
