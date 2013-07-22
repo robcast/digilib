@@ -306,7 +306,7 @@ digilib buttons plugin
         var mode = settings.interactionMode;
         var imagePath = settings.buttonSettings[mode].imagePath;
         // make relative imagePath absolute
-        if (imagePath.charAt(0) !== '/' && imagePath.substring(0,3) !== 'http') {
+        if (imagePath.charAt(0) !== '/' && imagePath.substring(0,7) !== 'http://') {
         	imagePath = settings.digilibBaseUrl + '/jquery/' + imagePath;
         }
         var buttonConfig = settings.buttons[buttonName];
