@@ -44,6 +44,7 @@ import org.apache.log4j.Logger;
 import digilib.conf.DigilibServletRequest;
 import digilib.image.DocuImage;
 import digilib.image.ImageOpException;
+import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.ImageInput;
 import digilib.util.ImageSize;
@@ -353,6 +354,7 @@ public class ServletOps {
      * @param dlReq
      * @param response
      * @param logger
+     * @throws FileOpException 
      * @throws ServletException
      * @see <a href="http://www-sul.stanford.edu/iiif/image-api/1.1/#info">IIIF Image Information Request</a>
      */
@@ -361,33 +363,43 @@ public class ServletOps {
             logger.error("No response!");
             return;
         }
+        ImageSize size = null;
         try {
             // get original image size
-            ImageInput img = dlReq.getJobDescription().getImageSet().getBiggest();
-            ImageSize size = img.getSize();
-            String url = dlReq.getServletRequest().getRequestURL().toString();
-            if (url.endsWith("/info.json")) {
-                url = url.substring(0, url.lastIndexOf("/info.json"));
-            } else if (url.endsWith("/")) {
-                url = url.substring(0, url.lastIndexOf("/"));
+            ImageInput img;
+            img = dlReq.getJobDescription().getImageSet().getBiggest();
+            size = img.getSize();
+        } catch (FileOpException e) {
+            try {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            } catch (IOException e1) {
+                throw new ServletException("Unable to write error response!", e);
             }
-            response.setContentType("application/json;charset=UTF-8");
-            PrintWriter writer = response.getWriter();
+        }
+        String url = dlReq.getServletRequest().getRequestURL().toString();
+        if (url.endsWith("/info.json")) {
+            url = url.substring(0, url.lastIndexOf("/info.json"));
+        } else if (url.endsWith("/")) {
+            url = url.substring(0, url.lastIndexOf("/"));
+        }
+        response.setContentType("application/json;charset=UTF-8");
+        PrintWriter writer;
+        try {
+            writer = response.getWriter();
             writer.println("{");
             writer.println("\"@context\" : \"http://library.stanford.edu/iiif/image-api/1.1/context.json\",");
-            writer.println("\"@id\" : \""+url+"\",");
-            writer.println("\"width\" : "+size.width+",");
-            writer.println("\"height\" : "+size.height+",");
+            writer.println("\"@id\" : \"" + url + "\",");
+            writer.println("\"width\" : " + size.width + ",");
+            writer.println("\"height\" : " + size.height + ",");
             writer.println("\"formats\" : [\"jpg\", \"png\"],");
             writer.println("\"qualities\" : [\"native\", \"color\", \"grey\"],");
             writer.println("\"profile\" : \"http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2\"");
             writer.println("}");
         } catch (IOException e) {
-            throw new ServletException("Error sending info:", e);
+            throw new ServletException("Unable to write response!", e);
         }
-        // TODO: should we: finally { img.dispose(); }
     }
-
 
     /** Returns text representation of headers for debuggging purposes.
      * @param req

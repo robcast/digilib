@@ -44,8 +44,9 @@ public class DigilibConfiguration extends ParameterMap {
     /** Log4J logger */
     protected static Logger logger = Logger.getLogger(DigilibConfiguration.class);
 
+    /** digilib version */
     public static String getVersion() {
-        return "2.2.1";
+        return "2.2.2";
     }
     
     /**
