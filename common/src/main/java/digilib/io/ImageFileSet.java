@@ -115,22 +115,6 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
     }
 
     /**
-     * Adds an ImageFile to this Fileset.
-     * 
-     * The files should be added in the order of higher to lower resolutions.
-     * The first file is considered the hires "original".
-     * 
-     * 
-     * @param f
-     *            file to add
-     * @return true (always)
-     */
-    public boolean add(ImageInput f) {
-    	f.setParent(this);
-    	return list.add(f);
-    }
-
-    /**
      * Fill the ImageSet with files from different base directories.
      * 
      * 

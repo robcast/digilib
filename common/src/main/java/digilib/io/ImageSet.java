@@ -217,4 +217,20 @@ public class ImageSet {
         
     }
 
+    /**
+     * Adds an ImageImput to this ImageSet.
+     * 
+     * The images should be added in the order of higher to lower resolutions.
+     * The first image is considered the hires "original".
+     * 
+     * 
+     * @param f
+     *            ImageInput to add
+     * @return true (always)
+     */
+    public boolean add(ImageInput f) {
+    	f.setParent(this);
+    	return list.add(f);
+    }
+
 }
