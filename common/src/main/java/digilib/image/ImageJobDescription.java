@@ -186,7 +186,7 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     /**
-     * Returns the mime-type (of the input).
+     * Returns the mime-type of the input.
      * 
      * @return
      * @throws IOException
@@ -199,6 +199,33 @@ public class ImageJobDescription extends ParameterMap {
         return mimeType;
     }
 
+
+    /**
+     * Return the mime-type of the output.
+     * 
+     * @return
+     */
+    public String getOutputMimeType() {
+        // forced destination image type
+        if (hasOption("jpg")) {
+            return "image/jpeg";
+        } else if (hasOption("png")) {
+            return "image/png";
+        }
+        // use input image type
+        try {
+            String mt = getMimeType();
+            if ((mt.equals("image/jpeg") || mt.equals("image/jp2") || mt.equals("image/fpx"))) {
+                return "image/jpeg";
+            } else {
+                return "image/png";
+            }
+        } catch (IOException e) {
+            logger.error("No input when trying to getOutputMimeType!");
+        }
+        return null;
+    }
+    
     /**
      * Set the current ImageInput.
      * 
