@@ -1,217 +1,254 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-	<groupId>digilib</groupId>
-	<artifactId>digilib</artifactId>
-	<version>2.2-SNAPSHOT</version>
-	<packaging>pom</packaging>
+  <groupId>digilib</groupId>
+  <artifactId>digilib</artifactId>
+  <version>2.2-SNAPSHOT</version>
+  <packaging>pom</packaging>
 
-	<name>digilib</name>
-	<description>The Digital Image Library</description>
-	<url>http://digilib.berlios.de</url>
-	<inceptionYear>2001</inceptionYear>
+  <name>digilib</name>
+  <description>The Digital Image Library</description>
+  <url>http://digilib.berlios.de</url>
+  <inceptionYear>2001</inceptionYear>
 
-	<organization>
-		<name>digilib Community</name>
-		<url>http://digilib.berlios.de</url>
-	</organization>
+  <organization>
+    <name>digilib Community</name>
+    <url>http://digilib.berlios.de</url>
+  </organization>
 
-	<developers>
-		<developer>
-			<id>robcast</id>
-			<name>Robert Casties</name>
-			<email>robcast@berlios.de</email>
-			<organization>Max Planck Institute for the History of Science (MPIWG)</organization>
-			<organizationUrl>http://www.mpiwg-berlin.mpg.de</organizationUrl>
-			<roles>
-			</roles>
-		</developer>
-		<developer>
-			<id>hertzhaft</id>
-			<name>Martin Raspe</name>
-			<email>hertzhaft@berlios.de</email>
-			<organization>Bibliotheca Hertziana</organization>
-			<organizationUrl>http://www.biblhertz.it</organizationUrl>
-		</developer>
-	</developers>
-	<licenses>
-		<license>
-			<name>GNU General Lesser Public License (LGPL) version 3.0</name>
-			<url>http://www.gnu.org/licenses/lgpl-3.0.html</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-	<scm>
-		<connection>scm:hg:http://hg.berlios.de/repos/digilib</connection>
-		<developerConnection>scm:hg:https://hg.berlios.de/repos/digilib</developerConnection>
-		<url>http://hg.berlios.de/repos/digilib</url>
-	</scm>
-	<issueManagement>
-		<system>Trac</system>
-		<url>https://it-dev.mpiwg-berlin.mpg.de/tracs/digilib</url>
-	</issueManagement>
+  <developers>
+    <developer>
+      <id>robcast</id>
+      <name>Robert Casties</name>
+      <email>robcast@berlios.de</email>
+      <organization>Max Planck Institute for the History of Science (MPIWG)</organization>
+      <organizationUrl>http://www.mpiwg-berlin.mpg.de</organizationUrl>
+      <roles>
+        <role>developer</role>
+        <role>architect</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>hertzhaft</id>
+      <name>Martin Raspe</name>
+      <email>hertzhaft@berlios.de</email>
+      <organization>Bibliotheca Hertziana</organization>
+      <organizationUrl>http://www.biblhertz.it</organizationUrl>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+  </developers>
+  <contributors>
+    <contributor>
+      <name>Gerd Grasshoff</name>
+      <organization>Humboldt Universität Berlin</organization>
+      <organizationUrl>http://www.hu-berlin.de</organizationUrl>
+      <roles>
+        <role>former developer</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Robert Gordesch</name>
+      <organization>Max Planck Institute for the History of Science (MPIWG)</organization>
+      <roles>
+        <role>former developer</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Christian Luginbuehl</name>
+      <organization>Universität Bern</organization>
+      <roles>
+        <role>former developer</role>
+      </roles>
+    </contributor>
+  </contributors>
+  <licenses>
+    <license>
+      <name>GNU General Lesser Public License (LGPL) version 3.0</name>
+      <url>http://www.gnu.org/licenses/lgpl-3.0-standalone.html</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <connection>scm:hg:http://hg.berlios.de/repos/digilib</connection>
+    <developerConnection>scm:hg:https://hg.berlios.de/repos/digilib</developerConnection>
+    <url>http://hg.berlios.de/repos/digilib</url>
+  </scm>
+  <issueManagement>
+    <system>Trac</system>
+    <url>https://it-dev.mpiwg-berlin.mpg.de/tracs/digilib</url>
+  </issueManagement>
+  <mailingLists>
+    <mailingList>
+      <name>Developer List</name>
+      <subscribe>https://lists.berlios.de/mailman/listinfo/digilib-devel</subscribe>
+      <unsubscribe>https://lists.berlios.de/mailman/listinfo/digilib-devel</unsubscribe>
+      <archive>https://lists.berlios.de/pipermail/digilib-devel/</archive>
+    </mailingList>
+  </mailingLists>
 
-	<build>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<version>2.3.2</version>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-scm-plugin</artifactId>
-				<version>1.5</version>
-				<configuration>
-					<goals>install</goals>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>license-maven-plugin</artifactId>
-				<version>1.4</version>
-				<configuration>
-					<!--  <verbose>false</verbose> -->
-                    <licenseName>lgpl_v3</licenseName>
-                    <!-- <useMissingFile>true</useMissingFile> -->
-                    <!-- servlet-api is never included in packaging -->
-                    <excludedArtifacts>servlet-api</excludedArtifacts>
-				</configuration>
-			</plugin>
-  			<plugin>
-		        <groupId>org.apache.maven.plugins</groupId>
-    		    <artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9.1</version>
-        		<configuration>
-          			<show>package</show>
-          			<nohelp>true</nohelp>
-        		</configuration>
-   		    </plugin>
-		</plugins>
-	</build>
-	<profiles>
-		<profile>
-			<id>servlet2</id>
-		</profile>
-		<profile>
-			<id>servlet3</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-		</profile>
-		<!-- optional modules with dependencies selected by profile -->
-		<profile>
-			<id>text</id>
-			<modules>
-				<module>text</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>pdf</id>
-			<modules>
-				<module>pdf</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>codec-jai</id>
-			<modules>
-				<module>common-jai</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>codec-imagej</id>
-			<modules>
-				<module>common-imagej</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>codec-bioformats</id>
-			<modules>
-				<module>common-bioformats</module>
-			</modules>
-		</profile>
-	</profiles>
-	<repositories>
-	</repositories>
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>2.3.2</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-scm-plugin</artifactId>
+        <version>1.5</version>
+        <configuration>
+          <goals>install</goals>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>1.4</version>
+        <configuration>
+          <!-- <verbose>false</verbose> -->
+          <licenseName>lgpl_v3</licenseName>
+          <!-- <useMissingFile>true</useMissingFile> -->
+          <!-- servlet-api is never included in packaging -->
+          <excludedArtifacts>servlet-api</excludedArtifacts>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.9.1</version>
+        <configuration>
+          <show>package</show>
+          <nohelp>true</nohelp>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <profiles>
+    <profile>
+      <id>servlet2</id>
+    </profile>
+    <profile>
+      <id>servlet3</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+    </profile>
+    <!-- optional modules with dependencies selected by profile -->
+    <profile>
+      <id>text</id>
+      <modules>
+        <module>text</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>pdf</id>
+      <modules>
+        <module>pdf</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>codec-jai</id>
+      <modules>
+        <module>common-jai</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>codec-imagej</id>
+      <modules>
+        <module>common-imagej</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>codec-bioformats</id>
+      <modules>
+        <module>common-bioformats</module>
+      </modules>
+    </profile>
+  </profiles>
+  <repositories>
+  </repositories>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>log4j</groupId>
-				<artifactId>log4j</artifactId>
-				<version>1.2.14</version>
-			</dependency>
-			<!-- digilib module versions -->
-			<dependency>
-				<groupId>digilib</groupId>
-				<artifactId>digilib-common</artifactId>
-				<version>2.2-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>digilib</groupId>
-				<artifactId>digilib-common-jai</artifactId>
-				<version>2.2-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>digilib</groupId>
-				<artifactId>digilib-common-imagej</artifactId>
-				<version>2.2-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>digilib</groupId>
-				<artifactId>digilib-common-bioformats</artifactId>
-				<version>2.2-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>digilib</groupId>
-				<artifactId>digilib-pdf</artifactId>
-				<version>2.2-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>digilib</groupId>
-				<artifactId>digilib-text</artifactId>
-				<version>2.2-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>digilib</groupId>
-				<artifactId>digilib-servlet</artifactId>
-				<version>2.2-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>digilib</groupId>
-				<artifactId>digilib-servlet2</artifactId>
-				<version>2.2-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>digilib</groupId>
-				<artifactId>digilib-servlet3</artifactId>
-				<version>2.2-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>digilib</groupId>
-				<artifactId>digilib-webapp</artifactId>
-				<version>2.2-SNAPSHOT</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+        <version>1.2.14</version>
+      </dependency>
+      <!-- digilib module versions -->
+      <dependency>
+        <groupId>digilib</groupId>
+        <artifactId>digilib-common</artifactId>
+        <version>2.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>digilib</groupId>
+        <artifactId>digilib-common-jai</artifactId>
+        <version>2.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>digilib</groupId>
+        <artifactId>digilib-common-imagej</artifactId>
+        <version>2.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>digilib</groupId>
+        <artifactId>digilib-common-bioformats</artifactId>
+        <version>2.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>digilib</groupId>
+        <artifactId>digilib-pdf</artifactId>
+        <version>2.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>digilib</groupId>
+        <artifactId>digilib-text</artifactId>
+        <version>2.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>digilib</groupId>
+        <artifactId>digilib-servlet</artifactId>
+        <version>2.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>digilib</groupId>
+        <artifactId>digilib-servlet2</artifactId>
+        <version>2.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>digilib</groupId>
+        <artifactId>digilib-servlet3</artifactId>
+        <version>2.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>digilib</groupId>
+        <artifactId>digilib-webapp</artifactId>
+        <version>2.2-SNAPSHOT</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
 
-	<dependencies>
-	</dependencies>
-	<!-- default modules -->
-	<modules>
-		<module>common</module>
-		<module>servlet</module>
-		<module>servlet2</module>
-		<module>servlet3</module>
-		<module>webapp</module>
-	</modules>
+  <dependencies>
+  </dependencies>
+  <!-- default modules -->
+  <modules>
+    <module>common</module>
+    <module>servlet</module>
+    <module>servlet2</module>
+    <module>servlet3</module>
+    <module>webapp</module>
+  </modules>
 </project>
