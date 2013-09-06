@@ -207,6 +207,11 @@
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
+        <artifactId>digilib-doc</artifactId>
+        <version>2.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>digilib</groupId>
         <artifactId>digilib-pdf</artifactId>
         <version>2.2-SNAPSHOT</version>
       </dependency>
@@ -250,5 +255,6 @@
     <module>servlet2</module>
     <module>servlet3</module>
     <module>webapp</module>
+    <module>doc</module>
   </modules>
 </project>

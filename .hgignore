@@ -114,3 +114,9 @@ syntax: regexp
 ^servlet/\.project$
 syntax: regexp
 ^servlet/bin$
+syntax: regexp
+^doc/\.settings$
+syntax: regexp
+^doc/\.project$
+syntax: regexp
+^doc/target$
