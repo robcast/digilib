@@ -66,7 +66,6 @@ int dirSize = dir != null ? dir.size(fc) : 0;
         String fn = (f != null) ? f.getName() : "null";
 %>  <file>
     <index><%= i+1 %></index>
-<!--    <name><%= digilib.io.FileOps.basename(fn) %></name>-->
    <name><c:out value="<%=digilib.io.FileOps.basename(fn)%>"/> </name>
     <fsname><c:out value="<%=fn%>"/></fsname>
   </file>
