@@ -40,7 +40,7 @@ public void jspInit() {
         System.out.println(e);
     }
 }
-%><?xml version="1.0" encoding="UTF-8" ?>
+%><%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %><%@ page contentType="text/xml" %><?xml version="1.0" encoding="UTF-8" ?>
 <%
 // process request
 // get digilib config
@@ -66,8 +66,8 @@ int dirSize = dir != null ? dir.size(fc) : 0;
         String fn = (f != null) ? f.getName() : "null";
 %>  <file>
     <index><%= i+1 %></index>
-    <name><%= digilib.io.FileOps.basename(fn) %></name>
-    <fsname><%= fn %></fsname>
+   <name><c:out value="<%=digilib.io.FileOps.basename(fn)%>"/> </name>
+    <fsname><c:out value="<%=fn%>"/></fsname>
   </file>
 <%
       } // for 
