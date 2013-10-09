@@ -33,8 +33,8 @@
     </menu>
     <menu name="Development">
       <item name="The digilib Scaler API" href="scaler-api.html"/>
-      <!-- <item name="Integrating digilib into your page" href=""/>
-      <item name="Integrating digilib into your server" href=""/> -->
+      <item name="Integrating digilib into your page" href="client-integration.html"/>
+      <!-- <item name="Integrating digilib into your server" href=""/> -->
     </menu>
     <menu ref="reports"/>
   </body>
