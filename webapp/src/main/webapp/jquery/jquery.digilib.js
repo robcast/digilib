@@ -38,11 +38,14 @@ if (typeof console === 'undefined') {
     var customConsole = false; // set to true if debugging for MS IE
 }
 
-(function($) {
+(/**
+ * @param $
+ */
+function($) {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.2.1',
+        'version' : 'jquery.digilib.js 2.2.2',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -379,8 +382,7 @@ if (typeof console === 'undefined') {
          * @param mode
          */
         zoomFull : function (data, mode) {
-            var settings = data.settings;
-            data.zoomArea = FULL_AREA.copy();
+            setZoomArea(data, FULL_AREA.copy());
             setFitMode(data, mode);
             // zoom full only works in screen mode
             setScaleMode(data, 'screen');
@@ -1607,12 +1609,18 @@ if (typeof console === 'undefined') {
         return border/2;
     };
 
-    /** return if the current zoomarea can be moved further.
+    /** 
+     * Return if the current zoomarea can be moved further in a given direction.
      * 
+     * @param data
+     * @param movx Move in x-direction
+     * @param movy Move in y-direction
+     * @param za New zoom area (optional, default current zoom area)
      */
-    var canMove = function(data, movx, movy) {
-
-        var za = data.zoomArea;
+    var canMove = function(data, movx, movy, za) {
+        if (za == null) {
+            za = data.zoomArea;
+        }
         if (isFullArea(za)) return false;
         var dx = movx;
         var dy = movy;

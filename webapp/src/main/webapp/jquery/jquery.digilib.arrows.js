@@ -130,8 +130,7 @@
         data.currentInsets['arrows'] = getInsets(data);
         // install event handler
         $data.bind('setup', handleSetup);
-        $data.bind('update', handleUpdate);
-        // $data.bind('redisplay', handleRedisplay);
+        $data.bind('changeZoomArea', handleChangeZoomArea);
     };
 
     var handleSetup = function(evt) {
@@ -140,17 +139,17 @@
         setupZoomArrows(data);
     };
 
-    var handleUpdate = function(evt) {
-        console.debug("arrows: handleUpdate");
+    var handleChangeZoomArea = function(evt, newZa) {
+        console.debug("arrows: handleChangeZoomArea");
         var data = this;
-        renderZoomArrows(data);
+        renderZoomArrows(data, newZa);
     };
 
 
     /** 
      * returns insets for arrows (based on canMove and arrowSetSize
      */
-    var getInsets = function(data) {
+    var getInsets = function(data, za) {
         var settings = data.settings;
         var insets = {
             'x' : 0,
@@ -159,13 +158,13 @@
         if (settings.showZoomArrows) {
             var mode = settings.interactionMode;
             var bw = settings.buttonSettings[mode].arrowSetSize;
-            if (digilib.fn.canMove(data, 0, -1))
+            if (digilib.fn.canMove(data, 0, -1, za))
                 insets.y += bw;
-            if (digilib.fn.canMove(data, 0, 1))
+            if (digilib.fn.canMove(data, 0, 1, za))
                 insets.y += bw;
-            if (digilib.fn.canMove(data, -1, 0))
+            if (digilib.fn.canMove(data, -1, 0, za))
                 insets.x += bw;
-            if (digilib.fn.canMove(data, 1, 0))
+            if (digilib.fn.canMove(data, 1, 0, za))
                 insets.x += bw;
         }
         return insets;
@@ -250,11 +249,15 @@
     /**
      * show or hide arrows, called after scaler img is loaded.
      * 
+     * @param za New zoom area (optional)
      */
-    var renderZoomArrows = function(data) {
+    var renderZoomArrows = function(data, za) {
         var settings = data.settings;
         var arrows = data.arrows;
-        if (digilib.fn.isFullArea(data.zoomArea) || !settings.showZoomArrows) {
+        if (za == null) {
+            za = data.zoomArea;
+        }
+        if (digilib.fn.isFullArea(za) || !settings.showZoomArrows) {
             arrows.$up.hide();
             arrows.$down.hide();
             arrows.$left.hide();
@@ -262,28 +265,28 @@
             data.currentInsets['arrows'] = {'x' : 0, 'y' : 0};
             return;
         }
-        if (digilib.fn.canMove(data, 0, -1)) {
+        if (digilib.fn.canMove(data, 0, -1, za)) {
             arrows.$up.show();
         } else {
             arrows.$up.hide();
         }
-        if (digilib.fn.canMove(data, 0, 1)) {
+        if (digilib.fn.canMove(data, 0, 1, za)) {
             arrows.$down.show();
         } else {
             arrows.$down.hide();
         }
-        if (digilib.fn.canMove(data, -1, 0)) {
+        if (digilib.fn.canMove(data, -1, 0, za)) {
             arrows.$left.show();
         } else {
             arrows.$left.hide();
         }
-        if (digilib.fn.canMove(data, 1, 0)) {
+        if (digilib.fn.canMove(data, 1, 0, za)) {
             arrows.$right.show();
         } else {
             arrows.$right.hide();
         }
         // adjust insets
-        data.currentInsets['arrows'] = getInsets(data);
+        data.currentInsets['arrows'] = getInsets(data, za);
     };
 
     // plugin object with name and init
