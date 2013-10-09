@@ -18,6 +18,7 @@
   <body>
     <menu name="Overview">
       <item name="About digilib" href="index.html"/>
+      <item name="digilib features" href="features.html"/>
       <item name="How digilib works" href="digilib-short.html"/>
       <item name="Ancient history" href="history.html"/>
     </menu>
