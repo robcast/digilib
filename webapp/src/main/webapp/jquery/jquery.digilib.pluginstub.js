@@ -34,35 +34,36 @@ digilib plugin stub
     var FULL_AREA;
 
     var buttons = {
-            stub : {
-                onclick : ["doStub", 1],
+            STUB : {
+                onclick : ["doSTUB", 1],
                 tooltip : "what does this button do?",
-                icon : "stub.png"
+                icon : "STUB.png"
                 }
     };
 
     var defaults = {
-            // is stub active?
-            'isStubActive' : true
+            // set default values for options here
+            // is STUB active?
+            'isSTUBActive' : true
     };
 
     var actions = {
             // action code goes here 
-            doStub : function (data, param) {
+            doSTUB : function (data, param) {
                 var settings = data.settings;
-                console.log('isStubActive', settings.isStubActive);
+                console.log('isSTUBActive', settings.isSTUBActive);
                 // do some useful stuff ...
             }
     };
 
-    // plugin installation called by digilib on plugin object.
+    // plugin installation routine, called by digilib on each plugin object.
     var install = function(plugin) {
         digilib = plugin;
-        console.debug('installing stub plugin. digilib:', digilib);
+        console.debug('installing STUB plugin. digilib:', digilib);
         // import geometry classes
         geom = digilib.fn.geometry;
         FULL_AREA = geom.rectangle(0,0,1,1);
-        // add defaults, actins, buttons
+        // add defaults, actions, buttons to the main digilib object
         $.extend(digilib.defaults, defaults);
         $.extend(digilib.actions, actions);
         $.extend(digilib.buttons, buttons);
@@ -70,9 +71,9 @@ digilib plugin stub
 
     // plugin initialization
     var init = function (data) {
-        console.debug('initialising stub plugin. data:', data);
+        console.debug('initialising STUB plugin. data:', data);
         var $data = $(data);
-        // install event handler
+        // install event handlers
         $data.bind('setup', handleSetup);
         $data.bind('update', handleUpdate);
         $data.bind('redisplay', handleRedisplay);
@@ -81,17 +82,17 @@ digilib plugin stub
 
 
     var handleSetup = function (evt) {
-        console.debug("stub: handleSetup");
+        console.debug("STUB: handleSetup");
         var data = this;
     };
 
     var handleUpdate = function (evt) {
-        console.debug("stub: handleUpdate");
+        console.debug("STUB: handleUpdate");
         var data = this;
     };
 
     var handleRedisplay = function (evt) {
-        console.debug("stub: handleRedisplay");
+        console.debug("STUB: handleRedisplay");
         var data = this;
     };
 
@@ -99,10 +100,10 @@ digilib plugin stub
         var data = this;
     };
 
-    // plugin object with name and init
-    // shared objects filled by digilib on registration
+    // plugin object, containing name, install and init routines 
+    // all shared objects are filled by digilib on registration
     var plugin = {
-            name : 'pluginstub',
+            name : 'STUB',
             install : install,
             init : init,
             buttons : {},
@@ -112,7 +113,7 @@ digilib plugin stub
     };
 
     if ($.fn.digilib == null) {
-        $.error("jquery.digilib.pluginstub must be loaded after jquery.digilib!");
+        $.error("jquery.digilib.pluginstub.js must be loaded after jquery.digilib!");
     } else {
         $.fn.digilib('plugin', plugin);
     }
