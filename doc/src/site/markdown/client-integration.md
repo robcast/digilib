@@ -10,9 +10,11 @@ digilib can be integrated into other web pages on different levels:
 
 Insert an image reference into your html code, referencing the "Scaler" servlet path in your digilib environment (servlet/Scaler, relative to your context). The image filename and path are specified in the `fn` parameter of the querystring. 
 
+```html
     <img
         src="http://your.imagerserver.org/digilib/servlet/Scaler?fn=/yourimage.jpg&dw=100&dh=100">
     </img>
+```
 
 Don't forget to specify at least one of the `dw` and `dh` parameters! They inform the servlet about the desired size (in pixel) of the scaled image. Otherwise you'll get an error image.
 
@@ -24,19 +26,24 @@ An example file called _static.html_ is provided in your digilib context root di
 
 To embed one or more scaled images with controls into your site, add one `div` element for each image to your HTML code. Set the image to load and its size in the scaler parameters `fn / pn` and `dw / dh`. These will be picked up by Digilib.
 
+```html
         <div class="mydiv">
             <img src="servlet/Scaler?dw=200&amp;dh=200&amp;fn=/p0005" />
         </div>
+```
 
 Apart from jQuery and jquery.digilib.js (the digilib plugin for jQuery) the digilib plugins `geometry` and `buttons` are needed. They must be loaded _after_ digilib. See [plugins](plugins.html) for the plugin documentation.
 
+```html
         <script type="text/javascript" src="jquery/jquery.js"></script>
         <script type="text/javascript" src="jquery/jquery.digilib.js"></script>
         <script type="text/javascript" src="jquery/jquery.digilib.geometry.js"></script>
         <script type="text/javascript" src="jquery/jquery.digilib.buttons.js"></script>
+```
 
 Add a jQuery `ready` event handler for the Javascript `document` object. In the handler the initialization function `digilib()` should be called. Set the `ìnteractionMode` option to "embedded" and the `digilibBaseUrl` option to the digilib context path.
 
+```html
         <script type="text/javascript">
             $(document).ready(function(){
                 var options = {
@@ -45,13 +52,16 @@ Add a jQuery `ready` event handler for the Javascript `document` object. In the 
                     };
                 $('.mydiv').digilib(options);
         </script>
+```
 
-For the standard controls (contained in the buttons plugin) to be displayed next to the image, the <div> should have a `position: relative` CSS property and a fixed width.
+For the standard controls (contained in the buttons plugin) to be displayed next to the image, the `<div>` should have a `position: relative` CSS property and a fixed width.
 
+```css
         div.mydiv {
             position: relative;
             width: 250px;
         }
+```
 
 An example file called _embedded.html_ is provided in your digilib context root directory.
 
