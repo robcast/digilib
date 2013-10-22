@@ -71,7 +71,7 @@ public class ImageJobDescription extends ParameterMap {
     DocuImage docuImage = null;
     String filePath = null;
     ImageSize expectedSourceSize = null;
-    Float scaleXY = null;
+    Double scaleXY = null;
     Rectangle2D userImgArea = null;
     Rectangle2D outerUserImgArea = null;
     Boolean imageSendable = null;
@@ -405,17 +405,17 @@ public class ImageJobDescription extends ParameterMap {
      * @throws IOException
      * @throws ImageOpException
      */
-    public float getScaleXY() throws IOException, ImageOpException {
+    public double getScaleXY() throws IOException, ImageOpException {
         // logger.debug("get_scaleXY()");
         if (scaleXY != null) {
-            return (float) scaleXY;
+            return scaleXY.doubleValue();
         }
 
         /*
          * calculate region of interest
          */
-        float areaWidth;
-        float areaHeight;
+        double areaWidth;
+        double areaHeight;
         // size of the currently selected input image
         ImageSize imgSize = getInput().getSize();
         if (!options.hasOption("pxarea")) {
@@ -438,10 +438,10 @@ public class ImageJobDescription extends ParameterMap {
             /*
              * scale to fit -- scaling factor based on destination size and user area
              */
-            areaWidth = (float) userImgArea.getWidth();
-            areaHeight = (float) userImgArea.getHeight();
-            float scaleX = getDw() / areaWidth * ws;
-            float scaleY = getDh() / areaHeight * ws;
+            areaWidth = (double) userImgArea.getWidth();
+            areaHeight = (double) userImgArea.getHeight();
+            double scaleX = getDw() / areaWidth * ws;
+            double scaleY = getDh() / areaHeight * ws;
             scaleXY = (scaleX > scaleY) ? scaleY : scaleX;
         } else if (isAbsoluteScale()) {
             /*
@@ -450,15 +450,15 @@ public class ImageJobDescription extends ParameterMap {
             if (hasOption("osize")) {
                 // get original resolution from metadata
                 imageSet.checkMeta();
-                float origResX = imageSet.getResX();
-                float origResY = imageSet.getResY();
+                double origResX = imageSet.getResX();
+                double origResY = imageSet.getResY();
                 if ((origResX == 0) || (origResY == 0)) {
                     throw new ImageOpException("Missing image DPI information!");
                 }
-                float ddpix = getAsFloat("ddpix");
-                float ddpiy = getAsFloat("ddpiy");
+                double ddpix = getAsFloat("ddpix");
+                double ddpiy = getAsFloat("ddpiy");
                 if (ddpix == 0 || ddpiy == 0) {
-                    float ddpi = getAsFloat("ddpi");
+                    double ddpi = getAsFloat("ddpi");
                     if (ddpi == 0) {
                         throw new ImageOpException("Missing display DPI information!");
                     } else {
@@ -467,13 +467,13 @@ public class ImageJobDescription extends ParameterMap {
                     }
                 }
                 // calculate absolute scale factor
-                float sx = ddpix / origResX;
-                float sy = ddpiy / origResY;
+                double sx = ddpix / origResX;
+                double sy = ddpiy / origResY;
                 // currently only same scale -- mean value
                 scaleXY = (sx + sy) / 2f;
             } else {
                 // absolute scale factor
-                scaleXY = getAsFloat("scale");
+                scaleXY = (double) getAsFloat("scale");
                 // use original size if no destination size given
                 if (getDw() == 0 && getDh() == 0) {
                     paramDW = (int) userImgArea.getWidth();
@@ -483,7 +483,7 @@ public class ImageJobDescription extends ParameterMap {
             // we need to correct the factor if we use a pre-scaled image
             ImageSize hiresSize = getHiresSize();
             if (imgSize.getWidth() != hiresSize.getWidth()) {
-                scaleXY *= (float) hiresSize.getWidth() / (float) imgSize.getWidth();
+                scaleXY *= (double) hiresSize.getWidth() / (double) imgSize.getWidth();
             }
             areaWidth = getDw() / scaleXY * ws;
             areaHeight = getDh() / scaleXY * ws;
@@ -497,9 +497,9 @@ public class ImageJobDescription extends ParameterMap {
             areaHeight = getDh() * ws;
             // reset user area size
             userImgArea.setRect(userImgArea.getX(), userImgArea.getY(), areaWidth, areaHeight);
-            scaleXY = 1f;
+            scaleXY = 1d;
         }
-        return (float) scaleXY;
+        return scaleXY.doubleValue();
     }
 
     /**

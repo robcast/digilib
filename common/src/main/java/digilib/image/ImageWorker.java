@@ -79,7 +79,7 @@ public class ImageWorker implements Callable<DocuImage> {
         docuImage.setQuality(jobinfo.getScaleQual());
 
         Rectangle loadRect = jobinfo.getOuterUserImgArea().getBounds();
-        float scaleXY = jobinfo.getScaleXY();
+        double scaleXY = jobinfo.getScaleXY();
 
         if (stopNow) {
             logger.debug("ImageWorker stopping (after setup)");
@@ -88,26 +88,28 @@ public class ImageWorker implements Callable<DocuImage> {
         // use subimage loading if possible
         if (docuImage.isSubimageSupported()) {
             logger.debug("Subimage: scale " + scaleXY + " = " + (1 / scaleXY));
-            float subf = 1f;
-            float subsamp = 1f;
+            double subf = 1d;
+            double subsamp = 1d;
             if (scaleXY < 1) {
                 subf = 1 / scaleXY;
                 // for higher quality reduce subsample factor by minSubsample
                 if (jobinfo.getScaleQual() > 0) {
-                    subsamp = (float) Math.max(Math.floor(subf / dlConfig.getAsFloat("subsample-minimum")), 1d);
+                    subsamp = Math.max(Math.floor(subf / dlConfig.getAsFloat("subsample-minimum")), 1d);
                 } else {
-                    subsamp = (float) Math.floor(subf);
+                    subsamp = Math.floor(subf);
                 }
-                scaleXY = subsamp / subf;
-                logger.debug("Using subsampling: " + subsamp + " rest "
-                        + scaleXY);
+                // correct scaling factor by subsampling factor
+                scaleXY *= subsamp;
+                logger.debug("Using subsampling: " + subsamp + " rest " + scaleXY);
             }
+            // load region with subsampling
             docuImage.loadSubimage(jobinfo.getInput(), loadRect, (int) subsamp);
-            logger.debug("SUBSAMP: " + subsamp + " -> " + docuImage.getSize());
+            logger.debug("SUBSAMP: " + subsamp + ": " + jobinfo.getInput().getSize() + " -> " + docuImage.getSize());
             if (stopNow) {
                 logger.debug("ImageWorker stopping (after loading and cropping)");
                 return null;
             }
+            // and scale
             docuImage.scale(scaleXY, scaleXY);
         } else {
             // else load and crop the whole file
