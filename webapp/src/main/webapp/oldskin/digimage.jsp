@@ -44,7 +44,7 @@ docBean.setRequest(dlRequest);
 // check if authentication is needed and redirect if necessary
 docBean.doAuthentication(response);
 // add number of pages
-dlRequest.setValue("pt", docBean.getNumPages());
+int pt = docBean.getNumPages();
 // store objects for jsp:include
 pageContext.setAttribute("docBean", docBean, PageContext.REQUEST_SCOPE);
 %><html>
@@ -74,8 +74,7 @@ pageContext.setAttribute("docBean", docBean, PageContext.REQUEST_SCOPE);
   newParameter('ddpix', '', 8);
   newParameter('ddpiy', '', 8);
   newParameter('mk', '', 16);
-  newParameter('pt', '0', 32);
-  setParameter('pt', '<%= dlRequest.getAsString("pt") %>');
+  newParameter('pt', <%= pt %>, 32);
   document.id='digilib';
   dl_param_init();
 </script>

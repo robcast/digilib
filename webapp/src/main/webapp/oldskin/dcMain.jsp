@@ -45,7 +45,7 @@ digilib.conf.DigilibServletRequest dcRequest = new digilib.conf.DigilibServletRe
 // check if authentication is needed and redirect if necessary
 docBean.doAuthentication(dcRequest, response);
 // set number of pages  
-dcRequest.setValue("pt", docBean.getNumPages(dcRequest));
+int pt = docBean.getNumPages(dcRequest);
 // chop off /oldskin -- ugly ;-(
 String baseUrl = dcRequest.getAsString("base.url");
 /* int p = baseUrl.lastIndexOf("/oldskin");
@@ -62,7 +62,7 @@ base_init();
 var baseUrl = "<%= baseUrl %>";
 newParameter('fn', '', 1);
 newParameter('pn', 1, 1);
-newParameter('pt', 9, 9);
+newParameter('pt', <%= pt %>, 9);
 newParameter('mx', '6x4', 1);
 newParameter('mo', '', 1);
 newParameter('dw', 0, 1);
