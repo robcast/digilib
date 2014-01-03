@@ -19,7 +19,7 @@ versions of your images. If you have pre-scaled images the directory with the
 high-resolution images must be the first entry in the list.
 
 Documentation on the directory layout and on using pre-scaled images is 
-[here](image-directories.md).
+[here](image-directories.html).
 
 A minimal configuration looks like this:
 

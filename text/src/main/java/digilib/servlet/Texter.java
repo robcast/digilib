@@ -41,6 +41,7 @@ import org.apache.log4j.Logger;
 import digilib.auth.AuthOps;
 import digilib.conf.DigilibServletConfiguration;
 import digilib.conf.DigilibServletRequest;
+import digilib.conf.TextServletConfiguration;
 import digilib.image.ImageOpException;
 import digilib.io.DocuDirCache;
 import digilib.io.FileOps;
@@ -59,7 +60,7 @@ public class Texter extends HttpServlet {
     private static final long serialVersionUID = 6678666342141409867L;
 
     /** Servlet version */
-	public static String tlVersion = "2.2.0";
+	public static String tlVersion = TextServletConfiguration.getVersion();
 
 	/** DigilibConfiguration instance */
 	DigilibServletConfiguration dlConfig = null;
@@ -100,7 +101,7 @@ public class Texter extends HttpServlet {
 		ServletContext context = config.getServletContext();
 		// see if there is a Configuration instance
 		dlConfig = (DigilibServletConfiguration) context
-				.getAttribute("digilib.servlet.configuration");
+				.getAttribute(TextServletConfiguration.TEXT_SERVLET_CONFIG_KEY);
 		if (dlConfig == null) {
 			// no Configuration
 			throw new ServletException("No Configuration!");
@@ -113,7 +114,7 @@ public class Texter extends HttpServlet {
 		useAuthentication = dlConfig.getAsBoolean("use-authorization");
 		authOp = (AuthOps) dlConfig.getValue("servlet.auth.op");
 		// DocuDirCache instance
-		dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
+		dirCache = (DocuDirCache) dlConfig.getValue(TextServletConfiguration.TEXT_DIR_CACHE_KEY);
 	}
 
 	/*

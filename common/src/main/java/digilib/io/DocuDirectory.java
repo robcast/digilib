@@ -42,7 +42,7 @@ import digilib.meta.MetaFactory;
 public class DocuDirectory extends Directory {
 
 	/** list of files (DocuDirent) */
-	private List<List<DocuDirent>> list = null;
+	private List<DocuDirent> list = null;
 
 	/** directory object is valid (exists on disk) */
 	private boolean isValid = false;
@@ -83,12 +83,7 @@ public class DocuDirectory extends Directory {
 		this.cache = cache;
 		String baseDirName = cache.getBaseDirNames()[0];
 		// clear directory list
-		FileClass[] fcs = FileClass.values();
-		list = new ArrayList<List<DocuDirent>>(fcs.length);
-		// create empty list for all classes
-		for (@SuppressWarnings("unused") FileClass fc: fcs) {
-		    list.add(null);
-		}
+		list = new ArrayList<DocuDirent>();
 		dirMTime = 0;
 		// the first directory has to exist
 		dir = new File(baseDirName, path);
@@ -98,11 +93,9 @@ public class DocuDirectory extends Directory {
 
 	/**
 	 * number of DocuFiles in this directory. 
-	 * Warning: this does mostly not give the right result!  
-	 * @deprecated Use {@link #size(FileClass)} instead.
 	 */
 	public int size() {
-		return ((list != null) && (list.get(0) != null)) ? list.get(0).size() : 0;
+		return (list != null) ? list.size() : 0;
 	}
 
 	/**
@@ -110,9 +103,10 @@ public class DocuDirectory extends Directory {
 	 * 
 	 * @param fc
 	 *            fileClass
+     * @deprecated Use {@link #size()} instead.
 	 */
 	public int size(FileClass fc) {
-		return ((list != null) && (list.get(fc.ordinal()) != null)) ? list.get(fc.ordinal()).size() : 0;
+		return size();
 	}
 
 	/**
@@ -122,10 +116,10 @@ public class DocuDirectory extends Directory {
 	 * @return
 	 */
 	public DocuDirent get(int index) {
-		if ((list == null) || (list.get(0) == null) || (index >= list.get(0).size())) {
+		if ((list == null) || (index >= list.size())) {
 			return null;
 		}
-		return list.get(0).get(index);
+		return list.get(index);
 	}
 
 	/**
@@ -135,12 +129,10 @@ public class DocuDirectory extends Directory {
 	 * @param fc
 	 *            fileClass
 	 * @return
+     * @deprecated Use {@link #get()} instead.
 	 */
 	public DocuDirent get(int index, FileClass fc) {
-		if ((list == null) || (list.get(fc.ordinal()) == null) || (index >= list.get(fc.ordinal()).size())) {
-			return null;
-		}
-		return (DocuDirent) list.get(fc.ordinal()).get(index);
+	    return get(index);
 	}
 
 	/**
@@ -194,29 +186,25 @@ public class DocuDirectory extends Directory {
 			}
 		}
 
-		// go through all file classes
-		for (FileClass fileClass : cache.getFileClasses()) {
-			File[] fileList = FileOps.listFiles(allFiles,
-					FileOps.filterForClass(fileClass));
-			// number of files in the directory
-			int numFiles = fileList.length;
-			if (numFiles > 0) {
-				// create new list
-				ArrayList<DocuDirent> dl = new ArrayList<DocuDirent>(numFiles);
-				list.set(fileClass.ordinal(), dl);
-				for (File f : fileList) {
-					DocuDirent df = FileOps.fileForClass(fileClass, f, dirs);
-					df.setParent(this);
-					// add the file to our list
-					dl.add(df);
-				}
-				/*
-				 * we sort the inner ArrayList (the list of files not the list
-				 * of file types) for binarySearch to work (DocuDirent's natural
-				 * sort order is by filename)
-				 */
-				Collections.sort(dl);
+		FileClass fileClass = cache.getFileClass();
+		File[] fileList = FileOps.listFiles(allFiles, FileOps.filterForClass(fileClass));
+		// number of files in the directory
+		int numFiles = fileList.length;
+		if (numFiles > 0) {
+			// create new list
+			ArrayList<DocuDirent> dl = new ArrayList<DocuDirent>(numFiles);
+			list = dl;
+			for (File f : fileList) {
+				DocuDirent df = FileOps.fileForClass(fileClass, f, dirs);
+				df.setParent(this);
+				// add the file to our list
+				dl.add(df);
 			}
+			/*
+			 * we sort the ArrayList (the list of files) for binarySearch to work 
+			 * (DocuDirent's natural sort order is by filename)
+			 */
+			Collections.sort(dl);
 		}
 		// clear the scaled directories
 		for (Directory d: dirs) {
@@ -226,7 +214,7 @@ public class DocuDirectory extends Directory {
 		}
 		// update number of cached files if this was the first time
 		if (dirMTime == 0) {
-			cache.numImgFiles.addAndGet(size(FileClass.IMAGE));
+			cache.numFiles.addAndGet(size());
 		}
 		dirMTime = dir.lastModified();
 		// read metadata as well
@@ -279,41 +267,41 @@ public class DocuDirectory extends Directory {
 		return t;
 	}
 
-	/**
-	 * Searches for the file with the name <code>fn</code>.
-	 * 
-	 * Searches the directory for the file with the name <code>fn</code> and
-	 * returns its index. Returns -1 if the file cannot be found.
-	 * 
-	 * @param fn
-	 *            filename
-	 * @param fc
-	 *            file class
-	 * @return int index of file <code>fn</code>
-	 */
-	public int indexOf(String fn) {
-		FileClass fc = FileOps.classForFilename(fn);
-		return indexOf(fn, fc);
+    /**
+     * Searches for the file with the name <code>fn</code> and class fc.
+     * 
+     * Searches the directory for the file with the name <code>fn</code> and
+     * returns its index. Returns -1 if the file cannot be found.
+     * 
+     * @param fn
+     *            filename
+     * @return int index of file <code>fn</code>
+     * @deprecated Use {@link #indexOf(String fn)} instead.
+     */
+	public int indexOf(String fn, FileClass fc) {
+		return indexOf(fn);
 	}
 
-	/**
-	 * Searches for the file with the name <code>fn</code> and class fc.
-	 * 
-	 * Searches the directory for the file with the name <code>fn</code> and
-	 * returns its index. Returns -1 if the file cannot be found.
-	 * 
-	 * @param fn
-	 *            filename
-	 * @return int index of file <code>fn</code>
-	 */
-	public int indexOf(String fn, FileClass fc) {
+    /**
+     * Searches for the file with the name <code>fn</code>.
+     * 
+     * Searches the directory for the file with the name <code>fn</code> and
+     * returns its index. Returns -1 if the file cannot be found.
+     * 
+     * @param fn
+     *            filename
+     * @param fc
+     *            file class
+     * @return int index of file <code>fn</code>
+     */
+	public int indexOf(String fn) {
 		if (!isRead()) {
 			// read directory now
 			if (!readDir()) {
 				return -1;
 			}
 		}
-		List<DocuDirent> fileList = list.get(fc.ordinal());
+		List<DocuDirent> fileList = list;
 		// empty directory?
 		if (fileList == null) {
 			return -1;
@@ -348,7 +336,7 @@ public class DocuDirectory extends Directory {
 
 	private boolean isBasenameInList(List<DocuDirent> fileList, int idx, String fn) {
 		String dfn = FileOps.basename((fileList.get(idx)).getName());
-		return (dfn.equals(fn)||dfn.equals(FileOps.basename(fn))); 
+		return (dfn.equals(fn) || dfn.equals(FileOps.basename(fn))); 
 	}
 	
 	
@@ -363,10 +351,9 @@ public class DocuDirectory extends Directory {
 	 * @return DocuDirent
 	 */
 	public DocuDirent find(String fn) {
-		FileClass fc = FileOps.classForFilename(fn);
-		int i = indexOf(fn, fc);
+		int i = indexOf(fn);
 		if (i >= 0) {
-			return list.get(0).get(i);
+			return list.get(i);
 		}
 		return null;
 	}
@@ -383,11 +370,7 @@ public class DocuDirectory extends Directory {
 	 * @return DocuDirent
 	 */
 	public DocuDirent find(String fn, FileClass fc) {
-		int i = indexOf(fn, fc);
-		if (i >= 0) {
-			return list.get(fc.ordinal()).get(i);
-		}
-		return null;
+		return find(fn);
 	}
 
 	/**

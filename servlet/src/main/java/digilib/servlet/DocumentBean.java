@@ -90,8 +90,7 @@ public class DocumentBean {
 		// get our ServletContext
 		ServletContext context = conf.getServletContext();
 		// see if there is a Configuration instance
-		dlConfig = (DigilibServletConfiguration) context
-				.getAttribute("digilib.servlet.configuration");
+		dlConfig = DigilibServletConfiguration.getCurrentConfig(context);
 		if (dlConfig == null) {
 			// create new Configuration
 			throw new ServletException("ERROR: No configuration!");
@@ -186,8 +185,7 @@ public class DocumentBean {
 		}
 		String fn = dlRequest.getFilePath();
 		// get information about the file
-		ImageSet fileset = (ImageSet) dirCache.getFile(fn, dlRequest
-				.getAsInt("pn"), FileClass.IMAGE);
+		ImageSet fileset = (ImageSet) dirCache.getFile(fn, dlRequest.getAsInt("pn"));
 		if (fileset == null) {
 			return;
 		}
@@ -200,7 +198,7 @@ public class DocumentBean {
 		DocuDirectory dd = dirCache.getDirectory(fn);
 		if (dd != null) {
 			// add pt
-			dlRequest.setValue("pt", dd.size(FileClass.IMAGE));
+			dlRequest.setValue("pt", dd.size());
 		}
 		// get original pixel size
 		ImageInput origfile = fileset.getBiggest();
@@ -232,20 +230,20 @@ public class DocumentBean {
      * get the number of image pages/files in the directory
      */
     public int getNumPages(DigilibServletRequest request) throws Exception {
-        return getNumPages(request, FileClass.IMAGE);
+        logger.debug("getNumPages");
+        DocuDirectory dd = (dirCache != null) ? dirCache.getDirectory(request
+                .getFilePath()) : null;
+        if (dd != null) {
+            return dd.size();
+        }
+        return 0;
     }
 
 	/**
 	 * get the number of pages/files of type fc in the directory
 	 */
 	public int getNumPages(DigilibServletRequest request, FileClass fc) throws Exception {
-		logger.debug("getNumPages");
-		DocuDirectory dd = (dirCache != null) ? dirCache.getDirectory(request
-				.getFilePath()) : null;
-		if (dd != null) {
-			return dd.size(fc);
-		}
-		return 0;
+        return getNumPages(request);
 	}
 
 	/**

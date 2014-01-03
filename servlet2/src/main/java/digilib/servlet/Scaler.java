@@ -61,7 +61,7 @@ public class Scaler extends HttpServlet {
     private static final long serialVersionUID = -5439198888139362735L;
 
     /** digilib servlet version (for all components) */
-    public static final String version = "2.2.0 noasync";
+    public static final String version = "2.3.0 noasync";
 
     /** servlet error codes */
     public static enum Error {
@@ -127,7 +127,7 @@ public class Scaler extends HttpServlet {
         // get our ServletContext
         ServletContext context = config.getServletContext();
         // see if there is a Configuration instance
-        dlConfig = (DigilibServletConfiguration) context.getAttribute("digilib.servlet.configuration");
+        dlConfig = DigilibServletConfiguration.getCurrentConfig(context);
         if (dlConfig == null) {
             // no Configuration
             throw new ServletException("No Configuration!");

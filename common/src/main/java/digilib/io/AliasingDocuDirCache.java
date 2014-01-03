@@ -44,15 +44,15 @@ public class AliasingDocuDirCache extends DocuDirCache {
 
 	/**
 	 * @param baseDirs
-	 * @param fcs
+	 * @param fc
 	 * @param confFileName
 	 * @throws FileOpException
 	 */
-	public AliasingDocuDirCache(String[] baseDirs, FileClass[] fcs,
+	public AliasingDocuDirCache(String[] baseDirs, FileClass fc,
 			File confFile, DigilibConfiguration dlConfig)
 			throws FileOpException {
 		// create standard DocuDirCache
-		super(baseDirs, fcs, dlConfig);
+		super(baseDirs, fc, dlConfig);
 		Map<String,String> pathMap = null;
 		// read alias config file
 		try {

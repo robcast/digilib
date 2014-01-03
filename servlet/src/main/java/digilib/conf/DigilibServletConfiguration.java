@@ -83,7 +83,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
     public final Long webappStartTime = System.currentTimeMillis();
 
     public static String getVersion() {
-        return "2.2.0 srv";
+        return "2.3.0 srv";
     }
     
     /**
@@ -271,16 +271,15 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         try {
             // directory cache
             String[] bd = (String[]) config.getValue("basedir-list");
-            FileClass[] fcs = { FileClass.IMAGE, FileClass.TEXT };
             DocuDirCache dirCache;
             if (config.getAsBoolean("use-mapping")) {
                 // with mapping file
                 File mapConf = ServletOps.getConfigFile((File) config.getValue("mapping-file"), context);
-                dirCache = new AliasingDocuDirCache(bd, fcs, mapConf, config);
+                dirCache = new AliasingDocuDirCache(bd, FileClass.IMAGE, mapConf, config);
                 config.setValue("mapping-file", mapConf);
             } else {
                 // without mapping
-                dirCache = new DocuDirCache(bd, fcs, this);
+                dirCache = new DocuDirCache(bd, FileClass.IMAGE, this);
             }
             config.setValue(DIR_CACHE_KEY, dirCache);
             // useAuthentication
@@ -302,7 +301,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
             /*
              * set as the servlets main config
              */
-            context.setAttribute(SERVLET_CONFIG_KEY, this);
+            setCurrentConfig(context);
         } catch (Exception e) {
             logger.error("Error configuring digilib servlet:", e);
         }
@@ -351,6 +350,15 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         }
     }
 
+
+    /**
+     * Sets the current DigilibConfiguration in the context. 
+     * @param context
+     */
+    public void setCurrentConfig(ServletContext context) {
+        context.setAttribute(DigilibServletConfiguration.SERVLET_CONFIG_KEY, this);
+    }
+    
     /**
      * Returns the current DigilibConfiguration from the context.
      * 
@@ -358,7 +366,8 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
      * @return
      */
     public static DigilibServletConfiguration getCurrentConfig(ServletContext context) {
-        DigilibServletConfiguration config = (DigilibServletConfiguration) context.getAttribute(DigilibServletConfiguration.SERVLET_CONFIG_KEY);
+        DigilibServletConfiguration config = (DigilibServletConfiguration) context
+                .getAttribute(DigilibServletConfiguration.SERVLET_CONFIG_KEY);
         return config;
     }
 

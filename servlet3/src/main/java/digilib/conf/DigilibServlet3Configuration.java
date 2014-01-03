@@ -42,7 +42,7 @@ import digilib.servlet.AsyncServletWorker;
 public class DigilibServlet3Configuration extends DigilibServletConfiguration {
 
     public static String getVersion() {
-        return "2.2.1 async";
+        return "2.3.0 async";
     }
 
     /**

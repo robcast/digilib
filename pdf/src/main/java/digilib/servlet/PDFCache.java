@@ -60,7 +60,7 @@ import digilib.util.DigilibJobCenter;
 @SuppressWarnings("serial")
 public class PDFCache extends HttpServlet {
 
-    public static String version = "2.2.0";
+    public static String version = PDFServletConfiguration.getVersion();
 
     /** logger for accounting requests */
     protected static Logger accountlog = Logger.getLogger("account.pdf.request");
@@ -110,16 +110,16 @@ public class PDFCache extends HttpServlet {
             // no Configuration
             throw new ServletException("No Configuration!");
         }
-        workDir = dlConfig.getAsFile(PDFServletConfiguration.PDFWORKDIR_KEY);
-        cacheDir = dlConfig.getAsFile(PDFServletConfiguration.PDFCACHEDIR_KEY);
+        workDir = dlConfig.getAsFile(PDFServletConfiguration.PDF_WORKDIR_KEY);
+        cacheDir = dlConfig.getAsFile(PDFServletConfiguration.PDF_CACHEDIR_KEY);
         if (!workDir.isDirectory()) {
             throw new ServletException("Configuration error: problem with pdf-temp-dir=" + workDir);
         }
         if (!cacheDir.isDirectory()) {
             throw new ServletException("Configuration error: problem with pdf-cache-dir=" + cacheDir);
         }
-        pdfJobCenter = (DigilibJobCenter<File>) dlConfig.getValue(PDFServletConfiguration.PDFEXECUTOR_KEY);
-        pdfImageJobCenter = (DigilibJobCenter<DocuImage>) dlConfig.getValue(PDFServletConfiguration.PDFIMAGEEXECUTOR_KEY);
+        pdfJobCenter = (DigilibJobCenter<File>) dlConfig.getValue(PDFServletConfiguration.PDF_EXECUTOR_KEY);
+        pdfImageJobCenter = (DigilibJobCenter<DocuImage>) dlConfig.getValue(PDFServletConfiguration.PDF_IMAGEEXECUTOR_KEY);
         // register this instance globally
         context.setAttribute(instanceKey, this);
     }

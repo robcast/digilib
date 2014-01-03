@@ -10,6 +10,12 @@
         <servlet-name>Texter</servlet-name>
         <servlet-class>digilib.servlet.Texter</servlet-class>
     </servlet>
+    <!-- The Intialisation Listener -->
+    <listener>
+        <listener-class>
+            digilib.conf.TextServletConfiguration
+        </listener-class>
+    </listener>
     <!-- The mapping for the Texter servlet -->
     <servlet-mapping>
         <servlet-name>Texter</servlet-name>
@@ -25,6 +31,12 @@
         <servlet-name>PDFCache</servlet-name>
         <servlet-class>digilib.servlet.PDFCache</servlet-class>
     </servlet>
+    <!-- The Intialisation Listener -->
+    <listener>
+        <listener-class>
+            digilib.conf.PDFServletConfiguration
+        </listener-class>
+    </listener>
     <!-- The mapping for the PDFCache servlet -->
     <servlet-mapping>
         <servlet-name>PDFCache</servlet-name>

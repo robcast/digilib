@@ -40,6 +40,10 @@ import digilib.io.FileOps.FileClass;
  * @author casties
  *
  */
+/**
+ * @author casties
+ *
+ */
 public class IndexMetaDirMeta implements DirMeta {
     /** Log4J logger */
     protected static Logger logger = Logger.getLogger(IndexMetaDirMeta.class);
@@ -119,29 +123,26 @@ public class IndexMetaDirMeta implements DirMeta {
     protected void readFileMeta(DocuDirectory dir, Map<String,MetadataMap> fileMeta, String relPath) {
         String path = (relPath != null) ? (relPath + "/") : "";
         // go through all file classes
-        for (FileClass fc: dir.getCache().getFileClasses()) {
-            int ds = dir.size(fc);
-            if (ds == 0) {
-                continue;
-            }
-            // iterate through the list of files in this directory
-            for (int i = 0; i < ds; ++i) {
-                DocuDirent f = dir.get(i, fc);
-                // prepend path to the filename
-                String fn = path + f.getName();
-                // look up meta for this file and remove from dir
-                MetadataMap meta = fileMeta.remove(fn);
-                if (meta != null) {
-                    // store meta in file
-                    f.getMeta().setFileMeta(meta);
-                }
+        int ds = dir.size();
+        if (ds == 0) {
+            return;
+        }
+        // iterate through the list of files in this directory
+        for (int i = 0; i < ds; ++i) {
+            DocuDirent f = dir.get(i);
+            // prepend path to the filename
+            String fn = path + f.getName();
+            // look up meta for this file and remove from dir
+            MetadataMap meta = fileMeta.remove(fn);
+            if (meta != null) {
+                // store meta in file
+                f.getMeta().setFileMeta(meta);
             }
         }
     }
 
-    /**
-     * Checks metadata
-     *  
+    /* (non-Javadoc)
+     * @see digilib.meta.DirMeta#checkMeta(digilib.io.DocuDirectory)
      */
     public void checkMeta(DocuDirectory dir) {
         if (metaChecked) {
@@ -151,27 +152,30 @@ public class IndexMetaDirMeta implements DirMeta {
         }
     }
 
-    /**
-     * @return Hashtable
+    /* (non-Javadoc)
+     * @see digilib.meta.DirMeta#getDirMeta()
      */
     public MetadataMap getDirMeta() {
         return dirMeta;
     }
 
-    /**
-     * Sets the dirMeta.
-     * 
-     * @param dirMeta
-     *            The dirMeta to set
+    /* (non-Javadoc)
+     * @see digilib.meta.DirMeta#setDirMeta(digilib.meta.MetadataMap)
      */
     public void setDirMeta(MetadataMap dirMeta) {
         this.dirMeta = dirMeta;
     }
 
+    /**
+     * @return
+     */
     protected boolean hasUnresolvedFileMeta() {
         return (this.unresolvedFileMeta != null);
     }
 
+    /**
+     * @return
+     */
     protected Map<String, MetadataMap> getUnresolvedFileMeta() {
         return this.unresolvedFileMeta;
     }

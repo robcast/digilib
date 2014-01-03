@@ -48,14 +48,14 @@ import digilib.util.DigilibJobCenter;
  */
 public class PDFServletConfiguration extends DigilibServletConfiguration {
 
-    public static final String PDFSERVLET_CONFIG_KEY = "digilib.pdfservlet.configuration";
-    public static final String PDFIMAGEEXECUTOR_KEY = "pdfservlet.worker.pdfimageexecutor";
-    public static final String PDFEXECUTOR_KEY = "pdfservlet.worker.pdfexecutor";
-    public static final String PDFWORKDIR_KEY = "pdfservlet.work.dir";
-    public static final String PDFCACHEDIR_KEY = "pdfservlet.cache.dir";
+    public static final String PDF_SERVLET_CONFIG_KEY = "digilib.pdf.servlet.configuration";
+    public static final String PDF_IMAGEEXECUTOR_KEY = "pdf.servlet.worker.imageexecutor";
+    public static final String PDF_EXECUTOR_KEY = "pdf.servlet.worker.pdfexecutor";
+    public static final String PDF_WORKDIR_KEY = "pdf.servlet.work.dir";
+    public static final String PDF_CACHEDIR_KEY = "pdf.servlet.cache.dir";
 
-    public String getVersion() {
-        return "2.2.0 pdf";
+    public static String getVersion() {
+        return "2.3.0 pdf";
     }
 
     /**
@@ -69,13 +69,13 @@ public class PDFServletConfiguration extends DigilibServletConfiguration {
          */
 
         // Executor for PDF operations
-        newParameter(PDFEXECUTOR_KEY, null, null, 's');
+        newParameter(PDF_EXECUTOR_KEY, null, null, 's');
         // Executor for PDF-image operations
-        newParameter(PDFIMAGEEXECUTOR_KEY, null, null, 's');
+        newParameter(PDF_IMAGEEXECUTOR_KEY, null, null, 's');
         // working directory for PDF generation
-        newParameter(PDFWORKDIR_KEY, null, null, 's');
+        newParameter(PDF_WORKDIR_KEY, null, null, 's');
         // cache directory for PDF files
-        newParameter(PDFCACHEDIR_KEY, null, null, 's');
+        newParameter(PDF_CACHEDIR_KEY, null, null, 's');
 
         /*
          * parameters that can be read from config file have a type 'f'
@@ -115,12 +115,12 @@ public class PDFServletConfiguration extends DigilibServletConfiguration {
         int pnt = config.getAsInt("pdf-worker-threads");
         int pmt = config.getAsInt("pdf-max-waiting-threads");
         DigilibJobCenter<OutputStream> pdfExecutor = new DigilibJobCenter<OutputStream>(pnt, pmt, false, "servlet.worker.pdfexecutor");
-        config.setValue(PDFEXECUTOR_KEY, pdfExecutor);
+        config.setValue(PDF_EXECUTOR_KEY, pdfExecutor);
         // PDF image worker threads
         int pint = config.getAsInt("pdf-image-worker-threads");
         int pimt = config.getAsInt("pdf-image-max-waiting-threads");
         DigilibJobCenter<DocuImage> pdfImageExecutor = new DigilibJobCenter<DocuImage>(pint, pimt, false, "servlet.worker.pdfimageexecutor");
-        config.setValue(PDFIMAGEEXECUTOR_KEY, pdfImageExecutor);
+        config.setValue(PDF_IMAGEEXECUTOR_KEY, pdfImageExecutor);
         /*
          * set up temporary directories
          */
@@ -133,19 +133,19 @@ public class PDFServletConfiguration extends DigilibServletConfiguration {
             // rid the temporary directory of possible incomplete document files
             FileOps.emptyDirectory(temp_directory);
         }
-        config.setValue(PDFWORKDIR_KEY, temp_directory);
+        config.setValue(PDF_WORKDIR_KEY, temp_directory);
         String cache_fn = config.getAsString("pdf-cache-dir");
         File cache_directory = new File(cache_fn);
         if (!cache_directory.exists()) {
             // try to create
             cache_directory.mkdirs();
         }
-        config.setValue(PDFCACHEDIR_KEY, cache_directory);
+        config.setValue(PDF_CACHEDIR_KEY, cache_directory);
 
         /*
          * set as the PDF servlets main config
          */
-        context.setAttribute(PDFSERVLET_CONFIG_KEY, this);
+        context.setAttribute(PDF_SERVLET_CONFIG_KEY, this);
     }
 
     /**
@@ -194,7 +194,7 @@ public class PDFServletConfiguration extends DigilibServletConfiguration {
         ServletContext context = sce.getServletContext();
         DigilibServletConfiguration config = PDFServletConfiguration.getCurrentConfig(context);
         @SuppressWarnings("unchecked")
-        DigilibJobCenter<DocuImage>  pdfExecutor = (DigilibJobCenter<DocuImage>) config.getValue(PDFEXECUTOR_KEY);
+        DigilibJobCenter<DocuImage>  pdfExecutor = (DigilibJobCenter<DocuImage>) config.getValue(PDF_EXECUTOR_KEY);
         if (pdfExecutor  != null) {
             // shut down pdf thread pool
             List<Runnable> rj = pdfExecutor.shutdownNow();
@@ -204,7 +204,7 @@ public class PDFServletConfiguration extends DigilibServletConfiguration {
             }
         }
         @SuppressWarnings("unchecked")
-        DigilibJobCenter<DocuImage>  pdfImageExecutor = (DigilibJobCenter<DocuImage>) config.getValue(PDFIMAGEEXECUTOR_KEY);
+        DigilibJobCenter<DocuImage>  pdfImageExecutor = (DigilibJobCenter<DocuImage>) config.getValue(PDF_IMAGEEXECUTOR_KEY);
         if (pdfImageExecutor != null) {
             // shut down pdf image thread pool
             List<Runnable> rj = pdfImageExecutor.shutdownNow();
@@ -222,7 +222,8 @@ public class PDFServletConfiguration extends DigilibServletConfiguration {
      * @return
      */
     public static DigilibServletConfiguration getCurrentConfig(ServletContext context) {
-        DigilibServletConfiguration config = (DigilibServletConfiguration) context.getAttribute(PDFServletConfiguration.PDFSERVLET_CONFIG_KEY);
+        DigilibServletConfiguration config = (DigilibServletConfiguration) context
+                .getAttribute(PDFServletConfiguration.PDF_SERVLET_CONFIG_KEY);
         return config;
     }
 

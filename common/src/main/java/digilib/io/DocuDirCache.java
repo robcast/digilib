@@ -53,11 +53,11 @@ public class DocuDirCache {
 	/** names of base directories */
 	protected String[] baseDirNames = null;
 
-	/** array of allowed file classes (image/text) */
-	protected FileClass[] fileClasses = null;
+	/** allowed file class (image/text) */
+	protected FileClass fileClass = null;
 
 	/** number of files in the whole cache (approximate) */
-	protected AtomicInteger numImgFiles = new AtomicInteger(0);
+	protected AtomicInteger numFiles = new AtomicInteger(0);
 
 	/** number of cache hits */
 	protected AtomicInteger hits = new AtomicInteger(0);
@@ -65,19 +65,18 @@ public class DocuDirCache {
 	/** number of cache misses */
 	protected AtomicInteger misses = new AtomicInteger(0);
 
-	/** the root directory element */
-	public static Directory ROOT = null;
-
 	/**
-	 * Constructor with array of base directory names and file classes.
+	 * Constructor with array of base directory names and file class.
 	 * 
 	 * @param bd
 	 *            base directory names
+     * @param fc
+     * @param dlConfig
 	 */
-	public DocuDirCache(String[] bd, FileClass[] fcs,
+	public DocuDirCache(String[] bd, FileClass fc,
 			DigilibConfiguration dlConfig) {
 		baseDirNames = bd;
-		this.fileClasses = fcs;
+		this.fileClass = fc;
 	}
 
 	/**
@@ -89,7 +88,7 @@ public class DocuDirCache {
 	public DocuDirCache(String[] bd) {
 		baseDirNames = bd;
 		// default file class is CLASS_IMAGE
-		fileClasses = new FileClass[] { FileClass.IMAGE };
+		fileClass = FileClass.IMAGE;
 	}
 
 	/**
@@ -117,7 +116,7 @@ public class DocuDirCache {
 			logger.warn("Duplicate key in DocuDirCache.put -- ignoring!");
 			return olddir;
 		}
-		numImgFiles.addAndGet(newdir.size(FileClass.IMAGE));
+		numFiles.addAndGet(newdir.size());
 		return newdir;
 	}
 
@@ -176,7 +175,27 @@ public class DocuDirCache {
 		return l;
 	}
 
-	/**
+    /**
+     * Returns the DocuDirent with the pathname <code>fn</code> and the index
+     * <code>in</code>.
+     * 
+     * If <code>fn</code> is a file then the corresponding DocuDirent is
+     * returned and the index is ignored.
+     * 
+     * @param fn
+     *            digilib pathname
+     * @param in
+     *            file index
+     * @param fc
+     *            file class
+     * @return
+     * @deprecated Use {@link #getFile(String fn, int in)} instead.
+     */
+    public DocuDirent getFile(String fn, int in, FileClass fc) {
+        return getFile(fn, in);
+    }
+    
+    /**
 	 * Returns the DocuDirent with the pathname <code>fn</code> and the index
 	 * <code>in</code> and the class <code>fc</code>.
 	 * 
@@ -191,7 +210,7 @@ public class DocuDirCache {
 	 *            file class
 	 * @return
 	 */
-	public DocuDirent getFile(String fn, int in, FileClass fc) {
+	public DocuDirent getFile(String fn, int in) {
 		DocuDirectory dd;
 		// file number is 1-based, vector index is 0-based
 		int n = in - 1;
@@ -215,8 +234,7 @@ public class DocuDirCache {
 				/*
 				 * maybe it's a file
 				 */
-				// get the parent directory string (like we store it in the
-				// cache)
+				// get the parent directory string (like we store it in the cache)
 				String d = FileOps.parent(fn);
 				// try it in the cache
                 // logger.debug(fn + " is a file in dir " + d);
@@ -237,7 +255,7 @@ public class DocuDirCache {
 					misses.decrementAndGet();
 				}
 				// get the file's index
-				n = dd.indexOf(f.getName(), fc);
+				n = dd.indexOf(f.getName());
 			}
 		} else {
 			// cache hit
@@ -246,7 +264,7 @@ public class DocuDirCache {
 		dd.refresh();
 		if (dd.isValid()) {
 			try {
-				return dd.get(n, fc);
+				return dd.get(n);
 			} catch (IndexOutOfBoundsException e) {
                 // logger.debug(fn + " not found in directory");
 			}
@@ -334,7 +352,7 @@ public class DocuDirCache {
      * @return long
      */
     public int getNumFiles() {
-        return numImgFiles.get();
+        return numFiles.get();
     }
 
 	/**
@@ -354,15 +372,15 @@ public class DocuDirCache {
 	/**
 	 * @return
 	 */
-	public FileClass[] getFileClasses() {
-		return fileClasses;
+	public FileClass getFileClass() {
+		return fileClass;
 	}
 
 	/**
 	 * @param fileClasses
 	 */
-	public void setFileClasses(FileClass[] fileClasses) {
-		this.fileClasses = fileClasses;
+	public void setFileClass(FileClass fileClass) {
+		this.fileClass = fileClass;
 	}
 
 }
