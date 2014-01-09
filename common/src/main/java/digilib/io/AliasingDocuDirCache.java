@@ -76,7 +76,7 @@ public class AliasingDocuDirCache extends DocuDirCache {
 				logger.error("Key mismatch in mapping file!");
 				break;	
 			}
-			DocuDirectory destDir = new DocuDirectory(linkdir.getValue(), this);
+			DocuDirectory destDir = DocuDirectoryFactory.getDocuDirectoryInstance(linkdir.getValue(), this);
 			if (destDir.isValid()) {
 				logger.debug("Aliasing dir: " + linkdir.getKey());
 				// add the alias name

@@ -44,6 +44,8 @@ import digilib.auth.AuthOpsFactory;
 import digilib.image.DocuImage;
 import digilib.io.AliasingDocuDirCache;
 import digilib.io.DocuDirCache;
+import digilib.io.DocuDirectory;
+import digilib.io.DocuDirectoryFactory;
 import digilib.io.FileOps;
 import digilib.io.FileOps.FileClass;
 import digilib.meta.DirMeta;
@@ -109,6 +111,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         newParameter("servlet.filemeta.class", null, null, 's');
         newParameter("servlet.dirmeta.class", null, null, 's');
         newParameter("servlet.authops.class", null, null, 's');
+        newParameter("servlet.docudirectory.class", null, null, 's');
         newParameter("servlet.version", DigilibServletConfiguration.getVersion(), null, 's');
 
         /*
@@ -146,6 +149,8 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         newParameter("dirmeta-class", "digilib.meta.IndexMetaDirMeta", null, 'f');
         // AuthOps implementation
         newParameter("authops-class", "digilib.auth.PathServletAuthOps", null, 'f');
+        // DocuDirectory implementation
+        newParameter("docudirectory-class", "digilib.io.BaseDirDocuDirectory", null, 'f');
 
     }
 
@@ -256,6 +261,14 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
             AuthOpsFactory.setAuthOpsClass(authOpsClass);
         } catch (ClassNotFoundException e) {
             logger.error("Error setting AuthOps class!");
+        }
+        try {
+            // initialise DocuDirectoryFactory
+            Class<DocuDirectory> docuDirectoryClass = (Class<DocuDirectory>) Class.forName(config.getAsString("docudirectory-class"));
+            config.setValue("servlet.docudirectory.class", docuDirectoryClass);
+            DocuDirectoryFactory.setDocuDirectoryClass(docuDirectoryClass);
+        } catch (ClassNotFoundException e) {
+            logger.error("Error setting DocuDirectory class!");
         }
         /*
          * configure singletons

@@ -25,6 +25,8 @@ package digilib.conf;
  * Author: Robert Casties (robcast@berlios.de)
  */
 
+import java.util.Iterator;
+
 import javax.imageio.ImageIO;
 
 import org.apache.log4j.BasicConfigurator;
@@ -78,7 +80,7 @@ public class DigilibConfiguration extends ParameterMap {
         newParameter("img-diskcache-allowed", Boolean.TRUE, null, 'f');
         // default type of error message (image, text, code)
         newParameter("default-errmsg-type", "image", null, 'f');
-        // prefix for IIIF image API paths
+        // prefix for IIIF image API paths (used by DigilibRequest)
         newParameter("iiif-prefix", "IIIF", null, 'f');
     }
 
@@ -104,8 +106,18 @@ public class DigilibConfiguration extends ParameterMap {
             Class<DocuImage> docuImageClass = (Class<DocuImage>) Class.forName(config.getAsString("docuimage-class"));
             DocuImageFactory.setDocuImageClass(docuImageClass);
             // DocuImage class instance
+            DocuImage di = DocuImageFactory.getInstance();
             config.newParameter("servlet.docuimage.class", docuImageClass, null, 's');
-            config.newParameter("servlet.docuimage.version", DocuImageFactory.getInstance().getVersion(), null, 's');
+            config.newParameter("servlet.docuimage.version", di.getVersion(), null, 's');
+            logger.debug("DocuImage ("+docuImageClass+") "+di.getVersion()); 
+            // log supported formats
+            StringBuilder fmts = new StringBuilder();
+            Iterator<String> dlfs = di.getSupportedFormats();
+            for (String f = dlfs.next(); dlfs.hasNext(); f = dlfs.next()) {
+                fmts.append(f);
+                fmts.append(", ");
+            }
+            logger.debug("DocuImage supported image formats: "+fmts);
         } catch (ClassNotFoundException e) {
             logger.error("Error setting DocuImage class!");
         }

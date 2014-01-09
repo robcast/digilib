@@ -28,8 +28,6 @@ package digilib.io;
  */
 
 import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -138,41 +136,13 @@ public class DocuDirCache {
 				DocuDirectory pd = map.get(parent);
 				if (pd == null) {
 					// the parent is unknown
-					pd = new DocuDirectory(parent, this);
+					pd = DocuDirectoryFactory.getDocuDirectoryInstance(parent, this);
 					pd = putDir(pd);
 				}
 				newDir.setParent(pd);
 			}
 		}
 		return dd;
-	}
-
-	/**
-	 * Get a list with all children of a directory.
-	 * 
-	 * Returns a List of DocuDirectory's. Returns an empty List if the directory
-	 * has no children. If recurse is false then only direct children are
-	 * returned.
-	 * 
-	 * @param dirname
-	 * @param recurse
-	 *            find all children and their children.
-	 * @return
-	 */
-	public List<DocuDirectory> getChildren(String dirname, boolean recurse) {
-		List<DocuDirectory> l = new LinkedList<DocuDirectory>();
-		for (DocuDirectory dd: map.values()) {
-			if (recurse) {
-				if (dd.getDirName().startsWith(dirname)) {
-					l.add(dd);
-				}
-			} else {
-				if (FileOps.parent(dd.getDirName()).equals(dirname)) {
-					l.add(dd);
-				}
-			}
-		}
-		return l;
 	}
 
     /**
@@ -225,7 +195,7 @@ public class DocuDirCache {
 			File f = new File(baseDirNames[0], fn);
 			if (f.isDirectory()) {
                 // logger.debug(fn + " is a dir");
-				dd = new DocuDirectory(fn, this);
+				dd = DocuDirectoryFactory.getDocuDirectoryInstance(fn, this);
 				if (dd.isValid()) {
 					// add to the cache
 					dd = putDir(dd);
@@ -241,7 +211,7 @@ public class DocuDirCache {
 				dd = map.get(d);
 				if (dd == null) {
 					// try to read from disk
-					dd = new DocuDirectory(d, this);
+					dd = DocuDirectoryFactory.getDocuDirectoryInstance(d, this);
 					if (dd.isValid()) {
 						// add to the cache
                         // logger.debug(dd + " is valid");
@@ -291,7 +261,7 @@ public class DocuDirCache {
 			// see if it's a directory
 			File f = new File(baseDirNames[0], fn);
 			if (f.isDirectory()) {
-				dd = new DocuDirectory(fn, this);
+				dd = DocuDirectoryFactory.getDocuDirectoryInstance(fn, this);
 				if (dd.isValid()) {
 					// add to the cache
 					dd = putDir(dd);
@@ -303,7 +273,7 @@ public class DocuDirCache {
 					dd = map.get(f.getParent());
 					if (dd == null) {
 						// try to read from disk
-						dd = new DocuDirectory(f.getParent(), this);
+						dd = DocuDirectoryFactory.getDocuDirectoryInstance(f.getParent(), this);
 						if (dd.isValid()) {
 							// add to the cache
 							dd = putDir(dd);

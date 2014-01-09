@@ -33,6 +33,8 @@ import java.util.ListIterator;
 import digilib.util.ImageSize;
 
 /**
+ * Set of ImageInputs of the same image in different resolutions.
+ * 
  * @author casties
  */
 public class ImageSet {

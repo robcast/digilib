@@ -39,34 +39,28 @@ import digilib.meta.MetaFactory;
 /**
  * @author casties
  */
-public class DocuDirectory extends Directory {
+public abstract class DocuDirectory extends Directory {
 
 	/** list of files (DocuDirent) */
-	private List<DocuDirent> list = null;
+	protected List<DocuDirent> list = null;
 
 	/** directory object is valid (exists on disk) */
-	private boolean isValid = false;
-
-	/** reference of the parent DocuDirCache */
-	private DocuDirCache cache = null;
+	protected boolean isValid = false;
 
 	/** directory name (digilib canonical form) */
-	private String dirName = null;
-
-	/** array of parallel dirs for scaled images */
-	private Directory[] dirs = null;
+	protected String dirName = null;
 
 	/** directory metadata */
 	protected DirMeta meta = null;
 
 	/** time of last access of this object (not the filesystem) */
-	private long objectATime = 0;
+	protected long objectATime = 0;
 
 	/** time directory was last modified on the file system */
-	private long dirMTime = 0;
+	protected long dirMTime = 0;
 
 	/**
-	 * Constructor with digilib directory path and a parent DocuDirCache.
+	 * Configure object with digilib directory path and a parent DocuDirCache.
 	 * 
 	 * Directory names at the given path are appended to the base directories
 	 * from the cache. The directory is checked on disk and isValid is set.
@@ -77,16 +71,15 @@ public class DocuDirectory extends Directory {
 	 *            digilib directory path name
 	 * @param cache
 	 *            parent DocuDirCache
+	 * @return 
 	 */
-	public DocuDirectory(String path, DocuDirCache cache) {
+	public void configure(String path, DocuDirCache cache) {
 		this.dirName = path;
-		this.cache = cache;
-		String baseDirName = cache.getBaseDirNames()[0];
 		// clear directory list
 		list = new ArrayList<DocuDirent>();
 		dirMTime = 0;
 		// the first directory has to exist
-		dir = new File(baseDirName, path);
+		dir = new File(path);
 		isValid = dir.isDirectory();
 		meta = MetaFactory.getDirMetaInstance();
 	}
@@ -142,101 +135,14 @@ public class DocuDirectory extends Directory {
 	 * 
 	 * @return boolean the directory exists
 	 */
-	public synchronized boolean readDir() {
-		// check directory first
-		if (!isValid) {
-			return false;
-		}
-		// re-check modification time because the thread may have slept
-		if (dir.lastModified() <= dirMTime) {
-			return true;
-		}
-		// read all filenames
-		logger.debug("reading directory "+this+" = "+dir.getPath());
-		File[] allFiles = null;
-		/*
-		 * using ReadableFileFilter is safer (we won't get directories with file
-		 * extensions) but slower.
-		 */
-		// allFiles = dir.listFiles(new FileOps.ReadableFileFilter());
-		allFiles = dir.listFiles();
-		if (allFiles == null) {
-			// not a directory
-			return false;
-		}
-		// init parallel directories
-		if (dirs == null) {
-			// list of base dirs from the parent cache
-			String[] baseDirNames = cache.getBaseDirNames();
-			// number of base dirs
-			int nb = baseDirNames.length;
-			// array of parallel dirs
-			dirs = new Directory[nb];
-			// first entry is this directory
-			dirs[0] = this;
-			// fill array with the remaining directories
-			for (int j = 1; j < nb; j++) {
-				// add dirName to baseDirName
-				File d = new File(baseDirNames[j], dirName);
-				if (d.isDirectory()) {
-					dirs[j] = new Directory(d);
-					logger.debug("  reading scaled directory " + d.getPath());
-					dirs[j].readDir();
-				}
-			}
-		}
-
-		FileClass fileClass = cache.getFileClass();
-		File[] fileList = FileOps.listFiles(allFiles, FileOps.filterForClass(fileClass));
-		// number of files in the directory
-		int numFiles = fileList.length;
-		if (numFiles > 0) {
-			// create new list
-			ArrayList<DocuDirent> dl = new ArrayList<DocuDirent>(numFiles);
-			list = dl;
-			for (File f : fileList) {
-				DocuDirent df = FileOps.fileForClass(fileClass, f, dirs);
-				df.setParent(this);
-				// add the file to our list
-				dl.add(df);
-			}
-			/*
-			 * we sort the ArrayList (the list of files) for binarySearch to work 
-			 * (DocuDirent's natural sort order is by filename)
-			 */
-			Collections.sort(dl);
-		}
-		// clear the scaled directories
-		for (Directory d: dirs) {
-			if (d != null) {
-				d.clearFilenames();
-			}
-		}
-		// update number of cached files if this was the first time
-		if (dirMTime == 0) {
-			cache.numFiles.addAndGet(size());
-		}
-		dirMTime = dir.lastModified();
-		// read metadata as well
-		readMeta();
-		return isValid;
-	}
+	public abstract boolean readDir();
 
 	/**
 	 * Check to see if the directory has been modified and reread if necessary.
 	 * 
 	 * @return boolean the directory is valid
 	 */
-	public boolean refresh() {
-		if (isValid) {
-			if (dir.lastModified() > dirMTime) {
-				// on-disk modification time is more recent
-				readDir();
-			}
-			touch();
-		}
-		return isValid;
-	}
+	public abstract boolean refresh();
 
 	/**
 	 * Read directory metadata.
@@ -334,12 +240,6 @@ public class DocuDirectory extends Directory {
 		return -1;
 	}
 
-	private boolean isBasenameInList(List<DocuDirent> fileList, int idx, String fn) {
-		String dfn = FileOps.basename((fileList.get(idx)).getName());
-		return (dfn.equals(fn) || dfn.equals(FileOps.basename(fn))); 
-	}
-	
-	
 	/**
 	 * Finds the DocuDirent with the name <code>fn</code>.
 	 * 
@@ -418,11 +318,9 @@ public class DocuDirectory extends Directory {
         return meta;
     }
 
-    /**
-     * @return the cache
-     */
-    public DocuDirCache getCache() {
-        return cache;
+    private boolean isBasenameInList(List<DocuDirent> fileList, int idx, String fn) {
+    	String dfn = FileOps.basename((fileList.get(idx)).getName());
+    	return (dfn.equals(fn) || dfn.equals(FileOps.basename(fn))); 
     }
 
 }
