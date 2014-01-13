@@ -242,6 +242,27 @@ public class FileOps {
 		return "";
 	}
 
+    /**
+     * Extract the file name of a (digilib) path name.
+     * 
+     * Returns the file name of a path name. The file name is the part
+     * after the last slash in the path name. If the path name has no slash the
+     * original string is returned.
+     * 
+     * @param fn
+     * @return
+     */
+    public static String filename(String fn) {
+        if (fn == null) {
+            return null;
+        }
+        int i = fn.lastIndexOf('/');
+        if (i >= 0 && i < fn.length()) {
+            return fn.substring(i+1);
+        }
+        return fn;
+    }
+
 	/**
 	 * Normalize a path name.
 	 * 

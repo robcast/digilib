@@ -267,6 +267,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
             Class<DocuDirectory> docuDirectoryClass = (Class<DocuDirectory>) Class.forName(config.getAsString("docudirectory-class"));
             config.setValue("servlet.docudirectory.class", docuDirectoryClass);
             DocuDirectoryFactory.setDocuDirectoryClass(docuDirectoryClass);
+            DocuDirectoryFactory.setDigilibConfig(this);
         } catch (ClassNotFoundException e) {
             logger.error("Error setting DocuDirectory class!");
         }
@@ -283,16 +284,15 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         logger.info("***** Digital Image Library Configuration (version " + getVersion() + ") *****");
         try {
             // directory cache
-            String[] bd = (String[]) config.getValue("basedir-list");
             DocuDirCache dirCache;
             if (config.getAsBoolean("use-mapping")) {
                 // with mapping file
                 File mapConf = ServletOps.getConfigFile((File) config.getValue("mapping-file"), context);
-                dirCache = new AliasingDocuDirCache(bd, FileClass.IMAGE, mapConf, config);
+                dirCache = new AliasingDocuDirCache(FileClass.IMAGE, mapConf, config);
                 config.setValue("mapping-file", mapConf);
             } else {
                 // without mapping
-                dirCache = new DocuDirCache(bd, FileClass.IMAGE, this);
+                dirCache = new DocuDirCache(FileClass.IMAGE, this);
             }
             config.setValue(DIR_CACHE_KEY, dirCache);
             // useAuthentication

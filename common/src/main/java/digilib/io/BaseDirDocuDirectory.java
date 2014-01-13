@@ -29,6 +29,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import digilib.conf.DigilibConfiguration;
 import digilib.io.FileOps.FileClass;
 import digilib.meta.MetaFactory;
 
@@ -43,8 +44,8 @@ public class BaseDirDocuDirectory extends DocuDirectory {
 
     /** array of parallel dirs for scaled images */
     protected Directory[] dirs = null;
-    /** reference of the parent DocuDirCache */
-    protected DocuDirCache cache = null;
+    /** list of base directories */
+    protected String[] baseDirNames = null;
 
     /**
      * Configure object with digilib directory path and a parent DocuDirCache.
@@ -61,12 +62,13 @@ public class BaseDirDocuDirectory extends DocuDirectory {
      * @return 
      */
     @Override
-    public void configure(String path, DocuDirCache cache) {
+    public void configure(String path, FileClass fileClass, DigilibConfiguration dlConfig) {
         this.dirName = path;
-        this.cache = cache;
-        String baseDirName = cache.getBaseDirNames()[0];
+        this.fileClass = fileClass;
+        this.baseDirNames = (String[]) dlConfig.getValue("basedir-list");
+        String baseDirName = baseDirNames[0];
         // clear directory list
-        list = new ArrayList<DocuDirent>();
+        files = new ArrayList<DocuDirent>();
         dirMTime = 0;
         // the first directory has to exist
         dir = new File(baseDirName, path);
@@ -99,8 +101,6 @@ public class BaseDirDocuDirectory extends DocuDirectory {
     	}
     	// init parallel directories
     	if (dirs == null) {
-    		// list of base dirs from the parent cache
-    		String[] baseDirNames = cache.getBaseDirNames();
     		// number of base dirs
     		int nb = baseDirNames.length;
     		// array of parallel dirs
@@ -119,14 +119,13 @@ public class BaseDirDocuDirectory extends DocuDirectory {
     		}
     	}
     
-    	FileClass fileClass = cache.getFileClass();
     	File[] fileList = FileOps.listFiles(allFiles, FileOps.filterForClass(fileClass));
     	// number of files in the directory
     	int numFiles = fileList.length;
     	if (numFiles > 0) {
     		// create new list
     		ArrayList<DocuDirent> dl = new ArrayList<DocuDirent>(numFiles);
-    		list = dl;
+    		files = dl;
     		for (File f : fileList) {
     			DocuDirent df = FileOps.fileForClass(fileClass, f, dirs);
     			df.setParent(this);
@@ -145,25 +144,9 @@ public class BaseDirDocuDirectory extends DocuDirectory {
     			d.clearFilenames();
     		}
     	}
-    	// update number of cached files if this was the first time
-    	if (dirMTime == 0) {
-    		cache.numFiles.addAndGet(size());
-    	}
     	dirMTime = dir.lastModified();
     	// read metadata as well
     	readMeta();
-    	return isValid;
-    }
-
-    @Override
-    public boolean refresh() {
-    	if (isValid) {
-    		if (dir.lastModified() > dirMTime) {
-    			// on-disk modification time is more recent
-    			readDir();
-    		}
-    		touch();
-    	}
     	return isValid;
     }
 

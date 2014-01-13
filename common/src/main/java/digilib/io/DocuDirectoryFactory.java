@@ -25,6 +25,9 @@ package digilib.io;
 
 import org.apache.log4j.Logger;
 
+import digilib.conf.DigilibConfiguration;
+import digilib.io.FileOps.FileClass;
+
 /**
  * Static factory for DocuDirectory implementations.
  * 
@@ -35,6 +38,9 @@ public class DocuDirectoryFactory {
 
     /** Log4J logger */
     protected static Logger logger = Logger.getLogger(DocuDirectoryFactory.class);
+    
+    /** digilib config instance */
+    protected static DigilibConfiguration dlConfig;
 
     /** DocuDirectory implementation class */
     protected static Class<DocuDirectory> docuDirClass;
@@ -54,6 +60,19 @@ public class DocuDirectoryFactory {
     }
 
     /**
+     * Returns a DocuDirectory instance with the given path and FileClass.
+     *  
+     * @param path
+     * @param fileClass
+     * @return
+     */
+    public static DocuDirectory getDocuDirectoryInstance(String path, FileClass fileClass) {
+        DocuDirectory dd = getInstance();
+        dd.configure(path, fileClass, dlConfig);
+        return dd;        
+    }
+    
+    /**
      * Returns a DocuDirectory instance with the given path and DocuDirCache.
      *  
      * @param path
@@ -62,7 +81,7 @@ public class DocuDirectoryFactory {
      */
     public static DocuDirectory getDocuDirectoryInstance(String path, DocuDirCache cache) {
         DocuDirectory dd = getInstance();
-        dd.configure(path, cache);
+        dd.configure(path, null, dlConfig);
         return dd;        
     }
     
@@ -71,6 +90,13 @@ public class DocuDirectoryFactory {
      */
     public static void setDocuDirectoryClass(Class<DocuDirectory> dirMetaClass) {
         DocuDirectoryFactory.docuDirClass = dirMetaClass;
+    }
+
+    /**
+     * @param dlConfig
+     */
+    public static void setDigilibConfig(DigilibConfiguration dlConfig) {
+        DocuDirectoryFactory.dlConfig = dlConfig;
     }
 
 

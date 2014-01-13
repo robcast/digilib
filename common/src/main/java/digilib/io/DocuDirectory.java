@@ -7,7 +7,7 @@ package digilib.io;
  * Digital Image Library servlet components
  * 
  * %%
- * Copyright (C) 2003 - 2013 MPIWG Berlin
+ * Copyright (C) 2003 - 2014 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -32,17 +32,28 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import digilib.conf.DigilibConfiguration;
 import digilib.io.FileOps.FileClass;
 import digilib.meta.DirMeta;
 import digilib.meta.MetaFactory;
 
 /**
+ * Class representing a directory containing (image) files.
+ * 
+ * Files can be access by index or name. All files are of the same FileClass.
+ * The DocuDirectory holds DirMeta. 
+ * 
+ * Subclasses of DocuDirectory can also hold multiple scaled versions of an image file. 
+ * 
  * @author casties
  */
 public abstract class DocuDirectory extends Directory {
 
+    /** type of files in this DocuDirectory */
+    protected FileClass fileClass = FileClass.IMAGE;
+    
 	/** list of files (DocuDirent) */
-	protected List<DocuDirent> list = null;
+	protected List<DocuDirent> files = null;
 
 	/** directory object is valid (exists on disk) */
 	protected boolean isValid = false;
@@ -69,14 +80,17 @@ public abstract class DocuDirectory extends Directory {
 	 * 
 	 * @param path
 	 *            digilib directory path name
-	 * @param cache
-	 *            parent DocuDirCache
+	 * @param fileClass 
+	 *            type of files in this DocuDirectory
+	 * @param dlConfig
+	 *            digilib config
 	 * @return 
 	 */
-	public void configure(String path, DocuDirCache cache) {
+	public void configure(String path, FileClass fileClass, DigilibConfiguration dlConfig) {
 		this.dirName = path;
+		this.fileClass = fileClass;
 		// clear directory list
-		list = new ArrayList<DocuDirent>();
+		files = new ArrayList<DocuDirent>();
 		dirMTime = 0;
 		// the first directory has to exist
 		dir = new File(path);
@@ -88,7 +102,7 @@ public abstract class DocuDirectory extends Directory {
 	 * number of DocuFiles in this directory. 
 	 */
 	public int size() {
-		return (list != null) ? list.size() : 0;
+		return (files != null) ? files.size() : 0;
 	}
 
 	/**
@@ -109,10 +123,10 @@ public abstract class DocuDirectory extends Directory {
 	 * @return
 	 */
 	public DocuDirent get(int index) {
-		if ((list == null) || (index >= list.size())) {
+		if ((files == null) || (index >= files.size())) {
 			return null;
 		}
-		return list.get(index);
+		return files.get(index);
 	}
 
 	/**
@@ -128,6 +142,7 @@ public abstract class DocuDirectory extends Directory {
 	    return get(index);
 	}
 
+
 	/**
 	 * Read the filesystem directory and fill this object.
 	 * 
@@ -137,12 +152,23 @@ public abstract class DocuDirectory extends Directory {
 	 */
 	public abstract boolean readDir();
 
+
 	/**
 	 * Check to see if the directory has been modified and reread if necessary.
 	 * 
 	 * @return boolean the directory is valid
 	 */
-	public abstract boolean refresh();
+    public boolean refresh() {
+        if (isValid) {
+            if (dir.lastModified() > dirMTime) {
+                // on-disk modification time is more recent
+                readDir();
+            }
+            touch();
+        }
+        return isValid;
+    }
+
 
 	/**
 	 * Read directory metadata.
@@ -207,7 +233,7 @@ public abstract class DocuDirectory extends Directory {
 				return -1;
 			}
 		}
-		List<DocuDirent> fileList = list;
+		List<DocuDirent> fileList = files;
 		// empty directory?
 		if (fileList == null) {
 			return -1;
@@ -253,7 +279,7 @@ public abstract class DocuDirectory extends Directory {
 	public DocuDirent find(String fn) {
 		int i = indexOf(fn);
 		if (i >= 0) {
-			return list.get(i);
+			return files.get(i);
 		}
 		return null;
 	}

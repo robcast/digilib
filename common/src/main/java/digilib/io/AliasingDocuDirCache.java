@@ -43,16 +43,15 @@ import digilib.util.XMLListLoader;
 public class AliasingDocuDirCache extends DocuDirCache {
 
 	/**
-	 * @param baseDirs
 	 * @param fc
 	 * @param confFileName
 	 * @throws FileOpException
 	 */
-	public AliasingDocuDirCache(String[] baseDirs, FileClass fc,
+	public AliasingDocuDirCache(FileClass fc,
 			File confFile, DigilibConfiguration dlConfig)
 			throws FileOpException {
 		// create standard DocuDirCache
-		super(baseDirs, fc, dlConfig);
+		super(fc, dlConfig);
 		Map<String,String> pathMap = null;
 		// read alias config file
 		try {
