@@ -189,6 +189,7 @@ public class DocuDirCache {
 			dd = DocuDirectoryFactory.getDocuDirectoryInstance(fn, fileClass);
 			if (dd.isValid()) {
 			    // add to the cache
+			    dd.refresh();
 			    dd = putDir(dd);
 			} else {
 				/*
@@ -205,6 +206,7 @@ public class DocuDirCache {
 					if (dd.isValid()) {
 						// add to the cache
                         // logger.debug(dd + " is valid");
+					    dd.refresh();
 						dd = putDir(dd);
 					} else {
 						// invalid path
@@ -252,6 +254,7 @@ public class DocuDirCache {
 			dd = DocuDirectoryFactory.getDocuDirectoryInstance(fn, fileClass);
 			if (dd.isValid()) {
 			    // add to the cache
+                dd.refresh();
 			    dd = putDir(dd);
 			} else {
 				// try the parent directory in the cache
@@ -262,6 +265,7 @@ public class DocuDirCache {
 					dd = DocuDirectoryFactory.getDocuDirectoryInstance(pn, fileClass);
 					if (dd.isValid()) {
 						// add to the cache
+		                dd.refresh();
 						dd = putDir(dd);
 					} else {
 						// invalid path
