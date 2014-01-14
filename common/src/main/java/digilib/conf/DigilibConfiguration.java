@@ -25,7 +25,11 @@ package digilib.conf;
  * Author: Robert Casties (robcast@berlios.de)
  */
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.Properties;
 
 import javax.imageio.ImageIO;
 
@@ -34,6 +38,7 @@ import org.apache.log4j.Logger;
 
 import digilib.image.DocuImage;
 import digilib.image.DocuImageFactory;
+import digilib.util.Parameter;
 import digilib.util.ParameterMap;
 
 /**
@@ -47,6 +52,8 @@ public class DigilibConfiguration extends ParameterMap {
     protected static Logger logger = Logger.getLogger(DigilibConfiguration.class);
     
     private static boolean isLoggerConfigured = false;
+    
+    protected static String propertiesFileName = "digilib.properties";
 
     /** digilib version */
     public static String getVersion() {
@@ -84,6 +91,44 @@ public class DigilibConfiguration extends ParameterMap {
         newParameter("iiif-prefix", "IIIF", null, 'f');
     }
 
+    /**
+     * read parameters from properties file digilib.properties in class path.
+     */
+    public void readConfig() {
+        Properties props = new Properties();
+        InputStream s = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream(propertiesFileName);
+        if (s != null) {
+            try {
+                props.load(s);
+                s.close();
+                for (Entry<Object, Object> confEntry : props.entrySet()) {
+                    Parameter param = get((String) confEntry.getKey());
+                    if (param != null) {
+                        if (param.getType() == 's') {
+                            // type 's' Parameters are not overwritten.
+                            continue;
+                        }
+                        if (!param.setValueFromString((String) confEntry.getValue())) {
+                            /*
+                             * automatic conversion failed -- try special casesß
+                             */
+                            logger.warn("Unable to parse config parameter: "+param.getName());
+                        }
+                    } else {
+                        // parameter unknown -- just add
+                        newParameter((String) confEntry.getKey(), null, confEntry.getValue(), 'u');
+                    }
+                }
+                // set config file path parameter
+                newParameter("digilib.config.file", Thread.currentThread().getContextClassLoader()
+                        .getResource("digilib.properties").toString(), null, 's');
+            } catch (IOException e) {
+                logger.error("Error reading digilib properties file.", e);
+            }
+        }
+    }
+    
     /**
      * Configure digilib.
      * 

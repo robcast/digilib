@@ -28,9 +28,12 @@ package digilib.conf;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -155,8 +158,9 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
     }
 
     /**
-     * read parameter list from the XML file in init parameter "config-file" or
-     * file digilib-config.xml
+     * read parameter list from the file WEB-INF/digilib-config.xml 
+     * or digilib.properties in class path.
+     * 
      * @throws IOException 
      * @throws SAXException 
      */
@@ -180,55 +184,83 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
             // setup config file list reader
             XMLListLoader lilo = new XMLListLoader("digilib-config", "parameter", "name", "value");
             // read config file into HashMap
-            Map<String, String> confTable = lilo.loadUri(f.toURI());
+            Map<String, String> map = lilo.loadUri(f.toURI());
 
             // set config file path parameter
             setValue("servlet.config.file", f.getCanonicalPath());
 
-            /*
-             * read parameters
-             */
-
-            for (Entry<String, String> confEntry : confTable.entrySet()) {
-                Parameter param = get(confEntry.getKey());
-                if (param != null) {
-                    if (param.getType() == 's') {
-                        // type 's' Parameters are not overwritten.
-                        continue;
-                    }
-                    if (!param.setValueFromString(confEntry.getValue())) {
-                        /*
-                         * automatic conversion failed -- try special cases
-                         */
-
-                        // basedir-list
-                        if (confEntry.getKey().equals("basedir-list")) {
-                            // split list into directories
-                            String[] dirs = FileOps.pathToArray(confEntry.getValue());
-                            for (int j = 0; j < dirs.length; j++) {
-                                // make relative directory paths be inside the webapp
-                                dirs[j] = ServletOps.getFile(dirs[j], c);
-                            }
-                            if (dirs != null) {
-                                param.setValue(dirs);
-                            }
-                        }
-                    }
-                } else {
-                    // parameter unknown -- just add
-                    newParameter(confEntry.getKey(), null, confEntry.getValue(), 'u');
-                }
-            }
+            readConfigEntries(c, map);
         } else {
-            logger.warn("No digilib config file! Using defaults!");
-            // update basedir-list
-            String[] dirs = (String[]) this.getValue("basedir-list");
-            for (int j = 0; j < dirs.length; j++) {
-                // make relative directory paths be inside the webapp
-                dirs[j] = ServletOps.getFile(dirs[j], c);
+            /*
+             * try properties file digilib.properties
+             */
+            Properties props = new Properties();
+            InputStream s = Thread.currentThread().getContextClassLoader()
+                    .getResourceAsStream("digilib.properties");
+            if (s != null) {
+                props.load(s);
+                s.close();
+                // re-pack entries
+                HashMap<String,String> map = new HashMap<String,String>();
+                for (Entry<Object, Object> e : props.entrySet()) {
+                    map.put((String)e.getKey(), (String)e.getValue());
+                }
+                readConfigEntries(c, map);
+                // set config file path parameter
+                setValue("servlet.config.file", Thread.currentThread().getContextClassLoader()
+                        .getResource("digilib.properties").toString());
+            } else {
+                logger.warn("No digilib config file! Using defaults!");
+                // update basedir-list
+                String[] dirs = (String[]) this.getValue("basedir-list");
+                for (int j = 0; j < dirs.length; j++) {
+                    // make relative directory paths be inside the webapp
+                    dirs[j] = ServletOps.getFile(dirs[j], c);
+                }
             }
         }
 
+    }
+
+    /**
+     * @param ctx
+     * @param conf
+     */
+    public void readConfigEntries(ServletContext ctx, Map<String, String> conf) {
+        /*
+         * read parameters
+         */
+
+        for (Entry<String, String> confEntry : conf.entrySet()) {
+            Parameter param = get(confEntry.getKey());
+            if (param != null) {
+                if (param.getType() == 's') {
+                    // type 's' Parameters are not overwritten.
+                    continue;
+                }
+                if (!param.setValueFromString(confEntry.getValue())) {
+                    /*
+                     * automatic conversion failed -- try special cases
+                     */
+
+                    // basedir-list
+                    if (confEntry.getKey().equals("basedir-list")) {
+                        // split list into directories
+                        String[] dirs = FileOps.pathToArray(confEntry.getValue());
+                        for (int j = 0; j < dirs.length; j++) {
+                            // make relative directory paths be inside the webapp
+                            dirs[j] = ServletOps.getFile(dirs[j], ctx);
+                        }
+                        if (dirs != null) {
+                            param.setValue(dirs);
+                        }
+                    }
+                }
+            } else {
+                // parameter unknown -- just add
+                newParameter(confEntry.getKey(), null, confEntry.getValue(), 'u');
+            }
+        }
     }
 
     /*
