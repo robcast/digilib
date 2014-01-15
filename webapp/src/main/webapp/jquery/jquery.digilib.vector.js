@@ -35,12 +35,22 @@ digilib vector plugin
     };
 
     var defaults = {
-            // set default values for options here
-            // is STUB active?
-            'isvectorActive' : true
+        // is vector active?
+        'isVectorActive' : true
     };
 
     var actions = {
+        /**
+         * set list of vector objects (shapes)
+         * 
+         * @param data
+         * @param shapes
+         */
+        setShapes : function(data, shapes) {
+        	data.shapes = shapes;
+        	renderShapes(data);
+        },
+	
     };
 
     // plugin installation routine, called by digilib on each plugin object.
@@ -49,7 +59,6 @@ digilib vector plugin
         console.debug('installing vector plugin. digilib:', digilib);
         // import geometry classes
         geom = digilib.fn.geometry;
-        FULL_AREA = geom.rectangle(0,0,1,1);
         // add defaults, actions, buttons to the main digilib object
         $.extend(digilib.defaults, defaults);
         $.extend(digilib.actions, actions);
@@ -63,30 +72,76 @@ digilib vector plugin
         // install event handlers
         $data.bind('setup', handleSetup);
         $data.bind('update', handleUpdate);
-        $data.bind('redisplay', handleRedisplay);
-        $data.bind('dragZoom', handleDragZoom);
+        //$data.bind('redisplay', handleRedisplay);
+        //$data.bind('dragZoom', handleDragZoom);
     };
 
 
     var handleSetup = function (evt) {
         console.debug("vector: handleSetup");
         var data = this;
-        var $svg = $('<svg xmlns="http://www.w3.org/2000/svg" \
-        		viewBox="0 0 1 1" preserveAspectRatio="none" style="position:absolute">\
-        <g style="stroke-width: 0.005; fill: none">\
-        <rect x="0.0" y="0.0" width="1.0" height="1.0" style="stroke: red" />\
-        <rect x="0.1" y="0.1" width="0.1" height="0.1" style="stroke: orange" />\
-        </g></svg>');
-        data.$elem.append($svg);
-        data.$svg = $svg;
+        renderShapes(data);
     };
 
+    var renderShapes = function (data) {
+    	if (data.shapes == null) return;
+        if (!data.settings.isVectorActive) return;
+    	var svg = '<svg xmlns="http://www.w3.org/2000/svg"\
+        		viewBox="0 0 1 1" preserveAspectRatio="none"\
+        		class="'+data.settings.cssPrefix+'overlay"\
+        		style="position:absolute; pointer-events:none">\n';
+    	for (var i in data.shapes) {
+    		var vec = data.shapes[i];
+    		var gt = vec.geometry.type;
+    		if (gt === 'Line') {
+        		/*
+        		 * Line
+        		 */
+    			var props = vec.properties || {};
+    			var stroke = props['stroke'] || 'red';
+    			var strokeWidth = props['stroke-width'] || '0.005';
+    			var coords = vec.geometry.coordinates;
+    			svg += '<line\
+    					x1="'+coords[0][0]+'" y1="'+coords[0][0]+'"\
+    					x2="'+coords[1][0]+'" y2="'+coords[1][0]+'"\
+    					stroke="'+stroke+'" stroke-width="'+strokeWidth+'"\
+    					/>';
+    		} else if (gt === 'Rectangle') {
+    			/*
+    			 * Rectangle
+    			 */
+    			var props = vec.properties || {};
+    			var stroke = props['stroke'] || 'red';
+    			var strokeWidth = props['stroke-width'] || '0.005';
+    			var fill = props['fill'] || 'none';
+    			var coords = vec.geometry.coordinates;
+    			var p0 = geom.position(coords[0][0], coords[0][1]);
+    			var p1 = geom.position(coords[1][0], coords[1][1]);
+    			var rect = geom.rectangle(p0, p1);
+    			svg += '<rect\
+    					x="'+rect.x+'" y="'+rect.y+'"\
+    					width="'+rect.width+'" height="'+rect.height+'"\
+    					stroke="'+stroke+'" stroke-width="'+strokeWidth+'"\
+    					fill="'+fill+'"\
+    					/>';
+    		}
+    	}
+    	svg += '</svg>';
+    	$svg = $(svg);
+    	data.$elem.append($svg);
+        data.$svg = $svg;    	
+    };
+    
+    
     var handleUpdate = function (evt) {
         console.debug("vector: handleUpdate");
         var data = this;
         if (data.imgRect != null) {
+        	// adjust svg element size and position (doesn't work with .adjustDiv())
         	data.$svg.css(data.imgRect.getAsCss());
+        	// adjust zoom statue (use DOM setAttribute because jQuery lowercases attributes)
             data.$svg.get(0).setAttribute("viewBox", data.zoomArea.getAsSvg());
+            data.$svg.show();
         }
     };
 

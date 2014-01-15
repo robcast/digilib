@@ -35,8 +35,22 @@
                     };
                 var $div = $('div#digilib');
                 $div.digilib(opts);
+                $div.digilib("setShapes", [{
+                    'geometry' : {
+                        'type' : 'Line',
+                        'coordinates' : [[0.1, 0.1], [0.2, 0.2]]
+                    }
+                    },
+                    {
+                    'geometry' : {
+                        'type' : 'Rectangle',
+                        'coordinates' : [[0.2, 0.2], [0.3, 0.3]]
+                    },
+                    'properties' : {
+                        'stroke' : 'green'
+                    }
+                }]);
             });
-
         </script>
     </head>
 
