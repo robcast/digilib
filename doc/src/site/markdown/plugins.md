@@ -48,7 +48,7 @@ The regions plugin provides an additional set of buttons for defining and deleti
 
 Allows the user to add visual annotations on top of the scaled image, defining and referencing areas or points of interest. The annotations are loaded from an annotation server; new annotations can be inserted and edited. Annotations always point to the defined location even when the image is zoomed, rotated or mirrored.
 
-## How to write your own plugin ##
+# How to write your own plugin #
 
 Start with the stub file `jquery.digilib.pluginstub.js` in the "jquery" subdirectory of your digilib webapp directory.
 

@@ -162,7 +162,7 @@ public class DigilibConfiguration extends ParameterMap {
                 fmts.append(f);
                 fmts.append(", ");
             }
-            logger.debug("DocuImage supported image formats: "+fmts);
+            logger.info("DocuImage supported image formats: "+fmts);
         } catch (ClassNotFoundException e) {
             logger.error("Error setting DocuImage class!");
         }
