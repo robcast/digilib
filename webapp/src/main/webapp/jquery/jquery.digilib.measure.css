@@ -1,0 +1,17 @@
+/* 
+ * CSS style file for jQuery digilib
+ *
+ * Martin Raspe, Robert Casties, 26.3.2012
+ */
+
+div#measure-toolbar {
+    display: none;
+	border: 2px solid aqua;
+	background-color: silver;
+    padding: 5px;
+    position: absolute;
+}
+
+option.dl-units {
+    margin-left: 10px;
+}

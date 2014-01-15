@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" >
+    <head>
+        <title>jquery.digilib.svg.js test</title>
+
+        <script type="text/javascript" src="jquery.js"></script>
+        <script type="text/javascript" src="jquery.cookie.js"></script>
+        <script type="text/javascript" src="jquery.digilib.js"></script>
+        <script type="text/javascript" src="jquery.digilib.geometry.js"></script>
+        <script type="text/javascript" src="jquery.digilib.arrows.js"></script>
+        <script type="text/javascript" src="jquery.range.js"></script>
+        <link rel="stylesheet" type="text/css" href="jquery.range.css"></link>
+        <script type="text/javascript" src="jquery.digilib.buttons.js"></script>
+        <script type="text/javascript" src="jquery.digilib.dialogs.js"></script>
+        <script type="text/javascript" src="jquery.digilib.sliders.js"></script>
+        <script type="text/javascript" src="jquery.digilib.birdseye.js"></script>
+        <script type="text/javascript" src="jquery.digilib.marks.js"></script>
+        <script type="text/javascript" src="jquery.digilib.regions.js"></script>
+        <link rel="stylesheet" type="text/css" href="jquery.digilib.css"></link>
+        <link rel="stylesheet" type="text/css" href="jquery.digilib.measure.css"></link>
+        <script type="text/javascript" src="jquery.digilib.vector.js"></script>
+        <script type="text/javascript" src="jquery.digilib.measure.js"></script>
+
+        <script type="text/javascript">
+            $(document).ready(function(){
+                var opts = {
+                    interactionMode : 'fullscreen',
+                    showRegionNumbers : true
+                    };
+                var $div = $('div#digilib');
+                $div.digilib(opts);
+                DIGILIB = function (action) {
+                    return $div.digilib(action);
+                    };
+            });
+        </script>
+    </head>
+
+    <body>
+
+        <div id="digilib">
+            <p>digilib doesn't work! Please switch on Javascript or notify the server administrator!</p>
+            <img src="http://digilib.berlios.de/images/digilib-logo-big.png" />
+        </div>
+
+        <a href="javascript: DIGILIB('test')">test</a>
+
+    </body>
+</html>
+
