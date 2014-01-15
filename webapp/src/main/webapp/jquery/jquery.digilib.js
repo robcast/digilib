@@ -2,7 +2,7 @@
  * #%L
  * digilib-webapp
  * %%
- * Copyright (C) 2011 - 2013 MPIWG Berlin, Bibliotheca Hertziana
+ * Copyright (C) 2011 - 2014 MPIWG Berlin, Bibliotheca Hertziana
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -45,7 +45,7 @@ function($) {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.2.2',
+        'version' : 'jquery.digilib.js 2.3.0',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -206,7 +206,7 @@ function($) {
                 // check if browser supports AJAX-like URL-replace without reload
                 data.hasAsyncReload = (typeof history.replaceState === 'function');
                 // check if browser sets complete on cached images
-                data.hasCachedComplete = ! $.browser.mozilla;
+                data.hasCachedComplete = false; //FIXME: ! $.browser.mozilla;
                 // check digilib base URL
                 if (elemSettings.digilibBaseUrl == null) {
                     if (isFullscreen) {
@@ -301,7 +301,7 @@ function($) {
                     </a>\
                     <p>Version: '+settings.version+'</p>\
                 </div>';
-            $about = $(html);
+            var $about = $(html);
             $about.appendTo($elem);
             $about.on('click.digilib', function () {
                 withdraw($about);
@@ -471,7 +471,7 @@ function($) {
             if (rgbm == null && rgba == null) {
                 var rgb = window.prompt("RGBm, RGBa (m_r/m_g/m_b, a_r/a_g/a_b)", oldRgbm+', '+oldRgba);
                 if (rgb != null) {
-                    rgbs = rgb.split(/,\s*/);
+                    var rgbs = rgb.split(/,\s*/);
                     if (rgbs.length == 2) {
                         data.settings.rgbm = rgbs[0];
                         data.settings.rgba = rgbs[1];
@@ -1172,7 +1172,7 @@ function($) {
         var $img = data.$img;
         if ($img == null)
             return;
-        var imgLoaded = $.browser.msie
+        var imgLoaded = false // FIXME: $.browser.msie
             ? $img.prop('width') > 0
             : $img.prop('complete');
         if (imgLoaded || data.hasPreviewBg) {
