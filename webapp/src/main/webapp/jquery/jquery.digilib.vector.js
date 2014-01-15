@@ -60,17 +60,23 @@ digilib vector plugin
         },
 	
         /**
-         * add vector object (shape).
+         * add vector object (shape) or create by clicking.
          * 
          * @param data
          * @param shape
+         * @param onComplete
          */
-        addShape : function(data, shape) {
+        addShape : function(data, shape, onComplete) {
         	if (data.shapes == null) {
         		data.shapes = [];
         	};
-        	data.shapes.push(shape);
-        	renderShapes(data);
+        	if (shape.geometry.coordinates == null) {
+        		// define shape interactively
+        		defineShape(data, shape, onComplete);
+        	} else {
+        		data.shapes.push(shape);
+            	renderShapes(data);
+        	}
         },
         
         /**
@@ -78,6 +84,7 @@ digilib vector plugin
          * 
          * @param data
          * @param id
+         * @returns shape
          */
         getShapeById : function(data, id) {
         	shapes = data.shapes;
@@ -137,8 +144,12 @@ digilib vector plugin
     };
 
     var renderShapes = function (data) {
+    	console.debug("renderShapes shapes:", data.shapes);
     	if (data.shapes == null) return;
         if (!data.settings.isVectorActive) return;
+        if (data.$svg != null) {
+        	data.$svg.remove();
+        }
         var settings = data.settings;
     	var svg = '<svg xmlns="http://www.w3.org/2000/svg"\
         		viewBox="0 0 1 1" preserveAspectRatio="none"\
@@ -158,8 +169,8 @@ digilib vector plugin
         		 * Line
         		 */
     			svg += '<line '+id+'\
-    					x1="'+coords[0][0]+'" y1="'+coords[0][0]+'"\
-    					x2="'+coords[1][0]+'" y2="'+coords[1][0]+'"\
+    					x1="'+coords[0][0]+'" y1="'+coords[0][1]+'"\
+    					x2="'+coords[1][0]+'" y2="'+coords[1][1]+'"\
     					stroke="'+stroke+'" stroke-width="'+strokeWidth+'"\
     					/>';
     		} else if (gt === 'Rectangle') {
@@ -180,7 +191,13 @@ digilib vector plugin
     	svg += '</svg>';
     	$svg = $(svg);
     	data.$elem.append($svg);
-        data.$svg = $svg;    	
+        data.$svg = $svg;
+        if (data.imgRect != null) {
+        	// adjust svg element size and position (doesn't work with .adjustDiv())
+        	data.$svg.css(data.imgRect.getAsCss());
+        	// adjust zoom statue (use DOM setAttribute because jQuery lowercases attributes)
+            data.$svg.get(0).setAttribute("viewBox", data.zoomArea.getAsSvg());
+        }
     };
     
     
@@ -194,6 +211,94 @@ digilib vector plugin
             data.$svg.get(0).setAttribute("viewBox", data.zoomArea.getAsSvg());
             data.$svg.show();
         }
+    };
+
+    /** define a shape by click and drag
+     * 
+     */
+    var defineShape = function(data, shape, onComplete) {
+    	var shapeType = shape.geometry.type;
+    	var shapeId = shape.id;
+    	if (shapeId == null) {
+    		shapeId = data.settings.cssPrefix+'shape-'+Date.now();
+    		shape.id = shapeId;
+    	}
+        var CSS = data.settings.cssPrefix;
+        var $elem = data.$elem;
+        var $scaler = data.$scaler;
+        var picRect = geom.rectangle($scaler);
+        var $body = $('body');
+        var bodyRect = geom.rectangle($body);
+        var pt1, pt2;
+        // overlay div prevents other elements from reacting to mouse events 
+        var $overlayDiv = $('<div class="'+CSS+'shapeOverlay" style="position:absolute; z-index:100;"/>');
+        $elem.append($overlayDiv);
+        bodyRect.adjustDiv($overlayDiv);
+        // shape element reference
+        var $shape = null;
+        var shapeStart = function (evt) {
+            pt1 = geom.position(evt);
+            // setup and show shape
+            p1 = data.imgTrafo.invtransform(pt1);
+            if (shapeType === 'Line' || shapeType === 'Rectangle') {
+            	shape.geometry.coordinates = [[p1.x, p1.y], [p1.x, p1.y]];
+            }
+            data.shapes.push(shape);
+            renderShapes(data);
+            $shape = $('#'+shapeId);
+            // register events
+            $overlayDiv.on("mousemove.dlShape", shapeMove);
+            $overlayDiv.on("mouseup.dlShape", shapeEnd);
+            return false;
+        };
+
+        // mouse move handler
+        var shapeMove = function (evt) {
+            pt2 = geom.position(evt);
+            pt2.clipTo(picRect);
+            // update shape
+            if (shapeType === 'Line') {
+            	var p2 = data.imgTrafo.invtransform(pt2);
+            	$shape.attr({'x2': p2.x, 'y2': p2.y});
+            } else if (shapeType === 'Rectangle') {
+                var clickRect = geom.rectangle(pt1, pt2);
+            	var rect = data.imgTrafo.invtransform(clickRect);
+            	$shape.attr({'x': rect.x, 'y': rect.y,
+            		'width': rect.width, 'height': rect.height});            	
+            }
+            return false;
+        };
+
+        // mouseup handler: end moving
+        var shapeEnd = function (evt) {
+            pt2 = geom.position(evt);
+            // assume a click and continue if the area is too small
+            var clickRect = geom.rectangle(pt1, pt2);
+            if (clickRect.width < 5 && clickRect.height < 5) {
+            	if (onComplete != null) {
+            		onComplete(data, null);
+            	}
+                return false;
+            };
+            // unregister events
+            $overlayDiv.off("mousemove.dlShape", shapeMove);
+            $overlayDiv.off("mouseup.dlShape", shapeEnd);
+            // clip and transform
+            clickRect.clipTo(picRect);
+            var rect = data.imgTrafo.invtransform(clickRect);
+            // update shape
+            var p2 = rect.getPt2();
+            shape.geometry.coordinates = [[rect.x, rect.y], [p2.x, p2.y]];
+            console.debug("new shape:", shape);
+            $overlayDiv.remove();
+        	if (onComplete != null) {
+        		onComplete(data, shape);
+        	}            
+            return false;
+        };
+
+        // start by clicking
+        $overlayDiv.one('mousedown.dlShape', shapeStart);
     };
 
     // plugin object, containing name, install and init routines 
