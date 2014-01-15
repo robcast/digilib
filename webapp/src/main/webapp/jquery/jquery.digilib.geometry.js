@@ -136,6 +136,16 @@
                 top : this.y
             });
         };
+        // adjust this position so that is is inside rect
+        that.clipTo = function (rect) {
+            var p1 = rect.getPt1();
+            var p2 = rect.getPt2();
+            this.x = Math.max(this.x, p1.x);
+            this.y = Math.max(this.y, p1.y);
+            this.x = Math.min(this.x, p2.x);
+            this.y = Math.min(this.y, p2.y);
+            return this;        	
+        };
         // returns distance of this position to pos (length if pos == null)
         that.distance = function(pos) {
             if (pos == null) {
@@ -435,7 +445,7 @@
             var x = this.m00 * rect.x + this.m01 * rect.y + this.m02;
             var y = this.m10 * rect.x + this.m11 * rect.y + this.m12;
             var pt = position(x, y);
-            if (rect.width) {
+            if (rect.width != null) {
                 // transform the other corner point
                 var pt2 = this.transform(rect.getPt2());
                 return rectangle(pt, pt2);
@@ -453,7 +463,7 @@
                     * this.m02 - this.m00 * this.m12)
                     / det;
             var pt = position(x, y);
-            if (rect.width) {
+            if (rect.width != null) {
                 // transform the other corner point
                 var pt2 = this.invtransform(rect.getPt2());
                 return rectangle(pt, pt2);
