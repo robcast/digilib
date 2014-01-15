@@ -27,7 +27,7 @@ digilib vector plugin
 (function($) {
 
     // affine geometry
-    var geom;
+    var geom = null;
     // plugin object with digilib data
     var digilib;
 
@@ -36,12 +36,20 @@ digilib vector plugin
 
     var defaults = {
         // is vector active?
-        'isVectorActive' : true
+        'isVectorActive' : true,
+        // default SVG stroke
+        'defaultStroke' : 'red',
+        // default SVG stroke-width
+        'defaultStrokeWidth' : '0.005',
+        // default SVG fill
+        'defaultFill' : 'none'
     };
 
     var actions = {
         /**
-         * set list of vector objects (shapes)
+         * set list of vector objects (shapes).
+         * 
+         * replaces existing shapes.
          * 
          * @param data
          * @param shapes
@@ -51,6 +59,53 @@ digilib vector plugin
         	renderShapes(data);
         },
 	
+        /**
+         * add vector object (shape).
+         * 
+         * @param data
+         * @param shape
+         */
+        addShape : function(data, shape) {
+        	if (data.shapes == null) {
+        		data.shapes = [];
+        	};
+        	data.shapes.push(shape);
+        	renderShapes(data);
+        },
+        
+        /**
+         * get vector object (shape) by id.
+         * 
+         * @param data
+         * @param id
+         */
+        getShapeById : function(data, id) {
+        	shapes = data.shapes;
+        	if (shapes == null) return null;
+        	for (var i in shapes) {
+        		if (shapes[i].id === id) {
+        			return shapes[i];
+        		}
+        	}
+        	return null;
+        },
+        
+        /**
+         * remove vector object (shape) by id.
+         * 
+         * @param data
+         * @param id
+         */
+        removeShapeById : function(data, id) {
+        	shapes = data.shapes;
+        	if (shapes == null) return;
+        	for (var i in shapes) {
+        		if (shapes[i].id === id) {
+        			shapes.splice(i, 1);
+        		}
+        	}
+        	displayShapes(data);
+        }        	
     };
 
     // plugin installation routine, called by digilib on each plugin object.
@@ -72,8 +127,6 @@ digilib vector plugin
         // install event handlers
         $data.bind('setup', handleSetup);
         $data.bind('update', handleUpdate);
-        //$data.bind('redisplay', handleRedisplay);
-        //$data.bind('dragZoom', handleDragZoom);
     };
 
 
@@ -86,22 +139,25 @@ digilib vector plugin
     var renderShapes = function (data) {
     	if (data.shapes == null) return;
         if (!data.settings.isVectorActive) return;
+        var settings = data.settings;
     	var svg = '<svg xmlns="http://www.w3.org/2000/svg"\
         		viewBox="0 0 1 1" preserveAspectRatio="none"\
-        		class="'+data.settings.cssPrefix+'overlay"\
+        		class="'+settings.cssPrefix+'overlay"\
         		style="position:absolute; pointer-events:none">\n';
     	for (var i in data.shapes) {
     		var vec = data.shapes[i];
+    		var id = (vec.id != null) ? 'id="'+vec.id+'"' : '';
+			var props = vec.properties || {};
+			var stroke = props['stroke'] || settings.defaultStroke;
+			var strokeWidth = props['stroke-width'] || settings.defaultStrokeWidth;
+			var fill = props['fill'] || settings.defaultFill;
+			var coords = vec.geometry.coordinates;
     		var gt = vec.geometry.type;
     		if (gt === 'Line') {
         		/*
         		 * Line
         		 */
-    			var props = vec.properties || {};
-    			var stroke = props['stroke'] || 'red';
-    			var strokeWidth = props['stroke-width'] || '0.005';
-    			var coords = vec.geometry.coordinates;
-    			svg += '<line\
+    			svg += '<line '+id+'\
     					x1="'+coords[0][0]+'" y1="'+coords[0][0]+'"\
     					x2="'+coords[1][0]+'" y2="'+coords[1][0]+'"\
     					stroke="'+stroke+'" stroke-width="'+strokeWidth+'"\
@@ -110,21 +166,16 @@ digilib vector plugin
     			/*
     			 * Rectangle
     			 */
-    			var props = vec.properties || {};
-    			var stroke = props['stroke'] || 'red';
-    			var strokeWidth = props['stroke-width'] || '0.005';
-    			var fill = props['fill'] || 'none';
-    			var coords = vec.geometry.coordinates;
     			var p0 = geom.position(coords[0][0], coords[0][1]);
     			var p1 = geom.position(coords[1][0], coords[1][1]);
     			var rect = geom.rectangle(p0, p1);
-    			svg += '<rect\
+    			svg += '<rect '+id+'\
     					x="'+rect.x+'" y="'+rect.y+'"\
     					width="'+rect.width+'" height="'+rect.height+'"\
     					stroke="'+stroke+'" stroke-width="'+strokeWidth+'"\
     					fill="'+fill+'"\
     					/>';
-    		}
+    		};
     	}
     	svg += '</svg>';
     	$svg = $(svg);
@@ -143,15 +194,6 @@ digilib vector plugin
             data.$svg.get(0).setAttribute("viewBox", data.zoomArea.getAsSvg());
             data.$svg.show();
         }
-    };
-
-    var handleRedisplay = function (evt) {
-        console.debug("vector: handleRedisplay");
-        var data = this;
-    };
-
-    var handleDragZoom = function (evt, zoomArea) {
-        var data = this;
     };
 
     // plugin object, containing name, install and init routines 
