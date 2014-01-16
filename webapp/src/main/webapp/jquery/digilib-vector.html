@@ -39,8 +39,11 @@
                     'geometry' : {
                         'type' : 'Line',
                         'coordinates' : [[0.1, 0.1], [0.2, 0.2]]
+                    },
+                    'properties' : {
+                    	'editable' : true
                     }
-                    },{
+                },{
                     'geometry' : {
                         'type' : 'Rectangle',
                         'coordinates' : [[0.2, 0.2], [0.3, 0.3]]
@@ -54,7 +57,8 @@
         </script>
     </head>
 
-    <body>
+    <body onload="$('#digilib').digilib('addShape', {'geometry':{'type':'Rectangle','coordinates':null}})"> 
+    <!-- <body> -->
         <div id="digilib">
             <p>digilib doesn't work! Please switch on Javascript or notify the server administrator!</p>
             <img src="http://digilib.berlios.de/images/digilib-logo-big.png" />
