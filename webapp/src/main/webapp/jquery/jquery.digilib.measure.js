@@ -1,8 +1,8 @@
 /*
  * #%L
- * digilib SVG plugin
+ * digilib measure plugin
  * %%
- * Copyright (C) 2012 - 2013 Bibliotheca Hertziana, MPIWG Berlin
+ * Copyright (C) 2012 - 2014 Bibliotheca Hertziana, MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -21,7 +21,7 @@
  * Authors: Martin Raspe, Robert Casties, 2012-2014
  */
 /**
- * digilib SVG plugin (display a SVG on top if scaler image and zoom/rotate/mirror etc.)
+ * digilib measure plugin (measure distances on the digilib image in historic units etc.)
 **/ 
 
 /* jslint browser: true, debug: true, forin: true
@@ -677,29 +677,42 @@
           }]
         };
     var buttons = {
-        toolbar : {
-            onclick : "toolbar",
+        showtoolbar : {
+            onclick : "showtoolbar",
             tooltip : "show toolbar",
             icon : "showregions.png"
+            },
+        drawshape : {
+            onclick : "drawshape",
+            tooltip : "draw a shape",
             }
         };
 
     var defaults = {
         // buttonset of this plugin
-        measureButtonSet : ['toolbar'],
+        measureButtonSet : ['showtoolbar'],
         // unit data
         units : UNITS,
         // choice of colors offered by toolbar
         lineColors : ['white', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'violet', 'black'],
         // default color
-        lineColor : 'white',
+        lineColor : 'red',
         // color while the line is drawn
         drawColor : 'green',
         // color of selected objects
         selectColor : 'red',
         // drawing shapes
-        shapes : ['line', 'polyline', 'rectangle', 'square', 'circle', 'arch',
-            'ratio', 'intercolumnium', 'line grid'],
+        shapetypes : [
+            { 'name': 'line', 'type' : 'Line' },
+            { 'name': 'polyline', 'type' : 'Polygon' },
+            { 'name': 'rectangle', 'type' : 'Rectangle' },
+            { 'name': 'square', 'type' : 'Square' },
+            { 'name': 'circle', 'type' : 'Circle' },
+            { 'name': 'arch', 'type' : 'Arch' },
+            { 'name': 'ratio', 'type' : 'Ratio' },
+            { 'name': 'intercolumnium', 'type' : 'InterCol' },
+            { 'name': 'line grid', 'type' : 'Grid' }
+            ],
         // default shape
         shape : 'line',
         // measuring unit (index into unit list)
@@ -747,26 +760,60 @@
         };
 
     var actions = {
-        toolbar : function(data) {
+        showtoolbar : function(data) {
             var $toolbar = data.$toolbar;
             if (!$toolbar) {
                 $toolbar = setupToolbar(data);
 				};
 			$toolbar.toggle();
-            setBottom(data, $toolbar);
+            setScreenPosition(data, $toolbar);
 			return;
             },
-        line : function(data) {
-            //
-            }
+        drawshape : function(data) {
+            var shape = currentShape(data);
+            digilib.actions.addShape(data, shape, onCompleteShape);
+            console.debug('action: drawshape', shape);
+            }
         };
 
+    var onCompleteShape = function(data, shape) {
+            console.debug('onCompleteShape', shape);
+        };
+
+    var currentShape = function(data) {
+        var shape = getSelectedShapeType(data);
+        var stroke = getSelectedStroke(data);
+        var item = {
+            'geometry' : {
+                'type' : shape.type
+                },
+            'properties' : {
+                'stroke' : stroke
+                }
+            };
+        return item;
+        };
+
+    // return shape type selected by user (on the toolbar)
+    var getSelectedShapeType = function(data) {
+        var $t = data.$toolbar;
+        var $select = $t.find('#measure-shapes');
+        var val = $select.val();
+        return data.settings.shapetypes[val];
+    };
+
+    // return line color chosen by user
+    var getSelectedStroke = function(data) {
+        // TODO: colorpicker
+        return data.settings.linecolor;
+    };
+
     // load shapes into select element
-    var loadShapes = function(data) {
+    var loadShapeTypes = function(data) {
         var $t = data.$toolbar;
         var $shape = $t.find('#measure-shapes');
-        $.each(data.settings.shapes, function(index, name) {
-            var $opt = $('<option value="'+index+'">'+name+'</option>');
+        $.each(data.settings.shapetypes, function(index, item) {
+            var $opt = $('<option value="'+ index + '">' + item.name + '</option>');
             $shape.append($opt);
             });
     };
@@ -790,15 +837,16 @@
             });
     };
 
-    var setBottom = function(data, $div) {
+    var setScreenPosition = function(data, $div) {
         if ($div == null) return;
         var h = geom.rectangle($div).height;
         var s = fn.getFullscreenRect(data);
         geom.position(0, s.height - h).adjustDiv($div);
     };
 
-    // setup a div for accessing the main SVG functionality
+    // setup a div for accessing the measure functionality
     var setupToolbar = function(data) {
+        console.debug('measure: setupToolbar');
         var html = '\
             <div id="measure-toolbar">\
                 <button id="measure-draw">M</button>\
@@ -816,28 +864,48 @@
 				<span id="measure-angle" class="dl-measure-number">0.0</span>\
             </div>';
         var $toolbar = $(html);
+        console.debug('measure', data.$elem, $toolbar);
         data.$elem.append($toolbar);
         data.$toolbar = $toolbar;
-        loadShapes(data);
+        loadShapeTypes(data);
         loadSections(data);
+        setupToolbarButton(data);
         return $toolbar;
         };
 
-    var drawInitial = function ($svg) {
-        console.debug('Measure is ready');
+    // wire the draw button
+    var setupToolbarButton = function (data) {
+        console.debug('measure: setupToolbarButton');
+        var $t = data.$toolbar;
+        var $b = $t.find('#measure-draw');
+        var buttonConfig = buttons['drawshape']; // not in data.settings.buttons
+        // button properties
+        var action = buttonConfig.onclick;
+        var tooltip = buttonConfig.tooltip;
+        $b.attr('title', tooltip);
+        $elem = data.$elem;
+        $b.on('click.digilib', function(evt) {
+            // the handler function calls digilib with action
+            console.debug('click action=', action, ' evt=', evt);
+            $elem.digilib(action);
+            return false;
+            });
         };
 
+    // event handler
     var handleSetup = function (evt) {
         console.debug("measure: handleSetup");
-        // var data = this;
+        var data = this;
+        setupToolbar(data);
         // var settings = data.settings;
-    };
+        };
 
+    // event handler
     var handleUpdate = function (evt) {
-        console.debug("svg: handleUpdate");
+        console.debug("measure: handleUpdate");
         // var data = this;
         // var settings = data.settings;
-    };
+        };
 
     // additional buttons
     var installButtons = function (data) {
@@ -849,11 +917,15 @@
             buttonSettings.measureButtonSet = buttonSet;
             buttonSettings.buttonSets.push('measureButtonSet');
             }
-    };
+        };
 
     // plugin installation called by digilib on plugin object.
     var install = function (plugin) {
         digilib = plugin;
+        if (digilib.plugins.vector == null) {
+            console.debug('measure plugin: vector plugin is missing, aborting installation.');
+            return;
+            }
         console.debug('installing measure plugin. digilib:', digilib);
         fn = digilib.fn;
         // import geometry classes
@@ -864,11 +936,11 @@
         $.extend(true, digilib.buttons, buttons);
         // export functions
         // fn.test = test;
-    };
+        };
 
     // plugin initialization
     var init = function (data) {
-        console.debug('initialising svg plugin. data:', data);
+        console.debug('initialising measure plugin. data:', data);
         var settings = data.settings;
         CSS = settings.cssPrefix;
         FULL_AREA  = geom.rectangle(0, 0, 1, 1);
@@ -880,7 +952,7 @@
         if (digilib.plugins.buttons != null) {
             installButtons(data);
         }
-    };
+        };
 
     // plugin object with name and init
     // shared objects filled by digilib on registration
@@ -892,7 +964,7 @@
             actions : {},
             fn : {},
             plugins : {}
-    };
+        };
 
     if ($.fn.digilib == null) {
         $.error("jquery.digilib.measure must be loaded after jquery.digilib!");
