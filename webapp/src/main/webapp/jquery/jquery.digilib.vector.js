@@ -79,7 +79,11 @@
         },
 	
         /**
-         * add vector object (shape) or create by clicking.
+         * add vector object (shape) or create one by clicking.
+         * 
+         * For interactive use shape has to be initialized with a shape object with
+         * type but no coordinates, e.g {'geometry':{'type':'Line'}}. The onComplete
+         * function will be called with data and the new shape object as parameters.
          * 
          * @param data
          * @param shape
@@ -232,8 +236,8 @@
         }
     };
 
-    /** define a shape by click and drag
-     * 
+    /** 
+     * define a shape by click and drag.
      */
     var defineShape = function(data, shape, onComplete) {
     	var shapeType = shape.geometry.type;
