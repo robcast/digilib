@@ -1579,6 +1579,39 @@ function($) {
         }
     };
 
+    /**
+     * calculates the distance between two points (in relative cooordinates).
+     * 
+     * Returns the distance in (current) screen pixels, original pixels and 
+     * original size (in meter) (if available).
+     * 
+     * @param data
+     * @param p1 point in relative coordinates
+     * @param p2 point in relative coordinates
+     * @returns { pixel: X, o_pixel: Y, o_size: Z} 
+     * 
+     */
+    var getDistance = function (data, p1, p2) {
+    	var dist = {};
+    	if (data.imgTrafo != null) {
+	    	var pt1 = data.imgTrafo.transform(p1);
+	    	var pt2 = data.imgTrafo.transform(p2);
+	    	dist['pixel'] = pt1.distance(pt2);
+	    	if (data.imgInfo != null && data.imgInfo.width != null) {
+	    		// use original pixel size
+	    		var odx = (p2.x - p1.x) * data.imgInfo.width;
+	    		var ody = (p2.y - p1.y) * data.imgInfo.height;
+	    		var opd = Math.sqrt(odx * odx + ody * ody);
+	    		dist['o_pixel'] = opd;
+	    		if (data.imgInfo.dpi_x != null) {
+	    			// use original dpi
+	    			dist['o_size'] = opd / data.imgInfo.dpi_x * 0.0254;
+	    		}
+	    	}
+    	}
+    	return dist;
+    };
+    
     /** sets a key to a value (relative values with +/- if relative=true).
      * 
      */
@@ -1756,6 +1789,7 @@ function($) {
             isFullArea : isFullArea,
             isNumber : isNumber,
             getFullscreenRect : getFullscreenRect,
+            getDistance : getDistance,
             getBorderWidth : getBorderWidth,
             cropFloat : cropFloat,
             cropFloatStr : cropFloatStr,

@@ -748,7 +748,7 @@
 
     var actions = {
         toolbar : function(data) {
-            var $toolbar = data.settings.$toolbar;
+            var $toolbar = data.$toolbar;
             if (!$toolbar) {
                 $toolbar = setupToolbar(data);
 				};
@@ -763,7 +763,7 @@
 
     // load shapes into select element
     var loadShapes = function(data) {
-        var $t = data.settings.$toolbar;
+        var $t = data.$toolbar;
         var $shape = $t.find('#measure-shapes');
         $.each(data.settings.shapes, function(index, name) {
             var $opt = $('<option value="'+index+'">'+name+'</option>');
@@ -773,7 +773,7 @@
 
     // load units into select elements
     var loadSections = function(data) {
-        var $t = data.settings.$toolbar;
+        var $t = data.$toolbar;
         var $unit1 = $t.find('#measure-unit1');
         var $unit2 = $t.find('#measure-unit2');
         var sections = data.settings.units.sections;
@@ -817,7 +817,7 @@
             </div>';
         var $toolbar = $(html);
         data.$elem.append($toolbar);
-        data.settings.$toolbar = $toolbar;
+        data.$toolbar = $toolbar;
         loadShapes(data);
         loadSections(data);
         return $toolbar;

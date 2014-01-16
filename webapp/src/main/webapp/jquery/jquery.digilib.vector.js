@@ -204,7 +204,7 @@ digilib vector plugin
     var handleUpdate = function (evt) {
         console.debug("vector: handleUpdate");
         var data = this;
-        if (data.imgRect != null) {
+        if (data.imgRect != null && data.$svg != null) {
         	// adjust svg element size and position (doesn't work with .adjustDiv())
         	data.$svg.css(data.imgRect.getAsCss());
         	// adjust zoom statue (use DOM setAttribute because jQuery lowercases attributes)
