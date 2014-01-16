@@ -2,7 +2,7 @@
  * #%L
  * digilib vector plugin
  * %%
- * Copyright (C) 2014 Bibliotheca Hertziana, MPIWG Berlin
+ * Copyright (C) 2014 MPIWG Berlin, Bibliotheca Hertziana
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -20,10 +20,29 @@
  * #L%
  * Authors: Robert Casties, Martin Raspe
  */
-/**
-digilib vector plugin
- */
 
+/**
+ * digilib vector plugin.
+ * 
+ * Displays vector shapes on top of the image.
+ * 
+ * Shapes are objects with "geometry" and "properties" members.
+ * Geometry is an object with "type" and "coordinates" members.
+ * Types: Line, Rectangle. Coordinates are lists of pairs of relative coordinates.
+ * Properties are SVG properties "stroke", "stroke-width", "fill" and other properties.
+ * If a shape has an "id" member its value will be used in SVG.
+ * 
+ * shape = {
+ *   'geometry' : {
+ *     'type' : 'Line',
+ *     'coordinates' : [[0.1, 0.2], [0.3, 0.4]]
+ *   },
+ *   'properties' : {
+ *     'stroke' : 'blue'
+ *   }
+ * }
+ * 
+ */
 (function($) {
 
     // affine geometry
