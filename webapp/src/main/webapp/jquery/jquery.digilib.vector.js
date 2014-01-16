@@ -59,7 +59,7 @@
         // default SVG stroke
         'defaultStroke' : 'red',
         // default SVG stroke-width
-        'defaultStrokeWidth' : '0.005',
+        'defaultStrokeWidth' : '2',
         // default SVG fill
         'defaultFill' : 'none'
     };
@@ -163,24 +163,27 @@
     var handleSetup = function (evt) {
         console.debug("vector: handleSetup");
         var data = this;
-        renderShapes(data);
+        //renderShapes(data);
     };
 
     var renderShapes = function (data) {
     	console.debug("renderShapes shapes:", data.shapes);
-    	if (data.shapes == null) return;
-        if (!data.settings.isVectorActive) return;
+    	if (data.shapes == null || data.imgTrafo == null || !data.settings.isVectorActive) 
+    	    return;
         if (data.$svg != null) {
         	data.$svg.remove();
         }
         var settings = data.settings;
+        var trafo = data.imgTrafo;
     	var svg = '<svg xmlns="http://www.w3.org/2000/svg"\
-        		viewBox="0 0 1 1" preserveAspectRatio="none"\
-        		class="'+settings.cssPrefix+'overlay"\
-        		style="position:absolute; pointer-events:none">\n';
+    	    viewBox="'+data.imgRect.getAsSvg()+'"\
+    	    class="'+settings.cssPrefix+'overlay"\
+    		style="position:absolute; z-index:10; pointer-events:none">';
     	for (var i in data.shapes) {
     		var vec = data.shapes[i];
+    		// use given id
     		var id = (vec.id != null) ? 'id="'+vec.id+'"' : '';
+    		// set properties
 			var props = vec.properties || {};
 			var stroke = props['stroke'] || settings.defaultStroke;
 			var strokeWidth = props['stroke-width'] || settings.defaultStrokeWidth;
@@ -191,18 +194,20 @@
         		/*
         		 * Line
         		 */
+    		    var p1 = trafo.transform(geom.position(coords[0][0], coords[0][1]));
+                var p2 = trafo.transform(geom.position(coords[1][0], coords[1][1]));
     			svg += '<line '+id+'\
-    					x1="'+coords[0][0]+'" y1="'+coords[0][1]+'"\
-    					x2="'+coords[1][0]+'" y2="'+coords[1][1]+'"\
+    					x1="'+p1.x+'" y1="'+p1.y+'"\
+    					x2="'+p2.x+'" y2="'+p2.y+'"\
     					stroke="'+stroke+'" stroke-width="'+strokeWidth+'"\
     					/>';
     		} else if (gt === 'Rectangle') {
     			/*
     			 * Rectangle
     			 */
-    			var p0 = geom.position(coords[0][0], coords[0][1]);
-    			var p1 = geom.position(coords[1][0], coords[1][1]);
-    			var rect = geom.rectangle(p0, p1);
+                var p1 = trafo.transform(geom.position(coords[0][0], coords[0][1]));
+                var p2 = trafo.transform(geom.position(coords[1][0], coords[1][1]));
+    			var rect = geom.rectangle(p1, p2);
     			svg += '<rect '+id+'\
     					x="'+rect.x+'" y="'+rect.y+'"\
     					width="'+rect.width+'" height="'+rect.height+'"\
@@ -215,25 +220,21 @@
     	$svg = $(svg);
     	data.$elem.append($svg);
         data.$svg = $svg;
-        if (data.imgRect != null) {
-        	// adjust svg element size and position (doesn't work with .adjustDiv())
-        	data.$svg.css(data.imgRect.getAsCss());
-        	// adjust zoom statue (use DOM setAttribute because jQuery lowercases attributes)
-            data.$svg.get(0).setAttribute("viewBox", data.zoomArea.getAsSvg());
-        }
+    	// adjust svg element size and position (doesn't work with .adjustDiv())
+    	data.$svg.css(data.imgRect.getAsCss());
     };
     
     
     var handleUpdate = function (evt) {
         console.debug("vector: handleUpdate");
         var data = this;
-        if (data.imgRect != null && data.$svg != null) {
-        	// adjust svg element size and position (doesn't work with .adjustDiv())
-        	data.$svg.css(data.imgRect.getAsCss());
-        	// adjust zoom statue (use DOM setAttribute because jQuery lowercases attributes)
-            data.$svg.get(0).setAttribute("viewBox", data.zoomArea.getAsSvg());
-            data.$svg.show();
+        if (data.shapes == null || data.imgTrafo == null || !data.settings.isVectorActive)
+            return;
+        if (data.zoomArea != data.vectorOldZA) {
+            renderShapes(data);
+            data.vectorOldZA = data.zoomArea;
         }
+        data.$svg.show();
     };
 
     /** 
@@ -281,11 +282,9 @@
             pt2.clipTo(picRect);
             // update shape
             if (shapeType === 'Line') {
-            	var p2 = data.imgTrafo.invtransform(pt2);
-            	$shape.attr({'x2': p2.x, 'y2': p2.y});
+            	$shape.attr({'x2': pt2.x, 'y2': pt2.y});
             } else if (shapeType === 'Rectangle') {
-                var clickRect = geom.rectangle(pt1, pt2);
-            	var rect = data.imgTrafo.invtransform(clickRect);
+                var rect = geom.rectangle(pt1, pt2);
             	$shape.attr({'x': rect.x, 'y': rect.y,
             		'width': rect.width, 'height': rect.height});            	
             }
@@ -296,8 +295,7 @@
         var shapeEnd = function (evt) {
             pt2 = geom.position(evt);
             // assume a click and continue if the area is too small
-            var clickRect = geom.rectangle(pt1, pt2);
-            if (clickRect.width < 5 && clickRect.height < 5) {
+            if (pt2.distance(pt1) < 5) {
             	if (onComplete != null) {
             		onComplete(data, null);
             	}
@@ -307,11 +305,15 @@
             $overlayDiv.off("mousemove.dlShape", shapeMove);
             $overlayDiv.off("mouseup.dlShape", shapeEnd);
             // clip and transform
-            clickRect.clipTo(picRect);
-            var rect = data.imgTrafo.invtransform(clickRect);
+            pt2.clipTo(picRect);
             // update shape
-            var p2 = rect.getPt2();
-            shape.geometry.coordinates = [[rect.x, rect.y], [p2.x, p2.y]];
+            if (shapeType === 'Line') {
+                var p2 = data.imgTrafo.invtransform(pt2);
+                shape.geometry.coordinates[1] = [p2.x, p2.y];
+            } else if (shapeType === 'Rectangle') {
+                var p2 = data.imgTrafo.invtransform(pt2);
+                shape.geometry.coordinates[1] = [p2.x, p2.y];
+            }
             console.debug("new shape:", shape);
             $overlayDiv.remove();
         	if (onComplete != null) {
