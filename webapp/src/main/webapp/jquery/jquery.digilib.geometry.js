@@ -84,6 +84,11 @@
                     x : pos.left,
                     y : pos.top
                 };
+            } else if ($.isArray(x)) {
+                that = {
+                    x : x[0],
+                    y : x[1]
+                };
             } else {
                 if (x.x != null) {
                     // position object
@@ -105,7 +110,8 @@
                 x : parseFloat(x),
                 y : parseFloat(y)
             };
-        }
+        };
+
         that.equals = function(other) {
             return (this.x === other.x && this.y === other.y);
         };

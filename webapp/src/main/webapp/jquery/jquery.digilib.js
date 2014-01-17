@@ -1025,6 +1025,18 @@ function($) {
     };
 
     /** 
+     * returns the (unzoomed) aspect ratio of the current scaler image
+     */
+    var getImgAspectRatio = function (data) {
+        var za = data.zoomArea;
+        var scalerSize = data.imgRect.getSize();
+        scalerSize.width /= za.width;
+        scalerSize.height /= za.height;
+        var aspect = scalerSize.getAspect();
+        return aspect;
+    };
+
+    /** 
      * creates HTML structure for digilib in elem
      */
     var setupScalerDiv = function (data) {
@@ -1608,6 +1620,10 @@ function($) {
 	    			dist['o_size'] = opd / data.imgInfo.dpi_x * 0.0254;
 	    		}
 	    	}
+	    	var ar = getImgAspectRatio(data);
+	    	p1.x *= ar;
+	    	p2.x *= ar;
+	    	dist['rectified'] = p1.distance(p2);
     	}
     	return dist;
     };
@@ -1789,6 +1805,7 @@ function($) {
             isFullArea : isFullArea,
             isNumber : isNumber,
             getFullscreenRect : getFullscreenRect,
+            getImgAspectRatio : getImgAspectRatio,
             getDistance : getDistance,
             getBorderWidth : getBorderWidth,
             cropFloat : cropFloat,

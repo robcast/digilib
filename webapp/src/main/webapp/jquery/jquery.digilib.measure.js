@@ -771,13 +771,39 @@
             },
         drawshape : function(data) {
             var shape = currentShape(data);
-            digilib.actions.addShape(data, shape, onCompleteShape);
+            digilib.actions.addShape(data, shape, onCompleteShape);
+
             console.debug('action: drawshape', shape);
-            }
+            }
+
+
         };
 
+
+    // callback for vector.drawshape
     var onCompleteShape = function(data, shape) {
-            console.debug('onCompleteShape', shape);
+        console.debug('onCompleteShape', shape);
+        if (shape == null) {
+            return false; // do nothing if no line was produced
+            };
+        var dist = rectifiedDist(data, shape);
+        setMeasuredDist(data, dist);
+        return false;
+        };
+
+    // calculate a rectified distance from a shape with digilib coords
+    var rectifiedDist = function(data, shape) {
+        var coords = shape.geometry.coordinates;
+        var p0 = geom.position(coords[0]);
+        var p1 = geom.position(coords[1]);
+        var dist = fn.getDistance(data, p0, p1);
+        return dist.rectified;
+        };
+
+    var setMeasuredDist = function(data, dist) {
+        var $view = data.$toolbar.find('#measure-pixel');
+        var str = fn.cropFloatStr(dist);
+        $view.text(str);
         };
 
     var currentShape = function(data) {
@@ -790,7 +816,8 @@
             'properties' : {
                 'stroke' : stroke
                 }
-            };
+            };
+
         return item;
         };
 
@@ -902,8 +929,10 @@
 
     // event handler
     var handleUpdate = function (evt) {
-        console.debug("measure: handleUpdate");
-        // var data = this;
+        var data = this;
+        var ar = fn.getImgAspectRatio(data);
+        data.settings.imgAspectRatio = ar;
+        console.debug("measure: handleUpdate. aspectratio:", ar);
         // var settings = data.settings;
         };
 

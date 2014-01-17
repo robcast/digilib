@@ -10,6 +10,7 @@ div#measure-toolbar {
 	background-color: silver;
     padding: 5px;
     position: absolute;
+    z-index: 20;
 }
 
 option.dl-units {
