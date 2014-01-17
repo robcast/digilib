@@ -327,6 +327,7 @@
             }
             $document.off("mousemove.dlVertexDrag", dragMove);
             $document.off("mouseup.dlVertexDrag", dragEnd);
+            $(data).trigger('changeShape', shape);
             return false;
         };
 
