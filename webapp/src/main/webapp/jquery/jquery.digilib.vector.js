@@ -166,6 +166,9 @@
         //renderShapes(data);
     };
 
+    /**
+     * render list of shapes on screen.
+     */
     var renderShapes = function (data) {
     	console.debug("renderShapes shapes:", data.shapes);
     	if (data.shapes == null || data.imgTrafo == null || !data.settings.isVectorActive) 
@@ -174,11 +177,12 @@
         	data.$svg.remove();
         }
         var settings = data.settings;
+        var css = settings.cssPrefix;
         var trafo = data.imgTrafo;
     	var svg = '<svg xmlns="http://www.w3.org/2000/svg"\
     	    viewBox="'+data.imgRect.getAsSvg()+'"\
     	    class="'+settings.cssPrefix+'overlay"\
-    		style="position:absolute; z-index:10; pointer-events:none">';
+    		style="position:absolute; z-index:10; pointer-events:visiblePainted;">';
     	for (var i in data.shapes) {
     		var vec = data.shapes[i];
     		// use given id
@@ -201,6 +205,16 @@
     					x2="'+p2.x+'" y2="'+p2.y+'"\
     					stroke="'+stroke+'" stroke-width="'+strokeWidth+'"\
     					/>';
+    			if (props.editable != null) {
+    			    svg += '<rect \
+    			        x="'+(p1.x-5)+'" y="'+(p1.y-5)+'" width="10" height="10"\
+    			        stroke="darkgrey" stroke-width="1" fill="none"\
+    			        class="'+css+'svg-handle"/>';
+                    /* svg += '<circle \
+                        cx="'+p1.x+'" cy="'+p1.y+'" r="5"\
+                        stroke="blue" stroke-width="1" fill="none"\
+                        class="'+css+'svg-handle"/>'; */
+    			}
     		} else if (gt === 'Rectangle') {
     			/*
     			 * Rectangle

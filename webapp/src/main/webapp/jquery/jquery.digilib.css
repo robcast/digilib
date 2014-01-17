@@ -393,6 +393,11 @@ div.dl-digilib a img.dl-button {
     border:none;
 }
 
+/* SVG */
+div.dl-digilib .dl-svg-handle:hover {
+	fill: red;
+}
+
 /* special definitions for embedded */
 div.dl-digilib.dl-embedded {
 	position: relative;
