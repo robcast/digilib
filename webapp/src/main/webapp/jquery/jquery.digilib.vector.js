@@ -48,8 +48,11 @@
     // affine geometry
     var geom = null;
     // plugin object with digilib data
-    var digilib;
-
+    var digilib = null;
+    // SVG namespace
+    var svgNS = 'http://www.w3.org/2000/svg';
+    
+    
     var buttons = {
     };
 
@@ -61,7 +64,9 @@
         // default SVG stroke-width
         'defaultStrokeWidth' : '2',
         // default SVG fill
-        'defaultFill' : 'none'
+        'defaultFill' : 'none',
+        // grab handle size
+        'editHandleSize' : 10
     };
 
     var actions = {
@@ -177,68 +182,103 @@
         	data.$svg.remove();
         }
         var settings = data.settings;
-        var css = settings.cssPrefix;
-        var trafo = data.imgTrafo;
-    	var svg = '<svg xmlns="http://www.w3.org/2000/svg"\
-    	    viewBox="'+data.imgRect.getAsSvg()+'"\
-    	    class="'+settings.cssPrefix+'overlay"\
-    		style="position:absolute; z-index:10; pointer-events:visiblePainted;">';
-    	for (var i in data.shapes) {
-    		var vec = data.shapes[i];
-    		// use given id
-    		var id = (vec.id != null) ? 'id="'+vec.id+'"' : '';
-    		// set properties
-			var props = vec.properties || {};
-			var stroke = props['stroke'] || settings.defaultStroke;
-			var strokeWidth = props['stroke-width'] || settings.defaultStrokeWidth;
-			var fill = props['fill'] || settings.defaultFill;
-			var coords = vec.geometry.coordinates;
-    		var gt = vec.geometry.type;
-    		if (gt === 'Line') {
-        		/*
-        		 * Line
-        		 */
-    		    var p1 = trafo.transform(geom.position(coords[0][0], coords[0][1]));
-                var p2 = trafo.transform(geom.position(coords[1][0], coords[1][1]));
-    			svg += '<line '+id+'\
-    					x1="'+p1.x+'" y1="'+p1.y+'"\
-    					x2="'+p2.x+'" y2="'+p2.y+'"\
-    					stroke="'+stroke+'" stroke-width="'+strokeWidth+'"\
-    					/>';
-    			if (props.editable != null) {
-    			    svg += '<rect \
-    			        x="'+(p1.x-5)+'" y="'+(p1.y-5)+'" width="10" height="10"\
-    			        stroke="darkgrey" stroke-width="1" fill="none"\
-    			        class="'+css+'svg-handle"/>';
-                    /* svg += '<circle \
-                        cx="'+p1.x+'" cy="'+p1.y+'" r="5"\
-                        stroke="blue" stroke-width="1" fill="none"\
-                        class="'+css+'svg-handle"/>'; */
-    			}
-    		} else if (gt === 'Rectangle') {
-    			/*
-    			 * Rectangle
-    			 */
-                var p1 = trafo.transform(geom.position(coords[0][0], coords[0][1]));
-                var p2 = trafo.transform(geom.position(coords[1][0], coords[1][1]));
-    			var rect = geom.rectangle(p1, p2);
-    			svg += '<rect '+id+'\
-    					x="'+rect.x+'" y="'+rect.y+'"\
-    					width="'+rect.width+'" height="'+rect.height+'"\
-    					stroke="'+stroke+'" stroke-width="'+strokeWidth+'"\
-    					fill="'+fill+'"\
-    					/>';
-    		};
-    	}
-    	svg += '</svg>';
-    	$svg = $(svg);
-    	data.$elem.append($svg);
+    	var $svg = $(createSvg('svg', {
+    	    'viewBox': data.imgRect.getAsSvg(),
+    	    'class': settings.cssPrefix+'overlay',
+    		'style': 'position:absolute; z-index:10; pointer-events:none;'}));
+        // adjust svg element size and position (doesn't work with .adjustDiv())
+        $svg.css(data.imgRect.getAsCss());
         data.$svg = $svg;
-    	// adjust svg element size and position (doesn't work with .adjustDiv())
-    	data.$svg.css(data.imgRect.getAsCss());
+    	for (var i in data.shapes) {
+    		var shape = data.shapes[i];
+    		renderShape(data, shape, $svg);
+    	}
+    	data.$elem.append($svg);
     };
     
-    
+    /**
+     * render a shape on screen.
+     * 
+     * Creates a SVG element and adds it to $svg.
+     * Puts a reference to the element in the shape object.
+     */
+    var renderShape = function (data, shape, $svg) {
+        if ($svg == null) {
+            if (data.$svg == null) {
+                renderShapes(data);
+            }
+            $svg = data.$svg;
+        }
+        var settings = data.settings;
+        var css = settings.cssPrefix;
+        var hs = settings.editHandleSize;
+        var trafo = data.imgTrafo;
+        // use given id
+        var id = digilib.fn.createId(shape.id, css+'svg-');
+        // set properties
+        var props = shape.properties || {};
+        var stroke = props['stroke'] || settings.defaultStroke;
+        var strokeWidth = props['stroke-width'] || settings.defaultStrokeWidth;
+        var fill = props['fill'] || settings.defaultFill;
+        var coords = shape.geometry.coordinates;
+        var gt = shape.geometry.type;
+        if (gt === 'Line') {
+            /*
+             * Line
+             */
+            var p1 = trafo.transform(geom.position(coords[0]));
+            var p2 = trafo.transform(geom.position(coords[1]));
+            var $elem = $(createSvg('line', {
+                'id': id,
+                'x1': p1.x, 'y1': p1.y,
+                'x2': p2.x, 'y2': p2.y,
+                'stroke': stroke, 'stroke-width': strokeWidth}));
+            shape.$elem = $elem;
+            $svg.append($elem);
+            if (props.editable) {
+                var e1 = createSvg('rect', {
+                    'x': p1.x-hs/2, 'y': p1.y-hs/2, 'width': hs, 'height': hs,
+                    'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
+                    'class': css+'svg-handle', 'style': 'pointer-events:all'});
+                var e2 = createSvg('rect', {
+                    'x': p2.x-hs/2, 'y': p2.y-hs/2, 'width': hs, 'height': hs,
+                    'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
+                    'class': css+'svg-handle', 'style': 'pointer-events:all'});
+                var $editElems = $([e1, e2]);
+                shape.$editElems = $editElems;
+                $svg.append($editElems);
+            }
+        } else if (gt === 'Rectangle') {
+            /*
+             * Rectangle
+             */
+            var p1 = trafo.transform(geom.position(coords[0]));
+            var p2 = trafo.transform(geom.position(coords[1]));
+            var rect = geom.rectangle(p1, p2);
+            var $elem = $(createSvg('rect', {
+                'id': id,
+                'x': rect.x, 'y': rect.y,
+                'width': rect.width, 'height': rect.height,
+                'stroke': stroke, 'stroke-width': strokeWidth,
+                'fill': fill}));
+            shape.$elem = $elem;
+            $svg.append($elem);
+            if (props.editable) {
+                var e1 = createSvg('rect', {
+                    'x': p1.x-hs/2, 'y': p1.y-hs/2, 'width': hs, 'height': hs,
+                    'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
+                    'class': css+'svg-handle', 'style': 'pointer-events:all'});
+                var e2 = createSvg('rect', {
+                    'x': p2.x-hs/2, 'y': p2.y-hs/2, 'width': hs, 'height': hs,
+                    'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
+                    'class': css+'svg-handle', 'style': 'pointer-events:all'});
+                var $editElems = $([e1, e2]);
+                shape.$editElems = $editElems;
+                $svg.append($editElems);
+            }
+        }
+    };
+
     var handleUpdate = function (evt) {
         console.debug("vector: handleUpdate");
         var data = this;
@@ -257,11 +297,8 @@
     var defineShape = function(data, shape, onComplete) {
     	var shapeType = shape.geometry.type;
     	var shapeId = shape.id;
-    	if (shapeId == null) {
-    		shapeId = data.settings.cssPrefix+'shape-'+Date.now();
-    		shape.id = shapeId;
-    	}
-        var CSS = data.settings.cssPrefix;
+    	shapeId = digilib.fn.createId(shapeId, data.settings.cssPrefix+'shape-');
+    	shape.id = shapeId;
         var $elem = data.$elem;
         var $scaler = data.$scaler;
         var picRect = geom.rectangle($scaler);
@@ -269,7 +306,7 @@
         var bodyRect = geom.rectangle($body);
         var pt1, pt2;
         // overlay div prevents other elements from reacting to mouse events 
-        var $overlayDiv = $('<div class="'+CSS+'shapeOverlay" style="position:absolute; z-index:100;"/>');
+        var $overlayDiv = $('<div class="'+data.settings.cssPrefix+'shapeOverlay" style="position:absolute; z-index:100;"/>');
         $elem.append($overlayDiv);
         bodyRect.adjustDiv($overlayDiv);
         // shape element reference
@@ -281,9 +318,8 @@
             if (shapeType === 'Line' || shapeType === 'Rectangle') {
             	shape.geometry.coordinates = [[p1.x, p1.y], [p1.x, p1.y]];
             }
-            data.shapes.push(shape);
-            renderShapes(data);
-            $shape = $('#'+shapeId);
+            renderShape(data, shape);
+            $shape = shape.$elem;
             // register events
             $overlayDiv.on("mousemove.dlShape", shapeMove);
             $overlayDiv.on("mouseup.dlShape", shapeEnd);
@@ -329,6 +365,7 @@
                 shape.geometry.coordinates[1] = [p2.x, p2.y];
             }
             console.debug("new shape:", shape);
+            data.shapes.push(shape);
             $overlayDiv.remove();
         	if (onComplete != null) {
         		onComplete(data, shape);
@@ -340,6 +377,19 @@
         $overlayDiv.one('mousedown.dlShape', shapeStart);
     };
 
+    /**
+     * create a SVG element
+     */
+    var createSvg = function (name, attrs) {
+        var elem = document.createElementNS(svgNS, name);
+        if (attrs != null) {
+            for (var att in attrs) {
+                elem.setAttributeNS(null, att, attrs[att]);
+            };
+        }
+        return elem;
+    };
+    
     // plugin object, containing name, install and init routines 
     // all shared objects are filled by digilib on registration
     var plugin = {

@@ -394,6 +394,9 @@ div.dl-digilib a img.dl-button {
 }
 
 /* SVG */
+div.dl-digilib .dl-svg-handle {
+	stroke: blue;
+}
 div.dl-digilib .dl-svg-handle:hover {
 	fill: red;
 }

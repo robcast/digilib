@@ -1754,7 +1754,21 @@ function($) {
         });
     };
 
-
+    /** 
+     * return an id.
+     * uses the given id or creates a random string (with prefix).
+     * 
+     * @param id default value
+     * @param prefix
+     */
+    var createId = function (id, prefix) {
+        if (id != null && id != '') return id;
+        if (prefix == null) {
+            prefix = settings.cssPrefix;
+        }
+        return prefix+Date.now();
+    };
+    
     // fallback for console.log calls
     if (customConsole) {
         var logFunction = function(type) {
@@ -1814,7 +1828,8 @@ function($) {
             centerOnScreen : centerOnScreen,
             withdraw : withdraw,
             isOnScreen : isOnScreen,
-            find : find
+            find : find,
+            createId : createId
     };
 
     // hook digilib plugin into jquery
