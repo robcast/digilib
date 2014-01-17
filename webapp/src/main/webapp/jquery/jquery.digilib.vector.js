@@ -345,7 +345,7 @@
             // remove move/end handler
             $document.off("mousemove.dlVertexDrag", dragMove);
             $document.off("mouseup.dlVertexDrag", dragEnd);
-            // rearm handle
+            // rearm start handler
             $handle.one("mousedown.dlVertexDrag", dragStart);
             if (onComplete != null) {
                 onComplete(shape);
@@ -380,6 +380,8 @@
                 shape.geometry.coordinates = [[p.x, p.y], [p.x, p.y]];
             } else {
                 console.error("unsupported shape type: "+shapeType);
+                $overlayDiv.remove();
+                return false;
             }
             // draw shape
             renderShape(data, shape);
@@ -394,7 +396,8 @@
                 }
             })(evt);
             return false;
-        }; 
+        };
+        
         // start by clicking
         $overlayDiv.one('mousedown.dlShape', shapeStart);
     };
@@ -404,11 +407,12 @@
         var data = this;
         if (data.shapes == null || data.imgTrafo == null || !data.settings.isVectorActive)
             return;
-        if (data.zoomArea != data.vectorOldZA) {
+        if (data.imgTrafo != data.vectorOldImgTrafo) {
+            // imgTrafo changed
             renderShapes(data);
-            data.vectorOldZA = data.zoomArea;
+            data.vectorOldImgTrafo = data.imgTrafo;
         }
-        data.$svg.show();
+        //data.$svg.show();
     };
 
     /**
