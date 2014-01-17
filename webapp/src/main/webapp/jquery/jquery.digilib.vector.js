@@ -412,7 +412,6 @@
             renderShapes(data);
             data.vectorOldImgTrafo = data.imgTrafo;
         }
-        //data.$svg.show();
     };
 
     /**
