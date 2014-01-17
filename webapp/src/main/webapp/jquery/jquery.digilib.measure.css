@@ -13,6 +13,35 @@ div#measure-toolbar {
     z-index: 20;
 }
 
+span.dl-measure-label {
+    padding: 0px 5px;
+    }
+
+span.dl-measure-number {
+    color: lightgreen;
+    background-color: #606060;
+    padding: 2px;
+    font-weight: bold;
+    }
+
+input#measure-val2, select#measure-shape, select#measure-unit1, select#measure-unit2 {
+    color: lightgreen;
+    background-color: #606060;
+    }
+
+select#measure-shape:focus  {
+    color: black;
+    background-color: white;
+    }
+
+option:disabled {
+    color: black;
+}
+
+button.dl-drawing {
+    background-color: lightgreen;
+}
+
 option.dl-units {
     margin-left: 10px;
 }
