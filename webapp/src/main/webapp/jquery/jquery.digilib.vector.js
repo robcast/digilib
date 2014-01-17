@@ -236,17 +236,19 @@
             shape.$elem = $elem;
             $svg.append($elem);
             if (props.editable) {
-                var e1 = createSvg('rect', {
+                var $e1 = $(createSvg('rect', {
                     'x': p1.x-hs/2, 'y': p1.y-hs/2, 'width': hs, 'height': hs,
                     'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
-                    'class': css+'svg-handle', 'style': 'pointer-events:all'});
-                var e2 = createSvg('rect', {
+                    'class': css+'svg-handle', 'style': 'pointer-events:all'}));
+                var $e2 = $(createSvg('rect', {
                     'x': p2.x-hs/2, 'y': p2.y-hs/2, 'width': hs, 'height': hs,
                     'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
-                    'class': css+'svg-handle', 'style': 'pointer-events:all'});
-                var $editElems = $([e1, e2]);
-                shape.$editElems = $editElems;
-                $svg.append($editElems);
+                    'class': css+'svg-handle', 'style': 'pointer-events:all'}));
+                var $vertexElems = [$e1, $e2];
+                shape.$vertexElems = $vertexElems;
+                $svg.append($vertexElems);
+                $e1.on("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 0));
+                $e2.on("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 1));
             }
         } else if (gt === 'Rectangle') {
             /*
@@ -264,21 +266,87 @@
             shape.$elem = $elem;
             $svg.append($elem);
             if (props.editable) {
-                var e1 = createSvg('rect', {
+                var $e1 = $(createSvg('rect', {
                     'x': p1.x-hs/2, 'y': p1.y-hs/2, 'width': hs, 'height': hs,
                     'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
-                    'class': css+'svg-handle', 'style': 'pointer-events:all'});
-                var e2 = createSvg('rect', {
+                    'class': css+'svg-handle', 'style': 'pointer-events:all'}));
+                var $e2 = $(createSvg('rect', {
                     'x': p2.x-hs/2, 'y': p2.y-hs/2, 'width': hs, 'height': hs,
                     'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
-                    'class': css+'svg-handle', 'style': 'pointer-events:all'});
-                var $editElems = $([e1, e2]);
-                shape.$editElems = $editElems;
-                $svg.append($editElems);
+                    'class': css+'svg-handle', 'style': 'pointer-events:all'}));
+                var $vertexElems = [$e1, $e2];
+                shape.$vertexElems = $vertexElems;
+                $svg.append($vertexElems);
+                $e1.on("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 0));
+                $e2.on("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 1));
             }
         }
     };
 
+    var getVertexDragHandler = function (data, shape, vtx) {
+        var $document = $(document);
+        var hs = data.settings.editHandleSize;
+        var $shape = shape.$elem;
+        var $handle = shape.$vertexElems[vtx];
+        var shapeType = shape.geometry.type;
+        var pt, pt0, pt1, pt2, rect;
+        
+        var dragMove = function (evt) {
+            pt = geom.position(evt);
+            pt.clipTo(data.imgRect);
+            // move handle
+            $handle.attr({'x': pt.x-hs/2, 'y': pt.y-hs/2});
+            // update shape element
+            if (shapeType === 'Line') {
+                if (vtx === 0) {
+                    $shape.attr({'x1': pt.x, 'y1': pt.y});
+                } else if (vtx === 1) {
+                    $shape.attr({'x2': pt.x, 'y2': pt.y});
+                }
+            } else if (shapeType === 'Rectangle') {
+                if (vtx === 0) {
+                    rect = geom.rectangle(pt, pt2);
+                } else if (vtx === 1) {
+                    rect = geom.rectangle(pt1, pt);
+                }
+                $shape.attr({'x': rect.x, 'y': rect.y,
+                    'width': rect.width, 'height': rect.height});               
+            }
+            return false;
+        };
+
+        var dragEnd = function (evt) {
+            pt = geom.position(evt);
+            pt.clipTo(data.imgRect);
+            var p1 = data.imgTrafo.invtransform(pt);
+            // update shape element
+            if (shapeType === 'Line') {
+                shape.geometry.coordinates[vtx] = [p1.x, p1.y];
+            } else if (shapeType === 'Rectangle') {
+                shape.geometry.coordinates[vtx] = [p1.x, p1.y];
+            }
+            $document.off("mousemove.dlVertexDrag", dragMove);
+            $document.off("mouseup.dlVertexDrag", dragEnd);
+            return false;
+        };
+
+        // dragStart
+        return function (evt) {
+            // cancel if not left-click
+            if (evt.which != 1) return;
+            pt0 = geom.position(evt);
+            if (shapeType === 'Rectangle') {
+                // save rectangle screen endpoints
+                pt1 = data.imgTrafo.transform(geom.position(shape.geometry.coordinates[0]));
+                pt2 = data.imgTrafo.transform(geom.position(shape.geometry.coordinates[1]));
+            }
+            $document.on("mousemove.dlVertexDrag", dragMove);
+            $document.on("mouseup.dlVertexDrag", dragEnd);            
+            return false;
+        };
+        
+    };
+    
     var handleUpdate = function (evt) {
         console.debug("vector: handleUpdate");
         var data = this;
