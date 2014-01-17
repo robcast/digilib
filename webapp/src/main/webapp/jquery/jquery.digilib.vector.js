@@ -247,8 +247,8 @@
                 var $vertexElems = [$e1, $e2];
                 shape.$vertexElems = $vertexElems;
                 $svg.append($vertexElems);
-                $e1.on("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 0));
-                $e2.on("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 1));
+                $e1.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 0));
+                $e2.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 1));
             }
         } else if (gt === 'Rectangle') {
             /*
@@ -277,19 +277,33 @@
                 var $vertexElems = [$e1, $e2];
                 shape.$vertexElems = $vertexElems;
                 $svg.append($vertexElems);
-                $e1.on("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 0));
-                $e2.on("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 1));
+                $e1.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 0));
+                $e2.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 1));
             }
         }
     };
 
-    var getVertexDragHandler = function (data, shape, vtx) {
+    var getVertexDragHandler = function (data, shape, vtx, onComplete) {
         var $document = $(document);
         var hs = data.settings.editHandleSize;
         var $shape = shape.$elem;
-        var $handle = shape.$vertexElems[vtx];
+        var $handle = (shape.$vertexElems != null) ? shape.$vertexElems[vtx] : $();
         var shapeType = shape.geometry.type;
         var pt, pt0, pt1, pt2, rect;
+
+        var dragStart = function (evt) {
+            // cancel if not left-click
+            if (evt.which != 1) return;
+            pt0 = geom.position(evt);
+            if (shapeType === 'Rectangle') {
+                // save rectangle screen endpoints
+                pt1 = data.imgTrafo.transform(geom.position(shape.geometry.coordinates[0]));
+                pt2 = data.imgTrafo.transform(geom.position(shape.geometry.coordinates[1]));
+            }
+            $document.on("mousemove.dlVertexDrag", dragMove);
+            $document.on("mouseup.dlVertexDrag", dragEnd);            
+            return false;
+        };
         
         var dragMove = function (evt) {
             pt = geom.position(evt);
@@ -317,6 +331,9 @@
 
         var dragEnd = function (evt) {
             pt = geom.position(evt);
+            if (pt.distance(pt0) < 5) {
+                return false;
+            }
             pt.clipTo(data.imgRect);
             var p1 = data.imgTrafo.invtransform(pt);
             // update shape element
@@ -325,27 +342,61 @@
             } else if (shapeType === 'Rectangle') {
                 shape.geometry.coordinates[vtx] = [p1.x, p1.y];
             }
+            // remove move/end handler
             $document.off("mousemove.dlVertexDrag", dragMove);
             $document.off("mouseup.dlVertexDrag", dragEnd);
-            $(data).trigger('changeShape', shape);
+            // rearm handle
+            $handle.one("mousedown.dlVertexDrag", dragStart);
+            if (onComplete != null) {
+                onComplete(shape);
+            } else {
+                $(data).trigger('changeShape', shape);
+            }
             return false;
         };
 
-        // dragStart
-        return function (evt) {
-            // cancel if not left-click
-            if (evt.which != 1) return;
-            pt0 = geom.position(evt);
-            if (shapeType === 'Rectangle') {
-                // save rectangle screen endpoints
-                pt1 = data.imgTrafo.transform(geom.position(shape.geometry.coordinates[0]));
-                pt2 = data.imgTrafo.transform(geom.position(shape.geometry.coordinates[1]));
-            }
-            $document.on("mousemove.dlVertexDrag", dragMove);
-            $document.on("mouseup.dlVertexDrag", dragEnd);            
-            return false;
-        };
+        // return drag start handler
+        return dragStart;
+    };
+    
+    /** 
+     * define a shape by click and drag.
+     */
+    var defineShape = function(data, shape, onComplete) {
+        var shapeType = shape.geometry.type;
+        var $elem = data.$elem;
+        var $body = $('body');
+        var bodyRect = geom.rectangle($body);
+        // overlay div prevents other elements from reacting to mouse events 
+        var $overlayDiv = $('<div class="'+data.settings.cssPrefix+'shapeOverlay" style="position:absolute; z-index:100;"/>');
+        $elem.append($overlayDiv);
+        bodyRect.adjustDiv($overlayDiv);
         
+        var shapeStart = function (evt) {
+            var pt = geom.position(evt);
+            // setup shape
+            var p = data.imgTrafo.invtransform(pt);
+            if (shapeType === 'Line' || shapeType === 'Rectangle') {
+                shape.geometry.coordinates = [[p.x, p.y], [p.x, p.y]];
+            } else {
+                console.error("unsupported shape type: "+shapeType);
+            }
+            // draw shape
+            renderShape(data, shape);
+            // execute vertex drag handler on second vertex
+            getVertexDragHandler(data, shape, 1, function (newshape) {
+                // dragging vertex done
+                console.debug("new shape:", shape);
+                data.shapes.push(shape);
+                $overlayDiv.remove();
+                if (onComplete != null) {
+                    onComplete(data, shape);
+                }
+            })(evt);
+            return false;
+        }; 
+        // start by clicking
+        $overlayDiv.one('mousedown.dlShape', shapeStart);
     };
     
     var handleUpdate = function (evt) {
@@ -358,92 +409,6 @@
             data.vectorOldZA = data.zoomArea;
         }
         data.$svg.show();
-    };
-
-    /** 
-     * define a shape by click and drag.
-     */
-    var defineShape = function(data, shape, onComplete) {
-    	var shapeType = shape.geometry.type;
-    	var shapeId = shape.id;
-    	shapeId = digilib.fn.createId(shapeId, data.settings.cssPrefix+'shape-');
-    	shape.id = shapeId;
-        var $elem = data.$elem;
-        var $scaler = data.$scaler;
-        var picRect = geom.rectangle($scaler);
-        var $body = $('body');
-        var bodyRect = geom.rectangle($body);
-        var pt1, pt2;
-        // overlay div prevents other elements from reacting to mouse events 
-        var $overlayDiv = $('<div class="'+data.settings.cssPrefix+'shapeOverlay" style="position:absolute; z-index:100;"/>');
-        $elem.append($overlayDiv);
-        bodyRect.adjustDiv($overlayDiv);
-        // shape element reference
-        var $shape = null;
-        var shapeStart = function (evt) {
-            pt1 = geom.position(evt);
-            // setup and show shape
-            p1 = data.imgTrafo.invtransform(pt1);
-            if (shapeType === 'Line' || shapeType === 'Rectangle') {
-            	shape.geometry.coordinates = [[p1.x, p1.y], [p1.x, p1.y]];
-            }
-            renderShape(data, shape);
-            $shape = shape.$elem;
-            // register events
-            $overlayDiv.on("mousemove.dlShape", shapeMove);
-            $overlayDiv.on("mouseup.dlShape", shapeEnd);
-            return false;
-        };
-
-        // mouse move handler
-        var shapeMove = function (evt) {
-            pt2 = geom.position(evt);
-            pt2.clipTo(picRect);
-            // update shape
-            if (shapeType === 'Line') {
-            	$shape.attr({'x2': pt2.x, 'y2': pt2.y});
-            } else if (shapeType === 'Rectangle') {
-                var rect = geom.rectangle(pt1, pt2);
-            	$shape.attr({'x': rect.x, 'y': rect.y,
-            		'width': rect.width, 'height': rect.height});            	
-            }
-            return false;
-        };
-
-        // mouseup handler: end moving
-        var shapeEnd = function (evt) {
-            pt2 = geom.position(evt);
-            // assume a click and continue if the area is too small
-            if (pt2.distance(pt1) < 5) {
-            	if (onComplete != null) {
-            		onComplete(data, null);
-            	}
-                return false;
-            };
-            // unregister events
-            $overlayDiv.off("mousemove.dlShape", shapeMove);
-            $overlayDiv.off("mouseup.dlShape", shapeEnd);
-            // clip and transform
-            pt2.clipTo(picRect);
-            // update shape
-            if (shapeType === 'Line') {
-                var p2 = data.imgTrafo.invtransform(pt2);
-                shape.geometry.coordinates[1] = [p2.x, p2.y];
-            } else if (shapeType === 'Rectangle') {
-                var p2 = data.imgTrafo.invtransform(pt2);
-                shape.geometry.coordinates[1] = [p2.x, p2.y];
-            }
-            console.debug("new shape:", shape);
-            data.shapes.push(shape);
-            $overlayDiv.remove();
-        	if (onComplete != null) {
-        		onComplete(data, shape);
-        	}            
-            return false;
-        };
-
-        // start by clicking
-        $overlayDiv.one('mousedown.dlShape', shapeStart);
     };
 
     /**

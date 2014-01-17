@@ -1317,7 +1317,7 @@ function($) {
             if (clickRect.getArea() <= 5) {
                 onComplete(data, null);
                 return false;
-                };
+            };
             // unregister events
             $overlayDiv.off("mousemove.dlArea", areaMove);
             $overlayDiv.off("mouseup.dlArea", areaEnd);
