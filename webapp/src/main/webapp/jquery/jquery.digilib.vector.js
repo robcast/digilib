@@ -28,8 +28,11 @@
  * 
  * Shapes are objects with "geometry" and "properties" members.
  * Geometry is an object with "type" and "coordinates" members.
- * Types: Line, Rectangle. Coordinates are lists of pairs of relative coordinates.
- * Properties are SVG properties "stroke", "stroke-width", "fill" and other properties.
+ * Currently supported types: "Line", "Rectangle". 
+ * Coordinates are lists of pairs of relative coordinates.
+ * Properties are the SVG properties "stroke", "stroke-width", "fill" and other properties.
+ * A property 'editable':true will display drag-handles to change the shape.
+ * Editing the shape will send a "changeShape"(shape) event.
  * If a shape has an "id" member its value will be used in SVG.
  * 
  * shape = {
@@ -38,7 +41,8 @@
  *     'coordinates' : [[0.1, 0.2], [0.3, 0.4]]
  *   },
  *   'properties' : {
- *     'stroke' : 'blue'
+ *     'stroke' : 'blue',
+ *     'editable' : true
  *   }
  * }
  * 
@@ -73,7 +77,7 @@
         /**
          * set list of vector objects (shapes).
          * 
-         * replaces existing shapes.
+         * replaces all existing shapes.
          * 
          * @param data
          * @param shapes
@@ -87,8 +91,8 @@
          * add vector object (shape) or create one by clicking.
          * 
          * For interactive use shape has to be initialized with a shape object with
-         * type but no coordinates, e.g {'geometry':{'type':'Line'}}. The onComplete
-         * function will be called with data and the new shape object as parameters.
+         * type but no coordinates, e.g {'geometry':{'type':'Line'}}. 
+         * onComplete(data, newShape) will be called when done.
          * 
          * @param data
          * @param shape
@@ -139,11 +143,13 @@
         			shapes.splice(i, 1);
         		}
         	}
-        	displayShapes(data);
+        	renderShapes(data);
         }        	
     };
 
-    // plugin installation routine, called by digilib on each plugin object.
+    /**
+     * plugin installation routine, called by digilib on each plugin object.
+     */
     var install = function(plugin) {
         digilib = plugin;
         console.debug('installing vector plugin. digilib:', digilib);
@@ -155,24 +161,33 @@
         $.extend(digilib.buttons, buttons);
     };
 
-    // plugin initialization
+    /** 
+     * plugin initialization
+     */
     var init = function (data) {
         console.debug('initialising vector plugin. data:', data);
         var $data = $(data);
         // install event handlers
-        $data.bind('setup', handleSetup);
         $data.bind('update', handleUpdate);
     };
 
-
-    var handleSetup = function (evt) {
-        console.debug("vector: handleSetup");
+    /**
+     * handle update event
+     */
+    var handleUpdate = function (evt) {
+        console.debug("vector: handleUpdate");
         var data = this;
-        //renderShapes(data);
+        if (data.shapes == null || data.imgTrafo == null || !data.settings.isVectorActive)
+            return;
+        if (data.imgTrafo != data.vectorOldImgTrafo) {
+            // imgTrafo changed
+            renderShapes(data);
+            data.vectorOldImgTrafo = data.imgTrafo;
+        }
     };
 
     /**
-     * render list of shapes on screen.
+     * render all shapes on screen.
      */
     var renderShapes = function (data) {
     	console.debug("renderShapes shapes:", data.shapes);
@@ -200,7 +215,7 @@
      * render a shape on screen.
      * 
      * Creates a SVG element and adds it to $svg.
-     * Puts a reference to the element in the shape object.
+     * Puts a reference $elem in the shape object.
      */
     var renderShape = function (data, shape, $svg) {
         if ($svg == null) {
@@ -283,6 +298,14 @@
         }
     };
 
+    /**
+     * return a vertexDragHandler function.
+     * 
+     * @param data
+     * @param shape shape to drag
+     * @param vtx vertex number on shape
+     * @onComplete function(data, shape)
+     */
     var getVertexDragHandler = function (data, shape, vtx, onComplete) {
         var $document = $(document);
         var hs = data.settings.editHandleSize;
@@ -348,7 +371,7 @@
             // rearm start handler
             $handle.one("mousedown.dlVertexDrag", dragStart);
             if (onComplete != null) {
-                onComplete(shape);
+                onComplete(data, shape);
             } else {
                 $(data).trigger('changeShape', shape);
             }
@@ -361,6 +384,12 @@
     
     /** 
      * define a shape by click and drag.
+     *
+     * The given shape object has to have a type, but its coordinates will be overwritten.
+     *
+     * @param data
+     * @param shape the shape to define
+     * @onComplete function(data, shape)
      */
     var defineShape = function(data, shape, onComplete) {
         var shapeType = shape.geometry.type;
@@ -386,13 +415,13 @@
             // draw shape
             renderShape(data, shape);
             // execute vertex drag handler on second vertex
-            getVertexDragHandler(data, shape, 1, function (newshape) {
+            getVertexDragHandler(data, shape, 1, function (data, newshape) {
                 // dragging vertex done
-                console.debug("new shape:", shape);
-                data.shapes.push(shape);
+                console.debug("new shape:", newshape);
+                data.shapes.push(newshape);
                 $overlayDiv.remove();
                 if (onComplete != null) {
-                    onComplete(data, shape);
+                    onComplete(data, newshape);
                 }
             })(evt);
             return false;
@@ -402,20 +431,11 @@
         $overlayDiv.one('mousedown.dlShape', shapeStart);
     };
     
-    var handleUpdate = function (evt) {
-        console.debug("vector: handleUpdate");
-        var data = this;
-        if (data.shapes == null || data.imgTrafo == null || !data.settings.isVectorActive)
-            return;
-        if (data.imgTrafo != data.vectorOldImgTrafo) {
-            // imgTrafo changed
-            renderShapes(data);
-            data.vectorOldImgTrafo = data.imgTrafo;
-        }
-    };
-
     /**
-     * create a SVG element
+     * create a SVG element with attributes.
+     * 
+     * @param name tag name
+     * @param attrs object with attributes
      */
     var createSvg = function (name, attrs) {
         var elem = document.createElementNS(svgNS, name);
