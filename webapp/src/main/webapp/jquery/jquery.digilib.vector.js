@@ -27,10 +27,10 @@
  * Displays vector shapes on top of the image.
  * 
  * Shapes are objects with "geometry" and "properties" members.
- * Geometry is an object with "type" and "coordinates" members.
+ * geometry is an object with "type" and "coordinates" members.
  * Currently supported types: "Line", "Rectangle". 
- * Coordinates are lists of pairs of relative coordinates.
- * Properties are the SVG properties "stroke", "stroke-width", "fill" and other properties.
+ * goordinates is a list of pairs of relative coordinates.
+ * properties are the SVG properties "stroke", "stroke-width", "fill" and other properties.
  * A property 'editable':true will display drag-handles to change the shape.
  * Editing the shape will send a "changeShape"(shape) event.
  * If a shape has an "id" member its value will be used in SVG.
@@ -56,10 +56,6 @@
     // SVG namespace
     var svgNS = 'http://www.w3.org/2000/svg';
     
-    
-    var buttons = {
-    };
-
     var defaults = {
         // is vector active?
         'isVectorActive' : true,
@@ -144,7 +140,26 @@
         		}
         	}
         	renderShapes(data);
-        }        	
+        },
+        
+        /**
+         * add vector layer.
+         * 
+         * Layer is an object with "projection" and "svg" members.
+         * projection can be "relative": relative (0..1) coordinates, 
+         * "screen": on-screen coordinates (requires re-scaling).
+         * svg is an (unattached) SVG dom object.
+         * 
+         * @param date
+         * @param layer
+         */
+        addVectorLayer : function (data, layer) {
+            data.vectorLayers.push(layer);
+            var $svg = $(layer.svg);
+            layer.$svg = $svg;
+            data.$elem.append($svg);
+            renderLayers(data);
+        }
     };
 
     /**
@@ -158,7 +173,7 @@
         // add defaults, actions, buttons to the main digilib object
         $.extend(digilib.defaults, defaults);
         $.extend(digilib.actions, actions);
-        $.extend(digilib.buttons, buttons);
+        //$.extend(digilib.buttons, buttons);
     };
 
     /** 
@@ -167,6 +182,8 @@
     var init = function (data) {
         console.debug('initialising vector plugin. data:', data);
         var $data = $(data);
+        // create default shapes layer
+        data.vectorLayers = [{'projection':'screen'}];
         // install event handlers
         $data.bind('update', handleUpdate);
     };
@@ -177,15 +194,34 @@
     var handleUpdate = function (evt) {
         console.debug("vector: handleUpdate");
         var data = this;
-        if (data.shapes == null || data.imgTrafo == null || !data.settings.isVectorActive)
-            return;
-        if (data.imgTrafo != data.vectorOldImgTrafo) {
-            // imgTrafo changed
-            renderShapes(data);
-            data.vectorOldImgTrafo = data.imgTrafo;
+        if (data.imgTrafo == null || !data.settings.isVectorActive) return;
+        if (data.imgTrafo != data._vectorImgTrafo) {
+            // imgTrafo changed -- redraw
+            renderLayers(data);
+            // save new imgTrafo
+            data._vectorImgTrafo = data.imgTrafo;
         }
     };
 
+    /**
+     * render all layers on screen
+     */
+    var renderLayers = function (data) {
+        for (var i in data.vectorLayers) {
+            // transform additional layers
+            var layer = data.vectorLayers[i];
+            if (i === 0) {
+                // assume that the shapes layer is first
+                renderShapes(data);
+            } else if (layer.projection === 'relative') {
+                // adjust svg element size and position (doesn't work with .adjustDiv())
+                layer.$svg.css(data.imgRect.getAsCss());
+                // set current viewBox (jQuery lowercases attributes)
+                layer.$svg[0].setAttribute('viewBox', data.zoomArea.getAsSvg());
+            }
+        }        
+    };
+    
     /**
      * render all shapes on screen.
      */
@@ -193,17 +229,17 @@
     	console.debug("renderShapes shapes:", data.shapes);
     	if (data.shapes == null || data.imgTrafo == null || !data.settings.isVectorActive) 
     	    return;
-        if (data.$svg != null) {
-        	data.$svg.remove();
+    	var $svg = data.vectorLayers[0].$svg;
+        if ($svg != null) {
+        	$svg.remove();
         }
-        var settings = data.settings;
-    	var $svg = $(createSvg('svg', {
+    	$svg = $(createSvg('svg', {
     	    'viewBox': data.imgRect.getAsSvg(),
-    	    'class': settings.cssPrefix+'overlay',
+    	    'class': data.settings.cssPrefix+'overlay',
     		'style': 'position:absolute; z-index:10; pointer-events:none;'}));
         // adjust svg element size and position (doesn't work with .adjustDiv())
         $svg.css(data.imgRect.getAsCss());
-        data.$svg = $svg;
+        data.vectorLayers[0].$svg = $svg;
     	for (var i in data.shapes) {
     		var shape = data.shapes[i];
     		renderShape(data, shape, $svg);
@@ -219,10 +255,10 @@
      */
     var renderShape = function (data, shape, $svg) {
         if ($svg == null) {
-            if (data.$svg == null) {
+            if (data.vectorLayers[0].$svg == null) {
                 renderShapes(data);
             }
-            $svg = data.$svg;
+            $svg = data.vectorLayers[0].$svg;
         }
         var settings = data.settings;
         var css = settings.cssPrefix;
