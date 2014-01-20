@@ -207,6 +207,7 @@
      * render all layers on screen
      */
     var renderLayers = function (data) {
+        if (data.imgRect == null) return;
         for (var i in data.vectorLayers) {
             // transform additional layers
             var layer = data.vectorLayers[i];
