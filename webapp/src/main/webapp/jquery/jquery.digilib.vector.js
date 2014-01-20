@@ -115,7 +115,7 @@
          * @returns shape
          */
         getShapeById : function(data, id) {
-        	shapes = data.shapes;
+        	var shapes = data.shapes;
         	if (shapes == null) return null;
         	for (var i in shapes) {
         		if (shapes[i].id === id) {
@@ -132,7 +132,7 @@
          * @param id
          */
         removeShapeById : function(data, id) {
-        	shapes = data.shapes;
+        	var shapes = data.shapes;
         	if (shapes == null) return;
         	for (var i in shapes) {
         		if (shapes[i].id === id) {
@@ -210,7 +210,7 @@
         for (var i in data.vectorLayers) {
             // transform additional layers
             var layer = data.vectorLayers[i];
-            if (i === 0) {
+            if (i == 0) {
                 // assume that the shapes layer is first
                 renderShapes(data);
             } else if (layer.projection === 'relative') {
@@ -371,15 +371,15 @@
             $handle.attr({'x': pt.x-hs/2, 'y': pt.y-hs/2});
             // update shape element
             if (shapeType === 'Line') {
-                if (vtx === 0) {
+                if (vtx == 0) {
                     $shape.attr({'x1': pt.x, 'y1': pt.y});
-                } else if (vtx === 1) {
+                } else if (vtx == 1) {
                     $shape.attr({'x2': pt.x, 'y2': pt.y});
                 }
             } else if (shapeType === 'Rectangle') {
-                if (vtx === 0) {
+                if (vtx == 0) {
                     rect = geom.rectangle(pt, pt2);
-                } else if (vtx === 1) {
+                } else if (vtx == 1) {
                     rect = geom.rectangle(pt1, pt);
                 }
                 $shape.attr({'x': rect.x, 'y': rect.y,
