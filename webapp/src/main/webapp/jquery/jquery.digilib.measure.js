@@ -715,8 +715,6 @@
             ],
         // index of default shape
         selectedShape : 0,
-        // factor to convert measured distance to length
-        lenFactor : 2.0,
         // measuring unit (index into unit list)
         unitFrom : 1,
         // converted unit (index into unit list)
@@ -783,9 +781,10 @@
     var onCompleteShape = function(data, shape) {
         console.debug('onCompleteShape', shape);
         data.tbWidgets.draw.removeClass('dl-drawing')
-        if (shape == null || shape.geometry.coordinates == null) {
-            return false; // do nothing if no line was produced
-            };
+        if (shape == null || shape.geometry.coordinates == null) {
+            return false; // do nothing if no line was produced
+            };
+
         var dist = rectifiedDist(data, shape);
         updateLength(data, dist);
         return false;
@@ -803,36 +802,36 @@
     // recalculate units
     var updateUnits = function(data) {
         var val = data.lastMeasuredValue;
-        var $t = data.tbWidgets;
-        var u1 = parseFloat($t.unit1.val());
-        var u2 = parseFloat($t.unit2.val());
-        var v2 = val * u1 / u2;
+        var $t = data.tbWidgets;
+        var u1 = parseFloat($t.unit1.val());
+        var u2 = parseFloat($t.unit2.val());
+        var v2 = val * u1 / u2;
         $t.val2.val(fn.cropFloatStr(v2));
         }
 
     // recalculate after measuring
     var updateLength = function(data, dist) {
         var $t = data.tbWidgets;
-        var fac = data.settings.lenFactor;
-        var val = dist * fac;
-        $t.len.text(fn.cropFloatStr(dist));
-        $t.val1.val(fn.cropFloatStr(val));
-        data.lastMeasuredValue = val;
-        data.lastMeasuredDistance = dist;
-        updateUnits(data);
+        var fac = data.lastMeasureFactor;
+        var val = dist * fac;
+        $t.len.text(fn.cropFloatStr(dist));
+        $t.val1.val(fn.cropFloatStr(val));
+        data.lastMeasuredValue = val;
+        data.lastMeasuredDistance = dist;
+        updateUnits(data);
         };
 
     // recalculate factor after entering a new value in val1
     var updateFactor = function(data) {
         var $t = data.tbWidgets;
-        var val = parseFloat($t.val1.val());
-        var dist = data.lastMeasuredDistance;
+        var val = parseFloat($t.val1.val());
+        var dist = data.lastMeasuredDistance;
         var fac = val / dist;
-        data.settings.lenFactor = fac;
-        $t.fac.text(fn.cropFloatStr(fac));
-        data.lastMeasuredValue = val;
+        data.lastMeasureFactor = fac;
+        $t.fac.text(fn.cropFloatStr(fac));
+        data.lastMeasuredValue = val;
         updateUnits(data);
-        };
+        };
 
     // return a shape of the currently selected shape type
     var currentShape = function(data) {
@@ -906,33 +905,31 @@
             names : [
                 'draw', 'shape',
                 'lenlabel', 'len',
-                'faclabel', 'fac',
                 'eq1', 'val1', 'unit1',
-                'eq2', 'val2', 'unit2',
-                'angle'
+                'eq2', 'val2', 'unit2'
                 ],
-            draw : $('<button id="measure-draw" title="click to draw a measuring shape on top of the image">M</button>'),
-            shape : $('<select id="measure-shape" title="select a shape to use for measuring" />'),
+            draw : $('<button id="dl-measure-draw" title="click to draw a measuring shape on top of the image">M</button>'),
+            shape : $('<select id="dl-measure-shape" title="select a shape to use for measuring" />'),
 			lenlabel : $('<span class="dl-measure-label" >len</span>'),
 			faclabel : $('<span class="dl-measure-label" >factor</span>'),
 			eq1 : $('<span class="dl-measure-label">=</span>'),
 			eq2 : $('<span class="dl-measure-label">=</span>'),
-			len : $('<span id="measure-len" class="dl-measure-number">0.0</span>'),
-			fac : $('<span id="measure-factor" class="dl-measure-number" />'),
-			val1 : $('<input id="measure-val1" class="dl-measure-input" title="value of the last measured distance - click to change the value" value="0.0" />'),
-			val2 : $('<input id="measure-val2" class="dl-measure-input" title="value of the last measured distance, converted to the secondary unit" value="0.0"/>'),
-			unit1 : $('<select id="measure-unit1" title="current measuring unit - click to change" />'),
-			unit2 : $('<select id="measure-unit2" title="secondary measuring unit - click to change" />'),
-			angle : $('<span id="measure-angle" class="dl-measure-number" title="last measured angle" />')
+			len : $('<span id="dl-measure-len" class="dl-measure-number">0.0</span>'),
+			fac : $('<span id="dl-measure-factor" class="dl-measure-number" />'),
+			val1 : $('<input id="dl-measure-val1" class="dl-measure-input" title="value of the last measured distance - click to change the value" value="0.0" />'),
+			val2 : $('<input id="dl-measure-val2" class="dl-measure-input" title="value of the last measured distance, converted to the secondary unit" value="0.0"/>'),
+			unit1 : $('<select id="dl-measure-unit1" title="current measuring unit - click to change" />'),
+			unit2 : $('<select id="dl-measure-unit2" title="secondary measuring unit - click to change" />'),
+			angle : $('<span id="dl-measure-angle" class="dl-measure-number" title="last measured angle" />')
 		    };
-        var $toolbar = $('<div id="measure-toolbar" />');
+        var $toolbar = $('<div id="dl-measure-toolbar" />');
         $.each(tbWidgets.names, function(index, item) {
             $toolbar.append(tbWidgets[item]);
             });
         data.$elem.append($toolbar);
         data.$toolbar = $toolbar;
         data.tbWidgets = tbWidgets;
-        tbWidgets.fac.text(fn.cropFloatStr(data.settings.lenFactor));
+        tbWidgets.fac.text(fn.cropFloatStr(data.lastMeasureFactor));
         loadShapeTypes(data);
         loadSections(data);
         setupToolbarButtons(data);
@@ -975,16 +972,14 @@
         data.lastMeasuredDistance = 0;
         data.lastMeasuredValue = 0;
         data.lastMeasuredAngle = 0;
+        data.lastMeasureFactor = 1.0,
         setupToolbar(data);
         };
 
     // event handler
     var handleUpdate = function (evt) {
         var data = this;
-        var ar = fn.getImgAspectRatio(data);
-        data.settings.imgAspectRatio = ar;
-        console.debug("measure: handleUpdate. aspectratio:", ar);
-        // var settings = data.settings;
+        console.debug("measure: handleUpdate");
         };
 
     // additional buttons
