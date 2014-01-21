@@ -54,7 +54,11 @@
                     },
                     'id' : 'myBestRect'
                 }]);
-                $div.digilib("addVectorLayer", {'projection': 'relative', 'svg': $('#test-squares')[0]});
+                $('#test-squares')[0].addEventListener('load', function (evt) {
+                    var layer = {'projection': 'relative', '$elem': $(this), 'svgElem': this.contentDocument.documentElement}
+                    $div.digilib("addVectorLayer", layer);
+                    return false;
+                });
             });
         </script>
     </head>
@@ -64,8 +68,8 @@
         <div id="digilib">
             <p>digilib doesn't work! Please switch on Javascript or notify the server administrator!</p>
             <img src="http://digilib.berlios.de/images/digilib-logo-big.png" />
+            <object class="dl-keep" id="test-squares" data="test-squares.svg" type="image/svg+xml"></object>
         </div>
-        <!-- <img id="test-squares" src="test-squares.svg" width="200" height="100"/> -->
     </body>
 </html>
 

@@ -145,20 +145,34 @@
         /**
          * add vector layer.
          * 
-         * Layer is an object with "projection" and "svg" members.
+         * Layer is an object with a "projection" member.
          * projection can be "relative": relative (0..1) coordinates, 
          * "screen": on-screen coordinates (requires re-scaling).
-         * svg is an (unattached) SVG dom object.
+         * A SVG layer is specified by the jQuery-HTML element "$elem" and the SVG-element "svgElem".
+         * 
+         * layer : {
+         *   projection : relative,
+         *   $elem : $(...),
+         *   svgElem : ...
+         * }
          * 
          * @param date
          * @param layer
          */
         addVectorLayer : function (data, layer) {
-            data.vectorLayers.push(layer);
-            var $svg = $(layer.svg);
-            layer.$svg = $svg;
-            data.$elem.append($svg);
-            renderLayers(data);
+            if (layer.projection === 'relative') {
+                var svg = layer.svgElem;
+                // set defaults for SVG in relative coordinates
+                svg.setAttributeNS(null, 'viewBox', '0 0 1 1');
+                svg.setAttributeNS(null, 'preserveAspectRatio', 'none');
+                var $elem = layer.$elem;
+                // set defaults for HTML element
+                $elem.css({'position':'absolute', 'z-index': 9, 'pointer-events':'none'});
+                $elem.addClass(data.settings.cssPrefix+'overlay');
+                // add layer
+                data.vectorLayers.push(layer);
+                renderLayers(data);
+            }
         }
     };
 
@@ -173,7 +187,6 @@
         // add defaults, actions, buttons to the main digilib object
         $.extend(digilib.defaults, defaults);
         $.extend(digilib.actions, actions);
-        //$.extend(digilib.buttons, buttons);
     };
 
     /** 
@@ -215,10 +228,17 @@
                 // assume that the shapes layer is first
                 renderShapes(data);
             } else if (layer.projection === 'relative') {
-                // adjust svg element size and position (doesn't work with .adjustDiv())
-                layer.$svg.css(data.imgRect.getAsCss());
-                // set current viewBox (jQuery lowercases attributes)
-                layer.$svg[0].setAttribute('viewBox', data.zoomArea.getAsSvg());
+                var svg = layer.svgElem;
+                if (svg != null) {
+                    // set current viewBox (jQuery lowercases attributes)
+                    svg.setAttribute('viewBox', data.zoomArea.getAsSvg());
+                }
+                var $elem = layer.$elem;
+                if ($elem != null) {
+                    // adjust layer element size and position (doesn't work with .adjustDiv())
+                    $elem.css(data.imgRect.getAsCss());
+                    $elem.show();
+                }
             }
         }        
     };
