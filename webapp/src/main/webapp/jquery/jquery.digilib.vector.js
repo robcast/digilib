@@ -377,6 +377,66 @@
                 $e1.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 0));
                 $e2.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 1));
             }
+        } else if (gt === 'Polygon') {
+            /*
+             * Polygon
+             */
+            var ps = [];
+            for (var i in coords) {
+                ps[i] = trafo.transform(geom.position(coords[i]));
+            }
+            var $elem = $(svgElement('polygon', {
+                'id': id,
+                'points': ps.join(" "),
+                'stroke': stroke, 'stroke-width': strokeWidth,
+                'fill': fill}));
+            shape.$elem = $elem;
+            $svg.append($elem);
+            if (props.editable) {
+                var $vertexElems = [];
+                shape.$vertexElems = $vertexElems;
+                for (var i in ps) {
+                    var p = ps[i];
+                    var $vertexElem = $(svgElement('rect', {
+                        'x': p.x-hs/2, 'y': p.y-hs/2, 'width': hs, 'height': hs,
+                        'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
+                        'class': css+'svg-handle', 'style': 'pointer-events:all'}));
+                    $vertexElems[i] = $vertexElem;
+                    // getVertexDragHandler needs shape.$vertexElems
+                    $vertexElem.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, i));
+                }
+                $svg.append($vertexElems);
+            }
+        } else if (gt === 'LineString') {
+            /*
+             * Polyline
+             */
+            var ps = [];
+            for (var i in coords) {
+                ps[i] = trafo.transform(geom.position(coords[i]));
+            }
+            var $elem = $(svgElement('polyline', {
+                'id': id,
+                'points': ps.join(" "),
+                'stroke': stroke, 'stroke-width': strokeWidth,
+                'fill': 'none'}));
+            shape.$elem = $elem;
+            $svg.append($elem);
+            if (props.editable) {
+                var $vertexElems = [];
+                shape.$vertexElems = $vertexElems;
+                for (var i in ps) {
+                    var p = ps[i];
+                    var $vertexElem = $(svgElement('rect', {
+                        'x': p.x-hs/2, 'y': p.y-hs/2, 'width': hs, 'height': hs,
+                        'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
+                        'class': css+'svg-handle', 'style': 'pointer-events:all'}));
+                    $vertexElems[i] = $vertexElem;
+                    // getVertexDragHandler needs shape.$vertexElems
+                    $vertexElem.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, i));
+                }
+                $svg.append($vertexElems);
+            }
         }
     };
 
@@ -431,6 +491,12 @@
                 }
                 $shape.attr({'x': rect.x, 'y': rect.y,
                     'width': rect.width, 'height': rect.height});               
+            } else if (shapeType === 'Polygon' || shapeType === 'LineString' ) {
+                var points = $shape.attr('points');
+                var ps = points.split(' ');
+                ps[vtx] = pt.x + ',' + pt.y;
+                points = ps.join(' ');
+                $shape.attr('points', points);
             }
             return false;
         };
