@@ -93,17 +93,22 @@
          * @param data
          * @param shape
          * @param onComplete
+         * @param layer
          */
-        addShape : function(data, shape, onComplete) {
+        addShape : function(data, shape, onComplete, layer) {
         	if (data.shapes == null) {
         		data.shapes = [];
         	};
+            if (layer == null) {
+                // assume shape layer is 0
+                layer = data.vectorLayers[0];
+            }
         	if (shape.geometry.coordinates == null) {
         		// define shape interactively
-        		defineShape(data, shape, onComplete);
+        		defineShape(data, shape, layer, onComplete);
         	} else {
         		data.shapes.push(shape);
-            	renderShapes(data);
+            	renderShapes(data, layer);
         	}
         },
         
@@ -147,7 +152,7 @@
          * 
          * Layer is an object with a "projection" member.
          * projection can be "relative": relative (0..1) coordinates, 
-         * "screen": on-screen coordinates (requires re-scaling).
+         * "screen": on-screen coordinates (needs renderFn(data, layer)).
          * A SVG layer is specified by the jQuery-HTML element "$elem" and the SVG-element "svgElem".
          * 
          * layer : {
@@ -196,7 +201,12 @@
         console.debug('initialising vector plugin. data:', data);
         var $data = $(data);
         // create default shapes layer
-        data.vectorLayers = [{'projection':'screen'}];
+        var shapeLayer = {
+            'projection': 'screen', 
+            'renderFn': renderShapes
+        };
+        // shapes layer is first
+        data.vectorLayers = [shapeLayer];
         // install event handlers
         $data.bind('update', handleUpdate);
     };
@@ -219,14 +229,16 @@
     /**
      * render all layers on screen
      */
-    var renderLayers = function (data) {
-        if (data.imgRect == null) return;
-        for (var i in data.vectorLayers) {
-            // transform additional layers
+    var renderLayers = function(data) {
+        if (data.imgRect == null)
+            return;
+        for ( var i in data.vectorLayers) {
             var layer = data.vectorLayers[i];
-            if (i == 0) {
-                // assume that the shapes layer is first
-                renderShapes(data);
+            if (layer.projection === 'screen') {
+                // screen layers have render function
+                if (layer.renderFn != null) {
+                    layer.renderFn(data, layer);
+                }
             } else if (layer.projection === 'relative') {
                 var svg = layer.svgElem;
                 if (svg != null) {
@@ -240,47 +252,60 @@
                     $elem.show();
                 }
             }
-        }        
+        }
     };
     
     /**
-     * render all shapes on screen.
+     * render all shapes on the layer.
+     * 
+     * @param data
+     * @param layer
      */
-    var renderShapes = function (data) {
+    var renderShapes = function (data, layer) {
     	console.debug("renderShapes shapes:", data.shapes);
     	if (data.shapes == null || data.imgTrafo == null || !data.settings.isVectorActive) 
     	    return;
-    	var $svg = data.vectorLayers[0].$svg;
+    	if (layer == null) {
+    	    // assume shape layer is 0
+    	    layer = data.vectorLayers[0];
+    	}
+    	var $svg = layer.$elem;
         if ($svg != null) {
         	$svg.remove();
         }
-    	$svg = $(createSvg('svg', {
+    	var svgElem = svgElement('svg', {
     	    'viewBox': data.imgRect.getAsSvg(),
     	    'class': data.settings.cssPrefix+'overlay',
-    		'style': 'position:absolute; z-index:10; pointer-events:none;'}));
-        // adjust svg element size and position (doesn't work with .adjustDiv())
-        $svg.css(data.imgRect.getAsCss());
-        data.vectorLayers[0].$svg = $svg;
+    		'style': 'position:absolute; z-index:10; pointer-events:none;'});
+    	$svg = $(svgElem);
+    	layer.svgElem = svgElem;
+        layer.$elem = $svg;
     	for (var i in data.shapes) {
     		var shape = data.shapes[i];
-    		renderShape(data, shape, $svg);
+    		renderShape(data, shape, layer);
     	}
     	data.$elem.append($svg);
+    	// adjust layer element size and position (doesn't work with .adjustDiv())
+    	$svg.css(data.imgRect.getAsCss());
+    	$svg.show();
     };
     
     /**
      * render a shape on screen.
      * 
-     * Creates a SVG element and adds it to $svg.
+     * Creates a SVG element and adds it to the layer.
      * Puts a reference $elem in the shape object.
+     * 
+     * @param data
+     * @param shape
+     * @param layer
      */
-    var renderShape = function (data, shape, $svg) {
-        if ($svg == null) {
-            if (data.vectorLayers[0].$svg == null) {
-                renderShapes(data);
-            }
-            $svg = data.vectorLayers[0].$svg;
+    var renderShape = function (data, shape, layer) {
+        // make sure we have a SVG element
+        if (layer.svgElem == null) {
+            renderShapes(data, layer);
         }
+        var $svg = $(layer.svgElem);
         var settings = data.settings;
         var css = settings.cssPrefix;
         var hs = settings.editHandleSize;
@@ -300,7 +325,7 @@
              */
             var p1 = trafo.transform(geom.position(coords[0]));
             var p2 = trafo.transform(geom.position(coords[1]));
-            var $elem = $(createSvg('line', {
+            var $elem = $(svgElement('line', {
                 'id': id,
                 'x1': p1.x, 'y1': p1.y,
                 'x2': p2.x, 'y2': p2.y,
@@ -308,11 +333,11 @@
             shape.$elem = $elem;
             $svg.append($elem);
             if (props.editable) {
-                var $e1 = $(createSvg('rect', {
+                var $e1 = $(svgElement('rect', {
                     'x': p1.x-hs/2, 'y': p1.y-hs/2, 'width': hs, 'height': hs,
                     'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
                     'class': css+'svg-handle', 'style': 'pointer-events:all'}));
-                var $e2 = $(createSvg('rect', {
+                var $e2 = $(svgElement('rect', {
                     'x': p2.x-hs/2, 'y': p2.y-hs/2, 'width': hs, 'height': hs,
                     'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
                     'class': css+'svg-handle', 'style': 'pointer-events:all'}));
@@ -329,7 +354,7 @@
             var p1 = trafo.transform(geom.position(coords[0]));
             var p2 = trafo.transform(geom.position(coords[1]));
             var rect = geom.rectangle(p1, p2);
-            var $elem = $(createSvg('rect', {
+            var $elem = $(svgElement('rect', {
                 'id': id,
                 'x': rect.x, 'y': rect.y,
                 'width': rect.width, 'height': rect.height,
@@ -338,11 +363,11 @@
             shape.$elem = $elem;
             $svg.append($elem);
             if (props.editable) {
-                var $e1 = $(createSvg('rect', {
+                var $e1 = $(svgElement('rect', {
                     'x': p1.x-hs/2, 'y': p1.y-hs/2, 'width': hs, 'height': hs,
                     'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
                     'class': css+'svg-handle', 'style': 'pointer-events:all'}));
-                var $e2 = $(createSvg('rect', {
+                var $e2 = $(svgElement('rect', {
                     'x': p2.x-hs/2, 'y': p2.y-hs/2, 'width': hs, 'height': hs,
                     'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
                     'class': css+'svg-handle', 'style': 'pointer-events:all'}));
@@ -369,6 +394,7 @@
         var $shape = shape.$elem;
         var $handle = (shape.$vertexElems != null) ? shape.$vertexElems[vtx] : $();
         var shapeType = shape.geometry.type;
+        var imgRect = data.imgRect;
         var pt, pt0, pt1, pt2, rect;
 
         var dragStart = function (evt) {
@@ -387,7 +413,7 @@
         
         var dragMove = function (evt) {
             pt = geom.position(evt);
-            pt.clipTo(data.imgRect);
+            pt.clipTo(imgRect);
             // move handle
             $handle.attr({'x': pt.x-hs/2, 'y': pt.y-hs/2});
             // update shape element
@@ -414,7 +440,7 @@
             if (pt.distance(pt0) < 5) {
                 return false;
             }
-            pt.clipTo(data.imgRect);
+            pt.clipTo(imgRect);
             var p1 = data.imgTrafo.invtransform(pt);
             // update shape element
             if (shapeType === 'Line') {
@@ -446,9 +472,14 @@
      *
      * @param data
      * @param shape the shape to define
+     * @param layer the layer to draw on
      * @onComplete function(data, shape)
      */
-    var defineShape = function(data, shape, onComplete) {
+    var defineShape = function(data, shape, layer, onComplete) {
+        if (layer == null) {
+            // assume shape layer is 0
+            layer = data.vectorLayers[0];
+        }
         var shapeType = shape.geometry.type;
         var $elem = data.$elem;
         var $body = $('body');
@@ -470,7 +501,7 @@
                 return false;
             }
             // draw shape
-            renderShape(data, shape);
+            renderShape(data, shape, layer);
             // execute vertex drag handler on second vertex
             getVertexDragHandler(data, shape, 1, function (data, newshape) {
                 // dragging vertex done
@@ -494,7 +525,7 @@
      * @param name tag name
      * @param attrs object with attributes
      */
-    var createSvg = function (name, attrs) {
+    var svgElement = function (name, attrs) {
         var elem = document.createElementNS(svgNS, name);
         if (attrs != null) {
             for (var att in attrs) {

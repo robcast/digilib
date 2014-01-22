@@ -1193,6 +1193,8 @@ function($) {
                     data.scalerFlags.hmir, data.scalerFlags.vmir,
                     data.scaleMode, data);
             console.debug("updateImgTrafo: ", data.imgTrafo);
+            // update imgRect
+            data.imgRect = geom.rectangle($img);
         }
     };
 
