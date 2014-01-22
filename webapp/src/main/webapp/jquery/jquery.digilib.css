@@ -295,6 +295,7 @@ div.dl-digilib div.dl-singleslider {
 	padding: 10px;
 	position: absolute;
     top: 0px;	
+    z-index: 100;
     }
 
 div.dl-digilib div.dl-slider {
