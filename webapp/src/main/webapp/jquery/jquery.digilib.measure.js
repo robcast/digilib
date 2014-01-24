@@ -677,10 +677,10 @@
           }]
         };
     var buttons = {
-        showtoolbar : {
-            onclick : "showtoolbar",
-            tooltip : "show toolbar",
-            icon : "showregions.png"
+        measure : {
+            onclick : "measurebar",
+            tooltip : "show the measuring toolbar",
+            icon : "measure.png"
             },
         drawshape : {
             onclick : "drawshape",
@@ -690,10 +690,10 @@
 
     var defaults = {
         // buttonset of this plugin
-        measureButtonSet : ['showtoolbar'],
+        measureButtonSet : ['measurebar'],
         // unit data
         units : UNITS,
-        // choice of colors offered by toolbar
+        // choice of colors offered by measure bar
         lineColors : ['white', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'violet', 'black'],
         // default color
         lineColor : 'red',
@@ -756,31 +756,33 @@
         };
 
     var actions = {
-        showtoolbar : function(data) {
-            var $toolbar = data.$toolbar;
-            if (!$toolbar) {
-                $toolbar = setupToolbar(data);
+        measurebar : function(data) {
+            var $measureBar = data.$measureBar;
+            if (!$measureBar) {
+                $measureBar = setupMeasureBar(data);
 				};
-			$toolbar.toggle();
-            setScreenPosition(data, $toolbar);
+			$measureBar.toggle();
+            setScreenPosition(data, $measureBar);
 			return;
             },
         drawshape : function(data) {
             var shape = currentShape(data);
-            data.tbWidgets.draw.addClass('dl-drawing')
+            data.measureWidgets.draw.addClass('dl-drawing')
             digilib.actions.addShape(data, shape, onCompleteShape);
-
             console.debug('action: drawshape', shape);
             }
-
-
         };
 
+
+    // round to 4 decimal places after point
+    var mRound = function (num) {
+        return Math.round(num * 10000 + 0.00001) / 10000
+        };
 
     // callback for vector.drawshape
     var onCompleteShape = function(data, shape) {
         console.debug('onCompleteShape', shape);
-        data.tbWidgets.draw.removeClass('dl-drawing')
+        data.measureWidgets.draw.removeClass('dl-drawing')
         if (shape == null || shape.geometry.coordinates == null) {
             return false; // do nothing if no line was produced
             };
@@ -802,33 +804,33 @@
     // recalculate units
     var updateUnits = function(data) {
         var val = data.lastMeasuredValue;
-        var $t = data.tbWidgets;
-        var u1 = parseFloat($t.unit1.val());
-        var u2 = parseFloat($t.unit2.val());
+        var $w = data.measureWidgets;
+        var u1 = parseFloat($w.unit1.val());
+        var u2 = parseFloat($w.unit2.val());
         var v2 = val * u1 / u2;
-        $t.val2.val(fn.cropFloatStr(v2));
+        $w.value2.val(fn.cropFloatStr(mRound(v2)));
         }
 
     // recalculate after measuring
     var updateLength = function(data, dist) {
-        var $t = data.tbWidgets;
+        var $w = data.measureWidgets;
         var fac = data.lastMeasureFactor;
         var val = dist * fac;
-        $t.len.text(fn.cropFloatStr(dist));
-        $t.val1.val(fn.cropFloatStr(val));
+        $w.len.text(fn.cropFloatStr(dist));
+        $w.value1.val(fn.cropFloatStr(mRound(val)));
         data.lastMeasuredValue = val;
         data.lastMeasuredDistance = dist;
         updateUnits(data);
         };
 
-    // recalculate factor after entering a new value in val1
+    // recalculate factor after entering a new value in input element "value1"
     var updateFactor = function(data) {
-        var $t = data.tbWidgets;
-        var val = parseFloat($t.val1.val());
+        var $w = data.measureWidgets;
+        var val = parseFloat($w.value1.val());
         var dist = data.lastMeasuredDistance;
         var fac = val / dist;
         data.lastMeasureFactor = fac;
-        $t.fac.text(fn.cropFloatStr(fac));
+        $w.fac.text(fn.cropFloatStr(fac));
         data.lastMeasuredValue = val;
         updateUnits(data);
         };
@@ -850,7 +852,7 @@
 
     // return shape type selected by user (on the toolbar)
     var getSelectedShapeType = function(data) {
-        var val = data.tbWidgets.shape.val();
+        var val = data.measureWidgets.shape.val();
         return data.settings.shapeTypes[val];
     };
 
@@ -862,7 +864,7 @@
 
     // load shapes into select element
     var loadShapeTypes = function(data) {
-        var $shape = data.tbWidgets.shape;
+        var $shape = data.measureWidgets.shape;
         $.each(data.settings.shapeTypes, function(index, item) {
             var $opt = $('<option value="'+ index + '">' + item.name + '</option>');
             $shape.append($opt);
@@ -872,7 +874,7 @@
 
     // load units into select elements
     var loadSections = function(data) {
-        var $t = data.tbWidgets;
+        var $t = data.measureWidgets;
         var $u1 = $t.unit1;
         var $u2 = $t.unit2;
         var sections = data.settings.units.sections;
@@ -899,14 +901,14 @@
     };
 
     // setup a div for accessing the measure functionality
-    var setupToolbar = function(data) {
-        console.debug('measure: setupToolbar');
-        var tbWidgets = {
+    var setupMeasureBar = function(data) {
+        console.debug('measure: setupMeasureBar');
+        var measureWidgets = {
             names : [
                 'draw', 'shape',
                 'lenlabel', 'len',
-                'eq1', 'val1', 'unit1',
-                'eq2', 'val2', 'unit2'
+                'eq1', 'value1', 'unit1',
+                'eq2', 'value2', 'unit2'
                 ],
             draw : $('<button id="dl-measure-draw" title="click to draw a measuring shape on top of the image">M</button>'),
             shape : $('<select id="dl-measure-shape" title="select a shape to use for measuring" />'),
@@ -916,30 +918,30 @@
 			eq2 : $('<span class="dl-measure-label">=</span>'),
 			len : $('<span id="dl-measure-len" class="dl-measure-number">0.0</span>'),
 			fac : $('<span id="dl-measure-factor" class="dl-measure-number" />'),
-			val1 : $('<input id="dl-measure-val1" class="dl-measure-input" title="value of the last measured distance - click to change the value" value="0.0" />'),
-			val2 : $('<input id="dl-measure-val2" class="dl-measure-input" title="value of the last measured distance, converted to the secondary unit" value="0.0"/>'),
+			value1 : $('<input id="dl-measure-value1" class="dl-measure-input" title="value of the last measured distance - click to change the value" value="0.0" />'),
+			value2 : $('<input id="dl-measure-value2" class="dl-measure-input" title="value of the last measured distance, converted to the secondary unit" value="0.0"/>'),
 			unit1 : $('<select id="dl-measure-unit1" title="current measuring unit - click to change" />'),
 			unit2 : $('<select id="dl-measure-unit2" title="secondary measuring unit - click to change" />'),
 			angle : $('<span id="dl-measure-angle" class="dl-measure-number" title="last measured angle" />')
 		    };
-        var $toolbar = $('<div id="dl-measure-toolbar" />');
-        $.each(tbWidgets.names, function(index, item) {
-            $toolbar.append(tbWidgets[item]);
+        var $measureBar = $('<div id="dl-measure-toolbar" />');
+        $.each(measureWidgets.names, function(index, item) {
+            $measureBar.append(measureWidgets[item]);
             });
-        data.$elem.append($toolbar);
-        data.$toolbar = $toolbar;
-        data.tbWidgets = tbWidgets;
-        tbWidgets.fac.text(fn.cropFloatStr(data.lastMeasureFactor));
+        data.$elem.append($measureBar);
+        data.$measureBar = $measureBar;
+        data.measureWidgets = measureWidgets;
+        measureWidgets.fac.text(fn.cropFloatStr(data.lastMeasureFactor));
         loadShapeTypes(data);
         loadSections(data);
-        setupToolbarButtons(data);
-        return $toolbar;
+        setupMeasureWidgets(data);
+        return $measureBar;
         };
 
     // wire the draw button
-    var setupToolbarButtons = function (data) {
-        console.debug('measure: setupToolbarButtons');
-        var $t = data.tbWidgets;
+    var setupMeasureWidgets = function (data) {
+        console.debug('measure: setupMeasureWidgets');
+        var $t = data.measureWidgets;
         var $draw = $t.draw;
         var buttonConfig = buttons['drawshape']; // not in data.settings.buttons
         // button properties
@@ -953,7 +955,7 @@
             $elem.digilib(action);
             return false;
             });
-        $t.val1.on('change.digilib', function(evt) {
+        $t.value1.on('change.digilib', function(evt) {
             updateFactor(data);
             });
         $t.unit1.on('change.digilib', function(evt) {
@@ -972,26 +974,14 @@
         data.lastMeasuredDistance = 0;
         data.lastMeasuredValue = 0;
         data.lastMeasuredAngle = 0;
-        data.lastMeasureFactor = 1.0,
-        setupToolbar(data);
+        data.lastMeasureFactor = 1.0,
+        setupMeasureBar(data);
         };
 
     // event handler
     var handleUpdate = function (evt) {
         var data = this;
         console.debug("measure: handleUpdate");
-        };
-
-    // additional buttons
-    var installButtons = function (data) {
-        var settings = data.settings;
-        var mode = settings.interactionMode;
-        var buttonSettings = settings.buttonSettings[mode];
-        var buttonSet = settings.measureButtonSet;
-        if (buttonSet.length && buttonSet.length > 0) {
-            buttonSettings.measureButtonSet = buttonSet;
-            buttonSettings.buttonSets.push('measureButtonSet');
-            }
         };
 
     // plugin installation called by digilib on plugin object.
@@ -1009,6 +999,11 @@
         $.extend(true, digilib.defaults, defaults);
         $.extend(digilib.actions, actions);
         $.extend(true, digilib.buttons, buttons);
+        // insert in button list -- not elegant
+        if (digilib.plugins.buttons != null) {
+            // if (digilib.defaults.buttonSettings != null) {
+            digilib.defaults.buttonSettings.fullscreen.standardSet.splice(10, 0, 'measure');
+            }
         // export functions
         // fn.test = test;
         };
@@ -1023,10 +1018,6 @@
         var $data = $(data);
         $data.on('setup', handleSetup);
         $data.on('update', handleUpdate);
-        // install region buttons if user defined regions are allowed
-        if (digilib.plugins.buttons != null) {
-            installButtons(data);
-        }
         };
 
     // plugin object with name and init
