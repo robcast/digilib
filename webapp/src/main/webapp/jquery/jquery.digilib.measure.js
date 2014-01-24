@@ -893,12 +893,29 @@
         $u2.children(':not(:disabled)')[data.settings.unitTo].selected = true;
     };
 
+    // initial position of measure bar (bottom left of browser window)
     var setScreenPosition = function(data, $div) {
         if ($div == null) return;
         var h = geom.rectangle($div).height;
         var s = fn.getFullscreenRect(data);
         geom.position(0, s.height - h).adjustDiv($div);
     };
+
+    // drag measureBar around
+    var dragMeasureBar = function(event) {
+        var $t = $(this);
+        var x = $t.offset().left - event.pageX;
+        var y = $t.offset().top - event.pageY;
+        $(document.body).on('mousemove.measure', function(event) {
+            $t.offset({
+                left : event.pageX + x,
+                top  : event.pageY + y
+            });
+        }).on('mouseup.measure', function(event) {
+            $(document.body).off('mousemove.measure').off('mouseup.measure');
+            });
+        return true;
+        };
 
     // setup a div for accessing the measure functionality
     var setupMeasureBar = function(data) {
@@ -935,6 +952,7 @@
         loadShapeTypes(data);
         loadSections(data);
         setupMeasureWidgets(data);
+        $measureBar.on('mousedown.measure', dragMeasureBar);
         return $measureBar;
         };
 
@@ -949,19 +967,19 @@
         var tooltip = buttonConfig.tooltip;
         $draw.attr('title', tooltip);
         $elem = data.$elem;
-        $draw.on('click.digilib', function(evt) {
-            // the handler function calls digilib with action
-            console.debug('click action=', action, ' evt=', evt);
+        $draw.on('mousedown.measure', function(evt) {
+            // prevent mousedown event ot bubble up to measureBar (no dragging!)
+            console.debug('mousedown=', action, ' evt=', evt);
             $elem.digilib(action);
             return false;
             });
-        $t.value1.on('change.digilib', function(evt) {
+        $t.value1.on('change.measure', function(evt) {
             updateFactor(data);
             });
-        $t.unit1.on('change.digilib', function(evt) {
+        $t.unit1.on('change.measure', function(evt) {
             updateUnits(data);
             });
-        $t.unit2.on('change.digilib', function(evt) {
+        $t.unit2.on('change.measure', function(evt) {
             updateUnits(data);
             });
 
