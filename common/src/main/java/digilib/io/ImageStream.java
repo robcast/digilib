@@ -63,4 +63,11 @@ public class ImageStream extends ImageInput {
         return stream;
     }
 
+    /**
+     * @param stream the stream to set
+     */
+    public void setInputStream(InputStream stream) {
+        this.stream = stream;
+    }
+
 }

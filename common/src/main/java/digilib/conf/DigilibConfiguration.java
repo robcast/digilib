@@ -84,7 +84,7 @@ public class DigilibConfiguration extends ParameterMap {
         // maximum destination image size (0 means no limit)
         newParameter("max-image-size", new Integer(0), null, 'f');
         // allow image toolkit to use disk cache
-        newParameter("img-diskcache-allowed", Boolean.TRUE, null, 'f');
+        newParameter("img-diskcache-allowed", Boolean.FALSE, null, 'f');
         // default type of error message (image, text, code)
         newParameter("default-errmsg-type", "image", null, 'f');
         // prefix for IIIF image API paths (used by DigilibRequest)
@@ -111,9 +111,11 @@ public class DigilibConfiguration extends ParameterMap {
                         }
                         if (!param.setValueFromString((String) confEntry.getValue())) {
                             /*
-                             * automatic conversion failed -- try special casesß
+                             * automatic conversion failed -- try special cases
                              */
-                            logger.warn("Unable to parse config parameter: "+param.getName());
+                            if (!setSpecialValueFromString(param, (String) confEntry.getValue())) {
+                                logger.warn("Unable to parse config parameter: "+param.getName());
+                            }
                         }
                     } else {
                         // parameter unknown -- just add
@@ -129,6 +131,20 @@ public class DigilibConfiguration extends ParameterMap {
         }
     }
     
+    
+    /**
+     * Set non-standard value in Parameter param. Returns true if successful.
+     * 
+     * @param param
+     * @param value
+     * @return
+     */
+    protected boolean setSpecialValueFromString(Parameter param, String value) {
+        // should be overridden
+        return false;
+    }
+    
+    
     /**
      * Configure digilib.
      * 
@@ -137,13 +153,7 @@ public class DigilibConfiguration extends ParameterMap {
     @SuppressWarnings("unchecked")
     public void configure() {
         DigilibConfiguration config = this;
-        if (DigilibConfiguration.isLoggerConfigured) {
-            logger.debug("Logger already configured!");
-        } else {
-            // we start log4j with a default logger config
-            BasicConfigurator.configure();
-            DigilibConfiguration.isLoggerConfigured = true;
-        }
+        setupLogger();
         /*
          * initialise static DocuImage class instance
          */
@@ -170,6 +180,19 @@ public class DigilibConfiguration extends ParameterMap {
         boolean dc = getAsBoolean("img-diskcache-allowed");
         // TODO: methods for all toolkits?
         ImageIO.setUseCache(dc);
+    }
+
+    /**
+     * Configure Log4J (using BasicConfigurator).
+     */
+    public static void setupLogger() {
+        if (DigilibConfiguration.isLoggerConfigured) {
+            logger.debug("Logger already configured!");
+        } else {
+            // we start log4j with a default logger config
+            BasicConfigurator.configure();
+            DigilibConfiguration.isLoggerConfigured = true;
+        }
     }
 
 }

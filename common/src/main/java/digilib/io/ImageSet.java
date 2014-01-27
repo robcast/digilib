@@ -220,7 +220,7 @@ public class ImageSet {
     }
 
     /**
-     * Adds an ImageImput to this ImageSet.
+     * Adds an ImageInput to this ImageSet.
      * 
      * The images should be added in the order of higher to lower resolutions.
      * The first image is considered the hires "original".
@@ -233,6 +233,23 @@ public class ImageSet {
     public boolean add(ImageInput f) {
     	f.setParent(this);
     	return list.add(f);
+    }
+    
+    
+    /**
+     * Append all ImageInputs from another ImageSet (at the end).
+     * 
+     * Changes the parents of the ImageInputs to this ImageSet.
+     *  
+     * @param imgs
+     */
+    public void append(ImageSet imgs) {
+        // append list
+        list.addAll(imgs.list);
+        // change parents
+        for (ImageInput ii : imgs.list) {
+            ii.setParent(this);
+        }
     }
 
 }

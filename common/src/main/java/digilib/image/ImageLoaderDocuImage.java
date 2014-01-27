@@ -186,7 +186,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         // RenderingHints.VALUE_ANTIALIAS_OFF);
         // setup interpolation quality
         if (qual > 0) {
-            logger.debug("quality q1");
+            logger.debug("quality q1+");
             renderHint.put(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         } else {
             logger.debug("quality q0");

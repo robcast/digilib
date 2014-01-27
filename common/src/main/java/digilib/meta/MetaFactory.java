@@ -46,6 +46,10 @@ public class MetaFactory {
     protected static Class<FileMeta> fileMetaClass;
 
     public static FileMeta getFileMetaInstance() {
+        if (fileMetaClass == null) {
+            logger.warn("No FileMeta class!");
+            return null;
+        }
         FileMeta mo = null;
         try {
             mo = fileMetaClass.newInstance();
@@ -56,6 +60,10 @@ public class MetaFactory {
     }
     
     public static DirMeta getDirMetaInstance() {
+        if (dirMetaClass == null) {
+            logger.warn("No DirMeta class!");
+            return null;
+        }
         DirMeta mo = null;
         try {
             mo = dirMetaClass.newInstance();

@@ -175,7 +175,9 @@ public abstract class DocuDirectory extends Directory {
 	 *  
 	 */
 	public void readMeta() {
-	    meta.readMeta(this);
+	    if (meta != null) {
+	        meta.readMeta(this);
+	    }
 	}
 
 
@@ -184,7 +186,9 @@ public abstract class DocuDirectory extends Directory {
      *  
      */
     public void checkMeta() {
-        meta.checkMeta(this);
+        if (meta != null) {
+            meta.checkMeta(this);
+        }
     }
 
 

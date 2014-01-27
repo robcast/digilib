@@ -60,10 +60,8 @@ public class DocuDirCache {
 	protected AtomicInteger misses = new AtomicInteger(0);
 
 	/**
-	 * Constructor with array of base directory names and file class.
+	 * Constructor with digilib configuration and file class.
 	 * 
-	 * @param bd
-	 *            base directory names
      * @param fc
      * @param dlConfig
 	 */
@@ -73,10 +71,7 @@ public class DocuDirCache {
 	}
 
 	/**
-	 * Constructor with array of base directory names.
-	 * 
-	 * @param bd
-	 *            base directory names
+	 * Default constructor. Uses FileClass.IMAGE.
 	 */
 	public DocuDirCache() {
 		// default file class is CLASS_IMAGE
@@ -115,7 +110,7 @@ public class DocuDirCache {
 	/**
 	 * Add a directory to the cache and check its parents.
 	 * Always returns the correct Object from the cache, 
-	 * either newDir one or another one.
+	 * either newDir or the cached one.
 	 *
 	 * @param newDir
 	 * @return dir
@@ -141,7 +136,7 @@ public class DocuDirCache {
 
     /**
      * Returns the DocuDirent with the pathname <code>fn</code> and the index
-     * <code>in</code>.
+     * <code>in</code> of FileClass fc.
      * 
      * If <code>fn</code> is a file then the corresponding DocuDirent is
      * returned and the index is ignored.

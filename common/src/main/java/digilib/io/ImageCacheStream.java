@@ -35,7 +35,7 @@ import javax.imageio.stream.ImageInputStream;
  */
 public class ImageCacheStream extends ImageStream {
 
-    private ImageInputStream iis = null;
+    protected ImageInputStream iis = null;
     
     /** Create ImageCacheStream from InputStream and mime-type.
      * 
@@ -52,7 +52,9 @@ public class ImageCacheStream extends ImageStream {
          * InputStream. This class is provided for cases where it is not
          * possible to create a writable temporary file.
          */
-        iis = ImageIO.createImageInputStream(stream);
+        if (stream != null) {
+            iis = ImageIO.createImageInputStream(stream);
+        }
     }
 
     /*
@@ -73,6 +75,21 @@ public class ImageCacheStream extends ImageStream {
     @Override
     public ImageInputStream getImageInputStream() {
         return iis;
+    }
+
+    /* (non-Javadoc)
+     * @see digilib.io.ImageStream#setInputStream(java.io.InputStream)
+     */
+    @Override
+    public void setInputStream(InputStream stream) {
+        super.setInputStream(stream);
+        if (stream != null) {
+            try {
+                iis = ImageIO.createImageInputStream(stream);
+            } catch (IOException e) {
+                // nothing to do, really.
+            }
+        }
     }
 
 }

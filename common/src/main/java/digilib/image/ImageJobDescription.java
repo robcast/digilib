@@ -38,7 +38,6 @@ import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
-import digilib.io.FileOps.FileClass;
 import digilib.io.ImageInput;
 import digilib.io.ImageSet;
 import digilib.util.ImageSize;
@@ -306,7 +305,7 @@ public class ImageJobDescription extends ParameterMap {
             if (dirCache == null) {
                 throw new FileOpException("No DirCache configured!");
             }
-            imageSet = (ImageSet) dirCache.getFile(getFilePath(), getAsInt("pn"), FileClass.IMAGE);
+            imageSet = (ImageSet) dirCache.getFile(getFilePath(), getAsInt("pn"));
             if (imageSet == null) {
                 throw new FileOpException("File " + getFilePath() + "(" + getAsInt("pn") + ") not found.");
             }
@@ -570,7 +569,8 @@ public class ImageJobDescription extends ParameterMap {
             qual = 0;
         else if (hasOption("q1"))
             qual = 1;
-        else if (hasOption("q2")) qual = 2;
+        else if (hasOption("q2")) 
+            qual = 2;
         return qual;
     }
 
