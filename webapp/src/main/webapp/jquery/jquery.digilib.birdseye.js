@@ -274,8 +274,8 @@ digilib bird's eye view plugin
             birdImgRect = geom.rectangle($birdImg);
             birdZoomRect = geom.rectangle($birdZoom);
             // grow rectangle by border width
-            birdZoomRect.enlarge({x : bw*2, y : bw*2});
-            birdZoomRect.addPosition({x : bw, y : bw});
+            // birdZoomRect.enlarge({x : bw*2, y : bw*2});
+            // birdZoomRect.addPosition({x : bw, y : bw});
             newRect = null;
             data.$elem.find('.'+cssPrefix+'overlay').hide(); // hide all overlays (marks/regions)
             $document.on("mousemove.dlBirdMove", birdZoomMove);
