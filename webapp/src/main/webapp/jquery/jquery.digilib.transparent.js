@@ -64,16 +64,28 @@ digilib transparent plugin
                 },
     };
 
+    var sliderOptions = {
+            param : 'trop',
+            label : "Transparency",
+            tooltip : "set opacity of the transparent image",
+            icon : "set-opacity.png",
+            preview : false,
+            min : 0.0,
+            max : 1.0,
+            step : 0.05,
+            start : 0.0
+            };
+
     var defaults = {
         // is transparent image visible?
         'isTransparentVisible' : false,
-        // Transparency of image
-        'opacity' : 0.5,
+        // Opacity of transparent image
+        'trop' : 0.5,
         // digilib file path for transparent image
-        'tfn' : '',
+        'trfn' : '',
         // digilib file number for transparent image
-        'tpn' : '',
-        // relative digilib coordinates for transparent image
+        'trpn' : '',
+        // digilib coordinates for transparent image (relative to scaler image)
         'trect' : null,
         // general buttonset of this plugin
         'transparentSet' : ['toggletransparent', 'setopacity', 'movetransparent', 'zoomtransparent']
@@ -81,66 +93,83 @@ digilib transparent plugin
 
     var actions = {
             // show or hide transparent image
-            toggleTransparent : function (data, param) {
-                var settings = data.settings;
-                var show = !data.settings.isTransparentVisible;
-                data.settings.isTransparentVisible = show;
-                fn.highlightButtons(data, 'transparent', show);
-                renderTransparent(data);
+            toggleTransparent : function (data) {
+                if (data.$transparent == null) {
+                    createTransparent(data);
+                    }
+                showTransparent(data);
                 console.log('toggleTransparent');
-            },
+                },
+
             // make the scaler image shine through
-            setOpacity : function (data, param) {
+            setOpacity : function (data) {
+                var $tp = data.$transparent;
+                if ($tp == null) {
+                    return;
+                    }
                 var settings = data.settings;
-                console.log('setOpacity');
-            },
+                var onChange = function($slider, val) {
+                    $tp.css('opacity', val);
+                    };
+                var onSubmit = function(val) {
+                    $tp.css('opacity', val);
+                    settings.trop = val;
+                    };
+                var $slider = fn.slider(data, sliderOptions, onChange, onSubmit);
+                console.log('setOpacity', settings.trop, $slider);
+                },
+
             // move the transparent image with respect to the scaler image
             moveTransparent : function (data, param) {
                 var settings = data.settings;
                 console.log('moveTransparent');
-            },
+                },
+
             // zoom the transparent image with respect to the scaler image
             zoomTransparent : function (data, param) {
                 var settings = data.settings;
                 console.log('zoomTransparent');
-            }
+                }
     };
 
     // show a transparent image on top of the scaler image 
-    var renderTransparent = function (data) {
-        //var zoomArea = data.zoomArea;
-        //if (!data.imgTrafo) return;
+    var createTransparent = function (data) {
         var settings = data.settings;
-        var cssPrefix = data.settings.cssPrefix;
-        var selector = '#'+cssPrefix+'transparent';
-        var $tp = data.$tp;
-        if ($tp == null) {
-            $tp = $('<div id="'+cssPrefix+'transparent"/>');
-            var queryString = fn.getParamString(settings, ['dw', 'dh']);
-            var file = settings.tfn
-                ? "&fn=" + settings.tfn
-                : "&pn=" + settings.tpn;
-            var url = settings.scalerBaseUrl + '?' + queryString + file;
-            var css = {
-                'position' : 'absolute',
-                'background-image' : 'url(' + url + ')',
-                'background-repeat' : 'no-repeat',
-                'background-position' : '0px 0px',
-                'opacity' : settings.opacity
-                };
-            $tp.css(css);
-            data.$elem.append($tp);
-            data.$tp = $tp;
-            }
+        var cssPrefix = settings.cssPrefix;
+        var $tp = $('<div id="'+cssPrefix+'transparent"/>');
+        var queryString = fn.getParamString(settings, ['dw', 'dh']);
+        var file = settings.trfn
+            ? "&fn=" + settings.trfn
+            : "&pn=" + settings.trpn;
+        var url = settings.scalerBaseUrl + '?' + queryString + file;
+        var css = {
+            'background-image' : 'url(' + url + ')',
+            'background-repeat' : 'no-repeat',
+            'background-position' : '0px 0px',
+            'display' : 'none',
+            'position' : 'absolute',
+            'opacity' : settings.trop
+            };
+        $tp.css(css);
+        data.$transparent = $tp;
+        data.$elem.append($tp);
+        showTransparent(data);
+        };
+
+    // show transparent image
+    var showTransparent = function (data) {
+        var $tp = data.$transparent;
         var show = data.settings.isTransparentVisible;
-        if (show){ 
+        data.settings.isTransparentVisible = !show;
+        fn.highlightButtons(data, 'transparent', show);
+        if (show) {
             $tp.fadeIn();
             data.imgRect.adjustDiv($tp);
             }
         else {
             $tp.fadeOut();
-        }
-    };
+            }
+        };
 
     // reload display after the transparent has been moved or resized
     var redisplay = function (data) {
@@ -185,6 +214,9 @@ digilib transparent plugin
         geom = digilib.fn.geometry;
         // import digilib functions
         $.extend(fn, digilib.fn);
+        if (fn.slider == null) {
+            return console.error('jquery.digilib.sliders.js is needed for transparent plugin')
+            }
         FULL_AREA = geom.rectangle(0,0,1,1);
         // add defaults, actions, buttons to the main digilib object
         $.extend(digilib.defaults, defaults);

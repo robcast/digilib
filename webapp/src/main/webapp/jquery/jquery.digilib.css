@@ -230,7 +230,7 @@ div.dl-digilib button.dl-button {
 	}
 
 div.dl-digilib table.dl-rgbslider td.dl-rgb {
-    width: 40%;
+    width: 180px;
     padding: 6px;
     border: 2px solid aqua;
 }
@@ -239,7 +239,6 @@ div.dl-digilib div.dl-rgbslider {
     display: none;
 	border: 2px solid aqua;
 	background-color: silver;
-	width: 400px;
 	padding: 10px;
 	position: absolute;
     top: 0px;	

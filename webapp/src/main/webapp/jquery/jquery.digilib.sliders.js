@@ -38,7 +38,8 @@ digilib sliders plugin
     var defaults = {};
 
     var sliderOptions = {
-        rot : {
+        rotation : {
+            param : 'rot',
             label : "Rotation angle",
             tooltip : "rotate image",
             icon : "rotate.png",
@@ -48,7 +49,8 @@ digilib sliders plugin
             step : 5,
             start : 0
             },
-        brgt : {
+        brightness : {
+            param : 'brgt',
             label : "Brightness",
             tooltip : "set numeric value to be added",
             icon : "brightness.png",
@@ -58,7 +60,8 @@ digilib sliders plugin
             step : 10,
             start : 0
             },
-        cont : {
+        contrast : {
+            param : 'cont',
             label : "Contrast",
             tooltip : "set numeric value to be multiplied",
             icon : "contrast.png",
@@ -99,8 +102,9 @@ digilib sliders plugin
         sliderBrgt : function (data) {
             // adjust min and max for contrast value (not nice to change sliderOptions)
             var maxBrgt = Math.max(Math.round(255 * Math.pow(2, data.settings.cont)), 255);
-            sliderOptions.brgt.min = -maxBrgt;
-            sliderOptions.brgt.max = maxBrgt;
+            var options = sliderOptions.brightness;
+            options.min = -maxBrgt;
+            options.max = maxBrgt;
             var onChange = function($slider, val) {
                 colorVals['brgt'] = parseFloat(val);
                 updatePreview($slider);
@@ -108,11 +112,12 @@ digilib sliders plugin
             var onSubmit = function(val) {
                 digilib.actions.brightness(data, val);
                 };
-            singleSlider(data, 'brgt', onChange, onSubmit);
+            singleSlider(data, options, onChange, onSubmit);
         },
 
         // shows contrast slider
         sliderCont : function (data) {
+            var options = sliderOptions.contrast;
             var onChange = function($slider, val) {
                 var m = Math.pow(2, parseFloat(val));
                 colorVals['cont'] = val;
@@ -122,16 +127,17 @@ digilib sliders plugin
             var onSubmit = function(val) {
                 digilib.actions.contrast(data, val, true);
                 };
-            singleSlider(data, 'cont', onChange, onSubmit);
+            singleSlider(data, options, onChange, onSubmit);
         },
 
         // shows rotate slider
         sliderRot : function (data) {
+            var options = sliderOptions.rotation;
             var onChange = null;
             var onSubmit = function(val) {
                 digilib.actions.rotate(data, val);
                 };
-            singleSlider(data, 'rot', onChange, onSubmit);
+            singleSlider(data, options, onChange, onSubmit);
         },
 
         // shows RGB sliders
@@ -192,6 +198,8 @@ digilib sliders plugin
         digilib = plugin;
         console.debug('installing sliders plugin. digilib:', digilib);
         fn = digilib.fn;
+        // export slider function
+        fn.slider = singleSlider;
         // import geometry classes
         geom = fn.geometry;
         // add defaults, actions, buttons
@@ -240,7 +248,7 @@ digilib sliders plugin
         var tiny = cssPrefix + 'tinyslider';
         var $elem = data.$elem;
         var sliderSelector = '#'+cssPrefix+'slider';
-        if (fn.isOnScreen(data, sliderSelector)) return; // already onscreen
+        if (fn.isOnScreen(data, sliderSelector)) return null; // already onscreen
         var html = '\
             <div id="'+cssPrefix+'slider" class="'+cls+'">\
                 <form class="'+cls+'">\
@@ -296,16 +304,15 @@ digilib sliders plugin
 
     /** creates a TinyRange slider
      */
-    var tinySlider = function (data, paramname, startvalue) {
+    var tinySlider = function (data, options, startvalue) {
         var $elem = data.$elem;
-        var opts = sliderOptions[paramname];
         var cssPrefix = data.settings.cssPrefix;
         var cls = cssPrefix + 'tinyslider';
         var html = '\
             <div class="'+cls+'">\
-                <span>'+opts.label+'</span>\
-                <input type="range" class="'+cls+'range" name="'+paramname+'" step="'+opts.step+'" min="'+opts.min+'" max="'+opts.max+'" value="'+startvalue+'"/>\
-                <input type="text" class="'+cls+'text" name="'+paramname+'" size="4" value="'+startvalue+'"/>\
+                <span>'+options.label+'</span>\
+                <input type="range" class="'+cls+'range" name="'+options.param+'" step="'+options.step+'" min="'+options.min+'" max="'+options.max+'" value="'+startvalue+'"/>\
+                <input type="text" class="'+cls+'text" name="'+options.param+'" size="4" value="'+startvalue+'"/>\
             </div>';
         var $slider = $(html);
         var $range = $slider.find('input.'+cls+'range');
@@ -317,8 +324,8 @@ digilib sliders plugin
             var update = $slider.data('update');
             if ($.isFunction(update)) {
                 update($slider, val);
-            }
-        };
+                }
+            };
         var textChange = function () {
             var val = $text.val();
             $range.val(val);
@@ -327,20 +334,20 @@ digilib sliders plugin
             var HTML5 = $range.prop('type') === 'range';
             if (!HTML5) {
                 $range.range('set', val);
-            }
+                }
             var update = $slider.data('update');
             if ($.isFunction(update)) {
                 update($slider, val);
-            }
-        };
+                }
+            };
         var reset = function () {
             $text.val(startvalue);
             textChange();
-        };
+            };
         var resetdefault = function () {
             $text.val(opts.start);
             textChange();
-        };
+            };
         // connect slider and input
         $range.on('change', rangeChange); 
         $text.on('change', textChange);
@@ -354,34 +361,34 @@ digilib sliders plugin
         return $slider;
     };
 
-    /** creates a single TinyRangeSlider for param "paramname",
+    /** creates a single TinyRangeSlider with options "options",
         the new value is passed to the "onSubmit" function.
      */
-    var singleSlider = function (data, paramname, onChange, onSubmit) {
+    var singleSlider = function (data, options, onChange, onSubmit) {
         var classname = 'singleslider';
         var $div = $('<div/>');
-        var opts = sliderOptions[paramname];
-        var startvalue = data.settings[paramname] || opts.start;
-        var $slider = tinySlider(data, paramname, startvalue);
+        var startvalue = data.settings[options.param] || options.start;
+        var $slider = tinySlider(data, options, startvalue);
         var getValue = function () {
             // get the new value and do something with it
             var val = $slider.data('$text').val();
-            onSubmit(val);
+            if (typeof onSubmit === 'function') {
+                onSubmit(val);
+                }
             };
         $div.append($slider);
         setupFormDiv(data, $div, classname, getValue);
-        var hasPreview = opts.preview;
+        var hasPreview = options.preview;
         if (hasPreview) {
             var cls = data.settings.cssPrefix + classname;
             var $preview = preview(cls);
             $div.append($preview);
             $slider.data({
                 'cls' : cls,
-                'preview' : $preview,
-                'update' : onChange
+                'preview' : $preview
                 });
-            onChange($slider, startvalue);
-        }
+            }
+        $slider.data({'update' : onChange});
     };
 
     /** creates a compound RGB slider
@@ -405,8 +412,8 @@ digilib sliders plugin
                     <div>'+color.label+'</div>\
                 </td>';
             $(html).appendTo($tr);
-            var $brgt = tinySlider(data, 'brgt', color.a);
-            var $cont = tinySlider(data, 'cont', color.m);
+            var $brgt = tinySlider(data, sliderOptions.brightness, color.a);
+            var $cont = tinySlider(data, sliderOptions.contrast, color.m);
             $table.data(value+'a', $brgt.data('$text'));
             $table.data(value+'m', $cont.data('$text'));
             $('<td class="'+css+'rgb"/>').append($brgt).appendTo($tr);
@@ -426,7 +433,9 @@ digilib sliders plugin
             var input = $table.data();
             var rgba = input['ra'].val() + '/' + input['ga'].val() + '/' + input['ba'].val();
             var rgbm = input['rm'].val() + '/' + input['gm'].val() + '/' + input['bm'].val();
-            onSubmit(rgbm, rgba);
+            if (typeof onSubmit === 'function') {
+                (rgbm, rgba);
+                }
             };
         $.each(primaryColors, insertTableRow);
         setupFormDiv(data, $div, 'rgbslider', submitSliderValues);
