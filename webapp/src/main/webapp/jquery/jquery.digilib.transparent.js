@@ -77,8 +77,10 @@ digilib transparent plugin
             };
 
     var defaults = {
-        // is transparent image visible?
+        // is the transparent image visible?
         'isTransparentVisible' : false,
+        // is the transparent image a zoomable image (= digilib)?
+        'isTransparentZoomable' : true,
         // Opacity of transparent image
         'trop' : 0.5,
         // digilib file path for transparent image
@@ -136,12 +138,18 @@ digilib transparent plugin
     var createTransparent = function (data) {
         var settings = data.settings;
         var cssPrefix = settings.cssPrefix;
-        var $tp = $('<div id="'+cssPrefix+'transparent"/>');
+        var $div = $('<div id="'+cssPrefix+'transparent"/>');
         var queryString = fn.getParamString(settings, ['dw', 'dh']);
-        var file = settings.trfn
+        var fileParam = settings.trfn
             ? "&fn=" + settings.trfn
             : "&pn=" + settings.trpn;
-        var url = settings.scalerBaseUrl + '?' + queryString + file;
+        // do we hav a digilib image or an external url?
+        var zoomable = (fileParam.indexOf('http://') != 0);
+        url = zoomable
+            ? settings.scalerBaseUrl + '?' + queryString + fileParam
+            : fileParam;
+        settings.isTransparentZoomable = zoomable;
+        // set the image as background of $div
         var css = {
             'background-image' : 'url(' + url + ')',
             'background-repeat' : 'no-repeat',
@@ -150,31 +158,68 @@ digilib transparent plugin
             'position' : 'absolute',
             'opacity' : settings.trop
             };
-        $tp.css(css);
-        data.$transparent = $tp;
-        data.$elem.append($tp);
-        showTransparent(data);
+        $div.css(css);
+        data.$transparent = $div;
+        data.$elem.append($div);
         };
 
     // show transparent image
     var showTransparent = function (data) {
-        var $tp = data.$transparent;
-        var show = data.settings.isTransparentVisible;
-        data.settings.isTransparentVisible = !show;
+        var $div = data.$transparent;
+        var show = !data.settings.isTransparentVisible;
+        data.settings.isTransparentVisible = show;
         fn.highlightButtons(data, 'transparent', show);
         if (show) {
-            $tp.fadeIn();
-            data.imgRect.adjustDiv($tp);
+            $div.fadeIn();
+            data.imgRect.adjustDiv($div);
             }
         else {
-            $tp.fadeOut();
+            $div.fadeOut();
             }
         };
+
+    // adjust transparent image to zoom area
+    var adjustTransparent = function (data, za) {
+        console.log('adjustTransparent', za);
+        var $div = data.$transparent;
+        var show = data.settings.isTransparentVisible;
+        if ($div == null || !show) {
+            return;
+            }
+        var imgTrafo = data.imgTrafo;
+        var $scaler = data.$scaler;
+        var scalerPos = geom.position($scaler);
+        var tRect = null;
+        var newCss = {};
+        $div.css(newCss);
+    };
 
     // reload display after the transparent has been moved or resized
     var redisplay = function (data) {
         packParams(data);
         fn.redisplay(data);
+    };
+
+    // adjust the ransparent image to a changed zoomarea
+    var handleChangeZoomArea = function (evt, newZa) {
+        var data = this;
+        adjustTransparent(data, newZa);
+    };
+
+    var handleUpdate = function (evt) {
+        console.debug("transparent: handleUpdate");
+        var data = this;
+        adjustTransparent(data, data.zoomArea);
+    };
+
+    var handleRedisplay = function (evt) {
+        console.debug("transparent: handleRedisplay");
+        var data = this;
+    };
+
+    var handleSetup = function (evt) {
+        console.debug("transparent: handleSetup");
+        var data = this;
     };
 
     // read transparent img from URL parameters
@@ -232,32 +277,13 @@ digilib transparent plugin
         $data.bind('setup', handleSetup);
         $data.bind('update', handleUpdate);
         $data.bind('redisplay', handleRedisplay);
-        $data.bind('dragZoom', handleDragZoom);
+        $data.bind('changeZoomArea', handleChangeZoomArea);
         // install buttons if button plugin is present
         if (digilib.plugins.buttons != null) {
             installButtons(data);
         }
     };
 
-
-    var handleSetup = function (evt) {
-        console.debug("transparent: handleSetup");
-        var data = this;
-    };
-
-    var handleUpdate = function (evt) {
-        console.debug("transparent: handleUpdate");
-        var data = this;
-    };
-
-    var handleRedisplay = function (evt) {
-        console.debug("transparent: handleRedisplay");
-        var data = this;
-    };
-
-    var handleDragZoom = function (evt, zoomArea) {
-        var data = this;
-    };
 
     // plugin object, containing name, install and init routines 
     // all shared objects are filled by digilib on registration
