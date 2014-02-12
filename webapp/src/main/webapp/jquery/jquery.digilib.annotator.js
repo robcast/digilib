@@ -316,7 +316,7 @@ and stored on a Annotator-API compatible server.
         } else {
             // render point
 	        if (!data.zoomArea.containsPosition(area)) return;
-            screenRect = data.imgTrafo.transform(area);
+            screenRect = data.imgTrafo.transform(area).getPosition();
             // create annotation
             var html = '<div class="'+cssPrefix+'annotationmark '+cssPrefix+'overlay annotator-hl">'+idx+'</div>';
             $annotation = $(html);
