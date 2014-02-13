@@ -1184,9 +1184,9 @@ function($) {
         var $img = data.$img;
         if ($img == null)
             return;
-        var imgLoaded = false // FIXME: $.browser.msie
-            ? $img.prop('width') > 0
-            : $img.prop('complete');
+        var imgLoaded = $img.prop('complete') // q&d fix to make zooming in IE possible again
+            ? true
+            : $img.prop('width') > 0;
         if (imgLoaded || data.hasPreviewBg) {
             // create Transform from current zoomArea and image size
             data.imgTrafo = getImgTrafo($img, data.zoomArea, data.settings.rot,
