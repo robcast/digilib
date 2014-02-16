@@ -14,7 +14,7 @@ or [Jetty](http://www.eclipse.org/jetty/) to run the web application.
 ## Quick build
 
 The fastest way to build the digilib web application is to download the digilib 
-project file [pom.xml](http://hg.berlios.de/repos/digilib/raw-file/tip/pom.xml)
+project file [pom.xml](https://sourceforge.net/p/digilib/code/ci/default/tree/pom.xml?format=raw)
 (download and save it) and run
 	
 	mvn scm:bootstrap -N
@@ -38,7 +38,7 @@ before you deploy.
 
 To check out the latest source code into the directory `digilib` run
 	
-	hg clone http://hg.berlios.de/repos/digilib
+	hg clone http://hg.code.sf.net/p/digilib/code digilib
 
 The digilib configuration files are now in `digilib/webapp/src/main/webapp/WEB-INF/`
 

@@ -9,7 +9,7 @@
   <packaging>pom</packaging>
   <name>digilib-doc</name>
   <description>The Digital Image Library - documentation</description>
-  <url>http://digilib.berlios.de</url>
+  <url>http://digilib.sourceforge.net</url>
   <build>
     <plugins>
       <plugin>

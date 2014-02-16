@@ -17,7 +17,7 @@
 		</dependency>
 	</dependencies>
 	<description>The Digital Image Library - text (plain or XML) serving servlet</description>
-	<url>http://digilib.berlios.de</url>
+	<url>http://digilib.sourceforge.net</url>
 	<profiles>
 		<profile>
 			<id>servlet2</id>

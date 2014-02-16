@@ -9,11 +9,11 @@
   </skin>
   <bannerLeft>
     <name>digilib - a versatile image viewing environment for the internet</name>
-    <href>http://digilib.berlios.de/</href>
+    <href>https://digilib.sourceforge.net/</href>
   </bannerLeft>
   <bannerRight>
     <src>images/digilib-logo-small.png</src>
-    <href>http://digilib.berlios.de/</href>
+    <href>http://digilib.sourceforge.net/</href>
   </bannerRight>
   <body>
     <menu name="Overview">

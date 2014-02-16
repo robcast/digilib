@@ -8,7 +8,7 @@ Unknown parameters will be silently ignored.
 
 Recognised parameters (as of Version 2.2.2, for the most recent list of 
 parameters 
-[use the source](http://hg.berlios.de/repos/digilib/file/default/servlet/src/main/java/digilib/conf/DigilibServletRequest.java)
+[use the source](https://sourceforge.net/p/digilib/code/ci/default/tree/servlet/src/main/java/digilib/conf/DigilibServletRequest.java)
 ):
 
 - `request_path`: path to file or directory.

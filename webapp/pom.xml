@@ -11,7 +11,7 @@
 	<artifactId>digilib-webapp</artifactId>
 	<name>digilib-webapp</name>
 	<description>The Digital Image Library - web application server and HTML and JS clients.</description>
-	<url>http://digilib.berlios.de</url>
+	<url>http://digilib.sourceforge.net</url>
 	<packaging>war</packaging>
 
 	<properties>

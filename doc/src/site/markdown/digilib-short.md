@@ -44,7 +44,7 @@ share some or all of the parameters with the Scaler API.
 
 ### Scaler
 
-The [Scaler API](scaler-api.html) is documented on the digilib.berlios.de 
+The [Scaler API](scaler-api.html) is documented on the digilib.sourceforge.net 
 pages. Here is a minimal version:
 
 The Scaler servlet takes parameters in the HTTP request format:
@@ -92,6 +92,6 @@ An example for a Scaler URL is:
 such a URL can be used as src attribute to an img element in the
 frontend HTML.
 
-[1]: http://hg.berlios.de/repos/digilib/file/default/webapp/src/main/webapp
+[1]: https://sourceforge.net/p/digilib/code/ci/default/tree/webapp/src/main/webapp
 
 [2]: http://itgroup.mpiwg-berlin.mpg.de/cgi-bin/cvsweb.cgi/zogiLib/

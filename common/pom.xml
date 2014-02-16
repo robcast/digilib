@@ -10,7 +10,7 @@
   <artifactId>digilib-common</artifactId>
   <name>digilib-common</name>
   <description>The Digital Image Library - common library</description>
-  <url>http://digilib.berlios.de</url>
+  <url>http://digilib.sourceforge.net</url>
   <packaging>jar</packaging>
   <build>
   	<pluginManagement>

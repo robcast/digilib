@@ -19,9 +19,9 @@ When it runs you should be able to access the start page on
 ## Install a digilib WAR file
 
 1. Download a digilib WAR file of a recent digilib release from the
-BerliOS [Download page](http://developer.berlios.de/project/showfiles.php?group_id=251)
+SourceForge [Download page](https://sourceforge.net/projects/digilib/files/)
 or the latest digilib build from the 
-[daily build page](http://digilib.berlios.de/downloads/daily-build/).
+[daily build page](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/).
 2. Rename the WAR file to `digilib.war`.
 3. Deploy the WAR file, i.e. drop it into the `webapps` directory of your 
 Servlet Container.

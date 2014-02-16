@@ -24,10 +24,10 @@
 ## Where can I get digilib?
 
 `digilib` source code, binaries and documentation can be found on the 
-[digilib project pages](http://developer.berlios.de/projects/digilib/)
-on [BerliOS](http://developer.berlios.de):
+[digilib project pages](https://sourceforge.net/projects/digilib/)
+on [SourceForge](https://sourceforge.net/):
 
-* [Source code](http://hg.berlios.de/repos/digilib)
-* Daily built [WAR files](http://digilib.berlios.de/downloads/daily-build/)
-* Daily built [Javadoc](http://digilib.berlios.de/downloads/daily-build/javadoc/)
+* [Source code](https://sourceforge.net/p/digilib/code/ci/default/tree/)
+* Daily built [WAR files](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/)
+* Daily built [Javadoc](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/javadoc/)
 * [Maven repository](http://it-dev.mpiwg-berlin.mpg.de/maven-repo/)

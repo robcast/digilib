@@ -9,7 +9,7 @@
   </parent>
   <artifactId>digilib-servlet</artifactId>
   <name>digilib-servlet</name>
-  <url>http://digilib.berlios.de</url>
+  <url>http://digilib.sourceforge.net</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>

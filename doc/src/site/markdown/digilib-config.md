@@ -33,9 +33,9 @@ A minimal configuration looks like this:
 	
 A more customized configuration may look like this (for a full list of
 configuration options use the source: 
-[1](http://hg.berlios.de/repos/digilib/file/default/common/src/main/java/digilib/conf/DigilibConfiguration.java) 
-[2](http://hg.berlios.de/repos/digilib/file/default/servlet/src/main/java/digilib/conf/DigilibServletConfiguration.java)
-[3](http://hg.berlios.de/repos/digilib/file/default/servlet3/src/main/java/digilib/conf/DigilibServlet3Configuration.java)
+[1](https://sourceforge.net/p/digilib/code/ci/default/tree/common/src/main/java/digilib/conf/DigilibConfiguration.java) 
+[2](https://sourceforge.net/p/digilib/code/ci/default/tree/servlet/src/main/java/digilib/conf/DigilibServletConfiguration.java)
+[3](https://sourceforge.net/p/digilib/code/ci/default/tree/servlet3/src/main/java/digilib/conf/DigilibServlet3Configuration.java)
 ):
 
 	<!-- Digilib servlet config file -->
