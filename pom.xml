@@ -84,9 +84,9 @@
   <mailingLists>
     <mailingList>
       <name>Developer List</name>
-      <subscribe>https://lists.berlios.de/mailman/listinfo/digilib-devel</subscribe>
-      <unsubscribe>https://lists.berlios.de/mailman/listinfo/digilib-devel</unsubscribe>
-      <archive>https://lists.berlios.de/pipermail/digilib-devel/</archive>
+      <subscribe>http://lists.sourceforge.net/lists/listinfo/digilib-devel</subscribe>
+      <unsubscribe>http://lists.sourceforge.net/lists/listinfo/digilib-devel</unsubscribe>
+      <archive>http://sourceforge.net/p/digilib/mailman/digilib-devel</archive>
     </mailingList>
   </mailingLists>
 

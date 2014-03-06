@@ -49,7 +49,7 @@ function($) {
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
-        'homeUrl' : 'http://digilib.berlios.de',
+        'homeUrl' : 'http://digilib.sourceforge.net',
         // base URL to digilib webapp (e.g. 'http://digilib.mpiwg-berlin.mpg.de/digitallibrary')
         'digilibBaseUrl' : null,
         // path to digilib frontend page (inside digilibBaseUrl)
