@@ -316,7 +316,7 @@ and stored on a Annotator-API compatible server.
         } else {
             // render point
 	        if (!data.zoomArea.containsPosition(area)) return;
-            screenRect = data.imgTrafo.transform(area).getPosition();
+            screenRect = data.imgTrafo.transform(area);
             // create annotation
             var html = '<div class="'+cssPrefix+'annotationmark '+cssPrefix+'overlay annotator-hl">'+idx+'</div>';
             $annotation = $(html);
@@ -533,15 +533,12 @@ and stored on a Annotator-API compatible server.
                     };
                 }
             },
-            'Store' : { 
+            /* 'Store' : { 
                 'prefix' : getAnnotationServerUrl,
                 'annotationData': {
                     'uri': getAnnotationPageUri
                 }, 
-                'loadFromSearch': {
-                    'uri': getAnnotationPageUri
-                }
-            },
+            }, */
             'DigilibIntegrator' : {
                 'hooks' : {
                     'setupAnnotation' : getSetupAnnotation,
@@ -605,7 +602,15 @@ and stored on a Annotator-API compatible server.
         // set up annotator (after html has been set up)
         var uri = getAnnotationPageUri(data);
         var elem = data.$elem.get(0);
-        var opts = {'readOnly' : data.settings.annotationsReadOnly};
+        var opts = {
+            'store' : {
+                type: Annotator.Plugin.Store,
+                prefix: getAnnotationServerUrl(data),
+                annotationData: {uri: uri}                
+            },
+            'loadQuery' : {'uri': uri},
+            'readOnly' : data.settings.annotationsReadOnly
+        };
         var annotator = new Annotator(elem, opts);
         // set plugin parameters
         var def = defaults.annotatorPluginSettings;
