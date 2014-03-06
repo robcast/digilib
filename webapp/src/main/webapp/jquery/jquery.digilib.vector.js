@@ -28,8 +28,8 @@
  * 
  * Shapes are objects with "geometry" and "properties" members.
  * geometry is an object with "type" and "coordinates" members.
- * Currently supported types: "Line", "Rectangle". 
- * goordinates is a list of pairs of relative coordinates.
+ * Currently supported types: "Line", "LineString", "Rectangle", "Polygon". 
+ * coordinates is a list of pairs of relative coordinates.
  * properties are the SVG properties "stroke", "stroke-width", "fill" and other properties.
  * A property 'editable':true will display drag-handles to change the shape.
  * Editing the shape will send a "changeShape"(shape) event.

@@ -698,7 +698,7 @@ public class ImageJobDescription extends ParameterMap {
         ImageSize ess = getExpectedSourceSize();
         // nt = no transform required
         boolean nt = isImageSendable() && (
-        // lores: send if smaller
+                // lores: send if smaller
                 (isLoresOnly() && is.isSmallerThan(ess))
                 // else send if it fits
                 || (!(isLoresOnly() || isHiresOnly()) && is.fitsIn(ess)));
