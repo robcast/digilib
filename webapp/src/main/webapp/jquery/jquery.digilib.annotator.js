@@ -208,15 +208,12 @@ and stored on a Annotator-API compatible server.
         $scaler.one('mousedown.dlSetAnnotationMark', function(evt) {
             // event handler adding a new mark
             console.log("setAnnotationMark at=", evt);
-            var annotator = data.annotator;
             var mpos = geom.position(evt);
             var pos = data.imgTrafo.invtransform(mpos);
             // mark selection shape
             var shape = {'type' : 'point', 'units' : 'fraction', 'geometry' : geom.position(pos)};
-            annotator.selectedShapes = [shape];
             // create and edit new annotation
-            var annotation = annotator.createAnnotation();
-            annotator.showEditor(annotation, mpos.getAsCss());
+            createAnnotation(data, shape, mpos.getAsCss());
             return false;
         });
     };
@@ -224,23 +221,55 @@ and stored on a Annotator-API compatible server.
     /**
      * add a region-annotation where clicked.
      */
-    var setAnnotationRegion = function(data) {
-        var annotator = data.annotator;
+    var setAnnotationRegion = function (data) {
         fn.defineArea(data, function (data, rect) {
         	if (rect == null) return;
             // event handler adding a new mark
             console.log("setAnnotationRegion at=", rect);
             // mark selection shape
             var shape = {'type' : 'rectangle', 'units' : 'fraction', 'geometry' : rect};
-            annotator.selectedShapes = [shape];
             // create and edit new annotation
             var pos = rect.getPt1();
             var mpos = data.imgTrafo.transform(pos);
-            var annotation = annotator.createAnnotation();
-            annotator.showEditor(annotation, mpos.getAsCss());
+            createAnnotation(data, shape, mpos.getAsCss());
         });
     };
 
+    /**
+     * create an empty annotation with the given shape, show the editor at the given position,
+     * and store the annotation.
+     * 
+     *  @param shape shape object
+     *  @param editorPos css position object
+     *  @returns promise
+     */
+    var createAnnotation = function (data, shape, editorPos) {
+        var annotator = data.annotator;
+        var annotation = {'shapes' : [shape]};
+        annotator.publish('beforeAnnotationCreated', [annotation]);
+        annotator.setupAnnotation(annotation);
+        // edit the annotation (returns a promise)
+        var dfd = annotator.editAnnotation(annotation, editorPos);
+        dfd.then(function (annotation) {
+            // store annotation (returns deferred)
+            return annotator.annotations.create(annotation)
+            // handle storage errors
+            .fail(function () {
+                console.error("Error storing annotation!");
+                // TODO: more error handling?
+            });
+        });
+        dfd.done(function (annotation) {
+          annotator.publish('annotationCreated', [annotation]);
+        });
+        // clean up (if, for example, editing was cancelled, or storage failed)
+        dfd.fail(function (annotation) {
+            console.warn("Editing annotation cancelled!");
+            // TODO: clean up
+        });
+        return dfd;
+    };
+    
     /**
      * place annotations on the image
      */
@@ -500,7 +529,7 @@ and stored on a Annotator-API compatible server.
         // string or function that returns the uri of the page being annotated
         'annotationPageUri' : null,
         // list of Annotator plugins
-        'annotatorPlugins' : ['Auth', 'Permissions', 'Store', 'DigilibIntegrator'],
+        'annotatorPlugins' : ['Auth', 'Permissions', 'DigilibIntegrator'],
         // Annotator plugin settings (values that are functions are replaced by fn(data))
         'annotatorPluginSettings' : {
             'Auth' : {
@@ -604,9 +633,9 @@ and stored on a Annotator-API compatible server.
         var elem = data.$elem.get(0);
         var opts = {
             'store' : {
-                type: Annotator.Plugin.Store,
-                prefix: getAnnotationServerUrl(data),
-                annotationData: {uri: uri}                
+                'type' : Annotator.Plugin.Store,
+                'prefix' : getAnnotationServerUrl(data),
+                'annotationData' : {'uri' : uri}                
             },
             'loadQuery' : {'uri': uri},
             'readOnly' : data.settings.annotationsReadOnly
