@@ -18,18 +18,17 @@
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
- * Authors: Robert Casties
+ * Authors: Robert Casties, Martin Raspe
  */
+
 /**
- digilib plugin for annotations.
-
- Currently supported are point annotations (like marks) and region annotations.
- 
- Annotations are displayed using code from the Annotator (http://annotateit.org) project
-and stored on a Annotator-API compatible server.
-
+ * digilib plugin for annotations.
+ *
+ * Currently supported are point-like annotations (like marks) and rectangular region annotations.
+ *
+ * Annotations are displayed using code from the Annotator (http://annotatorjs.org) project
+ * and stored on a Annotator-API compatible server.
  */
-
 (function($) {
 
     // affine geometry
@@ -117,7 +116,7 @@ and stored on a Annotator-API compatible server.
                 setAnnotationMark(data);
             } else {
                 // use position and text (and user-id)
-                console.error("Currently only interactive annotations!");
+                console.error("Sorry, currently only interactive annotations!");
             }
         },
 
@@ -134,7 +133,7 @@ and stored on a Annotator-API compatible server.
                 setAnnotationRegion(data);
             } else {
                 // use position and text (and user-id)
-                console.error("Currently only interactive annotations!");
+                console.error("Sorry, currently only interactive annotations!");
             }
         }
     };
@@ -205,7 +204,7 @@ and stored on a Annotator-API compatible server.
     var setAnnotationMark = function(data) {
         var $scaler = data.$scaler;
         // start event capturing
-        $scaler.one('mousedown.dlSetAnnotationMark', function(evt) {
+        $scaler.one('mousedown.dlSetAnnotationMark', function (evt) {
             // event handler adding a new mark
             console.log("setAnnotationMark at=", evt);
             var mpos = geom.position(evt);
@@ -219,7 +218,7 @@ and stored on a Annotator-API compatible server.
     };
 
     /**
-     * add a region-annotation where clicked.
+     * Add a region-annotation where clicked.
      */
     var setAnnotationRegion = function (data) {
         fn.defineArea(data, function (data, rect) {
@@ -228,16 +227,16 @@ and stored on a Annotator-API compatible server.
             console.log("setAnnotationRegion at=", rect);
             // mark selection shape
             var shape = {'type' : 'rectangle', 'units' : 'fraction', 'geometry' : rect};
-            // create and edit new annotation
             var pos = rect.getPt1();
             var mpos = data.imgTrafo.transform(pos);
+            // create and edit new annotation
             createAnnotation(data, shape, mpos.getAsCss());
         });
     };
 
     /**
      * create an empty annotation with the given shape, show the editor at the given position,
-     * and store the annotation.
+     * and store the annotation using Annotator.
      * 
      *  @param shape shape object
      *  @param editorPos css position object
@@ -260,18 +259,18 @@ and stored on a Annotator-API compatible server.
             });
         });
         dfd.done(function (annotation) {
-          annotator.publish('annotationCreated', [annotation]);
+            annotator.publish('annotationCreated', [annotation]);
         });
         // clean up (if, for example, editing was cancelled, or storage failed)
         dfd.fail(function (annotation) {
             console.warn("Editing annotation cancelled!");
-            // TODO: clean up
+            deleteAnnotation(data, annotation);
         });
         return dfd;
     };
     
     /**
-     * place annotations on the image
+     * Render all annotations on the image.
      */
     var renderAnnotations = function (data) {
         if (data.annotations == null || data.annotator == null || data.$img == null || data.imgTrafo == null)
@@ -291,7 +290,9 @@ and stored on a Annotator-API compatible server.
     };
 
     /**
-     * place single annotation on the image
+     * Render a single annotation on the image.
+     * 
+     * @param annot annotation wrapper object
      */
     var renderAnnotation = function (data, annot) {
         if (annot == null || annot.annotation == null || data.$img == null || data.imgTrafo == null)
@@ -373,46 +374,82 @@ and stored on a Annotator-API compatible server.
         screenRect.adjustDiv($annotation);
     };
 
-	/**
-	 * returns setupAnnotation function using the given data.
-	 */
-	var getSetupAnnotation = function(data) {
-		return function (annotation) {
-			// create annotation wrapper
-			var ann = {
-				'annotation' : annotation,
-				'idx' : data.annotations.length+1
-			};
-			// add to list
-			data.annotations.push(ann);
-			// render this annotation
-			renderAnnotation(data, ann);
-		};
-	};
+    
+    /**
+     * Delete annotation from digilib.
+     * 
+     * Finds the corresponding digilib annotation wrapper, removes any elements from screen, 
+     * and deletes the wrapper from the list.
+     * 
+     * @param annotation the annotation object to delete.
+     */
+    var deleteAnnotation = function(data, annotation) {
+        // remove annotation mark
+        var annots = data.annotations;
+        for (var i = 0; i < annots.length; ++i) {
+            var annot = annots[i];
+            if (annot.annotation === annotation) {
+                // this is the right wrapper
+                if (annot.$div != null) {
+                    // remove from screen
+                    annot.$div.remove();
+                }
+                // remove from list
+                annots.splice(i, 1);
+                break;
+            }
+        }
+    };
+        
 
-	/**
-	 * returns annotationDeleted function using the given data.
-	 */
-	var getAnnotationDeleted = function(data) {
-		return function (annotation) {
-			// remove annotation mark
-			var annots = data.annotations;
-			for (var i = 0; i < annots.length; ++i) {
-				var annot = annots[i];
-				if (annot.annotation === annotation) {
-					// this is the right wrapper
-					if (annot.$div != null) {
-						// remove from screen
-						annot.$div.remove();
-					}
-					// remove from list
-					delete annots[i];
-					break;
-				}
-			}
-		};
-	};
-		
+    /**
+     * Our modified version of Annotator.
+     */
+    var DigilibAnnotator = Annotator.extend({
+        /** 
+         * Set digilib data object in Annotator 
+         */
+        'setDigilibData' : function (data) {
+            // set digilib data in options
+            this.options.digilibData = data;
+        },
+        /**
+         * Initialises an annotation from an object representation.
+         * Overwrites Annotator.setupAnnotation().
+         * 
+         * Checks for image annotations, creates a wrapper, adds wrapper to list,
+         * and renders the annotation.
+         */
+        'setupAnnotation' : function (annotation) {
+            // digilibData has to be set in the options
+            var data = this.options.digilibData;
+            // is this a digilib image annotation?
+            if (annotation.shapes != null || annotation.areas != null) {
+                // create annotation wrapper
+                var ann = {
+                    'annotation' : annotation,
+                    'idx' : data.annotations.length+1
+                };
+                // add to list
+                data.annotations.push(ann);
+                // render this annotation
+                renderAnnotation(data, ann);
+            } else {
+                // Invoke the built-in implementation
+                Annotator.prototype.setupAnnotation.call(this, annotation);
+            }
+            return annotation;
+        },
+        /**
+         * Handler for annotationDeleted event for digilib annotations.
+         */
+        'onDigilibAnnotationDeleted' : function (annotation) {
+            // remove digilib annotation
+            var data = this.options.digilibData;
+            deleteAnnotation(data, annotation);
+        }
+    });
+        
 	/**
 	 * returns unauthorizedCallback function for Annotator authlogin plugin.  
 	 */
@@ -454,13 +491,12 @@ and stored on a Annotator-API compatible server.
 	};
 	
 	/**
-	 * zoom in, display the annotation in the middle of the screen.
+	 * zoom in and display the annotation in the middle of the screen.
 	 */
-    // 
     var zoomToAnnotation = function (data, $div) {
         var settings = data.settings;
         var rect = $div.data('rect');
-        var za = rect.copy();
+        var za = geom.rectangle(rect);
         var w = settings.annotationAutoWidth;
         if (za.width == null || za.width == 0) za.width = w; 
         if (za.height == null || za.height == 0) za.height = w; 
@@ -468,12 +504,16 @@ and stored on a Annotator-API compatible server.
         za.width  *= factor;
         za.height *= factor;
         za.setProportion(1, true); // avoid extreme zoomArea proportions
-        za.setCenter(rect.getCenter()).stayInside(FULL_AREA);
+        if (rect.width != null) {
+            za.setCenter(rect.getCenter()).stayInside(FULL_AREA);
+        }
         fn.setZoomArea(data, za);
         fn.redisplay(data);
     };
 
-    // event handler, gets called when a annotationClick event is triggered
+    /**
+     * event handler, gets called when a annotationClick event is triggered
+     */
     var handleAnnotationClick = function (evt, $div) {
         var data = this;
         var settings = data.settings;
@@ -529,7 +569,7 @@ and stored on a Annotator-API compatible server.
         // string or function that returns the uri of the page being annotated
         'annotationPageUri' : null,
         // list of Annotator plugins
-        'annotatorPlugins' : ['Auth', 'Permissions', 'DigilibIntegrator'],
+        'annotatorPlugins' : ['Auth', 'Permissions'],
         // Annotator plugin settings (values that are functions are replaced by fn(data))
         'annotatorPluginSettings' : {
             'Auth' : {
@@ -561,20 +601,7 @@ and stored on a Annotator-API compatible server.
                         return user;
                     };
                 }
-            },
-            /* 'Store' : { 
-                'prefix' : getAnnotationServerUrl,
-                'annotationData': {
-                    'uri': getAnnotationPageUri
-                }, 
-            }, */
-            'DigilibIntegrator' : {
-                'hooks' : {
-                    'setupAnnotation' : getSetupAnnotation,
-                    'annotationDeleted' : getAnnotationDeleted
-                }
             }
-
         }
     };
 
@@ -614,7 +641,6 @@ and stored on a Annotator-API compatible server.
             // get annotation user from cookie
             settings.annotationUser = data.dlOpts.annotationUser;
         }
-
         // install event handler
         $data.bind('setup', handleSetup);
         $data.bind('update', handleUpdate);
@@ -638,11 +664,11 @@ and stored on a Annotator-API compatible server.
                 'annotationData' : {'uri' : uri}                
             },
             'loadQuery' : {'uri': uri},
-            'readOnly' : data.settings.annotationsReadOnly
+            'readOnly' : data.settings.annotationsReadOnly,
         };
-        var annotator = new Annotator(elem, opts);
+        var annotator = new DigilibAnnotator(elem, opts);
+        annotator.setDigilibData(data);
         // set plugin parameters
-        var def = defaults.annotatorPluginSettings;
         var pluginParams = {};
         // merge settings 
         // (deep copy of defaults from plugin and options from HTML)
@@ -671,6 +697,8 @@ and stored on a Annotator-API compatible server.
         	console.debug("plugin:", name, params);
         	annotator.addPlugin(name, params);
         });
+        // subscribe annotation delete event
+        annotator.subscribe("annotationDeleted", annotator.onDigilibAnnotationDeleted);
 		// save annotator reference		
         data.annotator = annotator;
     	// save annotation token in cookie
@@ -704,6 +732,9 @@ and stored on a Annotator-API compatible server.
         plugins : {}
     };
 
+    if (Annotator == null) {
+        $.error("Annotator.js Javascript not found!");
+    }    
     if ($.fn.digilib == null) {
         $.error("jquery.digilib.annotator must be loaded after jquery.digilib!");
     } else {

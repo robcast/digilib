@@ -111,7 +111,11 @@
                 y : parseFloat(y)
             };
         };
-
+        // returns a copy of this Rectangle
+        that.copy = function() {
+            return position(this);
+        };
+        // compare function
         that.equals = function(other) {
             return (this.x === other.x && this.y === other.y);
         };
