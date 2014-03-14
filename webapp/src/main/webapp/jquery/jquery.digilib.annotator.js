@@ -96,11 +96,8 @@
         	auth.withToken(function (tkn) {
         		data.dlOpts.annotationToken = auth.token;
 		        fn.storeOptions(data);
-		        // clear annotations
-        		data.annotations = [];
-        		renderAnnotations(data);
-	        	// reload annotations
-        		annotator.load(data.annotatorLoadQuery);
+		        // reload annotations
+		        reloadAnnotations(data);
         	});
         },
 
@@ -402,7 +399,7 @@
      * 
      * @param annotation the annotation object to delete.
      */
-    var deleteAnnotation = function(data, annotation) {
+    var deleteAnnotation = function (data, annotation) {
         // remove annotation mark
         var annots = data.annotations;
         for (var i = 0; i < annots.length; ++i) {
@@ -421,6 +418,18 @@
     };
         
 
+    /**
+     * Reload annotations for current page.
+     */
+    var reloadAnnotations = function (data) {
+        // clear annotations
+        data.annotations = [];
+        renderAnnotations(data);
+        // reload annotations
+        data.annotator.load(data.annotatorLoadQuery);        
+    };
+
+    
     /**
      * Our modified version of Annotator.
      */
@@ -652,6 +661,7 @@
         }
         // install event handler
         $data.bind('setup', handleSetup);
+        $data.bind('redisplay', handleRedisplay);
         $data.bind('update', handleUpdate);
         $data.on('annotationClick', handleAnnotationClick);
     };
@@ -726,6 +736,22 @@
     	annotator.load(query);
         data.annotatorLoadQuery = query;
     };
+
+
+    /**
+     * redisplay checks if the page has changes and reloads all annotations.
+     */
+    var handleRedisplay = function(evt) {
+        console.debug("annotations: handleRedisplay");
+        var data = this;
+        var uri = getAnnotationPageUri(data);
+        if (uri != data.annotatorLoadQuery.uri) {
+            // uri changed
+            data.annotatorLoadQuery.uri = uri;
+            reloadAnnotations(data);
+        }
+    };
+
 
     /**
      * update renders all annotations.
