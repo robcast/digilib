@@ -1,4 +1,4 @@
-digilib - the Digital Image Library
+digilib - The Digital Image Library
 ===================================
 
 A versatile image viewing environment for the internet.

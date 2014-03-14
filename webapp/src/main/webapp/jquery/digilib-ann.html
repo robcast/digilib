@@ -38,17 +38,17 @@
                     showRegionNumbers : true,
                     // URL of annotation server
                     //'annotationServerUrl' : 'http://tuxserve03.mpiwg-berlin.mpg.de/AnnotationManager/annotator',
-                    'annotationServerUrl' : 'http://localhost:18080/AnnotationManager/annotator',
+                    'annotationServerUrl' : 'http://localhost:18080/AnnotationManagerN4J/annotator',
                     // are annotations read-only?
                     'annotationsReadOnly' : false,
                     // URL of authentication token server
                     //'annotationTokenUrl' : 'http://libcoll.mpiwg-berlin.mpg.de/libviewa/template/token/getLoginToken',
                     // URL of safe authentication token server
                     //'annotationSafeTokenUrl' : 'https://libcoll.mpiwg-berlin.mpg.de/libviewa/template/token/getLoginToken',
-                    //'annotationTokenUrl' : 'http://localhost:8080/test/docuviewa/template/token/getLoginToken',
+                    'annotationTokenUrl' : 'http://localhost:8080/test/annotator/token/getLoginToken',
                     // list of Annotator plugins
                     //'annotatorPlugins' : ['Auth', 'Permissions', 'Store', 'Markdown', 'DigilibIntegrator']
-                    'annotatorPlugins' : ['Store', 'Markdown', 'DigilibIntegrator']
+                    'annotatorPlugins' : ['Auth', 'Permissions', 'Markdown']
                 };
                 var $div = $('div#digilib');
                 $div.digilib(opts);

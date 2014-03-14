@@ -86,6 +86,7 @@
         		console.error("setAnnotationUser: No Auth plugin!!");
         		return;
         	}
+        	// set new user in digilib and Annotator Auth plugin
         	setAnnotationUser(data, auth, user, password);
         	// get new token
         	auth.token = null;
@@ -99,7 +100,7 @@
         		data.annotations = [];
         		renderAnnotations(data);
 	        	// reload annotations
-        		annotator.plugins.Store.pluginInit();
+        		annotator.load(data.annotatorLoadQuery);
         	});
         },
 
@@ -138,6 +139,21 @@
         }
     };
 
+    /** 
+     * install additional buttons 
+     */
+    var installButtons = function(data, buttonSet) {
+        var settings = data.settings;
+        var mode = settings.interactionMode;
+        var buttonSettings = settings.buttonSettings[mode];
+        // set annotationSet to [] or '' for no buttons (when showing annotations only)
+        if (buttonSet.length && buttonSet.length > 0) {
+            buttonSettings.annotationSet = buttonSet;
+            buttonSettings.buttonSets.push('annotationSet');
+        }
+    };
+
+
     /**
      * returns an annotatable uri to this digilib image
      */
@@ -156,8 +172,11 @@
     };
 
     /**
-     * sets annotation user and password in digilib and Annotator.Auth plugin.
-     * auth is Auth plugin instance.
+     * Set annotation user and password in digilib and Annotator.Auth plugin.
+     * 
+     * @param auth Auth plugin instance.
+     * @param user user name (optional)
+     * @param password password (optional)
      */
 	var setAnnotationUser = function (data, auth, user, password) {
 		if (user == null) {
@@ -449,7 +468,8 @@
             deleteAnnotation(data, annotation);
         }
     });
-        
+
+    
 	/**
 	 * returns unauthorizedCallback function for Annotator authlogin plugin.  
 	 */
@@ -490,6 +510,7 @@
 		return data.settings.annotationUser;
 	};
 	
+
 	/**
 	 * zoom in and display the annotation in the middle of the screen.
 	 */
@@ -511,6 +532,7 @@
         fn.redisplay(data);
     };
 
+
     /**
      * event handler, gets called when a annotationClick event is triggered
      */
@@ -528,19 +550,6 @@
         }
     };
 
-    /** 
-     * install additional buttons 
-     */
-    var installButtons = function(data, buttonSet) {
-        var settings = data.settings;
-        var mode = settings.interactionMode;
-        var buttonSettings = settings.buttonSettings[mode];
-        // set annotationSet to [] or '' for no buttons (when showing annotations only)
-        if (buttonSet.length && buttonSet.length > 0) {
-            buttonSettings.annotationSet = buttonSet;
-            buttonSettings.buttonSets.push('annotationSet');
-        }
-    };
 
     var defaults = {
         // are annotations active?
@@ -626,7 +635,7 @@
         console.debug('initialising annotator plugin. data:', data);
         var $data = $(data);
         var settings = data.settings;
-        FULL_AREA  = geom.rectangle(0, 0, 1, 1);
+        FULL_AREA = geom.rectangle(0, 0, 1, 1);
         // set up list of annotation wrappers
         data.annotations = [];
         // set up buttons
@@ -663,11 +672,14 @@
                 'prefix' : getAnnotationServerUrl(data),
                 'annotationData' : {'uri' : uri}                
             },
-            'loadQuery' : {'uri': uri},
+            'loadQuery' : null,
             'readOnly' : data.settings.annotationsReadOnly,
         };
+        console.debug("creating annotator.");
         var annotator = new DigilibAnnotator(elem, opts);
         annotator.setDigilibData(data);
+        // save annotator reference     
+        data.annotator = annotator;
         // set plugin parameters
         var pluginParams = {};
         // merge settings 
@@ -692,6 +704,8 @@
         };
         // add plugins
         $.each(settings.annotatorPlugins, function (idx, name) {
+            // ignore Store plugin (added by Annotator constructor)
+            if (name === 'Store') return;
             var params = pluginParams[name];
             evalParams(params);
         	console.debug("plugin:", name, params);
@@ -699,8 +713,6 @@
         });
         // subscribe annotation delete event
         annotator.subscribe("annotationDeleted", annotator.onDigilibAnnotationDeleted);
-		// save annotator reference		
-        data.annotator = annotator;
     	// save annotation token in cookie
     	var auth = annotator.plugins.Auth;
     	if (auth != null) {
@@ -709,6 +721,10 @@
 	    	    fn.storeOptions(data);
     		});
     	}
+    	// load annotations
+    	var query = {'uri' : uri};
+    	annotator.load(query);
+        data.annotatorLoadQuery = query;
     };
 
     /**
