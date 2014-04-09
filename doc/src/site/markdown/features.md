@@ -26,6 +26,9 @@
   so you don't have to create a different image format for online display (TIFF, 
   JPG, PNG, GIF, JPEG2000, and more depending on Java ImageIO support).
   
+* **IIIF image API**: the digilib server provides [IIIF](http://iiif.io)
+  image API (V1.1) compliant access to your images besides the digilib native server API.
+  
 * **plugins**: there are several Digilib plugins written in Javascript to add functionality to the client side, making use of jQuery features. See the [plugins](plugins.html) documentation.
 
-* **digilib API**: modifiy the settings, write Javascript functions or provide your own Digilib plugins and event handlers.
+* **digilib client API**: modify the settings, write Javascript functions or provide your own Digilib plugins and event handlers.

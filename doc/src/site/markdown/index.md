@@ -15,9 +15,11 @@
 * `digilib` facilitates cooperation of scholars over the internet and
   novel uses of source material by image annotations and stable references that
   can be embedded in URLs.
+* `digilib` facilitates federation of image servers through a standards compliant
+  [IIIF](http://iiif.io) image API.
 * `digilib` is Open Source Software under the Lesser General Public License,
   jointly developed by the
-  [Max-Planck-Institute for the History of Science](http://www.mpiwg-berlin.mpg.de),
+  [Max Planck Institute for the History of Science](http://www.mpiwg-berlin.mpg.de),
   the [Bibliotheca Hertziana](http://www.biblhertz.it), 
   the [University of Bern](http://philoscience.unibe.ch) and others.
 
