@@ -240,7 +240,7 @@ public class Scaler extends HttpServlet {
         
         // handle the info-request
         if (dlRequest.hasOption("info")) {
-            ServletOps.sendInfo(dlRequest, response, logger);
+            ServletOps.sendIiifInfo(dlRequest, response, logger);
             return;
         }
 

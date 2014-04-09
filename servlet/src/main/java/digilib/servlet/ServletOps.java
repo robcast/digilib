@@ -358,7 +358,7 @@ public class ServletOps {
      * @throws ServletException
      * @see <a href="http://www-sul.stanford.edu/iiif/image-api/1.1/#info">IIIF Image Information Request</a>
      */
-    public static void sendInfo(DigilibServletRequest dlReq, HttpServletResponse response, Logger logger) throws ServletException {
+    public static void sendIiifInfo(DigilibServletRequest dlReq, HttpServletResponse response, Logger logger) throws ServletException {
         if (response == null) {
             logger.error("No response!");
             return;
