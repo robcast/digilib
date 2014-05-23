@@ -1,8 +1,8 @@
 # The digilib Scaler API
 
-The Scaler servlet takes parameters in the HTTP request format:
+The Scaler servlet takes parameters in the HTTP query string format:
 
-	Scaler/request_path/?param1=value1&param2=value2&... 
+	http://host.domain/digilib/Scaler/request_path/?param1=value1&param2=value2&... 
 
 Unknown parameters will be silently ignored.
 
@@ -11,11 +11,11 @@ parameters
 [use the source](https://sourceforge.net/p/digilib/code/ci/default/tree/servlet/src/main/java/digilib/conf/DigilibServletRequest.java)
 ):
 
-- `request_path`: path to file or directory.
-- `fn`: path to file or directory. This path will be added to the
-    `request_path` behind the servlet name. Either parameter can be
-    empty. All paths are relative to the configured base directory 
-    (digilib-config parameter `basedir-list`). 
+- `request_path`: (optional) path to file or directory.
+- `fn`: path to file or directory. (This path will be added to
+    `request_path`. Either parameter can be empty. 
+    All paths are relative to the configured base directory 
+    from the [digilib-config.xml](digilib-config.html) parameter `basedir-list`). 
 - `pn`: page number. Index into the (alphabetically sorted)
     directory given by the path. Starts with 1. Ignored if the path
     points to a file. Default: 1.
@@ -34,11 +34,11 @@ parameters
 - `ws`: additional scaling factor. The resulting image will have
     the size \[`ws`\*`dw` x `ws`\*`dh`\]. Default: 1.
 - `cont`: change contrast of the image. Negative values reduce
-    contrast, positive values enhance contrast. Pixel value is
+    contrast, positive values enhance contrast. Each pixel value is
     multiplied by 2^`cont`. Default: 0
 - `brgt`: change brightness of image. Negative value reduces
     brightness, positive value enhances brightness. The value `brgt` is
-    added to the pixel value. Default: 0
+    added to each pixel value. Default: 0
 - `rot`: rotate image. Rotation angle is given in degrees.
     Default: 0
 - `rgbm`: modify colour by multiplication. The contrast of the
@@ -58,10 +58,11 @@ parameters
     `osize` mode.
 - `scale`: absolute scale factor applied to the highest resolution image
     for `ascale` mode.
-- `colop`: additional color operation. One of "GRAYSCALE" (produces grayscale 
+- `colop`: color operation. One of "GRAYSCALE" (produces grayscale 
     image), "NTSC\_GRAY" (uses NTSC formula to produce grayscale image), 
-    "INVERT" (inverts colors), "MAP\_GRAY\_BGR" (produces false-color image).
-- `mo`: list flags for the mode of operation separated by comma ",".
+    "INVERT" (inverts colors), "MAP\_GRAY\_BGR" (produces false-color image 
+    mapping brightness values to color scale from blue via green to red).
+- `mo`: list of flags for the mode of operation separated by comma ",".
     - `fit`: always scale the image to fit \[`dw` x `dh`\] (default).
     - `clip`: send the file in its original resolution, cropped
         to fit \[`dw` x `dh`\].
@@ -71,20 +72,17 @@ parameters
     - `ascale`: scale the highest resolution image by an absolute
     	factor given by the `scale` parameter.
     - `file`: send the file as-is (may be very large and all
-        sorts of image types!). If configuration doesn't allow sending
+        sorts of image types!). If the configuration doesn't allow sending
         files (`sendfile-allowed=false`) revert to `clip`.
     - `rawfile`: send the file as-is with a mime-type of
-        "application/octet-stream" so it can be downloaded with the
-        browser.
+        "application/octet-stream" so the browser presents a download dialog.
     - `errtxt`: send error response as plain text.
     - `errimg`: send error response as image (default).
     - `errcode`: send error response as HTTP status code.
     - `q0`-`q2`: quality of interpolation in scaling (q0:
-        worst, default).
-    - `lores`: try to use scaled image (default)
-    - `hires`: always use the highest resolution image.
-    - If the image is zoomed (`ww`, `wh` \< 1) the use of the scaled
-        image files depends on the requested resolution.
+        worst, q2 best).
+    - `lores`: try to use pre-scaled images (default)
+    - `hires`: only use the highest resolution image.
     - `vmir`: mirror image vertically.
     - `hmir`: mirror image horizontally.
     - `jpg`: the resulting image is always sent as JPEG
@@ -92,14 +90,14 @@ parameters
     - `png`: the resulting image is always sent as PNG
         (otherwise JPEG and J2K images are sent as JPEG).
 
-The image to be loaded can be specified by the `request_path`
-(deprecated) or the `fn` parameter (preferred) and the optional
+The image to be loaded is specified by the `request_path`
+(deprecated) and/or the `fn` parameter (preferred) and the optional
 index `pn`:
 
 - if `fn` points to a directory then the file with the index `pn`
     (in alphabetical order according to ASCII) will be loaded
 - if `fn` points to a file (with or without extension) then this
-    file will be loaded
+    file will be loaded (regardless of `pn`).
 
 Find more information on the directory layout [here](image-directories.html).
 
