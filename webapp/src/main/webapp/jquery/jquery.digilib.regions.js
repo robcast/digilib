@@ -138,7 +138,7 @@ inner (optional)
         // css selector for area/a elements (must also be marked with class "dl-keep")
         'areaSelector' : 'map.dl-regioncontent area, map.dl-regioncontent a',
         // general buttonset of this plugin
-        'regionSet' : ['regions', 'finddata', 'findcoords', 'lessoptions'],
+        'regionSet' : ['regions', 'finddata', 'findcoords', 'lessoptions', 'moreoptions'],
         // buttonset for region editing by user
         'userRegionSet' : ['defineregion', 'removeregion', 'removeallregions'],
         // url param for regions

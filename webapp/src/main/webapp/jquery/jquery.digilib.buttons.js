@@ -190,7 +190,7 @@ digilib buttons plugin
                 'imagePath' : 'img/fullscreen/32/',
                 'buttonSetWidth' : 36,
                 'standardSet' : ["reference","zoomin","zoomout","zoomarea","zoomfull","pagewidth","back","fwd","page","about","reset","moreoptions"],
-                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","lessoptions"],
+                'specialSet' : ["mark","delmark","hmir","vmir","rot","brgt","cont","rgb","quality","size","calibrationx","scale","lessoptions","moreoptions"],
                 'pageSet' : ["back","fwd","page"],
                 'buttonSets' : ['standardSet', 'specialSet']
                 },
