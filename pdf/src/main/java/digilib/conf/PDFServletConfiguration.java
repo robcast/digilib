@@ -54,10 +54,16 @@ public class PDFServletConfiguration extends DigilibServletConfiguration {
     public static final String PDF_WORKDIR_KEY = "pdf.servlet.work.dir";
     public static final String PDF_CACHEDIR_KEY = "pdf.servlet.cache.dir";
 
-    public static String getVersion() {
+    public static String getClassVersion() {
         return "2.3.0 pdf";
     }
 
+    /* non-static getVersion for Java inheritance */
+    @Override
+    public String getVersion() {
+    	return getClassVersion();
+    }
+    
     /**
      * Constructs PDFServletConfiguration and defines all parameters and their default values.
      */

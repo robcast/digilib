@@ -87,8 +87,14 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
     /** the time the webapp (i.e. this class) was loaded */
     public final Long webappStartTime = System.currentTimeMillis();
 
-    public static String getVersion() {
+    public static String getClassVersion() {
         return "2.3.0 srv";
+    }
+    
+    /* non-static getVersion for Java inheritance */
+    @Override
+    public String getVersion() {
+    	return getClassVersion();
     }
     
     /**
@@ -115,7 +121,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         newParameter("servlet.dirmeta.class", null, null, 's');
         newParameter("servlet.authops.class", null, null, 's');
         newParameter("servlet.docudirectory.class", null, null, 's');
-        newParameter("servlet.version", DigilibServletConfiguration.getVersion(), null, 's');
+        newParameter("servlet.version", getVersion(), null, 's');
 
         /*
          * parameters that can be read from config file have a type 'f'
@@ -346,7 +352,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
             /*
              * set as the servlets main config
              */
-            setCurrentConfig(context);
+            setContextConfig(context);
         } catch (Exception e) {
             logger.error("Error configuring digilib servlet:", e);
         }
@@ -359,7 +365,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         ServletContext context = cte.getServletContext();
         context.log("***** Digital Image Library Configuration (" + getVersion() + ") *****");
         // see if there is a Configuration instance
-        DigilibServletConfiguration dlConfig = getCurrentConfig(context);
+        DigilibServletConfiguration dlConfig = getContextConfig(context);
         if (dlConfig == null) {
             try {
                 // initialise this instance
@@ -382,7 +388,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         logger.info("DigilibServletConfiguration shutting down.");
         // get current config from servlet context
         ServletContext context = cte.getServletContext();
-        DigilibServletConfiguration config = getCurrentConfig(context);
+        DigilibServletConfiguration config = getContextConfig(context);
         @SuppressWarnings("unchecked")
         DigilibJobCenter<DocuImage> imageExecutor = (DigilibJobCenter<DocuImage>) config.getValue(IMAGEEXECUTOR_KEY);
         if (imageExecutor != null) {
@@ -400,7 +406,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
      * Sets the current DigilibConfiguration in the context. 
      * @param context
      */
-    public void setCurrentConfig(ServletContext context) {
+    protected void setContextConfig(ServletContext context) {
         context.setAttribute(DigilibServletConfiguration.SERVLET_CONFIG_KEY, this);
     }
     
@@ -414,6 +420,17 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         DigilibServletConfiguration config = (DigilibServletConfiguration) context
                 .getAttribute(DigilibServletConfiguration.SERVLET_CONFIG_KEY);
         return config;
+    }
+
+    /**
+     * Returns the current DigilibConfiguration from the context.
+     * (non-static method, for Java inheritance)
+     * 
+     * @param context
+     * @return
+     */
+    protected DigilibServletConfiguration getContextConfig(ServletContext context) {
+        return getCurrentConfig(context);
     }
 
 }

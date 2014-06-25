@@ -60,7 +60,7 @@ import digilib.util.DigilibJobCenter;
 @SuppressWarnings("serial")
 public class PDFCache extends HttpServlet {
 
-    public static String version = PDFServletConfiguration.getVersion();
+    public static String version = PDFServletConfiguration.getClassVersion();
 
     /** logger for accounting requests */
     protected static Logger accountlog = Logger.getLogger("account.pdf.request");

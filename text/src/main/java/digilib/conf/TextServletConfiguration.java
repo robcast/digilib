@@ -50,10 +50,16 @@ public class TextServletConfiguration extends DigilibServletConfiguration {
     
     public static final String TEXT_DIR_CACHE_KEY = "text.servlet.dir.cache";    
     
-    public static String getVersion() {
+    public static String getClassVersion() {
         return "2.3.0 txt";
     }
 
+    /** non-static getVersion for Java inheritance */
+    @Override
+    public String getVersion() {
+    	return getClassVersion();
+    }
+    
     /**
      * Constructs DigilibServletConfiguration and defines all parameters and
      * their default values.
@@ -76,20 +82,19 @@ public class TextServletConfiguration extends DigilibServletConfiguration {
         DigilibServletConfiguration config = this;
 
         // set version
-        setValue("servlet.version", TextServletConfiguration.getVersion());
+        setValue("servlet.version", getVersion());
 
         try {
             // directory cache for text files
-            String[] bd = (String[]) config.getValue("basedir-list");
             DocuDirCache dirCache;
             if (config.getAsBoolean("use-mapping")) {
                 // with mapping file
                 File mapConf = ServletOps.getConfigFile((File) config.getValue("mapping-file"), context);
-                dirCache = new AliasingDocuDirCache(bd, FileClass.TEXT, mapConf, config);
+                dirCache = new AliasingDocuDirCache(FileClass.TEXT, mapConf, config);
                 config.setValue("mapping-file", mapConf);
             } else {
                 // without mapping
-                dirCache = new DocuDirCache(bd, FileClass.TEXT, this);
+                dirCache = new DocuDirCache(FileClass.TEXT, this);
             }
             config.setValue(TEXT_DIR_CACHE_KEY, dirCache);
         } catch (Exception e) {
@@ -101,7 +106,8 @@ public class TextServletConfiguration extends DigilibServletConfiguration {
      * Sets the current DigilibConfiguration in the context. 
      * @param context
      */
-    public void setCurrentConfig(ServletContext context) {
+    @Override
+    public void setContextConfig(ServletContext context) {
         context.setAttribute(TextServletConfiguration.TEXT_SERVLET_CONFIG_KEY, this);
     }
     
@@ -115,6 +121,18 @@ public class TextServletConfiguration extends DigilibServletConfiguration {
         DigilibServletConfiguration config = (DigilibServletConfiguration) context
                 .getAttribute(TextServletConfiguration.TEXT_SERVLET_CONFIG_KEY);
         return config;
+    }
+
+    /**
+     * Returns the current DigilibConfiguration from the context.
+     * (non-static method, for Java inheritance)
+     * 
+     * @param context
+     * @return
+     */
+    @Override
+    protected DigilibServletConfiguration getContextConfig(ServletContext context) {
+        return getCurrentConfig(context);
     }
 
 }

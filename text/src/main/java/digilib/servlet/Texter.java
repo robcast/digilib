@@ -45,7 +45,6 @@ import digilib.conf.TextServletConfiguration;
 import digilib.image.ImageOpException;
 import digilib.io.DocuDirCache;
 import digilib.io.FileOps;
-import digilib.io.FileOps.FileClass;
 import digilib.io.TextFile;
 
 /**
@@ -60,7 +59,7 @@ public class Texter extends HttpServlet {
     private static final long serialVersionUID = 6678666342141409867L;
 
     /** Servlet version */
-	public static String tlVersion = TextServletConfiguration.getVersion();
+	public static String tlVersion = TextServletConfiguration.getClassVersion();
 
 	/** DigilibConfiguration instance */
 	DigilibServletConfiguration dlConfig = null;
@@ -100,8 +99,7 @@ public class Texter extends HttpServlet {
 		// get our ServletContext
 		ServletContext context = config.getServletContext();
 		// see if there is a Configuration instance
-		dlConfig = (DigilibServletConfiguration) context
-				.getAttribute(TextServletConfiguration.TEXT_SERVLET_CONFIG_KEY);
+		dlConfig = TextServletConfiguration.getCurrentConfig(context);
 		if (dlConfig == null) {
 			// no Configuration
 			throw new ServletException("No Configuration!");
@@ -197,7 +195,6 @@ public class Texter extends HttpServlet {
 	private TextFile getTextFile(DigilibServletRequest dlRequest, String subDirectory) {
 		String loadPathName = dlRequest.getFilePath() + subDirectory;
 		// find the file(set)
-		return (TextFile) dirCache.getFile(loadPathName, dlRequest.getAsInt("pn"), 
-		        FileClass.TEXT);
+		return (TextFile) dirCache.getFile(loadPathName, dlRequest.getAsInt("pn"));
 	}
 }

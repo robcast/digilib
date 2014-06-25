@@ -56,8 +56,13 @@ public class DigilibConfiguration extends ParameterMap {
     protected static String propertiesFileName = "digilib.properties";
 
     /** digilib version */
-    public static String getVersion() {
+    public static String getClassVersion() {
         return "2.3.0";
+    }
+
+    /* non-static getVersion for Java inheritance */
+    public String getVersion() {
+    	return getClassVersion();
     }
     
     /**
@@ -72,7 +77,7 @@ public class DigilibConfiguration extends ParameterMap {
          */
         
         // digilib version
-        newParameter("digilib.version", DigilibConfiguration.getVersion(), null, 's');
+        newParameter("digilib.version", getVersion(), null, 's');
         // sending image files as-is allowed
         newParameter("sendfile-allowed", Boolean.TRUE, null, 'f');
         // Type of DocuImage instance
