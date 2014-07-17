@@ -30,6 +30,8 @@
         <load-on-startup>
             5
         </load-on-startup>
+        <!-- yes we do use async, Jetty! -->
+        <async-supported>true</async-supported>
   </servlet>
   <!-- The mapping for the Scaler servlet -->
   <servlet-mapping>
