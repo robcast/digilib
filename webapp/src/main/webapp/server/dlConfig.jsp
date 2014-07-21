@@ -90,7 +90,9 @@ DigilibJobCenter imageProcessor =  (DigilibJobCenter)dlConfig.getValue("servlet.
             } else {
                 if (!f.isAbsolute()) {
                     // relative path -> use getRealPath to resolve
-                    f = new File(pageContext.getServletContext().getRealPath(f.getPath()));
+                    String fn = pageContext.getServletContext().getRealPath("/" + f.getPath());
+                    if (fn == null) fn = "";
+                    f = new File(fn);
                 }
                 if (f.canRead()) {
                     val = f.toString();

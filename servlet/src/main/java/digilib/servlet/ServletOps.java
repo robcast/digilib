@@ -87,7 +87,7 @@ public class ServletOps {
         // is the filename absolute?
         if (!f.isAbsolute()) {
             // relative path -> use getRealPath to resolve in WEB-INF
-            String fn = sc.getRealPath(f.getPath());
+            String fn = sc.getRealPath("/" + f.getPath());
             if (fn == null) {
                 // TODO: use getResourceAsStream?
                 return null;
@@ -112,7 +112,7 @@ public class ServletOps {
         // is the filename absolute?
         if (!f.isAbsolute()) {
             // relative path -> use getRealPath to resolve in WEB-INF
-            filename = sc.getRealPath(filename);
+            filename = sc.getRealPath("/" + filename);
         }
         return filename;
     }
@@ -141,8 +141,8 @@ public class ServletOps {
             }
         }
         // relative path -> use getRealPath to resolve in WEB-INF
-        String newfn = sc.getRealPath("WEB-INF/" + fn);
-        if (fn == null) {
+        String newfn = sc.getRealPath("/WEB-INF/" + fn);
+        if (newfn == null) {
             // TODO: use getResourceAsStream?
             return null;
         }
@@ -160,12 +160,12 @@ public class ServletOps {
      * @param sc
      * @return
      */
-    public static String getConfigFile(String filename, ServletContext sc) {
+    public static String getConfigFileName(String filename, ServletContext sc) {
         File f = new File(filename);
         // is the filename absolute?
         if (!f.isAbsolute()) {
             // relative path -> use getRealPath to resolve in WEB-INF
-            filename = sc.getRealPath("WEB-INF/" + filename);
+            filename = sc.getRealPath("/WEB-INF/" + filename);
         }
         return filename;
     }

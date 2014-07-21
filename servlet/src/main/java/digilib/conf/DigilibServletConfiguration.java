@@ -183,7 +183,8 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         String fn = c.getInitParameter("config-file");
         if (fn == null) {
             logger.debug("readConfig: no param config-file");
-            fn = ServletOps.getConfigFile("digilib-config.xml", c);
+            fn = ServletOps.getConfigFileName("digilib-config.xml", c);
+            if (fn == null) fn = "";
         }
         File f = new File(fn);
         if (f.canRead()) {
@@ -314,7 +315,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
          */
         // set up the logger
         File logConf = ServletOps.getConfigFile((File) config.getValue("log-config-file"), context);
-        if (logConf.canRead()) {
+        if (logConf != null && logConf.canRead()) {
             DOMConfigurator.configure(logConf.getAbsolutePath());
             config.setValue("log-config-file", logConf);
         }

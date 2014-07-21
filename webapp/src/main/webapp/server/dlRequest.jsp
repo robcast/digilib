@@ -72,7 +72,7 @@ DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
     <td><i>url of the page/document</i></td>
   </tr>
   <tr>
-    <td>Fn</td><td><b><b><%= dlRequest.getAsString("fn") %></b></td><td><i>url of the page/document</i></td>
+    <td>Fn</td><td><b><%= dlRequest.getAsString("fn") %></b></td><td><i>url of the page/document</i></td>
   </tr>
   <tr>
     <td>FilePath</td><td><b><%= dlRequest.getFilePath() %></b></td><td><i>effective path of the page/document</i></td>
@@ -115,7 +115,7 @@ DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
   </tr>
 </table>
 
-<h2>All parameters<h2>
+<h2>All parameters</h2>
 
 <table>
 <%
