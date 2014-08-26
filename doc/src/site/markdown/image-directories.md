@@ -71,9 +71,9 @@ and a user requests the image `books/book1/page0002` digilib looks for
 (automatically finding the right file extension) 
 and uses the first image that is bigger than or equal to the requested size.
 
-For batch-prescaling our images we use a script called "scale-o-mat" that uses a
-lot of freely available imaging libraries (ImageMagick, libtiff, netpbm) and is
-available in our public CVS [[1]](http://itgroup.mpiwg-berlin.mpg.de/cgi-bin/cvsweb.cgi/scaleomat/). 
+For batch-prescaling our images we use a very old Perl script called "scale-o-mat" 
+that uses a lot of freely available imaging libraries (ImageMagick, libtiff, netpbm) 
+and is available in our [public CVS](https://it-dev.mpiwg-berlin.mpg.de/cvs/cgi-bin/cvsweb/scaleomat/). 
 The script is given a
 hi-res base directory, a destination base directory, a destination size and a
 starting directory. It then processes all files in the starting directory and
