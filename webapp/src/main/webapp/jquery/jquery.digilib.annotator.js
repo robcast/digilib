@@ -222,7 +222,7 @@
     /**
      * add a mark-annotation where clicked.
      */
-    var setAnnotationMark = function(data) {
+    var setAnnotationMark = function (data) {
         var $scaler = data.$scaler;
         // start event capturing
         $scaler.one('mousedown.dlSetAnnotationMark', function (evt) {
@@ -236,6 +236,23 @@
             annotator.selectedShapes = [shape];
             // create and edit new annotation
             var annotation = annotator.createAnnotation();
+            var cleanup = function () {
+            	annotator.unsubscribe('annotationEditorSubmit', save);
+            	annotator.unsubscribe('annotationEditorHidden', cancel);
+            };
+            var save = function () {
+            	console.log("annotation save.")
+            	cleanup();
+                annotator.setupAnnotation(annotation);
+                // Fire annotationCreated events so that plugins can react to them
+                annotator.publish('annotationCreated', [annotation]);
+            };
+            var cancel = function () {
+            	console.log("annotation cancel.")
+            	cleanup();
+            };
+            annotator.subscribe('annotationEditorSubmit', save);
+            annotator.subscribe('annotationEditorHidden', cancel);
             annotator.showEditor(annotation, mpos.getAsCss());
             return false;
         });
@@ -244,7 +261,7 @@
     /**
      * Add a region-annotation where clicked.
      */
-    var setAnnotationRegion = function(data) {
+    var setAnnotationRegion = function (data) {
         var annotator = data.annotator;
         fn.defineArea(data, function (data, rect) {
         	if (rect == null) return;
@@ -257,6 +274,23 @@
             var pos = rect.getPt1();
             var mpos = data.imgTrafo.transform(pos);
             var annotation = annotator.createAnnotation();
+            var cleanup = function () {
+            	annotator.unsubscribe('annotationEditorSubmit', save);
+            	annotator.unsubscribe('annotationEditorHidden', cancel);
+            };
+            var save = function () {
+            	console.log("annotation save.")
+            	cleanup();
+                annotator.setupAnnotation(annotation);
+                // Fire annotationCreated events so that plugins can react to them
+                annotator.publish('annotationCreated', [annotation]);
+            };
+            var cancel = function () {
+            	console.log("annotation cancel.")
+            	cleanup();
+            };
+            annotator.subscribe('annotationEditorSubmit', save);
+            annotator.subscribe('annotationEditorHidden', cancel);
             annotator.showEditor(annotation, mpos.getAsCss());
         });
     };
