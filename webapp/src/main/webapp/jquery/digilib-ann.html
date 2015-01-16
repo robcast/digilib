@@ -13,6 +13,7 @@
 
         <script type="text/javascript" src="json2.js"></script>
         <script type="text/javascript" src="jquery.js"></script>
+        <script src="http://code.jquery.com/jquery-migrate-1.2.1.js"></script>
         <script type="text/javascript" src="jquery.cookie.js"></script>
         <script type="text/javascript" src="jquery.digilib.js"></script>
         <link rel="stylesheet" type="text/css" href="jquery.digilib.css" />
@@ -43,7 +44,8 @@
                     // URL of authentication token server
                     //'annotationTokenUrl' : 'http://localhost:8080/test/annotator/token/getLoginToken',
                     // list of Annotator plugins
-                    'annotatorPlugins' : ['Auth', 'Permissions', 'Markdown']
+                    //'annotatorPlugins' : ['Auth', 'Permissions', 'Store', 'Markdown', 'DigilibIntegrator']
+                    'annotatorPlugins' : ['Store', 'Markdown', 'DigilibIntegrator']
                 };
                 var $div = $('div#digilib');
                 $div.digilib(opts);
