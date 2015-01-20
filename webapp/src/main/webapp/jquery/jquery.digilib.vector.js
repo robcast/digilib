@@ -433,13 +433,28 @@
                         'class': css+'svg-handle', 'style': 'pointer-events:all'}));
                     $vertexElems[i] = $vertexElem;
                     // getVertexDragHandler needs shape.$vertexElems
-                    $vertexElem.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, i));
+                    $vertexElem.one('mousedown.dlVertexDrag', getVertexDragHandler(data, shape, i));
                 }
                 $svg.append($vertexElems);
             }
         }
     };
 
+    var unrenderShape = function (data, shape) {
+    	// remove vertex handles
+    	if (shape.$vertexElems != null) {
+    		for (var i = 0; i < shape.$vertexElems.length; ++i) {
+    			shape.$vertexElems[i].remove();
+    		}
+    		delete shape.$vertexElems;
+    	}
+    	// remove SVG element
+    	if (shape.$elem != null) {
+    		shape.$elem.remove();
+    		delete shape.$elem;
+    	}
+    };
+    
     /**
      * return a vertexDragHandler function.
      * 
@@ -468,6 +483,7 @@
             }
             $document.on("mousemove.dlVertexDrag", dragMove);
             $document.on("mouseup.dlVertexDrag", dragEnd);            
+            $document.on("dblclick.dlVertexDrag", dragEnd);            
             return false;
         };
         
@@ -476,7 +492,7 @@
             pt.clipTo(imgRect);
             // move handle
             $handle.attr({'x': pt.x-hs/2, 'y': pt.y-hs/2});
-            // update shape element
+            // update shape SVG element
             if (shapeType === 'Line') {
                 if (vtx == 0) {
                     $shape.attr({'x1': pt.x, 'y1': pt.y});
@@ -491,7 +507,7 @@
                 }
                 $shape.attr({'x': rect.x, 'y': rect.y,
                     'width': rect.width, 'height': rect.height});               
-            } else if (shapeType === 'Polygon' || shapeType === 'LineString' ) {
+            } else if (shapeType === 'Polygon' || shapeType === 'LineString') {
                 var points = $shape.attr('points');
                 var ps = points.split(' ');
                 ps[vtx] = pt.x + ',' + pt.y;
@@ -502,25 +518,28 @@
         };
 
         var dragEnd = function (evt) {
+        	console.debug("dragend!");
             pt = geom.position(evt);
-            if (pt.distance(pt0) < 5) {
+            if ((pt.distance(pt0) < 5) && evt.type === 'mouseup') {
+            	// not drag but click to start
+            	console.debug("dragend - not moved");
                 return false;
             }
             pt.clipTo(imgRect);
             var p1 = data.imgTrafo.invtransform(pt);
-            // update shape element
-            if (shapeType === 'Line') {
-                shape.geometry.coordinates[vtx] = [p1.x, p1.y];
-            } else if (shapeType === 'Rectangle') {
+            // update shape object
+            if (shapeType === 'Line' || shapeType === 'Rectangle' ||
+            		shapeType === 'Polygon' || shapeType === 'LineString') {
                 shape.geometry.coordinates[vtx] = [p1.x, p1.y];
             }
             // remove move/end handler
             $document.off("mousemove.dlVertexDrag", dragMove);
             $document.off("mouseup.dlVertexDrag", dragEnd);
+            $document.off("dblclick.dlVertexDrag", dragEnd);
             // rearm start handler
             $handle.one("mousedown.dlVertexDrag", dragStart);
             if (onComplete != null) {
-                onComplete(data, shape);
+                onComplete(data, shape, evt);
             } else {
                 $(data).trigger('changeShape', shape);
             }
@@ -559,7 +578,9 @@
             var pt = geom.position(evt);
             // setup shape
             var p = data.imgTrafo.invtransform(pt);
-            if (shapeType === 'Line' || shapeType === 'Rectangle') {
+            var vtxidx = 1;
+            if (shapeType === 'Line' || shapeType === 'Rectangle' || 
+            		shapeType === 'LineString' || shapeType === 'Polygon') {
                 shape.geometry.coordinates = [[p.x, p.y], [p.x, p.y]];
             } else {
                 console.error("unsupported shape type: "+shapeType);
@@ -568,16 +589,46 @@
             }
             // draw shape
             renderShape(data, shape, layer);
-            // execute vertex drag handler on second vertex
-            getVertexDragHandler(data, shape, 1, function (data, newshape) {
+            // vertex drag end handler
+            var vertexDragDone = function (data, newshape, newevt) {
+                console.debug("new shape. evtype:", newevt.type, "shape:", newshape);
+                console.debug("coords", newshape.geometry.coordinates.toString());
+            	if (shapeType === 'LineString' || shapeType === 'Polygon') {
+            		if (newevt.type === 'mouseup') {
+	            		// single click adds line to LineString/Polygon
+	            		unrenderShape(data, newshape);
+	            		// copy last vertex as starting point
+	            		var vtx = newshape.geometry.coordinates[vtxidx];
+	            		newshape.geometry.coordinates.push(vtx.slice());
+	                    console.debug("new coords", newshape.geometry.coordinates.toString());
+	            		vtxidx += 1;
+	                    // draw shape
+	                    renderShape(data, newshape, layer);            		
+	                    // execute vertex drag handler on next vertex
+	            		getVertexDragHandler(data, newshape, vtxidx, vertexDragDone)(newevt);
+	            		return false;
+            		} else if (newevt.type === 'dblclick') {
+            			// remove last vertex from mouseup
+            			console.debug("dblclick");
+	            		unrenderShape(data, newshape);
+            			newshape.geometry.coordinates.pop();
+	                    console.debug("new coords", newshape.geometry.coordinates.toString());
+	                    renderShape(data, newshape, layer);            		            			
+            		} else {
+            			console.error("unknown event type!");
+            			return false;
+            		}
+            	}
+            	console.debug("final shape:", newshape);
                 // dragging vertex done
-                console.debug("new shape:", newshape);
                 data.shapes.push(newshape);
                 $overlayDiv.remove();
                 if (onComplete != null) {
                     onComplete(data, newshape);
                 }
-            })(evt);
+            };
+            // execute vertex drag handler on second vertex
+            getVertexDragHandler(data, shape, vtxidx, vertexDragDone)(evt);
             return false;
         };
         

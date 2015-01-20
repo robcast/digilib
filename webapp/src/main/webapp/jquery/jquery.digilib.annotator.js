@@ -379,6 +379,7 @@
 	    }
         // save annotation in data for Annotator
         $annotation.data('annotation', annotation);
+        $annotation.attr('data-annotation-id', annotation.id)
         $annotation.data('rect', area);
         // add shared css class from annotations collection
         if (annotation.cssclass != null) {
@@ -716,7 +717,7 @@
         plugins : {}
     };
 
-    if (Annotator == null) {
+    if (typeof(Annotator) === 'undefined') {
         $.error("Annotator.js Javascript not found!");
     }    
     if ($.fn.digilib == null) {

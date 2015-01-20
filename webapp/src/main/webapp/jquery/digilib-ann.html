@@ -42,10 +42,10 @@
                     // are annotations read-only?
                     'annotationsReadOnly' : false,
                     // URL of authentication token server
-                    //'annotationTokenUrl' : 'http://localhost:8080/test/annotator/token/getLoginToken',
+                    'annotationTokenUrl' : 'http://localhost:8080/test/annotator/token/getLoginToken',
                     // list of Annotator plugins
-                    //'annotatorPlugins' : ['Auth', 'Permissions', 'Store', 'Markdown', 'DigilibIntegrator']
-                    'annotatorPlugins' : ['Store', 'Markdown', 'DigilibIntegrator']
+                    'annotatorPlugins' : ['Auth', 'Permissions', 'Store', 'Markdown', 'DigilibIntegrator']
+                    //'annotatorPlugins' : ['Store', 'Markdown', 'DigilibIntegrator']
                 };
                 var $div = $('div#digilib');
                 $div.digilib(opts);

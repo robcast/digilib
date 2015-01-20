@@ -1,13 +1,13 @@
 
 /*
-** Annotator v1.2.9-dev-b091a74
+** Annotator v1.2.9-dev-5096249
 ** https://github.com/okfn/annotator/
 **
 ** Copyright 2015, the Annotator project contributors.
 ** Dual licensed under the MIT and GPLv3 licenses.
 ** https://github.com/okfn/annotator/blob/master/LICENSE
 **
-** Built at: 2015-01-16 17:56:43Z
+** Built at: 2015-01-17 13:38:31Z
  */
 
 
@@ -3106,9 +3106,6 @@
         annotation.highlights = [];
         annotation.ranges = [];
         this.digilib.setupAnnotation(annotation);
-        if (fireEvents) {
-          this.publish('annotationCreated', [annotation]);
-        }
         return annotation;
       } else {
         return this.setupRangeAnnotation.apply(this, arguments);
