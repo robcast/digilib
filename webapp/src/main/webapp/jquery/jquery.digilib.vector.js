@@ -73,13 +73,18 @@
         /**
          * set list of vector objects (shapes).
          * 
-         * replaces all existing shapes.
+         * replaces all existing shapes on layer.
          * 
          * @param data
          * @param shapes
+         * @param layer
          */
-        setShapes : function(data, shapes) {
-        	data.shapes = shapes;
+        setShapes : function(data, shapes, layer) {
+            if (layer == null) {
+                // assume shape layer is 0
+                layer = data.vectorLayers[0];
+            }
+        	layer.shapes = shapes;
         	renderShapes(data);
         },
 	
@@ -96,18 +101,18 @@
          * @param layer
          */
         addShape : function(data, shape, onComplete, layer) {
-        	if (data.shapes == null) {
-        		data.shapes = [];
-        	};
             if (layer == null) {
                 // assume shape layer is 0
                 layer = data.vectorLayers[0];
+            }
+            if (layer.shapes == null) {
+            	layer.shapes = [];
             }
         	if (shape.geometry.coordinates == null) {
         		// define shape interactively
         		defineShape(data, shape, layer, onComplete);
         	} else {
-        		data.shapes.push(shape);
+        		layer.shapes.push(shape);
             	renderShapes(data, layer);
         	}
         },
@@ -192,6 +197,8 @@
         // add defaults, actions, buttons to the main digilib object
         $.extend(digilib.defaults, defaults);
         $.extend(digilib.actions, actions);
+        // export functions
+        digilib.fn.vectorDefaultRenderFn = renderShapes;
     };
 
     /** 
@@ -203,7 +210,8 @@
         // create default shapes layer
         var shapeLayer = {
             'projection': 'screen', 
-            'renderFn': renderShapes
+            'renderFn': renderShapes,
+            'shapes': []
         };
         // shapes layer is first
         data.vectorLayers = [shapeLayer];
@@ -262,8 +270,9 @@
      * @param layer
      */
     var renderShapes = function (data, layer) {
-    	console.debug("renderShapes shapes:", data.shapes);
-    	if (data.shapes == null || data.imgTrafo == null || !data.settings.isVectorActive) 
+    	var shapes = layer.shapes || data.shapes;
+    	console.debug("renderShapes shapes:", shapes);
+    	if (shapes == null || data.imgTrafo == null || !data.settings.isVectorActive) 
     	    return;
     	if (layer == null) {
     	    // assume shape layer is 0
@@ -280,8 +289,8 @@
     	$svg = $(svgElem);
     	layer.svgElem = svgElem;
         layer.$elem = $svg;
-    	for (var i in data.shapes) {
-    		var shape = data.shapes[i];
+    	for (var i = 0; i < shapes.length; ++i) {
+    		var shape = shapes[i];
     		renderShape(data, shape, layer);
     	}
     	data.$elem.append($svg);
@@ -317,23 +326,37 @@
         var stroke = props['stroke'] || settings.defaultStroke;
         var strokeWidth = props['stroke-width'] || settings.defaultStrokeWidth;
         var fill = props['fill'] || settings.defaultFill;
-        var coords = /**
-         * @author casties
-         *
-         */
-        shape.geometry.coordinates;
+        var cssclass = props['cssclass'];
+        var style = props['style'];
+        var coords = shape.geometry.coordinates;
         var gt = shape.geometry.type;
-        if (gt === 'Line') {
+        if (gt === 'Point') {
+            /*
+             * Point
+             */
+            var p1 = trafo.transform(geom.position(coords[0]));
+            var $elem = $(svgElement('circle', {
+                'id': id, 'class': cssclass,
+                'cx': p1.x, 'cy': p1.y,
+                'r': hs,
+                'stroke': stroke, 'stroke-width': strokeWidth, 
+                'fill': fill, 'style': style}));
+            shape.$elem = $elem;
+            $svg.append($elem);
+            if (props.editable) {
+                $elem.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 0));
+            }
+        } else if (gt === 'Line') {
             /*
              * Line
              */
             var p1 = trafo.transform(geom.position(coords[0]));
             var p2 = trafo.transform(geom.position(coords[1]));
             var $elem = $(svgElement('line', {
-                'id': id,
+                'id': id, 'class': cssclass,
                 'x1': p1.x, 'y1': p1.y,
                 'x2': p2.x, 'y2': p2.y,
-                'stroke': stroke, 'stroke-width': strokeWidth}));
+                'stroke': stroke, 'stroke-width': strokeWidth, 'style': style}));
             shape.$elem = $elem;
             $svg.append($elem);
             if (props.editable) {
@@ -359,11 +382,11 @@
             var p2 = trafo.transform(geom.position(coords[1]));
             var rect = geom.rectangle(p1, p2);
             var $elem = $(svgElement('rect', {
-                'id': id,
+                'id': id, 'class': cssclass,
                 'x': rect.x, 'y': rect.y,
                 'width': rect.width, 'height': rect.height,
                 'stroke': stroke, 'stroke-width': strokeWidth,
-                'fill': fill}));
+                'fill': fill, 'style': style}));
             shape.$elem = $elem;
             $svg.append($elem);
             if (props.editable) {
@@ -390,10 +413,10 @@
                 ps[i] = trafo.transform(geom.position(coords[i]));
             }
             var $elem = $(svgElement('polygon', {
-                'id': id,
+                'id': id, 'class': cssclass,
                 'points': ps.join(" "),
                 'stroke': stroke, 'stroke-width': strokeWidth,
-                'fill': fill}));
+                'fill': fill, 'style': style}));
             shape.$elem = $elem;
             $svg.append($elem);
             if (props.editable) {
@@ -420,10 +443,10 @@
                 ps[i] = trafo.transform(geom.position(coords[i]));
             }
             var $elem = $(svgElement('polyline', {
-                'id': id,
+                'id': id, 'class': cssclass,
                 'points': ps.join(" "),
                 'stroke': stroke, 'stroke-width': strokeWidth,
-                'fill': 'none'}));
+                'fill': 'none', 'style': style}));
             shape.$elem = $elem;
             $svg.append($elem);
             if (props.editable) {
@@ -642,7 +665,7 @@
             	shape.properties.editable = isShapeEditable;
             	renderShape(data, newshape, layer);
             	// save shape
-                data.shapes.push(newshape);
+                layer.shapes.push(newshape);
                 $overlayDiv.remove();
                 if (onComplete != null) {
                     onComplete(data, newshape);
@@ -667,7 +690,9 @@
         var elem = document.createElementNS(svgNS, name);
         if (attrs != null) {
             for (var att in attrs) {
-                elem.setAttributeNS(null, att, attrs[att]);
+            	if (attrs[att] != null) {
+            		elem.setAttributeNS(null, att, attrs[att]);
+            	}
             };
         }
         return elem;
