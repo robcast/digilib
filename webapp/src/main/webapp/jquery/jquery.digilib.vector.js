@@ -317,7 +317,11 @@
         var stroke = props['stroke'] || settings.defaultStroke;
         var strokeWidth = props['stroke-width'] || settings.defaultStrokeWidth;
         var fill = props['fill'] || settings.defaultFill;
-        var coords = shape.geometry.coordinates;
+        var coords = /**
+         * @author casties
+         *
+         */
+        shape.geometry.coordinates;
         var gt = shape.geometry.type;
         if (gt === 'Line') {
             /*
@@ -440,6 +444,14 @@
         }
     };
 
+    /**
+     * remove rendered shape from screen.
+     * 
+     * Removes the SVG elements from the layer.
+     * 
+     * @param data
+     * @param shape
+     */
     var unrenderShape = function (data, shape) {
     	// remove vertex handles
     	if (shape.$vertexElems != null) {
@@ -518,11 +530,9 @@
         };
 
         var dragEnd = function (evt) {
-        	console.debug("dragend!");
             pt = geom.position(evt);
             if ((pt.distance(pt0) < 5) && evt.type === 'mouseup') {
             	// not drag but click to start
-            	console.debug("dragend - not moved");
                 return false;
             }
             pt.clipTo(imgRect);
@@ -587,20 +597,25 @@
                 $overlayDiv.remove();
                 return false;
             }
+            // save editable state and set to non-editable
+            var isShapeEditable = false;
+            if (shape.properties != null) {
+            	isShapeEditable = shape.properties.editable;
+            	shape.properties.editable = false;
+            } else {
+                shape.properties = {'editable' : false};
+            }
             // draw shape
             renderShape(data, shape, layer);
             // vertex drag end handler
             var vertexDragDone = function (data, newshape, newevt) {
-                console.debug("new shape. evtype:", newevt.type, "shape:", newshape);
-                console.debug("coords", newshape.geometry.coordinates.toString());
+                var coords = newshape.geometry.coordinates;
             	if (shapeType === 'LineString' || shapeType === 'Polygon') {
             		if (newevt.type === 'mouseup') {
 	            		// single click adds line to LineString/Polygon
 	            		unrenderShape(data, newshape);
 	            		// copy last vertex as starting point
-	            		var vtx = newshape.geometry.coordinates[vtxidx];
-	            		newshape.geometry.coordinates.push(vtx.slice());
-	                    console.debug("new coords", newshape.geometry.coordinates.toString());
+	            		coords.push(coords[vtxidx].slice());
 	            		vtxidx += 1;
 	                    // draw shape
 	                    renderShape(data, newshape, layer);            		
@@ -608,19 +623,25 @@
 	            		getVertexDragHandler(data, newshape, vtxidx, vertexDragDone)(newevt);
 	            		return false;
             		} else if (newevt.type === 'dblclick') {
-            			// remove last vertex from mouseup
-            			console.debug("dblclick");
-	            		unrenderShape(data, newshape);
-            			newshape.geometry.coordinates.pop();
-	                    console.debug("new coords", newshape.geometry.coordinates.toString());
-	                    renderShape(data, newshape, layer);            		            			
+            			// double click ends Linestring/Polygon
+	            		if (coords[vtxidx][0] === coords[vtxidx-1][0] && 
+	            				coords[vtxidx][1] === coords[vtxidx-1][1]) {
+	            			unrenderShape(data, newshape);
+	            			// remove duplicate last vertex (from mouseup)
+	            			coords.pop();
+		                    renderShape(data, newshape, layer);            		            			
+	            		}
             		} else {
             			console.error("unknown event type!");
             			return false;
             		}
             	}
-            	console.debug("final shape:", newshape);
                 // dragging vertex done
+            	// re-set editable
+            	unrenderShape(data, newshape);
+            	shape.properties.editable = isShapeEditable;
+            	renderShape(data, newshape, layer);
+            	// save shape
                 data.shapes.push(newshape);
                 $overlayDiv.remove();
                 if (onComplete != null) {
