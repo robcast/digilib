@@ -31,7 +31,7 @@
  */
 (function($) {
     // version of this plugin
-    var version = 'jquery.digilib.annotator.js 1.2.0';
+    var version = 'jquery.digilib.annotator.js 1.3.0';
 
     // affine geometry
     var geom = null;
@@ -39,8 +39,6 @@
     var digilib = null;
     // the functions made available by digilib
     var fn = {};
-    // the normal zoom area
-    var FULL_AREA = null;
 
     var buttons = {
         annotations : {
@@ -310,7 +308,7 @@
         $elem.find('div.'+cssPrefix+'annotationmark,div.'+cssPrefix+'annotationregion').remove();
         if (!data.settings.isAnnotationsVisible) return;
         // re-render
-        for (var i = 0; i < annotations.length; i++) {
+        for (var i = 0; i < annotations.length; ++i) {
             renderAnnotation(data, annotations[i]);
         }
     };
@@ -348,35 +346,56 @@
                 console.error("Unsupported shape type="+type);
                 return;
             }
-        } else if (annotation.areas != null) {
-            // legacy annotation areas
-            shape = annotation.areas[0];
-            area = geom.rectangle(shape);
-            if (area.isRectangle()) {
-                type = 'rectangle';
-            } else {
-                type = 'point';
-            }
         } else {
             console.error("Unable to render this annotation!");
             return;
         }
-        var screenRect = null;
         var $annotation = null;
         if (type === 'rectangle') {
             // render rectangle
+        	if (annot.shape != null) {
+        		// vector shape is rendered
+        		return;
+        	}
         	var clippedArea = data.zoomArea.intersect(area);
         	if (clippedArea == null) return;
+        	var pt1 = area.getPt1();
+        	var pt2 = area.getPt2();
+        	var vecShape = {
+        			'geometry': {
+        				'type' : 'Rectangle',
+        				'coordinates' : [[pt1.x, pt1.y], [pt2.x, pt2.y]]
+        			},
+        			'properties' : {
+                        'stroke' : 'yellow',
+                        'cssclass' : cssPrefix+'svg-annotationregion annotator-hl',
+                        'style' : 'pointer-events:all'
+                	}
+        	};
+        	digilib.actions.addShape(data, vecShape);
+        	$annotation = vecShape.$elem;
             screenRect = data.imgTrafo.transform(clippedArea);
-	        $annotation = $('<div class="'+cssPrefix+'annotationregion '+cssPrefix+'overlay annotator-hl">'+idx+'</div>');
-        } else {
+        } else if (type === 'point') {
             // render point
+        	if (annot.shape != null) {
+        		// vector shape is rendered
+        		return;
+        	}
 	        if (!data.zoomArea.containsPosition(area)) return;
-            screenRect = data.imgTrafo.transform(area);
-            // create annotation
-            var html = '<div class="'+cssPrefix+'annotationmark '+cssPrefix+'overlay annotator-hl">'+idx+'</div>';
-            $annotation = $(html);
-	    }
+        	var vecShape = {
+        			'geometry': {
+        				'type' : 'Point',
+        				'coordinates' : [[area.x, area.y]]
+        			},
+        			'properties' : {
+                        'stroke' : 'yellow',
+                        'cssclass' : cssPrefix+'svg-annotationregion annotator-hl',
+                        'style' : 'pointer-events:all'
+                	}
+        	};
+        	digilib.actions.addShape(data, vecShape);
+        	$annotation = vecShape.$elem;
+        }
         // save annotation in data for Annotator
         $annotation.data('annotation', annotation);
         $annotation.attr('data-annotation-id', annotation.id)
@@ -391,14 +410,12 @@
         }
         // save reference to div
         annot.$div = $annotation;
-        $elem.append($annotation);
         // hook up Annotator events
         $annotation.on("mouseover", annotator.onHighlightMouseover);
         $annotation.on("mouseout", annotator.startViewerHideTimer);
         $annotation.on('click.dlAnnotation', function(event) {
             $(data).trigger('annotationClick', [$annotation]);
         }); 
-        screenRect.adjustDiv($annotation);
     };
 
 	/**
@@ -606,6 +623,10 @@
     var install = function(plugin) {
         digilib = plugin;
         console.debug('installing annotator plugin. digilib:', digilib);
+        if (digilib.plugins.vector == null) {
+            console.error('annotator plugin: vector plugin is missing, aborting installation.');
+            return;
+        }
         // import digilib functions
         $.extend(fn, digilib.fn);
         // import geometry classes
@@ -621,7 +642,6 @@
         console.debug('initialising annotator plugin. data:', data);
         var $data = $(data);
         var settings = data.settings;
-        FULL_AREA = geom.rectangle(0, 0, 1, 1);
         // set up list of annotation wrappers
         data.annotations = [];
         // set up buttons
