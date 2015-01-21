@@ -39,6 +39,8 @@
     var digilib = null;
     // the functions made available by digilib
     var fn = {};
+    // annotation shape layer
+    var annotationLayer = null;
 
     var buttons = {
         annotations : {
@@ -372,7 +374,7 @@
                         'style' : 'pointer-events:all'
                 	}
         	};
-        	digilib.actions.addShape(data, vecShape);
+        	digilib.actions.addShape(data, vecShape, annotationLayer);
         	$annotation = vecShape.$elem;
             screenRect = data.imgTrafo.transform(clippedArea);
         } else if (type === 'point') {
@@ -393,7 +395,7 @@
                         'style' : 'pointer-events:all'
                 	}
         	};
-        	digilib.actions.addShape(data, vecShape);
+        	digilib.actions.addShape(data, vecShape, annotationLayer);
         	$annotation = vecShape.$elem;
         }
         // save annotation in data for Annotator
@@ -656,6 +658,13 @@
             // get annotation user from cookie
             settings.annotationUser = data.dlOpts.annotationUser;
         }
+        // create annotation shapes layer
+        annotationLayer = {
+            'projection': 'screen', 
+            'renderFn': fn.vectorDefaultRenderFn,
+            'shapes': []
+        };
+        digilib.actions.addVectorLayer(data, annotationLayer);
         // install event handler
         $data.bind('setup', handleSetup);
         $data.bind('update', handleUpdate);

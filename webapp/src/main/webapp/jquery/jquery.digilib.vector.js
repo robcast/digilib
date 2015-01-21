@@ -179,10 +179,10 @@
                 // set defaults for HTML element
                 $elem.css({'position':'absolute', 'z-index': 9, 'pointer-events':'none'});
                 $elem.addClass(data.settings.cssPrefix+'overlay');
-                // add layer
-                data.vectorLayers.push(layer);
-                renderLayers(data);
             }
+            // add layer
+            data.vectorLayers.push(layer);
+            renderLayers(data);
         }
     };
 
