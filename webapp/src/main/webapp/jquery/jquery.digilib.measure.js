@@ -704,9 +704,10 @@
         // drawing shape types
         shapeTypes : [
             { name : 'line', type : 'Line' },
-            { name : 'polyline', type : 'Polygon' },
+            { name : 'linestring', type : 'LineString' },
             { name : 'rectangle', type : 'Rectangle' },
             { name : 'square', type : 'Square' },
+            { name : 'polygon', type : 'Polygon' },
             { name : 'circle', type : 'Circle' },
             { name : 'arch', type : 'Arch' },
             { name : 'ratio', type : 'Ratio' },
@@ -769,7 +770,7 @@
             var shape = currentShape(data);
             data.measureWidgets.startb.addClass('dl-drawing');
             digilib.actions.addShape(data, shape, shapeCompleted);
-            console.debug('action: drawshape', shape);
+            console.debug('measure: action drawshape', shape);
             }
         };
 
@@ -781,23 +782,33 @@
 
     // callback for vector.drawshape
     var shapeCompleted = function(data, shape) {
-        console.debug('shapeCompleted', shape);
+        console.debug('measure: shapeCompleted', shape);
         data.measureWidgets.startb.removeClass('dl-drawing');
         if (shape == null || shape.geometry.coordinates == null) {
             return false; // do nothing if no line was produced
             };
-        var $data = $(data);
-        $data.on('changeShape', onChangeShape);
-        $data.trigger('changeShape', shape); // update
+        $(data).trigger('changeShape', shape); // update widgets
         return false;
         };
 
     // event handler for changeShape
     var onChangeShape = function(event, shape) {
         var data = this;
-        console.debug('onChangeShape', data, shape);
+        console.debug('measure: onChangeShape', data, shape);
         var dist = rectifiedDist(data, shape);
         updateLength(data, dist);
+        };
+
+    // event handler for renderShape
+    var onRenderShape = function(event, shape) {
+        // event handler for clickShape
+        var onClickShape = function(event) {
+            console.debug('measure: onClickShape', shape.geometry.type);
+            };
+        var data = this;
+        var $elem = shape.$elem;
+        $elem.on('mousedown.measure', onClickShape);
+        console.debug('measure: onRenderShape', data, shape);
         };
 
     // calculate a rectified distance from a shape with digilib coords
@@ -853,7 +864,8 @@
                 },
             properties : {
                 stroke : stroke,
-                editable : true
+                editable : true,
+                cssclass : 'dl-measure-item'
                 }
             };
         return item;
@@ -979,7 +991,7 @@
         $elem = data.$elem;
         $startb.on('mousedown.measure', function(evt) {
             // prevent mousedown event ot bubble up to measureBar (no dragging!)
-            console.debug('mousedown=', action, ' evt=', evt);
+            console.debug('measure: startb mousedown=', action, ' evt=', evt);
             $elem.digilib(action);
             return false;
             });
@@ -1039,6 +1051,8 @@
         var $data = $(data);
         $data.on('setup', handleSetup);
         $data.on('update', handleUpdate);
+        $data.on('renderShape', onRenderShape);
+        $data.on('changeShape', onChangeShape);
         };
 
     // plugin object with name and init

@@ -63,3 +63,11 @@ img#dl-measure-move {
     vertical-align: middle;
     margin: 0px 4px 4px 0px;
 }
+
+.dl-measure-item {
+    pointer-events: visible;
+}
+
+.dl-measure-item:hover {
+    stroke: lightcyan;
+}
