@@ -673,10 +673,12 @@
             		}
             	}
                 // dragging vertex done
-            	// re-set editable
-            	unrenderShape(data, newshape);
-            	shape.properties.editable = isShapeEditable;
-            	renderShape(data, newshape, layer);
+            	if (shape.properties.editable = isShapeEditable) {
+	            	// re-set editable
+	            	unrenderShape(data, newshape);
+	            	shape.properties.editable = isShapeEditable;
+	            	renderShape(data, newshape, layer);
+            	}
             	// save shape
                 layer.shapes.push(newshape);
                 $overlayDiv.remove();
