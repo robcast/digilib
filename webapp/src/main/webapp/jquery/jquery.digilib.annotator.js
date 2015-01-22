@@ -289,7 +289,7 @@
      * Render all annotations on the image
      */
     var renderAnnotations = function (data) {
-        if (data.annotations == null || data.annotator == null || data.$img == null || data.imgTrafo == null)
+        if (data.annotations == null || data.annotator == null)
             return;
 		var annotations = data.annotations;
         var cssPrefix = data.settings.cssPrefix;
@@ -301,13 +301,25 @@
         for (var i = 0; i < annotations.length; ++i) {
             shapes.push(createVectorShape(data, annotations[i]));
         }
-        // render vector layer
         annotationLayer.shapes = shapes;
-        annotationLayer.renderFn(data, annotationLayer);
-        // attach annotations to shapes
-        for (var i = 0; i < annotations.length; ++i) {
-            attachAnnotation(data, annotations[i], annotationLayer);
+        // render vector layer
+        if (data.$img != null && data.imgTrafo != null) {
+        	annotationLayer.renderFn(data, annotationLayer);
         }
+    };
+
+    /**
+     * Layer render function for vector plugin.
+     */
+    var layerRenderFn = function (data, layer) {
+    	// default shape render fn creates SVG elements
+    	fn.vectorDefaultRenderFn(data, layer);
+        // attach annotations to shapes
+    	var annotations = data.annotations;
+        for (var i = 0; i < annotations.length; ++i) {
+            attachAnnotation(data, annotations[i], layer);
+        }
+        layer.dirty = false;
     };
 
     /**
@@ -317,7 +329,7 @@
      * @returns vector shape object
      */
     var createVectorShape = function (data, annot) {
-        if (annot == null || annot.annotation == null || data.$img == null || data.imgTrafo == null)
+        if (annot == null || annot.annotation == null)
             return;
         if (!data.settings.isAnnotationsVisible) return;
         var cssPrefix = data.settings.cssPrefix;
@@ -440,6 +452,7 @@
 			};
 			// add to list
 			data.annotations.push(ann);
+			annotationLayer.dirty = true;
 		};
 	};
 
@@ -449,6 +462,7 @@
 	var getAnnotationDeleted = function(data) {
 		return function (annotation) {
 			// remove annotation mark
+			console.debug("delete annotation.");
 			var annots = data.annotations;
 			for (var i = 0; i < annots.length; ++i) {
 				var annot = annots[i];
@@ -663,14 +677,14 @@
         // create annotation shapes layer
         annotationLayer = {
             'projection': 'screen', 
-            'renderFn': fn.vectorDefaultRenderFn,
+            'renderFn': layerRenderFn,
             'shapes': []
         };
         digilib.actions.addVectorLayer(data, annotationLayer);
         // install event handler
-        $data.bind('setup', handleSetup);
-        $data.bind('update', handleUpdate);
-        $data.on('annotationClick', handleAnnotationClick);
+        $data.on('setup', handleSetup);
+        $data.on('update', handleUpdate);
+        //$data.on('annotationClick', handleAnnotationClick);
     };
 
     /**
@@ -720,6 +734,7 @@
         data.annotator = annotator;
         annotator.subscribe("annotationsLoaded", function () {
         	console.debug("annotations loaded!");
+        	renderAnnotations(data);
         });
     	// save annotation token in cookie
     	var auth = annotator.plugins.Auth;
@@ -738,7 +753,9 @@
         console.debug("annotations: handleUpdate");
         var data = this;
         // TODO: do not render too often
-        renderAnnotations(data);
+        if (annotationLayer.dirty) {
+        	renderAnnotations(data);
+        }
     };
 
     // plugin object with name and init

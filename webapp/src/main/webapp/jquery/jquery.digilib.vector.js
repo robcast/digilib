@@ -248,7 +248,7 @@
     var renderLayers = function(data) {
         if (data.imgRect == null)
             return;
-        for ( var i in data.vectorLayers) {
+        for (var i in data.vectorLayers) {
             var layer = data.vectorLayers[i];
             if (layer.projection === 'screen') {
                 // screen layers have render function
