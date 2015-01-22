@@ -309,15 +309,6 @@
     };
 
     /**
-     * Layer render function for vector plugin.
-     */
-    var layerRenderFn = function (data, layer) {
-    	// default shape render fn creates SVG elements
-    	fn.vectorDefaultRenderFn(data, layer);
-        layer.dirty = false;
-    };
-
-    /**
      * Create a vector shape for an annotation.
      * 
      * @param annot annotation wrapper object
@@ -424,6 +415,8 @@
         /* $annotation.on('click.dlAnnotation', function(event) {
             $(data).trigger('annotationClick', [$annotation]);
         }); */ 
+        // assume that everything was rendered (eventually)
+        annotationLayer.dirty = false;
     };
     
     /**
@@ -676,7 +669,7 @@
         // create annotation shapes layer
         annotationLayer = {
             'projection': 'screen', 
-            'renderFn': layerRenderFn,
+            'renderFn': fn.vectorDefaultRenderFn,
             'shapes': []
         };
         digilib.actions.addVectorLayer(data, annotationLayer);
@@ -739,7 +732,7 @@
     var handleUpdate = function(evt) {
         console.debug("annotations: handleUpdate");
         var data = this;
-        if (annotationLayer.dirty) {
+        if (annotationLayer.dirty === true) {
         	renderAnnotations(data);
         }
     };
