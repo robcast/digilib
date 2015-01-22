@@ -29,9 +29,12 @@ span.dl-measure-label {
     }
 
 span.dl-measure-number {
+    display: inline-block;
     color: lightgreen;
     background-color: #606060;
     padding: 2px;
+    width: 4em;
+    text-align: center;
     }
 
 input#dl-measure-val2, select#dl-measure-shape, select#dl-measure-unit1, select#dl-measure-unit2 {

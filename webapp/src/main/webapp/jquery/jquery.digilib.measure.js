@@ -767,8 +767,8 @@
             },
         drawshape : function(data) {
             var shape = currentShape(data);
-            data.measureWidgets.draw.addClass('dl-drawing')
-            digilib.actions.addShape(data, shape, onCompleteShape);
+            data.measureWidgets.startb.addClass('dl-drawing');
+            digilib.actions.addShape(data, shape, shapeCompleted);
             console.debug('action: drawshape', shape);
             }
         };
@@ -780,16 +780,24 @@
         };
 
     // callback for vector.drawshape
-    var onCompleteShape = function(data, shape) {
-        console.debug('onCompleteShape', shape);
-        data.measureWidgets.draw.removeClass('dl-drawing')
+    var shapeCompleted = function(data, shape) {
+        console.debug('shapeCompleted', shape);
+        data.measureWidgets.startb.removeClass('dl-drawing');
         if (shape == null || shape.geometry.coordinates == null) {
             return false; // do nothing if no line was produced
             };
+        var $data = $(data);
+        $data.on('changeShape', onChangeShape);
+        $data.trigger('changeShape', shape); // update
+        return false;
+        };
 
+    // event handler for changeShape
+    var onChangeShape = function(event, shape) {
+        var data = this;
+        console.debug('onChangeShape', data, shape);
         var dist = rectifiedDist(data, shape);
         updateLength(data, dist);
-        return false;
         };
 
     // calculate a rectified distance from a shape with digilib coords
@@ -804,20 +812,20 @@
     // recalculate units
     var updateUnits = function(data) {
         var val = data.lastMeasuredValue;
-        var $w = data.measureWidgets;
-        var u1 = parseFloat($w.unit1.val());
-        var u2 = parseFloat($w.unit2.val());
+        var widgets = data.measureWidgets;
+        var u1 = parseFloat(widgets.unit1.val());
+        var u2 = parseFloat(widgets.unit2.val());
         var v2 = val * u1 / u2;
-        $w.value2.val(fn.cropFloatStr(mRound(v2)));
+        widgets.value2.val(fn.cropFloatStr(mRound(v2)));
         }
 
     // recalculate after measuring
     var updateLength = function(data, dist) {
-        var $w = data.measureWidgets;
+        var widgets = data.measureWidgets;
         var fac = data.lastMeasureFactor;
         var val = dist * fac;
-        $w.len.text(fn.cropFloatStr(dist));
-        $w.value1.val(fn.cropFloatStr(mRound(val)));
+        widgets.len.text(fn.cropFloatStr(dist));
+        widgets.value1.val(fn.cropFloatStr(mRound(val)));
         data.lastMeasuredValue = val;
         data.lastMeasuredDistance = dist;
         updateUnits(data);
@@ -825,12 +833,12 @@
 
     // recalculate factor after entering a new value in input element "value1"
     var updateFactor = function(data) {
-        var $w = data.measureWidgets;
-        var val = parseFloat($w.value1.val());
+        var widgets = data.measureWidgets;
+        var val = parseFloat(widgets.value1.val());
         var dist = data.lastMeasuredDistance;
         var fac = val / dist;
-        data.lastMeasureFactor = fac;
-        $w.fac.text(fn.cropFloatStr(fac));
+        widgets.fac.text(fn.cropFloatStr(fac));
+        data.lastMeasureFactor = fac;
         data.lastMeasuredValue = val;
         updateUnits(data);
         };
@@ -844,7 +852,8 @@
                 type : shape.type
                 },
             properties : {
-                stroke : stroke
+                stroke : stroke,
+                editable : true
                 }
             };
         return item;
@@ -874,9 +883,9 @@
 
     // load units into select elements
     var loadSections = function(data) {
-        var $t = data.measureWidgets;
-        var $u1 = $t.unit1;
-        var $u2 = $t.unit2;
+        var widgets = data.measureWidgets;
+        var $u1 = widgets.unit1;
+        var $u2 = widgets.unit2;
         var sections = data.settings.units.sections;
         $.each(sections, function(index, section) {
             var $opt = $('<option class="dl-section" disabled="disabled">'+ section.name +'</option>');
@@ -903,11 +912,11 @@
 
     // drag measureBar around
     var dragMeasureBar = function(event) {
-        var $t = $(this).parent();
-        var x = $t.offset().left - event.pageX;
-        var y = $t.offset().top - event.pageY;
+        var $div = $(this).parent();
+        var x = $div.offset().left - event.pageX;
+        var y = $div.offset().top - event.pageY;
         $(document.body).on('mousemove.measure', function(event) {
-            $t.offset({
+            $div.offset({
                 left : event.pageX + x,
                 top  : event.pageY + y
             });
@@ -920,15 +929,15 @@
     // setup a div for accessing the measure functionality
     var setupMeasureBar = function(data) {
         console.debug('measure: setupMeasureBar');
-        var measureWidgets = {
+        var widgets = {
             names : [
-                'move', 'draw', 'shape',
+                'move', 'startb', 'shape',
                 'lenlabel', 'len',
                 'eq1', 'value1', 'unit1',
                 'eq2', 'value2', 'unit2'
                 ],
             move : $('<img id="dl-measure-move" src="img/move.png" title="move measuring bar around the screen"></img>'),
-            draw : $('<button id="dl-measure-draw" title="click to draw a measuring shape on top of the image">M</button>'),
+            startb : $('<button id="dl-measure-startb" title="click to draw a measuring shape on top of the image">M</button>'),
             shape : $('<select id="dl-measure-shape" title="select a shape to use for measuring" />'),
 			lenlabel : $('<span class="dl-measure-label" >len</span>'),
 			faclabel : $('<span class="dl-measure-label" >factor</span>'),
@@ -943,47 +952,40 @@
 			angle : $('<span id="dl-measure-angle" class="dl-measure-number" title="last measured angle" />')
 		    };
         var $measureBar = $('<div id="dl-measure-toolbar" />');
-        $.each(measureWidgets.names, function(index, item) {
-            $measureBar.append(measureWidgets[item]);
+        $.each(widgets.names, function(index, item) {
+            $measureBar.append(widgets[item]);
             });
         data.$elem.append($measureBar);
         data.$measureBar = $measureBar;
-        data.measureWidgets = measureWidgets;
-        measureWidgets.fac.text(fn.cropFloatStr(data.lastMeasureFactor));
+        widgets.fac.text(fn.cropFloatStr(data.lastMeasureFactor));
+        data.measureWidgets = widgets;
         loadShapeTypes(data);
         loadSections(data);
         setupMeasureWidgets(data);
-        measureWidgets.move.on('mousedown.measure', dragMeasureBar);
+        widgets.move.on('mousedown.measure', dragMeasureBar);
         return $measureBar;
         };
 
     // wire the draw button
     var setupMeasureWidgets = function (data) {
         console.debug('measure: setupMeasureWidgets');
-        var $t = data.measureWidgets;
-        var $draw = $t.draw;
+        var widgets = data.measureWidgets;
+        var $startb = widgets.startb;
         var buttonConfig = buttons['drawshape']; // not in data.settings.buttons
         // button properties
         var action = buttonConfig.onclick;
         var tooltip = buttonConfig.tooltip;
-        $draw.attr('title', tooltip);
+        $startb.attr('title', tooltip);
         $elem = data.$elem;
-        $draw.on('mousedown.measure', function(evt) {
+        $startb.on('mousedown.measure', function(evt) {
             // prevent mousedown event ot bubble up to measureBar (no dragging!)
             console.debug('mousedown=', action, ' evt=', evt);
             $elem.digilib(action);
             return false;
             });
-        $t.value1.on('change.measure', function(evt) {
-            updateFactor(data);
-            });
-        $t.unit1.on('change.measure', function(evt) {
-            updateUnits(data);
-            });
-        $t.unit2.on('change.measure', function(evt) {
-            updateUnits(data);
-            });
-
+        widgets.value1.on('change.measure', function(evt) { updateFactor(data) });
+        widgets.unit1.on('change.measure', function(evt) { updateUnits(data) });
+        widgets.unit2.on('change.measure', function(evt) { updateUnits(data) });
         };
 
     // event handler
