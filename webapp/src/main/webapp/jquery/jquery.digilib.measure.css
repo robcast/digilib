@@ -55,3 +55,8 @@ button.dl-drawing {
 option.dl-units {
     margin-left: 10px;
 }
+
+img#dl-measure-move {
+    vertical-align: middle;
+    margin: 0px 4px 4px 0px;
+}

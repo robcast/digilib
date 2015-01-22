@@ -903,7 +903,7 @@
 
     // drag measureBar around
     var dragMeasureBar = function(event) {
-        var $t = $(this);
+        var $t = $(this).parent();
         var x = $t.offset().left - event.pageX;
         var y = $t.offset().top - event.pageY;
         $(document.body).on('mousemove.measure', function(event) {
@@ -914,7 +914,7 @@
         }).on('mouseup.measure', function(event) {
             $(document.body).off('mousemove.measure').off('mouseup.measure');
             });
-        return true;
+        return false;
         };
 
     // setup a div for accessing the measure functionality
@@ -922,11 +922,12 @@
         console.debug('measure: setupMeasureBar');
         var measureWidgets = {
             names : [
-                'draw', 'shape',
+                'move', 'draw', 'shape',
                 'lenlabel', 'len',
                 'eq1', 'value1', 'unit1',
                 'eq2', 'value2', 'unit2'
                 ],
+            move : $('<img id="dl-measure-move" src="img/move.png" title="move measuring bar around the screen"></img>'),
             draw : $('<button id="dl-measure-draw" title="click to draw a measuring shape on top of the image">M</button>'),
             shape : $('<select id="dl-measure-shape" title="select a shape to use for measuring" />'),
 			lenlabel : $('<span class="dl-measure-label" >len</span>'),
@@ -952,7 +953,7 @@
         loadShapeTypes(data);
         loadSections(data);
         setupMeasureWidgets(data);
-        $measureBar.on('mousedown.measure', dragMeasureBar);
+        measureWidgets.move.on('mousedown.measure', dragMeasureBar);
         return $measureBar;
         };
 
