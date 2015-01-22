@@ -673,7 +673,7 @@
             		}
             	}
                 // dragging vertex done
-            	if (shape.properties.editable = isShapeEditable) {
+            	if (shape.properties.editable !== isShapeEditable) {
 	            	// re-set editable
 	            	unrenderShape(data, newshape);
 	            	shape.properties.editable = isShapeEditable;
