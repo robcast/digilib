@@ -28,7 +28,7 @@
  * 
  * Shapes are objects with "geometry" and "properties" members.
  * geometry is an object with "type" and "coordinates" members.
- * Currently supported types: "Line", "LineString", "Rectangle", "Polygon". 
+ * Currently supported types: "Point", "Line", "LineString", "Rectangle", "Polygon". 
  * coordinates is a list of pairs of relative coordinates.
  * properties are the SVG properties "stroke", "stroke-width", "fill" and other properties.
  * A property 'editable':true will display drag-handles to change the shape.
@@ -321,6 +321,7 @@
         // make sure we have a SVG element
         if (layer.svgElem == null) {
             renderShapes(data, layer);
+            return;
         }
         var $svg = $(layer.svgElem);
         var settings = data.settings;
@@ -472,7 +473,11 @@
                 }
                 $svg.append($vertexElems);
             }
+        } else {
+        	console.error("Unable to render shape type:", gt);
+        	return;
         }
+        $(data).trigger("renderShape", shape);
     };
 
     /**

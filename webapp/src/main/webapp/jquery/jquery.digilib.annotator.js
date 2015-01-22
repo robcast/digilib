@@ -31,7 +31,7 @@
  */
 (function($) {
     // version of this plugin
-    var version = 'jquery.digilib.annotator.js 1.3.0';
+    var version = 'jquery.digilib.annotator.js 1.3.1';
 
     // affine geometry
     var geom = null;
@@ -299,7 +299,7 @@
         // create vector shapes
         var shapes = [];
         for (var i = 0; i < annotations.length; ++i) {
-            shapes.push(createVectorShape(data, annotations[i]));
+            shapes.push(createShape(data, annotations[i]));
         }
         annotationLayer.shapes = shapes;
         // render vector layer
@@ -314,11 +314,6 @@
     var layerRenderFn = function (data, layer) {
     	// default shape render fn creates SVG elements
     	fn.vectorDefaultRenderFn(data, layer);
-        // attach annotations to shapes
-    	var annotations = data.annotations;
-        for (var i = 0; i < annotations.length; ++i) {
-            attachAnnotation(data, annotations[i], layer);
-        }
         layer.dirty = false;
     };
 
@@ -328,7 +323,7 @@
      * @param annot annotation wrapper object
      * @returns vector shape object
      */
-    var createVectorShape = function (data, annot) {
+    var createShape = function (data, annot) {
         if (annot == null || annot.annotation == null)
             return;
         if (!data.settings.isAnnotationsVisible) return;
@@ -344,17 +339,17 @@
         	console.warn("substituting annotation id!");
         	annotation.id = id;
         }
-        var shape = null;
+        var annoShape = null;
         var area = null;
         var type = null;
-        var vectorShape = null;
+        var shape = null;
         if (annotation.shapes != null) {
             // annotation shape
-            shape = annotation.shapes[0];
-            type = shape.type;
+            annoShape = annotation.shapes[0];
+            type = annoShape.type;
             if (type === "point") {
-                area = geom.position(shape.geometry);
-            	vectorShape = {
+                area = geom.position(annoShape.geometry);
+            	shape = {
             			'id': id,
             			'geometry': {
             				'type' : 'Point',
@@ -364,14 +359,15 @@
                             'stroke' : 'yellow',
                             'cssclass' : cssPrefix+'svg-annotationregion annotator-hl',
                             'style' : 'pointer-events:all'
-                    	}
+                    	},
+                    	'annotation': annotation
             	};
             } else if (type === "rectangle") {
-                area = geom.rectangle(shape.geometry);
+                area = geom.rectangle(annoShape.geometry);
                 // render rectangle
             	var pt1 = area.getPt1();
             	var pt2 = area.getPt2();
-            	vectorShape = {
+            	shape = {
             			'id': id,
             			'geometry': {
             				'type' : 'Rectangle',
@@ -381,7 +377,8 @@
                             'stroke' : 'yellow',
                             'cssclass' : cssPrefix+'svg-annotationregion annotator-hl',
                             'style' : 'pointer-events:all'
-                    	}
+                    	},
+                    	'annotation': annotation
             	};
             } else {
                 console.error("Unsupported shape type: "+type);
@@ -391,33 +388,24 @@
             console.error("Unable to create a shape for this annotation!");
             return;
         }
-        return vectorShape;
+        return shape;
     };
     
     /**
-     * Attach annotation handlers to the SVG shape.
+     * renderShape event handler attaches annotation handlers to the SVG shape.
      * 
-     * @param annot annotation wrapper object
-     * @param layer vector shape layer
+     * @param shape
      */
-    var attachAnnotation = function (data, annot, layer) {
-        if (annot == null || annot.annotation == null || layer == null || layer.shapes == null)
-            return;
-        if (!data.settings.isAnnotationsVisible) return;
+    var handleRenderShape = function (evt, shape) {
+        if (shape.annotation == null) return;
+        var data = this;
         var cssPrefix = data.settings.cssPrefix;
-        var $elem = data.$elem;
         var annotator = data.annotator;
-        var annotation = annot.annotation;
+        var annotation = shape.annotation;
         var id = annotation.id;
-        // get vector shape
-        var vecShape = digilib.actions.getShapeById(data, id, layer);
-        if (vecShape == null) {
-        	console.error("Unable to find shape for annotation! id=", id);
-        	return;
-        };
         // annotation shape
-        var shape = annotation.shapes[0];
-        var $annotation = vecShape.$elem;
+        var annoShape = annotation.shapes[0];
+        var $annotation = shape.$elem;
         // save annotation in data for Annotator
         $annotation.data('annotation', annotation);
         $annotation.attr('data-annotation-id', id)
@@ -427,11 +415,9 @@
             $annotation.addClass(annotation.cssclass);
         }
         // add individual css class from this annotation
-        if (shape.cssclass != null) {
+        if (annoShape.cssclass != null) {
             $annotation.addClass(shape.cssclass);
         }
-        // save reference to div
-        annot.$div = $annotation;
         // hook up Annotator events
         $annotation.on("mouseover", annotator.onHighlightMouseover);
         $annotation.on("mouseout", annotator.startViewerHideTimer);
@@ -440,7 +426,7 @@
         }); */ 
     };
     
-	/**
+    /**
 	 * returns setupAnnotation function using the given data.
 	 */
 	var getSetupAnnotation = function(data) {
@@ -674,13 +660,6 @@
             // get annotation user from cookie
             settings.annotationUser = data.dlOpts.annotationUser;
         }
-        // create annotation shapes layer
-        annotationLayer = {
-            'projection': 'screen', 
-            'renderFn': layerRenderFn,
-            'shapes': []
-        };
-        digilib.actions.addVectorLayer(data, annotationLayer);
         // install event handler
         $data.on('setup', handleSetup);
         $data.on('update', handleUpdate);
@@ -694,6 +673,14 @@
         console.debug("annotations: handleSetup");
         var data = this;
         var settings = data.settings;
+        // create annotation shapes layer
+        annotationLayer = {
+            'projection': 'screen', 
+            'renderFn': layerRenderFn,
+            'shapes': []
+        };
+        digilib.actions.addVectorLayer(data, annotationLayer);
+        $(data).on("renderShape", handleRenderShape);
         // set up annotator (after html has been set up)
         var uri = getAnnotationPageUri(data);
         var elem = data.$elem.get(0);
@@ -752,7 +739,6 @@
     var handleUpdate = function(evt) {
         console.debug("annotations: handleUpdate");
         var data = this;
-        // TODO: do not render too often
         if (annotationLayer.dirty) {
         	renderAnnotations(data);
         }
