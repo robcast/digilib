@@ -11,9 +11,7 @@
             }
         </style>
 
-        <script type="text/javascript" src="json2.js"></script>
         <script type="text/javascript" src="jquery.js"></script>
-        <!-- <script src="http://code.jquery.com/jquery-migrate-1.2.1.js"></script> -->
         <script type="text/javascript" src="jquery.cookie.js"></script>
         <script type="text/javascript" src="jquery.digilib.js"></script>
         <link rel="stylesheet" type="text/css" href="jquery.digilib.css" />
@@ -27,6 +25,7 @@
         <script type="text/javascript" src="jquery.digilib.birdseye.js"></script>
         <script type="text/javascript" src="jquery.digilib.marks.js"></script>
         <script type="text/javascript" src="jquery.digilib.regions.js"></script>
+        <script type="text/javascript" src="jquery.digilib.vector.js"></script>
         <script type="text/javascript" src="showdown.js"></script>
         <script type="text/javascript" src="annotator-dl.js"></script>
         <link rel="stylesheet" type="text/css" href="annotator.min.css" />
@@ -42,10 +41,11 @@
                     // are annotations read-only?
                     'annotationsReadOnly' : false,
                     // URL of authentication token server
-                    //'annotationTokenUrl' : 'http://localhost:8080/test/annotator/token/getLoginToken',
+                    'annotationTokenUrl' : 'http://localhost:8080/test/annotator/token/getLoginToken',
                     // list of Annotator plugins
-                    //'annotatorPlugins' : ['Auth', 'Permissions', 'Store', 'Markdown', 'DigilibIntegrator']
-                    'annotatorPlugins' : ['Store', 'Markdown', 'DigilibIntegrator']
+                    'annotatorPlugins' : ['Auth', 'Permissions', 'Markdown', 'DigilibIntegrator', 'Store']
+                	//'annotatorPlugins' : ['Auth', 'Permissions', 'Markdown', 'DigilibIntegrator', 'Store']
+                    //'annotatorPlugins' : ['Store', 'Markdown', 'DigilibIntegrator']
                 };
                 var $div = $('div#digilib');
                 $div.digilib(opts);

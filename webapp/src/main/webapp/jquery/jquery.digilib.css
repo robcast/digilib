@@ -400,6 +400,16 @@ div.dl-digilib .dl-svg-handle {
 div.dl-digilib .dl-svg-handle:hover {
 	fill: red;
 }
+div.dl-digilib .dl-svg-annotationregion {
+    fill: rgba(255, 255, 10, 0.3);
+    stroke: none;
+}
+div.dl-digilib .dl-svg-annotationregion:hover {
+    fill: transparent;
+    stroke: yellow;
+    stroke-width: 2px;
+}
+
 
 /* special definitions for embedded */
 div.dl-digilib.dl-embedded {

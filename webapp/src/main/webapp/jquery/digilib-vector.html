@@ -63,23 +63,23 @@
                         'editable' : true
                     }
                 }]);
-                $('#test-squares')[0].addEventListener('load', function (evt) {
+                /* $('#test-squares')[0].addEventListener('load', function (evt) {
                     var layer = {'projection': 'relative', 
                             '$elem': $(this), 
                             'svgElem': this.contentDocument.documentElement};
                     $div.digilib("addVectorLayer", layer);
                     return false;
-                });
+                }); */
             });
         </script>
     </head>
 
-    <!-- <body onload="$('#digilib').digilib('addShape', {'geometry':{'type':'Line'},'properties':{'editable':true}})"> --> 
-    <body>
+    <body onload="$('#digilib').digilib('addShape', {'geometry':{'type':'Polygon'},'properties':{'editable':true}})"> 
+    <!-- <body> -->
         <div id="digilib">
             <p>digilib doesn't work! Please switch on Javascript or notify the server administrator!</p>
-            <img src="http://digilib.sourceforge.net/images/digilib-logo-big.png" />
-            <object class="dl-keep" id="test-squares" data="test-squares.svg" type="image/svg+xml"></object>
+            <img src="../img/digilib-logo.png" />
+            <!-- <object class="dl-keep" id="test-squares" data="test-squares.svg" type="image/svg+xml"></object> -->
         </div>
     </body>
 </html>
