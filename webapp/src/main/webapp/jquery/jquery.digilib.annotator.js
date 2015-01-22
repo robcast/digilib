@@ -233,27 +233,7 @@
             var pos = data.imgTrafo.invtransform(mpos);
             // mark selection shape
             var shape = {'type' : 'point', 'units' : 'fraction', 'geometry' : geom.position(pos)};
-            annotator.selectedShapes = [shape];
-            // create and edit new annotation
-            var annotation = annotator.createAnnotation();
-            var cleanup = function () {
-            	annotator.unsubscribe('annotationEditorSubmit', save);
-            	annotator.unsubscribe('annotationEditorHidden', cancel);
-            };
-            var save = function () {
-            	console.log("annotation save.")
-            	cleanup();
-                annotator.setupAnnotation(annotation);
-                // Fire annotationCreated events so that plugins can react to them
-                annotator.publish('annotationCreated', [annotation]);
-            };
-            var cancel = function () {
-            	console.log("annotation cancel.")
-            	cleanup();
-            };
-            annotator.subscribe('annotationEditorSubmit', save);
-            annotator.subscribe('annotationEditorHidden', cancel);
-            annotator.showEditor(annotation, mpos.getAsCss());
+            createAnnotation(data, shape, mpos);
             return false;
         });
     };
@@ -269,32 +249,42 @@
             console.log("setAnnotationRegion at=", rect);
             // mark selection shape
             var shape = {'type' : 'rectangle', 'units' : 'fraction', 'geometry' : rect};
-            annotator.selectedShapes = [shape];
             // create and edit new annotation
             var pos = rect.getPt1();
             var mpos = data.imgTrafo.transform(pos);
-            var annotation = annotator.createAnnotation();
-            var cleanup = function () {
-            	annotator.unsubscribe('annotationEditorSubmit', save);
-            	annotator.unsubscribe('annotationEditorHidden', cancel);
-            };
-            var save = function () {
-            	console.log("annotation save.")
-            	cleanup();
-                annotator.setupAnnotation(annotation);
-                // Fire annotationCreated events so that plugins can react to them
-                annotator.publish('annotationCreated', [annotation]);
-            };
-            var cancel = function () {
-            	console.log("annotation cancel.")
-            	cleanup();
-            };
-            annotator.subscribe('annotationEditorSubmit', save);
-            annotator.subscribe('annotationEditorHidden', cancel);
-            annotator.showEditor(annotation, mpos.getAsCss());
+            createAnnotation(data, shape, mpos);
         });
     };
 
+    /**
+     * Show editor and save annotation.
+     */
+    var createAnnotation = function (data, shape, screenPos) {
+    	var annotator = data.annotator;
+	    annotator.selectedShapes = [shape];
+	    // create and edit new annotation
+	    var annotation = annotator.createAnnotation();
+	    var cleanup = function () {
+	    	annotator.unsubscribe('annotationEditorSubmit', save);
+	    	annotator.unsubscribe('annotationEditorHidden', cancel);
+	    };
+	    var save = function () {
+	    	console.log("annotation save.");
+	    	cleanup();
+	        annotator.setupAnnotation(annotation);
+	        // Fire annotationCreated events so that plugins can react to them
+	        annotator.publish('annotationCreated', [annotation]);
+	        renderAnnotations(data);
+	    };
+	    var cancel = function () {
+	    	console.log("annotation cancel.")
+	    	cleanup();
+	    };
+	    annotator.subscribe('annotationEditorSubmit', save);
+	    annotator.subscribe('annotationEditorHidden', cancel);
+	    annotator.showEditor(annotation, screenPos.getAsCss());
+    }
+    
     /**
      * Render all annotations on the image
      */
@@ -306,102 +296,120 @@
         var $elem = data.$elem;
         // show annotation user state
         $elem.find('div#'+cssPrefix+'button-annotationuser').attr('title', 'annotation user: '+data.settings.annotationUser);
-        // clear annotations
-        $elem.find('div.'+cssPrefix+'annotationmark,div.'+cssPrefix+'annotationregion').remove();
-        if (!data.settings.isAnnotationsVisible) return;
-        // re-render
+        // create vector shapes
+        var shapes = [];
         for (var i = 0; i < annotations.length; ++i) {
-            renderAnnotation(data, annotations[i]);
+            shapes.push(createVectorShape(data, annotations[i]));
+        }
+        // render vector layer
+        annotationLayer.shapes = shapes;
+        annotationLayer.renderFn(data, annotationLayer);
+        // attach annotations to shapes
+        for (var i = 0; i < annotations.length; ++i) {
+            attachAnnotation(data, annotations[i], annotationLayer);
         }
     };
 
     /**
-     * Render a single annotation on the image.
+     * Create a vector shape for an annotation.
      * 
      * @param annot annotation wrapper object
+     * @returns vector shape object
      */
-    var renderAnnotation = function (data, annot) {
+    var createVectorShape = function (data, annot) {
         if (annot == null || annot.annotation == null || data.$img == null || data.imgTrafo == null)
             return;
         if (!data.settings.isAnnotationsVisible) return;
         var cssPrefix = data.settings.cssPrefix;
-        var $elem = data.$elem;
-        var annotator = data.annotator;
         var annotation = annot.annotation;
         var idx = '';
         if (data.settings.showAnnotationNumbers) {
             // show annotation number
             idx = annot.idx ? annot.idx : '?';
         }
+        var id = fn.createId(annotation.id, cssPrefix+'annot-');
+        if (annotation.id == null) {
+        	console.warn("substituting annotation id!");
+        	annotation.id = id;
+        }
         var shape = null;
         var area = null;
         var type = null;
+        var vectorShape = null;
         if (annotation.shapes != null) {
             // annotation shape
             shape = annotation.shapes[0];
             type = shape.type;
             if (type === "point") {
                 area = geom.position(shape.geometry);
+            	vectorShape = {
+            			'id': id,
+            			'geometry': {
+            				'type' : 'Point',
+            				'coordinates' : [[area.x, area.y]]
+            			},
+            			'properties' : {
+                            'stroke' : 'yellow',
+                            'cssclass' : cssPrefix+'svg-annotationregion annotator-hl',
+                            'style' : 'pointer-events:all'
+                    	}
+            	};
             } else if (type === "rectangle") {
                 area = geom.rectangle(shape.geometry);
+                // render rectangle
+            	var pt1 = area.getPt1();
+            	var pt2 = area.getPt2();
+            	vectorShape = {
+            			'id': id,
+            			'geometry': {
+            				'type' : 'Rectangle',
+            				'coordinates' : [[pt1.x, pt1.y], [pt2.x, pt2.y]]
+            			},
+            			'properties' : {
+                            'stroke' : 'yellow',
+                            'cssclass' : cssPrefix+'svg-annotationregion annotator-hl',
+                            'style' : 'pointer-events:all'
+                    	}
+            	};
             } else {
-                console.error("Unsupported shape type="+type);
+                console.error("Unsupported shape type: "+type);
                 return;
             }
         } else {
-            console.error("Unable to render this annotation!");
+            console.error("Unable to create a shape for this annotation!");
             return;
         }
-        var $annotation = null;
-        if (type === 'rectangle') {
-            // render rectangle
-        	if (annot.shape != null) {
-        		// vector shape is rendered
-        		return;
-        	}
-        	var clippedArea = data.zoomArea.intersect(area);
-        	if (clippedArea == null) return;
-        	var pt1 = area.getPt1();
-        	var pt2 = area.getPt2();
-        	var vecShape = {
-        			'geometry': {
-        				'type' : 'Rectangle',
-        				'coordinates' : [[pt1.x, pt1.y], [pt2.x, pt2.y]]
-        			},
-        			'properties' : {
-                        'stroke' : 'yellow',
-                        'cssclass' : cssPrefix+'svg-annotationregion annotator-hl',
-                        'style' : 'pointer-events:all'
-                	}
-        	};
-        	digilib.actions.addShape(data, vecShape, annotationLayer);
-        	$annotation = vecShape.$elem;
-            screenRect = data.imgTrafo.transform(clippedArea);
-        } else if (type === 'point') {
-            // render point
-        	if (annot.shape != null) {
-        		// vector shape is rendered
-        		return;
-        	}
-	        if (!data.zoomArea.containsPosition(area)) return;
-        	var vecShape = {
-        			'geometry': {
-        				'type' : 'Point',
-        				'coordinates' : [[area.x, area.y]]
-        			},
-        			'properties' : {
-                        'stroke' : 'yellow',
-                        'cssclass' : cssPrefix+'svg-annotationregion annotator-hl',
-                        'style' : 'pointer-events:all'
-                	}
-        	};
-        	digilib.actions.addShape(data, vecShape, annotationLayer);
-        	$annotation = vecShape.$elem;
-        }
+        return vectorShape;
+    };
+    
+    /**
+     * Attach annotation handlers to the SVG shape.
+     * 
+     * @param annot annotation wrapper object
+     * @param layer vector shape layer
+     */
+    var attachAnnotation = function (data, annot, layer) {
+        if (annot == null || annot.annotation == null || layer == null || layer.shapes == null)
+            return;
+        if (!data.settings.isAnnotationsVisible) return;
+        var cssPrefix = data.settings.cssPrefix;
+        var $elem = data.$elem;
+        var annotator = data.annotator;
+        var annotation = annot.annotation;
+        var id = annotation.id;
+        // get vector shape
+        var vecShape = digilib.actions.getShapeById(data, id, layer);
+        if (vecShape == null) {
+        	console.error("Unable to find shape for annotation! id=", id);
+        	return;
+        };
+        // annotation shape
+        var shape = annotation.shapes[0];
+        var $annotation = vecShape.$elem;
         // save annotation in data for Annotator
         $annotation.data('annotation', annotation);
-        $annotation.attr('data-annotation-id', annotation.id)
-        $annotation.data('rect', area);
+        $annotation.attr('data-annotation-id', id)
+        //$annotation.data('rect', area);
         // add shared css class from annotations collection
         if (annotation.cssclass != null) {
             $annotation.addClass(annotation.cssclass);
@@ -415,11 +423,11 @@
         // hook up Annotator events
         $annotation.on("mouseover", annotator.onHighlightMouseover);
         $annotation.on("mouseout", annotator.startViewerHideTimer);
-        $annotation.on('click.dlAnnotation', function(event) {
+        /* $annotation.on('click.dlAnnotation', function(event) {
             $(data).trigger('annotationClick', [$annotation]);
-        }); 
+        }); */ 
     };
-
+    
 	/**
 	 * returns setupAnnotation function using the given data.
 	 */
@@ -432,8 +440,6 @@
 			};
 			// add to list
 			data.annotations.push(ann);
-			// render this annotation
-			renderAnnotation(data, ann);
 		};
 	};
 
@@ -447,13 +453,9 @@
 			for (var i = 0; i < annots.length; ++i) {
 				var annot = annots[i];
 				if (annot.annotation === annotation) {
-					// this is the right wrapper
-					if (annot.$div != null) {
-						// remove from screen
-						annot.$div.remove();
-					}
-					// remove from list
-					delete annots[i];
+					// this is the right wrapper -- delete
+					annots.splice(i, 1);
+					renderAnnotations(data);
 					break;
 				}
 			}
@@ -683,6 +685,7 @@
         var elem = data.$elem.get(0);
         var opts = {'readOnly' : data.settings.annotationsReadOnly};
         var annotator = new Annotator(elem, opts);
+        console.debug("annotator created");
         // set plugin parameters
         var def = defaults.annotatorPluginSettings;
         var pluginParams = {};
@@ -715,6 +718,9 @@
         });
 		// save annotator reference		
         data.annotator = annotator;
+        annotator.subscribe("annotationsLoaded", function () {
+        	console.debug("annotations loaded!");
+        });
     	// save annotation token in cookie
     	var auth = annotator.plugins.Auth;
     	if (auth != null) {
@@ -731,6 +737,7 @@
     var handleUpdate = function(evt) {
         console.debug("annotations: handleUpdate");
         var data = this;
+        // TODO: do not render too often
         renderAnnotations(data);
     };
 

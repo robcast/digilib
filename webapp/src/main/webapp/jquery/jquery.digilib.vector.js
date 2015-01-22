@@ -124,8 +124,12 @@
          * @param id
          * @returns shape
          */
-        getShapeById : function(data, id) {
-        	var shapes = data.shapes;
+        getShapeById : function(data, id, layer) {
+            if (layer == null) {
+                // assume shape layer is 0
+                layer = data.vectorLayers[0];
+            }
+        	var shapes = layer.shapes;
         	if (shapes == null) return null;
         	for (var i in shapes) {
         		if (shapes[i].id === id) {
@@ -141,15 +145,19 @@
          * @param data
          * @param id
          */
-        removeShapeById : function(data, id) {
-        	var shapes = data.shapes;
-        	if (shapes == null) return;
+        removeShapeById : function(data, id, layer) {
+            if (layer == null) {
+                // assume shape layer is 0
+                layer = data.vectorLayers[0];
+            }
+        	var shapes = layer.shapes;
+         	if (shapes == null) return;
         	for (var i in shapes) {
         		if (shapes[i].id === id) {
         			shapes.splice(i, 1);
         		}
         	}
-        	renderShapes(data);
+        	renderShapes(data, layer);
         },
         
         /**
