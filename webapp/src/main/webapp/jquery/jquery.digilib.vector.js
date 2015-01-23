@@ -625,18 +625,19 @@
             // setup shape
             var p = data.imgTrafo.invtransform(pt);
             var vtxidx = 1;
-            if (shapeType === 'Line' || shapeType === 'Rectangle' || 
+            if (shapeType === 'Point') {
+                shape.geometry.coordinates = [[p.x, p.y]];
+            } else if (shapeType === 'Line' || shapeType === 'Rectangle' || 
             		shapeType === 'LineString' || shapeType === 'Polygon') {
                 shape.geometry.coordinates = [[p.x, p.y], [p.x, p.y]];
             } else {
-                console.error("unsupported shape type: "+shapeType);
+                console.error("defineShape: unsupported shape type: "+shapeType);
                 $overlayDiv.remove();
                 return false;
             }
             // save editable state and set to non-editable
-            var isShapeEditable = false;
             if (shape.properties != null) {
-            	isShapeEditable = shape.properties.editable;
+            	shape.properties._editable = shape.properties.editable;
             	shape.properties.editable = false;
             } else {
                 shape.properties = {'editable' : false};
@@ -644,53 +645,62 @@
             // draw shape
             renderShape(data, shape, layer);
             // vertex drag end handler
-            var vertexDragDone = function (data, newshape, newevt) {
-                var coords = newshape.geometry.coordinates;
+            var vertexDragDone = function (data, shape, newevt) {
+                var coords = shape.geometry.coordinates;
             	if (shapeType === 'LineString' || shapeType === 'Polygon') {
             		if (newevt.type === 'mouseup') {
 	            		// single click adds line to LineString/Polygon
-	            		unrenderShape(data, newshape);
+	            		unrenderShape(data, shape);
 	            		// copy last vertex as starting point
 	            		coords.push(coords[vtxidx].slice());
 	            		vtxidx += 1;
 	                    // draw shape
-	                    renderShape(data, newshape, layer);            		
+	                    renderShape(data, shape, layer);            		
 	                    // execute vertex drag handler on next vertex
-	            		getVertexDragHandler(data, newshape, vtxidx, vertexDragDone)(newevt);
+	            		getVertexDragHandler(data, shape, vtxidx, vertexDragDone)(newevt);
 	            		return false;
             		} else if (newevt.type === 'dblclick') {
             			// double click ends Linestring/Polygon
 	            		if (coords[vtxidx][0] === coords[vtxidx-1][0] && 
 	            				coords[vtxidx][1] === coords[vtxidx-1][1]) {
-	            			unrenderShape(data, newshape);
+	            			unrenderShape(data, shape);
 	            			// remove duplicate last vertex (from mouseup)
 	            			coords.pop();
-		                    renderShape(data, newshape, layer);            		            			
+		                    renderShape(data, shape, layer);            		            			
 	            		}
             		} else {
             			console.error("unknown event type!");
             			return false;
             		}
             	}
-                // dragging vertex done
-            	if (shape.properties.editable !== isShapeEditable) {
-	            	// re-set editable
-	            	unrenderShape(data, newshape);
-	            	shape.properties.editable = isShapeEditable;
-	            	renderShape(data, newshape, layer);
-            	}
-            	// save shape
-                layer.shapes.push(newshape);
-                $overlayDiv.remove();
-                if (onComplete != null) {
-                    onComplete(data, newshape);
-                }
+            	shapeDone(data, shape);
             };
-            // execute vertex drag handler on second vertex
-            getVertexDragHandler(data, shape, vtxidx, vertexDragDone)(evt);
+            if (shapeType === 'Point') {
+            	// just this one vertex
+            	shapeDone(data, shape);
+            } else {
+            	// execute vertex drag handler on second vertex
+            	getVertexDragHandler(data, shape, vtxidx, vertexDragDone)(evt);
+            }
             return false;
         };
         
+        var shapeDone = function (data, shape) {
+            // defining shape done
+        	if (shape.properties._editable != null) {
+            	// re-set editable
+            	unrenderShape(data, shape);
+            	shape.properties.editable = shape.properties._editable;
+            	delete shape.properties._editable;
+            	renderShape(data, shape, layer);
+        	}
+        	// save shape
+            layer.shapes.push(shape);
+            $overlayDiv.remove();
+            if (onComplete != null) {
+                onComplete(data, shape);
+            }
+        };
         // start by clicking
         $overlayDiv.one('mousedown.dlShape', shapeStart);
     };

@@ -31,7 +31,7 @@
  */
 (function($) {
     // version of this plugin
-    var version = 'jquery.digilib.annotator.js 1.3.1';
+    var version = 'jquery.digilib.annotator.js 1.3.2';
 
     // affine geometry
     var geom = null;
@@ -116,7 +116,7 @@
         setAnnotationMark : function (data, mpos, text) {
             if (mpos == null) {
                 // interactive
-                setAnnotationMark(data);
+                setAnnotationShape(data, 'Point');
             } else {
                 // use position and text (and user-id)
                 console.error("Sorry, currently only interactive annotations!");
@@ -133,7 +133,7 @@
         setAnnotationRegion : function (data, rect, text) {
             if (rect == null) {
                 // interactive
-                setAnnotationRegion(data);
+                setAnnotationShape(data, 'Rectangle');
             } else {
                 // use position and text (and user-id)
                 console.error("Sorry, currently only interactive annotations!");
@@ -257,6 +257,40 @@
     };
 
     /**
+     * Add a shape-annotation where clicked.
+     */
+    var setAnnotationShape = function (data, type) {
+        var annotator = data.annotator;
+        var shape = {'geometry': {'type': type}};
+        digilib.actions.addShape(data, shape, function (data, newshape) {
+        	console.debug("new annotation shape:", newshape);
+        	var annoShape = null;
+        	var pos = null;
+        	if (type === 'Point') {
+        		pos = geom.position(newshape.geometry.coordinates[0]);
+                // create annotation shape
+                annoShape = {'type': 'point', 'units': 'fraction', 'geometry': pos};
+        	} else if (type === 'Rectangle') {
+        		pos = geom.position(newshape.geometry.coordinates[0]);
+        		var pt2 = geom.position(newshape.geometry.coordinates[1]);
+        		var rect = geom.rectangle(pos, pt2);
+                // create annotation shape
+                annoShape = {'type': 'rectangle', 'units': 'fraction', 'geometry': rect};
+        	} else if (type === 'Polygon') {
+        		pos = geom.position(newshape.geometry.coordinates[0]);
+                // create annotation shape
+                annoShape = {'type': 'polygon', 'units': 'fraction', 'geometry': newshape.geometry.coordinates};
+        	} else {
+        		console.error("Unsupported annotation shape="+type);
+        		return;
+        	}
+            var mpos = data.imgTrafo.transform(pos);
+            createAnnotation(data, annoShape, mpos);        	
+        }, annotationLayer);
+    };
+    
+    
+    /**
      * Show editor and save annotation.
      */
     var createAnnotation = function (data, shape, screenPos) {
@@ -283,7 +317,7 @@
 	    annotator.subscribe('annotationEditorSubmit', save);
 	    annotator.subscribe('annotationEditorHidden', cancel);
 	    annotator.showEditor(annotation, screenPos.getAsCss());
-    }
+    };
     
     /**
      * Render all annotations on the image
@@ -372,7 +406,7 @@
                     	'annotation': annotation
             	};
             } else {
-                console.error("Unsupported shape type: "+type);
+                console.error("Unsupported annotation shape type: "+type);
                 return;
             }
         } else {
