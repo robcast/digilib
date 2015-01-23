@@ -19,14 +19,15 @@ div#dl-measure-toolbar input {
     width: 8em;
 }
 
-div#dl-measure-toolbar select {
-    font-size: 100%;
-    width: 12em;
-}
-
 span.dl-measure-label {
     padding: 0px 5px;
     }
+
+span#dl-measure-shapeinfo {
+    display: inline-block;
+    width: 5em;
+    }
+
 
 span.dl-measure-number {
     display: inline-block;
@@ -40,12 +41,19 @@ span.dl-measure-number {
 input#dl-measure-val2, select#dl-measure-shape, select#dl-measure-unit1, select#dl-measure-unit2 {
     color: lightgreen;
     background-color: #606060;
+    width: 12em;
+    margin: 0px 2px;
     }
 
-select#dl-measure-shape:focus  {
+select#dl-measure-shape  {
+    width: 9em;
+    }
+
+/* select#dl-measure-shape:focus  {
     color: black;
     background-color: white;
     }
+*/
 
 option:disabled {
     color: black;

@@ -806,7 +806,7 @@
             };
         var data = this;
         var $elem = shape.$elem;
-        $elem.on('mouseover.measure', shapeInfo);
+        $elem.on('click.measure', shapeInfo);
         console.debug('measure: onRenderShape', data, shape);
         };
 
@@ -878,6 +878,8 @@
         var widgets = data.measureWidgets;
         widgets.value1.val(fn.cropFloatStr(mRound(val)));
         widgets.value2.val(fn.cropFloatStr(mRound(conv)));
+        widgets.info.text('length');
+        setSelectedShape(data, shape);
         data.lastMeasuredValue = val;
         data.lastMeasuredDistance = dist;
         };
@@ -891,6 +893,8 @@
         var widgets = data.measureWidgets;
         widgets.value1.val(fn.cropFloatStr(mRound(val)));
         widgets.value2.val(fn.cropFloatStr(mRound(conv)));
+        widgets.info.text('area');
+        setSelectedShape(data, shape);
         };
 
     // info window for rectangle
@@ -898,6 +902,7 @@
         var widgets = data.measureWidgets;
         widgets.value1.val('rect 1');
         widgets.value2.val('rect 2');
+        setSelectedShape(data, shape);
         };
 
     // recalculate after measuring
@@ -933,6 +938,18 @@
                 }
             };
         return shape;
+        };
+
+    // return a shape of the currently selected shape type
+    var setSelectedShape = function(data, shape) {
+        var type = shape.geometry.type;
+        var types = data.settings.shapeTypes;
+        for (var i = 0; i < types.length; i++) {
+            if (types[i].type === type) break;
+            }
+        if (i === types.length) i = 0;
+        data.settings.selectedShape = i;
+        data.measureWidgets.shape.val(i);
         };
 
     // return shape type selected by user (on the toolbar)
@@ -1009,6 +1026,7 @@
             names : [
                 'move', 'startb', 'shape',
                 // 'lenlabel', 'len', 'eq1',
+                'info',
                 'value1', 'unit1', 'eq2',
                 'value2', 'unit2'
                 ],
@@ -1020,6 +1038,7 @@
 			// eq1 : $('<span class="dl-measure-label">=</span>'),
 			eq2 : $('<span class="dl-measure-label">=</span>'),
 			// len : $('<span id="dl-measure-len" class="dl-measure-number">0.0</span>'),
+			info : $('<span id="dl-measure-shapeinfo" class="dl-measure-label">length</span>'),
 			fac : $('<span id="dl-measure-factor" class="dl-measure-number" />'),
 			value1 : $('<input id="dl-measure-value1" class="dl-measure-input" title="value of the last measured distance - click to change the value" value="0.0" />'),
 			value2 : $('<input id="dl-measure-value2" class="dl-measure-input" title="value of the last measured distance, converted to the secondary unit" value="0.0"/>'),
