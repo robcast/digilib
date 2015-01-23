@@ -65,7 +65,7 @@ img#dl-measure-move {
 }
 
 .dl-measure-item {
-    pointer-events: visible;
+    pointer-events: visibleStroke;
 }
 
 .dl-measure-item:hover {

@@ -1623,9 +1623,9 @@ function($) {
 	    		}
 	    	}
 	    	var ar = getImgAspectRatio(data);
-	    	p1.x *= ar;
-	    	p2.x *= ar;
-	    	dist['rectified'] = p1.distance(p2);
+	    	var r1 = geom.position(p1.x * ar, p1.y);
+	    	var r2 = geom.position(p2.x * ar, p2.y);
+	    	dist['rectified'] = r1.distance(r2);
     	}
     	return dist;
     };

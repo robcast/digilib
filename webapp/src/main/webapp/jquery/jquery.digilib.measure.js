@@ -717,9 +717,9 @@
         // index of default shape
         selectedShape : 0,
         // measuring unit (index into unit list)
-        unitFrom : 1,
+        unitFrom : 17,
         // converted unit (index into unit list)
-        unitTo : 2,
+        unitTo : 0,
         // maximal denominator for mixed fractions
         maxDenominator : 20,
         // number of decimal places for convert results
@@ -767,7 +767,7 @@
 			return;
             },
         drawshape : function(data) {
-            var shape = currentShape(data);
+            var shape = getSelectedShape(data);
             data.measureWidgets.startb.addClass('dl-drawing');
             digilib.actions.addShape(data, shape, shapeCompleted);
             console.debug('measure: action drawshape', shape);
@@ -795,52 +795,66 @@
     var onChangeShape = function(event, shape) {
         var data = this;
         console.debug('measure: onChangeShape', data, shape);
-        var dist = rectifiedDist(data, shape);
-        updateLength(data, dist);
+        updateInfo(data, shape);
         };
 
     // event handler for renderShape
     var onRenderShape = function(event, shape) {
-        // event handler for clickShape
-        var onClickShape = function(event) {
-            console.debug('measure: onClickShape', shape.geometry.type);
+        // event handler for updating shape info
+        var shapeInfo = function(event) {
+            updateInfo(data, shape);
             };
         var data = this;
         var $elem = shape.$elem;
-        $elem.on('mousedown.measure', onClickShape);
+        $elem.on('mouseover.measure', shapeInfo);
         console.debug('measure: onRenderShape', data, shape);
         };
 
-    // calculate a rectified distance from a shape with digilib coords
+    // calculate the distance of the first 2 points of a shape (rectified digilib coords)
     var rectifiedDist = function(data, shape) {
         var coords = shape.geometry.coordinates;
-        var p0 = geom.position(coords[0]);
-        var p1 = geom.position(coords[1]);
-        var dist = fn.getDistance(data, p0, p1);
-        return dist.rectified;
+        var total = 0;
+        var pos1 = geom.position(coords[0]);
+        for (i = 1; i < coords.length; i++) {
+            var pos2 = geom.position(coords[i]);
+            var dist = fn.getDistance(data, pos1, pos2);
+            total += dist.rectified;
+            pos1 = pos2;
+            }
+        return total;
         };
 
-    // recalculate units
-    var updateUnits = function(data) {
-        var val = data.lastMeasuredValue;
+    // calculate the area of a polygon (rectified digilib coords)
+    var rectifiedArea = function(data, shape) {
+        var ar = fn.getImgAspectRatio(data);
+        var rectifyPoint = function (c) {
+            return geom.position(ar * c[0], c[1]);
+            };
+        var coords = $.map(shape.geometry.coordinates, rectifyPoint);
+        var area = 0;
+        j = coords.length-1;
+        for (i = 0; i < coords.length; i++) {
+            area += (coords[j].x + coords[i].x) * (coords[j].y - coords[i].y); 
+            j = i;  //j is previous vertex to i
+            }
+        return Math.abs(area/2);
+        };
+
+    // convert length to second unit
+    var convertLength = function(data, val) {
         var widgets = data.measureWidgets;
         var u1 = parseFloat(widgets.unit1.val());
         var u2 = parseFloat(widgets.unit2.val());
-        var v2 = val * u1 / u2;
-        widgets.value2.val(fn.cropFloatStr(mRound(v2)));
+        return val * u1 / u2;
         }
 
-    // recalculate after measuring
-    var updateLength = function(data, dist) {
+    // convert area to second unit
+    var convertArea = function(data, val) {
         var widgets = data.measureWidgets;
-        var fac = data.lastMeasureFactor;
-        var val = dist * fac;
-        widgets.len.text(fn.cropFloatStr(dist));
-        widgets.value1.val(fn.cropFloatStr(mRound(val)));
-        data.lastMeasuredValue = val;
-        data.lastMeasuredDistance = dist;
-        updateUnits(data);
-        };
+        var u1 = parseFloat(widgets.unit1.val());
+        var u2 = parseFloat(widgets.unit2.val());
+        return val * u1 * u1 / (u2 * u2);
+        }
 
     // recalculate factor after entering a new value in input element "value1"
     var updateFactor = function(data) {
@@ -848,19 +862,69 @@
         var val = parseFloat(widgets.value1.val());
         var dist = data.lastMeasuredDistance;
         var fac = val / dist;
-        widgets.fac.text(fn.cropFloatStr(fac));
+        // widgets.fac.text(fn.cropFloatStr(fac));
+        var conv = convertLength(data, val);
+        widgets.value2.val(fn.cropFloatStr(mRound(conv)));
         data.lastMeasureFactor = fac;
         data.lastMeasuredValue = val;
-        updateUnits(data);
+        };
+
+    // info window for line 
+    var infoLine = function(data, shape) {
+        var dist = rectifiedDist(data, shape);
+        var fac = data.lastMeasureFactor;
+        var val = dist * fac;
+        var conv = convertLength(data, val);
+        var widgets = data.measureWidgets;
+        widgets.value1.val(fn.cropFloatStr(mRound(val)));
+        widgets.value2.val(fn.cropFloatStr(mRound(conv)));
+        data.lastMeasuredValue = val;
+        data.lastMeasuredDistance = dist;
+        };
+
+    // info window for polygon 
+    var infoPolygon = function(data, shape) {
+        var area = rectifiedArea(data, shape);
+        var fac = data.lastMeasureFactor;
+        var val = area * fac * fac;
+        var conv = convertArea(data, val);
+        var widgets = data.measureWidgets;
+        widgets.value1.val(fn.cropFloatStr(mRound(val)));
+        widgets.value2.val(fn.cropFloatStr(mRound(conv)));
+        };
+
+    // info window for rectangle
+    var infoRect = function(data, shape) {
+        var widgets = data.measureWidgets;
+        widgets.value1.val('rect 1');
+        widgets.value2.val('rect 2');
+        };
+
+    // recalculate after measuring
+    var updateInfo = function(data, shape) {
+        var type = shape.geometry.type;
+        console.debug('measure: updateInfo', type);
+       if (type === 'Line') {
+            return infoLine(data, shape);
+            }
+        if (type === 'LineString') {
+            return infoLine(data, shape);
+            }
+        if (type === 'Rectangle') {
+            return infoRect(data, shape);
+            }
+        if (type === 'Polygon') {
+            return infoPolygon(data, shape);
+            }
         };
 
     // return a shape of the currently selected shape type
-    var currentShape = function(data) {
-        var shape = getSelectedShapeType(data);
+    var getSelectedShape = function(data) {
+        var selection = getSelectedShapeType(data);
         var stroke = getSelectedStroke(data);
-        var item = {
+        var shape = {
             geometry : {
-                type : shape.type
+                type : selection.type
                 },
             properties : {
                 stroke : stroke,
@@ -868,7 +932,7 @@
                 cssclass : 'dl-measure-item'
                 }
             };
-        return item;
+        return shape;
         };
 
     // return shape type selected by user (on the toolbar)
@@ -944,18 +1008,18 @@
         var widgets = {
             names : [
                 'move', 'startb', 'shape',
-                'lenlabel', 'len',
-                'eq1', 'value1', 'unit1',
-                'eq2', 'value2', 'unit2'
+                // 'lenlabel', 'len', 'eq1',
+                'value1', 'unit1', 'eq2',
+                'value2', 'unit2'
                 ],
             move : $('<img id="dl-measure-move" src="img/move.png" title="move measuring bar around the screen"></img>'),
             startb : $('<button id="dl-measure-startb" title="click to draw a measuring shape on top of the image">M</button>'),
             shape : $('<select id="dl-measure-shape" title="select a shape to use for measuring" />'),
-			lenlabel : $('<span class="dl-measure-label" >len</span>'),
-			faclabel : $('<span class="dl-measure-label" >factor</span>'),
-			eq1 : $('<span class="dl-measure-label">=</span>'),
+			// lenlabel : $('<span class="dl-measure-label" >len</span>'),
+			// faclabel : $('<span class="dl-measure-label" >factor</span>'),
+			// eq1 : $('<span class="dl-measure-label">=</span>'),
 			eq2 : $('<span class="dl-measure-label">=</span>'),
-			len : $('<span id="dl-measure-len" class="dl-measure-number">0.0</span>'),
+			// len : $('<span id="dl-measure-len" class="dl-measure-number">0.0</span>'),
 			fac : $('<span id="dl-measure-factor" class="dl-measure-number" />'),
 			value1 : $('<input id="dl-measure-value1" class="dl-measure-input" title="value of the last measured distance - click to change the value" value="0.0" />'),
 			value2 : $('<input id="dl-measure-value2" class="dl-measure-input" title="value of the last measured distance, converted to the secondary unit" value="0.0"/>'),
