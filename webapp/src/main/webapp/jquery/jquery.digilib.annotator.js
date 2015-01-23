@@ -31,7 +31,7 @@
  */
 (function($) {
     // version of this plugin
-    var version = 'jquery.digilib.annotator.js 1.3.2';
+    var version = 'jquery.digilib.annotator.js 1.3.3';
 
     // affine geometry
     var geom = null;
@@ -58,9 +58,14 @@
             tooltip : "create an annotation for a point",
             icon : "annotation-mark.png"
         },
-        annotationregion : {
-            onclick : "setAnnotationRegion",
-            tooltip : "create an annotation for a region",
+        annotationrect : {
+            onclick : "setAnnotationRect",
+            tooltip : "create an annotation for a rectangular region",
+            icon : "annotation-region.png"
+        },
+        annotationpolygon : {
+            onclick : "setAnnotationPolygon",
+            tooltip : "create an annotation for a polygon region",
             icon : "annotation-region.png"
         }
     };
@@ -124,13 +129,13 @@
         },
 
         /**
-         * set a region-annotation by clicking (or giving a position and a text)
+         * set a rectangle-annotation by clicking (or giving a position and a text)
          *
          * @param data
          * @param rect
          * @param text
          */
-        setAnnotationRegion : function (data, rect, text) {
+        setAnnotationRect : function (data, rect, text) {
             if (rect == null) {
                 // interactive
                 setAnnotationShape(data, 'Rectangle');
@@ -138,7 +143,25 @@
                 // use position and text (and user-id)
                 console.error("Sorry, currently only interactive annotations!");
             }
+        },
+        
+        /**
+         * set a polygon-annotation by clicking (or giving a position and a text)
+         *
+         * @param data
+         * @param poly
+         * @param text
+         */
+        setAnnotationPolygon : function (data, poly, text) {
+            if (poly == null) {
+                // interactive
+                setAnnotationShape(data, 'Polygon');
+            } else {
+                // use position and text (and user-id)
+                console.error("Sorry, currently only interactive annotations!");
+            }
         }
+
     };
 
     /** 
@@ -278,8 +301,8 @@
                 annoShape = {'type': 'rectangle', 'units': 'fraction', 'geometry': rect};
         	} else if (type === 'Polygon') {
         		pos = geom.position(newshape.geometry.coordinates[0]);
-                // create annotation shape
-                annoShape = {'type': 'polygon', 'units': 'fraction', 'geometry': newshape.geometry.coordinates};
+        		// create annotation shape
+                annoShape = {'type': 'polygon', 'units': 'fraction', 'geometry': {'coordinates': newshape.geometry.coordinates}};
         	} else {
         		console.error("Unsupported annotation shape="+type);
         		return;
@@ -397,6 +420,21 @@
             			'geometry': {
             				'type' : 'Rectangle',
             				'coordinates' : [[pt1.x, pt1.y], [pt2.x, pt2.y]]
+            			},
+            			'properties' : {
+                            'stroke' : 'yellow',
+                            'cssclass' : cssPrefix+'svg-annotationregion annotator-hl',
+                            'style' : 'pointer-events:all'
+                    	},
+                    	'annotation': annotation
+            	};
+            } else if (type === "polygon") {
+                // render polygon
+            	shape = {
+            			'id': id,
+            			'geometry': {
+            				'type' : 'Polygon',
+            				'coordinates' : annoShape.geometry.coordinates
             			},
             			'properties' : {
                             'stroke' : 'yellow',
@@ -574,7 +612,7 @@
         // are annotations active?
         'isAnnotationsVisible' : true,
         // buttonset of this plugin
-        'annotationSet' : ['annotations', 'annotationuser', 'annotationmark', 'annotationregion', 'lessoptions'],
+        'annotationSet' : ['annotations', 'annotationuser', 'annotationmark', 'annotationrect', 'annotationpolygon', 'lessoptions'],
         'annotationReadOnlySet' : ['annotations', 'lessoptions'],
         // URL of annotation server .e.g. 'http://tuxserve03.mpiwg-berlin.mpg.de/AnnotationManager/annotator'
         'annotationServerUrl' : null,

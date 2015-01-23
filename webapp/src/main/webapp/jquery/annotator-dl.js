@@ -3096,13 +3096,9 @@
       return this;
     };
 
-    DigilibIntegrator.prototype._setupAnnotation = function(annotation, fireEvents) {
-      if (fireEvents == null) {
-        fireEvents = true;
-      }
+    DigilibIntegrator.prototype._setupAnnotation = function(annotation) {
       if (this.selectedShapes || (annotation.shapes != null) || (this.selectedAreas != null) || (annotation.areas != null)) {
         annotation.shapes || (annotation.shapes = this.selectedShapes);
-        annotation.areas || (annotation.areas = this.selectedAreas);
         annotation.highlights = [];
         annotation.ranges = [];
         this.digilib.setupAnnotation(annotation);
