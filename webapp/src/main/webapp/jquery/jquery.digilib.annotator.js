@@ -66,7 +66,7 @@
         annotationpolygon : {
             onclick : "setAnnotationPolygon",
             tooltip : "create an annotation for a polygon region",
-            icon : "annotation-region.png"
+            icon : "annotation-polygon.png"
         }
     };
 
