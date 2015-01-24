@@ -243,43 +243,6 @@
 
 
     /**
-     * add a mark-annotation where clicked.
-     */
-    var setAnnotationMark = function (data) {
-        var $scaler = data.$scaler;
-        // start event capturing
-        $scaler.one('mousedown.dlSetAnnotationMark', function (evt) {
-            // event handler adding a new mark
-            console.log("setAnnotationMark at=", evt);
-            var annotator = data.annotator;
-            var mpos = geom.position(evt);
-            var pos = data.imgTrafo.invtransform(mpos);
-            // mark selection shape
-            var shape = {'type' : 'point', 'units' : 'fraction', 'geometry' : geom.position(pos)};
-            createAnnotation(data, shape, mpos);
-            return false;
-        });
-    };
-
-    /**
-     * Add a region-annotation where clicked.
-     */
-    var setAnnotationRegion = function (data) {
-        var annotator = data.annotator;
-        fn.defineArea(data, function (data, rect) {
-        	if (rect == null) return;
-            // event handler adding a new mark
-            console.log("setAnnotationRegion at=", rect);
-            // mark selection shape
-            var shape = {'type' : 'rectangle', 'units' : 'fraction', 'geometry' : rect};
-            // create and edit new annotation
-            var pos = rect.getPt1();
-            var mpos = data.imgTrafo.transform(pos);
-            createAnnotation(data, shape, mpos);
-        });
-    };
-
-    /**
      * Add a shape-annotation where clicked.
      */
     var setAnnotationShape = function (data, type) {
@@ -334,8 +297,9 @@
 	        renderAnnotations(data);
 	    };
 	    var cancel = function () {
-	    	console.log("annotation cancel.")
+	    	console.log("annotation cancel.");
 	    	cleanup();
+            renderAnnotations(data);
 	    };
 	    annotator.subscribe('annotationEditorSubmit', save);
 	    annotator.subscribe('annotationEditorHidden', cancel);
@@ -752,6 +716,9 @@
         var opts = {'readOnly' : data.settings.annotationsReadOnly};
         var annotator = new Annotator(elem, opts);
         console.debug("annotator created");
+        // unbind Annotator selection events so they don't annoy us
+        $(document).off("mousedown", annotator.checkForStartSelection);
+        $(document).off("mouseup", annotator.checkForEndSelection);
         // set plugin parameters
         var def = defaults.annotatorPluginSettings;
         var pluginParams = {};
