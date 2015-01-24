@@ -152,7 +152,7 @@
             }
         	var shapes = layer.shapes;
          	if (shapes == null) return;
-        	for (var i in shapes) {
+        	for (var i = 0; i < shapes.length; ++i) {
         		if (shapes[i].id === id) {
         			shapes.splice(i, 1);
         		}
@@ -645,11 +645,11 @@
             // draw shape
             renderShape(data, shape, layer);
             // vertex drag end handler
-            var vertexDragDone = function (data, shape, newevt) {
+            var vertexDragDone = function (data, shape, evt) {
                 var coords = shape.geometry.coordinates;
             	if (shapeType === 'LineString' || shapeType === 'Polygon') {
-            		if (newevt.type === 'mouseup') {
-	            		// single click adds line to LineString/Polygon
+            		if (evt.type === 'mouseup') {
+	            		// single click adds next line to LineString/Polygon
 	            		unrenderShape(data, shape);
 	            		// copy last vertex as starting point
 	            		coords.push(coords[vtxidx].slice());
@@ -657,16 +657,21 @@
 	                    // draw shape
 	                    renderShape(data, shape, layer);            		
 	                    // execute vertex drag handler on next vertex
-	            		getVertexDragHandler(data, shape, vtxidx, vertexDragDone)(newevt);
+	            		getVertexDragHandler(data, shape, vtxidx, vertexDragDone)(evt);
 	            		return false;
-            		} else if (newevt.type === 'dblclick') {
-            			// double click ends Linestring/Polygon
-	            		if (coords[vtxidx][0] === coords[vtxidx-1][0] && 
+            		} else if (evt.type === 'dblclick') {
+            		    // double click ends LineString/Polygon
+            		    // remove duplicate vertices (from mouseup)
+            		    var rerender = false;
+	            		while (coords[vtxidx][0] === coords[vtxidx-1][0] && 
 	            				coords[vtxidx][1] === coords[vtxidx-1][1]) {
-	            			unrenderShape(data, shape);
-	            			// remove duplicate last vertex (from mouseup)
-	            			coords.pop();
-		                    renderShape(data, shape, layer);            		            			
+                            coords.pop();
+                            vtxidx -= 1;
+                            rerender = true;
+	            		}
+	            		if (rerender) {
+	            		    unrenderShape(data, shape);
+	            		    renderShape(data, shape, layer);            		            			
 	            		}
             		} else {
             			console.error("unknown event type!");
