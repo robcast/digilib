@@ -31,7 +31,7 @@
  */
 (function($) {
     // version of this plugin
-    var version = 'jquery.digilib.annotator.js 1.3.3';
+    var version = 'jquery.digilib.annotator.js 1.3.4';
 
     // affine geometry
     var geom = null;
@@ -65,8 +65,13 @@
         },
         annotationpolygon : {
             onclick : "setAnnotationPolygon",
-            tooltip : "create an annotation for a polygon region",
+            tooltip : "create an annotation for a polygon region (end with doubleclick)",
             icon : "annotation-polygon.png"
+        },
+        annotationpolyline : {
+            onclick : "setAnnotationPolyline",
+            tooltip : "create an annotation for a polyline (end with doubleclick)",
+            icon : "annotation-polyline.png"
         }
     };
 
@@ -156,6 +161,23 @@
             if (poly == null) {
                 // interactive
                 setAnnotationShape(data, 'Polygon');
+            } else {
+                // use position and text (and user-id)
+                console.error("Sorry, currently only interactive annotations!");
+            }
+        },
+
+        /**
+         * set a polyline-annotation by clicking (or giving a position and a text)
+         *
+         * @param data
+         * @param poly
+         * @param text
+         */
+        setAnnotationPolyline : function (data, poly, text) {
+            if (poly == null) {
+                // interactive
+                setAnnotationShape(data, 'LineString');
             } else {
                 // use position and text (and user-id)
                 console.error("Sorry, currently only interactive annotations!");
@@ -255,17 +277,25 @@
         	if (type === 'Point') {
         		pos = geom.position(newshape.geometry.coordinates[0]);
                 // create annotation shape
-                annoShape = {'type': 'point', 'units': 'fraction', 'geometry': pos};
+                annoShape = {'type': 'point', 'geometry': pos};
+                annoshape.geometry['units'] = 'fraction'; 
         	} else if (type === 'Rectangle') {
         		pos = geom.position(newshape.geometry.coordinates[0]);
         		var pt2 = geom.position(newshape.geometry.coordinates[1]);
         		var rect = geom.rectangle(pos, pt2);
                 // create annotation shape
-                annoShape = {'type': 'rectangle', 'units': 'fraction', 'geometry': rect};
+                annoShape = {'type': 'rectangle', 'geometry': rect};
+                annoshape.geometry['units'] = 'fraction'; 
         	} else if (type === 'Polygon') {
         		pos = geom.position(newshape.geometry.coordinates[0]);
         		// create annotation shape
-                annoShape = {'type': 'polygon', 'units': 'fraction', 'geometry': {'coordinates': newshape.geometry.coordinates}};
+                annoShape = {'type': 'polygon', 'geometry': {'coordinates': newshape.geometry.coordinates}};
+                annoshape.geometry['units'] = 'fraction'; 
+        	} else if (type === 'LineString') {
+        		pos = geom.position(newshape.geometry.coordinates[0]);
+        		// create annotation shape
+                annoShape = {'type': 'linestring', 'geometry': {'coordinates': newshape.geometry.coordinates}};
+                annoshape.geometry['units'] = 'fraction'; 
         	} else {
         		console.error("Unsupported annotation shape="+type);
         		return;
@@ -404,6 +434,21 @@
                             'stroke' : 'yellow',
                             'cssclass' : cssPrefix+'svg-annotationregion annotator-hl',
                             'style' : 'pointer-events:all'
+                    	},
+                    	'annotation': annotation
+            	};
+            } else if (type === "linestring") {
+                // render polyline
+            	shape = {
+            			'id': id,
+            			'geometry': {
+            				'type' : 'LineString',
+            				'coordinates' : annoShape.geometry.coordinates
+            			},
+            			'properties' : {
+                            'stroke' : 'yellow',
+                            'cssclass' : cssPrefix+'svg-annotation annotator-hl',
+                            'style' : 'pointer-events:visiblePainted'
                     	},
                     	'annotation': annotation
             	};
@@ -576,7 +621,7 @@
         // are annotations active?
         'isAnnotationsVisible' : true,
         // buttonset of this plugin
-        'annotationSet' : ['annotations', 'annotationuser', 'annotationmark', 'annotationrect', 'annotationpolygon', 'lessoptions'],
+        'annotationSet' : ['annotations', 'annotationuser', 'annotationmark', 'annotationrect', 'annotationpolygon', 'annotationpolyline', 'lessoptions'],
         'annotationReadOnlySet' : ['annotations', 'lessoptions'],
         // URL of annotation server .e.g. 'http://tuxserve03.mpiwg-berlin.mpg.de/AnnotationManager/annotator'
         'annotationServerUrl' : null,

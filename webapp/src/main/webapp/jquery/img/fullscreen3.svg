@@ -141,16 +141,16 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="16"
-     inkscape:cx="16.28845"
+     inkscape:cx="2.41345"
      inkscape:cy="15.609701"
-     inkscape:current-layer="g3539"
+     inkscape:current-layer="g3545"
      showgrid="true"
      inkscape:grid-bbox="true"
      inkscape:document-units="px"
-     inkscape:window-width="1298"
-     inkscape:window-height="723"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:window-width="1851"
+     inkscape:window-height="1156"
+     inkscape:window-x="69"
+     inkscape:window-y="22"
      inkscape:window-maximized="1"
      showguides="true"
      inkscape:guide-bbox="true"
@@ -706,10 +706,11 @@
   </g>
   <g
      transform="translate(-7.8129058,-7.9934033)"
-     style="display:inline"
+     style="display:none"
      inkscape:label="annotation-polygon"
      id="g3539"
-     inkscape:groupmode="layer">
+     inkscape:groupmode="layer"
+     sodipodi:insensitive="true">
     <path
        inkscape:connector-curvature="0"
        id="path3541"
@@ -722,6 +723,30 @@
        id="path3543"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="ccccc" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="g3545"
+     inkscape:label="annotation-polyline"
+     style="display:none"
+     transform="translate(-7.8129058,-7.9934033)"
+     sodipodi:insensitive="true">
+    <path
+       style="fill:none;stroke:#4d4d4d;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 5.25,8.125 8,16.006596 16,16 l 4.5625,-7.875 5.75,1.319096"
+       id="path4319"
+       inkscape:connector-curvature="0"
+       transform="translate(7.8129058,7.9934033)"
+       sodipodi:nodetypes="ccccc"
+       inkscape:export-filename="/Volumes/User/Users/casties/Documents/Eclipse/digilib/webapp/src/main/webapp/jquery/img/fullscreen/32/annotation-polyline.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <path
+       sodipodi:nodetypes="ccccc"
+       inkscape:connector-curvature="0"
+       id="path3549"
+       d="m 21.765939,21.488404 11.278998,0 c -1.773025,8.409248 3.823753,4.013599 2.050729,12.004999 l -11.343086,0 C 25.482882,25.40112 19.907466,29.975104 21.765939,21.488404 z"
+       style="fill:#ffff00;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
   </g>
   <g
      transform="translate(-7.8129058,-7.9934033)"
