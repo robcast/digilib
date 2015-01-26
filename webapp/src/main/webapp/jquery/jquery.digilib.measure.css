@@ -7,7 +7,8 @@
 div#dl-measure-toolbar {
     font-size: 90%;
     display: none;
-	border: 2px solid aqua;
+	border: 1px solid grey;
+	border-radius: 20px;
 	background-color: silver;
     padding: 5px;
     position: absolute;
@@ -28,6 +29,10 @@ span#dl-measure-shapeinfo {
     width: 5em;
     }
 
+span#dl-measure-value2 {
+    display: inline-block;
+    width: 5em;
+    }
 
 span.dl-measure-number {
     display: inline-block;
@@ -38,14 +43,17 @@ span.dl-measure-number {
     text-align: center;
     }
 
-input#dl-measure-val2, select#dl-measure-shape, select#dl-measure-unit1, select#dl-measure-unit2 {
-    color: lightgreen;
-    background-color: #606060;
-    width: 12em;
+select#dl-measure-shape, select#dl-measure-unit1, select#dl-measure-unit2 {
+    font-size: 100%;
+    border: none;
+    background-color: silver;
+    /* width: 12em; */
     margin: 0px 2px;
     }
 
 select#dl-measure-shape  {
+    color: lightgreen;
+    background-color: #606060;
     width: 9em;
     }
 

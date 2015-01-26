@@ -853,7 +853,7 @@
         var widgets = data.measureWidgets;
         var u1 = parseFloat(widgets.unit1.val());
         var u2 = parseFloat(widgets.unit2.val());
-        return val * u1 * u1 / (u2 * u2);
+        return val * u1 * u1 / (u2 * u2);
         }
 
     // recalculate factor after entering a new value in input element "value1"
@@ -864,49 +864,47 @@
         var fac = val / dist;
         // widgets.fac.text(fn.cropFloatStr(fac));
         var conv = convertLength(data, val);
-        widgets.value2.val(fn.cropFloatStr(mRound(conv)));
-        data.lastMeasureFactor = fac;
+        widgets.value2.text(fn.cropFloatStr(mRound(conv)));
+        data.lastMeasureFactor = fac;
         data.lastMeasuredValue = val;
         };
 
     // info window for line 
     var infoLine = function(data, shape) {
-        var dist = rectifiedDist(data, shape);
-        var fac = data.lastMeasureFactor;
-        var val = dist * fac;
-        var conv = convertLength(data, val);
+        var dist = rectifiedDist(data, shape);
+        var fac = data.lastMeasureFactor;
+        var val = dist * fac;
+        var conv = convertLength(data, val);
         var widgets = data.measureWidgets;
-        widgets.value1.val(fn.cropFloatStr(mRound(val)));
-        widgets.value2.val(fn.cropFloatStr(mRound(conv)));
+        widgets.value1.val(fn.cropFloatStr(mRound(val)));
+        widgets.value2.text(fn.cropFloatStr(mRound(conv)));
         widgets.info.text('length');
-        setSelectedShape(data, shape);
         data.lastMeasuredValue = val;
         data.lastMeasuredDistance = dist;
         };
 
     // info window for polygon 
     var infoPolygon = function(data, shape) {
-        var area = rectifiedArea(data, shape);
-        var fac = data.lastMeasureFactor;
-        var val = area * fac * fac;
-        var conv = convertArea(data, val);
+        var area = rectifiedArea(data, shape);
+        var fac = data.lastMeasureFactor;
+        var val = area * fac * fac;
+        var conv = convertArea(data, val);
         var widgets = data.measureWidgets;
-        widgets.value1.val(fn.cropFloatStr(mRound(val)));
-        widgets.value2.val(fn.cropFloatStr(mRound(conv)));
+        widgets.value1.val(fn.cropFloatStr(mRound(val)));
+        widgets.value2.text(fn.cropFloatStr(mRound(conv)));
         widgets.info.text('area');
-        setSelectedShape(data, shape);
         };
 
     // info window for rectangle
     var infoRect = function(data, shape) {
         var widgets = data.measureWidgets;
         widgets.value1.val('rect 1');
-        widgets.value2.val('rect 2');
-        setSelectedShape(data, shape);
+        widgets.value2.text('rect 2');
         };
 
     // recalculate after measuring
     var updateInfo = function(data, shape) {
+        setSelectedShape(data, shape);
         var type = shape.geometry.type;
         console.debug('measure: updateInfo', type);
        if (type === 'Line') {
@@ -1040,8 +1038,8 @@
 			// len : $('<span id="dl-measure-len" class="dl-measure-number">0.0</span>'),
 			info : $('<span id="dl-measure-shapeinfo" class="dl-measure-label">length</span>'),
 			fac : $('<span id="dl-measure-factor" class="dl-measure-number" />'),
-			value1 : $('<input id="dl-measure-value1" class="dl-measure-input" title="value of the last measured distance - click to change the value" value="0.0" />'),
-			value2 : $('<input id="dl-measure-value2" class="dl-measure-input" title="value of the last measured distance, converted to the secondary unit" value="0.0"/>'),
+			value1 : $('<input id="dl-measure-value1" class="dl-measure-input" title="last measured distance - click to change the value" value="0.0" />'),
+			value2 : $('<span id="dl-measure-value2" class="dl-measure-label" title="last measured distance, converted to the secondary unit" value="0.0"/>'),
 			unit1 : $('<select id="dl-measure-unit1" title="current measuring unit - click to change" />'),
 			unit2 : $('<select id="dl-measure-unit2" title="secondary measuring unit - click to change" />'),
 			angle : $('<span id="dl-measure-angle" class="dl-measure-number" title="last measured angle" />')
@@ -1053,7 +1051,8 @@
         data.$elem.append($measureBar);
         data.$measureBar = $measureBar;
         widgets.fac.text(fn.cropFloatStr(data.lastMeasureFactor));
-        data.measureWidgets = widgets;
+        data.measureWidgets = widgets;
+
         loadShapeTypes(data);
         loadSections(data);
         setupMeasureWidgets(data);
@@ -1079,8 +1078,8 @@
             return false;
             });
         widgets.value1.on('change.measure', function(evt) { updateFactor(data) });
-        widgets.unit1.on('change.measure', function(evt) { updateUnits(data) });
-        widgets.unit2.on('change.measure', function(evt) { updateUnits(data) });
+        widgets.unit1.on('change.measure', function(evt) { updateInfo(data) }); // TODO: recalculate
+        widgets.unit2.on('change.measure', function(evt) { updateInfo(data) }); // TODO: recalculate
         };
 
     // event handler
@@ -1135,7 +1134,8 @@
         $data.on('setup', handleSetup);
         $data.on('update', handleUpdate);
         $data.on('renderShape', onRenderShape);
-        $data.on('changeShape', onChangeShape);
+        $data.on('changeShape', onChangeShape);
+
         };
 
     // plugin object with name and init
