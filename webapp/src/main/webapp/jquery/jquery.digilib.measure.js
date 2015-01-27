@@ -701,7 +701,6 @@
         drawColor : 'green',
         // color of selected objects
         selectColor : 'red',
-<<<<<<< local
         // implemented measuring shape types, for select widget
         implementedShapes : ['Line', 'LineString', 'Rectangle', 'Polygon'],
         // all measuring shape types
@@ -721,23 +720,6 @@
         activeShapeType : 'Line',
         // last measured distance
         lastMeasuredDistance : 0,
-=======
-        // drawing shape types
-        shapeTypes : [
-            { name : 'line', type : 'Line' },
-            { name : 'linestring', type : 'LineString' },
-            { name : 'rectangle', type : 'Rectangle' },
-            { name : 'square', type : 'Square' },
-            { name : 'polygon', type : 'Polygon' },
-            { name : 'circle', type : 'Circle' },
-            { name : 'arch', type : 'Arch' },
-            { name : 'ratio', type : 'Ratio' },
-            { name : 'intercolumnium', type : 'InterCol' },
-            { name : 'line grid', type : 'Grid' }
-            ],
-        // index of default shape
-        selectedShape : 0,
->>>>>>> other
         // measuring unit (index into unit list)
         unitFrom : 17,
         // converted unit (index into unit list)
@@ -781,7 +763,7 @@
     var actions = {
         measurebar : function(data) {
             var $measureBar = data.$measureBar;
-            if (!$measureBar) {
+            if ($measureBar == null) {
                 $measureBar = setupMeasureBar(data);
 				};
 			$measureBar.toggle();
@@ -789,17 +771,11 @@
 			return;
             },
         drawshape : function(data) {
-            var shape = getSelectedShape(data);
-            data.measureWidgets.startb.addClass('dl-drawing');
+            var shape = newShape(data);
+            $(data).trigger('createShape', shape);
             digilib.actions.addShape(data, shape, shapeCompleted);
             console.debug('measure: action drawshape', shape);
             }
-        };
-
-
-    // round to 4 decimal places after point
-    var mRound = function (num) {
-        return Math.round(num * 10000 + 0.00001) / 10000
         };
 
     // callback for vector.drawshape
@@ -813,12 +789,19 @@
         return false;
         };
 
+    // callback for vector.drawshape
+    var onCreateShape = function(event, shape) {
+        var data = this;
+        data.measureWidgets.startb.addClass('dl-drawing');
+        console.debug('measure: onCreateShape', shape);
+    };
+
     // event handler for changeShape
     var onChangeShape = function(event, shape) {
         var data = this;
-        console.debug('measure: onChangeShape', data, shape);
         updateInfo(data, shape);
-        };
+        console.debug('measure: onChangeShape', data, shape);
+    };
 
     // event handler for renderShape
     var onRenderShape = function(event, shape) {
@@ -830,6 +813,11 @@
         var $elem = shape.$elem;
         $elem.on('click.measure', shapeInfo);
         console.debug('measure: onRenderShape', data, shape);
+        };
+
+    // round to 4 decimal places after point
+    var mRound = function (num) {
+        return Math.round(num * 10000 + 0.00001) / 10000
         };
 
     // calculate the distance of the first 2 points of a shape (rectified digilib coords)
@@ -868,7 +856,7 @@
         var u1 = parseFloat(widgets.unit1.val());
         var u2 = parseFloat(widgets.unit2.val());
         return val * u1 / u2;
-        }
+        };
 
     // convert area to second unit
     var convertArea = function(data, val) {
@@ -876,49 +864,37 @@
         var u1 = parseFloat(widgets.unit1.val());
         var u2 = parseFloat(widgets.unit2.val());
         return val * u1 * u1 / (u2 * u2);
-        }
+        };
 
     // recalculate factor after entering a new value in input element "value1"
-    var updateFactor = function(data) {
+    var changeFactor = function(data) {
         var widgets = data.measureWidgets;
         var val = parseFloat(widgets.value1.val());
         var dist = data.lastMeasuredDistance;
         var fac = val / dist;
-<<<<<<< local
         data.measureFactor = fac;
-=======
->>>>>>> other
         // widgets.fac.text(fn.cropFloatStr(fac));
         var conv = convertLength(data, val);
         widgets.value2.text(fn.cropFloatStr(mRound(conv)));
-<<<<<<< local
-=======
-        data.lastMeasureFactor = fac;
-        data.lastMeasuredValue = val;
->>>>>>> other
         };
 
     // info window for line 
     var infoLine = function(data, shape) {
         var dist = rectifiedDist(data, shape);
-        var fac = data.lastMeasureFactor;
+        var fac = data.measureFactor;
         var val = dist * fac;
         var conv = convertLength(data, val);
         var widgets = data.measureWidgets;
         widgets.value1.val(fn.cropFloatStr(mRound(val)));
         widgets.value2.text(fn.cropFloatStr(mRound(conv)));
         widgets.info.text('length');
-<<<<<<< local
-=======
-        data.lastMeasuredValue = val;
->>>>>>> other
         data.lastMeasuredDistance = dist;
         };
 
     // info window for polygon 
     var infoPolygon = function(data, shape) {
         var area = rectifiedArea(data, shape);
-        var fac = data.lastMeasureFactor;
+        var fac = data.measureFactor;
         var val = area * fac * fac;
         var conv = convertArea(data, val);
         var widgets = data.measureWidgets;
@@ -936,10 +912,9 @@
 
     // recalculate after measuring
     var updateInfo = function(data, shape) {
-        setSelectedShape(data, shape);
         var type = shape.geometry.type;
-        console.debug('measure: updateInfo', type);
-       if (type === 'Line') {
+        data.measureWidgets.shape.val(type);
+        if (type === 'Line') {
             return infoLine(data, shape);
             }
         if (type === 'LineString') {
@@ -953,40 +928,38 @@
             }
         };
 
+    // recalculate after unit change
+    var updateConversion = function(data) {
+    }
     // return a shape of the currently selected shape type
-    var getSelectedShape = function(data) {
-        var selection = getSelectedShapeType(data);
-        var stroke = getSelectedStroke(data);
-        var shape = {
+    var newShape = function(data) {
+        return {
             geometry : {
-                type : selection.type
+                type : getSelectedShapeType(data)
                 },
             properties : {
-                stroke : stroke,
+                stroke : getSelectedStroke(data),
                 editable : true,
                 cssclass : 'dl-measure-item'
                 }
             };
-        return shape;
         };
 
-    // return a shape of the currently selected shape type
-    var setSelectedShape = function(data, shape) {
-        var type = shape.geometry.type;
-        var types = data.settings.shapeTypes;
-        for (var i = 0; i < types.length; i++) {
-            if (types[i].type === type) break;
-            }
-        if (i === types.length) i = 0;
-        data.settings.selectedShape = i;
-        data.measureWidgets.shape.val(i);
-        };
-
-    // return shape type selected by user (on the toolbar)
+    // return the currently selected shape type
     var getSelectedShapeType = function(data) {
-        var val = data.measureWidgets.shape.val();
-        return data.settings.shapeTypes[val];
-    };
+        return data.settings.activeShapeType;
+        };
+
+    // set the currently selected shape type
+    var setActiveShapeType = function(data) {
+        data.settings.activeShapeType = data.measureWidgets.shape.val();
+        };
+
+    // set the currently selected shape type
+    var changeActiveShapeType = function(data, type) {
+        data.settings.activeShapeType = type;
+        data.measureWidgets.shape.val(type);
+        };
 
     // return line color chosen by user
     var getSelectedStroke = function(data) {
@@ -997,11 +970,12 @@
     // load shapes into select element
     var loadShapeTypes = function(data) {
         var $shape = data.measureWidgets.shape;
-        $.each(data.settings.shapeTypes, function(index, item) {
-            var $opt = $('<option value="'+ index + '">' + item.name + '</option>');
-            $shape.append($opt);
-            });
-        $shape.children(':not(:disabled)')[data.settings.selectedShape].selected = true;
+        var shapeTypes = data.settings.shapeTypes;
+        var addOption = function(index, type) {
+            $shape.append($('<option value="'+ type + '">' + shapeTypes[type].name + '</option>'));
+            };
+        $.each(data.settings.implementedShapes, addOption);
+        $shape.children()[0].selected = true;
     };
 
     // load units into select elements
@@ -1030,7 +1004,7 @@
         if ($div == null) return;
         var h = geom.rectangle($div).height;
         var s = fn.getFullscreenRect(data);
-        geom.position(0, s.height - h).adjustDiv($div);
+        geom.position(10, s.height - h).adjustDiv($div);
     };
 
     // drag measureBar around
@@ -1070,8 +1044,8 @@
 			// len : $('<span id="dl-measure-len" class="dl-measure-number">0.0</span>'),
 			info : $('<span id="dl-measure-shapeinfo" class="dl-measure-label">length</span>'),
 			fac : $('<span id="dl-measure-factor" class="dl-measure-number" />'),
-			value1 : $('<input id="dl-measure-value1" class="dl-measure-input" title="last measured distance - click to change the value" value="0.0" />'),
-			value2 : $('<span id="dl-measure-value2" class="dl-measure-label" title="last measured distance, converted to the secondary unit" value="0.0"/>'),
+			value1 : $('<input id="dl-measure-value1" class="dl-measure-input" title="last measured value - click to change the value" value="0.0" />'),
+			value2 : $('<span id="dl-measure-value2" class="dl-measure-label" title="last measured value, converted to the secondary unit" value="0.0"/>'),
 			unit1 : $('<select id="dl-measure-unit1" title="current measuring unit - click to change" />'),
 			unit2 : $('<select id="dl-measure-unit2" title="secondary measuring unit - click to change" />'),
 			angle : $('<span id="dl-measure-angle" class="dl-measure-number" title="last measured angle" />')
@@ -1082,7 +1056,7 @@
             });
         data.$elem.append($measureBar);
         data.$measureBar = $measureBar;
-        widgets.fac.text(fn.cropFloatStr(data.lastMeasureFactor));
+        widgets.fac.text(fn.cropFloatStr(data.measureFactor));
         data.measureWidgets = widgets;
 
         loadShapeTypes(data);
@@ -1109,9 +1083,10 @@
             $elem.digilib(action);
             return false;
             });
-        widgets.value1.on('change.measure', function(evt) { updateFactor(data) });
-        widgets.unit1.on('change.measure', function(evt) { updateInfo(data) }); // TODO: recalculate
-        widgets.unit2.on('change.measure', function(evt) { updateInfo(data) }); // TODO: recalculate
+        widgets.shape.on('change.measure',  function(evt) { setActiveShapeType(data) });
+        widgets.value1.on('change.measure', function(evt) { changeFactor(data) });
+        widgets.unit1.on('change.measure',  function(evt) { updateInfo(data) });
+        widgets.unit2.on('change.measure',  function(evt) { updateInfo(data) });
         };
 
     // event handler
@@ -1119,16 +1094,8 @@
         console.debug("measure: handleSetup");
         var data = this;
         data.lastMeasuredDistance = 0;
-<<<<<<< local
-=======
-        data.lastMeasuredValue = 0;
->>>>>>> other
         data.lastMeasuredAngle = 0;
-<<<<<<< local
         data.measureFactor = 1.0,
-=======
-        data.lastMeasureFactor = 1.0,
->>>>>>> other
         setupMeasureBar(data);
         };
 
@@ -1172,9 +1139,9 @@
         var $data = $(data);
         $data.on('setup', handleSetup);
         $data.on('update', handleUpdate);
+        $data.on('createShape', onCreateShape);
         $data.on('renderShape', onRenderShape);
         $data.on('changeShape', onChangeShape);
-
         };
 
     // plugin object with name and init
