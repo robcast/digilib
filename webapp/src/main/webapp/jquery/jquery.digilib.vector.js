@@ -344,10 +344,11 @@
              * Point
              */
             var p1 = trafo.transform(geom.position(coords[0]));
-            var $elem = $(svgElement('circle', {
+            // point uses pin-like path of size 3*pu
+            var pu = hs / 3;
+            var $elem = $(svgElement('path', {
                 'id': id, 'class': cssclass,
-                'cx': p1.x, 'cy': p1.y,
-                'r': hs,
+                'd': 'M '+p1.x+','+p1.y+' l '+2*pu+','+pu+' c '+2*pu+','+pu+' '+0+','+3*pu+' '+(-pu)+','+pu+' Z',
                 'stroke': stroke, 'stroke-width': strokeWidth, 
                 'fill': fill, 'style': style}));
             shape.$elem = $elem;
