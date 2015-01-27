@@ -701,6 +701,27 @@
         drawColor : 'green',
         // color of selected objects
         selectColor : 'red',
+<<<<<<< local
+        // implemented measuring shape types, for select widget
+        implementedShapes : ['Line', 'LineString', 'Rectangle', 'Polygon'],
+        // all measuring shape types
+        shapeTypes : {
+            Line :       { name : 'line' },
+            LineString : { name : 'linestring' },
+            Rectangle :  { name : 'rectangle' },
+            Square :     { name : 'square' },
+            Polygon :    { name : 'polygon' },
+            Circle :     { name : 'circle' },
+            Arch :       { name : 'arch' },
+            Ratio :      { name : 'ratio' },
+            InterCol :   { name : 'intercolumnium' },
+            Grid :       { name : 'linegrid' }
+            },
+        // most recently selected shape
+        activeShapeType : 'Line',
+        // last measured distance
+        lastMeasuredDistance : 0,
+=======
         // drawing shape types
         shapeTypes : [
             { name : 'line', type : 'Line' },
@@ -716,6 +737,7 @@
             ],
         // index of default shape
         selectedShape : 0,
+>>>>>>> other
         // measuring unit (index into unit list)
         unitFrom : 17,
         // converted unit (index into unit list)
@@ -862,11 +884,18 @@
         var val = parseFloat(widgets.value1.val());
         var dist = data.lastMeasuredDistance;
         var fac = val / dist;
+<<<<<<< local
+        data.measureFactor = fac;
+=======
+>>>>>>> other
         // widgets.fac.text(fn.cropFloatStr(fac));
         var conv = convertLength(data, val);
         widgets.value2.text(fn.cropFloatStr(mRound(conv)));
+<<<<<<< local
+=======
         data.lastMeasureFactor = fac;
         data.lastMeasuredValue = val;
+>>>>>>> other
         };
 
     // info window for line 
@@ -879,7 +908,10 @@
         widgets.value1.val(fn.cropFloatStr(mRound(val)));
         widgets.value2.text(fn.cropFloatStr(mRound(conv)));
         widgets.info.text('length');
+<<<<<<< local
+=======
         data.lastMeasuredValue = val;
+>>>>>>> other
         data.lastMeasuredDistance = dist;
         };
 
@@ -1087,9 +1119,16 @@
         console.debug("measure: handleSetup");
         var data = this;
         data.lastMeasuredDistance = 0;
+<<<<<<< local
+=======
         data.lastMeasuredValue = 0;
+>>>>>>> other
         data.lastMeasuredAngle = 0;
+<<<<<<< local
+        data.measureFactor = 1.0,
+=======
         data.lastMeasureFactor = 1.0,
+>>>>>>> other
         setupMeasureBar(data);
         };
 
