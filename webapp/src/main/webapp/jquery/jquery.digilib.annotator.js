@@ -278,24 +278,24 @@
         		pos = geom.position(newshape.geometry.coordinates[0]);
                 // create annotation shape
                 annoShape = {'type': 'point', 'geometry': pos};
-                annoshape.geometry['units'] = 'fraction'; 
+                annoShape.geometry['units'] = 'fraction'; 
         	} else if (type === 'Rectangle') {
         		pos = geom.position(newshape.geometry.coordinates[0]);
         		var pt2 = geom.position(newshape.geometry.coordinates[1]);
         		var rect = geom.rectangle(pos, pt2);
                 // create annotation shape
                 annoShape = {'type': 'rectangle', 'geometry': rect};
-                annoshape.geometry['units'] = 'fraction'; 
+                annoShape.geometry['units'] = 'fraction'; 
         	} else if (type === 'Polygon') {
         		pos = geom.position(newshape.geometry.coordinates[0]);
         		// create annotation shape
                 annoShape = {'type': 'polygon', 'geometry': {'coordinates': newshape.geometry.coordinates}};
-                annoshape.geometry['units'] = 'fraction'; 
+                annoShape.geometry['units'] = 'fraction'; 
         	} else if (type === 'LineString') {
         		pos = geom.position(newshape.geometry.coordinates[0]);
         		// create annotation shape
                 annoShape = {'type': 'linestring', 'geometry': {'coordinates': newshape.geometry.coordinates}};
-                annoshape.geometry['units'] = 'fraction'; 
+                annoShape.geometry['units'] = 'fraction'; 
         	} else {
         		console.error("Unsupported annotation shape="+type);
         		return;
@@ -399,7 +399,7 @@
             			},
             			'properties' : {
                             'stroke' : 'yellow',
-                            'cssclass' : cssPrefix+'svg-annotationregion annotator-hl',
+                            'cssclass' : cssPrefix+'svg-annotation annotator-hl',
                             'style' : 'pointer-events:all'
                     	},
                     	'annotation': annotation
