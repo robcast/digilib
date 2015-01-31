@@ -856,6 +856,7 @@
         var val = parseFloat(widgets.value1.val());
         var fac = val / data.lastMeasuredValue;
         data.measureFactor = fac;
+        setActiveShapeType(data, 'Line');
         updateCalculation(data);
     };
 
