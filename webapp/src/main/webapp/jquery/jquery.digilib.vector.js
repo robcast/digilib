@@ -360,104 +360,79 @@
                 };
             $.each(coords, createHandle);
             };
+        // convert coords into an array of screen points
+        var p = $.map(coords, function(coord) {
+            return trafo.transform(geom.position(coord));
+            });
+        var p1 = p[0];
+        var p2 = p[1];
+        var $elem;
         // render the shape
-        if (gt === 'Point') {
+        if (gt === 'Point') { 
             /*
              * Point
              */
-            var p1 = trafo.transform(geom.position(coords[0]));
             // point uses pin-like path of size 3*pu
             var pu = hs / 3;
-            var $elem = $(svgElement('path', {
+            $elem = $(svgElement('path', {
                 'id': id, 'class': cssclass,
                 'd': 'M '+p1.x+','+p1.y+' l '+2*pu+','+pu+' c '+2*pu+','+pu+' '+0+','+3*pu+' '+(-pu)+','+pu+' Z',
                 'stroke': stroke, 'stroke-width': strokeWidth, 
                 'fill': fill, 'style': style}));
-            shape.$elem = $elem;
-            $svg.append($elem);
-            if (props.editable) {
-                $elem.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 0));
-            }
         } else if (gt === 'Line') {
             /*
              * Line
              */
-            var p1 = trafo.transform(geom.position(coords[0]));
-            var p2 = trafo.transform(geom.position(coords[1]));
-            var $elem = $(svgElement('line', {
+            $elem = $(svgElement('line', {
                 'id': id, 'class': cssclass,
                 'x1': p1.x, 'y1': p1.y,
                 'x2': p2.x, 'y2': p2.y,
                 'stroke': stroke, 'stroke-width': strokeWidth, 'style': style}));
-            shape.$elem = $elem;
-            $svg.append($elem);
-            createHandles(shape);
         } else if (gt === 'Rectangle') {
             /*
              * Rectangle
              */
-            var p1 = trafo.transform(geom.position(coords[0]));
-            var p2 = trafo.transform(geom.position(coords[1]));
             var rect = geom.rectangle(p1, p2);
-            var $elem = $(svgElement('rect', {
+            $elem = $(svgElement('rect', {
                 'id': id, 'class': cssclass,
                 'x': rect.x, 'y': rect.y,
                 'width': rect.width, 'height': rect.height,
                 'stroke': stroke, 'stroke-width': strokeWidth,
                 'fill': fill, 'style': style}));
-            shape.$elem = $elem;
-            $svg.append($elem);
-            createHandles(shape);
         } else if (gt === 'Polygon') {
             /*
              * Polygon
              */
-            var ps = [];
-            for (var i in coords) {
-                ps[i] = trafo.transform(geom.position(coords[i]));
-            }
-            var $elem = $(svgElement('polygon', {
+            $elem = $(svgElement('polygon', {
                 'id': id, 'class': cssclass,
-                'points': ps.join(" "),
+                'points': p.join(" "),
                 'stroke': stroke, 'stroke-width': strokeWidth,
                 'fill': fill, 'style': style}));
-            shape.$elem = $elem;
-            $svg.append($elem);
-            createHandles(shape);
         } else if (gt === 'LineString') {
             /*
              * Polyline
              */
-            var ps = [];
-            for (var i in coords) {
-                ps[i] = trafo.transform(geom.position(coords[i]));
-            }
-            var $elem = $(svgElement('polyline', {
+            $elem = $(svgElement('polyline', {
                 'id': id, 'class': cssclass,
-                'points': ps.join(" "),
+                'points': p.join(" "),
                 'stroke': stroke, 'stroke-width': strokeWidth,
                 'fill': 'none', 'style': style}));
-            shape.$elem = $elem;
-            $svg.append($elem);
-            createHandles(shape);
         } else if (gt === 'Circle') {
             /*
              * Circle
              */
-            var p1 = trafo.transform(geom.position(coords[0]));
-            var p2 = trafo.transform(geom.position(coords[1]));
-            var $elem = $(svgElement('circle', {
+            $elem = $(svgElement('circle', {
                 'id': id, 'class': cssclass,
                 'cx': p1.x, 'cy': p1.y, 'r' : p1.distance(p2),
                 'fill' : 'none', 'stroke': stroke, 'stroke-width': strokeWidth, 
                 'style': style}));
-            shape.$elem = $elem;
-            $svg.append($elem);
-            createHandles(shape);
         } else {
         	console.error("Unable to render shape type:", gt);
         	return;
         }
+        $svg.append($elem);
+        shape.$elem = $elem;
+        createHandles(shape);
         $(data).trigger("renderShape", shape);
     };
 
