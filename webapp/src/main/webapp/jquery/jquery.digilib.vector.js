@@ -364,6 +364,7 @@
         var p = $.map(coords, function(coord) {
             return trafo.transform(geom.position(coord));
             });
+        // convenience varables
         var p1 = p[0];
         var p2 = p[1];
         var $elem;
@@ -480,17 +481,17 @@
      */
     var getVertexDragHandler = function (data, shape, vtx, onComplete) {
         var $document = $(document);
-        var hs = data.settings.editHandleSize;
         var $shape = shape.$elem;
         var $handle = (shape.$vertexElems != null) ? shape.$vertexElems[vtx] : $();
         var shapeType = shape.geometry.type;
         var imgRect = data.imgRect;
-        var pt, pt0, pt1, pt2, rect;
+        var hs = data.settings.editHandleSize;
+        var pStart, pt1, pt2; // convenience variables
 
-        var dragStart = function (evt) {
+        var dragStart = function (evt) { // start dragging
             // cancel if not left-click
             if (evt.which != 1) return;
-            pt0 = geom.position(evt);
+            pStart = geom.position(evt);
             if ($.inArray(shapeType, ['Rectangle', 'Circle', 'Ellipse']) > -1) {
                 // save screen points of coordinates
                 pt1 = data.imgTrafo.transform(geom.position(shape.geometry.coordinates[0]));
@@ -502,8 +503,8 @@
             return false;
         };
 
-        var dragMove = function (evt) {
-            pt = geom.position(evt);
+        var dragMove = function (evt) { // dragging
+            var pt = geom.position(evt);
             pt.clipTo(imgRect);
             // move handle
             $handle.attr({'x': pt.x-hs/2, 'y': pt.y-hs/2});
@@ -515,6 +516,7 @@
                     $shape.attr({'x2': pt.x, 'y2': pt.y});
                 }
             } else if (shapeType === 'Rectangle') {
+                var rect;
                 if (vtx == 0) {
                     rect = geom.rectangle(pt, pt2);
                 } else if (vtx == 1) {
@@ -552,9 +554,9 @@
             return false;
         };
 
-        var dragEnd = function (evt) {
-            pt = geom.position(evt);
-            if ((pt.distance(pt0) < 5) && evt.type === 'mouseup') {
+        var dragEnd = function (evt) { // end dragging
+            var pt = geom.position(evt);
+            if ((pt.distance(pStart) < 5) && evt.type === 'mouseup') {
             	// not drag but click to start
                 return false;
             }
@@ -615,7 +617,7 @@
         var $overlayDiv = $('<div class="'+data.settings.cssPrefix+'shapeOverlay" style="position:absolute; z-index:100;"/>');
         $elem.append($overlayDiv);
         bodyRect.adjustDiv($overlayDiv);
-        
+
         var shapeStart = function (evt) {
             var pt = geom.position(evt);
             // setup shape
