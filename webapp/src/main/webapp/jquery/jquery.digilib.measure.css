@@ -15,9 +15,16 @@ div#dl-measure-toolbar {
     z-index: 20;
 }
 
-div#dl-measure-toolbar input {
+input#dl-measure-value1 {
     font-size: 100%;
     width: 8em;
+    text-align: right;
+}
+
+input#dl-measure-value1:disabled {
+    color: black;
+	background-color: silver;
+    border: none;
 }
 
 span.dl-measure-label {
@@ -27,6 +34,7 @@ span.dl-measure-label {
 span#dl-measure-shapeinfo {
     display: inline-block;
     width: 5em;
+    text-align: right;
     }
 
 span#dl-measure-value2 {

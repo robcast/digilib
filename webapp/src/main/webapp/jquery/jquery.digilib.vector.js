@@ -56,7 +56,7 @@
     // SVG namespace
     var svgNS = 'http://www.w3.org/2000/svg';
     // implemented shape types
-    var supportedShapeTypes = ['Line', 'Rectangle', 'LineString', 'Polygon', 'Circle'];
+    var supportedShapeTypes = ['Line', 'Rectangle', 'LineString', 'Polygon', 'Circle', 'Ellipse'];
 
     var defaults = {
         // is vector active?
@@ -426,6 +426,17 @@
                 'cx': p1.x, 'cy': p1.y, 'r' : p1.distance(p2),
                 'fill' : 'none', 'stroke': stroke, 'stroke-width': strokeWidth, 
                 'style': style}));
+        } else if (gt === 'Ellipse') {
+            /*
+             * Ellipse
+             */
+            $elem = $(svgElement('ellipse', {
+                'id': id, 'class': cssclass,
+                'cx': p1.x, 'cy': p1.y,
+                'rx' : Math.abs(p1.x - p2.x),
+                'ry' : Math.abs(p1.y - p2.y),
+                'fill' : 'none', 'stroke': stroke, 'stroke-width': strokeWidth, 
+                'style': style}));
         } else {
         	console.error("Unable to render shape type:", gt);
         	return;
@@ -480,7 +491,7 @@
             // cancel if not left-click
             if (evt.which != 1) return;
             pt0 = geom.position(evt);
-            if (shapeType === 'Rectangle' || shapeType === 'Circle') {
+            if ($.inArray(shapeType, ['Rectangle', 'Circle', 'Ellipse']) > -1) {
                 // save screen points of coordinates
                 pt1 = data.imgTrafo.transform(geom.position(shape.geometry.coordinates[0]));
                 pt2 = data.imgTrafo.transform(geom.position(shape.geometry.coordinates[1]));
@@ -522,6 +533,14 @@
                     $shape.attr({'cx': pt.x, 'cy': pt.y, 'r' : pt.distance(pt2)});
                 } else if (vtx == 1) {
                     $shape.attr({'r': pt.distance(pt1)});
+                }
+            } else if (shapeType === 'Ellipse') {
+                if (vtx == 0) {
+                    $shape.attr({'cx': pt.x, 'cy': pt.y,
+                        'rx': Math.abs(pt.x - pt2.x),
+                        'ry': Math.abs(pt.y - pt2.y)});
+                } else if (vtx == 1) {
+                    $shape.attr({'rx': Math.abs(pt.x - pt1.x), 'ry': Math.abs(pt.y - pt1.y)});
                 }
             }
             // update shape object and trigger drag event
@@ -570,7 +589,7 @@
      * @param shapeType shapeType to test
      */
     var isSupported = function(shapeType) {
-        return supportedShapeTypes.indexOf(shapeType) > -1;
+        return $.inArray(shapeType, supportedShapeTypes) > -1;
     };
 
     /** 

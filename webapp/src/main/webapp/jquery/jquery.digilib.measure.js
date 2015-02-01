@@ -702,7 +702,7 @@
         // color of selected objects
         selectColor : 'red',
         // implemented measuring shape types, for select widget
-        implementedShapes : ['Line', 'LineString', 'Rectangle', 'Polygon', 'Circle'],
+        implementedShapes : ['Line', 'LineString', 'Rectangle', 'Polygon', 'Circle', 'Ellipse'],
         // all measuring shape types
         shapeInfo : {
             Line :       { name : 'line',           display : 'length', },
@@ -711,6 +711,7 @@
             Square :     { name : 'square',         display : 'length'  },
             Polygon :    { name : 'polygon',        display : 'area'    },
             Circle :     { name : 'circle',         display : 'radius'  },
+            Ellipse :    { name : 'ellipse',        display : 'area'    },
             Arch :       { name : 'arch',           display : 'radius'  },
             Ratio :      { name : 'ratio',          display : 'ratio'   },
             Grid :       { name : 'linegrid',       display : 'spacing' },
@@ -854,11 +855,14 @@
             return geom.position(ar * c[0], c[1]);
             };
         var coords = $.map(shape.geometry.coordinates, rectifyPoint);
-        var area = 0;
-        j = coords.length-1;
+        if (shape.geometry.type === 'Ellipse') { // ellipse formula
+            return Math.abs((coords[0].x-coords[1].x) * (coords[0].y-coords[1].y) * Math.PI);
+            }
+        var area = 0; // polygon area algorithm
+        j = coords.length-1; // set j to the last vertex
         for (i = 0; i < coords.length; i++) {
             area += (coords[j].x + coords[i].x) * (coords[j].y - coords[i].y); 
-            j = i;  //j is previous vertex to i
+            j = i;  // set j to the current vertex, i increments
             }
         return Math.abs(area/2);
         };
@@ -869,7 +873,6 @@
         var val = parseFloat(widgets.value1.val());
         var fac = val / data.lastMeasuredValue;
         data.measureFactor = fac;
-        setActiveShapeType(data, 'Line');
         updateCalculation(data);
     };
 
@@ -887,7 +890,6 @@
         widgets.shape.val(type);
         widgets.value1.val(fn.cropFloatStr(mRound(val)));
         widgets.value2.text(fn.cropFloatStr(mRound(result)));
-        widgets.info.text(display);
         };
 
     // recalculate with new units
@@ -929,6 +931,16 @@
             };
         };
 
+    // dusable the calibration acccording to shapeType
+    var setInputState = function(data) {
+        var widgets = data.measureWidgets;
+        var type = getActiveShapeType(data);
+        var display = data.settings.shapeInfo[type].display;
+        var state = display !== 'length' && display !== 'radius';
+        widgets.value1.prop('disabled', state);
+        widgets.info.text(display);
+        };
+
     // return the currently selected shape type
     var getActiveShapeType = function(data) {
         return data.settings.activeShapeType;
@@ -937,11 +949,13 @@
     // set the currently selected shape type
     var changeShapeType = function(data) {
         data.settings.activeShapeType = data.measureWidgets.shape.val();
+        setInputState(data);
         };
 
     // set the currently selected shape type
     var setActiveShapeType = function(data, type) {
         data.settings.activeShapeType = type;
+        setInputState(data);
         };
 
     // return line color chosen by user
