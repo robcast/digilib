@@ -341,6 +341,26 @@
         var style = props['style'];
         var coords = shape.geometry.coordinates;
         var gt = shape.geometry.type;
+        //create handles for a shape.
+        var createHandles = function (shape) {
+            if (!shape.properties.editable) { return };
+            var $handles = [];
+            shape.$vertexElems = $handles;
+            var coords = shape.geometry.coordinates;
+            // create handle element from a coordinate pair
+            var createHandle = function (i, coord) {
+                var p = trafo.transform(geom.position(coord));
+                var $handle = $(svgElement('rect', {
+                    'x': p.x-hs/2, 'y': p.y-hs/2, 'width': hs, 'height': hs,
+                    'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
+                    'class': css+'svg-handle', 'style': 'pointer-events:all'}));
+                $handles.push($handle);
+                $handle.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, i));
+                $svg.append($handle);
+                };
+            $.each(coords, createHandle);
+            };
+        // render the shape
         if (gt === 'Point') {
             /*
              * Point
@@ -371,21 +391,7 @@
                 'stroke': stroke, 'stroke-width': strokeWidth, 'style': style}));
             shape.$elem = $elem;
             $svg.append($elem);
-            if (props.editable) {
-                var $e1 = $(svgElement('rect', {
-                    'x': p1.x-hs/2, 'y': p1.y-hs/2, 'width': hs, 'height': hs,
-                    'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
-                    'class': css+'svg-handle', 'style': 'pointer-events:all'}));
-                var $e2 = $(svgElement('rect', {
-                    'x': p2.x-hs/2, 'y': p2.y-hs/2, 'width': hs, 'height': hs,
-                    'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
-                    'class': css+'svg-handle', 'style': 'pointer-events:all'}));
-                var $vertexElems = [$e1, $e2];
-                shape.$vertexElems = $vertexElems;
-                $svg.append($vertexElems);
-                $e1.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 0));
-                $e2.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 1));
-            }
+            createHandles(shape);
         } else if (gt === 'Rectangle') {
             /*
              * Rectangle
@@ -401,21 +407,7 @@
                 'fill': fill, 'style': style}));
             shape.$elem = $elem;
             $svg.append($elem);
-            if (props.editable) {
-                var $e1 = $(svgElement('rect', {
-                    'x': p1.x-hs/2, 'y': p1.y-hs/2, 'width': hs, 'height': hs,
-                    'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
-                    'class': css+'svg-handle', 'style': 'pointer-events:all'}));
-                var $e2 = $(svgElement('rect', {
-                    'x': p2.x-hs/2, 'y': p2.y-hs/2, 'width': hs, 'height': hs,
-                    'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
-                    'class': css+'svg-handle', 'style': 'pointer-events:all'}));
-                var $vertexElems = [$e1, $e2];
-                shape.$vertexElems = $vertexElems;
-                $svg.append($vertexElems);
-                $e1.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 0));
-                $e2.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 1));
-            }
+            createHandles(shape);
         } else if (gt === 'Polygon') {
             /*
              * Polygon
@@ -431,21 +423,7 @@
                 'fill': fill, 'style': style}));
             shape.$elem = $elem;
             $svg.append($elem);
-            if (props.editable) {
-                var $vertexElems = [];
-                shape.$vertexElems = $vertexElems;
-                for (var i in ps) {
-                    var p = ps[i];
-                    var $vertexElem = $(svgElement('rect', {
-                        'x': p.x-hs/2, 'y': p.y-hs/2, 'width': hs, 'height': hs,
-                        'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
-                        'class': css+'svg-handle', 'style': 'pointer-events:all'}));
-                    $vertexElems[i] = $vertexElem;
-                    // getVertexDragHandler needs shape.$vertexElems
-                    $vertexElem.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, i));
-                }
-                $svg.append($vertexElems);
-            }
+            createHandles(shape);
         } else if (gt === 'LineString') {
             /*
              * Polyline
@@ -461,21 +439,7 @@
                 'fill': 'none', 'style': style}));
             shape.$elem = $elem;
             $svg.append($elem);
-            if (props.editable) {
-                var $vertexElems = [];
-                shape.$vertexElems = $vertexElems;
-                for (var i in ps) {
-                    var p = ps[i];
-                    var $vertexElem = $(svgElement('rect', {
-                        'x': p.x-hs/2, 'y': p.y-hs/2, 'width': hs, 'height': hs,
-                        'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
-                        'class': css+'svg-handle', 'style': 'pointer-events:all'}));
-                    $vertexElems[i] = $vertexElem;
-                    // getVertexDragHandler needs shape.$vertexElems
-                    $vertexElem.one('mousedown.dlVertexDrag', getVertexDragHandler(data, shape, i));
-                }
-                $svg.append($vertexElems);
-            }
+            createHandles(shape);
         } else if (gt === 'Circle') {
             /*
              * Circle
@@ -489,21 +453,7 @@
                 'style': style}));
             shape.$elem = $elem;
             $svg.append($elem);
-            if (props.editable) {
-                var $e1 = $(svgElement('rect', {
-                    'x': p1.x-hs/2, 'y': p1.y-hs/2, 'width': hs, 'height': hs,
-                    'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
-                    'class': css+'svg-handle', 'style': 'pointer-events:all'}));
-                var $e2 = $(svgElement('rect', {
-                    'x': p2.x-hs/2, 'y': p2.y-hs/2, 'width': hs, 'height': hs,
-                    'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
-                    'class': css+'svg-handle', 'style': 'pointer-events:all'}));
-                var $vertexElems = [$e1, $e2];
-                shape.$vertexElems = $vertexElems;
-                $svg.append($vertexElems);
-                $e1.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 0));
-                $e2.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 1));
-            }
+            createHandles(shape);
         } else {
         	console.error("Unable to render shape type:", gt);
         	return;
@@ -760,7 +710,7 @@
         // start by clicking
         $overlayDiv.one('mousedown.dlShape', shapeStart);
     };
-    
+
     /**
      * create a SVG element with attributes.
      * 
