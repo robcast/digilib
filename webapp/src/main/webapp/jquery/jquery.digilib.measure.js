@@ -760,6 +760,11 @@
         gridCopies : 10
         };
 
+
+    var _debug_shape = function (msg, shape) {
+        // console.debug('measure: ' + msg, shape.geometry.type, shape.geometry.coordinates);
+        };
+
     var actions = {
         measurebar : function(data) {
             var $measureBar = data.$measureBar;
@@ -774,13 +779,13 @@
             var shape = newShape(data);
             $(data).trigger('createShape', shape);
             digilib.actions.addShape(data, shape, shapeCompleted);
-            console.debug('measure: action drawshape', shape);
+            _debug_shape('action drawshape', shape);
             }
         };
 
     // callback for vector.drawshape
     var shapeCompleted = function(data, shape) {
-        console.debug('measure: shapeCompleted', shape);
+        _debug_shape('shapeCompleted', shape);
         data.measureWidgets.startb.removeClass('dl-drawing');
         if (shape == null || shape.geometry.coordinates == null) {
             return false; // do nothing if no line was produced
@@ -793,14 +798,21 @@
     var onCreateShape = function(event, shape) {
         var data = this;
         data.measureWidgets.startb.addClass('dl-drawing');
-        console.debug('measure: onCreateShape', shape);
+        _debug_shape('onCreateShape', shape);
+    };
+
+    // event handler for dragShape
+    var onDragShape = function(event, shape) {
+        var data = this;
+        updateInfo(data, shape);
+        _debug_shape('onDragShape', shape);
     };
 
     // event handler for changeShape
     var onChangeShape = function(event, shape) {
         var data = this;
         updateInfo(data, shape);
-        console.debug('measure: onChangeShape', data, shape);
+        _debug_shape('onChangeShape', shape);
     };
 
     // event handler for renderShape
@@ -808,11 +820,12 @@
         // event handler for updating shape info
         var info = function(event) {
             updateInfo(data, shape);
+            _debug_shape('onClick', shape);
             };
         var data = this;
         var $elem = shape.$elem;
         $elem.on('click.measure', info);
-        console.debug('measure: onRenderShape', data, shape);
+        _debug_shape('onRenderShape', shape);
         };
 
     // round to 4 decimal places after point
@@ -1105,6 +1118,7 @@
         $data.on('createShape', onCreateShape);
         $data.on('renderShape', onRenderShape);
         $data.on('changeShape', onChangeShape);
+        $data.on('dragShape', onDragShape);
         };
 
     // plugin object with name and init

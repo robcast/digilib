@@ -531,11 +531,11 @@
                 pt2 = data.imgTrafo.transform(geom.position(shape.geometry.coordinates[1]));
             }
             $document.on("mousemove.dlVertexDrag", dragMove);
-            $document.on("mouseup.dlVertexDrag", dragEnd);            
-            $document.on("dblclick.dlVertexDrag", dragEnd);            
+            $document.on("mouseup.dlVertexDrag", dragEnd);
+            $document.on("dblclick.dlVertexDrag", dragEnd);
             return false;
         };
-        
+
         var dragMove = function (evt) {
             pt = geom.position(evt);
             pt.clipTo(imgRect);
@@ -555,13 +555,20 @@
                     rect = geom.rectangle(pt1, pt);
                 }
                 $shape.attr({'x': rect.x, 'y': rect.y,
-                    'width': rect.width, 'height': rect.height});               
+                    'width': rect.width, 'height': rect.height});
             } else if (shapeType === 'Polygon' || shapeType === 'LineString') {
                 var points = $shape.attr('points');
                 var ps = points.split(' ');
                 ps[vtx] = pt.x + ',' + pt.y;
                 points = ps.join(' ');
                 $shape.attr('points', points);
+            }
+            // update shape object and trigger drag event
+            if (shapeType === 'Line' || shapeType === 'Rectangle' ||
+            		shapeType === 'Polygon' || shapeType === 'LineString') {
+                var p = data.imgTrafo.invtransform(pt);
+                shape.geometry.coordinates[vtx] = [p.x, p.y];
+                $(data).trigger('dragShape', shape);
             }
             return false;
         };
@@ -596,7 +603,7 @@
         // return drag start handler
         return dragStart;
     };
-    
+
     /** 
      * define a shape by click and drag.
      *
@@ -656,7 +663,7 @@
 	            		coords.push(coords[vtxidx].slice());
 	            		vtxidx += 1;
 	                    // draw shape
-	                    renderShape(data, shape, layer);            		
+	                    renderShape(data, shape, layer);
 	                    // execute vertex drag handler on next vertex
 	            		getVertexDragHandler(data, shape, vtxidx, vertexDragDone)(evt);
 	            		return false;
@@ -672,7 +679,7 @@
 	            		}
 	            		if (rerender) {
 	            		    unrenderShape(data, shape);
-	            		    renderShape(data, shape, layer);            		            			
+	            		    renderShape(data, shape, layer);
 	            		}
             		} else {
             			console.error("unknown event type!");
