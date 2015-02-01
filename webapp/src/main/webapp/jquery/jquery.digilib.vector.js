@@ -28,7 +28,7 @@
  * 
  * Shapes are objects with "geometry" and "properties" members.
  * geometry is an object with "type" and "coordinates" members.
- * Currently supported types: "Point", "Line", "LineString", "Rectangle", "Polygon". 
+ * Currently supported types: "Point", "Line", "LineString", "Rectangle", "Polygon", "Circle". 
  * coordinates is a list of pairs of relative coordinates.
  * properties are the SVG properties "stroke", "stroke-width", "fill" and other properties.
  * A property 'editable':true will display drag-handles to change the shape.
@@ -55,7 +55,9 @@
     var digilib = null;
     // SVG namespace
     var svgNS = 'http://www.w3.org/2000/svg';
-    
+    // implemented shape types
+    var supportedShapeTypes = ['Line', 'Rectangle', 'LineString', 'Polygon', 'Circle'];
+
     var defaults = {
         // is vector active?
         'isVectorActive' : true,
@@ -474,6 +476,34 @@
                 }
                 $svg.append($vertexElems);
             }
+        } else if (gt === 'Circle') {
+            /*
+             * Circle
+             */
+            var p1 = trafo.transform(geom.position(coords[0]));
+            var p2 = trafo.transform(geom.position(coords[1]));
+            var $elem = $(svgElement('circle', {
+                'id': id, 'class': cssclass,
+                'cx': p1.x, 'cy': p1.y, 'r' : p1.distance(p2),
+                'fill' : 'none', 'stroke': stroke, 'stroke-width': strokeWidth, 
+                'style': style}));
+            shape.$elem = $elem;
+            $svg.append($elem);
+            if (props.editable) {
+                var $e1 = $(svgElement('rect', {
+                    'x': p1.x-hs/2, 'y': p1.y-hs/2, 'width': hs, 'height': hs,
+                    'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
+                    'class': css+'svg-handle', 'style': 'pointer-events:all'}));
+                var $e2 = $(svgElement('rect', {
+                    'x': p2.x-hs/2, 'y': p2.y-hs/2, 'width': hs, 'height': hs,
+                    'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
+                    'class': css+'svg-handle', 'style': 'pointer-events:all'}));
+                var $vertexElems = [$e1, $e2];
+                shape.$vertexElems = $vertexElems;
+                $svg.append($vertexElems);
+                $e1.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 0));
+                $e2.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, 1));
+            }
         } else {
         	console.error("Unable to render shape type:", gt);
         	return;
@@ -525,8 +555,8 @@
             // cancel if not left-click
             if (evt.which != 1) return;
             pt0 = geom.position(evt);
-            if (shapeType === 'Rectangle') {
-                // save rectangle screen endpoints
+            if (shapeType === 'Rectangle' || shapeType === 'Circle') {
+                // save screen points of coordinates
                 pt1 = data.imgTrafo.transform(geom.position(shape.geometry.coordinates[0]));
                 pt2 = data.imgTrafo.transform(geom.position(shape.geometry.coordinates[1]));
             }
@@ -562,10 +592,15 @@
                 ps[vtx] = pt.x + ',' + pt.y;
                 points = ps.join(' ');
                 $shape.attr('points', points);
+            } else if (shapeType === 'Circle') {
+                if (vtx == 0) {
+                    $shape.attr({'cx': pt.x, 'cy': pt.y, 'r' : pt.distance(pt2)});
+                } else if (vtx == 1) {
+                    $shape.attr({'r': pt.distance(pt1)});
+                }
             }
             // update shape object and trigger drag event
-            if (shapeType === 'Line' || shapeType === 'Rectangle' ||
-            		shapeType === 'Polygon' || shapeType === 'LineString') {
+            if (isSupported(shapeType)) {
                 var p = data.imgTrafo.invtransform(pt);
                 shape.geometry.coordinates[vtx] = [p.x, p.y];
                 $(data).trigger('dragShape', shape);
@@ -582,8 +617,7 @@
             pt.clipTo(imgRect);
             var p1 = data.imgTrafo.invtransform(pt);
             // update shape object
-            if (shapeType === 'Line' || shapeType === 'Rectangle' ||
-            		shapeType === 'Polygon' || shapeType === 'LineString') {
+            if (isSupported(shapeType)) {
                 shape.geometry.coordinates[vtx] = [p1.x, p1.y];
             }
             // remove move/end handler
@@ -602,6 +636,16 @@
 
         // return drag start handler
         return dragStart;
+    };
+
+
+    /**
+     * returns true if shapeType is supported
+     * 
+     * @param shapeType shapeType to test
+     */
+    var isSupported = function(shapeType) {
+        return supportedShapeTypes.indexOf(shapeType) > -1;
     };
 
     /** 
@@ -635,8 +679,7 @@
             var vtxidx = 1;
             if (shapeType === 'Point') {
                 shape.geometry.coordinates = [[p.x, p.y]];
-            } else if (shapeType === 'Line' || shapeType === 'Rectangle' || 
-            		shapeType === 'LineString' || shapeType === 'Polygon') {
+            } else if (isSupported(shapeType)) {
                 shape.geometry.coordinates = [[p.x, p.y], [p.x, p.y]];
             } else {
                 console.error("defineShape: unsupported shape type: "+shapeType);

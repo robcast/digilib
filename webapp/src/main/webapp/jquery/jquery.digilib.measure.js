@@ -702,7 +702,7 @@
         // color of selected objects
         selectColor : 'red',
         // implemented measuring shape types, for select widget
-        implementedShapes : ['Line', 'LineString', 'Rectangle', 'Polygon'],
+        implementedShapes : ['Line', 'LineString', 'Rectangle', 'Polygon', 'Circle'],
         // all measuring shape types
         shapeInfo : {
             Line :       { name : 'line',           display : 'length', },
@@ -745,7 +745,7 @@
         // draw rectangles from the diagonal and one point
         drawFromDiagonal : false,
         // draw circles from center
-        drawFromCenter : false,
+        drawFromCenter : true,
         // snap to endpoints
         snapEndPoints : false,
         // snap to mid points of lines
@@ -923,7 +923,8 @@
             properties : {
                 stroke : getSelectedStroke(data),
                 editable : true,
-                cssclass : 'dl-measure-item'
+                cssclass : 'dl-measure-item',
+                center : data.settings.drawFromCenter
                 }
             };
         };
