@@ -773,7 +773,9 @@
                 $measureBar = setupMeasureBar(data);
 				};
 			$measureBar.toggle();
-            setScreenPosition(data, $measureBar);
+			var on = $measureBar.is(":visible");
+			setKeyHandler(data, on);
+			showSVG(data, on);
 			return;
             },
         drawshape : function(data) {
@@ -1017,6 +1019,17 @@
         $u2.children(':not(:disabled)')[data.settings.unitTo].selected = true;
     };
 
+    // show or hide SVG element
+    var showSVG = function(data, on) {
+        var layers = data.vectorLayers;
+        if (layers == null) return;
+        $svg = layers[0].$elem;
+        if (on) {
+            $svg.removeAttr("display"); }
+        else {
+            $svg.attr("display", "none"); }
+    };
+
     // initial position of measure bar (bottom left of browser window)
     var setScreenPosition = function(data, $div) {
         if ($div == null) return;
@@ -1039,6 +1052,21 @@
             $(document.body).off('mousemove.measure').off('mouseup.measure');
             });
         return false;
+        };
+
+    // keydown handler when measure bar is visible
+    var onKeyDown = function(event, data) {
+        console.debug('measure: keyDown', event.key)
+        };
+
+    // setup a div for accessing the measure functionality
+    var setKeyHandler = function(data, on) {
+        if (on) {
+            $(document.body).on('keydown.measure',
+                function(evt) { onKeyDown(evt, data) }
+                )}
+        else {
+            $(document.body).off('keydown.measure') }
         };
 
     // setup a div for accessing the measure functionality
@@ -1074,6 +1102,7 @@
         populateShapeSelect(data);
         populateUnitSelects(data);
         setupMeasureWidgets(data);
+        setScreenPosition(data, $measureBar);
         widgets.move.on('mousedown.measure', dragMeasureBar);
         return $measureBar;
         };

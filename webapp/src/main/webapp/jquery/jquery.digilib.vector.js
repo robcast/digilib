@@ -55,12 +55,12 @@
     var digilib = null;
     // SVG namespace
     var svgNS = 'http://www.w3.org/2000/svg';
-    // implemented shape types
-    var supportedShapeTypes = ['Line', 'Rectangle', 'LineString', 'Polygon', 'Circle', 'Ellipse'];
 
     var defaults = {
         // is vector active?
         'isVectorActive' : true,
+        // implemented shape types
+        'supportedShapeTypes' : ['Line', 'Rectangle', 'LineString', 'Polygon', 'Circle', 'Ellipse'],
         // default SVG stroke
         'defaultStroke' : 'red',
         // default SVG stroke-width
@@ -298,7 +298,7 @@
     		'style': 'position:absolute; z-index:10; pointer-events:none;'});
     	$svg = $(svgElem);
     	layer.svgElem = svgElem;
-        layer.$elem = $svg;
+    layer.$elem = $svg;
     	for (var i = 0; i < shapes.length; ++i) {
     		var shape = shapes[i];
     		renderShape(data, shape, layer);
@@ -546,7 +546,7 @@
                 }
             }
             // update shape object and trigger drag event
-            if (isSupported(shapeType)) {
+            if (isSupported(data, shapeType)) {
                 var p = data.imgTrafo.invtransform(pt);
                 shape.geometry.coordinates[vtx] = [p.x, p.y];
                 $(data).trigger('dragShape', shape);
@@ -563,7 +563,7 @@
             pt.clipTo(imgRect);
             var p1 = data.imgTrafo.invtransform(pt);
             // update shape object
-            if (isSupported(shapeType)) {
+            if (isSupported(data, shapeType)) {
                 shape.geometry.coordinates[vtx] = [p1.x, p1.y];
             }
             // remove move/end handler
@@ -590,8 +590,8 @@
      * 
      * @param shapeType shapeType to test
      */
-    var isSupported = function(shapeType) {
-        return $.inArray(shapeType, supportedShapeTypes) > -1;
+    var isSupported = function(data, shapeType) {
+        return $.inArray(shapeType, data.settings.supportedShapeTypes) > -1;
     };
 
     /** 
@@ -625,7 +625,7 @@
             var vtxidx = 1;
             if (shapeType === 'Point') {
                 shape.geometry.coordinates = [[p.x, p.y]];
-            } else if (isSupported(shapeType)) {
+            } else if (isSupported(data, shapeType)) {
                 shape.geometry.coordinates = [[p.x, p.y], [p.x, p.y]];
             } else {
                 console.error("defineShape: unsupported shape type: "+shapeType);
