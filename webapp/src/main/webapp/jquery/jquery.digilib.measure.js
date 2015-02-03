@@ -717,7 +717,7 @@
             Grid :       { name : 'linegrid',       display : 'spacing' },
             InterCol :   { name : 'intercolumnium', display : 'ratio'   }
             },
-        // most recently selected shape
+        // currently selected shape type
         activeShapeType : 'Line',
         // last measured distance
         lastMeasuredValue : 0,
@@ -761,7 +761,6 @@
         gridCopies : 10
         };
 
-
     var _debug_shape = function (msg, shape) {
         // console.debug('measure: ' + msg, shape.geometry.type, shape.geometry.coordinates);
         };
@@ -774,7 +773,7 @@
 				};
 			$measureBar.toggle();
 			var on = $measureBar.is(":visible");
-			setKeyHandler(data, on);
+			attachKeyDownHandler(data, on);
 			showSVG(data, on);
 			return;
             },
@@ -858,10 +857,12 @@
             return geom.position(ar * c[0], c[1]);
             };
         var coords = $.map(shape.geometry.coordinates, rectifyPoint);
-        if (shape.geometry.type === 'Ellipse') { // ellipse formula
+         // formula for ellipse area
+        if (shape.geometry.type === 'Ellipse') {
             return Math.abs((coords[0].x-coords[1].x) * (coords[0].y-coords[1].y) * Math.PI);
             }
-        var area = 0; // polygon area algorithm
+        // algorithm for polygon area
+        var area = 0;
         j = coords.length-1; // set j to the last vertex
         for (i = 0; i < coords.length; i++) {
             area += (coords[j].x + coords[i].x) * (coords[j].y - coords[i].y); 
@@ -870,16 +871,16 @@
         return Math.abs(area/2);
         };
 
-    // recalculate factor after entering a new value in input element "value1"
+    // recalculate factor after a new value was entered into input element "value1"
     var changeFactor = function(data) {
         var widgets = data.measureWidgets;
         var val = parseFloat(widgets.value1.val());
         var fac = val / data.lastMeasuredValue;
         data.measureFactor = fac;
-        updateCalculation(data);
+        convertUnits(data);
     };
 
-    // convert to second unit and display
+    // convert measured value to second unit and display
     var updateMeasures = function(data, val, type) {
         var info = data.settings.shapeInfo[type]
         var widgets = data.measureWidgets;
@@ -887,7 +888,7 @@
         var u1 = parseFloat(widgets.unit1.val());
         var u2 = parseFloat(widgets.unit2.val());
         var ratio = u1 / u2;
-        var result = (display === 'area')
+        var result = (display === 'area') // TODO: display unit²
             ? val * ratio * ratio
             : val * ratio;
         widgets.shape.val(type);
@@ -895,8 +896,8 @@
         widgets.value2.text(fn.cropFloatStr(mRound(result)));
         };
 
-    // recalculate with new units
-    var updateCalculation = function(data) {
+    // convert measured pixel values to new units
+    var convertUnits = function(data) {
         var type = getActiveShapeType(data);
         var display = data.settings.shapeInfo[type].display;
         var val = data.lastMeasuredValue;
@@ -916,13 +917,13 @@
             : rectifiedDist(data, shape);
         data.lastMeasuredValue = val;
         setActiveShapeType(data, type);
-        updateCalculation(data);
+        convertUnits(data);
         };
 
-    // select/unselect shape
+    // select/unselect shape (or toggle)
     var selectShape = function(data, shape, select) {
         var css = CSS+'measure-selected';
-        if (select == null) {
+        if (select == null) { // toggle
             select = !shape.properties.selected }
         var cssclass = shapeClass(shape.geometry.type, select ? css : null)
         shape.$elem.attr("class", cssclass);
@@ -937,7 +938,7 @@
         return css;
         };
 
-    // return a shape of the currently selected shape type
+    // create a shape of the currently selected shape type
     var newShape = function(data) {
         var shapeType = getActiveShapeType(data);
         return {
@@ -954,7 +955,7 @@
             };
         };
 
-    // dusable the calibration acccording to shapeType
+    // disable the calibration input 
     var setInputState = function(data) {
         var widgets = data.measureWidgets;
         var type = getActiveShapeType(data);
@@ -964,30 +965,30 @@
         widgets.info.text(display);
         };
 
-    // return the currently selected shape type
+    // return the current shape type
     var getActiveShapeType = function(data) {
         return data.settings.activeShapeType;
         };
 
-    // set the currently selected shape type
+    // set the current shape type (from shape select widget)
     var changeShapeType = function(data) {
         data.settings.activeShapeType = data.measureWidgets.shape.val();
         setInputState(data);
         };
 
-    // set the currently selected shape type
+    // set the current shape type
     var setActiveShapeType = function(data, type) {
         data.settings.activeShapeType = type;
         setInputState(data);
         };
 
-    // return line color chosen by user
+    // return line color from settings (TODO: chosen by user)
     var getSelectedStroke = function(data) {
         // TODO: colorpicker
         return data.settings.linecolor;
     };
 
-    // load shapes into select element
+    // load shape types into select element
     var populateShapeSelect = function(data) {
         var $shape = data.measureWidgets.shape;
         var shapeInfo = data.settings.shapeInfo;
@@ -1019,7 +1020,7 @@
         $u2.children(':not(:disabled)')[data.settings.unitTo].selected = true;
     };
 
-    // show or hide SVG element
+    // show or hide SVG element (not possible via jQuery .hide/.show)
     var showSVG = function(data, on) {
         var layers = data.vectorLayers;
         if (layers == null) return;
@@ -1054,11 +1055,11 @@
         return false;
         };
 
-    // remove selected shapes or last, if none was selected
+    // remove selected shapes - or the most recent one, if none was selected
     var removeSelectedShapes = function(data) {
         var layers = data.vectorLayers;
         if (layers == null) return;
-        var layer = layers[0];
+        var layer = layers[0]; // hopefully the correct layer?
         var shapes = layer.shapes;
         if (shapes == null) return;
         var shapesDeleted = 0;
@@ -1073,25 +1074,25 @@
             shapes.pop();
             shapesDeleted++;
             };
-        layer.renderFn(data, layer);
+        layer.renderFn(data, layer);
         console.debug('measure: shapes deleted:', shapesDeleted);
         };
 
-    // keydown handler (active when measure bar is visible)
+    // keydown event handler (active when measure bar is visible)
     var onKeyDown = function(event, data) {
         // delete selected shapes
         if (event.keyCode === 46 || event.key === 'Del') {
             removeSelectedShapes(data);
             return false;
             }
-        // shiftPressed=event.shiftKey;
-        // altPressed  =event.altKey;
-        // ctrlPressed =event.ctrlKey;
+        // shiftPressed = event.shiftKey;
+        // altPressed   = event.altKey;
+        // ctrlPressed  = event.ctrlKey;
         console.debug('measure: keyDown', event.keyCode, event.key)
         };
 
-    // setup a div for accessing the measure functionality
-    var setKeyHandler = function(data, on) {
+    // attach/detach the keydown event handler 
+    var attachKeyDownHandler = function(data, on) {
         if (on) {
             $(document.body).on('keydown.measure',
                 function(evt) { onKeyDown(evt, data) }
@@ -1100,7 +1101,7 @@
             $(document.body).off('keydown.measure') }
         };
 
-    // setup a div for accessing the measure functionality
+    // set up a div for accessing the measuring functionality
     var setupMeasureBar = function(data) {
         console.debug('measure: setupMeasureBar');
         var widgets = {
@@ -1133,12 +1134,13 @@
         populateShapeSelect(data);
         populateUnitSelects(data);
         setupMeasureWidgets(data);
-        setScreenPosition(data, $measureBar);
+        setScreenPosition(data, $measureBar);
+
         widgets.move.on('mousedown.measure', dragMeasureBar);
         return $measureBar;
         };
 
-    // wire the draw button
+    // wire the draw button and widgets
     var setupMeasureWidgets = function (data) {
         console.debug('measure: setupMeasureWidgets');
         var widgets = data.measureWidgets;
@@ -1157,11 +1159,11 @@
             });
         widgets.shape.on('change.measure',  function(evt) { changeShapeType(data) });
         widgets.value1.on('change.measure', function(evt) { changeFactor(data) });
-        widgets.unit1.on('change.measure',  function(evt) { updateCalculation(data) });
-        widgets.unit2.on('change.measure',  function(evt) { updateCalculation(data) });
+        widgets.unit1.on('change.measure',  function(evt) { convertUnits(data) });
+        widgets.unit2.on('change.measure',  function(evt) { convertUnits(data) });
         };
 
-    // event handler
+    // event handler for setup phase
     var handleSetup = function (evt) {
         console.debug("measure: handleSetup");
         var data = this;
@@ -1171,13 +1173,13 @@
         setupMeasureBar(data);
         };
 
-    // event handler
+    // event handler for scaler update
     var handleUpdate = function (evt) {
         var data = this;
         console.debug("measure: handleUpdate");
         };
 
-    // plugin installation called by digilib on plugin object.
+    // plugin installation called by digilib on plugin object
     var install = function (plugin) {
         digilib = plugin;
         if (digilib.plugins.vector == null) {
