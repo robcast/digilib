@@ -88,10 +88,14 @@ img#dl-measure-move {
     margin: 0px 4px 4px 0px;
 }
 
-.dl-measure-item {
+.dl-measure-shape {
     pointer-events: visibleStroke;
 }
 
-.dl-measure-item:hover {
+.dl-measure-shape:hover {
     stroke: lightcyan;
+}
+
+.dl-measure-selected {
+    stroke: cyan;
 }

@@ -820,6 +820,7 @@
     var onRenderShape = function(event, shape) {
         // event handler for updating shape info
         var info = function(event) {
+            selectShape(data, shape);
             updateInfo(data, shape);
             _debug_shape('onClick', shape);
             };
@@ -916,17 +917,37 @@
         updateCalculation(data);
         };
 
+    // select/unselect shape
+    var selectShape = function(data, shape, select) {
+        var css = CSS+'measure-selected';
+        if (select == null) {
+            select = !shape.properties.selected }
+        var cssclass = shapeClass(shape.geometry.type, select ? css : null)
+        shape.$elem.attr("class", cssclass);
+        shape.properties.cssclass = cssclass;
+        shape.properties.selected = select;
+    };
+
+    // construct CSS class for svg shape
+    var shapeClass = function(shapeType, more) {
+        var css = CSS+'measure-shape '+CSS+'measure-'+shapeType;
+        if (more != null) { css += ' '+more };
+        return css;
+        };
+
     // return a shape of the currently selected shape type
     var newShape = function(data) {
+        var shapeType = getActiveShapeType(data);
         return {
             geometry : {
-                type : getActiveShapeType(data)
+                type : shapeType
                 },
             properties : {
                 stroke : getSelectedStroke(data),
                 editable : true,
-                cssclass : 'dl-measure-item',
-                center : data.settings.drawFromCenter
+                cssclass : shapeClass(shapeType),
+                center : data.settings.drawFromCenter,
+                selected : false
                 }
             };
         };
