@@ -1054,9 +1054,40 @@
         return false;
         };
 
-    // keydown handler when measure bar is visible
+    // remove selected shapes or last, if none was selected
+    var removeSelectedShapes = function(data) {
+        var layers = data.vectorLayers;
+        if (layers == null) return;
+        var layer = layers[0];
+        var shapes = layer.shapes;
+        if (shapes == null) return;
+        var shapesDeleted = 0;
+        for (var c = shapes.length; c > 0; --c) {
+            var index = c-1;
+            if (shapes[index].properties.selected) {
+                shapesDeleted++;
+                shapes.splice(index, 1);
+                }
+            }
+        if (shapesDeleted === 0 && shapes.length > 0) {
+            shapes.pop();
+            shapesDeleted++;
+            };
+        layer.renderFn(data, layer);
+        console.debug('measure: shapes deleted:', shapesDeleted);
+        };
+
+    // keydown handler (active when measure bar is visible)
     var onKeyDown = function(event, data) {
-        console.debug('measure: keyDown', event.key)
+        // delete selected shapes
+        if (event.keyCode === 46 || event.key === 'Del') {
+            removeSelectedShapes(data);
+            return false;
+            }
+        // shiftPressed=event.shiftKey;
+        // altPressed  =event.altKey;
+        // ctrlPressed =event.ctrlKey;
+        console.debug('measure: keyDown', event.keyCode, event.key)
         };
 
     // setup a div for accessing the measure functionality
