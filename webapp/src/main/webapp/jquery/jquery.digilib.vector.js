@@ -492,7 +492,8 @@
             // cancel if not left-click
             if (evt.which != 1) return;
             pStart = geom.position(evt);
-            shape.properties.screenpos[0] = pStart;
+            shape.properties.startpos = pStart;
+            shape.properties.vtx = vtx;
             $(data).trigger('positionShape', shape);
             if ($.inArray(shapeType, ['Rectangle', 'Circle', 'Ellipse']) > -1) {
                 // save screen points of coordinates
@@ -642,7 +643,8 @@
             if (shape.properties != null) {
             	shape.properties._editable = shape.properties.editable;
             	shape.properties.editable = false;
-            	shape.properties.screenpos = [];
+            	shape.properties.screenpos = [pt];
+            	shape.properties.startpos = [pt];
             } else {
                 shape.properties = {'editable' : false};
             }

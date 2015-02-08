@@ -816,12 +816,12 @@
     var onPositionShape = function(event, shape) {
         var data = this;
         if (keystate['x'] != null) { // change only x-Dimension of mouse pointer
-            manipulateShapePos(shape, lockDimension('y'));
+            manipulatePosition(shape, lockDimension('y'));
             }
         if (keystate['y'] != null) { // change only y-Dimension of mouse pointer
-            manipulateShapePos(shape, lockDimension('x'));
+            manipulatePosition(shape, lockDimension('x'));
             }
-        _debug_shape('onPositionShape', keystate, shape.properties.screenpos);
+        // console.debug('onPositionShape', shape.properties.screenpos);
     };
 
     // event handler for dragShape
@@ -989,18 +989,22 @@
     // returns a screenpoint manipulation function
     var lockDimension = function(dim) {
         // lock one dimension of the current screen pos to that of the previous
-        var lock = function(screenpos) {
-            if (!$.isArray(screenpos) || screenpos.length < 2) return;
-            var last = screenpos.length-1;
-            screenpos[last][dim] = screenpos[last-1][dim];
+        var lock = function(shape) {
+            var props = shape.properties;
+            var startpos = props.startpos;
+            var screenpos = props.screenpos;
+            var vtx = props.vtx;
+            if (startpos == null || screenpos == null || vtx == null) {
+                return; }
+            screenpos[vtx][dim] = startpos[dim];
             }
         return lock;
         };
 
     // manipulate the screen points of the shape
-    var manipulateShapePos = function(shape, func) {
+    var manipulatePosition = function(shape, manipulate) {
         // apply the manipulation function
-        func(shape.properties.screenpos);
+        manipulate(shape);
         };
 
     // return the current shape type
