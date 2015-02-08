@@ -24,7 +24,7 @@ input#dl-measure-value1 {
 input#dl-measure-value1:disabled {
     color: black;
 	background-color: silver;
-    border: none;
+	border: none;
 }
 
 span.dl-measure-label {

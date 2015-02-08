@@ -298,7 +298,7 @@
     		'style': 'position:absolute; z-index:10; pointer-events:none;'});
     	$svg = $(svgElem);
     	layer.svgElem = svgElem;
-    layer.$elem = $svg;
+    	layer.$elem = $svg;
     	for (var i = 0; i < shapes.length; ++i) {
     		var shape = shapes[i];
     		renderShape(data, shape, layer);
@@ -492,6 +492,8 @@
             // cancel if not left-click
             if (evt.which != 1) return;
             pStart = geom.position(evt);
+            shape.properties.screenpos[0] = pStart;
+            $(data).trigger('positionShape', shape);
             if ($.inArray(shapeType, ['Rectangle', 'Circle', 'Ellipse']) > -1) {
                 // save screen points of coordinates
                 pt1 = data.imgTrafo.transform(geom.position(shape.geometry.coordinates[0]));
@@ -505,6 +507,8 @@
 
         var dragMove = function (evt) { // dragging
             var pt = geom.position(evt);
+            shape.properties.screenpos[vtx] = pt;
+            $(data).trigger('positionShape', shape);
             pt.clipTo(imgRect);
             // move handle
             $handle.attr({'x': pt.x-hs/2, 'y': pt.y-hs/2});
@@ -556,6 +560,8 @@
 
         var dragEnd = function (evt) { // end dragging
             var pt = geom.position(evt);
+            shape.properties.screenpos[vtx] = pt;
+            $(data).trigger('positionShape', shape);
             if ((pt.distance(pStart) < 5) && evt.type === 'mouseup') {
             	// not drag but click to start
                 return false;
@@ -636,6 +642,7 @@
             if (shape.properties != null) {
             	shape.properties._editable = shape.properties.editable;
             	shape.properties.editable = false;
+            	shape.properties.screenpos = [];
             } else {
                 shape.properties = {'editable' : false};
             }

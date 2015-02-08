@@ -803,6 +803,12 @@
         _debug_shape('onCreateShape', shape);
     };
 
+    // event handler for positionShape
+    var onPositionShape = function(event, shape) {
+        var data = this;
+        _debug_shape('onPositionShape', shape.properties.screenpos);
+    };
+
     // event handler for dragShape
     var onDragShape = function(event, shape) {
         var data = this;
@@ -1216,6 +1222,7 @@
         $data.on('createShape', onCreateShape);
         $data.on('renderShape', onRenderShape);
         $data.on('changeShape', onChangeShape);
+        $data.on('positionShape', onPositionShape);
         $data.on('dragShape', onDragShape);
         };
 
