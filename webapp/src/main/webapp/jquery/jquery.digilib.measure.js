@@ -45,7 +45,13 @@
     var geom = null;
     // convenience variable, set in init()
     var CSS = '';
+    // current key state: keystate[event.key] = event
+    var keystate = {};
+    // shiftPressed = event.shiftKey;
+    // altPressed   = event.altKey;
+    // ctrlPressed  = event.ctrlKey;
 
+    // the conversion data
     var UNITS = {
         comment : [
           "Angaben nach:",
@@ -761,10 +767,13 @@
         gridCopies : 10
         };
 
+    // debug routine
     var _debug_shape = function (msg, shape) {
         // console.debug('measure: ' + msg, shape.geometry.type, shape.geometry.coordinates);
+        return;
         };
 
+    // plugin actions
     var actions = {
         measurebar : function(data) {
             var $measureBar = data.$measureBar;
@@ -773,7 +782,7 @@
 				};
 			$measureBar.toggle();
 			var on = $measureBar.is(":visible");
-			attachKeyDownHandler(data, on);
+			attachKeyHandlers(data, on);
 			showSVG(data, on);
 			return;
             },
@@ -806,7 +815,13 @@
     // event handler for positionShape
     var onPositionShape = function(event, shape) {
         var data = this;
-        _debug_shape('onPositionShape', shape.properties.screenpos);
+        if (keystate['x'] != null) { // change only x-Dimension of mouse pointer
+            manipulateShapePos(shape, lockDimension('y'));
+            }
+        if (keystate['y'] != null) { // change only y-Dimension of mouse pointer
+            manipulateShapePos(shape, lockDimension('x'));
+            }
+        _debug_shape('onPositionShape', keystate, shape.properties.screenpos);
     };
 
     // event handler for dragShape
@@ -971,6 +986,23 @@
         widgets.info.text(display);
         };
 
+    // returns a screenpoint manipulation function
+    var lockDimension = function(dim) {
+        // lock one dimension of the current screen pos to that of the previous
+        var lock = function(screenpos) {
+            if (!$.isArray(screenpos) || screenpos.length < 2) return;
+            var last = screenpos.length-1;
+            screenpos[last][dim] = screenpos[last-1][dim];
+            }
+        return lock;
+        };
+
+    // manipulate the screen points of the shape
+    var manipulateShapePos = function(shape, func) {
+        // apply the manipulation function
+        func(shape.properties.screenpos);
+        };
+
     // return the current shape type
     var getActiveShapeType = function(data) {
         return data.settings.activeShapeType;
@@ -1086,25 +1118,38 @@
 
     // keydown event handler (active when measure bar is visible)
     var onKeyDown = function(event, data) {
+        var code = event.keyCode;
+        var key = event.key;
         // delete selected shapes
-        if (event.keyCode === 46 || event.key === 'Del') {
+        if (code === 46 || key === 'Delete') {
             removeSelectedShapes(data);
             return false;
             }
-        // shiftPressed = event.shiftKey;
-        // altPressed   = event.altKey;
-        // ctrlPressed  = event.ctrlKey;
-        console.debug('measure: keyDown', event.keyCode, event.key)
+        keystate[key] = event; // save key state on key
+        // console.debug('measure: keyDown', code, event.key, keystate);
         };
 
-    // attach/detach the keydown event handler 
-    var attachKeyDownHandler = function(data, on) {
+    // keyup event handler (active when measure bar is visible)
+    var onKeyUp = function(event, data) {
+        var code = event.keyCode;
+        var key = event.key;
+        delete keystate[key]; // invalidate key state
+        // console.debug('measure: keyUp', code, event.key, keystate);
+        };
+
+    // attach/detach keyup/down event handlers
+    var attachKeyHandlers = function(data, on) {
         if (on) {
-            $(document.body).on('keydown.measure',
-                function(evt) { onKeyDown(evt, data) }
-                )}
+            $(document.body).on('keydown.measure', 
+                function(evt) { onKeyDown(evt, data) });
+            $(document.body).on('keyup.measure', 
+                function(evt) { onKeyUp(evt, data) });
+            }
         else {
-            $(document.body).off('keydown.measure') }
+            $(document.body).off('keydown.measure');
+            $(document.body).off('keyup.measure');
+            }
+        keystate = {};
         };
 
     // set up a div for accessing the measuring functionality
