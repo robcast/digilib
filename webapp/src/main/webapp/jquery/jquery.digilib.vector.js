@@ -470,7 +470,7 @@
     		delete shape.$elem;
     	}
     };
-    
+
     /**
      * return a vertexDragHandler function.
      * 
@@ -508,9 +508,9 @@
 
         var dragMove = function (evt) { // dragging
             var pt = geom.position(evt);
+            pt.clipTo(imgRect);
             shape.properties.screenpos[vtx] = pt;
             $(data).trigger('positionShape', shape);
-            pt.clipTo(imgRect);
             // move handle
             $handle.attr({'x': pt.x-hs/2, 'y': pt.y-hs/2});
             // update shape SVG element

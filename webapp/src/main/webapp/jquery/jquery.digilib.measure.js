@@ -45,6 +45,8 @@
     var geom = null;
     // convenience variable, set in init()
     var CSS = '';
+    // shape currently being drawn/dragged
+    var currentShape;
     // current key state: keystate[event.key] = event
     var keystate = {};
     // shiftPressed = event.shiftKey;
@@ -815,6 +817,7 @@
     // event handler for positionShape
     var onPositionShape = function(event, shape) {
         var data = this;
+        currentShape = shape;
         if (keystate['x'] != null) { // change only x-Dimension of mouse pointer
             manipulatePosition(shape, lockDimension('y'));
             }
@@ -835,6 +838,7 @@
     var onChangeShape = function(event, shape) {
         var data = this;
         updateInfo(data, shape);
+        currentShape = null;
         _debug_shape('onChangeShape', shape);
     };
 
@@ -1124,12 +1128,22 @@
     var onKeyDown = function(event, data) {
         var code = event.keyCode;
         var key = event.key;
+        keystate[key] = event; // save key state on key
         // delete selected shapes
         if (code === 46 || key === 'Delete') {
             removeSelectedShapes(data);
             return false;
             }
-        keystate[key] = event; // save key state on key
+        // keys 'x' and 'y': immediate response, lock dimension and redraw shape
+        if (code === 88 || key === 'x' ||
+            code === 89 || key === 'y') {
+            if (currentShape == null) { return true };
+            var props = currentShape.properties;
+            var pt = props.screenpos[props.vtx]; // get last recorded mouse position
+            var eventpos = { pageX: pt.x, pageY: pt.y }
+            var evt = jQuery.Event("mousemove.dlVertexDrag", eventpos);
+            $(document).trigger(evt);
+            }
         // console.debug('measure: keyDown', code, event.key, keystate);
         };
 
