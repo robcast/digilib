@@ -641,10 +641,9 @@
             }
             // save editable state and set to non-editable
             if (shape.properties != null) {
-            	shape.properties._editable = shape.properties.editable;
-            	shape.properties.editable = false;
-            	shape.properties.screenpos = [pt];
-            	shape.properties.startpos = [pt];
+            	    shape.properties._editable = shape.properties.editable;
+            	    shape.properties.editable = false;
+            	    shape.properties.screenpos = [pt];
             } else {
                 shape.properties = {'editable' : false};
             }
