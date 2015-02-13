@@ -629,7 +629,7 @@
             var pt = geom.position(evt);
             // setup shape
             var p = data.imgTrafo.invtransform(pt);
-            var vtxidx = 1;
+            var vtx = 1;
             if (shapeType === 'Point') {
                 shape.geometry.coordinates = [[p.x, p.y]];
             } else if (isSupported(data, shapeType)) {
@@ -639,14 +639,12 @@
                 $overlayDiv.remove();
                 return false;
             }
-            // save editable state and set to non-editable
-            if (shape.properties != null) {
-            	    shape.properties._editable = shape.properties.editable;
-            	    shape.properties.editable = false;
-            	    shape.properties.screenpos = [pt];
-            } else {
+            // shape is not editable by default
+            if (shape.properties == null) {
                 shape.properties = {'editable' : false};
-            }
+                }
+            // save first mousedown position
+            shape.properties.screenpos = [pt];
             // draw shape
             renderShape(data, shape, layer);
             // vertex drag end handler
@@ -657,21 +655,21 @@
 	            		// single click adds next line to LineString/Polygon
 	            		unrenderShape(data, shape);
 	            		// copy last vertex as starting point
-	            		coords.push(coords[vtxidx].slice());
-	            		vtxidx += 1;
+	            		coords.push(coords[vtx].slice());
+	            		vtx += 1;
 	                    // draw shape
 	                    renderShape(data, shape, layer);
 	                    // execute vertex drag handler on next vertex
-	            		getVertexDragHandler(data, shape, vtxidx, vertexDragDone)(evt);
+	            		getVertexDragHandler(data, shape, vtx, vertexDragDone)(evt);
 	            		return false;
             		} else if (evt.type === 'dblclick') {
             		    // double click ends LineString/Polygon
             		    // remove duplicate vertices (from mouseup)
             		    var rerender = false;
-	            		while (coords[vtxidx][0] === coords[vtxidx-1][0] && 
-	            				coords[vtxidx][1] === coords[vtxidx-1][1]) {
+	            		while (coords[vtx][0] === coords[vtx-1][0] && 
+	            				coords[vtx][1] === coords[vtx-1][1]) {
                             coords.pop();
-                            vtxidx -= 1;
+                            vtx -= 1;
                             rerender = true;
 	            		}
 	            		if (rerender) {
@@ -690,27 +688,23 @@
             	shapeDone(data, shape);
             } else {
             	// execute vertex drag handler on second vertex
-            	getVertexDragHandler(data, shape, vtxidx, vertexDragDone)(evt);
+            	getVertexDragHandler(data, shape, vtx, vertexDragDone)(evt);
             }
             return false;
         };
         
         var shapeDone = function (data, shape) {
             // defining shape done
-        	if (shape.properties._editable != null) {
-            	// re-set editable
             	unrenderShape(data, shape);
-            	shape.properties.editable = shape.properties._editable;
-            	delete shape.properties._editable;
             	renderShape(data, shape, layer);
-        	}
-        	// save shape
+            	// save shape
             layer.shapes.push(shape);
             $overlayDiv.remove();
             if (onComplete != null) {
                 onComplete(data, shape);
             }
         };
+
         // start by clicking
         $overlayDiv.one('mousedown.dlShape', shapeStart);
     };
