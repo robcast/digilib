@@ -118,7 +118,7 @@
             	renderShapes(data, layer);
         	}
         },
-        
+
         /**
          * get vector object (shape) by id.
          * 
@@ -140,7 +140,7 @@
         	}
         	return null;
         },
-        
+
         /**
          * remove vector object (shape) by id.
          * 
@@ -161,7 +161,7 @@
         	}
         	renderShapes(data, layer);
         },
-        
+
         /**
          * add vector layer.
          * 
@@ -225,6 +225,8 @@
         };
         // shapes layer is first
         data.vectorLayers = [shapeLayer];
+        // prepare pluggable handle create functions 
+        setupHandleFactory(data);
         // install event handlers
         $data.bind('update', handleUpdate);
     };
@@ -272,7 +274,7 @@
             }
         }
     };
-    
+
     /**
      * render all shapes on the layer.
      * 
@@ -310,61 +312,48 @@
     };
 
     /**
-     * create a square handle from a screen position.
+     * setup handle creation functions
+     * (more functions can be plugged into data.settings.handleFactory)
      * 
-     * @param p Screen point
-     * @param hs Handle size
-     * @param css CSS prefix
+     * @param data
      */
-    var createHandleSquare = function (p, hs, css) {
+    var setupHandleFactory = function (data) {
+        var settings = data.settings;
+        var css = settings.cssPrefix;
+        var hs = settings.editHandleSize;
         var d = hs/2;
-        var $handle = $(svgElement('rect', {
-            'width': hs, 'height': hs,
-            'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
-            'class': css+'svg-handle', 'style': 'pointer-events:all'}));
-        $handle.moveTo = function(p) {
-            this.attr({'x': p.x-d, 'y': p.y-d});
+        var attr = {
+            'stroke': 'darkgrey',
+            'stroke-width': 1,
+            'fill': 'none',
+            'class': css+'svg-handle',
+            'style': 'pointer-events:all'
             };
-        $handle.moveTo(p);
-        return $handle;
-    };
-
-    /**
-     * create a diamond-like handle from a screen position.
-     * 
-     * @param p Screen point
-     * @param hs Handle size
-     * @param css CSS prefix
-     */
-    var createHandleDiamond = function (p, hs, css) {
-        var d = hs/2;
-        var $handle = $(svgElement('polygon', {
-            'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
-            'class': css+'svg-handle', 'style': 'pointer-events:all'}));
-        $handle.moveTo = function(p) {
-            this.attr('points', (p.x-d) +','+ p.y+ ' '+p.x +','+(p.y+d)+' '+(p.x+d)+','+p.y+' '+p.x+','+(p.y-d));
+        var factory = {
+            'square' : function() {
+                var $h = $(svgElement('rect', attr));
+                $h.attr({'width': hs, 'height': hs});
+                $h.moveTo = function(p) {
+                    this.attr({'x': p.x-d, 'y': p.y-d });
+                    };
+                return $h;
+                },
+            'diamond' : function() {
+                var $h = $(svgElement('polygon', attr));
+                $h.moveTo = function(p) {
+                    this.attr('points', (p.x-d) +','+ p.y+ ' '+p.x +','+(p.y+d)+' '+(p.x+d)+','+p.y+' '+p.x+','+(p.y-d));
+                    };
+                return $h;
+                },
+            'cross' : function() {
+                var $h = $(svgElement('path', attr));
+                $h.moveTo = function(p) {
+                    this.attr('d', 'M'+(p.x-d) +','+ p.y+ ' L'+(p.x+d)+','+p.y+' M'+p.x+','+(p.y+d)+' L'+p.x+','+(p.y-d));
+                    };
+                return $h;
+                }
             };
-        $handle.moveTo(p);
-        return $handle;
-    };
-
-    /**
-     * create a cross-like handle from a screen position.
-     * 
-     * @param p Screen point
-     * @param hs Handle size
-     * @param css CSS prefix
-     */
-    var createHandleCross = function (p, hs, css) {
-        var d = hs/2;
-        var $handle = $(svgElement('path', {
-            'stroke': 'darkgrey', 'stroke-width': 2, 'fill': 'none',
-            'class': css+'svg-handle', 'style': 'pointer-events:all'}));
-        $handle.moveTo = function(p) {
-            this.attr('d', 'M'+(p.x-d) +','+ p.y+ ' L'+(p.x+d)+','+p.y+' M'+p.x+','+(p.y+d)+' L'+p.x+','+(p.y-d));
-            };
-        $handle.moveTo(p);
-        return $handle;
+        data.handleFactory = factory;
     };
 
     /**
@@ -378,27 +367,33 @@
      * @param func If present, use a special create function
      */
     //create handles for a shape.
-    var createHandles = function (data, shape, $svg, func) {
+    var createHandles = function (data, shape, layer) {
         if (!shape.properties.editable) { return };
-        var $handles = [];
+        var $svg = $(layer.svgElem);
         var trafo = data.imgTrafo;
-        var settings = data.settings;
-        var hs = settings.editHandleSize;
-        var css = settings.cssPrefix;
-        if (func == null) {
-            func = createHandleCross }
-        // create handle element from a coordinate pair
-        var createHandle = function (i, coord) {
-            var p = trafo.transform(geom.position(coord));
-            var $handle = func(p, hs, css);
-            $handles.push($handle);
-            $handle.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, i));
+        // type of handle can be stated in layer
+        var type = layer.handleType;
+        var newHandle = data.handleFactory[type];
+        if (newHandle == null) {
+            newHandle = data.handleFactory['square']; }
+        var handles = [];
+        var createHandle = function (i, item) {
+            var p = trafo.transform(geom.position(item));
+            var $handle = newHandle();
+            $handle.moveTo(p);
+            handles.push($handle);
             $svg.append($handle);
+            return $handle;
             };
-        shape.$vertexElems = $handles;
         var coords = shape.geometry.coordinates;
         $.each(coords, createHandle);
-        };
+        // vertexElems must be defined before calling getVertexDragHandler()
+        shape.$vertexElems = handles;
+        var attachEvent = function (i, item) {
+            item.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, i));
+            };
+        $.each(handles, attachEvent);
+    };
 
     /**
      * calculate screen positions from coordinates for a shape.
@@ -528,7 +523,7 @@
         }
         shape.$elem = $elem;
         $svg.append($elem);
-        createHandles(data, shape, $svg);
+        createHandles(data, shape, layer);
         $(data).trigger("renderShape", shape);
     };
 
@@ -595,8 +590,6 @@
             pt.clipTo(imgRect);
             shape.properties.screenpos[vtx] = pt;
             $(data).trigger('positionShape', shape);
-            // move handle
-            //$handle.attr({'x': pt.x-hs/2, 'y': pt.y-hs/2});
             $handle.moveTo(pt);
             // update shape SVG element
             if (shapeType === 'Line') {
