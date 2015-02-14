@@ -308,7 +308,114 @@
     	$svg.css(data.imgRect.getAsCss());
     	$svg.show();
     };
-    
+
+    /**
+     * create a square handle from a screen position.
+     * 
+     * @param p Screen point
+     * @param hs Handle size
+     * @param css CSS prefix
+     */
+    var createHandleSquare = function (p, hs, css) {
+        var d = hs/2;
+        var $handle = $(svgElement('rect', {
+            'width': hs, 'height': hs,
+            'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
+            'class': css+'svg-handle', 'style': 'pointer-events:all'}));
+        $handle.moveTo = function(p) {
+            this.attr({'x': p.x-d, 'y': p.y-d});
+            };
+        $handle.moveTo(p);
+        return $handle;
+    };
+
+    /**
+     * create a diamond-like handle from a screen position.
+     * 
+     * @param p Screen point
+     * @param hs Handle size
+     * @param css CSS prefix
+     */
+    var createHandleDiamond = function (p, hs, css) {
+        var d = hs/2;
+        var $handle = $(svgElement('polygon', {
+            'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
+            'class': css+'svg-handle', 'style': 'pointer-events:all'}));
+        $handle.moveTo = function(p) {
+            this.attr('points', (p.x-d) +','+ p.y+ ' '+p.x +','+(p.y+d)+' '+(p.x+d)+','+p.y+' '+p.x+','+(p.y-d));
+            };
+        $handle.moveTo(p);
+        return $handle;
+    };
+
+    /**
+     * create a cross-like handle from a screen position.
+     * 
+     * @param p Screen point
+     * @param hs Handle size
+     * @param css CSS prefix
+     */
+    var createHandleCross = function (p, hs, css) {
+        var d = hs/2;
+        var $handle = $(svgElement('path', {
+            'stroke': 'darkgrey', 'stroke-width': 2, 'fill': 'none',
+            'class': css+'svg-handle', 'style': 'pointer-events:all'}));
+        $handle.moveTo = function(p) {
+            this.attr('d', 'M'+(p.x-d) +','+ p.y+ ' L'+(p.x+d)+','+p.y+' M'+p.x+','+(p.y+d)+' L'+p.x+','+(p.y-d));
+            };
+        $handle.moveTo(p);
+        return $handle;
+    };
+
+    /**
+     * create handles for a shape.
+     * 
+     * Creates SVG elements for each screen point and append it to the SVG element.
+     * 
+     * @param data
+     * @param shape
+     * @param svg The SVG element where to append handle elements
+     * @param func If present, use a special create function
+     */
+    //create handles for a shape.
+    var createHandles = function (data, shape, $svg, func) {
+        if (!shape.properties.editable) { return };
+        var $handles = [];
+        var trafo = data.imgTrafo;
+        var settings = data.settings;
+        var hs = settings.editHandleSize;
+        var css = settings.cssPrefix;
+        if (func == null) {
+            func = createHandleCross }
+        // create handle element from a coordinate pair
+        var createHandle = function (i, coord) {
+            var p = trafo.transform(geom.position(coord));
+            var $handle = func(p, hs, css);
+            $handles.push($handle);
+            $handle.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, i));
+            $svg.append($handle);
+            };
+        shape.$vertexElems = $handles;
+        var coords = shape.geometry.coordinates;
+        $.each(coords, createHandle);
+        };
+
+    /**
+     * calculate screen positions from coordinates for a shape.
+     * 
+     * @param data
+     * @param shape
+     */
+    var createScreenCoords = function (data, shape) {
+        var coords = shape.geometry.coordinates;
+        var trafo = data.imgTrafo;
+        var screenpos = $.map(coords, function(coord) {
+            return trafo.transform(geom.position(coord));
+            });
+        shape.properties.screenpos = screenpos;
+        return screenpos;
+    };
+
     /**
      * render a shape on screen.
      * 
@@ -329,7 +436,6 @@
         var settings = data.settings;
         var css = settings.cssPrefix;
         var hs = settings.editHandleSize;
-        var trafo = data.imgTrafo;
         // use given id
         var id = digilib.fn.createId(shape.id, css+'svg-');
         // set properties
@@ -339,31 +445,9 @@
         var fill = props['fill'] || settings.defaultFill;
         var cssclass = props['cssclass'];
         var style = props['style'];
-        var coords = shape.geometry.coordinates;
         var gt = shape.geometry.type;
-        //create handles for a shape.
-        var createHandles = function (shape) {
-            if (!shape.properties.editable) { return };
-            var $handles = [];
-            shape.$vertexElems = $handles;
-            var coords = shape.geometry.coordinates;
-            // create handle element from a coordinate pair
-            var createHandle = function (i, coord) {
-                var p = trafo.transform(geom.position(coord));
-                var $handle = $(svgElement('rect', {
-                    'x': p.x-hs/2, 'y': p.y-hs/2, 'width': hs, 'height': hs,
-                    'stroke': 'darkgrey', 'stroke-width': 1, 'fill': 'none',
-                    'class': css+'svg-handle', 'style': 'pointer-events:all'}));
-                $handles.push($handle);
-                $handle.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, i));
-                $svg.append($handle);
-                };
-            $.each(coords, createHandle);
-            };
         // convert coords into an array of screen points
-        var p = $.map(coords, function(coord) {
-            return trafo.transform(geom.position(coord));
-            });
+        var p = createScreenCoords(data, shape);
         // convenience varables
         var p1 = p[0];
         var p2 = p[1];
@@ -442,9 +526,9 @@
         	console.error("Unable to render shape type:", gt);
         	return;
         }
-        $svg.append($elem);
         shape.$elem = $elem;
-        createHandles(shape);
+        $svg.append($elem);
+        createHandles(data, shape, $svg);
         $(data).trigger("renderShape", shape);
     };
 
@@ -512,7 +596,8 @@
             shape.properties.screenpos[vtx] = pt;
             $(data).trigger('positionShape', shape);
             // move handle
-            $handle.attr({'x': pt.x-hs/2, 'y': pt.y-hs/2});
+            //$handle.attr({'x': pt.x-hs/2, 'y': pt.y-hs/2});
+            $handle.moveTo(pt);
             // update shape SVG element
             if (shapeType === 'Line') {
                 if (vtx == 0) {
@@ -692,7 +777,7 @@
             }
             return false;
         };
-        
+
         var shapeDone = function (data, shape) {
             // defining shape done
             	unrenderShape(data, shape);
