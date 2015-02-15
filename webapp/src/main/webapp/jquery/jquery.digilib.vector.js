@@ -207,6 +207,7 @@
         $.extend(digilib.actions, actions);
         // export functions
         digilib.fn.vectorDefaultRenderFn = renderShapes;
+        digilib.fn.svgElement = svgElement;
     };
 
     /** 
