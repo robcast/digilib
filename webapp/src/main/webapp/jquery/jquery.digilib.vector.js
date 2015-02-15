@@ -518,7 +518,7 @@
             return;
         }
         var shapeType = shape.geometry.type;
-        if (!isSupported(shapeType)) {
+        if (!isSupported(data, shapeType)) {
             console.error("renderShape: unsupported shape type: "+shapeType);
             return;
         }

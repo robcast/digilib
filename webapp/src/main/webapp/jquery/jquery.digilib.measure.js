@@ -710,12 +710,14 @@
         // color of selected objects
         selectColor : 'red',
         // implemented measuring shape types, for select widget
-        implementedShapes : ['Line', 'LineString', 'Rectangle', 'Polygon', 'Circle', 'Ellipse'],
+        implementedShapes : ['Line', 'LineString', 'Proportion', 'Rectangle', 'Polygon', 'Circle', 'Ellipse'],
         // all measuring shape types
         shapeInfo : {
             Line :       { name : 'line',           display : 'length', },
             LineString : { name : 'linestring',     display : 'length'  },
-            Rectangle :  { name : 'rectangle',      display : 'area'    },
+            Proportion : { name : 'proportion',     display : 'length'  },
+            Rectangle :  { name : 'box',            display : 'area'    },
+            Rect :       { name : 'rectangle',      display : 'area'    },
             Square :     { name : 'square',         display : 'length'  },
             Polygon :    { name : 'polygon',        display : 'area'    },
             Circle :     { name : 'circle',         display : 'radius'  },
@@ -1170,6 +1172,20 @@
         keystate = {};
         };
 
+    // set up additional SVG shapes
+    var setupSvgFactory = function(data) {
+        var factory = data.svgFactory;
+        if (factory == null) {
+            console.error("No SVG factory found: jquery.digilib.vector not loaded?");
+            return;
+            }
+        factory['Proportion'] = function (shape) {
+            var $s = factory['LineString'](shape);
+            shape.properties.maxvtx = 3;
+            return $s;
+            }
+        };
+
     // set up a div for accessing the measuring functionality
     var setupMeasureBar = function(data) {
         console.debug('measure: setupMeasureBar');
@@ -1240,6 +1256,7 @@
         data.lastMeasuredAngle = 0;
         data.measureFactor = 1.0,
         setupMeasureBar(data);
+        setupSvgFactory(data);
         };
 
     // event handler for scaler update
