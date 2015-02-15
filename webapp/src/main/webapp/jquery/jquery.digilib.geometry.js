@@ -175,8 +175,13 @@
                 top : this.y
             };
         };
+        // return as string
         that.toString = function() {
             return (this.x + "," + this.y);
+        };
+        // return as array
+        that.toArray = function() {
+            return [this.x, this.y];
         };
         return that;
     };

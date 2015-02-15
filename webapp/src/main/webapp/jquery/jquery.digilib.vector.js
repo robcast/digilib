@@ -479,8 +479,12 @@
         $.each(coords, createHandle);
         // vertexElems must be defined before calling getVertexDragHandler()
         shape.$vertexElems = handles;
+        var done = function (data, shape, evt) {
+            unrenderShape(data, shape);
+            renderShape(data, shape, layer);
+            }
         var attachEvent = function (i, item) {
-            item.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, i));
+            item.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, i, done));
             };
         $.each(handles, attachEvent);
     };
@@ -592,15 +596,14 @@
             pt.clipTo(imgRect);
             shape.properties.screenpos[vtx] = pt;
             $(data).trigger('positionShape', shape);
-            $handle.moveTo(pt);
             if (isSupported(data, shapeType)) {
                 // update shape object and trigger drag event
-                var p = data.imgTrafo.invtransform(pt);
-                shape.geometry.coordinates[vtx] = [p.x, p.y];
+                shape.geometry.coordinates[vtx] = data.imgTrafo.invtransform(pt).toArray();
                 // update shape SVG element
                 shape.$elem.place();
                 $(data).trigger('dragShape', shape);
             }
+            $handle.moveTo(pt);
             return false;
         };
 
@@ -666,12 +669,13 @@
         var shapeStart = function (evt) {
             var pt = geom.position(evt);
             // setup shape
-            var p = data.imgTrafo.invtransform(pt);
+            var p1 = data.imgTrafo.invtransform(pt).toArray();
+            var p2 = p1.slice(0);
             var vtx = 1;
             if (shapeType === 'Point') {
-                shape.geometry.coordinates = [[p.x, p.y]];
+                shape.geometry.coordinates = [p1];
             } else if (isSupported(data, shapeType)) {
-                shape.geometry.coordinates = [[p.x, p.y], [p.x, p.y]];
+                shape.geometry.coordinates = [p1, p2];
             } else {
                 console.error("defineShape: unsupported shape type: "+shapeType);
                 $overlayDiv.remove();
@@ -683,6 +687,7 @@
                 }
             // save first mousedown position
             shape.properties.screenpos = [pt];
+            shape.properties.vtx = vtx;
             // draw shape
             renderShape(data, shape, layer);
             // vertex drag end handler
@@ -698,6 +703,7 @@
 	            		coords.push(coords[vtx].slice());
 	            		vtx += 1;
 	                    // draw shape
+	                    shape.properties.vtx = vtx;
 	                    renderShape(data, shape, layer);
 	                    // execute vertex drag handler on next vertex
 	            		getVertexDragHandler(data, shape, vtx, vertexDragDone)(evt);
@@ -714,6 +720,7 @@
 	            		}
 	            		if (rerender) {
 	            		    unrenderShape(data, shape);
+	            		    shape.properties.vtx = vtx;
 	            		    renderShape(data, shape, layer);
 	            		}
             		} else {

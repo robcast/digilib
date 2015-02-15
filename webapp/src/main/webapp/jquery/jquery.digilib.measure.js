@@ -710,7 +710,7 @@
         // color of selected objects
         selectColor : 'red',
         // implemented measuring shape types, for select widget
-        implementedShapes : ['Line', 'LineString', 'Proportion', 'Rectangle', 'Polygon', 'Circle', 'Ellipse'],
+        implementedShapes : ['Line', 'LineString', 'Proportion', 'Rect', 'Rectangle', 'Polygon', 'Circle', 'Ellipse'],
         // all measuring shape types
         shapeInfo : {
             Line :       { name : 'line',           display : 'length', },
@@ -969,15 +969,15 @@
     var newShape = function(data) {
         var shapeType = getActiveShapeType(data);
         return {
-            geometry : {
-                type : shapeType
+            'geometry' : {
+                'type' : shapeType
                 },
-            properties : {
-                stroke : getSelectedStroke(data),
-                editable : true,
-                cssclass : shapeClass(shapeType),
-                center : data.settings.drawFromCenter,
-                selected : false
+            'properties' : {
+                'editable' : true,
+                'selected' : false,
+                'stroke' : getSelectedStroke(data),
+                'cssclass' : shapeClass(shapeType)
+                // 'center' : data.settings.drawFromCenter
                 }
             };
         };
@@ -1179,11 +1179,34 @@
             console.error("No SVG factory found: jquery.digilib.vector not loaded?");
             return;
             }
+        var trafo = data.imgTrafo;
         factory['Proportion'] = function (shape) {
             var $s = factory['LineString'](shape);
             shape.properties.maxvtx = 3;
             return $s;
-            }
+            };
+        factory['Rect'] = function (shape) {
+            var $s = factory['Polygon'](shape);
+            var props = shape.properties;
+            props.maxvtx = 3;
+            $s.place = function () {
+                var p = props.screenpos;
+                var vtx = props.vtx;
+                if (vtx > 1 || p.length > 2) {
+                    var pv = p[2];
+                    var pd = geom.position(p[1].x - p[0].x, p[1].y - p[0].y);
+                    var pe = (Math.abs(pd.y) > Math.abs(pd.x))
+                        ? geom.position(pv.x - p[1].x, pd.x/pd.y * (pv.x - p[1].x))
+                        : geom.position(pd.y/pd.x * (p[1].y - pv.y), p[1].y - pv.y);
+                    p[2] = geom.position(p[1].x + pe.x, p[1].y - pe.y);
+                    p[3] = geom.position(p[0].x + pe.x, p[0].y - pe.y);
+                    shape.geometry.coordinates[2] = data.imgTrafo.invtransform(p[2]).toArray();
+                    shape.geometry.coordinates[3] = data.imgTrafo.invtransform(p[3]).toArray();
+                    }
+                this.attr({'points': p.join(" ")});
+                };
+            return $s;
+            };
         };
 
     // set up a div for accessing the measuring functionality
