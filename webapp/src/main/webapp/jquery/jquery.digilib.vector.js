@@ -59,8 +59,6 @@
     var defaults = {
         // is vector active?
         'isVectorActive' : true,
-        // implemented shape types
-        'supportedShapeTypes' : ['Line', 'Rectangle', 'LineString', 'Polygon', 'Circle', 'Ellipse'],
         // default SVG stroke
         'defaultStroke' : 'red',
         // default SVG stroke-width
@@ -326,7 +324,7 @@
         var svgAttr = function (shape) {
             var props = shape.properties;
             return {
-                'id': shape.id,
+                'id': shape.id || digilib.fn.createId(shape.id, css+'svg-'),
                 'stroke': props['stroke'] || settings.defaultStroke,
                 'stroke-width' : props['stroke-width'] || settings.defaultStrokeWidth,
                 'fill' : props['fill'] || settings.defaultFill,
@@ -337,6 +335,7 @@
         var factory = {
             'Point' : function (shape) {
                 var $s = $(svgElement('path', svgAttr(shape)));
+                shape.properties.maxvtx = 1;
                 $s.place = function () {
                     // point uses pin-like path of size 3*pu
                     var p = shape.properties.screenpos[0];
@@ -346,6 +345,7 @@
                 return $s;
                 },
             'Line' : function (shape) {
+                shape.properties.maxvtx = 2;
                 var $s = $(svgElement('line', svgAttr(shape)));
                 $s.place = function () {
                     var p = shape.properties.screenpos;
@@ -354,6 +354,7 @@
                 return $s;
                 },
             'Rectangle' : function (shape) {
+                shape.properties.maxvtx = 2;
                 var $s = $(svgElement('rect', svgAttr(shape)));
                 $s.place = function () {
                     var p = shape.properties.screenpos;
@@ -379,6 +380,7 @@
                 return $s;
                 },
             'Circle' : function (shape) {
+                shape.properties.maxvtx = 2;
                 var $s = $(svgElement('circle', svgAttr(shape)));
                 $s.place = function () {
                     var p = shape.properties.screenpos;
@@ -387,12 +389,13 @@
                 return $s;
                 },
             'Ellipse' : function (shape) {
+                shape.properties.maxvtx = 2;
                 var $s = $(svgElement('ellipse', svgAttr(shape)));
                 $s.place = function () {
                     var p = shape.properties.screenpos;
                     this.attr({'cx': p[0].x, 'cy': p[0].y,
                         'rx' : Math.abs(p[0].x - p[1].x),
-                    'ry' : Math.abs(p[0].y - p[1].y)});
+                        'ry' : Math.abs(p[0].y - p[1].y)});
                     };
                 return $s;
                 }
@@ -514,12 +517,16 @@
             renderShapes(data, layer);
             return;
         }
-        // create the SVG
         var shapeType = shape.geometry.type;
+        if (!isSupported(shapeType)) {
+            console.error("renderShape: unsupported shape type: "+shapeType);
+            return;
+        }
+        // create the SVG
         var newSVG = data.svgFactory[shapeType];
         var $elem = newSVG(shape);
         shape.$elem = $elem;
-        // place the SVG
+        // place the SVG on screen
         createScreenCoords(data, shape);
         $elem.place();
         // render the SVG
@@ -565,8 +572,7 @@
         var $handle = (shape.$vertexElems != null) ? shape.$vertexElems[vtx] : $();
         var shapeType = shape.geometry.type;
         var imgRect = data.imgRect;
-        var hs = data.settings.editHandleSize;
-        var pStart, pt1, pt2; // convenience variables
+        var pStart; // save startpoint
 
         var dragStart = function (evt) { // start dragging
             // cancel if not left-click
@@ -575,11 +581,6 @@
             shape.properties.startpos = pStart;
             shape.properties.vtx = vtx;
             $(data).trigger('positionShape', shape);
-            if ($.inArray(shapeType, ['Rectangle', 'Circle', 'Ellipse']) > -1) {
-                // save screen points of coordinates
-                pt1 = data.imgTrafo.transform(geom.position(shape.geometry.coordinates[0]));
-                pt2 = data.imgTrafo.transform(geom.position(shape.geometry.coordinates[1]));
-            }
             $document.on("mousemove.dlVertexDrag", dragMove);
             $document.on("mouseup.dlVertexDrag", dragEnd);
             $document.on("dblclick.dlVertexDrag", dragEnd);
@@ -590,49 +591,14 @@
             var pt = geom.position(evt);
             pt.clipTo(imgRect);
             shape.properties.screenpos[vtx] = pt;
-            $(data).trigger('positionShape', shape);
             $handle.moveTo(pt);
-            // update shape SVG element
-            if (shapeType === 'Line') {
-                if (vtx == 0) {
-                    $shape.attr({'x1': pt.x, 'y1': pt.y});
-                } else if (vtx == 1) {
-                    $shape.attr({'x2': pt.x, 'y2': pt.y});
-                }
-            } else if (shapeType === 'Rectangle') {
-                var rect;
-                if (vtx == 0) {
-                    rect = geom.rectangle(pt, pt2);
-                } else if (vtx == 1) {
-                    rect = geom.rectangle(pt1, pt);
-                }
-                $shape.attr({'x': rect.x, 'y': rect.y,
-                    'width': rect.width, 'height': rect.height});
-            } else if (shapeType === 'Polygon' || shapeType === 'LineString') {
-                var points = $shape.attr('points');
-                var ps = points.split(' ');
-                ps[vtx] = pt.x + ',' + pt.y;
-                points = ps.join(' ');
-                $shape.attr('points', points);
-            } else if (shapeType === 'Circle') {
-                if (vtx == 0) {
-                    $shape.attr({'cx': pt.x, 'cy': pt.y, 'r' : pt.distance(pt2)});
-                } else if (vtx == 1) {
-                    $shape.attr({'r': pt.distance(pt1)});
-                }
-            } else if (shapeType === 'Ellipse') {
-                if (vtx == 0) {
-                    $shape.attr({'cx': pt.x, 'cy': pt.y,
-                        'rx': Math.abs(pt.x - pt2.x),
-                        'ry': Math.abs(pt.y - pt2.y)});
-                } else if (vtx == 1) {
-                    $shape.attr({'rx': Math.abs(pt.x - pt1.x), 'ry': Math.abs(pt.y - pt1.y)});
-                }
-            }
-            // update shape object and trigger drag event
+            $(data).trigger('positionShape', shape);
             if (isSupported(data, shapeType)) {
+                // update shape object and trigger drag event
                 var p = data.imgTrafo.invtransform(pt);
                 shape.geometry.coordinates[vtx] = [p.x, p.y];
+                // update shape SVG element
+                shape.$elem.place();
                 $(data).trigger('dragShape', shape);
             }
             return false;
@@ -640,18 +606,11 @@
 
         var dragEnd = function (evt) { // end dragging
             var pt = geom.position(evt);
-            shape.properties.screenpos[vtx] = pt;
-            $(data).trigger('positionShape', shape);
             if ((pt.distance(pStart) < 5) && evt.type === 'mouseup') {
             	// not drag but click to start
                 return false;
             }
-            pt.clipTo(imgRect);
-            var p1 = data.imgTrafo.invtransform(pt);
-            // update shape object
-            if (isSupported(data, shapeType)) {
-                shape.geometry.coordinates[vtx] = [p1.x, p1.y];
-            }
+            dragMove(evt);
             // remove move/end handler
             $document.off("mousemove.dlVertexDrag", dragMove);
             $document.off("mouseup.dlVertexDrag", dragEnd);
@@ -677,7 +636,7 @@
      * @param shapeType shapeType to test
      */
     var isSupported = function (data, shapeType) {
-        return $.inArray(shapeType, data.settings.supportedShapeTypes) > -1;
+        return data.svgFactory[shapeType] != null;
     };
 
     /** 
@@ -729,9 +688,11 @@
             // vertex drag end handler
             var vertexDragDone = function (data, shape, evt) {
                 var coords = shape.geometry.coordinates;
-            	if (shapeType === 'LineString' || shapeType === 'Polygon') {
+                var max = shape.properties.maxvtx;
+            	if (max == null || vtx < max-1) {
+            	// multipoint shape (e. g. Polygon, LineString)
             		if (evt.type === 'mouseup') {
-	            		// single click adds next line to LineString/Polygon
+	            		// single click adds next point
 	            		unrenderShape(data, shape);
 	            		// copy last vertex as starting point
 	            		coords.push(coords[vtx].slice());
@@ -742,10 +703,10 @@
 	            		getVertexDragHandler(data, shape, vtx, vertexDragDone)(evt);
 	            		return false;
             		} else if (evt.type === 'dblclick') {
-            		    // double click ends LineString/Polygon
-            		    // remove duplicate vertices (from mouseup)
+            		    // double click ends multipoint shape
             		    var rerender = false;
-	            		while (coords[vtx][0] === coords[vtx-1][0] && 
+            		    // remove duplicate vertices (from mouseup)
+	            		while (coords[vtx][0] === coords[vtx-1][0] &&
 	            				coords[vtx][1] === coords[vtx-1][1]) {
                             coords.pop();
                             vtx -= 1;
@@ -762,11 +723,11 @@
             	}
             	shapeDone(data, shape);
             };
-            if (shapeType === 'Point') {
-            	// just this one vertex
+            if (vtx === shape.properties.maxvtx) {
+            	// last vertex
             	shapeDone(data, shape);
             } else {
-            	// execute vertex drag handler on second vertex
+            	// execute vertex drag handler on next vertex
             	getVertexDragHandler(data, shape, vtx, vertexDragDone)(evt);
             }
             return false;
