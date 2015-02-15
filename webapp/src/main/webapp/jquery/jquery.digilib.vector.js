@@ -591,8 +591,8 @@
             var pt = geom.position(evt);
             pt.clipTo(imgRect);
             shape.properties.screenpos[vtx] = pt;
-            $handle.moveTo(pt);
             $(data).trigger('positionShape', shape);
+            $handle.moveTo(pt);
             if (isSupported(data, shapeType)) {
                 // update shape object and trigger drag event
                 var p = data.imgTrafo.invtransform(pt);
