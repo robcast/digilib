@@ -47,7 +47,7 @@
  * }
  * 
  */
-(function($) {
+(function ($) {
 
     // affine geometry
     var geom = null;
@@ -81,7 +81,7 @@
          * @param shapes
          * @param layer
          */
-        setShapes : function(data, shapes, layer) {
+        setShapes : function (data, shapes, layer) {
             if (layer == null) {
                 // assume shape layer is 0
                 layer = data.vectorLayers[0];
@@ -102,7 +102,7 @@
          * @param onComplete
          * @param layer
          */
-        addShape : function(data, shape, onComplete, layer) {
+        addShape : function (data, shape, onComplete, layer) {
             if (layer == null) {
                 // assume shape layer is 0
                 layer = data.vectorLayers[0];
@@ -126,7 +126,7 @@
          * @param id
          * @returns shape
          */
-        getShapeById : function(data, id, layer) {
+        getShapeById : function (data, id, layer) {
             if (layer == null) {
                 // assume shape layer is 0
                 layer = data.vectorLayers[0];
@@ -147,7 +147,7 @@
          * @param data
          * @param id
          */
-        removeShapeById : function(data, id, layer) {
+        removeShapeById : function (data, id, layer) {
             if (layer == null) {
                 // assume shape layer is 0
                 layer = data.vectorLayers[0];
@@ -199,7 +199,7 @@
     /**
      * plugin installation routine, called by digilib on each plugin object.
      */
-    var install = function(plugin) {
+    var install = function (plugin) {
         digilib = plugin;
         console.debug('installing vector plugin. digilib:', digilib);
         // import geometry classes
@@ -225,7 +225,8 @@
         };
         // shapes layer is first
         data.vectorLayers = [shapeLayer];
-        // prepare pluggable handle create functions 
+        // pluggable SVG create functions 
+        setupSVGFactory(data);
         setupHandleFactory(data);
         // install event handlers
         $data.bind('update', handleUpdate);
@@ -249,7 +250,7 @@
     /**
      * render all layers on screen
      */
-    var renderLayers = function(data) {
+    var renderLayers = function (data) {
         if (data.imgRect == null)
             return;
         for (var i in data.vectorLayers) {
@@ -312,6 +313,94 @@
     };
 
     /**
+     * setup SVG creation functions
+     * (more functions can be plugged into data.settings.SVGFactory)
+     * 
+     * @param data
+     */
+    var setupSVGFactory = function (data) {
+        var settings = data.settings;
+        var css = settings.cssPrefix;
+        var hs = settings.editHandleSize;
+        // set standard SVG attributes
+        var svgAttr = function (shape) {
+            var props = shape.properties;
+            return {
+                'id': shape.id,
+                'stroke': props['stroke'] || settings.defaultStroke,
+                'stroke-width' : props['stroke-width'] || settings.defaultStrokeWidth,
+                'fill' : props['fill'] || settings.defaultFill,
+                'class' : props['cssclass'],
+                'style' : props['style']
+                };
+            };
+        var factory = {
+            'Point' : function (shape) {
+                var $s = $(svgElement('path', svgAttr(shape)));
+                $s.place = function () {
+                    // point uses pin-like path of size 3*pu
+                    var p = shape.properties.screenpos[0];
+                    var pu = hs / 3;
+                    this.attr({'d': 'M '+p.x+','+p.y+' l '+2*pu+','+pu+' c '+2*pu+','+pu+' '+0+','+3*pu+' '+(-pu)+','+pu+' Z'});
+                    };
+                return $s;
+                },
+            'Line' : function (shape) {
+                var $s = $(svgElement('line', svgAttr(shape)));
+                $s.place = function () {
+                    var p = shape.properties.screenpos;
+                    this.attr({'x1': p[0].x, 'y1': p[0].y, 'x2': p[1].x, 'y2': p[1].y});
+                    };
+                return $s;
+                },
+            'Rectangle' : function (shape) {
+                var $s = $(svgElement('rect', svgAttr(shape)));
+                $s.place = function () {
+                    var p = shape.properties.screenpos;
+                    var r = geom.rectangle(p[0], p[1]);
+                    this.attr({'x': r.x, 'y': r.y, 'width': r.width, 'height': r.height});
+                    };
+                return $s;
+                },
+            'Polygon' : function (shape) {
+                var $s = $(svgElement('polygon', svgAttr(shape)));
+                $s.place = function () {
+                    var p = shape.properties.screenpos;
+                    this.attr({'points': p.join(" ")});
+                    };
+                return $s;
+                },
+            'LineString' : function (shape) {
+                var $s = $(svgElement('polyline', svgAttr(shape)));
+                $s.place = function () {
+                    var p = shape.properties.screenpos;
+                    this.attr({'points': p.join(" ")});
+                    };
+                return $s;
+                },
+            'Circle' : function (shape) {
+                var $s = $(svgElement('circle', svgAttr(shape)));
+                $s.place = function () {
+                    var p = shape.properties.screenpos;
+                    this.attr({'cx': p[0].x, 'cy': p[0].y, 'r': p[0].distance(p[1])});
+                    };
+                return $s;
+                },
+            'Ellipse' : function (shape) {
+                var $s = $(svgElement('ellipse', svgAttr(shape)));
+                $s.place = function () {
+                    var p = shape.properties.screenpos;
+                    this.attr({'cx': p[0].x, 'cy': p[0].y,
+                        'rx' : Math.abs(p[0].x - p[1].x),
+                    'ry' : Math.abs(p[0].y - p[1].y)});
+                    };
+                return $s;
+                }
+            };
+        data.svgFactory = factory;
+    };
+
+    /**
      * setup handle creation functions
      * (more functions can be plugged into data.settings.handleFactory)
      * 
@@ -330,24 +419,24 @@
             'style': 'pointer-events:all'
             };
         var factory = {
-            'square' : function() {
+            'square' : function () {
                 var $h = $(svgElement('rect', attr));
                 $h.attr({'width': hs, 'height': hs});
-                $h.moveTo = function(p) {
+                $h.moveTo = function (p) {
                     this.attr({'x': p.x-d, 'y': p.y-d });
                     };
                 return $h;
                 },
-            'diamond' : function() {
+            'diamond' : function () {
                 var $h = $(svgElement('polygon', attr));
-                $h.moveTo = function(p) {
+                $h.moveTo = function (p) {
                     this.attr('points', (p.x-d) +','+ p.y+ ' '+p.x +','+(p.y+d)+' '+(p.x+d)+','+p.y+' '+p.x+','+(p.y-d));
                     };
                 return $h;
                 },
-            'cross' : function() {
+            'cross' : function () {
                 var $h = $(svgElement('path', attr));
-                $h.moveTo = function(p) {
+                $h.moveTo = function (p) {
                     this.attr('d', 'M'+(p.x-d) +','+ p.y+ ' L'+(p.x+d)+','+p.y+' M'+p.x+','+(p.y+d)+' L'+p.x+','+(p.y-d));
                     };
                 return $h;
@@ -373,9 +462,7 @@
         var trafo = data.imgTrafo;
         // type of handle can be stated in layer
         var type = layer.handleType;
-        var newHandle = data.handleFactory[type];
-        if (newHandle == null) {
-            newHandle = data.handleFactory['square']; }
+        var newHandle = data.handleFactory[type] || data.handleFactory['square'];
         var handles = [];
         var createHandle = function (i, item) {
             var p = trafo.transform(geom.position(item));
@@ -404,7 +491,7 @@
     var createScreenCoords = function (data, shape) {
         var coords = shape.geometry.coordinates;
         var trafo = data.imgTrafo;
-        var screenpos = $.map(coords, function(coord) {
+        var screenpos = $.map(coords, function (coord) {
             return trafo.transform(geom.position(coord));
             });
         shape.properties.screenpos = screenpos;
@@ -427,102 +514,16 @@
             renderShapes(data, layer);
             return;
         }
-        var $svg = $(layer.svgElem);
-        var settings = data.settings;
-        var css = settings.cssPrefix;
-        var hs = settings.editHandleSize;
-        // use given id
-        var id = digilib.fn.createId(shape.id, css+'svg-');
-        // set properties
-        var props = shape.properties || {};
-        var stroke = props['stroke'] || settings.defaultStroke;
-        var strokeWidth = props['stroke-width'] || settings.defaultStrokeWidth;
-        var fill = props['fill'] || settings.defaultFill;
-        var cssclass = props['cssclass'];
-        var style = props['style'];
-        var gt = shape.geometry.type;
-        // convert coords into an array of screen points
-        var p = createScreenCoords(data, shape);
-        // convenience varables
-        var p1 = p[0];
-        var p2 = p[1];
-        var $elem;
-        // render the shape
-        if (gt === 'Point') { 
-            /*
-             * Point
-             */
-            // point uses pin-like path of size 3*pu
-            var pu = hs / 3;
-            $elem = $(svgElement('path', {
-                'id': id, 'class': cssclass,
-                'd': 'M '+p1.x+','+p1.y+' l '+2*pu+','+pu+' c '+2*pu+','+pu+' '+0+','+3*pu+' '+(-pu)+','+pu+' Z',
-                'stroke': stroke, 'stroke-width': strokeWidth, 
-                'fill': fill, 'style': style}));
-        } else if (gt === 'Line') {
-            /*
-             * Line
-             */
-            $elem = $(svgElement('line', {
-                'id': id, 'class': cssclass,
-                'x1': p1.x, 'y1': p1.y,
-                'x2': p2.x, 'y2': p2.y,
-                'stroke': stroke, 'stroke-width': strokeWidth, 'style': style}));
-        } else if (gt === 'Rectangle') {
-            /*
-             * Rectangle
-             */
-            var rect = geom.rectangle(p1, p2);
-            $elem = $(svgElement('rect', {
-                'id': id, 'class': cssclass,
-                'x': rect.x, 'y': rect.y,
-                'width': rect.width, 'height': rect.height,
-                'stroke': stroke, 'stroke-width': strokeWidth,
-                'fill': fill, 'style': style}));
-        } else if (gt === 'Polygon') {
-            /*
-             * Polygon
-             */
-            $elem = $(svgElement('polygon', {
-                'id': id, 'class': cssclass,
-                'points': p.join(" "),
-                'stroke': stroke, 'stroke-width': strokeWidth,
-                'fill': fill, 'style': style}));
-        } else if (gt === 'LineString') {
-            /*
-             * Polyline
-             */
-            $elem = $(svgElement('polyline', {
-                'id': id, 'class': cssclass,
-                'points': p.join(" "),
-                'stroke': stroke, 'stroke-width': strokeWidth,
-                'fill': 'none', 'style': style}));
-        } else if (gt === 'Circle') {
-            /*
-             * Circle
-             */
-            $elem = $(svgElement('circle', {
-                'id': id, 'class': cssclass,
-                'cx': p1.x, 'cy': p1.y, 'r' : p1.distance(p2),
-                'fill' : 'none', 'stroke': stroke, 'stroke-width': strokeWidth, 
-                'style': style}));
-        } else if (gt === 'Ellipse') {
-            /*
-             * Ellipse
-             */
-            $elem = $(svgElement('ellipse', {
-                'id': id, 'class': cssclass,
-                'cx': p1.x, 'cy': p1.y,
-                'rx' : Math.abs(p1.x - p2.x),
-                'ry' : Math.abs(p1.y - p2.y),
-                'fill' : 'none', 'stroke': stroke, 'stroke-width': strokeWidth, 
-                'style': style}));
-        } else {
-        	console.error("Unable to render shape type:", gt);
-        	return;
-        }
+        // create the SVG
+        var shapeType = shape.geometry.type;
+        var newSVG = data.svgFactory[shapeType];
+        var $elem = newSVG(shape);
         shape.$elem = $elem;
-        $svg.append($elem);
+        // place the SVG
+        createScreenCoords(data, shape);
+        $elem.place();
+        // render the SVG
+        $(layer.svgElem).append($elem);
         createHandles(data, shape, layer);
         $(data).trigger("renderShape", shape);
     };
@@ -556,7 +557,7 @@
      * @param data
      * @param shape shape to drag
      * @param vtx vertex number on shape
-     * @onComplete function(data, shape)
+     * @onComplete function (data, shape)
      */
     var getVertexDragHandler = function (data, shape, vtx, onComplete) {
         var $document = $(document);
@@ -675,7 +676,7 @@
      * 
      * @param shapeType shapeType to test
      */
-    var isSupported = function(data, shapeType) {
+    var isSupported = function (data, shapeType) {
         return $.inArray(shapeType, data.settings.supportedShapeTypes) > -1;
     };
 
@@ -687,9 +688,9 @@
      * @param data
      * @param shape the shape to define
      * @param layer the layer to draw on
-     * @onComplete function(data, shape)
+     * @onComplete function (data, shape)
      */
-    var defineShape = function(data, shape, layer, onComplete) {
+    var defineShape = function (data, shape, layer, onComplete) {
         if (layer == null) {
             // assume shape layer is 0
             layer = data.vectorLayers[0];
