@@ -256,9 +256,11 @@
             var layer = data.vectorLayers[i];
             if (layer.projection === 'screen') {
                 // screen layers have render function
-                if (layer.renderFn != null) {
-                    layer.renderFn(data, layer);
+                if (layer.renderFn == null) {
+                	// user renderShapes as default
+                	layer.renderFn = renderShapes;
                 }
+                layer.renderFn(data, layer);
             } else if (layer.projection === 'relative') {
                 var svg = layer.svgElem;
                 if (svg != null) {
@@ -574,7 +576,7 @@
     var getVertexDragHandler = function (data, shape, vtx, onComplete) {
         var $document = $(document);
         var $shape = shape.$elem;
-        var $handle = (shape.$vertexElems != null) ? shape.$vertexElems[vtx] : $();
+        var $handle = (shape.$vertexElems != null) ? shape.$vertexElems[vtx] : null;
         var shapeType = shape.geometry.type;
         var imgRect = data.imgRect;
         var pStart; // save startpoint
@@ -601,10 +603,12 @@
                 // update shape object and trigger drag event
                 shape.geometry.coordinates[vtx] = data.imgTrafo.invtransform(pt).toArray();
                 // update shape SVG element
-                shape.$elem.place();
+                $shape.place();
                 $(data).trigger('dragShape', shape);
             }
-            $handle.moveTo(pt);
+            if ($handle != null) {
+            	$handle.moveTo(pt);
+            }
             return false;
         };
 
@@ -620,7 +624,9 @@
             $document.off("mouseup.dlVertexDrag", dragEnd);
             $document.off("dblclick.dlVertexDrag", dragEnd);
             // rearm start handler
-            $handle.one("mousedown.dlVertexDrag", dragStart);
+            if ($handle != null) {
+            	$handle.one("mousedown.dlVertexDrag", dragStart);
+            }
             if (onComplete != null) {
                 onComplete(data, shape, evt);
             } else {
