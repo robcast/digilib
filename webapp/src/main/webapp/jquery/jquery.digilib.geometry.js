@@ -168,6 +168,16 @@
             var dy = pos.y - this.y;
             return Math.sqrt(dx * dx + dy * dy);
         };
+        // radians of angle between line and the positive X axis
+        that.rad = function (pos) {
+            return Math.atan2(pos.y - this.y, pos.x - this.x);
+            }
+
+        // degree of angle between line and the positive X axis
+        that.deg = function (pos) {
+            return this.rad(pos) / Math.PI * 180;
+            }
+
         // returns position in css-compatible format
         that.getAsCss = function() {
             return {
