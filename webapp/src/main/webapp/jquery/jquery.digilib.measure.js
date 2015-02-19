@@ -1191,13 +1191,16 @@
                 var p = props.screenpos;
                 var vtx = props.vtx;
                 if (vtx > 1 || p.length > 2) {
-                    var pv = p[2];
-                    var pd = geom.position(p[1].x - p[0].x, p[1].y - p[0].y);
-                    var pe = (Math.abs(pd.y) > Math.abs(pd.x))
-                        ? geom.position(pv.x - p[1].x, pd.x/pd.y * (pv.x - p[1].x))
-                        : geom.position(pd.y/pd.x * (p[1].y - pv.y), p[1].y - pv.y);
-                    p[2] = geom.position(p[1].x + pe.x, p[1].y - pe.y);
-                    p[3] = geom.position(p[0].x + pe.x, p[0].y - pe.y);
+                    var dx = p[2].x - p[1].x;
+                    var dy = p[1].y - p[2].y
+                    var d = p[0].delta(p[1]);
+                    var ratio = d.x/d.y;
+                    var inv = d.y/d.x;
+                    var z = Math.abs(d.y) > Math.abs(d.x)
+                        ? geom.position(dx, ratio * -dx)
+                        : geom.position(inv * dy, -dy);
+                    p[2] = p[1].copy().add(z);
+                    p[3] = p[0].copy().add(z);
                     shape.geometry.coordinates[2] = data.imgTrafo.invtransform(p[2]).toArray();
                     shape.geometry.coordinates[3] = data.imgTrafo.invtransform(p[3]).toArray();
                     }
