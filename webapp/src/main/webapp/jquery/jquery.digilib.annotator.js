@@ -103,14 +103,13 @@
         	// get new token
         	auth.token = null;
         	auth._unsafeToken = null;
-        	auth.requestToken();
         	// save new token in cookie
         	auth.withToken(function (tkn) {
         		data.dlOpts.annotationToken = auth.token;
 		        fn.storeOptions(data);
 		        // clear annotations
         		data.annotations = [];
-        		renderAnnotations(data);
+        		annotator.plugins.Store.annotations = [];
 	        	// reload annotations
         		annotator.plugins.Store.pluginInit();
         	});
