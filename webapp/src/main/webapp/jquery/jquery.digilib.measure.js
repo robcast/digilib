@@ -790,8 +790,9 @@
             },
         drawshape : function(data) {
             var shape = newShape(data);
+            var layer = data.measureLayer;
             $(data).trigger('createShape', shape);
-            digilib.actions.addShape(data, shape, shapeCompleted);
+            digilib.actions.addShape(data, shape, shapeCompleted, layer);
             _debug_shape('action drawshape', shape);
             }
         };
@@ -860,18 +861,6 @@
     var mRound = function (num) {
         return Math.round(num * 10000 + 0.00001) / 10000
         };
-
-    // radians of angle between line and the positive X axis
-    var rad = function (p1, p2) {
-        var dx = p2.x - p1.x;
-        var dy = p2.y - p1.y;
-        return Math.atan2(dy, dx);
-        }
-
-    // degree of angle between line and the positive X axis
-    var deg = function (p1, p2) {
-        return rad(p1, p2) / Math.PI * 180;
-        }
 
     // calculate the distance of the first 2 points of a shape (rectified digilib coords)
     var rectifiedDist = function(data, shape) {
@@ -979,15 +968,16 @@
     var newShape = function(data) {
         var shapeType = getActiveShapeType(data);
         return {
-            'geometry' : {
-                'type' : shapeType
+            'id': fn.createId(null, CSS+'measure-'),
+            'geometry': {
+                'type': shapeType
                 },
-            'properties' : {
-                'editable' : true,
-                'selected' : false,
-                'stroke' : getSelectedStroke(data),
-                'stroke-width' : 1,
-                'cssclass' : shapeClass(shapeType)
+            'properties': {
+                'editable': true,
+                'selected': false,
+                'stroke': getSelectedStroke(data),
+                'stroke-width': 1,
+                'cssclass': shapeClass(shapeType)
                 // 'center' : data.settings.drawFromCenter
                 }
             };
@@ -1081,9 +1071,8 @@
 
     // show or hide SVG element (not possible via jQuery .hide/.show)
     var showSVG = function(data, on) {
-        var layers = data.vectorLayers;
-        if (layers == null) return;
-        $svg = layers[0].$elem;
+        var layer = data.measureLayer;
+        $svg = layer.$elem;
         if (on) {
             $svg.removeAttr("display"); }
         else {
@@ -1116,9 +1105,7 @@
 
     // remove selected shapes - or the most recent one, if none was selected
     var removeSelectedShapes = function(data) {
-        var layers = data.vectorLayers;
-        if (layers == null) return;
-        var layer = layers[0]; // hopefully the correct layer?
+        var layer = data.measureLayer;
         var shapes = layer.shapes;
         if (shapes == null) return;
         var shapesDeleted = 0;
@@ -1204,13 +1191,16 @@
                 var p = props.screenpos;
                 var vtx = props.vtx;
                 if (vtx > 1 || p.length > 2) {
-                    var pv = p[2];
-                    var pd = geom.position(p[1].x - p[0].x, p[1].y - p[0].y);
-                    var pe = (Math.abs(pd.y) > Math.abs(pd.x))
-                        ? geom.position(pv.x - p[1].x, pd.x/pd.y * (pv.x - p[1].x))
-                        : geom.position(pd.y/pd.x * (p[1].y - pv.y), p[1].y - pv.y);
-                    p[2] = geom.position(p[1].x + pe.x, p[1].y - pe.y);
-                    p[3] = geom.position(p[0].x + pe.x, p[0].y - pe.y);
+                    var dx = p[2].x - p[1].x;
+                    var dy = p[1].y - p[2].y
+                    var d = p[0].delta(p[1]);
+                    var ratio = d.x/d.y;
+                    var inv = d.y/d.x;
+                    var z = Math.abs(d.y) > Math.abs(d.x)
+                        ? geom.position(dx, ratio * -dx)
+                        : geom.position(inv * dy, -dy);
+                    p[2] = p[1].copy().add(z);
+                    p[3] = p[0].copy().add(z);
                     shape.geometry.coordinates[2] = data.imgTrafo.invtransform(p[2]).toArray();
                     shape.geometry.coordinates[3] = data.imgTrafo.invtransform(p[3]).toArray();
                     }
@@ -1221,19 +1211,20 @@
         factory['Grid'] = function (shape) {
             var $s = factory['Line'](shape);
             var place = $s.place;
+            var gridID = shape.id + '-grid';
             var props = shape.properties;
             props.maxvtx = 2;
-            var $g = $(fn.svgElement('g'));
+            var $g = $(fn.svgElement('g', {'id': shape.id + '-g'}));
             var $defs = $(fn.svgElement('defs'));
-            var $pat = $(fn.svgElement('pattern', {'id': 'grid', 'height': '10%', 'width': '10%', 'patternUnits': 'objectBoundingBox'}));
+            var $pat = $(fn.svgElement('pattern', {'id': gridID, 'height': '10%', 'width': '10%', 'patternUnits': 'objectBoundingBox'}));
             var $path = $(fn.svgElement('path', {'d': "M100,0 L0,0 0,100", 'fill': 'none', 'stroke': props.stroke, 'stroke-width': '1'}));
-            var $r = $(fn.svgElement('rect', {stroke: props.stroke, fill: 'url(#grid)'}));
+            var $r = $(fn.svgElement('rect', {'id': shape.id + '-rect', stroke: props.stroke, fill: 'url(#'+gridID+')'}));
             $g.append($defs.append($pat.append($path))).append($r).append($s);
             $g.place = function () {
                 place.call($s);
                 var p = props.screenpos;
                 var d = p[0].distance(p[1]);
-                var angle = mRound(deg(p[0], p[1]));
+                var angle = mRound(p[0].deg(p[1]));
                 var rotate = 'rotate('+angle+' '+p[0].x+' '+p[0].y+')';
                 $r.attr({x:p[0].x, y:p[0].y, height:d, width:d, transform:rotate});
                 $pat.attr({patternTransform:rotate});
@@ -1313,7 +1304,12 @@
         data.measureFactor = 1.0,
         setupMeasureBar(data);
         setupSvgFactory(data);
-        data.vectorLayers[0].handleType = 'diamond';
+        data.measureLayer = {
+            'shapes': [],
+            'projection': 'screen',
+            'handleType': 'diamond'
+            };
+        digilib.actions.addVectorLayer(data, data.measureLayer);
         };
 
     // event handler for scaler update
