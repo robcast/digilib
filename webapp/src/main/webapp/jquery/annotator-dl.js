@@ -1,13 +1,13 @@
 
 /*
-** Annotator v1.2.9-dev-5096249
+** Annotator v1.2.9-dev-cab39d7
 ** https://github.com/okfn/annotator/
 **
 ** Copyright 2015, the Annotator project contributors.
 ** Dual licensed under the MIT and GPLv3 licenses.
 ** https://github.com/okfn/annotator/blob/master/LICENSE
 **
-** Built at: 2015-01-17 13:38:31Z
+** Built at: 2015-02-20 19:20:03Z
  */
 
 
@@ -1237,9 +1237,6 @@
       for (_k = 0, _len2 = _ref1.length; _k < _len2; _k++) {
         range = _ref1[_k];
         container = range.commonAncestor;
-        if ($(container).hasClass('annotator-hl')) {
-          container = $(container).parents('[class!=annotator-hl]')[0];
-        }
         if (this.isAnnotator(container)) {
           return;
         }
@@ -1252,7 +1249,7 @@
     };
 
     Annotator.prototype.isAnnotator = function(element) {
-      return !!$(element).parents().addBack().filter('[class^=annotator-]').not(this.wrapper).length;
+      return !!$(element).parents().addBack().filter('[class^=annotator-]').not('[class=annotator-hl]').not(this.wrapper).length;
     };
 
     Annotator.prototype.onHighlightMouseover = function(event) {
@@ -1593,6 +1590,12 @@
       if (field.type === 'checkbox') {
         input[0].type = 'checkbox';
         element.addClass('annotator-checkbox');
+        element.append($('<label />', {
+          "for": field.id,
+          html: field.label
+        }));
+      } else if (field.type === 'select') {
+        element.addClass('annotator-select');
         element.append($('<label />', {
           "for": field.id,
           html: field.label
@@ -2651,6 +2654,299 @@
     };
 
     return Permissions;
+
+  })(Annotator.Plugin);
+
+  Annotator.Plugin.GroupPermissions = (function(_super) {
+    __extends(GroupPermissions, _super);
+
+    GroupPermissions.prototype.events = {
+      'beforeAnnotationCreated': 'addFieldsToAnnotation'
+    };
+
+    GroupPermissions.prototype.options = {
+      showViewPermissionsCheckbox: true,
+      showEditPermissionsCheckbox: true,
+      showAdminGroupSelection: true,
+      userId: function(user) {
+        if ((user != null ? user.id : void 0) != null) {
+          return user.id;
+        } else {
+          return user;
+        }
+      },
+      userString: function(user) {
+        if ((user != null ? user.name : void 0) != null) {
+          return user.name;
+        } else {
+          return user;
+        }
+      },
+      userAuthorize: function(action, annotation, user) {
+        var token, tokens, _k, _len2;
+        if (annotation.permissions) {
+          tokens = annotation.permissions[action] || [];
+          if (tokens.length === 0) {
+            return true;
+          }
+          for (_k = 0, _len2 = tokens.length; _k < _len2; _k++) {
+            token = tokens[_k];
+            if (this.userId(user) === token) {
+              return true;
+            } else if (((user != null ? user.groups : void 0) != null) && __indexOf.call(user.groups, token) >= 0) {
+              return true;
+            }
+          }
+          return false;
+        } else if (annotation.user) {
+          if (user) {
+            return this.userId(user) === this.userId(annotation.user);
+          } else {
+            return false;
+          }
+        }
+        return true;
+      },
+      user: '',
+      groups: [],
+      permissions: {
+        'read': [],
+        'update': [],
+        'delete': [],
+        'admin': []
+      }
+    };
+
+    function GroupPermissions(element, options) {
+      this._setAuthFromToken = __bind(this._setAuthFromToken, this);
+      this._cleanPermissions = __bind(this._cleanPermissions, this);
+      this.updateViewer = __bind(this.updateViewer, this);
+      this.updateAnnotationPermissions = __bind(this.updateAnnotationPermissions, this);
+      this.updateGroupPermissionsField = __bind(this.updateGroupPermissionsField, this);
+      this.updatePermissionsField = __bind(this.updatePermissionsField, this);
+      this.addFieldsToAnnotation = __bind(this.addFieldsToAnnotation, this);
+      GroupPermissions.__super__.constructor.apply(this, arguments);
+      if (this.options.user) {
+        this.setUser(this.options.user);
+        delete this.options.user;
+      }
+      if (this.options.groups && this.options.groups.length > 0) {
+        this.setGroups(this.options.groups);
+        delete this.options.groups;
+      }
+    }
+
+    GroupPermissions.prototype.pluginInit = function() {
+      var createCallback, self,
+        _this = this;
+      if (!Annotator.supported()) {
+        return;
+      }
+      self = this;
+      createCallback = function(method, type) {
+        return function(field, annotation) {
+          return self[method].call(self, type, field, annotation);
+        };
+      };
+      if (!this.user && this.annotator.plugins.Auth) {
+        this.annotator.plugins.Auth.withToken(this._setAuthFromToken);
+      }
+      if (this.options.showViewPermissionsCheckbox === true) {
+        this.annotator.editor.addField({
+          type: 'checkbox',
+          label: Annotator._t('Allow anyone to <strong>view</strong> this annotation'),
+          load: createCallback('updatePermissionsField', 'read'),
+          submit: createCallback('updateAnnotationPermissions', 'read')
+        });
+      }
+      if (this.options.showEditPermissionsCheckbox === true) {
+        this.annotator.editor.addField({
+          type: 'checkbox',
+          label: Annotator._t('Allow anyone to <strong>edit</strong> this annotation'),
+          load: createCallback('updatePermissionsField', 'update'),
+          submit: createCallback('updateAnnotationPermissions', 'update')
+        });
+      }
+      if (this.options.showAdminGroupSelection === true) {
+        this.annotator.editor.addField({
+          type: 'select',
+          label: Annotator._t(' group <strong>manages</strong> this annotation'),
+          load: createCallback('updateGroupPermissionsField', 'admin'),
+          submit: createCallback('updateAnnotationPermissions', 'admin')
+        });
+      }
+      this.annotator.viewer.addField({
+        load: this.updateViewer
+      });
+      if (this.annotator.plugins.Filter) {
+        return this.annotator.plugins.Filter.addFilter({
+          label: Annotator._t('User'),
+          property: 'user',
+          isFiltered: function(input, user) {
+            var keyword, _k, _len2, _ref3;
+            user = _this.options.userString(user);
+            if (!(input && user)) {
+              return false;
+            }
+            _ref3 = input.split(/\s*/);
+            for (_k = 0, _len2 = _ref3.length; _k < _len2; _k++) {
+              keyword = _ref3[_k];
+              if (user.indexOf(keyword) === -1) {
+                return false;
+              }
+            }
+            return true;
+          }
+        });
+      }
+    };
+
+    GroupPermissions.prototype.setUser = function(user) {
+      if (typeof user === 'string') {
+        return this.user = {
+          id: user,
+          name: user
+        };
+      } else {
+        return this.user = user;
+      }
+    };
+
+    GroupPermissions.prototype.setGroups = function(groups) {
+      this.groups = groups;
+      return this.user.groups = (function() {
+        var _k, _len2, _results;
+        _results = [];
+        for (_k = 0, _len2 = groups.length; _k < _len2; _k++) {
+          g = groups[_k];
+          _results.push('group:' + g);
+        }
+        return _results;
+      })();
+    };
+
+    GroupPermissions.prototype.addFieldsToAnnotation = function(annotation) {
+      if (annotation) {
+        annotation.permissions = $.extend(true, {}, this.options.permissions);
+        if (this.user) {
+          return annotation.user = this.user;
+        }
+      }
+    };
+
+    GroupPermissions.prototype.authorize = function(action, annotation, user) {
+      if (user === void 0) {
+        user = this.user;
+      }
+      if (this.options.userAuthorize) {
+        return this.options.userAuthorize.call(this.options, action, annotation, user);
+      } else {
+        return true;
+      }
+    };
+
+    GroupPermissions.prototype.updatePermissionsField = function(action, field, annotation) {
+      var input;
+      field = $(field).show();
+      input = field.find('input').removeAttr('disabled');
+      if (!this.authorize('admin', annotation)) {
+        field.hide();
+      }
+      return input.prop('checked', this.authorize(action, annotation, null));
+    };
+
+    GroupPermissions.prototype.updateGroupPermissionsField = function(action, field, annotation) {
+      var input, permuser, _k, _len2, _ref3, _ref4, _ref5, _results;
+      field = $(field);
+      if (!(this.authorize('admin', annotation) && ((_ref3 = this.groups) != null ? _ref3.length : void 0) > 0)) {
+        field.hide();
+        return;
+      }
+      field.show();
+      input = field.find('select').removeAttr('disabled');
+      permuser = ((_ref4 = annotation.permissions) != null ? _ref4[action][0] : void 0) || this.options.userId(this.user);
+      input.empty();
+      input.append($('<option>', {
+        selected: permuser === this.options.userId(this.user),
+        html: ' '
+      }));
+      _ref5 = this.groups;
+      _results = [];
+      for (_k = 0, _len2 = _ref5.length; _k < _len2; _k++) {
+        g = _ref5[_k];
+        _results.push(input.append($('<option>', {
+          selected: permuser === 'group:' + g,
+          html: g
+        })));
+      }
+      return _results;
+    };
+
+    GroupPermissions.prototype.updateAnnotationPermissions = function(type, field, annotation) {
+      var dataKey, group;
+      if (!annotation.permissions) {
+        annotation.permissions = $.extend(true, {}, this.options.permissions);
+      }
+      dataKey = type + '-permissions';
+      if (group = $(field).find('select').val()) {
+        annotation.permissions[type] = ['group:' + group];
+      } else if ($(field).find('input').is(':checked')) {
+        annotation.permissions[type] = [];
+      } else {
+        annotation.permissions[type] = [this.options.userId(this.user)];
+      }
+      if (type === 'admin') {
+        return this._cleanPermissions(annotation);
+      }
+    };
+
+    GroupPermissions.prototype.updateViewer = function(field, annotation, controls) {
+      var user, username, _ref3, _ref4;
+      field = $(field);
+      username = this.options.userString(annotation.user);
+      if (annotation.user && username && typeof username === 'string') {
+        user = Annotator.Util.escape(this.options.userString(annotation.user));
+        if (((_ref3 = annotation.permissions) != null ? (_ref4 = _ref3.admin) != null ? _ref4[0].indexOf('group:') : void 0 : void 0) === 0) {
+          user += ' (Group ' + annotation.permissions.admin[0].substr(6) + ')';
+        }
+        field.html(user).addClass('annotator-user');
+      } else {
+        field.remove();
+      }
+      if (controls) {
+        if (!this.authorize('update', annotation)) {
+          controls.hideEdit();
+        }
+        if (!this.authorize('delete', annotation)) {
+          return controls.hideDelete();
+        }
+      }
+    };
+
+    GroupPermissions.prototype._cleanPermissions = function(annotation) {
+      var perm, type, _k, _len2, _ref3, _results;
+      perm = annotation.permissions['admin'];
+      _ref3 = ['delete', 'update', 'read'];
+      _results = [];
+      for (_k = 0, _len2 = _ref3.length; _k < _len2; _k++) {
+        type = _ref3[_k];
+        if (annotation.permissions[type].length === 0) {
+          _results.push(perm = []);
+        } else {
+          _results.push(annotation.permissions[type] = perm);
+        }
+      }
+      return _results;
+    };
+
+    GroupPermissions.prototype._setAuthFromToken = function(token) {
+      this.setUser(token.userId);
+      if (token.memberOf != null) {
+        return this.setGroups(token.memberOf);
+      }
+    };
+
+    return GroupPermissions;
 
   })(Annotator.Plugin);
 
