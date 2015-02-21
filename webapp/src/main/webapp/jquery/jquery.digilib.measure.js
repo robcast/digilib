@@ -1177,7 +1177,6 @@
             console.error("No SVG factory found: jquery.digilib.vector not loaded?");
             return;
             }
-        var trafo = data.imgTrafo;
         factory['Proportion'] = function (shape) {
             var $s = factory['LineString'](shape);
             shape.properties.maxvtx = 3;
@@ -1185,24 +1184,22 @@
             };
         factory['Rect'] = function (shape) {
             var $s = factory['Polygon'](shape);
+            var trafo = data.imgTrafo;
             var props = shape.properties;
             props.maxvtx = 3;
             $s.place = function () {
                 var p = props.screenpos;
+                var g = shape.geometry;
                 var vtx = props.vtx;
                 if (vtx > 1 || p.length > 2) {
-                    var dx = p[2].x - p[1].x;
-                    var dy = p[1].y - p[2].y
-                    var d = p[0].delta(p[1]);
-                    var ratio = d.x/d.y;
-                    var inv = d.y/d.x;
-                    var z = Math.abs(d.y) > Math.abs(d.x)
-                        ? geom.position(dx, ratio * -dx)
-                        : geom.position(inv * dy, -dy);
-                    p[2] = p[1].copy().add(z);
-                    p[3] = p[0].copy().add(z);
-                    shape.geometry.coordinates[2] = data.imgTrafo.invtransform(p[2]).toArray();
-                    shape.geometry.coordinates[3] = data.imgTrafo.invtransform(p[3]).toArray();
+                    var d = p[0].delta(p[1]).toArray();
+                    var line1 = geom.line(p[0], d);
+                    var line2 = geom.line(p[2], d); // parallel (same slope)
+                    var orth = line1.orthogonal();
+                    p[3] = orth.intersection(line2);
+                    p[2] = p[3].copy().add(d);
+                    g.coordinates[2] = trafo.invtransform(p[2]).toArray();
+                    g.coordinates[3] = trafo.invtransform(p[3]).toArray();
                     }
                 this.attr({'points': p.join(" ")});
                 };

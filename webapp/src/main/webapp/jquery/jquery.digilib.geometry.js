@@ -121,8 +121,13 @@
         };
         // add position other to this
         that.add = function(other) {
-            this.x += other.x;
-            this.y += other.y;
+            if ($.isArray(other)) {
+                this.x += other[0];
+                this.y += other[1];
+            } else {
+                this.x += other.x;
+                this.y += other.y;
+            }
             return this;
         };
         // returns negative position
@@ -195,6 +200,70 @@
         };
         return that;
     };
+
+    /*
+     * Line class (for on-screen geometry)
+     */
+    var line = function(p, q) {
+        var that = { // definition point
+            x: p.x,
+            y: p.y
+            };
+        if (q.x != null) {
+            that.dx = q.x - that.x;
+            that.dy = q.y - that.y;
+        } else if ($.isArray(q)) {
+            that.dx = q[0]+0;
+            that.dy = q[1]+0;
+        } else if (q === 0) {
+            that.dx = 0;
+            that.dy = 1;
+        } else if (q === Infinity) {
+            that.dx = 1;
+            that.dy = 0;
+        } else if (q === -Infinity) {
+            that.dx = -1;
+            that.dy = 0;
+        } else if (typeof q === 'number' && isFinite(q)) {
+            that.dx = 1;
+            that.dy = 1/q;
+        } else {
+            that.dx = 1;
+            that.dy = 1;
+        }
+        that.ratio = that.dx/that.dy; // slope
+
+        // return a copy
+        that.copy = function() {
+            return line(position(this.x, this.y), this.ratio);
+        };
+        // return orthogonal line
+        that.orthogonal = function() {
+            return (this.ratio === Infinity || this.ratio === -Infinity)
+                ? line(position(this.x, this.y), 0)
+                : line(position(this.x, this.y), [-this.dy, this.dx]);
+        };
+        // return a point (position) by adding a vector to the definition point
+        that.add = function(q) {
+            return $.isArray(q)
+                ? position(this.x + q[0], this.y + q[1])
+                : position(this.x + q.x, this.y + q.y);
+        };
+        // point on line
+        that.point = function(factor) {
+            return position(this.x + factor*this.dx, this.y + factor*this.dy)
+        };
+        // intersection point with other line
+        that.intersection = function(other) {
+            var det = this.dy*other.dx - this.dx*other.dy
+            if (det === 0) { // parallel
+                return null; }
+            var c = this.dx*(other.y - this. y) + this.dy*(this.x - other.x);
+            return other.point(c/det);
+        };
+        return that;
+    };
+
     /*
      * Rectangle class
      */
@@ -588,6 +657,7 @@
     var geometry = {
             size : size,
             position : position,
+            line : line,
             rectangle : rectangle,
             transform : transform
     };
