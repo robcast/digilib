@@ -1191,10 +1191,11 @@
                 var p = props.screenpos;
                 var g = shape.geometry;
                 var vtx = props.vtx;
-                if (vtx > 1 || p.length > 2) {
+                if (p.length > 2) {
+                    var pt = (vtx > 1) ? p[vtx] : p[2];
                     var d = p[0].delta(p[1]).toArray();
                     var line1 = geom.line(p[0], d);
-                    var line2 = geom.line(p[2], d); // parallel (same slope)
+                    var line2 = geom.line(pt, d); // parallel (same slope)
                     var orth = line1.orthogonal();
                     p[3] = orth.intersection(line2);
                     p[2] = p[3].copy().add(d);

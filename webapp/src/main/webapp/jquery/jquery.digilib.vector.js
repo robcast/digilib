@@ -575,18 +575,28 @@
      */
     var getVertexDragHandler = function (data, shape, vtx, onComplete) {
         var $document = $(document);
+        var imgRect = data.imgRect;
         var $shape = shape.$elem;
         var $handle = (shape.$vertexElems != null) ? shape.$vertexElems[vtx] : null;
         var shapeType = shape.geometry.type;
-        var imgRect = data.imgRect;
+        var props = shape.properties;
+        var pos = props.screenpos;
         var pStart; // save startpoint
+
+        var placeHandle = function (i, $handle) {
+            $handle.moveTo(pos[i]);
+            };
+
+        var placeHandles = function () {
+            $.each(shape.$vertexElems, placeHandle);
+            };
 
         var dragStart = function (evt) { // start dragging
             // cancel if not left-click
             if (evt.which != 1) return;
             pStart = geom.position(evt);
-            shape.properties.startpos = pStart;
-            shape.properties.vtx = vtx;
+            props.startpos = pStart;
+            props.vtx = vtx;
             $(data).trigger('positionShape', shape);
             $document.on("mousemove.dlVertexDrag", dragMove);
             $document.on("mouseup.dlVertexDrag", dragEnd);
@@ -597,17 +607,16 @@
         var dragMove = function (evt) { // dragging
             var pt = geom.position(evt);
             pt.clipTo(imgRect);
-            shape.properties.screenpos[vtx] = pt;
+            pos[vtx] = pt;
             $(data).trigger('positionShape', shape);
             if (isSupported(data, shapeType)) {
                 // update shape object and trigger drag event
                 shape.geometry.coordinates[vtx] = data.imgTrafo.invtransform(pt).toArray();
                 // update shape SVG element
                 $shape.place();
+                // move handles accordingly
+                placeHandles();
                 $(data).trigger('dragShape', shape);
-            }
-            if ($handle != null) {
-            	$handle.moveTo(pt);
             }
             return false;
         };
