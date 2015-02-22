@@ -708,7 +708,7 @@
         // color while the line is drawn
         drawColor : 'green',
         // implemented measuring shape types, for select widget
-        implementedShapes : ['Line', 'LineString', 'Proportion', 'Rect', 'Rectangle', 'Polygon', 'Circle', 'Ellipse', 'Grid'],
+        implementedShapes : ['Line', 'LineString', 'Proportion', 'Rect', 'Rectangle', 'Polygon', 'Circle', 'Ellipse', 'Oval', 'Grid'],
         // all measuring shape types
         shapeInfo : {
             Line :       { name : 'line',           display : 'length', },
@@ -720,10 +720,8 @@
             Polygon :    { name : 'polygon',        display : 'area'    },
             Circle :     { name : 'circle',         display : 'radius'  },
             Ellipse :    { name : 'ellipse',        display : 'area'    },
-            Arch :       { name : 'arch',           display : 'radius'  },
-            Ratio :      { name : 'ratio',          display : 'ratio'   },
-            Grid :       { name : 'linegrid',       display : 'spacing' },
-            InterCol :   { name : 'intercolumnium', display : 'ratio'   }
+            Oval :       { name : 'oval',           display : 'length'  },
+            Grid :       { name : 'linegrid',       display : 'spacing' }
             },
         // currently selected shape type
         activeShapeType : 'Line',
@@ -1189,22 +1187,39 @@
             props.maxvtx = 3;
             $s.place = function () {
                 var p = props.screenpos;
-                var g = shape.geometry;
                 var vtx = props.vtx;
-                if (p.length > 2) {
-                    var pt = (vtx > 1) ? p[vtx] : p[2];
+                if (p.length > 2) { // p[2] is the mouse pointer
                     var d = p[0].delta(p[1]).toArray();
-                    var line1 = geom.line(p[0], d);
-                    var line2 = geom.line(pt, d); // parallel (same slope)
-                    var orth = line1.orthogonal();
-                    p[3] = orth.intersection(line2);
-                    p[2] = p[3].copy().add(d);
-                    g.coordinates[2] = trafo.invtransform(p[2]).toArray();
-                    g.coordinates[3] = trafo.invtransform(p[3]).toArray();
+                    var line1 = geom.line(p[0], d); // base line
+                    var line2 = line1.parallel(p[2]);
+                    var p3 = line1.perpendicular().intersection(line2);
+                    var p2 = p3.copy().add(d);
+                    p[2] = p2.mid(p3); // handle position
+                    shape.geometry.coordinates[2] = trafo.invtransform(p[2]).toArray();
                     }
-                this.attr({'points': p.join(" ")});
+                this.attr({points: [p[0], p[1], p2, p3].join(" ")});
                 };
             return $s;
+            };
+        factory['Oval'] = function (shape) {
+            var $s = factory['Rect'](shape);
+            var place = $s.place;
+            var props = shape.properties;
+            props.maxvtx = 4;
+            var $g = $(fn.svgElement('g', {'id': shape.id + '-oval'}));
+            var $c = $(fn.svgElement('circle', {'id': shape.id + '-circle', stroke: props.stroke, fill: 'none'}));
+            $g.append($s).append($c);
+            $g.place = function () {
+                var p = props.screenpos;
+                var vtx = props.vtx;
+                place.call($s);
+                if (p.length > 3) { // p[3] is the mouse pointer
+                    var m = p[2].mid(p[3]);
+                    var r = m.distance(p[2]);
+                    $c.attr({cx: m.x, cy: m.y, r: r});
+                    }
+                };
+            return $g;
             };
         factory['Grid'] = function (shape) {
             var $s = factory['Line'](shape);
@@ -1212,11 +1227,11 @@
             var gridID = shape.id + '-grid';
             var props = shape.properties;
             props.maxvtx = 2;
-            var $g = $(fn.svgElement('g', {'id': shape.id + '-g'}));
+            var $g = $(fn.svgElement('g', {id: shape.id + '-g'}));
             var $defs = $(fn.svgElement('defs'));
-            var $pat = $(fn.svgElement('pattern', {'id': gridID, 'height': '10%', 'width': '10%', 'patternUnits': 'objectBoundingBox'}));
-            var $path = $(fn.svgElement('path', {'d': "M100,0 L0,0 0,100", 'fill': 'none', 'stroke': props.stroke, 'stroke-width': '1'}));
-            var $r = $(fn.svgElement('rect', {'id': shape.id + '-rect', stroke: props.stroke, fill: 'url(#'+gridID+')'}));
+            var $pat = $(fn.svgElement('pattern', {id: gridID, height: '10%', width: '10%', patternUnits: 'objectBoundingBox'}));
+            var $path = $(fn.svgElement('path', {d: "M100,0 L0,0 0,100", fill: 'none', stroke: props.stroke, 'stroke-width': '1'}));
+            var $r = $(fn.svgElement('rect', {id: shape.id + '-rect', stroke: props.stroke, fill: 'url(#'+gridID+')'}));
             $g.append($defs.append($pat.append($path))).append($r).append($s);
             $g.place = function () {
                 place.call($s);

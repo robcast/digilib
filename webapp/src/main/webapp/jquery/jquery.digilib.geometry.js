@@ -159,7 +159,7 @@
             this.y = Math.max(this.y, p1.y);
             this.x = Math.min(this.x, p2.x);
             this.y = Math.min(this.y, p2.y);
-            return this;        	
+            return this;
         };
         // returns distance of this position to pos (length if pos == null)
         that.distance = function(pos) {
@@ -173,6 +173,14 @@
             var dy = pos.y - this.y;
             return Math.sqrt(dx * dx + dy * dy);
         };
+        // midpoint of this and other pos
+        that.mid = function (pos) {
+            return position({
+                x : (this.x + pos.x)/2,
+                y : (this.y + pos.y)/2
+            });
+            return ;
+            }
         // radians of angle between line and the positive X axis
         that.rad = function (pos) {
             return Math.atan2(pos.y - this.y, pos.x - this.x);
@@ -231,17 +239,23 @@
             that.dx = 1;
             that.dy = 1;
         }
-        that.ratio = that.dx/that.dy; // slope
+        // slope
+        that.slope = function() {
+            return this.dx/this.dy;
+        };
 
         // return a copy
         that.copy = function() {
-            return line(position(this.x, this.y), this.ratio);
+            return line(position(this.x, this.y), [this.dx, this.dy]);
         };
-        // return orthogonal line
-        that.orthogonal = function() {
-            return (this.ratio === Infinity || this.ratio === -Infinity)
-                ? line(position(this.x, this.y), 0)
-                : line(position(this.x, this.y), [-this.dy, this.dx]);
+        // return a parallel through a point
+        that.parallel = function(p) {
+            return line(position(p.x, p.y), [this.dx, this.dy]);
+        };
+        // return perpendicular line, with optional directon
+        that.perpendicular = function(clockwise) {
+            var delta = clockwise ? [-this.dy, this.dx] : [this.dy, -this.dx];
+            return line(position(this.x, this.y), delta)
         };
         // return a point (position) by adding a vector to the definition point
         that.add = function(q) {
@@ -249,17 +263,17 @@
                 ? position(this.x + q[0], this.y + q[1])
                 : position(this.x + q.x, this.y + q.y);
         };
-        // point on line
+        // point on line, moved from origin by factor
         that.point = function(factor) {
             return position(this.x + factor*this.dx, this.y + factor*this.dy)
         };
         // intersection point with other line
-        that.intersection = function(other) {
-            var det = this.dy*other.dx - this.dx*other.dy
+        that.intersection = function(line) {
+            var det = this.dy*line.dx - this.dx*line.dy
             if (det === 0) { // parallel
                 return null; }
-            var c = this.dx*(other.y - this. y) + this.dy*(this.x - other.x);
-            return other.point(c/det);
+            var c = this.dx*(line.y - this. y) + this.dy*(this.x - line.x);
+            return line.point(c/det);
         };
         return that;
     };
