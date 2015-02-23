@@ -1181,8 +1181,8 @@
             return $s;
             };
         factory['Rect'] = function (shape) {
-            var $s = factory['Polygon'](shape);
             var trafo = data.imgTrafo;
+            var $s = factory['Polygon'](shape);
             var props = shape.properties;
             props.maxvtx = 3;
             $s.place = function () {
@@ -1196,27 +1196,40 @@
                     var p2 = p3.copy().add(d);
                     p[2] = p2.mid(p3); // handle position
                     shape.geometry.coordinates[2] = trafo.invtransform(p[2]).toArray();
+                    props.pos = [p3, p2]; // save other points
                     }
                 this.attr({points: [p[0], p[1], p2, p3].join(" ")});
                 };
             return $s;
             };
         factory['Oval'] = function (shape) {
+            var trafo = data.imgTrafo;
             var $s = factory['Rect'](shape);
             var place = $s.place;
             var props = shape.properties;
             props.maxvtx = 4;
             var $g = $(fn.svgElement('g', {'id': shape.id + '-oval'}));
-            var $c = $(fn.svgElement('circle', {'id': shape.id + '-circle', stroke: props.stroke, fill: 'none'}));
-            $g.append($s).append($c);
+            var $c1 = $(fn.svgElement('circle', {'id': shape.id + '-circle1', stroke: props.stroke, fill: 'none'}));
+            var $c2 = $(fn.svgElement('circle', {'id': shape.id + '-circle2', stroke: props.stroke, fill: 'none'}));
+            var $l1 = $(fn.svgElement('line', {'id': shape.id + '-line1', stroke: props.stroke }));
+            var $l2 = $(fn.svgElement('line', {'id': shape.id + '-line2', stroke: props.stroke }));
+            $g.append($s).append($c1).append($c2).append($l1).append($l2);
             $g.place = function () {
                 var p = props.screenpos;
-                var vtx = props.vtx;
                 place.call($s);
                 if (p.length > 3) { // p[3] is the mouse pointer
-                    var m = p[2].mid(p[3]);
-                    var r = m.distance(p[2]);
-                    $c.attr({cx: m.x, cy: m.y, r: r});
+                    var mp0 = p[0].mid(p[1]);
+                    var line1 = geom.line(p[2], mp0);
+                    var mp1 = line1.perpendicularPoint(p[3]);
+                    var radius = mp1.distance(p[2]);
+                    var mp2 = geom.line(mp0, p[2]).length(radius).point();
+                    var pt = geom.line(p[0], p[1]).parallel(p[0].mid(props.pos[0])).length(radius).point();
+                    $c1.attr({cx: mp1.x, cy: mp1.y, r: radius});
+                    $c2.attr({cx: mp2.x, cy: mp2.y, r: radius});
+                    $l1.attr({x1: mp1.x, y1: mp1.y, x2 : pt.x, y2 : pt.y});
+                    $l2.attr({x1: mp2.x, y1: mp2.y, x2 : pt.x, y2 : pt.y});
+                    p[3] = mp1;
+                    shape.geometry.coordinates[3] = trafo.invtransform(p[3]).toArray();
                     }
                 };
             return $g;

@@ -214,16 +214,16 @@
      */
     var line = function(p, q) {
         var that = { // definition point
-            x: p.x,
-            y: p.y
+            x : p.x,
+            y : p.y
             };
-        if (q.x != null) {
+        if (q.x != null) { // second point
             that.dx = q.x - that.x;
             that.dy = q.y - that.y;
-        } else if ($.isArray(q)) {
-            that.dx = q[0]+0;
-            that.dy = q[1]+0;
-        } else if (q === 0) {
+        } else if ($.isArray(q)) { // vector
+            that.dx = q[0];
+            that.dy = q[1];
+        } else if (q === 0) { // slope
             that.dx = 0;
             that.dy = 1;
         } else if (q === Infinity) {
@@ -238,45 +238,108 @@
         } else {
             that.dx = 1;
             that.dy = 1;
-        }
+            }
+        // get/set origin of line
+        that.origin = function(p) {
+            if (p == null) {
+                return position(this.x, this.y);
+                }
+            this.x = p.x;
+            this.y = p.y;
+            return this;
+            };
+        // get/set vector
+        that.vector = function(vector) {
+            if (vector == null) {
+                return [this.dx, this.dy];
+                }
+            this.dx = vector[0];
+            this.dy = vector[1];
+            return this;
+            };
+        // vector
+        that.invertedVector = function() {
+            return [-this.dx, -this.dy];
+            };
+        // perpendicular vector
+        that.perpendicularVector = function(clockwise) {
+            return clockwise ? [-this.dy, this.dx] : [this.dy, -this.dx];
+            };
+        // get/set vector length
+        that.length = function(length) {
+            var dist = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
+            if (length == null) {
+                return dist;
+                }
+            var ratio = length/dist;
+            this.dx *= ratio;
+            this.dy *= ratio
+            return this;
+            };
         // slope
         that.slope = function() {
             return this.dx/this.dy;
-        };
-
+            };
         // return a copy
         that.copy = function() {
-            return line(position(this.x, this.y), [this.dx, this.dy]);
-        };
+            return line(position(this.x, this.y), this.vector());
+            };
+        // invert direction
+        that.invert = function() {
+            this.vector(this.invertedVector);
+            return this;
+            };
         // return a parallel through a point
         that.parallel = function(p) {
-            return line(position(p.x, p.y), [this.dx, this.dy]);
-        };
-        // return perpendicular line, with optional directon
-        that.perpendicular = function(clockwise) {
-            var delta = clockwise ? [-this.dy, this.dx] : [this.dy, -this.dx];
-            return line(position(this.x, this.y), delta)
-        };
+            return line(position(p.x, p.y), this.vector());
+            };
+        // return perpendicular line, with optional directon or other point
+        that.perpendicular = function(p, clockwise) {
+            var point = (p == null || p.x == null)
+                ? position(this.x, this.y) : p;
+            return line(point, this.perpendicularVector(clockwise));
+            };
+        // return perpendicular point on line
+        that.perpendicularPoint = function(p) {
+            return this.intersection(this.perpendicular(p));
+            };
+        // return perpendicular line from point
+        that.perpendicularLine = function(p) {
+            return line(p, this.perpendicularPoint(p));
+            };
+        // return point in mirrored position (with regard to this line)
+        that.mirrorPoint = function(p) {
+            var line = this.perpendicularLine(p);
+            return line.add(line.vector());
+            };
         // return a point (position) by adding a vector to the definition point
-        that.add = function(q) {
-            return $.isArray(q)
-                ? position(this.x + q[0], this.y + q[1])
-                : position(this.x + q.x, this.y + q.y);
-        };
-        // point on line, moved from origin by factor
+        that.add = function(vector) {
+            return $.isArray(vector)
+                ? position(this.x + vector[0], this.y + vector[1])
+                : position(this.x + vector.x, this.y + vector.y);
+            };
+        // point on the line, moved from origin by factor
         that.point = function(factor) {
-            return position(this.x + factor*this.dx, this.y + factor*this.dy)
-        };
+            if (factor == null) { factor = 1; }
+            var vector = [factor*this.dx, factor*this.dy];
+            return this.add(vector);
+            };
+        // factor of point (assuming it is on the line)
+        that.factor = function(p) {
+            return (dx === 0)
+                ? (p.y - this.y)/this.dy
+                : (p.x - this.x)/this.dx;
+            };
         // intersection point with other line
         that.intersection = function(line) {
-            var det = this.dy*line.dx - this.dx*line.dy
-            if (det === 0) { // parallel
+            var denominator = this.dy*line.dx - this.dx*line.dy
+            if (denominator === 0) { // parallel
                 return null; }
-            var c = this.dx*(line.y - this. y) + this.dy*(this.x - line.x);
-            return line.point(c/det);
-        };
+            var num = this.dx*(line.y - this.y) + this.dy*(this.x - line.x);
+            return line.point(num/denominator);
+            };
         return that;
-    };
+        };
 
     /*
      * Rectangle class
