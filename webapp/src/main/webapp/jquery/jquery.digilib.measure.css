@@ -99,3 +99,10 @@ img#dl-measure-move {
 .dl-measure-selected {
     stroke: cyan;
 }
+
+.dl-measure-guide {
+    stroke: blue;
+    stroke-dasharray: 10 5;
+    fill: none;
+}
+

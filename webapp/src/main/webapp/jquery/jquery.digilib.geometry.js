@@ -111,7 +111,7 @@
                 y : parseFloat(y)
             };
         };
-        // returns a copy of this Rectangle
+        // return a copy of this position
         that.copy = function() {
             return position(this);
         };
@@ -119,7 +119,7 @@
         that.equals = function(other) {
             return (this.x === other.x && this.y === other.y);
         };
-        // add position other to this
+        // add vector or position to this
         that.add = function(other) {
             if ($.isArray(other)) {
                 this.x += other[0];
@@ -173,23 +173,35 @@
             var dy = pos.y - this.y;
             return Math.sqrt(dx * dx + dy * dy);
         };
+        // nearest of several points
+        that.nearest = function (points) {
+            var nearest = points[0];
+            var dist = this.distance(nearest);
+            $.each(points, function(index, item) {
+                var len = this.distance(item);
+                if (len < dist) {
+                    dist = len;
+                    nearest = item;
+                    }
+                });
+            return nearest;
+        };
         // midpoint of this and other pos
         that.mid = function (pos) {
             return position({
                 x : (this.x + pos.x)/2,
                 y : (this.y + pos.y)/2
             });
-            return ;
-            }
+        };
         // radians of angle between line and the positive X axis
         that.rad = function (pos) {
             return Math.atan2(pos.y - this.y, pos.x - this.x);
-            }
+        };
 
         // degree of angle between line and the positive X axis
         that.deg = function (pos) {
             return this.rad(pos) / Math.PI * 180;
-            }
+        };
 
         // returns position in css-compatible format
         that.getAsCss = function() {
@@ -265,11 +277,15 @@
         that.perpendicularVector = function(clockwise) {
             return clockwise ? [-this.dy, this.dx] : [this.dy, -this.dx];
             };
+        // vector distance
+        that.dist = function() {
+            return Math.sqrt(this.dx * this.dx + this.dy * this.dy);
+            };
         // get/set vector length
         that.length = function(length) {
-            var dist = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
+            var dist = this.dist();
             if (length == null) {
-                return dist;
+                return this.dist;
                 }
             var ratio = length/dist;
             this.dx *= ratio;
@@ -308,21 +324,38 @@
             return line(p, this.perpendicularPoint(p));
             };
         // return point in mirrored position (with regard to this line)
-        that.mirrorPoint = function(p) {
+        that.mirror = function(p) {
             var line = this.perpendicularLine(p);
-            return line.add(line.vector());
+            return line.addEnd(line.vector());
             };
-        // return a point (position) by adding a vector to the definition point
-        that.add = function(vector) {
-            return $.isArray(vector)
-                ? position(this.x + vector[0], this.y + vector[1])
-                : position(this.x + vector.x, this.y + vector.y);
+        // return a position by adding a vector/position/distance to origin
+        that.add = function(item) {
+            if (item == null) {
+                return this.origin();
+            } else if ($.isArray(item)) { // add a vector
+                return position(this.x + item[0], this.y + item[1])
+            } else if (item.x != null) { // add a position
+                return position(this.x + item.x, this.y + item.y);
+            } else if (typeof item === 'number' && isFinite(item)) { // add a distance
+                ratio = item/this.dist();
+                return position(this.x + this.dx*ratio, this.y + this.dy*ratio);
+            } else {
+                return this.origin();
+                }
             };
-        // point on the line, moved from origin by factor
+        // return a position by adding a vector/position/distance to end point
+        that.addEnd = function(item) {
+            return this.add(item).add(this.vector());
+            };
+        // end point on the line (pointed to by vector)
         that.point = function(factor) {
             if (factor == null) { factor = 1; }
             var vector = [factor*this.dx, factor*this.dy];
             return this.add(vector);
+            };
+        // midpoint on the line (half of vector distance, multiplied by factor)
+        that.mid = function(factor) {
+            return this.origin().mid(this.point(factor));
             };
         // factor of point (assuming it is on the line)
         that.factor = function(p) {

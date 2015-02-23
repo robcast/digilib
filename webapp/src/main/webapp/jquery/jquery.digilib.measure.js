@@ -1189,14 +1189,13 @@
                 var p = props.screenpos;
                 var vtx = props.vtx;
                 if (p.length > 2) { // p[2] is the mouse pointer
-                    var d = p[0].delta(p[1]).toArray();
-                    var line1 = geom.line(p[0], d); // base line
+                    var line1 = geom.line(p[0], p[1]); // base line
                     var line2 = line1.parallel(p[2]);
                     var p3 = line1.perpendicular().intersection(line2);
-                    var p2 = p3.copy().add(d);
+                    var p2 = p3.copy().add(line1.vector());
                     p[2] = p2.mid(p3); // handle position
                     shape.geometry.coordinates[2] = trafo.invtransform(p[2]).toArray();
-                    props.pos = [p3, p2]; // save other points
+                    props.pos = [p2, p3]; // save other points
                     }
                 this.attr({points: [p[0], p[1], p2, p3].join(" ")});
                 };
@@ -1205,31 +1204,56 @@
         factory['Oval'] = function (shape) {
             var trafo = data.imgTrafo;
             var $s = factory['Rect'](shape);
-            var place = $s.place;
             var props = shape.properties;
+            var place = $s.place;
+            var guide = CSS+'measure-guide';
+            $s.attr({'class' : guide});
             props.maxvtx = 4;
             var $g = $(fn.svgElement('g', {'id': shape.id + '-oval'}));
-            var $c1 = $(fn.svgElement('circle', {'id': shape.id + '-circle1', stroke: props.stroke, fill: 'none'}));
-            var $c2 = $(fn.svgElement('circle', {'id': shape.id + '-circle2', stroke: props.stroke, fill: 'none'}));
-            var $l1 = $(fn.svgElement('line', {'id': shape.id + '-line1', stroke: props.stroke }));
-            var $l2 = $(fn.svgElement('line', {'id': shape.id + '-line2', stroke: props.stroke }));
-            $g.append($s).append($c1).append($c2).append($l1).append($l2);
+            var $c1 = $(fn.svgElement('circle', {'id': shape.id + '-circ1', 'class': guide }));
+            var $c2 = $(fn.svgElement('circle', {'id': shape.id + '-circ2', 'class': guide }));
+            var $p1 = $(fn.svgElement('path',   {'id': shape.id + '-lines', 'class': guide }));
+            var $p2 = $(fn.svgElement('path',   {'id': shape.id + '-arc', stroke: props.stroke, fill: 'none' }));
+            $g.append($s).append($c1).append($c2).append($p1).append($p2);
             $g.place = function () {
                 var p = props.screenpos;
                 place.call($s);
                 if (p.length > 3) { // p[3] is the mouse pointer
-                    var mp0 = p[0].mid(p[1]);
-                    var line1 = geom.line(p[2], mp0);
-                    var mp1 = line1.perpendicularPoint(p[3]);
-                    var radius = mp1.distance(p[2]);
-                    var mp2 = geom.line(mp0, p[2]).length(radius).point();
-                    var pt = geom.line(p[0], p[1]).parallel(p[0].mid(props.pos[0])).length(radius).point();
-                    $c1.attr({cx: mp1.x, cy: mp1.y, r: radius});
-                    $c2.attr({cx: mp2.x, cy: mp2.y, r: radius});
-                    $l1.attr({x1: mp1.x, y1: mp1.y, x2 : pt.x, y2 : pt.y});
-                    $l2.attr({x1: mp2.x, y1: mp2.y, x2 : pt.x, y2 : pt.y});
-                    p[3] = mp1;
-                    shape.geometry.coordinates[3] = trafo.invtransform(p[3]).toArray();
+                    var side0 = geom.line(p[0], p[1])
+                    var side1 = geom.line(p[1], props.pos[0]);
+                    var side2 = geom.line(props.pos[0], props.pos[1]);
+                    var side3 = geom.line(props.pos[1], p[0]);
+                    var pt0 = side0.mid(); // midpoint of base line
+                    var axis1 = geom.line(p[2], pt0); // longitudinal axis
+                    var handle = axis1.perpendicularPoint(p[3]); // drag point projected on axis
+                    var mp1 = handle.mid(p[2]); // midpoint of first small circle
+                    var rad1 = mp1.distance(p[2]); // radius of small circles
+                    var mp2 = geom.line(pt0, p[2]).length(rad1).point();  // midpoint of second small circle
+                    var pt1 = side1.mid(); // midpoints of long axis
+                    var pt2 = side3.mid();
+                    var axis2 = side0.parallel(pt2); // short axis
+                    var pt3 = axis2.copy().length(rad1).point(); // radius distance from short axis
+                    var mp3 = axis2.intersection(geom.line(pt3, mp1).perpendicular(pt2.mid(mp1))); // perpendicular bisector
+                    var mp4 = axis1.mirror(mp3);
+                    var sp1 = geom.line(mp3, mp1).addEnd(rad1); // the lozenge of midpoints
+                    var sp2 = geom.line(mp3, mp2).addEnd(rad1);
+                    var sp3 = geom.line(mp4, mp1).addEnd(rad1);
+                    var sp4 = geom.line(mp4, mp2).addEnd(rad1);
+                    var rad2 = mp3.distance(sp1); // radius of big circles
+                    $c1.attr({cx: mp1.x, cy: mp1.y, r: rad1});
+                    $c2.attr({cx: mp2.x, cy: mp2.y, r: rad1});
+                    $p1.attr({d:
+                        'M'+sp1+' L'+mp3+' '+sp2+
+                        'M'+sp3+' L'+mp4+' '+sp4+
+                        'M'+pt0+' L'+p[2]+
+                        'M'+pt1+' L'+pt2});
+                    $p2.attr({d: 'M'+sp2+
+                        ' A'+rad2+','+rad2+' 0 0,1 '+sp1+
+                        ' A'+rad1+','+rad1+' 0 0,1 '+sp3+
+                        ' A'+rad2+','+rad2+' 0 0,1 '+sp4+
+                        ' A'+rad1+','+rad1+' 0 0,1 '+sp2});
+                    p[3] = handle;
+                    shape.geometry.coordinates[3] = trafo.invtransform(handle).toArray();
                     }
                 };
             return $g;
