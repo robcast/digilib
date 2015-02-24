@@ -1251,7 +1251,14 @@
                     var mid3 = side3.mid();
                     var axis0 = side0.parallel(mid3); // short axis
                     var axis1 = side1.parallel(mid0); // long axis
-                    var handle = axis1.perpendicularPoint(p[3]); // drag point projected on long axis
+                    var maxDiam = axis0.length()-1; // maximal diameter for small circles
+                    var handle = axis1.perpendicularPoint(p[3]); // drag point projected on long axis
+                    console.debug(handle.distance(mid2), maxDiam);
+                    if (handle.distance(mid0) > axis1.length()) { // constrain handle
+                        handle.moveTo(mid2);
+                    } else if (handle.distance(mid2) > maxDiam) {
+                        handle.moveTo(geom.line(mid2, handle).length(maxDiam).point());
+                        }
                     var m1 = handle.mid(mid2); // midpoints of the small circles
                     var m2 = axis0.mirror(m1);
                     var rad1 = m1.distance(mid2); // radius of the small circles

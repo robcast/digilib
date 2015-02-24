@@ -151,6 +151,12 @@
                 top : this.y
             });
         };
+        // move this position to another
+        that.moveTo = function(other) {
+            this.x = other.x;
+            this.y = other.y;
+            return this;
+        };
         // adjust this position so that is is inside rect
         that.clipTo = function (rect) {
             var p1 = rect.getPt1();
@@ -285,7 +291,7 @@
         that.length = function(length) {
             var dist = this.dist();
             if (length == null) {
-                return this.dist;
+                return dist;
                 }
             var ratio = length/dist;
             this.dx *= ratio;
