@@ -720,7 +720,7 @@
             Polygon :    { name : 'polygon',        display : 'area'    },
             Circle :     { name : 'circle',         display : 'radius'  },
             Ellipse :    { name : 'ellipse',        display : 'area'    },
-            Oval :       { name : 'oval',           display : 'length'  },
+            Oval :       { name : 'oval',           display : 'axis'  },
             Grid :       { name : 'linegrid',       display : 'spacing' }
             },
         // currently selected shape type
@@ -863,15 +863,22 @@
     // calculate the distance of the first 2 points of a shape (rectified digilib coords)
     var rectifiedDist = function(data, shape) {
         var coords = shape.geometry.coordinates;
-        var total = 0;
-        var pos1 = geom.position(coords[0]);
-        for (i = 1; i < coords.length; i++) {
-            var pos2 = geom.position(coords[i]);
-            var dist = fn.getDistance(data, pos1, pos2);
-            total += dist.rectified;
-            pos1 = pos2;
+        if (shape.geometry.type === 'LineString') {
+            var pos1 = geom.position(coords[0]);
+            var total = 0;
+            for (i = 1; i < coords.length; i++) {
+                var pos2 = geom.position(coords[i]);
+                var dist = fn.getDistance(data, pos1, pos2);
+                total += dist.rectified;
+                pos1 = pos2;
+                }
+            return total;
+        } else {
+            var v = shape.properties.vtx;
+            if (v === 0) {v = 1}
+            var dist = fn.getDistance(data, geom.position(coords[v]), geom.position(coords[v-1]));
+            return dist.rectified;
             }
-        return total;
         };
 
     // calculate the area of a polygon (rectified digilib coords)
@@ -1214,44 +1221,51 @@
             var $c2 = $(fn.svgElement('circle', {'id': shape.id + '-circ2', 'class': guide }));
             var $p1 = $(fn.svgElement('path',   {'id': shape.id + '-lines', 'class': guide }));
             var $p2 = $(fn.svgElement('path',   {'id': shape.id + '-arc', stroke: props.stroke, fill: 'none' }));
+            // var $p3 = $(fn.svgElement('path', {stroke: 'yellow', fill: 'none' })); // debug construction
             $g.append($s).append($c1).append($c2).append($p1).append($p2);
             $g.place = function () {
                 var p = props.screenpos;
-                place.call($s);
+                place.call($s); // place the framing rectangle (polygon)
                 if (p.length > 3) { // p[3] is the mouse pointer
                     var side0 = geom.line(p[0], p[1])
                     var side1 = geom.line(p[1], props.pos[0]);
                     var side2 = geom.line(props.pos[0], props.pos[1]);
                     var side3 = geom.line(props.pos[1], p[0]);
-                    var pt0 = side0.mid(); // midpoint of base line
-                    var axis1 = geom.line(p[2], pt0); // longitudinal axis
-                    var handle = axis1.perpendicularPoint(p[3]); // drag point projected on axis
-                    var mp1 = handle.mid(p[2]); // midpoint of first small circle
-                    var rad1 = mp1.distance(p[2]); // radius of small circles
-                    var mp2 = geom.line(pt0, p[2]).length(rad1).point();  // midpoint of second small circle
-                    var pt1 = side1.mid(); // midpoints of long axis
-                    var pt2 = side3.mid();
-                    var axis2 = side0.parallel(pt2); // short axis
-                    var pt3 = axis2.copy().length(rad1).point(); // radius distance from short axis
-                    var mp3 = axis2.intersection(geom.line(pt3, mp1).perpendicular(pt2.mid(mp1))); // perpendicular bisector
-                    var mp4 = axis1.mirror(mp3);
-                    var sp1 = geom.line(mp3, mp1).addEnd(rad1); // the lozenge of midpoints
-                    var sp2 = geom.line(mp3, mp2).addEnd(rad1);
-                    var sp3 = geom.line(mp4, mp1).addEnd(rad1);
-                    var sp4 = geom.line(mp4, mp2).addEnd(rad1);
-                    var rad2 = mp3.distance(sp1); // radius of big circles
-                    $c1.attr({cx: mp1.x, cy: mp1.y, r: rad1});
-                    $c2.attr({cx: mp2.x, cy: mp2.y, r: rad1});
-                    $p1.attr({d:
-                        'M'+sp1+' L'+mp3+' '+sp2+
-                        'M'+sp3+' L'+mp4+' '+sp4+
-                        'M'+pt0+' L'+p[2]+
-                        'M'+pt1+' L'+pt2});
-                    $p2.attr({d: 'M'+sp2+
-                        ' A'+rad2+','+rad2+' 0 0,1 '+sp1+
-                        ' A'+rad1+','+rad1+' 0 0,1 '+sp3+
-                        ' A'+rad2+','+rad2+' 0 0,1 '+sp4+
-                        ' A'+rad1+','+rad1+' 0 0,1 '+sp2});
+                    var mid0 = side0.mid(); // midpoints of sides
+                    var mid1 = side1.mid();
+                    var mid2 = side2.mid();
+                    var mid3 = side3.mid();
+                    var axis0 = side0.parallel(mid3); // short axis
+                    var axis1 = side1.parallel(mid0); // long axis
+                    var handle = axis1.perpendicularPoint(p[3]); // drag point projected on long axis
+                    var m1 = handle.mid(mid2); // midpoints of the small circles
+                    var m2 = axis0.mirror(m1);
+                    var rad1 = m1.distance(mid2); // radius of the small circles
+                    var rd = axis0.copy().length(rad1).point(); // radius distance from short axis
+                    var ld = geom.line(rd, m1);
+                    var md = rd.mid(m1);
+                    var bi = ld.perpendicular(md); // perpendicular bisector
+                    var m3 = axis0.intersection(bi); // midpoints of the big circles
+                    var m4 = axis1.mirror(m3);
+                    var fp1 = geom.line(m3, m1).addEnd(rad1); // the four fitting points
+                    var fp2 = geom.line(m3, m2).addEnd(rad1);
+                    var fp3 = geom.line(m4, m1).addEnd(rad1);
+                    var fp4 = geom.line(m4, m2).addEnd(rad1);
+                    var rad2 = m3.distance(fp1); // radius of the big circles
+                    // place the SVG shapes
+                    $c1.attr({cx: m1.x, cy: m1.y, r: rad1});
+                    $c2.attr({cx: m2.x, cy: m2.y, r: rad1});
+                    $p1.attr({d: // the guides
+                        'M'+fp1+' L'+m3+' '+fp2+
+                        'M'+fp3+' L'+m4+' '+fp4+
+                        'M'+mid0+' L'+mid2+
+                        'M'+mid1+' L'+mid3});
+                    $p2.attr({d: 'M'+fp2+ // the arcs
+                        ' A'+rad2+','+rad2+' 0 0,1 '+fp1+
+                        ' A'+rad1+','+rad1+' 0 0,1 '+fp3+
+                        ' A'+rad2+','+rad2+' 0 0,1 '+fp4+
+                        ' A'+rad1+','+rad1+' 0 0,1 '+fp2});
+                    // $p3.attr({d: 'M'+p[3]+' L'+m1+'M'+rd+' L'+m1+' '+md+' '+m3}); // debug construction
                     p[3] = handle;
                     shape.geometry.coordinates[3] = trafo.invtransform(handle).toArray();
                     }
