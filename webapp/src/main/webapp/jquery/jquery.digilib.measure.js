@@ -27,6 +27,19 @@
 /* jslint browser: true, debug: true, forin: true
 */
 
+/* TODO:
+    - infowindow for shapes
+        - display fractions
+        - display angles
+        - display Vitruvian intercolumnium types
+    - display shapes overlay? (angles, distances?)
+    - move shapes (shift+drag?)
+    - confine oval to sensible measurements
+    - better grid
+    - snap vertex to next "round" unit / sub-unit while dragging (on keypress?)
+*/
+
+
 (function($) {
 
     // the digilib object
@@ -1214,6 +1227,7 @@
             var props = shape.properties;
             var place = $s.place;
             var guide = CSS+'measure-guide';
+            var constr = CSS+'measure-constr';
             $s.attr({'class' : guide});
             props.maxvtx = 4;
             var $g = $(fn.svgElement('g', {'id': shape.id + '-oval'}));
@@ -1221,8 +1235,8 @@
             var $c2 = $(fn.svgElement('circle', {'id': shape.id + '-circ2', 'class': guide }));
             var $p1 = $(fn.svgElement('path',   {'id': shape.id + '-lines', 'class': guide }));
             var $p2 = $(fn.svgElement('path',   {'id': shape.id + '-arc', stroke: props.stroke, fill: 'none' }));
-            // var $p3 = $(fn.svgElement('path', {stroke: 'yellow', fill: 'none' })); // debug construction
-            $g.append($s).append($c1).append($c2).append($p1).append($p2);
+            var $p3 = $(fn.svgElement('path',   {'id': shape.id + '-constr', 'class': constr })); // debug construction
+            $g.append($s).append($c1).append($c2).append($p1).append($p2).append($p3);
             $g.place = function () {
                 var p = props.screenpos;
                 place.call($s); // place the framing rectangle (polygon)
@@ -1265,7 +1279,7 @@
                         ' A'+rad1+','+rad1+' 0 0,1 '+fp3+
                         ' A'+rad2+','+rad2+' 0 0,1 '+fp4+
                         ' A'+rad1+','+rad1+' 0 0,1 '+fp2});
-                    // $p3.attr({d: 'M'+p[3]+' L'+m1+'M'+rd+' L'+m1+' '+md+' '+m3}); // debug construction
+                    $p3.attr({d: 'M'+rd+' L'+m1+' M'+md+' '+m3}); // debug construction
                     p[3] = handle;
                     shape.geometry.coordinates[3] = trafo.invtransform(handle).toArray();
                     }

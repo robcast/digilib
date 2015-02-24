@@ -106,3 +106,9 @@ img#dl-measure-move {
     fill: none;
 }
 
+.dl-measure-constr {
+    stroke: cornsilk;
+    stroke-dasharray: 3 3;
+    fill: none;
+}
+
