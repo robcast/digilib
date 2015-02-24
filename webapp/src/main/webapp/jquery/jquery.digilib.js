@@ -45,7 +45,7 @@ function($) {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.3.0',
+        'version' : 'jquery.digilib.js 2.3.0-1',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -287,7 +287,10 @@ function($) {
             var settings = data.settings;
             var cssPrefix = settings.cssPrefix;
             var aboutSelector = '#'+cssPrefix+'about';
-            if (isOnScreen(data, aboutSelector)) return;
+            if (isOnScreen(data, aboutSelector)) {
+                $(aboutSelector).fadeToggle();
+                return;
+            }
             // make relative logoUrl absolute
             var logoUrl = settings.logoUrl;
             if (logoUrl.charAt(0) !== '/' && logoUrl.substring(0,3) !== 'http') {
