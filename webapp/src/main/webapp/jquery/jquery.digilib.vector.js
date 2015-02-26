@@ -615,7 +615,7 @@
                 // update shape SVG element
                 $shape.place();
                 // move handles accordingly
-                placeHandles();
+                if (shape.$vertexElems != null) placeHandles();
                 $(data).trigger('dragShape', shape);
             }
             return false;
