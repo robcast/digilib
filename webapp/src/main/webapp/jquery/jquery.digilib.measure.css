@@ -85,7 +85,12 @@ option.dl-units {
 
 img#dl-measure-move {
     vertical-align: middle;
-    margin: 0px 4px 4px 0px;
+    margin: 0px 0px 4px 4px;
+}
+
+img#dl-measure-info {
+    vertical-align: middle;
+    margin: 0px 4px 4px 4px;
 }
 
 .dl-measure-shape {
@@ -112,3 +117,13 @@ img#dl-measure-move {
     fill: none;
 }
 
+span#dl-measure-linecolor,
+span#dl-measure-guidecolor,
+span#dl-measure-selectedcolor {
+    display: inline-block;
+    width: 4px;
+    height: 16px;
+    vertical-align: middle;
+    margin: 0px 0px 2px 4px;
+    background-color: darkgray;
+ 

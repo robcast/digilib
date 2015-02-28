@@ -714,12 +714,12 @@
         measureButtonSet : ['measurebar'],
         // unit data
         units : UNITS,
-        // choice of colors offered by measure bar
-        lineColors : ['white', 'red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'violet', 'black'],
-        // default color
+        // default shape color
         lineColor : 'red',
-        // color while the line is drawn
-        drawColor : 'green',
+        // construction line color
+        guideColor : 'cornsilk',
+        // selected shape color
+        selectedColor : 'cyan',
         // implemented measuring shape types, for select widget
         implementedShapes : ['Line', 'LineString', 'Proportion', 'Rect', 'Rectangle', 'Polygon', 'Circle', 'Ellipse', 'Oval', 'Grid'],
         // all measuring shape types
@@ -993,7 +993,7 @@
             'properties': {
                 'editable': true,
                 'selected': false,
-                'stroke': getSelectedStroke(data),
+                'stroke': getLineStroke(data),
                 'stroke-width': 1,
                 'cssclass': shapeClass(shapeType)
                 // 'center' : data.settings.drawFromCenter
@@ -1008,7 +1008,7 @@
         var display = data.settings.shapeInfo[type].display;
         var state = display !== 'length' && display !== 'radius';
         widgets.value1.prop('disabled', state);
-        widgets.info.text(display);
+        widgets.type.text(display);
         };
 
     // returns a screenpoint manipulation function
@@ -1050,11 +1050,20 @@
         };
 
     // return line color from settings (TODO: chosen by user)
-    var getSelectedStroke = function(data) {
+    var getLineStroke = function(data) {
         // TODO: colorpicker
         return data.settings.lineColor;
     };
 
+    // return color from settings
+    var getGuideStroke = function(data) {
+        return data.settings.guideColor;
+    };
+
+    // return color from settings (TODO: chosen by user)
+    var getSelectedStroke = function(data) {
+        return data.settings.selectedColor;
+    };
     // load shape types into select element
     var populateShapeSelect = function(data) {
         var $shape = data.measureWidgets.shape;
@@ -1252,7 +1261,8 @@
                     var axis0 = side0.parallel(mid3); // short axis
                     var axis1 = side1.parallel(mid0); // long axis
                     var maxDiam = axis0.length()-1; // maximal diameter for small circles
-                    var handle = axis1.perpendicularPoint(p[3]); // drag point projected on long axis
+                    var handle = axis1.perpendicularPoint(p[3]); // drag point projected on long axis
+
                     console.debug(handle.distance(mid2), maxDiam);
                     if (handle.distance(mid0) > axis1.length()) { // constrain handle
                         handle.moveTo(mid2);
@@ -1323,22 +1333,29 @@
         console.debug('measure: setupMeasureBar');
         var widgets = {
             names : [
-                'move', 'startb', 'shape',
                 'info',
+                'startb', 'shape',
+                'type',
                 'value1', 'unit1', 'eq',
-                'value2', 'unit2'
+                'value2', 'unit2',
+                'linecolor', 'guidecolor', 'selcolor',
+                'move'
                 ],
-            move :   $('<img id="dl-measure-move" src="img/move.png" title="move measuring bar around the screen"></img>'),
-            startb : $('<button id="dl-measure-startb" title="click to draw a measuring shape on top of the image">M</button>'),
-            shape :  $('<select id="dl-measure-shape" title="select a shape to use for measuring" />'),
-			eq :     $('<span class="dl-measure-label">=</span>'),
-			info :   $('<span id="dl-measure-shapetype" class="dl-measure-label">length</span>'),
-			fac :    $('<span id="dl-measure-factor" class="dl-measure-number" />'),
-			value1 : $('<input id="dl-measure-value1" class="dl-measure-input" title="last measured value - click to change the value" value="0.0" />'),
-			value2 : $('<span id="dl-measure-value2" class="dl-measure-label" title="last measured value, converted to the secondary unit" value="0.0"/>'),
-			unit1 :  $('<select id="dl-measure-unit1" title="current measuring unit - click to change" />'),
-			unit2 :  $('<select id="dl-measure-unit2" title="secondary measuring unit - click to change" />'),
-			angle :  $('<span id="dl-measure-angle" class="dl-measure-number" title="last measured angle" />')
+            info :       $('<img id="dl-measure-info" src="img/info.png" title="display info window for shapes"></img>'),
+            startb :     $('<button id="dl-measure-startb" title="click to draw a measuring shape on top of the image">M</button>'),
+            shape :      $('<select id="dl-measure-shape" title="select a shape to use for measuring" />'),
+			eq :         $('<span class="dl-measure-label">=</span>'),
+			type :       $('<span id="dl-measure-shapetype" class="dl-measure-label">length</span>'),
+			fac :        $('<span id="dl-measure-factor" class="dl-measure-number" />'),
+			value1 :     $('<input id="dl-measure-value1" class="dl-measure-input" title="last measured value - click to change the value" value="0.0" />'),
+			value2 :     $('<span id="dl-measure-value2" class="dl-measure-label" title="last measured value, converted to the secondary unit" value="0.0"/>'),
+			unit1 :      $('<select id="dl-measure-unit1" title="current measuring unit - click to change" />'),
+			unit2 :      $('<select id="dl-measure-unit2" title="secondary measuring unit - click to change" />'),
+			angle :      $('<span id="dl-measure-angle" class="dl-measure-number" title="last measured angle" />'),
+            linecolor :  $('<span id="dl-measure-linecolor" title="select main line color for shapes"></span>'),
+            guidecolor : $('<span id="dl-measure-guidecolor" title="select construction line color for shapes"></span>'),
+            selcolor :   $('<span id="dl-measure-selectedcolor" title="select line color for selected shapes"></span>'),
+            move :       $('<img id="dl-measure-move" src="img/move.png" title="move measuring bar around the screen"></img>')
 		    };
         var $measureBar = $('<div id="dl-measure-toolbar" />');
         $.each(widgets.names, function(index, item) {
