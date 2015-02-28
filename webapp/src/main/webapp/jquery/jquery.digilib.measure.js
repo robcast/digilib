@@ -745,6 +745,8 @@
                     }
                 }
             },
+        // implemented styles
+        implementedStyles : ['shape', 'constr', 'guide', 'selected'],
         // implemented measuring shape types, for select widget
         implementedShapes : ['Line', 'LineString', 'Proportion', 'Rect', 'Rectangle', 'Polygon', 'Circle', 'Ellipse', 'Oval', 'Grid'],
         // all measuring shape types
@@ -758,7 +760,7 @@
             Polygon :    { name : 'polygon',        display : 'area'    },
             Circle :     { name : 'circle',         display : 'radius'  },
             Ellipse :    { name : 'ellipse',        display : 'area'    },
-            Oval :       { name : 'oval',           display : 'axis'  },
+            Oval :       { name : 'oval',           display : 'distance'  },
             Grid :       { name : 'linegrid',       display : 'spacing' }
             },
         // currently selected shape type
@@ -1077,23 +1079,32 @@
 
     // update Line Style classes (overwrite CSS)
     var updateLineStyles = function(data) {
-        var styles = data.settings.styles;
-        var $lineStyles = data.settings.$lineStyles;
+        var s = data.settings;
+        var $lineStyles = s.$lineStyles;
+        var style = s.styles;
         $lineStyles.html(
-            '.'+CSS+'guide {stroke: '+styles.guide.stroke+'} '+
-            '.'+CSS+'constr {stroke: '+styles.constr.stroke+'} '+
-            '.'+CSS+'selected {stroke: '+styles.selected.stroke+'}'
+            '.'+CSS+'guide {stroke: '+style.guide.stroke+'} '+
+            '.'+CSS+'constr {stroke: '+style.constr.stroke+'} '+
+            '.'+CSS+'selected {stroke: '+style.selected.stroke+'}'
             );
+        var widget = data.measureWidgets;
+        var styleName = s.implementedStyles;
+        var bg = 'background-color';
+        var setColor = function(i, item) {
+            widget[item+'color'].css(bg, style[item].stroke)
+            };
+        $.each(styleName, setColor);
     };
 
     // load shape types into select element
     var populateShapeSelect = function(data) {
         var $shape = data.measureWidgets.shape;
         var shapeInfo = data.settings.shapeInfo;
+        var implementedShape = data.settings.implementedShapes;
         var addOption = function(index, type) {
             $shape.append($('<option value="'+ type + '">' + shapeInfo[type].name + '</option>'));
             };
-        $.each(data.settings.implementedShapes, addOption);
+        $.each(implementedShape, addOption);
         $shape.children()[0].selected = true;
     };
 
@@ -1102,18 +1113,21 @@
         var widgets = data.measureWidgets;
         var $u1 = widgets.unit1;
         var $u2 = widgets.unit2;
-        var sections = data.settings.units.sections;
-        $.each(sections, function(index, section) {
-            var $opt = $('<option class="dl-section" disabled="disabled">'+ section.name +'</option>');
+        var section = data.settings.units.sections;
+        var addOptions = function(i, item) {
+            var $opt = $('<option class="dl-section" disabled="disabled">'+ item.name +'</option>');
             $u1.append($opt);
             $u2.append($opt.clone());
-            $.each(section.units, function(index, unit) {
-				var $opt = $('<option class="dl-units" value="'+ unit.factor + '">'+ unit.name + '</option>');
-				$opt.data('unit', unit);
+            var unit = item.units;
+            var addOption = function(i, item) {
+				var $opt = $('<option class="dl-units" value="'+ item.factor + '">'+ item.name + '</option>');
+				$opt.data('unit', item);
 				$u1.append($opt);
 				$u2.append($opt.clone());
-				});
-            });
+				};
+            $.each(unit, addOption);
+            };
+        $.each(section, addOptions);
         $u1.children(':not(:disabled)')[data.settings.unitFrom].selected = true;
         $u2.children(':not(:disabled)')[data.settings.unitTo].selected = true;
     };
@@ -1129,11 +1143,11 @@
     };
 
     // initial position of measure bar (bottom left of browser window)
-    var setScreenPosition = function(data, $div) {
-        if ($div == null) return;
-        var h = geom.rectangle($div).height;
-        var s = fn.getFullscreenRect(data);
-        geom.position(10, s.height - h).adjustDiv($div);
+    var setScreenPosition = function(data, $bar) {
+        if ($bar == null) return;
+        var barH = geom.rectangle($bar).height;
+        var screenH = fn.getFullscreenRect(data).height;
+        geom.position(10, screenH - barH).adjustDiv($bar);
     };
 
     // drag measureBar around
@@ -1368,7 +1382,7 @@
                 'type',
                 'value1', 'unit1', 'eq',
                 'value2', 'unit2',
-                'linecolor', 'guidecolor', 'selcolor',
+                'shapecolor', 'guidecolor', 'constrcolor', 'selectedcolor',
                 'move'
                 ],
             info :       $('<img id="dl-measure-info" src="img/info.png" title="display info window for shapes"></img>'),
@@ -1382,15 +1396,18 @@
 			unit1 :      $('<select id="dl-measure-unit1" title="current measuring unit - click to change" />'),
 			unit2 :      $('<select id="dl-measure-unit2" title="secondary measuring unit - click to change" />'),
 			angle :      $('<span id="dl-measure-angle" class="dl-measure-number" title="last measured angle" />'),
-            linecolor :  $('<span id="dl-measure-linecolor" title="select main line color for shapes"></span>'),
-            guidecolor : $('<span id="dl-measure-guidecolor" title="select construction line color for shapes"></span>'),
-            selcolor :   $('<span id="dl-measure-selectedcolor" title="select line color for selected shapes"></span>'),
+            shapecolor : $('<span id="dl-measure-shapecolor" title="select line color for shapes"></span>'),
+            guidecolor : $('<span id="dl-measure-guidecolor" title="select guide line color for shapes"></span>'),
+            constrcolor :$('<span id="dl-measure-constrcolor" title="select construction line color for shapes"></span>'),
+            selectedcolor :$('<span id="dl-measure-selectedcolor" title="select line color for selected shapes"></span>'),
             move :       $('<img id="dl-measure-move" src="img/move.png" title="move measuring bar around the screen"></img>')
 		    };
         var $measureBar = $('<div id="dl-measure-toolbar" />');
-        $.each(widgets.names, function(index, item) {
+        var widgetName = widgets.names;
+        var appendWidget = function (i, item) {
             $measureBar.append(widgets[item]);
-            });
+            };
+        $.each(widgetName, appendWidget);
         data.$elem.append($measureBar);
         data.$measureBar = $measureBar;
         widgets.fac.text(fn.cropFloatStr(data.measureFactor));
@@ -1398,8 +1415,8 @@
         populateShapeSelect(data);
         populateUnitSelects(data);
         setupMeasureWidgets(data);
+        setupLineStyles(data);
         setScreenPosition(data, $measureBar);
-
         widgets.move.on('mousedown.measure', dragMeasureBar);
         return $measureBar;
         };
@@ -1434,7 +1451,6 @@
         data.lastMeasuredValue = 0;
         data.lastMeasuredAngle = 0;
         data.measureFactor = 1.0,
-        setupLineStyles(data);
         setupMeasureBar(data);
         setupSvgFactory(data);
         data.measureLayer = {
