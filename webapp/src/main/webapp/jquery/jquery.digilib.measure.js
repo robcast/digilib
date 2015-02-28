@@ -714,12 +714,37 @@
         measureButtonSet : ['measurebar'],
         // unit data
         units : UNITS,
-        // default shape color
-        lineColor : 'red',
-        // construction line color
-        guideColor : 'cornsilk',
-        // selected shape color
-        selectedColor : 'cyan',
+        // styles for shapes
+        styles : {
+            shape : {
+                stroke : 'red',
+                strokewidth : 1,
+                fill : 'none'
+                },
+            constr : {
+                stroke : 'cornsilk',
+                strokewidth : 1,
+                fill : 'none'
+                },
+            guide : {
+                stroke : 'green',
+                strokewidth : 1,
+                fill : 'none'
+                },
+            selected : {
+                stroke : 'cyan',
+                strokewidth : 1,
+                fill : 'none'
+                },
+            handle : {
+                stroke : 'blue',
+                strokewidth : 1,
+                fill : 'none',
+                hover : {
+                    fill : 'red',
+                    }
+                }
+            },
         // implemented measuring shape types, for select widget
         implementedShapes : ['Line', 'LineString', 'Proportion', 'Rect', 'Rectangle', 'Polygon', 'Circle', 'Ellipse', 'Oval', 'Grid'],
         // all measuring shape types
@@ -966,7 +991,7 @@
 
     // select/unselect shape (or toggle)
     var selectShape = function(data, shape, select) {
-        var css = CSS+'measure-selected';
+        var css = CSS+'selected';
         if (select == null) { // toggle
             select = !shape.properties.selected }
         var cssclass = shapeClass(shape.geometry.type, select ? css : null)
@@ -977,7 +1002,7 @@
 
     // construct CSS class for svg shape
     var shapeClass = function(shapeType, more) {
-        var css = CSS+'measure-shape '+CSS+'measure-'+shapeType;
+        var css = CSS+'shape '+CSS+shapeType;
         if (more != null) { css += ' '+more };
         return css;
         };
@@ -985,16 +1010,17 @@
     // create a shape of the currently selected shape type
     var newShape = function(data) {
         var shapeType = getActiveShapeType(data);
+        var style = data.settings.styles.shape;
         return {
-            'id': fn.createId(null, CSS+'measure-'),
+            'id': fn.createId(null, CSS),
             'geometry': {
                 'type': shapeType
                 },
             'properties': {
                 'editable': true,
                 'selected': false,
-                'stroke': getLineStroke(data),
-                'stroke-width': 1,
+                'stroke': style['stroke'],
+                'stroke-width': style['stroke-width'],
                 'cssclass': shapeClass(shapeType)
                 // 'center' : data.settings.drawFromCenter
                 }
@@ -1049,21 +1075,17 @@
         setInputState(data);
         };
 
-    // return line color from settings (TODO: chosen by user)
-    var getLineStroke = function(data) {
-        // TODO: colorpicker
-        return data.settings.lineColor;
+    // update Line Style classes (overwrite CSS)
+    var updateLineStyles = function(data) {
+        var styles = data.settings.styles;
+        var $lineStyles = data.settings.$lineStyles;
+        $lineStyles.html(
+            '.'+CSS+'guide {stroke: '+styles.guide.stroke+'} '+
+            '.'+CSS+'constr {stroke: '+styles.constr.stroke+'} '+
+            '.'+CSS+'selected {stroke: '+styles.selected.stroke+'}'
+            );
     };
 
-    // return color from settings
-    var getGuideStroke = function(data) {
-        return data.settings.guideColor;
-    };
-
-    // return color from settings (TODO: chosen by user)
-    var getSelectedStroke = function(data) {
-        return data.settings.selectedColor;
-    };
     // load shape types into select element
     var populateShapeSelect = function(data) {
         var $shape = data.measureWidgets.shape;
@@ -1235,8 +1257,8 @@
             var $s = factory['Rect'](shape);
             var props = shape.properties;
             var place = $s.place;
-            var guide = CSS+'measure-guide';
-            var constr = CSS+'measure-constr';
+            var guide = CSS+'guide';
+            var constr = CSS+'constr';
             $s.attr({'class' : guide});
             props.maxvtx = 4;
             var $g = $(fn.svgElement('g', {'id': shape.id + '-oval'}));
@@ -1328,7 +1350,15 @@
             };
         };
 
-    // set up a div for accessing the measuring functionality
+    // add a style element to head, for changing line class styles
+    var setupLineStyles = function(data) {
+        var $head = $('head');
+        var $lineStyles = $('<style></style>');
+        $head.append($lineStyles);
+        data.settings.$lineStyles = $lineStyles;
+        updateLineStyles(data);
+        };
+
     var setupMeasureBar = function(data) {
         console.debug('measure: setupMeasureBar');
         var widgets = {
@@ -1404,6 +1434,7 @@
         data.lastMeasuredValue = 0;
         data.lastMeasuredAngle = 0;
         data.measureFactor = 1.0,
+        setupLineStyles(data);
         setupMeasureBar(data);
         setupSvgFactory(data);
         data.measureLayer = {
@@ -1448,7 +1479,7 @@
     var init = function (data) {
         console.debug('initialising measure plugin. data:', data);
         var settings = data.settings;
-        CSS = settings.cssPrefix;
+        CSS = settings.cssPrefix+'measure-';
         FULL_AREA  = geom.rectangle(0, 0, 1, 1);
         // install event handlers
         var $data = $(data);
