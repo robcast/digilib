@@ -1034,7 +1034,7 @@
         var widgets = data.measureWidgets;
         var type = getActiveShapeType(data);
         var display = data.settings.shapeInfo[type].display;
-        var state = display !== 'length' && display !== 'radius';
+        var state = display !== 'length' && display !== 'radius' && display !== 'spacing';
         widgets.value1.prop('disabled', state);
         widgets.type.text(display);
         };
@@ -1346,7 +1346,7 @@
             var $g = $(fn.svgElement('g', {id: shape.id + '-g'}));
             var $defs = $(fn.svgElement('defs'));
             var $pat = $(fn.svgElement('pattern', {id: gridID, height: '10%', width: '10%', patternUnits: 'objectBoundingBox'}));
-            var $path = $(fn.svgElement('path', {d: "M100,0 L0,0 0,100", fill: 'none', stroke: props.stroke, 'stroke-width': '1'}));
+            var $path = $(fn.svgElement('path', {d: "M1000,0 L0,0 0,1000", fill: 'none', stroke: props.stroke, 'stroke-width': '1'}));
             var $r = $(fn.svgElement('rect', {id: shape.id + '-rect', stroke: props.stroke, fill: 'url(#'+gridID+')'}));
             $g.append($defs.append($pat.append($path))).append($r).append($s);
             $g.place = function () {
@@ -1354,9 +1354,13 @@
                 var p = props.screenpos;
                 var d = p[0].distance(p[1]);
                 var angle = mRound(p[0].deg(p[1]));
-                var rotate = 'rotate('+angle+' '+p[0].x+' '+p[0].y+')';
-                $r.attr({x:p[0].x, y:p[0].y, height:d, width:d, transform:rotate});
-                $pat.attr({patternTransform:rotate});
+                var scale = 10;
+                var fac = Math.ceil((1-scale)/2);
+                var x = p[0].x + fac * d;
+                var y = p[0].y + (fac-1) * d;
+                var transform = 'rotate('+angle+' '+p[0].x+' '+p[0].y+')';
+                $r.attr({x:x, y:y, height:d*scale, width:d*scale, transform:transform});
+                $pat.attr({patternTransform:transform});
                 };
             return $g;
             };
