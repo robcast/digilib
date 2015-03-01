@@ -1298,8 +1298,6 @@
                     var axis1 = side1.parallel(mid0); // long axis
                     var maxDiam = axis0.length()-1; // maximal diameter for small circles
                     var handle = axis1.perpendicularPoint(p[3]); // drag point projected on long axis
-
-                    console.debug(handle.distance(mid2), maxDiam);
                     if (handle.distance(mid0) > axis1.length()) { // constrain handle
                         handle.moveTo(mid2);
                     } else if (handle.distance(mid2) > maxDiam) {
@@ -1371,6 +1369,23 @@
         $head.append($lineStyles);
         data.settings.$lineStyles = $lineStyles;
         updateLineStyles(data);
+        var widget = data.measureWidgets;
+        if ($.fn.colorPicker == null) {
+            return; }
+        var styleName = data.settings.implementedStyles;
+        var style = data.settings.styles;
+        var setupColorPicker = function(i, item) {
+            var changeStroke = function(color) {
+                style[item].stroke = color;
+                updateLineStyles(data);
+                };
+            var w = widget[item+'color'];
+            w.colorPicker({
+                pickerDefault : style[item].stroke,
+                onColorChange : changeStroke
+                });
+            };
+        $.each(styleName, setupColorPicker);
         };
 
     var setupMeasureBar = function(data) {
