@@ -144,6 +144,14 @@
                 y : other.y - this.y
             });
         };
+        // returns other position scaled by ratio with regard to this point
+        that.scale = function(other, ratio) {
+            var d = this.delta(other);
+            return position({
+                x : this.x + d.x * ratio,
+                y : this.y + d.y * ratio
+            });
+        };
         // adjusts CSS position of $elem to this position
         that.adjustDiv = function($elem) {
             $elem.offset({
@@ -275,17 +283,23 @@
             this.dy = vector[1];
             return this;
             };
-        // vector
+        // return a vector with the contrary direction
         that.invertedVector = function() {
-            return [-this.dx, -this.dy];
+            return [-this.dx, -this.dy];rectifiedDist
             };
-        // perpendicular vector
+        // return a vector that is perpendicular to this line
         that.perpendicularVector = function(clockwise) {
             return clockwise ? [-this.dy, this.dx] : [this.dy, -this.dx];
             };
-        // vector distance
+        // return vector distance
         that.dist = function() {
             return Math.sqrt(this.dx * this.dx + this.dy * this.dy);
+            };
+        // multiply vector with a ratio
+        that.scale = function(ratio) {
+            this.dx *= ratio;
+            this.dy *= ratio
+            return this;
             };
         // get/set vector length
         that.length = function(length) {
@@ -293,16 +307,13 @@
             if (length == null) {
                 return dist;
                 }
-            var ratio = length/dist;
-            this.dx *= ratio;
-            this.dy *= ratio
-            return this;
+            return this.scale(length/dist);
             };
-        // slope
+        // return the slope
         that.slope = function() {
             return this.dx/this.dy;
             };
-        // return a copy
+        // return a copy of this line
         that.copy = function() {
             return line(position(this.x, this.y), this.vector());
             };
@@ -311,17 +322,17 @@
             this.vector(this.invertedVector);
             return this;
             };
-        // return a parallel through a point
+        // return a parallel line through a point (with the same vector)
         that.parallel = function(p) {
             return line(position(p.x, p.y), this.vector());
             };
-        // return perpendicular line, with optional directon or other point
+        // return a perpendicular line from the origin (optionally from another point) with direction
         that.perpendicular = function(p, clockwise) {
             var point = (p == null || p.x == null)
                 ? position(this.x, this.y) : p;
             return line(point, this.perpendicularVector(clockwise));
             };
-        // return perpendicular point on line
+        // return the intersection with a perpendicular line through a point
         that.perpendicularPoint = function(p) {
             return this.intersection(this.perpendicular(p));
             };

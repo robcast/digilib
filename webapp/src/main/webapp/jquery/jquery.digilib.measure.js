@@ -727,7 +727,7 @@
                 fill : 'none'
                 },
             guide : {
-                stroke : 'green',
+                stroke : 'blue',
                 strokewidth : 1,
                 fill : 'none'
                 },
@@ -863,6 +863,9 @@
         if (keystate['y'] != null) { // change only y-Dimension of mouse pointer
             manipulatePosition(shape, lockDimension('x'));
             }
+        if (keystate['s'] != null) { // snap to next unit
+            manipulatePosition(shape, snaptoUnit(data));
+            }
         // console.debug('onPositionShape', shape.properties.screenpos);
     };
 
@@ -900,24 +903,28 @@
         return Math.round(num * 10000 + 0.00001) / 10000
         };
 
-    // calculate the distance of the first 2 points of a shape (rectified digilib coords)
+    // calculate the distance of a shape vertex to the next (rectified digilib coords)
+    var getVertexDistance = function(data, shape, index) {
+        var vtx = shape.properties.vtx;
+        if (index == null) {
+             index = vtx == 0 ? 1 : vtx; }
+        var coords = shape.geometry.coordinates;
+        var next = (index < coords.length-1) ? index+1 : 0;
+        var dist = fn.getDistance(data, geom.position(coords[index]), geom.position(coords[next]));
+        return dist.rectified;
+        };
+
+    // calculate the measured distance for a shape (in rectified digilib coords)
     var rectifiedDist = function(data, shape) {
         var coords = shape.geometry.coordinates;
         if (shape.geometry.type === 'LineString') {
-            var pos1 = geom.position(coords[0]);
             var total = 0;
-            for (i = 1; i < coords.length; i++) {
-                var pos2 = geom.position(coords[i]);
-                var dist = fn.getDistance(data, pos1, pos2);
-                total += dist.rectified;
-                pos1 = pos2;
+            for (v = 0; v < coords.length-1; v++) {
+                total += getVertexDistance(data, shape, v);
                 }
             return total;
         } else {
-            var v = shape.properties.vtx;
-            if (v === 0) {v = 1}
-            var dist = fn.getDistance(data, geom.position(coords[v]), geom.position(coords[v-1]));
-            return dist.rectified;
+            return getVertexDistance(data, shape);
             }
         };
 
@@ -1037,6 +1044,24 @@
         var state = display !== 'length' && display !== 'radius' && display !== 'spacing';
         widgets.value1.prop('disabled', state);
         widgets.type.text(display);
+        };
+
+    // returns a screenpoint manipulation function
+    var snaptoUnit = function(data) {
+        // lock one dimension of the current screen pos to that of the previous
+        var snap = function(shape) {
+            var props = shape.properties;
+            var startpos = props.startpos;
+            var screenpos = props.screenpos;
+            var vtx = props.vtx;
+            if (startpos == null || screenpos == null || vtx == null) {
+                return; }
+            var fac = data.measureFactor;
+            var dist = getVertexDistance(data, shape) * fac;
+            var round = Math.round(dist);
+            screenpos[vtx] = startpos.scale(screenpos[vtx], round/dist);
+            }
+        return snap;
         };
 
     // returns a screenpoint manipulation function
@@ -1197,15 +1222,17 @@
             removeSelectedShapes(data);
             return false;
             }
-        // keys 'x' and 'y': immediate response, lock dimension and redraw shape
+        // immediate key response, fire drag event
         if (code === 88 || key === 'x' ||
-            code === 89 || key === 'y') {
+            code === 89 || key === 'y' ||
+            code === 83 || key === 's') {
             if (currentShape == null) { return true };
             var props = currentShape.properties;
             var pt = props.screenpos[props.vtx]; // get last recorded mouse position
             var eventpos = { pageX: pt.x, pageY: pt.y }
             var evt = jQuery.Event("mousemove.dlVertexDrag", eventpos);
             $(document).trigger(evt);
+            return false;
             }
         // console.debug('measure: keyDown', code, event.key, keystate);
         };
@@ -1216,6 +1243,7 @@
         var key = event.key;
         delete keystate[key]; // invalidate key state
         // console.debug('measure: keyUp', code, event.key, keystate);
+        return false;
         };
 
     // attach/detach keyup/down event handlers
@@ -1461,6 +1489,9 @@
         widgets.value1.on('change.measure', function(evt) { changeFactor(data) });
         widgets.unit1.on('change.measure',  function(evt) { convertUnits(data) });
         widgets.unit2.on('change.measure',  function(evt) { convertUnits(data) });
+        widgets.unit1.attr('tabindex', -1);
+        widgets.unit2.attr('tabindex', -1);
+        widgets.value1.attr('tabindex', -1);
         };
 
     // event handler for setup phase
