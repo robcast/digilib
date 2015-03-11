@@ -903,29 +903,36 @@
         return Math.round(num * 10000 + 0.00001) / 10000
         };
 
-    // calculate the distance of a shape vertex to the next (rectified digilib coords)
-    var getVertexDistance = function(data, shape, index) {
-        var vtx = shape.properties.vtx;
-        if (index == null) {
-             index = vtx == 0 ? 1 : vtx; }
+    // get last vertex before current one
+    var getLastVertex = function(shape, vertex) {
+        var props = shape.properties;
+        var vtx = vertex == null ? props.vtx : vertex;
+        return (vtx === 0) ? props.screenpos.length-1 : vtx-1;
+        };
+
+    // calculate the distance of a shape vertex to the last (in rectified digilib coords)
+    var getVertexDistance = function(data, shape, vtx) {
+        if (vtx == null) {
+            vtx = shape.properties.vtx; }
         var coords = shape.geometry.coordinates;
-        var next = (index < coords.length-1) ? index+1 : 0;
-        var dist = fn.getDistance(data, geom.position(coords[index]), geom.position(coords[next]));
+        var last = getLastVertex(shape, vtx);
+        // safely assume that screenpos and coords have equal length?
+        var dist = fn.getDistance(data, geom.position(coords[last]), geom.position(coords[vtx]));
         return dist.rectified;
         };
 
-    // calculate the measured distance for a shape (in rectified digilib coords)
+    // calculate distance from current to last vertex (in rectified digilib coords)
     var rectifiedDist = function(data, shape) {
         var coords = shape.geometry.coordinates;
-        if (shape.geometry.type === 'LineString') {
-            var total = 0;
-            for (v = 0; v < coords.length-1; v++) {
-                total += getVertexDistance(data, shape, v);
+        var total = 0;
+        if (shape.geometry.type === 'LineString') { // sum up distances
+            for (vtx = 1; vtx < coords.length; vtx++) {
+                total += getVertexDistance(data, shape, vtx);
                 }
-            return total;
         } else {
-            return getVertexDistance(data, shape);
+            total = getVertexDistance(data, shape);
             }
+        return total;
         };
 
     // calculate the area of a polygon (rectified digilib coords)
@@ -1051,15 +1058,17 @@
         // lock one dimension of the current screen pos to that of the previous
         var snap = function(shape) {
             var props = shape.properties;
-            var startpos = props.startpos;
             var screenpos = props.screenpos;
             var vtx = props.vtx;
-            if (startpos == null || screenpos == null || vtx == null) {
+            if (screenpos == null || vtx == null) {
                 return; }
+            var last = getLastVertex(shape);
+            var lastPos = screenpos[last];
+            var thisPos = screenpos[vtx];
             var fac = data.measureFactor;
             var dist = getVertexDistance(data, shape) * fac;
-            var round = Math.round(dist);
-            screenpos[vtx] = startpos.scale(screenpos[vtx], round/dist);
+            var round = Math.round(dist); // to the nearest integer
+            screenpos[vtx] = lastPos.scale(thisPos, round/dist);
             }
         return snap;
         };
