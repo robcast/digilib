@@ -1055,7 +1055,7 @@
 
     // returns a screenpoint manipulation function
     var snaptoUnit = function(data) {
-        // lock one dimension of the current screen pos to that of the previous
+        // snap to the next rounded unit distance
         var snap = function(shape) {
             var props = shape.properties;
             var screenpos = props.screenpos;
@@ -1064,12 +1064,13 @@
                 return; }
             var last = getLastVertex(shape);
             var lastPos = screenpos[last];
-            var thisPos = screenpos[vtx];
             var fac = data.measureFactor;
             var dist = getVertexDistance(data, shape) * fac;
             var round = Math.round(dist); // to the nearest integer
-            screenpos[vtx] = lastPos.scale(thisPos, round/dist);
-            }
+            var newPos = lastPos.scale(screenpos[vtx], round/dist);
+            console.debug(lastPos.x, screenpos[vtx].x, '[', dist, ']', newPos.x);
+            screenpos[vtx].moveTo(newPos);
+        }
         return snap;
         };
 
@@ -1225,25 +1226,27 @@
     var onKeyDown = function(event, data) {
         var code = event.keyCode;
         var key = event.key;
-        keystate[key] = event; // save key state on key
         // delete selected shapes
         if (code === 46 || key === 'Delete') {
             removeSelectedShapes(data);
             return false;
             }
-        // immediate key response, fire drag event
+        // manipulate current vertex position of shape
         if (code === 88 || key === 'x' ||
             code === 89 || key === 'y' ||
             code === 83 || key === 's') {
-            if (currentShape == null) { return true };
-            var props = currentShape.properties;
-            var pt = props.screenpos[props.vtx]; // get last recorded mouse position
-            var eventpos = { pageX: pt.x, pageY: pt.y }
-            var evt = jQuery.Event("mousemove.dlVertexDrag", eventpos);
-            $(document).trigger(evt);
+            if (keystate[key] == null) {
+                // fire mousemove event with manipulated coords on keydown
+                keystate[key] = event; // save key state
+                if (currentShape == null) { return true };
+                var props = currentShape.properties;
+                var pt = props.screenpos[props.vtx]; // get vertex position
+                var eventpos = { pageX: pt.x, pageY: pt.y };
+                var evt = jQuery.Event("mousemove.dlVertexDrag", eventpos);
+                $(document).trigger(evt);
+                }
             return false;
             }
-        // console.debug('measure: keyDown', code, event.key, keystate);
         };
 
     // keyup event handler (active when measure bar is visible)
@@ -1251,7 +1254,6 @@
         var code = event.keyCode;
         var key = event.key;
         delete keystate[key]; // invalidate key state
-        // console.debug('measure: keyUp', code, event.key, keystate);
         return false;
         };
 

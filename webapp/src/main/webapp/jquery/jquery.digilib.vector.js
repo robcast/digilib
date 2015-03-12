@@ -607,11 +607,12 @@
         var dragMove = function (evt) { // dragging
             var pt = geom.position(evt);
             pt.clipTo(imgRect);
-            pos[vtx] = pt;
-            $(data).trigger('positionShape', shape);
+            pos[vtx].moveTo(pt);
             if (isSupported(data, shapeType)) {
-                // update shape object and trigger drag event
-                shape.geometry.coordinates[vtx] = data.imgTrafo.invtransform(pt).toArray();
+                // trigger drag event (may manipulate screen position)
+                $(data).trigger('positionShape', shape);
+                // update vertex coords of shape
+                shape.geometry.coordinates[vtx] = data.imgTrafo.invtransform(pos[vtx]).toArray();
                 // update shape SVG element
                 $shape.place();
                 // move handles accordingly
