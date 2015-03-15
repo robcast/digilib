@@ -864,7 +864,7 @@
             manipulatePosition(shape, lockDimension('x'));
             }
         if (keystate['s'] != null) { // snap to next unit
-            manipulatePosition(shape, snaptoUnit(data));
+            manipulatePosition(shape, snapToUnit(data));
             }
         // console.debug('onPositionShape', shape.properties.screenpos);
     };
@@ -1044,7 +1044,7 @@
         };
 
     // disable the calibration input 
-    var setInputState = function(data) {
+    var setCalibrationInputState = function(data) {
         var widgets = data.measureWidgets;
         var type = getActiveShapeType(data);
         var display = data.settings.shapeInfo[type].display;
@@ -1054,30 +1054,31 @@
         };
 
     // returns a screenpoint manipulation function
-    var snaptoUnit = function(data) {
+    var snapToUnit = function(data) {
         // snap to the next rounded unit distance
-        var snap = function(shape) {
+        return function(shape) {
             var props = shape.properties;
             var screenpos = props.screenpos;
             var vtx = props.vtx;
             if (screenpos == null || vtx == null) {
                 return; }
-            var last = getLastVertex(shape);
-            var lastPos = screenpos[last];
+            var lastPos = screenpos[getLastVertex(shape)];
+            var thisPos = screenpos[vtx]; // mouse position
             var fac = data.measureFactor;
-            var dist = getVertexDistance(data, shape) * fac;
-            var round = Math.round(dist); // to the nearest integer
-            var newPos = lastPos.scale(screenpos[vtx], round/dist);
-            console.debug(lastPos.x, screenpos[vtx].x, '[', dist, ']', newPos.x);
+            shape.geometry.coordinates[vtx] = data.imgTrafo.invtransform(thisPos);
+            var unitDist = getVertexDistance(data, shape) * fac;
+            var roundDist = Math.round(unitDist); // round to the nearest integer
+            var newPos = (roundDist === 0)
+                ? thisPos
+                : lastPos.scale(thisPos, roundDist/unitDist); // calculate snap position
             screenpos[vtx].moveTo(newPos);
-        }
-        return snap;
+            };
         };
 
     // returns a screenpoint manipulation function
     var lockDimension = function(dim) {
         // lock one dimension of the current screen pos to that of the previous
-        var lock = function(shape) {
+        return function(shape) {
             var props = shape.properties;
             var startpos = props.startpos;
             var screenpos = props.screenpos;
@@ -1085,8 +1086,7 @@
             if (startpos == null || screenpos == null || vtx == null) {
                 return; }
             screenpos[vtx][dim] = startpos[dim];
-            }
-        return lock;
+            };
         };
 
     // manipulate the screen points of the shape
@@ -1103,13 +1103,13 @@
     // set the current shape type (from shape select widget)
     var changeShapeType = function(data) {
         data.settings.activeShapeType = data.measureWidgets.shape.val();
-        setInputState(data);
+        setCalibrationInputState(data);
         };
 
     // set the current shape type
     var setActiveShapeType = function(data, type) {
         data.settings.activeShapeType = type;
-        setInputState(data);
+        setCalibrationInputState(data);
         };
 
     // update Line Style classes (overwrite CSS)
