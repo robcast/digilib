@@ -225,7 +225,7 @@
         // shapes layer is first
         data.vectorLayers = [shapeLayer];
         // pluggable SVG create functions 
-        setupSVGFactory(data);
+        data.shapeFactory = getShapeFactory(data);
         setupHandleFactory(data);
         // install event handlers
         $data.bind('update', handleUpdate);
@@ -284,14 +284,26 @@
      * @param layer
      */
     var renderShapes = function (data, layer) {
+        if (layer == null) {
+            // assume shape layer is 0
+            layer = data.vectorLayers[0];
+        }
     	var shapes = layer.shapes || data.shapes;
     	console.debug("renderShapes shapes:", shapes);
     	if (shapes == null || data.imgTrafo == null || !data.settings.isVectorActive) 
     	    return;
-    	if (layer == null) {
-    	    // assume shape layer is 0
-    	    layer = data.vectorLayers[0];
-    	}
+    	// set up shapes
+        for (var i = 0; i < shapes.length; ++i) {
+            var shape = shapes[i];
+            data.shapeFactory[shape.geometry.type].setup(data, shape);
+        }
+        // sort shapes by size descending
+        shapes.sort(function (a, b) {
+           console.debug("sort.compare:",a.properties.sorta,b.properties.sorta);
+           return (b.properties.sorta - a.properties.sorta); 
+        });
+        console.debug("renderShapes: sorted shapes:", shapes);
+        // set up SVG
     	var $svg = layer.$elem;
         if ($svg != null) {
         	$svg.remove();
@@ -314,12 +326,12 @@
     };
 
     /**
-     * setup SVG creation functions
-     * (more functions can be plugged into data.settings.SVGFactory)
+     * setup Shape SVG creation functions
+     * (more functions can be plugged into data.settings.ShapeFactory)
      * 
      * @param data
      */
-    var setupSVGFactory = function (data) {
+    var getShapeFactory = function (data) {
         var settings = data.settings;
         var css = settings.cssPrefix;
         var hs = settings.editHandleSize;
@@ -336,74 +348,118 @@
                 };
             };
         var factory = {
-            'Point' : function (shape) {
-                var $s = $(svgElement('path', svgAttr(shape)));
-                shape.properties.maxvtx = 1;
-                $s.place = function () {
-                    // point uses pin-like path of size 3*pu
-                    var p = shape.properties.screenpos[0];
-                    var pu = hs / 3;
-                    this.attr({'d': 'M '+p.x+','+p.y+' l '+2*pu+','+pu+' c '+2*pu+','+pu+' '+0+','+3*pu+' '+(-pu)+','+pu+' Z'});
-                    };
-                return $s;
+            'Point' : {
+                'setup' : function (data, shape) {
+                    shape.properties.maxvtx = 1;
+                    shape.properties.sorta = 0;
                 },
-            'Line' : function (shape) {
-                shape.properties.maxvtx = 2;
-                var $s = $(svgElement('line', svgAttr(shape)));
-                $s.place = function () {
-                    var p = shape.properties.screenpos;
-                    this.attr({'x1': p[0].x, 'y1': p[0].y, 'x2': p[1].x, 'y2': p[1].y});
-                    };
-                return $s;
+                'svg' : function (shape) {
+                    var $s = $(svgElement('path', svgAttr(shape)));
+                    $s.place = function () {
+                        // point uses pin-like path of size 3*pu
+                        var p = shape.properties.screenpos[0];
+                        var pu = hs / 3;
+                        this.attr({'d': 'M '+p.x+','+p.y+' l '+2*pu+','+pu+' c '+2*pu+','+pu+' '+0+','+3*pu+' '+(-pu)+','+pu+' Z'});
+                        };
+                    return $s;
+                }
+            },
+            'Line' : {
+                'setup' : function (data, shape) {
+                    shape.properties.maxvtx = 2;
+                    shape.properties.bbox = getBboxRect(data, shape);
+                    shape.properties.sorta = 0;
                 },
-            'Rectangle' : function (shape) {
-                shape.properties.maxvtx = 2;
-                var $s = $(svgElement('rect', svgAttr(shape)));
-                $s.place = function () {
-                    var p = shape.properties.screenpos;
-                    var r = geom.rectangle(p[0], p[1]);
-                    this.attr({'x': r.x, 'y': r.y, 'width': r.width, 'height': r.height});
-                    };
-                return $s;
+                'svg' : function (shape) {
+                    var $s = $(svgElement('line', svgAttr(shape)));
+                    $s.place = function () {
+                        var p = shape.properties.screenpos;
+                        this.attr({'x1': p[0].x, 'y1': p[0].y, 'x2': p[1].x, 'y2': p[1].y});
+                        };
+                    return $s;
+                }
+            },
+            'Rectangle' : {
+                'setup' : function (data, shape) {
+                    shape.properties.maxvtx = 2;
+                    shape.properties.bbox = getBboxRect(data, shape);
+                    shape.properties.sorta = shape.properties.bbox.getArea();
                 },
-            'Polygon' : function (shape) {
-                var $s = $(svgElement('polygon', svgAttr(shape)));
-                $s.place = function () {
-                    var p = shape.properties.screenpos;
-                    this.attr({'points': p.join(" ")});
-                    };
-                return $s;
+                'svg' : function (shape) {
+                    var $s = $(svgElement('rect', svgAttr(shape)));
+                    $s.place = function () {
+                        var p = shape.properties.screenpos;
+                        var r = geom.rectangle(p[0], p[1]);
+                        this.attr({'x': r.x, 'y': r.y, 'width': r.width, 'height': r.height});
+                        };
+                    return $s;
+                }
+            },
+            'Polygon' : {
+                'setup' : function (data, shape) {
+                    shape.properties.bbox = getBboxRect(data, shape);
+                    shape.properties.sorta = shape.properties.bbox.getArea();
                 },
-            'LineString' : function (shape) {
-                var $s = $(svgElement('polyline', svgAttr(shape)));
-                $s.place = function () {
-                    var p = shape.properties.screenpos;
-                    this.attr({'points': p.join(" ")});
-                    };
-                return $s;
+                'svg' : function (shape) {
+                    var $s = $(svgElement('polygon', svgAttr(shape)));
+                    $s.place = function () {
+                        var p = shape.properties.screenpos;
+                        this.attr({'points': p.join(" ")});
+                        };
+                    return $s;
+                }
+            },
+            'LineString' : {
+                'setup' : function (data, shape) {
+                    shape.properties.bbox = getBboxRect(data, shape);
+                    shape.properties.sorta = shape.properties.bbox.getArea();
                 },
-            'Circle' : function (shape) {
-                shape.properties.maxvtx = 2;
-                var $s = $(svgElement('circle', svgAttr(shape)));
-                $s.place = function () {
-                    var p = shape.properties.screenpos;
-                    this.attr({'cx': p[0].x, 'cy': p[0].y, 'r': p[0].distance(p[1])});
-                    };
-                return $s;
+                'svg' : function (shape) {
+                    var $s = $(svgElement('polyline', svgAttr(shape)));
+                    $s.place = function () {
+                        var p = shape.properties.screenpos;
+                        this.attr({'points': p.join(" ")});
+                        };
+                    return $s;
+                }
+            },
+            'Circle' : {
+                'setup' : function (data, shape) {
+                    shape.properties.maxvtx = 2;
+                    // TODO: bbox not really accurate
+                    shape.properties.bbox = getBboxRect(data, shape);
+                    shape.properties.sorta = shape.properties.bbox.getArea();
                 },
-            'Ellipse' : function (shape) {
-                shape.properties.maxvtx = 2;
-                var $s = $(svgElement('ellipse', svgAttr(shape)));
-                $s.place = function () {
-                    var p = shape.properties.screenpos;
-                    this.attr({'cx': p[0].x, 'cy': p[0].y,
-                        'rx' : Math.abs(p[0].x - p[1].x),
-                        'ry' : Math.abs(p[0].y - p[1].y)});
-                    };
-                return $s;
+                'svg' : function (shape) {
+                    var $s = $(svgElement('circle', svgAttr(shape)));
+                    $s.place = function () {
+                        var p = shape.properties.screenpos;
+                        this.attr({'cx': p[0].x, 'cy': p[0].y, 'r': p[0].distance(p[1])});
+                        };
+                    return $s;
+                }
+            },
+            'Ellipse' : {
+                'setup' : function (data, shape) {
+                    shape.properties.maxvtx = 2;
+                    // TODO: bbox not really accurate
+                    shape.properties.bbox = getBboxRect(data, shape);
+                    shape.properties.sorta = shape.properties.bbox.getArea();
+                },
+                'svg' : function (shape) {
+                    var $s = $(svgElement('ellipse', svgAttr(shape)));
+                    $s.place = function () {
+                        var p = shape.properties.screenpos;
+                        this.attr({'cx': p[0].x, 'cy': p[0].y,
+                            'rx' : Math.abs(p[0].x - p[1].x),
+                            'ry' : Math.abs(p[0].y - p[1].y)});
+                        };
+                    return $s;
+                    }
                 }
             };
-        data.svgFactory = factory;
+
+        return factory;
     };
 
     /**
@@ -508,6 +564,24 @@
         return screenpos;
     };
 
+    var getBboxRect = function (data, shape) {
+        var coords = shape.geometry.coordinates;
+        var xmin = 1;
+        var xmax = 0;
+        var ymin = 1;
+        var ymax = 0;
+        var x, y;
+        for (var i = 0; i < coords.length; ++i) {
+            x = coords[i][0];
+            y = coords[i][1];
+            xmin = (x < xmin) ? x : xmin;
+            xmax = (x > xmax) ? x : xmax;
+            ymin = (y < ymin) ? y : ymin;
+            ymax = (y > ymax) ? y : ymax;            
+        }
+        return geom.rectangle(xmin, ymin, xmax-xmin, ymax-ymin);
+    };
+    
     /**
      * render a shape on screen.
      * 
@@ -530,8 +604,7 @@
             return;
         }
         // create the SVG
-        var newSVG = data.svgFactory[shapeType];
-        var $elem = newSVG(shape);
+        var $elem = data.shapeFactory[shapeType].svg(shape);
         shape.$elem = $elem;
         // place the SVG on screen
         createScreenCoords(data, shape);
@@ -656,7 +729,7 @@
      * @param shapeType shapeType to test
      */
     var isSupported = function (data, shapeType) {
-        return data.svgFactory[shapeType] != null;
+        return data.shapeFactory[shapeType] != null;
     };
 
     /** 
