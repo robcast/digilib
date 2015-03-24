@@ -383,7 +383,9 @@
                 'setup' : function (data, shape) {
                     shape.properties.maxvtx = 2;
                     shape.properties.bbox = getBboxRect(data, shape);
-                    shape.properties.sorta = shape.properties.bbox.getArea();
+                    if (shape.properties.bbox != null) {
+                        shape.properties.sorta = shape.properties.bbox.getArea();
+                    }
                 },
                 'svg' : function (shape) {
                     var $s = $(svgElement('rect', svgAttr(shape)));
@@ -398,7 +400,9 @@
             'Polygon' : {
                 'setup' : function (data, shape) {
                     shape.properties.bbox = getBboxRect(data, shape);
-                    shape.properties.sorta = shape.properties.bbox.getArea();
+                    if (shape.properties.bbox != null) {
+                        shape.properties.sorta = shape.properties.bbox.getArea();
+                    }
                 },
                 'svg' : function (shape) {
                     var $s = $(svgElement('polygon', svgAttr(shape)));
@@ -412,7 +416,9 @@
             'LineString' : {
                 'setup' : function (data, shape) {
                     shape.properties.bbox = getBboxRect(data, shape);
-                    shape.properties.sorta = shape.properties.bbox.getArea();
+                    if (shape.properties.bbox != null) {
+                        shape.properties.sorta = shape.properties.bbox.getArea();
+                    }
                 },
                 'svg' : function (shape) {
                     var $s = $(svgElement('polyline', svgAttr(shape)));
@@ -428,7 +434,9 @@
                     shape.properties.maxvtx = 2;
                     // TODO: bbox not really accurate
                     shape.properties.bbox = getBboxRect(data, shape);
-                    shape.properties.sorta = shape.properties.bbox.getArea();
+                    if (shape.properties.bbox != null) {
+                        shape.properties.sorta = shape.properties.bbox.getArea();
+                    }
                 },
                 'svg' : function (shape) {
                     var $s = $(svgElement('circle', svgAttr(shape)));
@@ -444,7 +452,9 @@
                     shape.properties.maxvtx = 2;
                     // TODO: bbox not really accurate
                     shape.properties.bbox = getBboxRect(data, shape);
-                    shape.properties.sorta = shape.properties.bbox.getArea();
+                    if (shape.properties.bbox != null) {
+                        shape.properties.sorta = shape.properties.bbox.getArea();
+                    }
                 },
                 'svg' : function (shape) {
                     var $s = $(svgElement('ellipse', svgAttr(shape)));
@@ -566,6 +576,7 @@
 
     var getBboxRect = function (data, shape) {
         var coords = shape.geometry.coordinates;
+        if (coords == null) return null;
         var xmin = 1;
         var xmax = 0;
         var ymin = 1;
@@ -706,6 +717,8 @@
             $document.off("mousemove.dlVertexDrag", dragMove);
             $document.off("mouseup.dlVertexDrag", dragEnd);
             $document.off("dblclick.dlVertexDrag", dragEnd);
+            // call setup to update bbox
+            data.shapeFactory[shapeType].setup(data, shape);
             // rearm start handler
             if ($handle != null) {
             	$handle.one("mousedown.dlVertexDrag", dragStart);
@@ -748,6 +761,8 @@
             layer = data.vectorLayers[0];
         }
         var shapeType = shape.geometry.type;
+        // call setup to make sure maxvtx is set
+        data.shapeFactory[shapeType].setup(data, shape);
         var $elem = data.$elem;
         var $body = $('body');
         var bodyRect = geom.rectangle($body);
@@ -832,9 +847,11 @@
 
         var shapeDone = function (data, shape) {
             // defining shape done
-            	unrenderShape(data, shape);
-            	renderShape(data, shape, layer);
-            	// save shape
+            unrenderShape(data, shape);
+            // call setup to update bbox
+            data.shapeFactory[shapeType].setup(data, shape);
+            renderShape(data, shape, layer);
+            // save shape
             layer.shapes.push(shape);
             $overlayDiv.remove();
             if (onComplete != null) {
