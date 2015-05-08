@@ -81,7 +81,7 @@ public class DocuDirectoryFactory {
      */
     public static DocuDirectory getDocuDirectoryInstance(String path, DocuDirCache cache) {
         DocuDirectory dd = getInstance();
-        dd.configure(path, null, dlConfig);
+        dd.configure(path, cache.getFileClass(), dlConfig);
         return dd;        
     }
     
