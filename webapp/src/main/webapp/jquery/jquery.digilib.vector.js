@@ -289,7 +289,6 @@
             layer = data.vectorLayers[0];
         }
     	var shapes = layer.shapes || data.shapes;
-    	console.debug("renderShapes shapes:", shapes);
     	if (shapes == null || data.imgTrafo == null || !data.settings.isVectorActive) 
     	    return;
     	// set up shapes
@@ -299,10 +298,8 @@
         }
         // sort shapes by size descending
         shapes.sort(function (a, b) {
-           console.debug("sort.compare:",a.properties.sorta,b.properties.sorta);
            return (b.properties.sorta - a.properties.sorta); 
         });
-        console.debug("renderShapes: sorted shapes:", shapes);
         // set up SVG
     	var $svg = layer.$elem;
         if ($svg != null) {
@@ -350,6 +347,7 @@
         var factory = {
             'Point' : {
                 'setup' : function (data, shape) {
+                    if (shape.properties == null) shape.properties = {};
                     shape.properties.maxvtx = 1;
                     shape.properties.sorta = 0;
                 },
@@ -366,6 +364,7 @@
             },
             'Line' : {
                 'setup' : function (data, shape) {
+                    if (shape.properties == null) shape.properties = {};
                     shape.properties.maxvtx = 2;
                     shape.properties.bbox = getBboxRect(data, shape);
                     shape.properties.sorta = 0;
@@ -381,6 +380,7 @@
             },
             'Rectangle' : {
                 'setup' : function (data, shape) {
+                    if (shape.properties == null) shape.properties = {};
                     shape.properties.maxvtx = 2;
                     shape.properties.bbox = getBboxRect(data, shape);
                     if (shape.properties.bbox != null) {
@@ -399,6 +399,7 @@
             },
             'Polygon' : {
                 'setup' : function (data, shape) {
+                    if (shape.properties == null) shape.properties = {};
                     shape.properties.bbox = getBboxRect(data, shape);
                     if (shape.properties.bbox != null) {
                         shape.properties.sorta = shape.properties.bbox.getArea();
@@ -415,6 +416,7 @@
             },
             'LineString' : {
                 'setup' : function (data, shape) {
+                    if (shape.properties == null) shape.properties = {};
                     shape.properties.bbox = getBboxRect(data, shape);
                     if (shape.properties.bbox != null) {
                         shape.properties.sorta = shape.properties.bbox.getArea();
@@ -431,6 +433,7 @@
             },
             'Circle' : {
                 'setup' : function (data, shape) {
+                    if (shape.properties == null) shape.properties = {};
                     shape.properties.maxvtx = 2;
                     // TODO: bbox not really accurate
                     shape.properties.bbox = getBboxRect(data, shape);
@@ -449,6 +452,7 @@
             },
             'Ellipse' : {
                 'setup' : function (data, shape) {
+                    if (shape.properties == null) shape.properties = {};
                     shape.properties.maxvtx = 2;
                     // TODO: bbox not really accurate
                     shape.properties.bbox = getBboxRect(data, shape);
