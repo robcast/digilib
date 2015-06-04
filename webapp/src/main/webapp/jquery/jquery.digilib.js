@@ -45,7 +45,7 @@ function($) {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.3.0-1',
+        'version' : 'jquery.digilib.js 2.3.0-2',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -627,7 +627,45 @@ function($) {
      * 
      */
     var parseQueryParams = function() {
-        return parseQueryString(window.location.search.slice(1));
+        var qs = window.location.search.slice(1);
+        if (qs.indexOf("=") === -1) {
+            console.warn("Query in legacy +-format! Converting...");
+            return parseLegacyQueryString(qs);
+        }
+        return parseQueryString(qs);
+    };
+    
+    var parseLegacyQueryString = function(query) {
+        var params = {};
+        var parts = query.split('+');
+        if (parts.length > 0) {
+            params['fn'] = parts[0]
+        }
+        if (parts.length > 1) {
+            params['pn'] = parts[1]
+        }
+        if (parts.length > 2) {
+            params['ws'] = parts[2]
+        }
+        if (parts.length > 3) {
+            params['mo'] = parts[3]
+        }
+        if (parts.length > 3) {
+            params['mk'] = parts[3]
+        }
+        if (parts.length > 3) {
+            params['wx'] = parts[3]
+        }
+        if (parts.length > 3) {
+            params['wy'] = parts[3]
+        }
+        if (parts.length > 3) {
+            params['ww'] = parts[3]
+        }
+        if (parts.length > 3) {
+            params['wh'] = parts[3]
+        }
+        return params;
     };
 
     /** 

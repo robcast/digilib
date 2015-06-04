@@ -285,7 +285,7 @@
             };
         // return a vector with the contrary direction
         that.invertedVector = function() {
-            return [-this.dx, -this.dy];rectifiedDist
+            return [-this.dx, -this.dy];
             };
         // return a vector that is perpendicular to this line
         that.perpendicularVector = function(clockwise) {
