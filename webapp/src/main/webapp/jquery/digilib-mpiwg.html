@@ -26,6 +26,7 @@
         <script type="text/javascript" src="jquery.digilib.birdseye.js"></script>
         <script type="text/javascript" src="jquery.digilib.marks.js"></script>
         <script type="text/javascript" src="jquery.digilib.regions.js"></script>
+        <script type="text/javascript" src="jquery.digilib.vector.js"></script>
         <script type="text/javascript" src="showdown.js"></script>
         <script type="text/javascript" src="annotator-dl.js"></script>
         <link rel="stylesheet" type="text/css" href="annotator.min.css" />
@@ -50,7 +51,7 @@
                     	return 'http://echo.mpiwg-berlin.mpg.de/documents'+(fn.charAt(0)==='/'?'':'/')+fn+'?pn='+data.settings.pn;
                     },
                     // list of Annotator plugins
-                    'annotatorPlugins' : ['Auth', 'Permissions', 'Markdown']
+                    'annotatorPlugins' : ['Auth', 'GroupPermissions', 'Markdown', 'DigilibIntegrator', 'Store']
                 };
                 var $div = $('div#digilib');
                 $div.digilib(opts);
