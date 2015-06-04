@@ -31,7 +31,7 @@
  */
 (function($) {
     // version of this plugin
-    var version = 'jquery.digilib.annotator.js 1.3.4';
+    var version = 'jquery.digilib.annotator.js 1.3.5';
 
     // affine geometry
     var geom = null;
@@ -384,6 +384,24 @@
         var area = null;
         var type = null;
         var shape = null;
+        if (annotation.areas != null && annotation.shapes == null) {
+            console.warn("Annotation uses legacy 'areas' format! Converting...");
+            /*
+             * convert legacy annotation areas into shapes
+             */
+            area = geom.rectangle(annotation.areas[0]);
+            annoShape = {
+                'geometry' : area,
+                'units' : 'fraction'
+            };
+            if (area.isRectangle()) {
+                annoShape['type'] = 'rectangle';
+            } else {
+                annoShape['type'] = 'point';
+            }
+            delete annotation.areas;
+            annotation.shapes = [annoShape];
+        }
         if (annotation.shapes != null) {
             // annotation shape
             annoShape = annotation.shapes[0];
