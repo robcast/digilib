@@ -650,20 +650,20 @@ function($) {
         if (parts.length > 3) {
             params['mo'] = parts[3]
         }
-        if (parts.length > 3) {
-            params['mk'] = parts[3]
+        if (parts.length > 4) {
+            params['mk'] = parts[4]
         }
-        if (parts.length > 3) {
-            params['wx'] = parts[3]
+        if (parts.length > 5) {
+            params['wx'] = parts[5]
         }
-        if (parts.length > 3) {
-            params['wy'] = parts[3]
+        if (parts.length > 6) {
+            params['wy'] = parts[6]
         }
-        if (parts.length > 3) {
-            params['ww'] = parts[3]
+        if (parts.length > 7) {
+            params['ww'] = parts[7]
         }
-        if (parts.length > 3) {
-            params['wh'] = parts[3]
+        if (parts.length > 8) {
+            params['wh'] = parts[8]
         }
         return params;
     };
