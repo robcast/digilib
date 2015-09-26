@@ -45,21 +45,20 @@ public class ParameterMap {
 	protected OptionsSet options;
 	
 	/** Default constructor.
-	 * 
+	 * Does not call initParams().
 	 */
 	public ParameterMap() {
 		params = new HashMap<String, Parameter>();
 		options = new OptionsSet();
-		initParams();
 	}
 
 	/** Constructor with initial size.
+     * Does not call initParams().
 	 * @param size
 	 */
 	public ParameterMap(int size) {
 		params = new HashMap<String, Parameter>(size);
 		options = new OptionsSet();
-		initParams();
 	}
 
 	/** Shallow copy constructor.
@@ -69,6 +68,7 @@ public class ParameterMap {
 	@SuppressWarnings("unchecked")
 	public static ParameterMap cloneInstance(ParameterMap pm) {
 		ParameterMap newPm = new ParameterMap();
+        // TODO: initParams?
 		// clone params to this map
 		newPm.params = (HashMap<String, Parameter>) pm.params.clone();
 		newPm.options = (OptionsSet) pm.options.clone();
@@ -82,6 +82,7 @@ public class ParameterMap {
 	 */
 	public static ParameterMap getInstance(ParameterMap pm) {
 		ParameterMap newPm = new ParameterMap();
+        // TODO: initParams?
 		// add all params to this map
 		newPm.params.putAll(pm.params);
 		newPm.initOptions();

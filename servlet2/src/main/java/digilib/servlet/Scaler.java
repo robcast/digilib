@@ -61,7 +61,7 @@ public class Scaler extends HttpServlet {
     private static final long serialVersionUID = -5439198888139362735L;
 
     /** digilib servlet version (for all components) */
-    public static final String version = "2.3.0 noasync";
+    public static final String version = "2.3.1 noasync";
 
     /** servlet error codes */
     public static enum Error {
@@ -161,7 +161,7 @@ public class Scaler extends HttpServlet {
         accountlog.debug("GetLastModified from " + request.getRemoteAddr() + " for " + request.getQueryString());
         long mtime = -1;
         // create new request
-        DigilibServletRequest dlReq = new DigilibServletRequest(request);
+        DigilibServletRequest dlReq = new DigilibServletRequest(request, dlConfig);
         DocuDirectory dd = dirCache.getDirectory(dlReq.getFilePath());
         if (dd != null) {
             mtime = dd.getDirMTime() / 1000 * 1000;
@@ -223,7 +223,7 @@ public class Scaler extends HttpServlet {
         long startTime = System.currentTimeMillis();
 
         // parse request
-        DigilibServletRequest dlRequest = new DigilibServletRequest(request);
+        DigilibServletRequest dlRequest = new DigilibServletRequest(request, dlConfig);
         // extract the job information
         ImageJobDescription jobTicket = ImageJobDescription.getInstance(dlRequest, dlConfig);
 

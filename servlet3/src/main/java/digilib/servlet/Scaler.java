@@ -166,7 +166,7 @@ public class Scaler extends HttpServlet {
         long mtime = -1;
         try {
             // create new digilib request
-            DigilibServletRequest dlReq = new DigilibServletRequest(request);
+            DigilibServletRequest dlReq = new DigilibServletRequest(request, dlConfig);
             DocuDirectory dd = dirCache.getDirectory(dlReq.getFilePath());
             if (dd != null) {
                 mtime = dd.getDirMTime() / 1000 * 1000;
@@ -234,7 +234,7 @@ public class Scaler extends HttpServlet {
         final long startTime = System.currentTimeMillis();
 
         // parse request
-        DigilibServletRequest dlRequest = new DigilibServletRequest(request);
+        DigilibServletRequest dlRequest = new DigilibServletRequest(request, dlConfig);
         // extract the job information
         final ImageJobDescription jobTicket = ImageJobDescription.getInstance(dlRequest, dlConfig);
         

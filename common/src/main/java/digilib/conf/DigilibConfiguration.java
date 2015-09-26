@@ -57,7 +57,7 @@ public class DigilibConfiguration extends ParameterMap {
 
     /** digilib version */
     public static String getClassVersion() {
-        return "2.3.0";
+        return "2.3.1";
     }
 
     /* non-static getVersion for Java inheritance */
@@ -94,6 +94,8 @@ public class DigilibConfiguration extends ParameterMap {
         newParameter("default-errmsg-type", "image", null, 'f');
         // prefix for IIIF image API paths (used by DigilibRequest)
         newParameter("iiif-prefix", "IIIF", null, 'f');
+        // character to use as slash-replacement in IIIF identifier part
+        newParameter("iiif-slash-replacement", "!", null, 'f');        
     }
 
     /**

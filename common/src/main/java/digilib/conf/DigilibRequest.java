@@ -67,6 +67,9 @@ public class DigilibRequest extends ParameterMap {
     /** IIIF path prefix (taken from config) */
     protected String iiifPrefix = "IIIF";
     
+    /** IIIF slash replacement (taken from config) */
+    protected String iiifSlashReplacement = null;
+    
     /** error message while configuring */
     public String errorMessage = null;
 
@@ -78,6 +81,7 @@ public class DigilibRequest extends ParameterMap {
 
     public DigilibRequest() {
         super(30);
+        initParams();
     }
 
     /**
@@ -86,8 +90,9 @@ public class DigilibRequest extends ParameterMap {
      * @param config
      */
     public DigilibRequest(DigilibConfiguration config) {
-        super();
+        super(30);
         this.config = config;
+        initParams();
     }
 
     /**
@@ -169,6 +174,7 @@ public class DigilibRequest extends ParameterMap {
          */
         if (config != null) {
             iiifPrefix = config.getAsString("iiif-prefix");
+            iiifSlashReplacement = config.getAsString("iiif-slash-replacement");
         }
     }
 
@@ -417,6 +423,10 @@ public class DigilibRequest extends ParameterMap {
                 if (identifier.contains("%")) {
                     // still escape chars -- decode again
                     identifier = URLDecoder.decode(identifier, "UTF-8");
+                }
+                if (iiifSlashReplacement != null && identifier.contains(iiifSlashReplacement)) {
+                    // change replacement back to slash
+                    identifier = identifier.replace(iiifSlashReplacement, "/");
                 }
                 setValueFromString("fn", identifier);
             } catch (UnsupportedEncodingException e) {

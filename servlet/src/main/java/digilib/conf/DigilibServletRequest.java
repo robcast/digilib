@@ -76,6 +76,7 @@ public class DigilibServletRequest extends DigilibRequest {
      * @throws ImageOpException 
      */
     public DigilibServletRequest(HttpServletRequest request) {
+        super();
         setWithRequest(request);
         initOptions();
     }
@@ -88,7 +89,7 @@ public class DigilibServletRequest extends DigilibRequest {
      * @throws ImageOpException 
      */
     public DigilibServletRequest(HttpServletRequest request, DigilibConfiguration config) {
-        this.config = config;
+        super(config);
         setWithRequest(request);
         initOptions();
     }
@@ -99,6 +100,7 @@ public class DigilibServletRequest extends DigilibRequest {
      */
     @Override
     protected void initParams() {
+        // TODO: check if we can call super.initParams()
         /*
          * Definition of parameters and default values. Parameter of type 's'
          * are for the servlet.
@@ -175,13 +177,14 @@ public class DigilibServletRequest extends DigilibRequest {
         newParameter("img.pix_x", new Integer(0), null, 'c');
         // hires image size y
         newParameter("img.pix_y", new Integer(0), null, 'c');
+        
         /*
-         * TODO: check if we can remove these
-         * // total number of pages
-         * newParameter("pt", new Integer(0), null, 'c');
-         * // marks
-         * newParameter("mk", "", null, 'c');
+         * set local variables from config
          */
+        if (config != null) {
+            iiifPrefix = config.getAsString("iiif-prefix");
+            iiifSlashReplacement = config.getAsString("iiif-slash-replacement");
+        }
     }
 
     /*
