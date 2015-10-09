@@ -1,4 +1,6 @@
-# Java VM settings for digilib
+# Java VM memory settings for digilib
+
+(Robert Casties, September 2013)
 
 The Java virtual machine (Java-VM) only uses a fixed amount of memory for
 its operations. When an operation needs more memory than available it aborts
@@ -21,6 +23,8 @@ bottom of the web page `/server/dlConfig.jsp` in your digilib instance (e.g.
 
 # Installing JAI ImageIO
 
+(Robert Casties, September 2013)
+
 In principle you should be able to install the 
 [Java Advanced Imaging](http://java.sun.com/javase/technologies/desktop/media/jai/) JAI-ImageIO
 JAR file `jai_imageio.jar` (and native
@@ -38,18 +42,59 @@ after a period of running. In these cases it helped to install the JAI files in
 Tomcats `lib/` directory or globally in the local Java JDK
 installation (i.e. in the Java's 'jre/lib/ext/' directory on linux).
 
-# Sample setup
+# Codec availability and Performance
 
-The current digilib setup at the MPIWG (as of December 2010):
+(Ubbo Veentjer, Oct 2015)
 
-* One frontend server running the lightweight web-multiplexer [pound](http://www.apsis.ch/pound/)
-    on port 80 that distributes requests to three servers runnning digilib
-* the three servers run digilib under [Jetty](http://www.eclipse.org/jetty/) on port 8080 without Apache
-   * one server is the frontend server (Linux 32bit, Dual 2.4GHz Xeon, 2GB RAM)
-   * the other server is a separate, newer machine (Linux 64bit, Dual 1.8GHz Opteron, 2GB RAM)
-   * the third server is a separate, newer machine (Linux 32bit, Dual 2.8GHz Xeon, 4GB RAM)
-* the digilib instances (digilib 2.0b1 as of 12.12.2011) run on Jetty 8.0.4 on Java
-   1.6.0_26 with 1GB of Java VM memory for digilib (-Xmx1024m) with JAI (1.1.3) and JAI-ImageIO (1.1)
-   installed in `Jetty/lib/ext`
-* both digilib servers access all image files over NFS (over GBit Ethernet) from a central file server 
-   (Solaris 10, Sun Fire 240, multiple RAIDs on Fibrechannel)
+The number of image formats, which digilib may read or write, but also the performance of operating on this image formats depends on the ImageIO readers and writers available on the classpath.
+
+Working with larger images in JPEG format we experienced a big performance difference using different implementations of the JPEG readers/writers. OpenJDK-7 for example brings rather slow JPEG codecs, OpenJDK-8 operates much quicker on JPEG images, relying on libjpeg-turbo for this file format. Also the official Oracle-JDKs may include faster native codecs. 
+
+Some drop-in replacements for the native codecs are:
+
+* https://github.com/geosolutions-it/imageio-ext
+* https://github.com/haraldk/TwelveMonkeys
+
+if these jar files are availabe on the classpath, the codecs may be used by digilib. To add them the jar files could e.g. be placed in the lib directory of tomcat or addded as a dependency to the digilib maven project.
+
+The actual codec implementation used is logged by digilib in debug mode, e.g.
+
+    1564059 [http-apr-9092-exec-4] DEBUG digilib.image.DocuImage  - ImageIO: this reader: class com.twelvemonkeys.imageio.plugins.jpeg.JPEGImageReader
+
+# Codec performance
+
+(Ubbo Veentjer, Oct 2015)
+
+In our tests comparing the performance of OpenJDK7, OpenJDK8, imageio-ext and TwelveMonkeys codecs we experienced the following numbers for decoding, encoding and scaling a 4968px*5968px to 50% size: 
+
+24801 ms - OpenJDK7
+11507 ms - OpenJDK7 with com.twelvemonkeys.imageio.plugins.jpeg.JPEGImageReader
+4216 ms - OpenJDK7 with imageio-ext using libjpeg-turbo
+3635 ms - OpenJDK8 
+
+This numbers may depend on the actual implementation used, the processing power of the CPU and many other factors, to this are just meant to be a rough hint.
+
+For using imageio-ext, the native library needs to be 
+available with the LD_LIBRARY_PATH environment variable (compare: https://github.com/geosolutions-it/imageio-ext/wiki/TurboJPEG-plugin), also the .jar archives need to be on the classpath.
+
+For using the TwelveMonkey Codecs we added the following jars to the tomcat lib directory, which were retrieved by maven (dependency on imageio-jpeg-3.1.2):
+
+* common-image-3.1.2.jar
+* common-lang-3.1.2.jar
+* imageio-jpeg-3.1.2.jar
+* common-io-3.1.2.jar
+* imageio-core-3.1.2.jar
+* imageio-metadata-3.1.2.jar
+
+
+# Codec availability
+
+(Ubbo Veentjer, Oct 2015)
+
+Digilib logs on startup which image formats are supported, e.g: 
+
+    9763 [localhost-startStop-1] INFO digilib.conf.DigilibConfiguration  - DocuImage supported image formats: raw, jpeg, tif, WBMP, pcx, PNM, JPG, wbmp, JPEG, PNG, jpeg 2000, tiff, BMP, JPEG2000, RAW, jpeg2000, GIF, TIF, TIFF, bmp, jpg, PCX, pnm, png, gif,
+
+by adding e.g. TwelveMonkeys or image-io ext codecs, more codecs could become available.
+
+

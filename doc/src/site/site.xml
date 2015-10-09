@@ -34,10 +34,11 @@
     <menu name="Configuration">
       <item name="Configuring digilib" href="digilib-config.html"/>
       <item name="Directory layout" href="image-directories.html"/>
-      <item name="Java settings" href="java-settings.html"/>
+      <item name="Java settings and performance" href="java-settings.html"/>
     </menu>
     <menu name="Development">
       <item name="The digilib Scaler API" href="scaler-api.html"/>
+      <item name="The digilib IIIF API" href="iiif-api.html"/>
       <item name="Integrating digilib into your page" href="client-integration.html"/>
       <item name="Digilib plugins" href="plugins.html"/>
       <!-- <item name="Integrating digilib into your server" href=""/> -->
