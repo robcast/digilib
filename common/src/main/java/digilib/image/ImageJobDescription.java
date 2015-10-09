@@ -58,26 +58,31 @@ import digilib.util.ParameterMap;
 
 public class ImageJobDescription extends ParameterMap {
 
-    DigilibConfiguration dlConfig = null;
+    protected DigilibConfiguration dlConfig = null;
     protected static Logger logger = Logger.getLogger("digilib.servlet");
 
     /* 
      * variables for caching values
      */
-    ImageInput input = null;
-    ImageSet imageSet = null;
-    DocuDirectory fileDir = null;
-    DocuImage docuImage = null;
-    String filePath = null;
-    ImageSize expectedSourceSize = null;
-    Double scaleXY = null;
-    Rectangle2D userImgArea = null;
-    Rectangle2D outerUserImgArea = null;
-    Boolean imageSendable = null;
-    String mimeType = null;
-    Integer paramDW = null;
-    Integer paramDH = null;
-    DocuDirCache dirCache = null;
+    protected ImageInput input = null;
+    protected ImageSet imageSet = null;
+    protected DocuDirectory fileDir = null;
+    protected DocuImage docuImage = null;
+    protected String filePath = null;
+    protected ImageSize expectedSourceSize = null;
+    protected Double scaleXY = null;
+    protected Rectangle2D userImgArea = null;
+    protected Rectangle2D outerUserImgArea = null;
+    protected Boolean imageSendable = null;
+    protected String mimeType = null;
+    protected Integer paramDW = null;
+    protected Integer paramDH = null;
+    protected Float paramWX = null;
+    protected Float paramWY = null;
+    protected Float paramWW = null;
+    protected Float paramWH = null;
+    protected DocuDirCache dirCache = null;
+	protected ImageSize hiresSize = null;
 
     /**
      * create empty ImageJobDescription.
@@ -338,7 +343,7 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     public boolean isHiresOnly() {
-        return hasOption("clip") || hasOption("hires") || hasOption("pxarea");
+        return hasOption("clip") || hasOption("hires");
     }
 
     public boolean isLoresOnly() {
@@ -364,7 +369,7 @@ public class ImageJobDescription extends ParameterMap {
             expectedSourceSize = new ImageSize();
             if (isScaleToFit()) {
                 // scale to fit -- calculate minimum source size
-                float scale = (1 / Math.min(getAsFloat("ww"), getAsFloat("wh"))) * getAsFloat("ws");
+                float scale = (1 / Math.min(getWw(), getWh())) * getAsFloat("ws");
                 expectedSourceSize.setSize((int) (getDw() * scale), (int) (getDh() * scale));
             } else if (isAbsoluteScale() && hasOption("ascale")) {
                 // absolute scale -- apply scale to hires size
@@ -385,12 +390,10 @@ public class ImageJobDescription extends ParameterMap {
      */
     public ImageSize getHiresSize() throws IOException {
         logger.debug("get_hiresSize()");
-
-        ImageSize hiresSize = null;
-        ImageSet fileset = getImageSet();
-        if (isAbsoluteScale()) {
-            ImageInput hiresFile = fileset.getBiggest();
-            hiresSize = hiresFile.getSize();
+        if (hiresSize == null) {
+	        ImageSet fileset = getImageSet();
+	        ImageInput hiresFile = fileset.getBiggest();
+	        hiresSize = hiresFile.getSize();
         }
         return hiresSize;
     }
@@ -417,17 +420,12 @@ public class ImageJobDescription extends ParameterMap {
         double areaHeight;
         // size of the currently selected input image
         ImageSize imgSize = getInput().getSize();
-        if (!options.hasOption("pxarea")) {
-            // user area is in [0,1] coordinates
-            Rectangle2D relUserArea = new Rectangle2D.Float(getAsFloat("wx"), getAsFloat("wy"), getAsFloat("ww"), getAsFloat("wh"));
-            // transform from relative [0,1] to image coordinates.
-            AffineTransform imgTrafo = AffineTransform.getScaleInstance(imgSize.getWidth(), imgSize.getHeight());
-            // transform user coordinate area to image coordinate area
-            userImgArea = imgTrafo.createTransformedShape(relUserArea).getBounds2D();
-        } else {
-            // ugly: user area in pixel coordinates
-            userImgArea = new Rectangle2D.Float(getAsFloat("wx"), getAsFloat("wy"), getAsFloat("ww"), getAsFloat("wh"));
-        }
+        // user area is in [0,1] coordinates
+        Rectangle2D relUserArea = new Rectangle2D.Float(getWx(), getWy(), getWw(), getWh());
+        // transform from relative [0,1] to image coordinates.
+        AffineTransform imgTrafo = AffineTransform.getScaleInstance(imgSize.getWidth(), imgSize.getHeight());
+        // transform user coordinate area to image coordinate area
+        userImgArea = imgTrafo.createTransformedShape(relUserArea).getBounds2D();
 
         /*
          * calculate scaling factor
@@ -558,6 +556,86 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     /**
+     * Returns the width of the image area.
+     * Uses ww parameter.
+     * 
+     * @return
+     * @throws IOException
+     */
+    public Float getWw() throws IOException {
+        logger.debug("get_paramWW()");
+        if (paramWW == null) {
+        	paramWW = getAsFloat("ww");
+        	if (hasOption("pxarea")) {
+        		// area in absolute pixels - convert to relative
+        		ImageSize imgSize = getHiresSize();
+        		paramWW = paramWW / imgSize.getWidth(); 
+        	}
+        }
+        return paramWW;
+    }
+
+    /**
+     * Returns the height of the image area.
+     * Uses wh parameter.
+     * 
+     * @return
+     * @throws IOException
+     */
+    public Float getWh() throws IOException {
+        logger.debug("get_paramWH()");
+        if (paramWH == null) {
+        	paramWH = getAsFloat("wh");
+        	if (hasOption("pxarea")) {
+        		// area in absolute pixels - convert to relative
+        		ImageSize imgSize = getHiresSize();
+        		paramWH = paramWH / imgSize.getHeight(); 
+        	}
+        }
+        return paramWH;
+    }
+
+    /**
+     * Returns the x-offset of the image area.
+     * Uses wx parameter.
+     * 
+     * @return
+     * @throws IOException
+     */
+    public Float getWx() throws IOException {
+        logger.debug("get_paramWX()");
+        if (paramWX == null) {
+        	paramWX = getAsFloat("wx");
+        	if (hasOption("pxarea")) {
+        		// area in absolute pixels - convert to relative
+        		ImageSize imgSize = getHiresSize();
+        		paramWX = paramWX / imgSize.getWidth(); 
+        	}
+        }
+        return paramWX;
+    }
+
+    /**
+     * Returns the y-offset of the image area.
+     * Uses wy parameter.
+     * 
+     * @return
+     * @throws IOException
+     */
+    public Float getWy() throws IOException {
+        logger.debug("get_paramWY()");
+        if (paramWY == null) {
+        	paramWY = getAsFloat("wy");
+        	if (hasOption("pxarea")) {
+        		// area in absolute pixels - convert to relative
+        		ImageSize imgSize = getHiresSize();
+        		paramWY = paramWY / imgSize.getWidth(); 
+        	}
+        }
+        return paramWY;
+    }
+
+    /**
      * Returns image quality as an integer.
      * 
      * @return
@@ -574,6 +652,11 @@ public class ImageJobDescription extends ParameterMap {
         return qual;
     }
 
+    /**
+     * Return the color operation as a ColorOp.
+     * 
+     * @return
+     */
     public ColorOp getColOp() {
         String op = getAsString("colop");
         if (op == null || op.length() == 0) {
@@ -674,8 +757,11 @@ public class ImageJobDescription extends ParameterMap {
         if (imageSendable == null) {
             String mimeType = getMimeType();
             imageSendable = (mimeType != null
-                    && (mimeType.equals("image/jpeg") || mimeType.equals("image/png") || mimeType.equals("image/gif")) 
-                    && !(getAsFloat("wx") > 0f || getAsFloat("wy") > 0f || getAsFloat("ww") < 1f || getAsFloat("wh") < 1f                            
+            		// input image is browser compatible
+                    && (mimeType.equals("image/jpeg") || mimeType.equals("image/png") || mimeType.equals("image/gif"))
+                    // no zooming
+                    && !(getWx() > 0f || getWy() > 0f || getWw() < 1f || getWh() < 1f
+                    // no other image operations
                     || hasOption("vmir") || hasOption("hmir")
                     || (getAsFloat("rot") != 0.0)
                     || (getRGBM() != null)
@@ -696,13 +782,19 @@ public class ImageJobDescription extends ParameterMap {
     public boolean isTransformRequired() throws IOException {
         ImageSize is = getInput().getSize();
         ImageSize ess = getExpectedSourceSize();
-        // nt = no transform required
-        boolean nt = isImageSendable() && (
-                // lores: send if smaller
-                (isLoresOnly() && is.isSmallerThan(ess))
-                // else send if it fits
-                || (!(isLoresOnly() || isHiresOnly()) && is.fitsIn(ess)));
-        return !nt;
+        // does the image require processing?
+        if (isImageSendable()) {
+        	// does the image require rescaling?
+        	if (isLoresOnly() && is.isSmallerThan(ess)) {
+        		// lores: send even if smaller
+        		return false;
+        	} else if (is.fitsIn(ess)) {
+        		// TODO: check condition again. had && !(isLoresOnly() || isHiresOnly())
+        		// send if it fits
+        		return false;
+        	}
+        }
+        return true;
     }
 
     /**
