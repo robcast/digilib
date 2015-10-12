@@ -48,15 +48,12 @@ The [Scaler API](scaler-api.html) is documented on the digilib.sourceforge.net
 pages. Here is a minimal version:
 
 The Scaler servlet takes parameters in the HTTP request format:
-`Scaler/request\_path/?param1=value1&param2=value2&...` Unknown parameters
+`Scaler?param1=value1&param2=value2&...` Unknown parameters
 will be silently ignored.
 
 Recognised parameters:
 
-- `request_path` path to file or directory.
-- `fn` path to file or directory. This path will be added to the
-    `request_path` behind the servlet name. Either parameter can be
-    empty. All paths are relative to the configured base directory 
+- `fn` path to file or directory. All paths are relative to the configured base directory 
     (digilib-config parameter `basedir-list`). 
 - `pn` page number. Index into the (alphabetically sorted)
     directory given by the path. Starts with 1. Ignored if the path
@@ -73,8 +70,7 @@ Recognised parameters:
     <= 1). Default: 1.
 - `wh` relative height of the image area to be sent (0 <= `wh`
     <= 1). Default: 1.
-- The image to be loaded can be specified by the `request_path`
-    (deprecated) or the `fn` (preferred) parameter and the optional
+- The image to be loaded can be specified by  `fn` parameter and the optional
     index `pn`
     - if `fn` points to a directory then the file with the index `pn`
         (in alphabetical order according to ASCII) will be loaded
@@ -88,7 +84,7 @@ only the given parameter. The size of the resulting image in the other
 parameter is determined by the aspect ratio of the image.
 
 An example for a Scaler URL is:
-`http://digilib.mpiwg-berlin.mpg.de/digitallibrary/servlet/Scaler?fn=experimental/digilib-test/images&wh=0.1712&ww=0.1282&wy=0.1681&wx=0.6895&dw=862&dh=904`
+`http://digilib.mpiwg-berlin.mpg.de/digitallibrary/Scaler?fn=experimental/digilib-test/images&wh=0.1712&ww=0.1282&wy=0.1681&wx=0.6895&dw=862&dh=904`
 such a URL can be used as src attribute to an img element in the
 frontend HTML.
 
