@@ -483,13 +483,15 @@ public class ImageJobDescription extends ParameterMap {
                 // calculate dw
                 userImgArea = getUserImgArea();
                 double imgAspect = userImgArea.getWidth() / userImgArea.getHeight();
-                paramDW = (int) Math.round(paramDH * imgAspect);
+                // round up to make sure we don't squeeze dh
+                paramDW = (int) Math.ceil(paramDH * imgAspect);
                 setValue("dw", paramDW);
             } else if (paramDH == 0) {
                 // calculate dh
-                userImgArea = getUserImgArea();
+            	userImgArea = getUserImgArea();
                 double imgAspect = userImgArea.getWidth() / userImgArea.getHeight();
-                paramDH = (int) Math.round(paramDW / imgAspect);
+                // round up to make sure we don't squeeze dw
+                paramDH = (int) Math.ceil(paramDW / imgAspect);
                 setValue("dh", paramDH);
             }
         }
