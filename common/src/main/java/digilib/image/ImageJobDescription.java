@@ -629,7 +629,7 @@ public class ImageJobDescription extends ParameterMap {
         	if (hasOption("pxarea")) {
         		// area in absolute pixels - convert to relative
         		ImageSize imgSize = getHiresSize();
-        		paramWY = paramWY / imgSize.getWidth(); 
+        		paramWY = paramWY / imgSize.getHeight(); 
         	}
         }
         return paramWY;
