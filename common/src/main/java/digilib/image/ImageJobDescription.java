@@ -375,7 +375,6 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Returns image scaling factor.
      * Uses image size and user parameters.
-     * Modifies scaleXY, userImgArea.
      * 
      * @return
      * @throws IOException
@@ -404,6 +403,7 @@ public class ImageJobDescription extends ParameterMap {
              */
             double scaleX = getDw() / areaWidth * ws;
             double scaleY = getDh() / areaHeight * ws;
+            // use the smaller factor to get fit-in-box
             scaleXY = (scaleX > scaleY) ? scaleY : scaleX;
         } else if (isAbsoluteScale()) {
             /*
@@ -473,21 +473,25 @@ public class ImageJobDescription extends ParameterMap {
      * @throws IOException
      */
     public int getDw() throws IOException {
-        logger.debug("get_paramDW()");
+        //logger.debug("get_paramDW()");
         if (paramDW == null) {
 
             paramDW = getAsInt("dw");
             paramDH = getAsInt("dh");
 
             if (paramDW == 0) {
-                // calculate dw using aspect ratio of image area
+                /*
+                 * calculate dw using aspect ratio of image area
+                 */
                 userImgArea = getUserImgArea();
                 double imgAspect = userImgArea.getWidth() / userImgArea.getHeight();
                 // round up to make sure we don't squeeze dh
                 paramDW = (int) Math.ceil(paramDH * imgAspect);
                 setValue("dw", paramDW);
             } else if (paramDH == 0) {
-                // calculate dh using aspect ratio of image area
+                /*
+                 * calculate dh using aspect ratio of image area
+                 */
             	userImgArea = getUserImgArea();
                 double imgAspect = userImgArea.getWidth() / userImgArea.getHeight();
                 // round up to make sure we don't squeeze dw
@@ -506,24 +510,28 @@ public class ImageJobDescription extends ParameterMap {
      * @throws IOException
      */
     public int getDh() throws IOException {
-        logger.debug("get_paramDH()");
+        //logger.debug("get_paramDH()");
         if (paramDH == null) {
 
             paramDW = getAsInt("dw");
             paramDH = getAsInt("dh");
 
             if (paramDW == 0) {
-                // calculate dw using aspect ratio of image area
+                /*
+                 * calculate dw using aspect ratio of image area
+                 */
                 userImgArea = getUserImgArea();
                 double imgAspect = userImgArea.getWidth() / userImgArea.getHeight();
                 // round up to make sure we don't squeeze dh
                 paramDW = (int) Math.ceil(paramDH * imgAspect);
                 setValue("dw", paramDW);
             } else if (paramDH == 0) {
-                // calculate dh using aspect ratio of image area
+                /*
+                 * calculate dh using aspect ratio of image area
+                 */
                 userImgArea = getUserImgArea();
                 double imgAspect = userImgArea.getWidth() / userImgArea.getHeight();
-                // round up to make sure we don't squeeze dh
+                // round up to make sure we don't squeeze dw
                 paramDH = (int) Math.ceil(paramDW / imgAspect);
                 setValue("dh", paramDH);
             }
@@ -539,7 +547,7 @@ public class ImageJobDescription extends ParameterMap {
      * @throws IOException
      */
     public Float getWw() throws IOException {
-        logger.debug("get_paramWW()");
+        //logger.debug("get_paramWW()");
         if (paramWW == null) {
         	paramWW = getAsFloat("ww");
         	if (hasOption("pxarea")) {
@@ -559,7 +567,7 @@ public class ImageJobDescription extends ParameterMap {
      * @throws IOException
      */
     public Float getWh() throws IOException {
-        logger.debug("get_paramWH()");
+        //logger.debug("get_paramWH()");
         if (paramWH == null) {
         	paramWH = getAsFloat("wh");
         	if (hasOption("pxarea")) {
@@ -579,7 +587,7 @@ public class ImageJobDescription extends ParameterMap {
      * @throws IOException
      */
     public Float getWx() throws IOException {
-        logger.debug("get_paramWX()");
+        //logger.debug("get_paramWX()");
         if (paramWX == null) {
         	paramWX = getAsFloat("wx");
         	if (hasOption("pxarea")) {
@@ -599,7 +607,7 @@ public class ImageJobDescription extends ParameterMap {
      * @throws IOException
      */
     public Float getWy() throws IOException {
-        logger.debug("get_paramWY()");
+        //logger.debug("get_paramWY()");
         if (paramWY == null) {
         	paramWY = getAsFloat("wy");
         	if (hasOption("pxarea")) {
@@ -617,7 +625,7 @@ public class ImageJobDescription extends ParameterMap {
      * @return
      */
     public int getScaleQual() {
-        logger.debug("get_scaleQual()");
+        //logger.debug("get_scaleQual()");
         int qual = dlConfig.getAsInt("default-quality");
         if (hasOption("q0"))
             qual = 0;
@@ -658,22 +666,26 @@ public class ImageJobDescription extends ParameterMap {
             // size of the currently selected input image
             ImageSize imgSize = getInput().getSize();
             // transform from relative [0,1] to image coordinates.
-            float areaXf = getWx() * imgSize.getWidth();
-            float areaYf = getWy() * imgSize.getHeight();
-            float areaWidthF = getWw() * imgSize.getWidth();
-            float areaHeightF = getWh() * imgSize.getHeight();
+            double areaXf = getWx() * imgSize.getWidth();
+            double areaYf = getWy() * imgSize.getHeight();
+            double areaWidthF = getWw() * imgSize.getWidth();
+            double areaHeightF = getWh() * imgSize.getHeight();
             // round to pixels
-    		int areaX = Math.round(areaXf);
-    		int areaY = Math.round(areaYf);
-    		int areaHeight = Math.round(areaHeightF);
-    		int areaWidth = Math.round(areaWidthF);
-            userImgArea = new Rectangle2D.Float(areaX, areaY, areaWidth, areaHeight);
+    		long areaX = Math.round(areaXf);
+    		long areaY = Math.round(areaYf);
+    		long areaHeight = Math.round(areaHeightF);
+    		long areaWidth = Math.round(areaWidthF);
+            userImgArea = new Rectangle2D.Double(areaX, areaY, areaWidth, areaHeight);
         }
         return userImgArea;
     }
 
     /**
      * Returns the maximal area of the source image that will be used.
+     * 
+     * This was meant to correct for missing pixels outside the 
+     * userImgArea when rotating oblique angles but is not yet implemented.
+     * Currently returns userImgArea.
      * 
      * @return
      * @throws IOException
@@ -692,18 +704,21 @@ public class ImageJobDescription extends ParameterMap {
 
             // check image parameters sanity
             scaleXY = getScaleXY();
-            logger.debug("outerUserImgArea.getWidth()=" + outerUserImgArea.getWidth());
-            logger.debug("get_scaleXY() * outerUserImgArea.getWidth() = " + (scaleXY * outerUserImgArea.getWidth()));
-
             if ((outerUserImgArea.getWidth() < 1) || (outerUserImgArea.getHeight() < 1)
                     || (scaleXY * outerUserImgArea.getWidth() < 2) || (scaleXY * outerUserImgArea.getHeight() < 2)) {
                 logger.error("ERROR: invalid scale parameter set!");
+            	logger.debug("scaleXY="+scaleXY+" outerUserImgArea="+outerUserImgArea);
                 throw new ImageOpException("Invalid scale parameter set!");
             }
         }
         return outerUserImgArea;
     }
 
+    /**
+     * Get the RGBM parameter set.
+     * 
+     * @return
+     */
     public float[] getRGBM() {
         float[] paramRGBM = null;// {0f,0f,0f};
         Parameter p = params.get("rgbm");
@@ -713,6 +728,11 @@ public class ImageJobDescription extends ParameterMap {
         return paramRGBM;
     }
 
+    /**
+     * Get the RGBA parameter set.
+     * 
+     * @return
+     */
     public float[] getRGBA() {
         float[] paramRGBA = null;// {0f,0f,0f};
         Parameter p = params.get("rgba");
