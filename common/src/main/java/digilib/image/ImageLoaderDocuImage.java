@@ -449,12 +449,33 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     public void scale(double scaleX, double scaleY) throws ImageOpException {
         logger.debug("scale: " + scaleX);
         logger.debug("scaled from " + img.getWidth() + "x" + img.getHeight() + " img=" + img);
-        /* for downscaling in high quality the image is blurred first */
+        /* 
+         * for downscaling in high quality the image is blurred first 
+         */
         if ((scaleX <= 0.5) && (quality > 1)) {
             int bl = (int) Math.floor(1 / scaleX);
             blur(bl);
         }
-        /* then scaled */
+        /* 
+         * then scaled 
+         */
+        int oldWidth = img.getWidth();
+        int oldHeight = img.getHeight();
+        double targetWidth = oldWidth * scaleX;
+        double targetHeight = oldHeight * scaleY;
+        double deltaX = targetWidth - Math.floor(targetWidth);
+        double deltaY = targetHeight - Math.floor(targetHeight);
+        logger.debug("dw="+targetWidth+" dh="+targetHeight);
+        logger.debug("dx="+deltaX+" dy="+deltaY);
+        if (deltaX > epsilon) {
+            scaleX += (1 - deltaX) / oldWidth;
+        }
+        if (deltaY > epsilon) {
+            scaleY += (1 - deltaY) / oldHeight;
+        }
+        double targetWidth2 = oldWidth * scaleX;
+        double targetHeight2 = oldHeight * scaleY;
+        logger.debug("dw="+targetWidth2+" dh="+targetHeight2);
         AffineTransformOp scaleOp = new AffineTransformOp(AffineTransform.getScaleInstance(scaleX, scaleY), renderHint);
         img = scaleOp.filter(img, null);
         logger.debug("scaled to " + img.getWidth() + "x" + img.getHeight() + " img=" + img);
