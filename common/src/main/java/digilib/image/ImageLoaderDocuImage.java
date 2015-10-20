@@ -448,6 +448,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
     public void scale(double scaleX, double scaleY) throws ImageOpException {
         logger.debug("scale: " + scaleX);
+        logger.debug("scaled from " + img.getWidth() + "x" + img.getHeight() + " img=" + img);
         /* for downscaling in high quality the image is blurred first */
         if ((scaleX <= 0.5) && (quality > 1)) {
             int bl = (int) Math.floor(1 / scaleX);

@@ -480,14 +480,14 @@ public class ImageJobDescription extends ParameterMap {
             paramDH = getAsInt("dh");
 
             if (paramDW == 0) {
-                // calculate dw
+                // calculate dw using aspect ratio of image area
                 userImgArea = getUserImgArea();
                 double imgAspect = userImgArea.getWidth() / userImgArea.getHeight();
                 // round up to make sure we don't squeeze dh
                 paramDW = (int) Math.ceil(paramDH * imgAspect);
                 setValue("dw", paramDW);
             } else if (paramDH == 0) {
-                // calculate dh
+                // calculate dh using aspect ratio of image area
             	userImgArea = getUserImgArea();
                 double imgAspect = userImgArea.getWidth() / userImgArea.getHeight();
                 // round up to make sure we don't squeeze dw
@@ -513,15 +513,17 @@ public class ImageJobDescription extends ParameterMap {
             paramDH = getAsInt("dh");
 
             if (paramDW == 0) {
-                // calculate dw
+                // calculate dw using aspect ratio of image area
                 userImgArea = getUserImgArea();
                 double imgAspect = userImgArea.getWidth() / userImgArea.getHeight();
+                // round up to make sure we don't squeeze dh
                 paramDW = (int) Math.ceil(paramDH * imgAspect);
                 setValue("dw", paramDW);
             } else if (paramDH == 0) {
-                // calculate dh
+                // calculate dh using aspect ratio of image area
                 userImgArea = getUserImgArea();
                 double imgAspect = userImgArea.getWidth() / userImgArea.getHeight();
+                // round up to make sure we don't squeeze dh
                 paramDH = (int) Math.ceil(paramDW / imgAspect);
                 setValue("dh", paramDH);
             }
