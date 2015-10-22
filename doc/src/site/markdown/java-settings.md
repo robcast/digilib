@@ -37,7 +37,8 @@ availability of the TIFF image format under "Supported image types" on the
 status page.
 
 Sometimes there are memory issues. Newer versions of Tomcat refuse to load
-the libraries and I found that in some cases digilib stopped reading TIFF files
+the libraries (see JREMemoryLeakPreventionListener) and I found that in some 
+cases digilib stopped reading TIFF files
 after a period of running. In these cases it helped to install the JAI files in 
 Tomcats `lib/` directory or globally in the local Java JDK
 installation (i.e. in the Java's 'jre/lib/ext/' directory on linux).
@@ -60,6 +61,12 @@ if these jar files are availabe on the classpath, the codecs may be used by digi
 The actual codec implementation used is logged by digilib in debug mode, e.g.
 
     1564059 [http-apr-9092-exec-4] DEBUG digilib.image.DocuImage  - ImageIO: this reader: class com.twelvemonkeys.imageio.plugins.jpeg.JPEGImageReader
+
+(Robert Casties, Oct 2015)
+
+You can now use the TwelveMonkeys codecs instead of the default JAI-ImageIO by [building digilib](build-maven.html) with the Maven-Parameter `imageio=12m`:
+
+    mvn -Dimageio=12m package
 
 # Codec performance
 
@@ -87,7 +94,7 @@ For using the TwelveMonkey Codecs we added the following jars to the tomcat lib 
 * imageio-metadata-3.1.2.jar
 
 
-# Codec availability
+# Available image formats
 
 (Ubbo Veentjer, Oct 2015)
 
