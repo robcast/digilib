@@ -383,7 +383,8 @@ public class ServletOps {
         } else if (url.endsWith("/")) {
             url = url.substring(0, url.lastIndexOf("/"));
         }
-        response.setContentType("application/json;charset=UTF-8");
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json,application/ld+json");
         PrintWriter writer;
         try {
             writer = response.getWriter();

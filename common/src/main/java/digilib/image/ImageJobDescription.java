@@ -866,6 +866,8 @@ public class ImageJobDescription extends ParameterMap {
             imageSendable = (mimeType != null
             		// input image is browser compatible
                     && (mimeType.equals("image/jpeg") || mimeType.equals("image/png") || mimeType.equals("image/gif"))
+                    // no forced type conversion
+                    && !(hasOption("jpg") || hasOption("png"))
                     // no zooming
                     && !(getWx() > 0f || getWy() > 0f || getWw() < 1f || getWh() < 1f
                     // no other image operations
