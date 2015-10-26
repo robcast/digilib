@@ -228,7 +228,7 @@ public class Scaler extends HttpServlet {
 
         accountlog.debug("request: " + request.getQueryString());
         logger.debug("request: " + request.getQueryString());
-        logger.debug("headers: " + ServletOps.headersToString(request));
+        //logger.debug("headers: " + ServletOps.headersToString(request));
         // logger.debug("response:"+ response + " committed=" +
         // response.isCommitted());
         final long startTime = System.currentTimeMillis();

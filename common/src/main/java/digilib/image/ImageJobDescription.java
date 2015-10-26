@@ -404,7 +404,13 @@ public class ImageJobDescription extends ParameterMap {
             double scaleX = getDw() / areaWidth * ws;
             double scaleY = getDh() / areaHeight * ws;
             // use the smaller factor to get fit-in-box
-            scaleXY = (scaleX > scaleY) ? scaleY : scaleX;
+            if (scaleX == 0) {
+            	scaleXY = scaleY;
+            } else if (scaleY == 0) {
+            	scaleXY = scaleX;
+            } else {
+            	scaleXY = (scaleX > scaleY) ? scaleY : scaleX;
+            }
         } else if (isAbsoluteScale()) {
             /*
              * absolute scaling factor -- either original size, based on dpi, or absolute 
@@ -479,7 +485,7 @@ public class ImageJobDescription extends ParameterMap {
             paramDW = getAsInt("dw");
             paramDH = getAsInt("dh");
 
-            if (paramDW == 0) {
+            if (paramDW == 0 && input != null) {
                 /*
                  * calculate dw using aspect ratio of image area
                  */
@@ -488,7 +494,7 @@ public class ImageJobDescription extends ParameterMap {
                 // round up to make sure we don't squeeze dh
                 paramDW = (int) Math.ceil(paramDH * imgAspect);
                 setValue("dw", paramDW);
-            } else if (paramDH == 0) {
+            } else if (paramDH == 0 && input != null) {
                 /*
                  * calculate dh using aspect ratio of image area
                  */
@@ -516,7 +522,7 @@ public class ImageJobDescription extends ParameterMap {
             paramDW = getAsInt("dw");
             paramDH = getAsInt("dh");
 
-            if (paramDW == 0) {
+            if (paramDW == 0 && input != null) {
                 /*
                  * calculate dw using aspect ratio of image area
                  */
@@ -525,7 +531,7 @@ public class ImageJobDescription extends ParameterMap {
                 // round up to make sure we don't squeeze dh
                 paramDW = (int) Math.ceil(paramDH * imgAspect);
                 setValue("dw", paramDW);
-            } else if (paramDH == 0) {
+            } else if (paramDH == 0 && input != null) {
                 /*
                  * calculate dh using aspect ratio of image area
                  */

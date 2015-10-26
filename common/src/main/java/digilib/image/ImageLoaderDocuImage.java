@@ -72,7 +72,7 @@ import digilib.util.ImageSize;
 public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
     /** DocuImage version */
-    public static final String version = "ImageLoaderDocuImage 2.1.7";
+    public static final String version = "ImageLoaderDocuImage 2.1.8";
 
     /** image object */
     protected BufferedImage img;
@@ -104,8 +104,10 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     /* lookup table for false-color */
     protected static LookupTable mapBgrByteTable;
     protected static boolean needsMapBgr = false;
+    /* set destination type to sRGB if available */
+    protected static boolean setDestSrgb = true;
     /* set destination type to sRGB if available, even for non-RGB images */
-    protected static boolean alwaysSetDestSrgb = false;
+    protected static boolean setDestSrgbForNonRgb = false;
 
     static {
         /*
@@ -161,7 +163,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         // this hopefully works for all
         mapBgrByteTable = new ByteLookupTable(0, new byte[][] { mapR, mapG, mapB });
         logger.debug("ImageIO Hacks: needsRescaleRgba="+needsRescaleRgba+" needsInvertRgba="+needsInvertRgba+
-                " needsMapBgr="+needsMapBgr);
+                " needsMapBgr="+needsMapBgr+" setDestSrgb="+setDestSrgb+" setDestSrgbForNonRgb="+setDestSrgbForNonRgb);
     }
 
     /** the size of the current image */
@@ -364,36 +366,48 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         // ImageReader reader = null;
         try {
             reader = getReader(ii);
-            // set up reader parameters
+            /*
+             * set up reader parameters
+             */
             ImageReadParam readParam = reader.getDefaultReadParam();
             readParam.setSourceRegion(region);
             if (prescale > 1) {
                 readParam.setSourceSubsampling(prescale, prescale, 0, 0);
             }
-            // try to set target color space to sRGB
-            for (Iterator<ImageTypeSpecifier> i = reader.getImageTypes(0); i.hasNext();) {
-                ImageTypeSpecifier type = (ImageTypeSpecifier) i.next();
-                ColorModel cm = type.getColorModel();
-                ColorSpace cs = cm.getColorSpace();
-                logger.debug("loadSubimage: possible color model:"+cm+" color space:"+cs);
-                if (cs.getNumComponents() < 3 && ! ImageLoaderDocuImage.alwaysSetDestSrgb) {
-                    // if the first type is not RGB do nothing
-                    logger.debug("loadSubimage: image is not RGB " + type);
-                    break;
-                }
-                if (cs.isCS_sRGB()) {
-                    logger.debug("loadSubimage: substituted sRGB destination type " + type);
-                    readParam.setDestinationType(type);
-                    break;
-                }
-            }
-            // read image
+			if (ImageLoaderDocuImage.setDestSrgb) {
+				/*
+				 * try to set target color space to sRGB
+				 */
+				for (Iterator<ImageTypeSpecifier> i = reader.getImageTypes(0); i.hasNext();) {
+					ImageTypeSpecifier type = (ImageTypeSpecifier) i.next();
+					ColorModel cm = type.getColorModel();
+					ColorSpace cs = cm.getColorSpace();
+					logger.debug("loadSubimage: possible color model:" + cm + " color space:" + cs);
+					if (cs.getNumComponents() < 3 && !ImageLoaderDocuImage.setDestSrgbForNonRgb) {
+						// if the first type is not RGB do nothing
+						logger.debug("loadSubimage: image is not RGB " + type);
+						break;
+					}
+					if (cs.isCS_sRGB()) {
+						logger.debug("loadSubimage: substituted sRGB destination type " + type);
+						readParam.setDestinationType(type);
+						break;
+					}
+				}
+			}
+			
+            /*
+             * read image
+             */
             logger.debug("loadSubimage: loading..");
             img = reader.read(0, readParam);
             logger.debug("loadSubimage: loaded");
             // invalidate image size if it was set
             imageSize = null;
-            // downconvert highcolor images
+            
+            /*
+             * downconvert highcolor images
+             */
             if (img.getColorModel().getComponentSize(0) > 8) {
                 logger.debug("loadSubimage: converting to 8bit");
                 int type = BufferedImage.TYPE_INT_RGB;
