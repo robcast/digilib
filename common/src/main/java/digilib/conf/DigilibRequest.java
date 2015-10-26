@@ -520,11 +520,9 @@ public class DigilibRequest extends ParameterMap {
                             // width only
                             setValueFromString("dw", parms[0]);
                         } else {
-                            // w,h -- according to spec, we should distort the
-                            // image to match ;-(
-                            errorMessage = "Non-uniform-scale size parameter in IIIF path not supported!";
-                            logger.error(errorMessage);
-                            return false;
+                            // w,h -- according to spec, we should distort the image to match ;-(
+                        	options.setOption("squeeze");
+                            setValueFromString("dw", parms[0]);
                         }
                     }
                     if (parms[1].length() > 0) {
