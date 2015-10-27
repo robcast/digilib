@@ -585,6 +585,9 @@ public class ImageJobDescription extends ParameterMap {
 	        ImageSet fileset = getImageSet();
 	        ImageInput hiresFile = fileset.getBiggest();
 	        hiresSize = hiresFile.getSize();
+	        if (hiresSize == null) {
+	        	throw new FileOpException("Can't get size from hires image file!");
+	        }
         }
         return hiresSize;
     }

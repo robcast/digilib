@@ -274,7 +274,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             return input;
         } catch (FileOpException e) {
             // maybe just our class doesn't know what to do
-            logger.error("ImageLoaderDocuimage unable to identify:", e);
+            logger.error("ImageLoaderDocuimage unable to identify: "+e);
             return null;
         } finally {
             if (!reuseReader && reader != null) {
