@@ -61,7 +61,7 @@ public class Scaler extends HttpServlet {
     private static final long serialVersionUID = -5439198888139362735L;
 
     /** digilib servlet version (for all components) */
-    public static final String version = "2.3.1 noasync";
+    public static final String version = DigilibServletConfiguration.getClassVersion() + " noasync";
 
     /** servlet error codes */
     public static enum Error {
