@@ -63,7 +63,7 @@
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-war-plugin</artifactId>
 						<configuration>
-							<webXml>${basedir}/src/main/webapp/WEB-INF/web-2.3.xml</webXml>
+							<webXml>${basedir}/src/main/webapp/WEB-INF/web-2.4.xml</webXml>
 							<classifier>srv2</classifier>
 						</configuration>
 					</plugin>

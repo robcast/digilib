@@ -78,19 +78,24 @@ public class ImageWorker implements Callable<DocuImage> {
         docuImage.setQuality(jobinfo.getScaleQual());
 
         // get area of interest and scale factor
-        Rectangle loadRect = jobinfo.getOuterUserImgArea().getBounds();
-        double scaleXY = jobinfo.getScaleXY();
+        jobinfo.prepareScaleParams();
+        Rectangle loadRect = jobinfo.getOuterImgArea().getBounds();
+        double scaleX = jobinfo.getScaleX();
+        double scaleY = jobinfo.getScaleY();
 
         if (stopNow) {
             logger.debug("ImageWorker stopping (after setup)");
             return null;
         }
-        /*
+		/*
          * load, crop and scale the image 
          */
         if (docuImage.isSubimageSupported()) {
-        	// use subimage loading if possible
-            logger.debug("Subimage: scale " + scaleXY + " = " + (1 / scaleXY));
+        	/*
+        	 * use subimage loading with subsampling
+        	 */
+        	double scaleXY = scaleX + scaleY / 2d;
+            logger.debug("Subimage: scale " + scaleX + ", " + scaleY);
             double subf = 1d;
             double subsamp = 1d;
             if (scaleXY < 1) {
@@ -102,8 +107,9 @@ public class ImageWorker implements Callable<DocuImage> {
                     subsamp = Math.floor(subf);
                 }
                 // correct scaling factor by subsampling factor
-                scaleXY *= subsamp;
-                logger.debug("Using subsampling: " + subsamp + " rest " + scaleXY);
+                scaleX *= subsamp;
+                scaleY *= subsamp;
+                logger.debug("Using subsampling: " + subsamp + " rest " + scaleX + ", " + scaleY);
             }
             // load region with subsampling
             docuImage.loadSubimage(jobinfo.getInput(), loadRect, (int) subsamp);
@@ -113,9 +119,12 @@ public class ImageWorker implements Callable<DocuImage> {
                 return null;
             }
             // and scale
-            docuImage.scale(scaleXY, scaleXY);
+            docuImage.scale(scaleX, scaleY);
+            
         } else {
-            // else load and crop the whole file
+            /*
+             * else load and crop the whole file
+             */
             docuImage.loadImage(jobinfo.getInput());
             if (stopNow) {
                 logger.debug("ImageWorker stopping (after loading)");
@@ -127,8 +136,9 @@ public class ImageWorker implements Callable<DocuImage> {
                 logger.debug("ImageWorker stopping (after cropping)");
                 return null;
             }
-            docuImage.scale(scaleXY, scaleXY);
+            docuImage.scale(scaleX, scaleY);
         }
+        
         if (stopNow) {
             logger.debug("ImageWorker stopping (after scaling)");
             return null;
