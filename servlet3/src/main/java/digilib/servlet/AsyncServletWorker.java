@@ -54,10 +54,10 @@ import digilib.servlet.Scaler.Error;
 public class AsyncServletWorker implements Runnable, AsyncListener {
 
     /** the AsyncServlet context */
-    private AsyncContext asyncContext;
+    private AsyncContext asyncContext = null;
 
     /** the ImageWorker we use */
-    private ImageWorker imageWorker;
+    private ImageWorker imageWorker = null;
 
     protected static Logger logger = Logger.getLogger(AsyncServletWorker.class);
     private long startTime;
@@ -92,22 +92,34 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
     @Override
     public void run() {
         try {
-            // render the image
+            /*
+             * render the image
+             */
             DocuImage img = imageWorker.call();
             if (completed) {
                 logger.debug("AsyncServletWorker already completed (after scaling)!");
                 return;
             }
-            // forced destination image type
+            /*
+             * set forced destination image type
+             */
             String mt = null;
             if (jobinfo.hasOption("jpg")) {
                 mt = "image/jpeg";
             } else if (jobinfo.hasOption("png")) {
                 mt = "image/png";
             }
-            // send image
-            ServletOps.sendImage(img, mt,
-                    (HttpServletResponse) asyncContext.getResponse(), logger);
+            /*
+             *  send the image
+             */
+            HttpServletResponse response = (HttpServletResponse) asyncContext.getResponse();
+            if (response.isCommitted()) {
+            	logger.error("Crap! ServletResponse is already committed! Aborting.");
+            	// what now?
+            	return;
+            }
+            ServletOps.sendImage(img, mt, response, logger);
+            
             logger.debug("Job done in: "
                     + (System.currentTimeMillis() - startTime) + "ms");
         } catch (ImageOpException e) {
