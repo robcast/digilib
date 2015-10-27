@@ -140,7 +140,7 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
             } else {
                 // submit response
                 logger.debug("context complete.");
-                this.completed = true;
+                completed = true;
                 asyncContext.complete();
             }
         }
@@ -156,7 +156,7 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
     public void onComplete(AsyncEvent event) throws IOException {
         logger.debug("AsyncServletWorker onComplete");
         // make sure complete isn't called twice
-        this.completed = true;
+        completed = true;
     }
 
     @Override
@@ -167,7 +167,7 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
             return;
         }
         imageWorker.stopNow();
-        this.completed = true;
+        completed = true;
         Scaler.digilibError(errMsgType, Error.UNKNOWN, null,
                 (HttpServletResponse) asyncContext.getResponse());
         asyncContext.complete();
@@ -183,7 +183,7 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
             return;
         }
         imageWorker.stopNow();
-        this.completed = true;
+        completed = true;
         Scaler.digilibError(errMsgType, Error.UNKNOWN, "ERROR: timeout rendering image!",
                 (HttpServletResponse) asyncContext.getResponse());
         asyncContext.complete();

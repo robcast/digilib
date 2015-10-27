@@ -2,7 +2,7 @@
 
 The Scaler servlet provides not only its native [Scaler API](scaler-api.html) but also an API compliant to the standards of the International Image Interoperability Framework http://iiif.io.
 
-As of version 2.3 digilib supports the [IIIF Image API version 1.1](http://iiif.io/api/image/1.1/) at [compliance level 2](http://iiif.io/api/image/1.1/compliance.html) (except for forced w,h sizes where the image would be distorted).
+As of version 2.3 digilib supports the [IIIF Image API version 1.1](http://iiif.io/api/image/1.1/) at [compliance level 2](http://iiif.io/api/image/1.1/compliance.html) (since V2.3.3 even for forced w,h sizes where the image will be distorted).
 
 IIIF Image API URLs for an image request have the form:
 

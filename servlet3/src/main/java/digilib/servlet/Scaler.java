@@ -292,7 +292,7 @@ public class Scaler extends HttpServlet {
             }
 
             /*
-             * if possible, send the image without actually having to transform it
+             * send the image if it's possible without having to transform it
              */
             if (!jobTicket.isTransformRequired()) {
                 logger.debug("Sending File as is.");
