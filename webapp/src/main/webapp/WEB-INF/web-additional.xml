@@ -40,6 +40,10 @@
     <!-- The mapping for the PDFCache servlet -->
     <servlet-mapping>
         <servlet-name>PDFCache</servlet-name>
+        <url-pattern>/PDFCache/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PDFCache</servlet-name>
         <url-pattern>/servlet/PDFCache/*</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
