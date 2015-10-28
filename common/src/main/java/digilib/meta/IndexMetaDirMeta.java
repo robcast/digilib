@@ -32,7 +32,6 @@ import org.apache.log4j.Logger;
 import digilib.io.Directory;
 import digilib.io.DocuDirectory;
 import digilib.io.DocuDirent;
-import digilib.io.FileOps.FileClass;
 
 /**
  * DirMeta implementation reading index.meta files.

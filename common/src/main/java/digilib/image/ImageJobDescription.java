@@ -141,6 +141,7 @@ public class ImageJobDescription extends ParameterMap {
      */
     public static ImageJobDescription getInstance(DigilibRequest dlReq, DigilibConfiguration dlcfg) {
         ImageJobDescription newMap = new ImageJobDescription(dlcfg);
+        newMap.initParams();
         // add all params to this map
         newMap.params.putAll(dlReq.getParams());
         newMap.initOptions();
@@ -159,6 +160,7 @@ public class ImageJobDescription extends ParameterMap {
      */
     public static ImageJobDescription getInstance(ParameterMap pm, DigilibConfiguration dlcfg) {
         ImageJobDescription newMap = new ImageJobDescription(dlcfg);
+        newMap.initParams();
         // add all params to this map
         newMap.params.putAll(pm.getParams());
         newMap.initOptions();

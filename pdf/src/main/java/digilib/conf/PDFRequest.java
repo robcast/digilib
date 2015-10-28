@@ -32,11 +32,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 
-import digilib.conf.DigilibConfiguration;
 import digilib.image.ImageJobDescription;
 import digilib.io.DocuDirectory;
 import digilib.io.FileOpException;
-import digilib.io.FileOps.FileClass;
 import digilib.util.NumRange;
 import digilib.util.OptionsSet;
 import digilib.util.ParameterMap;
@@ -59,18 +57,18 @@ public class PDFRequest extends ParameterMap {
 
 	
 	/**
-	 * Initialize the PDFJobInformation
+	 * Initialize the PDFRequest
 	 * 
-	 * @param dlcfg			
-	 * 						The DigilibConfiguration. 
+	 * @param dlcfg	The DigilibConfiguration. 
 	 */
 	public PDFRequest(DigilibConfiguration dlcfg) {
 		super(30);
 		dlConfig = dlcfg;
+		initParams();
 	}
 
 	/**
-	 * Initialize the PDFJobInformation with a request.
+	 * Initialize the PDFRequest with a request.
 	 * 
 	 * @param dlcfg		The DigilibConfiguration. 		
 	 * @param request
@@ -79,7 +77,8 @@ public class PDFRequest extends ParameterMap {
 	public PDFRequest(HttpServletRequest request, DigilibConfiguration dlcfg) throws FileOpException {
 		super(30);
 		dlConfig = dlcfg;
-		this.setWithRequest(request);
+		initParams();
+		setWithRequest(request);
 	}
 
 	
@@ -119,7 +118,7 @@ public class PDFRequest extends ParameterMap {
 		pages = new NumRange(getAsString("pgs"));
         ImageJobDescription ij = ImageJobDescription.getInstance(this, dlConfig);
         DocuDirectory dir = ij.getFileDirectory();
-        int dirsize = dir.size(FileClass.IMAGE);
+        int dirsize = dir.size();
         pages.setMaxnum(dirsize);
 	}
 	
