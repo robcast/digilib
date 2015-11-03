@@ -434,7 +434,7 @@ digilib sliders plugin
             var rgba = input['ra'].val() + '/' + input['ga'].val() + '/' + input['ba'].val();
             var rgbm = input['rm'].val() + '/' + input['gm'].val() + '/' + input['bm'].val();
             if (typeof onSubmit === 'function') {
-                (rgbm, rgba);
+                onSubmit(rgbm, rgba);
                 }
             };
         $.each(primaryColors, insertTableRow);
