@@ -229,7 +229,10 @@ public class Scaler extends HttpServlet {
         accountlog.debug("request: " + request.getQueryString());
         logger.debug("request: " + request.getQueryString());
         //logger.debug("headers: " + ServletOps.headersToString(request));
-        //logger.debug("response committed=" + response.isCommitted());
+        //logger.debug("processRequest response committed=" + response.isCommitted());
+        if (response.isCommitted()) {
+        	logger.error("Crap: response committed before we got a chance!");
+        }
         final long startTime = System.currentTimeMillis();
 
         // parse request

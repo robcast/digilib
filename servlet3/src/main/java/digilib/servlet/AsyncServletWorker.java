@@ -113,11 +113,6 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
              *  send the image
              */
             HttpServletResponse response = (HttpServletResponse) asyncContext.getResponse();
-            if (response.isCommitted()) {
-            	logger.error("Crap! ServletResponse is already committed! Aborting.");
-            	// what now?
-            	return;
-            }
             ServletOps.sendImage(img, mt, response, logger);
             
             logger.debug("Job done in: "

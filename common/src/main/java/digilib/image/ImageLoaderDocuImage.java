@@ -481,8 +481,22 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         } catch (IOException e) {
             logger.error("Error writing image:", e);
             throw new FileOpException("Error writing image!", e);
+        } finally {
+        	if (writer != null) {
+        		writer.dispose();
+        	}
+        	if (imgout != null) {
+        		/* 
+        		 * ImageOutputStream likes to keep ServletOutputStream and close it when disposed.
+        		 * Thanks to Tom Van Wietmarschen's mail to tomcat-users on July 4, 2008!
+        		 */
+        		try {
+					imgout.close();
+				} catch (IOException e) {
+					logger.error("Error closing ImageOutputStream!", e);
+				}
+        	}
         }
-        // TODO: should we: finally { writer.dispose(); }
     }
 
     /* 

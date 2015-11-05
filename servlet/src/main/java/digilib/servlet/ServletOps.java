@@ -319,11 +319,11 @@ public class ServletOps {
     	}
         //logger.debug("sending to response: ("+ headersToString(response) + ") committed=" + response.isCommitted());
         logger.debug("sending to response. committed=" + response.isCommitted());
-        // TODO: should we erase or replace old last-modified header?
         try {
-            OutputStream outstream = response.getOutputStream();
-            // setup output -- if mime type is set use that otherwise
-            // if source is JPG then dest will be JPG else it's PNG
+            /*
+             *  determine content-type: if mime type is set use that otherwise
+             *  if source is JPG then dest will be JPG else it's PNG
+             */
             if (mimeType == null) {
                 mimeType = img.getMimetype();
                 if (mimeType == null) {
@@ -338,8 +338,20 @@ public class ServletOps {
             } else {
                 mimeType = "image/png";
             }
-            // write the image
+            // set the content type
             response.setContentType(mimeType);
+            String respType = response.getContentType();
+            if (! mimeType.equals(respType)) {
+            	// this shouldn't happen
+            	logger.error("Crap! ServletResponse lost content type! ct="+respType);
+            	// TODO: would this help?
+            	response.getOutputStream().close();
+            	return;
+            }
+            /*
+             * write the image
+             */
+            OutputStream outstream = response.getOutputStream();
             img.writeImage(mimeType, outstream);
         } catch (IOException e) {
             throw new ServletException("Error sending image:", e);
