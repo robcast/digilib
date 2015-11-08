@@ -525,14 +525,24 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         double deltaX = targetW - Math.floor(targetW);
         double deltaY = targetH - Math.floor(targetH);
         if (deltaX > epsilon) {
-        	// round up
-        	logger.debug("rounding up x scale factor");
-            scaleX += (1 - deltaX) / imgW;
+        	// round x
+            if (deltaX > 0.5d) {
+                logger.debug("rounding up x scale factor");
+                scaleX += (1 - deltaX) / imgW;
+            } else {
+                logger.debug("rounding down x scale factor");
+                scaleX -= deltaX / imgW;
+            }
         }
         if (deltaY > epsilon) {
-        	// round up
-        	logger.debug("rounding up y scale factor");
-            scaleY += (1 - deltaY) / imgH;
+            // round y
+            if (deltaY > 0.5d) {
+                logger.debug("rounding up y scale factor");
+                scaleY += (1 - deltaY) / imgH;
+            } else {
+                logger.debug("rounding down y scale factor");
+                scaleY -= deltaY / imgH;
+            }
         }
         // scale with AffineTransformOp
         logger.debug("scaled from " + imgW + "x" + imgH + " img=" + img);
