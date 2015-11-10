@@ -55,7 +55,7 @@ public class ScalerNoThread extends HttpServlet {
     private static final long serialVersionUID = 1450947819851623306L;
 
     /** digilib servlet version (for all components) */
-    public static final String version = "2.3.1 nothread";
+    public static final String version = DigilibServletConfiguration.getClassVersion() + " nothread";
 
     /** servlet error codes */
     public static enum Error {
@@ -207,8 +207,6 @@ public class ScalerNoThread extends HttpServlet {
 
         // parse request
         DigilibServletRequest dlRequest = new DigilibServletRequest(request, dlConfig);
-        // extract the job information
-        ImageJobDescription jobTicket = ImageJobDescription.getInstance(dlRequest, dlConfig);
 
         // type of error reporting
         ErrMsg errMsgType = ErrMsg.IMAGE;
@@ -219,6 +217,8 @@ public class ScalerNoThread extends HttpServlet {
         }
 
         try {
+            // extract the job information
+            ImageJobDescription jobTicket = ImageJobDescription.getInstance(dlRequest, dlConfig);
             /*
              * check if we can fast-track without scaling
              */
