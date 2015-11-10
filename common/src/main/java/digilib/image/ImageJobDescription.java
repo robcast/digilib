@@ -203,8 +203,8 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Prepare image scaling factors and coordinates.
      * 
+     * Should be called by getInstance().
      * Uses image size and user parameters.
-     * 
      * Sets scaleX, scaleY, imgArea.
      * 
      * @return
@@ -232,7 +232,7 @@ public class ImageJobDescription extends ParameterMap {
              */
             imgArea = prepareSqueezeToFit();
             
-        } else if (isCropToFit()){
+        } else if (isCropToFit()) {
             /*
              * crop to fit -- don't scale
              */
