@@ -55,7 +55,7 @@ public class PDFServletConfiguration extends DigilibServletConfiguration {
     public static final String PDF_CACHEDIR_KEY = "pdf.servlet.cache.dir";
 
     public static String getClassVersion() {
-        return "2.3.0 pdf";
+        return DigilibServletConfiguration.getClassVersion() + " pdf";
     }
 
     /* non-static getVersion for Java inheritance */

@@ -36,11 +36,16 @@ availability of the TIFF image format under "Supported image types" on the
 [`/server/dlConfig.jsp`](http://localhost:8080/digilib/server/dlConfig.jsp)
 status page.
 
-Sometimes there are memory issues. Newer versions of Tomcat refuse to load
-the libraries and I found that in some cases digilib stopped reading TIFF files
+Sometimes there are problems with leaking memory. Newer versions of Tomcat refuse to load
+the libraries (see JREMemoryLeakPreventionListener) and I found that in some 
+cases digilib stopped reading TIFF files
 after a period of running. In these cases it helped to install the JAI files in 
 Tomcats `lib/` directory or globally in the local Java JDK
 installation (i.e. in the Java's 'jre/lib/ext/' directory on linux).
+
+If you really need to have the imageio-plugins JAR inside the web app, please consider 
+using Harald Kuhrs [IIOProviderContextListener](https://github.com/haraldk/TwelveMonkeys#deploying-the-plugins-in-a-web-app).
+ 
 
 # Codec availability and Performance
 
@@ -61,21 +66,27 @@ The actual codec implementation used is logged by digilib in debug mode, e.g.
 
     1564059 [http-apr-9092-exec-4] DEBUG digilib.image.DocuImage  - ImageIO: this reader: class com.twelvemonkeys.imageio.plugins.jpeg.JPEGImageReader
 
+(Robert Casties, Oct 2015)
+
+You can now use the TwelveMonkeys codecs instead of the default JAI-ImageIO by just [building digilib](build-maven.html) with the Maven-Parameter `imageio=12m`:
+
+    mvn -Dimageio=12m package
+
 # Codec performance
 
 (Ubbo Veentjer, Oct 2015)
 
-In our tests comparing the performance of OpenJDK7, OpenJDK8, imageio-ext and TwelveMonkeys codecs we experienced the following numbers for decoding, encoding and scaling a 4968px*5968px to 50% size: 
+In our tests comparing the performance of OpenJDK7, OpenJDK8, imageio-ext and TwelveMonkeys codecs we experienced the following numbers for decoding, encoding and scaling a 4968px*5968px JPEG file with a color profile to 50% size: 
 
-24801 ms - OpenJDK7
-11507 ms - OpenJDK7 with com.twelvemonkeys.imageio.plugins.jpeg.JPEGImageReader
-4216 ms - OpenJDK7 with imageio-ext using libjpeg-turbo
-3635 ms - OpenJDK8 
+    24801 ms - OpenJDK7
+    11507 ms - OpenJDK7 with com.twelvemonkeys.imageio.plugins.jpeg.JPEGImageReader
+    4216 ms - OpenJDK7 with imageio-ext using libjpeg-turbo
+    3635 ms - OpenJDK8 
 
-This numbers may depend on the actual implementation used, the processing power of the CPU and many other factors, to this are just meant to be a rough hint.
+This numbers may depend on the actual implementation used, the processing power of the CPU and many other factors, to this is just meant to be a rough hint.
 
 For using imageio-ext, the native library needs to be 
-available with the LD_LIBRARY_PATH environment variable (compare: https://github.com/geosolutions-it/imageio-ext/wiki/TurboJPEG-plugin), also the .jar archives need to be on the classpath.
+available with the `LD_LIBRARY_PATH` environment variable (compare: https://github.com/geosolutions-it/imageio-ext/wiki/TurboJPEG-plugin), also the .jar archives need to be on the classpath.
 
 For using the TwelveMonkey Codecs we added the following jars to the tomcat lib directory, which were retrieved by maven (dependency on imageio-jpeg-3.1.2):
 
@@ -87,7 +98,7 @@ For using the TwelveMonkey Codecs we added the following jars to the tomcat lib 
 * imageio-metadata-3.1.2.jar
 
 
-# Codec availability
+# Available image formats
 
 (Ubbo Veentjer, Oct 2015)
 

@@ -72,7 +72,7 @@ import digilib.util.ImageSize;
 public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
     /** DocuImage version */
-    public static final String version = "ImageLoaderDocuImage 2.1.6a";
+    public static final String version = "ImageLoaderDocuImage 2.1.8";
 
     /** image object */
     protected BufferedImage img;
@@ -104,8 +104,10 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     /* lookup table for false-color */
     protected static LookupTable mapBgrByteTable;
     protected static boolean needsMapBgr = false;
+    /* set destination type to sRGB if available */
+    protected static boolean setDestSrgb = true;
     /* set destination type to sRGB if available, even for non-RGB images */
-    protected static boolean alwaysSetDestSrgb = false;
+    protected static boolean setDestSrgbForNonRgb = false;
 
     static {
         /*
@@ -161,24 +163,30 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         // this hopefully works for all
         mapBgrByteTable = new ByteLookupTable(0, new byte[][] { mapR, mapG, mapB });
         logger.debug("ImageIO Hacks: needsRescaleRgba="+needsRescaleRgba+" needsInvertRgba="+needsInvertRgba+
-                " needsMapBgr="+needsMapBgr);
+                " needsMapBgr="+needsMapBgr+" setDestSrgb="+setDestSrgb+" setDestSrgbForNonRgb="+setDestSrgbForNonRgb);
     }
 
     /** the size of the current image */
     protected ImageSize imageSize;
 
-    /**
-     * @return the version
+    /* (non-Javadoc)
+     * @see digilib.image.DocuImageImpl#getVersion()
      */
     public String getVersion() {
         return version;
     }
 
-    /* loadSubimage is supported. */
+    /* 
+     * loadSubimage is supported.
+     * @see digilib.image.DocuImageImpl#isSubimageSupported()
+     */
     public boolean isSubimageSupported() {
         return true;
     }
 
+    /* (non-Javadoc)
+     * @see digilib.image.DocuImageImpl#setQuality(int)
+     */
     public void setQuality(int qual) {
         quality = qual;
         renderHint = new RenderingHints(null);
@@ -194,7 +202,10 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         }
     }
 
-    /* returns the size of the current image */
+    /* 
+     * returns the size of the current image
+     * @see digilib.image.DocuImageImpl#getSize()
+     */
     public ImageSize getSize() {
         if (imageSize == null) {
             int h = 0;
@@ -218,13 +229,19 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         return imageSize;
     }
 
-    /* returns a list of supported image formats */
+    /* 
+     * returns a list of supported image formats
+     * @see digilib.image.DocuImageImpl#getSupportedFormats()
+     */
     public Iterator<String> getSupportedFormats() {
         String[] formats = ImageIO.getReaderFormatNames();
         return Arrays.asList(formats).iterator();
     }
 
-    /* Check image size and type and store in ImageInput */
+    /* 
+     * Check image size and type and store in ImageInput
+     * @see digilib.image.ImageInfoDocuImage#identify(digilib.io.ImageInput)
+     */
     public ImageInput identify(ImageInput input) throws IOException {
         ImageInput ii = null;
         if (!reuseReader) {
@@ -257,7 +274,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             return input;
         } catch (FileOpException e) {
             // maybe just our class doesn't know what to do
-            logger.error("ImageLoaderDocuimage unable to identify:", e);
+            logger.error("ImageLoaderDocuimage unable to identify: "+e);
             return null;
         } finally {
             if (!reuseReader && reader != null) {
@@ -266,7 +283,10 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         }
     }
 
-    /* load image file */
+    /* 
+     * load image file
+     * @see digilib.image.DocuImageImpl#loadImage(digilib.io.ImageInput)
+     */
     public void loadImage(ImageInput ii) throws FileOpException {
         logger.debug("loadImage: " + ii);
         this.input = ii;
@@ -335,43 +355,59 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         return reader;
     }
 
-    /* Load an image file into the Object. */
+    /* 
+     * Load an image file into the Object.
+     * 
+     * @see digilib.image.DocuImageImpl#loadSubimage(digilib.io.ImageInput, java.awt.Rectangle, int)
+     */
     public void loadSubimage(ImageInput ii, Rectangle region, int prescale) throws FileOpException {
         logger.debug("loadSubimage");
         this.input = ii;
         // ImageReader reader = null;
         try {
             reader = getReader(ii);
-            // set up reader parameters
+            /*
+             * set up reader parameters
+             */
             ImageReadParam readParam = reader.getDefaultReadParam();
             readParam.setSourceRegion(region);
             if (prescale > 1) {
                 readParam.setSourceSubsampling(prescale, prescale, 0, 0);
             }
-            // try to set target color space to sRGB
-            for (Iterator<ImageTypeSpecifier> i = reader.getImageTypes(0); i.hasNext();) {
-                ImageTypeSpecifier type = (ImageTypeSpecifier) i.next();
-                ColorModel cm = type.getColorModel();
-                ColorSpace cs = cm.getColorSpace();
-                logger.debug("loadSubimage: possible color model:"+cm+" color space:"+cs);
-                if (cs.getNumComponents() < 3 && ! ImageLoaderDocuImage.alwaysSetDestSrgb) {
-                    // if the first type is not RGB do nothing
-                    logger.debug("loadSubimage: image is not RGB " + type);
-                    break;
-                }
-                if (cs.isCS_sRGB()) {
-                    logger.debug("loadSubimage: substituted sRGB destination type " + type);
-                    readParam.setDestinationType(type);
-                    break;
-                }
-            }
-            // read image
+			if (ImageLoaderDocuImage.setDestSrgb) {
+				/*
+				 * try to set target color space to sRGB
+				 */
+				for (Iterator<ImageTypeSpecifier> i = reader.getImageTypes(0); i.hasNext();) {
+					ImageTypeSpecifier type = (ImageTypeSpecifier) i.next();
+					ColorModel cm = type.getColorModel();
+					ColorSpace cs = cm.getColorSpace();
+					logger.debug("loadSubimage: possible color model:" + cm + " color space:" + cs);
+					if (cs.getNumComponents() < 3 && !ImageLoaderDocuImage.setDestSrgbForNonRgb) {
+						// if the first type is not RGB do nothing
+						logger.debug("loadSubimage: image is not RGB " + type);
+						break;
+					}
+					if (cs.isCS_sRGB()) {
+						logger.debug("loadSubimage: substituted sRGB destination type " + type);
+						readParam.setDestinationType(type);
+						break;
+					}
+				}
+			}
+			
+            /*
+             * read image
+             */
             logger.debug("loadSubimage: loading..");
             img = reader.read(0, readParam);
             logger.debug("loadSubimage: loaded");
             // invalidate image size if it was set
             imageSize = null;
-            // downconvert highcolor images
+            
+            /*
+             * downconvert highcolor images
+             */
             if (img.getColorModel().getComponentSize(0) > 8) {
                 logger.debug("loadSubimage: converting to 8bit");
                 int type = BufferedImage.TYPE_INT_RGB;
@@ -391,7 +427,10 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         }
     }
 
-    /* write image of type mt to Stream */
+    /* 
+     * (non-Javadoc)
+     * @see digilib.image.DocuImageImpl#writeImage(java.lang.String, java.io.OutputStream)
+     */
     public void writeImage(String mt, OutputStream ostream) throws ImageOpException, FileOpException {
         logger.debug("writeImage");
         // setup output
@@ -442,18 +481,71 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         } catch (IOException e) {
             logger.error("Error writing image:", e);
             throw new FileOpException("Error writing image!", e);
+        } finally {
+        	if (writer != null) {
+        		writer.dispose();
+        	}
+        	if (imgout != null) {
+        		/* 
+        		 * ImageOutputStream likes to keep ServletOutputStream and close it when disposed.
+        		 * Thanks to Tom Van Wietmarschen's mail to tomcat-users on July 4, 2008!
+        		 */
+        		try {
+					imgout.close();
+				} catch (IOException e) {
+					logger.error("Error closing ImageOutputStream!", e);
+				}
+        	}
         }
-        // TODO: should we: finally { writer.dispose(); }
     }
 
+    /* 
+     * (non-Javadoc)
+     * @see digilib.image.DocuImageImpl#scale(double, double)
+     */
     public void scale(double scaleX, double scaleY) throws ImageOpException {
         logger.debug("scale: " + scaleX);
-        /* for downscaling in high quality the image is blurred first */
+        /* 
+         * for downscaling in high quality the image is blurred first ...
+         */
         if ((scaleX <= 0.5) && (quality > 1)) {
             int bl = (int) Math.floor(1 / scaleX);
             blur(bl);
         }
-        /* then scaled */
+        /* 
+         * ... then scaled.
+         * 
+         * We need to correct the scale factors to round to whole pixels 
+         * or else we get a 1px black (or transparent) border.
+         */
+        int imgW = img.getWidth();
+        int imgH = img.getHeight();
+        double targetW = imgW * scaleX;
+        double targetH = imgH * scaleY;
+        double deltaX = targetW - Math.floor(targetW);
+        double deltaY = targetH - Math.floor(targetH);
+        if (deltaX > epsilon) {
+        	// round x
+            if (deltaX > 0.5d) {
+                logger.debug("rounding up x scale factor");
+                scaleX += (1 - deltaX) / imgW;
+            } else {
+                logger.debug("rounding down x scale factor");
+                scaleX -= deltaX / imgW;
+            }
+        }
+        if (deltaY > epsilon) {
+            // round y
+            if (deltaY > 0.5d) {
+                logger.debug("rounding up y scale factor");
+                scaleY += (1 - deltaY) / imgH;
+            } else {
+                logger.debug("rounding down y scale factor");
+                scaleY -= deltaY / imgH;
+            }
+        }
+        // scale with AffineTransformOp
+        logger.debug("scaled from " + imgW + "x" + imgH + " img=" + img);
         AffineTransformOp scaleOp = new AffineTransformOp(AffineTransform.getScaleInstance(scaleX, scaleY), renderHint);
         img = scaleOp.filter(img, null);
         logger.debug("scaled to " + img.getWidth() + "x" + img.getHeight() + " img=" + img);
@@ -461,6 +553,12 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         imageSize = null;
     }
 
+    /**
+     * Blur the image with a convolution using the given radius.
+     * 
+     * @param radius
+     * @throws ImageOpException
+     */
     public void blur(int radius) throws ImageOpException {
         logger.debug("blur: " + radius);
         // minimum radius is 2
@@ -492,6 +590,10 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         logger.debug("blurred: " + img);
     }
 
+    /* 
+     * (non-Javadoc)
+     * @see digilib.image.DocuImageImpl#crop(int, int, int, int)
+     */
     public void crop(int x_off, int y_off, int width, int height) throws ImageOpException {
         // setup Crop
         img = img.getSubimage(x_off, y_off, width, height);
@@ -500,6 +602,10 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         imageSize = null;
     }
 
+    /* 
+     * (non-Javadoc)
+     * @see digilib.image.DocuImageImpl#rotate(double)
+     */
     public void rotate(double angle) throws ImageOpException {
         logger.debug("rotate: " + angle);
         // setup rotation
@@ -528,6 +634,10 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         imageSize = null;
     }
 
+    /* 
+     * (non-Javadoc)
+     * @see digilib.image.DocuImageImpl#mirror(double)
+     */
     public void mirror(double angle) throws ImageOpException {
         logger.debug("mirror: " + angle);
         // setup mirror
@@ -560,6 +670,10 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         imageSize = null;
     }
 
+    /* 
+     * (non-Javadoc)
+     * @see digilib.image.DocuImageImpl#enhance(float, float)
+     */
     public void enhance(float mult, float add) throws ImageOpException {
         RescaleOp op = null;
         logger.debug("enhance: img=" + img);
@@ -591,6 +705,11 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         op.filter(img, img);
     }
 
+    /* 
+     * (non-Javadoc)
+     * 
+     * @see digilib.image.DocuImageImpl#enhanceRGB(float[], float[])
+     */
     public void enhanceRGB(float[] rgbm, float[] rgba) throws ImageOpException {
         logger.debug("enhanceRGB: rgbm=" + rgbm + " rgba=" + rgba);
         /*
@@ -702,6 +821,10 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         }
     }
 
+    /* 
+     * (non-Javadoc)
+     * @see digilib.image.DocuImageImpl#dispose()
+     */
     public void dispose() {
         if (reader != null) {
             reader.dispose();
@@ -710,6 +833,10 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         img = null;
     }
 
+    /* 
+     * (non-Javadoc)
+     * @see digilib.image.DocuImageImpl#getAwtImage()
+     */
     public Image getAwtImage() {
         return (Image) img;
     }

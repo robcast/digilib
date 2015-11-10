@@ -57,8 +57,7 @@ public class ImageWorker implements Callable<DocuImage> {
     /**
      * render and return the image
      */
-    public DocuImage call() throws FileOpException, IOException,
-            ImageOpException {
+    public DocuImage call() throws FileOpException, IOException, ImageOpException {
 
         logger.debug("ImageWorker starting");
         long startTime = System.currentTimeMillis();
@@ -78,16 +77,25 @@ public class ImageWorker implements Callable<DocuImage> {
         // set interpolation quality
         docuImage.setQuality(jobinfo.getScaleQual());
 
-        Rectangle loadRect = jobinfo.getOuterUserImgArea().getBounds();
-        double scaleXY = jobinfo.getScaleXY();
+        // get area of interest and scale factor
+        jobinfo.prepareScaleParams();
+        Rectangle loadRect = jobinfo.getOuterImgArea().getBounds();
+        double scaleX = jobinfo.getScaleX();
+        double scaleY = jobinfo.getScaleY();
 
         if (stopNow) {
             logger.debug("ImageWorker stopping (after setup)");
             return null;
         }
-        // use subimage loading if possible
+		/*
+         * load, crop and scale the image 
+         */
         if (docuImage.isSubimageSupported()) {
-            logger.debug("Subimage: scale " + scaleXY + " = " + (1 / scaleXY));
+        	/*
+        	 * use subimage loading with subsampling
+        	 */
+        	double scaleXY = scaleX + scaleY / 2d;
+            logger.debug("Subimage: scale " + scaleX + ", " + scaleY);
             double subf = 1d;
             double subsamp = 1d;
             if (scaleXY < 1) {
@@ -99,8 +107,9 @@ public class ImageWorker implements Callable<DocuImage> {
                     subsamp = Math.floor(subf);
                 }
                 // correct scaling factor by subsampling factor
-                scaleXY *= subsamp;
-                logger.debug("Using subsampling: " + subsamp + " rest " + scaleXY);
+                scaleX *= subsamp;
+                scaleY *= subsamp;
+                logger.debug("Using subsampling: " + subsamp + " rest " + scaleX + ", " + scaleY);
             }
             // load region with subsampling
             docuImage.loadSubimage(jobinfo.getInput(), loadRect, (int) subsamp);
@@ -110,9 +119,12 @@ public class ImageWorker implements Callable<DocuImage> {
                 return null;
             }
             // and scale
-            docuImage.scale(scaleXY, scaleXY);
+            docuImage.scale(scaleX, scaleY);
+            
         } else {
-            // else load and crop the whole file
+            /*
+             * else load and crop the whole file
+             */
             docuImage.loadImage(jobinfo.getInput());
             if (stopNow) {
                 logger.debug("ImageWorker stopping (after loading)");
@@ -124,28 +136,32 @@ public class ImageWorker implements Callable<DocuImage> {
                 logger.debug("ImageWorker stopping (after cropping)");
                 return null;
             }
-            docuImage.scale(scaleXY, scaleXY);
+            docuImage.scale(scaleX, scaleY);
         }
-
+        
         if (stopNow) {
             logger.debug("ImageWorker stopping (after scaling)");
             return null;
         }
-        // mirror image
-        // operation mode: "hmir": mirror horizontally, "vmir": mirror
-        // vertically
+
+        /* 
+         * mirror image
+         * operation mode: "hmir": mirror horizontally, "vmir": mirror vertically
+         */
         if (jobinfo.hasOption("hmir")) {
             docuImage.mirror(0);
         }
         if (jobinfo.hasOption("vmir")) {
             docuImage.mirror(90);
         }
-
         if (stopNow) {
             logger.debug("ImageWorker stopping (after mirroring)");
             return null;
         }
-        // rotate image
+        
+        /*
+         * rotate image
+         */
         if (jobinfo.getAsFloat("rot") != 0d) {
             docuImage.rotate(jobinfo.getAsFloat("rot"));
             /*
@@ -162,12 +178,14 @@ public class ImageWorker implements Callable<DocuImage> {
              */
 
         }
-
         if (stopNow) {
             logger.debug("ImageWorker stopping (after rotating)");
             return null;
         }
-        // color modification
+        
+        /*
+         * color modification
+         */
         float[] paramRGBM = jobinfo.getRGBM();
         float[] paramRGBA = jobinfo.getRGBA();
         if ((paramRGBM != null) || (paramRGBA != null)) {
@@ -185,31 +203,34 @@ public class ImageWorker implements Callable<DocuImage> {
             }
             docuImage.enhanceRGB(mult, paramRGBA);
         }
-
         if (stopNow) {
             logger.debug("ImageWorker stopping (after enhanceRGB)");
             return null;
         }
-        // contrast and brightness enhancement
+
+        /*
+         * contrast and brightness enhancement
+         */
         float paramCONT = jobinfo.getAsFloat("cont");
         float paramBRGT = jobinfo.getAsFloat("brgt");
         if ((paramCONT != 0f) || (paramBRGT != 0f)) {
             float mult = (float) Math.pow(2, paramCONT);
             docuImage.enhance(mult, paramBRGT);
         }
-
         if (stopNow) {
             logger.debug("ImageWorker stopping (after enhance)");
             return null;
         }
-        // color operation
+        
+        /*
+         * color operation
+         */
         DocuImage.ColorOp colop = jobinfo.getColOp();
         if (colop != null) {
             docuImage.colorOp(colop);
         }
 
-        logger.debug("rendered in " + (System.currentTimeMillis() - startTime)
-                + "ms");
+        logger.debug("rendered in " + (System.currentTimeMillis() - startTime) + "ms");
 
         return docuImage;
     }

@@ -228,9 +228,11 @@ public class Scaler extends HttpServlet {
 
         accountlog.debug("request: " + request.getQueryString());
         logger.debug("request: " + request.getQueryString());
-        logger.debug("headers: " + ServletOps.headersToString(request));
-        // logger.debug("response:"+ response + " committed=" +
-        // response.isCommitted());
+        //logger.debug("headers: " + ServletOps.headersToString(request));
+        //logger.debug("processRequest response committed=" + response.isCommitted());
+        if (response.isCommitted()) {
+        	logger.error("Crap: response committed before we got a chance!");
+        }
         final long startTime = System.currentTimeMillis();
 
         // parse request
@@ -262,11 +264,13 @@ public class Scaler extends HttpServlet {
         
         try {
             /*
-             * check if we can fast-track without scaling
+             * get the input file
              */
             ImageInput fileToLoad = (ImageInput) jobTicket.getInput();
 
-            // check permissions
+            /*
+             * check permissions
+             */
             if (useAuthorization) {
                 // is the current request/user authorized?
                 if (!authOp.isAuthorized(dlRequest)) {
@@ -275,10 +279,13 @@ public class Scaler extends HttpServlet {
                 }
             }
 
-            // if requested, send image as a file
+            /*
+             * if requested, send image as a file
+             */
             if (sendFileAllowed && jobTicket.getSendAsFile()) {
                 String mt = null;
                 if (jobTicket.hasOption("rawfile")) {
+                	// mo=rawfile sends as octet-stream
                     mt = "application/octet-stream";
                 }
                 logger.debug("Sending RAW File as is.");
@@ -287,7 +294,9 @@ public class Scaler extends HttpServlet {
                 return;
             }
 
-            // if possible, send the image without actually having to transform it
+            /*
+             * send the image if it's possible without having to transform it
+             */
             if (!jobTicket.isTransformRequired()) {
                 logger.debug("Sending File as is.");
                 ServletOps.sendFile(fileToLoad.getFile(), null, null, response, logger);
@@ -295,15 +304,19 @@ public class Scaler extends HttpServlet {
                 return;
             }
 
-            // check load of workers
+            /*
+             * check load of workers
+             */
             if (imageJobCenter.isBusy()) {
                 logger.error("Servlet overloaded!");
                 response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
                 return;
             }
 
-            // worker job is done asynchronously
-            AsyncContext asyncCtx = request.startAsync(request, response);
+            /*
+             * dispatch worker job to be done asynchronously
+             */
+            AsyncContext asyncCtx = request.startAsync();
             // create job
             AsyncServletWorker job = new AsyncServletWorker(dlConfig, jobTicket, asyncCtx, errMsgType, startTime);
             // AsyncServletWorker is its own AsyncListener
@@ -348,7 +361,7 @@ public class Scaler extends HttpServlet {
                 status = HttpServletResponse.SC_FORBIDDEN;
             } else if (error == Error.FILE) {
                 if (msg == null) {
-                    msg = "ERROR: Image file not found!";
+                    msg = "ERROR: Image file not found or image not readable!";
                 }
                 img = notfoundImgFile;
                 status = HttpServletResponse.SC_NOT_FOUND;

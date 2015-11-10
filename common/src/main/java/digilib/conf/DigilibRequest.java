@@ -463,8 +463,8 @@ public class DigilibRequest extends ParameterMap {
                     float h = Float.parseFloat(parms[3]);
                     setValue("wh", h / 100f);
                 } catch (Exception e) {
-                    errorMessage = "Error parsing range parameter in IIIF path!";
-                    logger.error(errorMessage, e);
+                    errorMessage = "Error parsing range parameter in IIIF path! ";
+                    logger.error(errorMessage+e);
                     return false;
                 }
             } else {
@@ -503,8 +503,8 @@ public class DigilibRequest extends ParameterMap {
                     options.setOption("ascale");
                     setValue("scale", pct / 100);
                 } catch (NumberFormatException e) {
-                    errorMessage = "Error parsing size parameter in IIIF path!";
-                    logger.error(errorMessage, e);
+                    errorMessage = "Error parsing size parameter in IIIF path! ";
+                    logger.error(errorMessage+e);
                     return false;
                 }
             } else {
@@ -520,11 +520,9 @@ public class DigilibRequest extends ParameterMap {
                             // width only
                             setValueFromString("dw", parms[0]);
                         } else {
-                            // w,h -- according to spec, we should distort the
-                            // image to match ;-(
-                            errorMessage = "Non-uniform-scale size parameter in IIIF path not supported!";
-                            logger.error(errorMessage);
-                            return false;
+                            // w,h -- according to spec, we should distort the image to match ;-(
+                        	options.setOption("squeeze");
+                            setValueFromString("dw", parms[0]);
                         }
                     }
                     if (parms[1].length() > 0) {
@@ -532,8 +530,8 @@ public class DigilibRequest extends ParameterMap {
                         setValueFromString("dh", parms[1]);
                     }
                 } catch (Exception e) {
-                    errorMessage = "Error parsing size parameter in IIIF path!";
-                    logger.error(errorMessage, e);
+                    errorMessage = "Error parsing size parameter in IIIF path! ";
+                    logger.error(errorMessage+e);
                     return false;
                 }
             }
@@ -552,8 +550,8 @@ public class DigilibRequest extends ParameterMap {
                 float rot = Float.parseFloat(rotation);
                 setValue("rot", rot);
             } catch (NumberFormatException e) {
-                errorMessage = "Error parsing rotation parameter in IIIF path!";
-                logger.error(errorMessage, e);
+                errorMessage = "Error parsing rotation parameter in IIIF path! ";
+                logger.error(errorMessage+e);
                 return false;
             }
         }

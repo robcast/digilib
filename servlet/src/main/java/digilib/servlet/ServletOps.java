@@ -301,7 +301,9 @@ public class ServletOps {
     }
 
     /**
-     * Write image img to ServletResponse response.
+     * Write image img to ServletResponse response as data of mimeType.
+     * 
+     * If mimeType is null, use heuristics for type.
      * 
      * @param img
      * @param mimeType
@@ -317,13 +319,12 @@ public class ServletOps {
     		logger.error("No response!");
     		return;
     	}
-        //logger.debug("sending to response: ("+ headersToString(response) + ") committed=" + response.isCommitted());
         logger.debug("sending to response. committed=" + response.isCommitted());
-        // TODO: should we erase or replace old last-modified header?
         try {
-            OutputStream outstream = response.getOutputStream();
-            // setup output -- if mime type is set use that otherwise
-            // if source is JPG then dest will be JPG else it's PNG
+            /*
+             * determine the content-type: if mime type is set use that 
+             * otherwise if source is JPG then dest will be JPG else it's PNG
+             */
             if (mimeType == null) {
                 mimeType = img.getMimetype();
                 if (mimeType == null) {
@@ -338,13 +339,28 @@ public class ServletOps {
             } else {
                 mimeType = "image/png";
             }
-            // write the image
+            // set the content type
             response.setContentType(mimeType);
+            String respType = response.getContentType();
+            if (! mimeType.equals(respType)) {
+            	// this shouldn't happen
+            	logger.error("Crap! ServletResponse lost content type! ["+respType+"] Aborting!");
+            	// TODO: would this even help?
+            	response.getOutputStream().close();
+            	return;
+            }
+            
+            /*
+             * write the image
+             */
+            OutputStream outstream = response.getOutputStream();
             img.writeImage(mimeType, outstream);
+            
         } catch (IOException e) {
             throw new ServletException("Error sending image:", e);
-        }
-        // TODO: should we: finally { img.dispose(); }
+        } finally { 
+        	img.dispose(); 
+    	}
     }
 
 
@@ -383,7 +399,8 @@ public class ServletOps {
         } else if (url.endsWith("/")) {
             url = url.substring(0, url.lastIndexOf("/"));
         }
-        response.setContentType("application/json;charset=UTF-8");
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("application/json,application/ld+json");
         PrintWriter writer;
         try {
             writer = response.getWriter();

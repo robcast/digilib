@@ -54,9 +54,6 @@ configuration options use the source:
 	       is first in list. -->
 	  <parameter name="basedir-list" value="/docuserver/images:/docuserver/scaled/small" />
 	
-	  <!-- mimimum amount of scaling done with antialiasing -->
-	  <parameter name="subsample-minimum" value="2"/>
-	
 	  <!-- default interpolation quality (0=worst) -->
 	  <parameter name="default-quality" value="2"/>
 	
@@ -88,7 +85,7 @@ configuration options use the source:
 	  <!-- use mapping of "virtual directories" to real directories on the server -->
 	  <parameter name="use-mapping" value="false"/>
 	
-	  <!-- location of XML mapping file -->
+	  <!-- location of XML name mapping file -->
 	  <parameter name="mapping-file" value="digilib-map.xml"/>
 	
 	  <!-- location of logger config file -->

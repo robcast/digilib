@@ -1,31 +1,5 @@
 package digilib.image;
 
-/*
- * #%L
- * A class for storing the set of parameters necessary for scaling images 
- * with an ImageWorker.
- * 
- * %%
- * Copyright (C) 2001 - 2013 MPIWG Berlin
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 3 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-3.0.html>.
- * #L%
- * Author: Robert Casties (robcast@berlios.de)
- */
-
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 
@@ -69,10 +43,11 @@ public class ImageJobDescription extends ParameterMap {
     protected DocuDirectory fileDir = null;
     protected DocuImage docuImage = null;
     protected String filePath = null;
-    protected ImageSize expectedSourceSize = null;
-    protected Double scaleXY = null;
-    protected Rectangle2D userImgArea = null;
-    protected Rectangle2D outerUserImgArea = null;
+    protected ImageSize minSourceSize = null;
+    protected Double scaleX = null;
+    protected Double scaleY = null;
+    protected Rectangle2D imgArea = null;
+    protected Rectangle2D outerImgArea = null;
     protected Boolean imageSendable = null;
     protected String mimeType = null;
     protected Integer paramDW = null;
@@ -83,6 +58,7 @@ public class ImageJobDescription extends ParameterMap {
     protected Float paramWH = null;
     protected DocuDirCache dirCache = null;
 	protected ImageSize hiresSize = null;
+	protected ImageSize imgSize = null;
 
     /**
      * create empty ImageJobDescription.
@@ -165,6 +141,7 @@ public class ImageJobDescription extends ParameterMap {
      */
     public static ImageJobDescription getInstance(DigilibRequest dlReq, DigilibConfiguration dlcfg) {
         ImageJobDescription newMap = new ImageJobDescription(dlcfg);
+        newMap.initParams();
         // add all params to this map
         newMap.params.putAll(dlReq.getParams());
         newMap.initOptions();
@@ -183,11 +160,159 @@ public class ImageJobDescription extends ParameterMap {
      */
     public static ImageJobDescription getInstance(ParameterMap pm, DigilibConfiguration dlcfg) {
         ImageJobDescription newMap = new ImageJobDescription(dlcfg);
+        newMap.initParams();
         // add all params to this map
         newMap.params.putAll(pm.getParams());
         newMap.initOptions();
         return newMap;
     }
+
+    
+    /**
+     * Prepare image scaling factors and coordinates.
+     * 
+     * Uses image size and user parameters.
+     * 
+     * Sets scaleX, scaleY, imgArea.
+     * 
+     * @return
+     * @throws IOException
+     * @throws ImageOpException
+     */
+    public void prepareScaleParams() throws IOException, ImageOpException {
+        // logger.debug("get_scaleXY()");
+
+    	/*
+         * get image region of interest
+         */
+        // size of the currently selected input image
+        imgSize  = getImgSize();
+        // transform from relative [0,1] to image coordinates.
+        double areaXf = getWx() * imgSize.getWidth();
+        double areaYf = getWy() * imgSize.getHeight();
+        double areaWidthF = getWw() * imgSize.getWidth();
+        double areaHeightF = getWh() * imgSize.getHeight();
+        // round to pixels
+        long areaX = Math.round(areaXf);
+        long areaY = Math.round(areaYf);
+        long areaHeight = Math.round(areaHeightF);
+        long areaWidth = Math.round(areaWidthF);
+
+        /*
+         * calculate scaling factors
+         */
+		if (isScaleToFit()) {
+            /*
+             * scale to fit -- scaling factor based on destination size and user area
+             */
+            scaleX = getDw() / (double) areaWidth;
+            scaleY = getDh() / (double) areaHeight;
+            if (scaleX == 0) {
+            	// dw undefined
+            	scaleX = scaleY;
+            } else if (scaleY == 0) {
+            	// dh undefined
+            	scaleY = scaleX;
+            } else {
+                // use the smaller factor to get fit-in-box
+            	if (scaleX > scaleY) {
+            		scaleX = scaleY;
+            		if (hasOption("fill")) {
+            			// fill mode uses whole destination rect
+            			// TODO: should we center, clip or shift the area?
+            			areaWidth = (long) (getDw() / scaleX);
+            		}
+            	} else {
+            		scaleY = scaleX;
+            		if (hasOption("fill")) {
+            			// fill mode uses whole destination rect
+            			// TODO: should we center, clip or shift the area?
+            			areaHeight = (long) (getDh() / scaleY);
+            		}
+            	}
+            }
+            
+        } else if (isSqueezeToFit()) {
+            /*
+             * squeeze to fit -- scaling factor based on destination size and user area
+             */
+            scaleX = getDw() / (double) areaWidth;
+            scaleY = getDh() / (double) areaHeight;
+            
+        } else if (isCropToFit()){
+            /*
+             * crop to fit -- don't scale
+             */
+            areaWidth = getDw();
+            areaHeight = getDh();
+            scaleX = 1d;
+            scaleY = 1d;
+
+        } else if (isAbsoluteScale()) {
+            /*
+             * absolute scaling factor -- either original size, based on dpi, or absolute 
+             */
+            if (hasOption("osize")) {
+                /*
+                 * get original resolution from metadata
+                 */
+                imageSet.checkMeta();
+                double origResX = imageSet.getResX();
+                double origResY = imageSet.getResY();
+                if ((origResX == 0) || (origResY == 0)) {
+                    throw new ImageOpException("Missing image DPI information!");
+                }
+                double ddpix = getAsFloat("ddpix");
+                double ddpiy = getAsFloat("ddpiy");
+                if (ddpix == 0 || ddpiy == 0) {
+                    double ddpi = getAsFloat("ddpi");
+                    if (ddpi == 0) {
+                        throw new ImageOpException("Missing display DPI information!");
+                    } else {
+                        ddpix = ddpi;
+                        ddpiy = ddpi;
+                    }
+                }
+                // calculate absolute scale factor
+                scaleX = ddpix / origResX;
+                scaleY = ddpiy / origResY;
+                
+            } else {
+                /*
+                 * explicit absolute scale factor
+                 */
+                double scaleXY = (double) getAsFloat("scale");
+                scaleX = scaleXY;
+                scaleY = scaleXY;
+                // use original size if no destination size given
+                if (getDw() == 0 && getDh() == 0) {
+                    paramDW = (int) areaWidth;
+                    paramDH = (int) areaHeight;
+                }
+            }
+            /*
+             * correct scaling factor if we use a pre-scaled image
+             */
+            hiresSize = getHiresSize();
+            if (imgSize.getWidth() != hiresSize.getWidth()) {
+                double preScale = (double) hiresSize.getWidth() / (double) imgSize.getWidth();
+				scaleX *= preScale;
+				scaleY *= preScale;
+            }
+            areaWidth = Math.round(getDw() / scaleX);
+            areaHeight = Math.round(getDh() / scaleY);
+            
+        } else {
+            throw new ImageOpException("Unknown scaling mode!");
+        }
+
+		/*
+		 * set image area
+		 */
+		imgArea = new Rectangle2D.Double(areaX, areaY, areaWidth, areaHeight);
+    
+    }
+    
 
     /**
      * Returns the mime-type of the input.
@@ -195,7 +320,7 @@ public class ImageJobDescription extends ParameterMap {
      * @return
      * @throws IOException
      */
-    public String getMimeType() throws IOException {
+    public String getInputMimeType() throws IOException {
         if (mimeType == null) {
             input = getInput();
             mimeType = input.getMimetype();
@@ -218,7 +343,7 @@ public class ImageJobDescription extends ParameterMap {
         }
         // use input image type
         try {
-            String mt = getMimeType();
+            String mt = getInputMimeType();
             if ((mt.equals("image/jpeg") || mt.equals("image/jp2") || mt.equals("image/fpx"))) {
                 return "image/jpeg";
             } else {
@@ -261,14 +386,14 @@ public class ImageJobDescription extends ParameterMap {
                 input = imageSet.getBiggest();
             } else if (isLoresOnly()) {
                 // enforced lores uses next smaller resolution
-                input = imageSet.getNextSmaller(getExpectedSourceSize());
+                input = imageSet.getNextSmaller(getMinSourceSize());
                 if (input == null) {
                     // this is the smallest we have
                     input = imageSet.getSmallest();
                 }
             } else {
                 // autores: use next higher resolution
-                input = imageSet.getNextBigger(getExpectedSourceSize());
+                input = imageSet.getNextBigger(getMinSourceSize());
                 if (input == null) {
                     // this is the highest we have
                     input = imageSet.getBiggest();
@@ -342,18 +467,57 @@ public class ImageJobDescription extends ParameterMap {
         return filePath;
     }
 
+    /**
+     * Only use the highest resolution image.
+     * 
+     * @return
+     */
     public boolean isHiresOnly() {
         return hasOption("clip") || hasOption("hires");
     }
 
+    /**
+     * Prefer a prescaled lower resolution image.
+     * 
+     * @return
+     */
     public boolean isLoresOnly() {
         return hasOption("lores");
     }
 
+    /**
+     * Scale according to zoom area and destination size preserving aspect ratio.
+     * 
+     * @return
+     */
     public boolean isScaleToFit() {
-        return !(hasOption("clip") || hasOption("osize") || hasOption("ascale"));
+        return hasOption("fit") || 
+        		!(hasOption("clip") || hasOption("osize") || hasOption("ascale") || hasOption("squeeze"));
     }
 
+    /**
+     * Do not scale, just crop.
+     * 
+     * @return
+     */
+    public boolean isCropToFit() {
+        return hasOption("clip");
+    }
+
+    /**
+     * Scale according to zoom area and destination size violating aspect ratio.
+     * 
+     * @return
+     */
+    public boolean isSqueezeToFit() {
+        return hasOption("squeeze");
+    }
+
+    /**
+     * Scale according to fixed factor independent of destination size.
+     * 
+     * @return
+     */
     public boolean isAbsoluteScale() {
         return hasOption("osize") || hasOption("ascale");
     }
@@ -361,25 +525,54 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Returns the minimum size the source image should have for scaling.
      * 
+     * This function is called by getInput(). It must not assume a selected input image!
+     * 
      * @return
      * @throws IOException
      */
-    public ImageSize getExpectedSourceSize() throws IOException {
-        if (expectedSourceSize == null) {
-            expectedSourceSize = new ImageSize();
-            if (isScaleToFit()) {
-                // scale to fit -- calculate minimum source size
-                float scale = (1 / Math.min(getWw(), getWh())) * getAsFloat("ws");
-                expectedSourceSize.setSize((int) (getDw() * scale), (int) (getDh() * scale));
-            } else if (isAbsoluteScale() && hasOption("ascale")) {
-                // absolute scale -- apply scale to hires size
-                expectedSourceSize = getHiresSize().getScaled(getAsFloat("scale"));
-            } else {
-                // clip to fit -- source = destination size
-                expectedSourceSize.setSize((int) (getDw() * getAsFloat("ws")), (int) (getDh() * getAsFloat("ws")));
-            }
+    public ImageSize getMinSourceSize() throws IOException {
+        //logger.debug("getMinSourceSize()");
+        if (minSourceSize != null) {
+        	return minSourceSize;
         }
-        return expectedSourceSize;
+        
+        minSourceSize = new ImageSize();
+        if (isScaleToFit()) {
+        	/*
+        	 * scale to fit -- calculate minimum source size
+        	 * 
+        	 * roughly: w_min = dw * 1/ww
+        	 * 
+        	 * Note: dw or dh can be empty (=0) 
+        	 */
+        	float scale = (1 / Math.min(getWw(), getWh()));
+        	minSourceSize.setSize(
+        			Math.round(getAsInt("dw") * scale), 
+        			Math.round(getAsInt("dh") * scale));
+        	
+        } else if (isSqueezeToFit()) {
+        	/*
+        	 * squeeze to fit -- calculate minimum source size
+        	 * 
+        	 * w_min = dw * 1/ww
+        	 */
+        	minSourceSize.setSize(
+        			Math.round(getAsInt("dw") / getWw()), 
+        			Math.round(getAsInt("dh") / getWh()));
+        	
+        } else if (isAbsoluteScale() && hasOption("ascale")) {
+        	/*
+        	 * absolute scale -- apply scale to hires size
+        	 */
+        	minSourceSize = getHiresSize().getScaled(getAsFloat("scale"));
+        	
+        } else {
+        	/*
+        	 * clip or other -- source = hires size
+        	 */
+        	minSourceSize = getHiresSize();
+        }
+        return minSourceSize;
     }
 
     /**
@@ -389,114 +582,59 @@ public class ImageJobDescription extends ParameterMap {
      * @throws IOException
      */
     public ImageSize getHiresSize() throws IOException {
-        logger.debug("get_hiresSize()");
+        //logger.debug("get_hiresSize()");
         if (hiresSize == null) {
 	        ImageSet fileset = getImageSet();
 	        ImageInput hiresFile = fileset.getBiggest();
 	        hiresSize = hiresFile.getSize();
+	        if (hiresSize == null) {
+	        	throw new FileOpException("Can't get size from hires image file!");
+	        }
         }
         return hiresSize;
     }
 
     /**
-     * Returns image scaling factor.
-     * Uses image size and user parameters.
-     * Modifies scaleXY, userImgArea.
+     * Returns the size of the selected input image.
+     * 
+     * @return
+     * @throws IOException
+     */
+    public ImageSize getImgSize() throws IOException {
+        //logger.debug("get_hiresSize()");
+        if (imgSize == null) {
+        	imgSize = getInput().getSize();
+        }
+        return imgSize;
+    }
+
+      
+    /**
+     * Return the X scale factor.
      * 
      * @return
      * @throws IOException
      * @throws ImageOpException
      */
-    public double getScaleXY() throws IOException, ImageOpException {
-        // logger.debug("get_scaleXY()");
-        if (scaleXY != null) {
-            return scaleXY.doubleValue();
-        }
+    public double getScaleX() throws IOException, ImageOpException {
+    	if (scaleX == null) {
+    		prepareScaleParams();
+    	}
+    	return scaleX.doubleValue();
+    }
 
-        /*
-         * calculate region of interest
-         */
-        double areaWidth;
-        double areaHeight;
-        // size of the currently selected input image
-        ImageSize imgSize = getInput().getSize();
-        // user area is in [0,1] coordinates
-        Rectangle2D relUserArea = new Rectangle2D.Float(getWx(), getWy(), getWw(), getWh());
-        // transform from relative [0,1] to image coordinates.
-        AffineTransform imgTrafo = AffineTransform.getScaleInstance(imgSize.getWidth(), imgSize.getHeight());
-        // transform user coordinate area to image coordinate area
-        userImgArea = imgTrafo.createTransformedShape(relUserArea).getBounds2D();
-
-        /*
-         * calculate scaling factor
-         */
-        float ws = getAsFloat("ws");
-        if (isScaleToFit()) {
-            /*
-             * scale to fit -- scaling factor based on destination size and user area
-             */
-            areaWidth = (double) userImgArea.getWidth();
-            areaHeight = (double) userImgArea.getHeight();
-            double scaleX = getDw() / areaWidth * ws;
-            double scaleY = getDh() / areaHeight * ws;
-            scaleXY = (scaleX > scaleY) ? scaleY : scaleX;
-        } else if (isAbsoluteScale()) {
-            /*
-             * absolute scaling factor -- either original size, based on dpi, or absolute 
-             */
-            if (hasOption("osize")) {
-                // get original resolution from metadata
-                imageSet.checkMeta();
-                double origResX = imageSet.getResX();
-                double origResY = imageSet.getResY();
-                if ((origResX == 0) || (origResY == 0)) {
-                    throw new ImageOpException("Missing image DPI information!");
-                }
-                double ddpix = getAsFloat("ddpix");
-                double ddpiy = getAsFloat("ddpiy");
-                if (ddpix == 0 || ddpiy == 0) {
-                    double ddpi = getAsFloat("ddpi");
-                    if (ddpi == 0) {
-                        throw new ImageOpException("Missing display DPI information!");
-                    } else {
-                        ddpix = ddpi;
-                        ddpiy = ddpi;
-                    }
-                }
-                // calculate absolute scale factor
-                double sx = ddpix / origResX;
-                double sy = ddpiy / origResY;
-                // currently only same scale -- mean value
-                scaleXY = (sx + sy) / 2f;
-            } else {
-                // absolute scale factor
-                scaleXY = (double) getAsFloat("scale");
-                // use original size if no destination size given
-                if (getDw() == 0 && getDh() == 0) {
-                    paramDW = (int) userImgArea.getWidth();
-                    paramDH = (int) userImgArea.getHeight();
-                }
-            }
-            // we need to correct the factor if we use a pre-scaled image
-            ImageSize hiresSize = getHiresSize();
-            if (imgSize.getWidth() != hiresSize.getWidth()) {
-                scaleXY *= (double) hiresSize.getWidth() / (double) imgSize.getWidth();
-            }
-            areaWidth = getDw() / scaleXY * ws;
-            areaHeight = getDh() / scaleXY * ws;
-            // reset user area size
-            userImgArea.setRect(userImgArea.getX(), userImgArea.getY(), areaWidth, areaHeight);
-        } else {
-            /*
-             * crop to fit -- don't scale
-             */
-            areaWidth = getDw() * ws;
-            areaHeight = getDh() * ws;
-            // reset user area size
-            userImgArea.setRect(userImgArea.getX(), userImgArea.getY(), areaWidth, areaHeight);
-            scaleXY = 1d;
-        }
-        return scaleXY.doubleValue();
+    /**
+     * Return the Y scale factor.
+     * 
+     * @return
+     * @throws IOException
+     * @throws ImageOpException
+     */
+    public double getScaleY() throws IOException, ImageOpException {
+    	if (scaleY == null) {
+    		prepareScaleParams();
+    	}
+    	return scaleY.doubleValue();
     }
 
     /**
@@ -507,22 +645,10 @@ public class ImageJobDescription extends ParameterMap {
      * @throws IOException
      */
     public int getDw() throws IOException {
-        logger.debug("get_paramDW()");
+        //logger.debug("get_paramDW()");
         if (paramDW == null) {
-
             paramDW = getAsInt("dw");
             paramDH = getAsInt("dh");
-
-            float imgAspect = getInput().getAspect();
-            if (paramDW == 0) {
-                // calculate dw
-                paramDW = Math.round(paramDH * imgAspect);
-                setValue("dw", paramDW);
-            } else if (paramDH == 0) {
-                // calculate dh
-                paramDH = Math.round(paramDW / imgAspect);
-                setValue("dh", paramDH);
-            }
         }
         return paramDW;
     }
@@ -535,75 +661,63 @@ public class ImageJobDescription extends ParameterMap {
      * @throws IOException
      */
     public int getDh() throws IOException {
-        logger.debug("get_paramDH()");
+        //logger.debug("get_paramDH()");
         if (paramDH == null) {
-
             paramDW = getAsInt("dw");
             paramDH = getAsInt("dh");
-
-            float imgAspect = getInput().getAspect();
-            if (paramDW == 0) {
-                // calculate dw
-                paramDW = Math.round(paramDH * imgAspect);
-                setValue("dw", paramDW);
-            } else if (paramDH == 0) {
-                // calculate dh
-                paramDH = Math.round(paramDW / imgAspect);
-                setValue("dh", paramDH);
-            }
         }
         return paramDH;
     }
 
     /**
-     * Returns the width of the image area.
+     * Returns the relative width of the image area.
      * Uses ww parameter.
      * 
      * @return
      * @throws IOException
      */
     public Float getWw() throws IOException {
-        logger.debug("get_paramWW()");
+        //logger.debug("get_paramWW()");
         if (paramWW == null) {
         	paramWW = getAsFloat("ww");
         	if (hasOption("pxarea")) {
         		// area in absolute pixels - convert to relative
-        		ImageSize imgSize = getHiresSize();
-        		paramWW = paramWW / imgSize.getWidth(); 
+        		hiresSize = getHiresSize();
+        		paramWW = paramWW / hiresSize.getWidth(); 
         	}
         }
         return paramWW;
     }
 
     /**
-     * Returns the height of the image area.
+     * Returns the relative height of the image area.
      * Uses wh parameter.
      * 
      * @return
      * @throws IOException
      */
     public Float getWh() throws IOException {
-        logger.debug("get_paramWH()");
+        //logger.debug("get_paramWH()");
         if (paramWH == null) {
         	paramWH = getAsFloat("wh");
         	if (hasOption("pxarea")) {
         		// area in absolute pixels - convert to relative
-        		ImageSize imgSize = getHiresSize();
-        		paramWH = paramWH / imgSize.getHeight(); 
+        		hiresSize = getHiresSize();
+        		paramWH = paramWH / hiresSize.getHeight(); 
         	}
         }
         return paramWH;
     }
 
     /**
-     * Returns the x-offset of the image area.
+     * Returns the relative x-offset of the image area.
      * Uses wx parameter.
      * 
      * @return
      * @throws IOException
      */
     public Float getWx() throws IOException {
-        logger.debug("get_paramWX()");
+        //logger.debug("get_paramWX()");
         if (paramWX == null) {
         	paramWX = getAsFloat("wx");
         	if (hasOption("pxarea")) {
@@ -616,20 +730,20 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     /**
-     * Returns the y-offset of the image area.
+     * Returns the relative y-offset of the image area.
      * Uses wy parameter.
      * 
      * @return
      * @throws IOException
      */
     public Float getWy() throws IOException {
-        logger.debug("get_paramWY()");
+        //logger.debug("get_paramWY()");
         if (paramWY == null) {
         	paramWY = getAsFloat("wy");
         	if (hasOption("pxarea")) {
         		// area in absolute pixels - convert to relative
         		ImageSize imgSize = getHiresSize();
-        		paramWY = paramWY / imgSize.getWidth(); 
+        		paramWY = paramWY / imgSize.getHeight(); 
         	}
         }
         return paramWY;
@@ -641,7 +755,7 @@ public class ImageJobDescription extends ParameterMap {
      * @return
      */
     public int getScaleQual() {
-        logger.debug("get_scaleQual()");
+        //logger.debug("get_scaleQual()");
         int qual = dlConfig.getAsInt("default-quality");
         if (hasOption("q0"))
             qual = 0;
@@ -671,53 +785,48 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     /**
-     * Returns the area of the source image that will be transformed into the
-     * destination image.
-     * 
-     * @return
-     * @throws IOException
-     * @throws ImageOpException
-     */
-    public Rectangle2D getUserImgArea() throws IOException, ImageOpException {
-        if (userImgArea == null) {
-            // getScaleXY sets userImgArea
-            getScaleXY();
-        }
-        return userImgArea;
-    }
-
-    /**
      * Returns the maximal area of the source image that will be used.
      * 
+     * This was meant to include extra pixels outside the 
+     * imgArea when rotating by oblique angles but is not yet implemented.
+     * Currently returns imgArea.
+     * 
      * @return
      * @throws IOException
      * @throws ImageOpException
      */
-    public Rectangle2D getOuterUserImgArea() throws IOException, ImageOpException {
-        if (outerUserImgArea == null) {
-            outerUserImgArea = getUserImgArea();
+    public Rectangle2D getOuterImgArea() throws IOException, ImageOpException {
+        if (outerImgArea == null) {
+        	// calculate scale parameters
+        	if (imgArea == null) {
+        		prepareScaleParams();
+        	}
+            // start with imgArea
+            outerImgArea = imgArea;
 
             // image size in pixels
             ImageSize imgSize = getInput().getSize();
-            Rectangle2D imgBounds = new Rectangle2D.Float(0, 0, imgSize.getWidth(), imgSize.getHeight());
+            Rectangle2D imgBounds = new Rectangle2D.Double(0, 0, imgSize.getWidth(), imgSize.getHeight());
 
             // clip area at the image border
-            outerUserImgArea = outerUserImgArea.createIntersection(imgBounds);
+            outerImgArea = outerImgArea.createIntersection(imgBounds);
 
             // check image parameters sanity
-            scaleXY = getScaleXY();
-            logger.debug("outerUserImgArea.getWidth()=" + outerUserImgArea.getWidth());
-            logger.debug("get_scaleXY() * outerUserImgArea.getWidth() = " + (scaleXY * outerUserImgArea.getWidth()));
-
-            if ((outerUserImgArea.getWidth() < 1) || (outerUserImgArea.getHeight() < 1)
-                    || (scaleXY * outerUserImgArea.getWidth() < 2) || (scaleXY * outerUserImgArea.getHeight() < 2)) {
+            if ((outerImgArea.getWidth() < 1) || (outerImgArea.getHeight() < 1)
+                    || (scaleX * outerImgArea.getWidth() < 2) || (scaleY * outerImgArea.getHeight() < 2)) {
                 logger.error("ERROR: invalid scale parameter set!");
+            	logger.debug("scaleX="+scaleX+" scaleY="+scaleY+" outerImgArea="+outerImgArea);
                 throw new ImageOpException("Invalid scale parameter set!");
             }
         }
-        return outerUserImgArea;
+        return outerImgArea;
     }
 
+    /**
+     * Get the RGBM parameter set.
+     * 
+     * @return
+     */
     public float[] getRGBM() {
         float[] paramRGBM = null;// {0f,0f,0f};
         Parameter p = params.get("rgbm");
@@ -727,6 +836,11 @@ public class ImageJobDescription extends ParameterMap {
         return paramRGBM;
     }
 
+    /**
+     * Get the RGBA parameter set.
+     * 
+     * @return
+     */
     public float[] getRGBA() {
         float[] paramRGBA = null;// {0f,0f,0f};
         Parameter p = params.get("rgba");
@@ -755,10 +869,12 @@ public class ImageJobDescription extends ParameterMap {
      */
     public boolean isImageSendable() throws IOException {
         if (imageSendable == null) {
-            String mimeType = getMimeType();
+            String mimeType = getInputMimeType();
             imageSendable = (mimeType != null
             		// input image is browser compatible
                     && (mimeType.equals("image/jpeg") || mimeType.equals("image/png") || mimeType.equals("image/gif"))
+                    // no forced type conversion
+                    && !(hasOption("jpg") || hasOption("png"))
                     // no zooming
                     && !(getWx() > 0f || getWy() > 0f || getWw() < 1f || getWh() < 1f
                     // no other image operations
@@ -781,7 +897,7 @@ public class ImageJobDescription extends ParameterMap {
      */
     public boolean isTransformRequired() throws IOException {
         ImageSize is = getInput().getSize();
-        ImageSize ess = getExpectedSourceSize();
+        ImageSize ess = getMinSourceSize();
         // does the image require processing?
         if (isImageSendable()) {
         	// does the image require rescaling?

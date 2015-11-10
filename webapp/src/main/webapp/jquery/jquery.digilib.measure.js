@@ -1393,7 +1393,7 @@
                     shape.properties.maxvtx = 2;
                 },
                 'svg' : function (shape) {
-                    var $s = factory['Line'](shape);
+                    var $s = factory['Line'].svg(shape);
                     var place = $s.place;
                     var gridID = shape.id + '-grid';
                     var props = shape.properties;

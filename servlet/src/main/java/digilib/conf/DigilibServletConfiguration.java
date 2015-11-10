@@ -88,7 +88,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
     public final Long webappStartTime = System.currentTimeMillis();
 
     public static String getClassVersion() {
-        return "2.3.0 srv";
+        return DigilibConfiguration.getClassVersion() + " srv";
     }
     
     /* non-static getVersion for Java inheritance */
