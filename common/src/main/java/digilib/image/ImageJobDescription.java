@@ -1,5 +1,31 @@
 package digilib.image;
 
+/*
+ * #%L
+ * A class for storing the set of parameters necessary for scaling images with an ImageWorker.
+ * 
+ * Digital Image Library servlet components
+ * 
+ * %%
+ * Copyright (C) 2002 - 2015 MPIWG Berlin
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 3 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-3.0.html>.
+ * #L%
+ * Author: Robert Casties (robcast@berlios.de)
+ */
+
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 
@@ -203,7 +229,9 @@ public class ImageJobDescription extends ParameterMap {
          */
 		if (isScaleToFit()) {
             /*
-             * scale to fit -- scaling factor based on destination size and user area
+             * scale to fit -- scale factor based on destination size dw/dh and user area
+             * 
+             * uses a uniform scale factor for x and y
              */
             scaleX = getDw() / (double) areaWidth;
             scaleY = getDh() / (double) areaHeight;
@@ -234,7 +262,9 @@ public class ImageJobDescription extends ParameterMap {
             
         } else if (isSqueezeToFit()) {
             /*
-             * squeeze to fit -- scaling factor based on destination size and user area
+             * squeeze to fit -- scale factor based on destination size and user area
+             * 
+             * uses separate scale factors for x and y
              */
             scaleX = getDw() / (double) areaWidth;
             scaleY = getDh() / (double) areaHeight;
@@ -291,7 +321,7 @@ public class ImageJobDescription extends ParameterMap {
                 }
             }
             /*
-             * correct scaling factor if we use a pre-scaled image
+             * correct absolute scale factor if we use a pre-scaled image
              */
             hiresSize = getHiresSize();
             if (imgSize.getWidth() != hiresSize.getWidth()) {
