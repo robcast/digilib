@@ -187,12 +187,15 @@ public class ImageJobDescription extends ParameterMap {
      * @param pm
      * @param dlcfg
      * @return
+     * @throws ImageOpException 
+     * @throws IOException 
      */
-    public static ImageJobDescription getInstance(ParameterMap pm, DigilibConfiguration dlcfg) {
+    public static ImageJobDescription getInstance(ParameterMap pm, DigilibConfiguration dlcfg) throws IOException, ImageOpException {
         ImageJobDescription newMap = new ImageJobDescription(dlcfg);
         // add all params to this map
         newMap.params.putAll(pm.getParams());
         newMap.initOptions();
+        newMap.prepareScaleParams();
         return newMap;
     }
 
