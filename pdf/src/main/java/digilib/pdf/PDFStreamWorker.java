@@ -176,7 +176,7 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 		Image pdfimg = Image.getInstance(img.getAwtImage(), null);
 		float docW = PageSize.A4.getWidth() - 2 * PageSize.A4.getBorder();
 		float docH = PageSize.A4.getHeight() - 2 * PageSize.A4.getBorder();
-		// TODO: do we really scale this again?
+		// fit the image to the page
 		pdfimg.scaleToFit(docW, docH);
 		// add to PDF
 		doc.add(pdfimg);

@@ -274,7 +274,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             return input;
         } catch (FileOpException e) {
             // maybe just our class doesn't know what to do
-            logger.error("ImageLoaderDocuimage unable to identify:", e);
+            logger.error("ImageLoaderDocuimage unable to identify: "+e);
             return null;
         } finally {
             if (!reuseReader && reader != null) {
@@ -481,8 +481,22 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         } catch (IOException e) {
             logger.error("Error writing image:", e);
             throw new FileOpException("Error writing image!", e);
+        } finally {
+        	if (writer != null) {
+        		writer.dispose();
+        	}
+        	if (imgout != null) {
+        		/* 
+        		 * ImageOutputStream likes to keep ServletOutputStream and close it when disposed.
+        		 * Thanks to Tom Van Wietmarschen's mail to tomcat-users on July 4, 2008!
+        		 */
+        		try {
+					imgout.close();
+				} catch (IOException e) {
+					logger.error("Error closing ImageOutputStream!", e);
+				}
+        	}
         }
-        // TODO: should we: finally { writer.dispose(); }
     }
 
     /* 
@@ -511,14 +525,24 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         double deltaX = targetW - Math.floor(targetW);
         double deltaY = targetH - Math.floor(targetH);
         if (deltaX > epsilon) {
-        	// round up
-        	logger.debug("rounding up x scale factor");
-            scaleX += (1 - deltaX) / imgW;
+        	// round x
+            if (deltaX > 0.5d) {
+                logger.debug("rounding up x scale factor");
+                scaleX += (1 - deltaX) / imgW;
+            } else {
+                logger.debug("rounding down x scale factor");
+                scaleX -= deltaX / imgW;
+            }
         }
         if (deltaY > epsilon) {
-        	// round up
-        	logger.debug("rounding up y scale factor");
-            scaleY += (1 - deltaY) / imgH;
+            // round y
+            if (deltaY > 0.5d) {
+                logger.debug("rounding up y scale factor");
+                scaleY += (1 - deltaY) / imgH;
+            } else {
+                logger.debug("rounding down y scale factor");
+                scaleY -= deltaY / imgH;
+            }
         }
         // scale with AffineTransformOp
         logger.debug("scaled from " + imgW + "x" + imgH + " img=" + img);

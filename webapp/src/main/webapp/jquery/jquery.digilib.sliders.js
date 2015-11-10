@@ -151,13 +151,14 @@ digilib sliders plugin
 
     // update preview values for a given slider
     var updatePreview = function ($slider) {
-        if ($slider == null) return;
-        var cls = $slider.data('cls');
+        if ($slider == null) {
+            return;
+            }
         var $preview = $slider.data('preview');
         if ($preview == null) {
-            console.error("slider updatePreview without preview!");
             return;
-        }
+            }
+        var cls = $slider.data('cls');
         var $td2 = $preview.find('table.'+cls+'preview td');
         // account for current brgt/cont/rgbm/rgba values
         var calcRGBValue = function (code, val) {
@@ -168,7 +169,7 @@ digilib sliders plugin
             var brgt = colorVals.brgt;
             var resultVal = cont + brgt;
             return Math.min(Math.max(Math.round(resultVal), 0), 255);
-           };
+            };
         // color one table cell according to index position
         var setRGBValues = function (index) {
             var val = index * 32;
@@ -340,12 +341,12 @@ digilib sliders plugin
                 update($slider, val);
                 }
             };
-        var reset = function () {
+        var resetToStartvalue = function () {
             $text.val(startvalue);
             textChange();
             };
-        var resetdefault = function () {
-            $text.val(opts.start);
+        var resetToDefaultvalue = function () {
+            $text.val(options.start);
             textChange();
             };
         // connect slider and input
@@ -354,8 +355,8 @@ digilib sliders plugin
         $slider.data({
             '$text' : $text,
             '$range' : $range,
-            'reset' : reset,
-            'default' : resetdefault,
+            'reset' : resetToStartvalue,
+            'default' : resetToDefaultvalue,
             'update' : null
         });
         return $slider;
@@ -434,7 +435,7 @@ digilib sliders plugin
             var rgba = input['ra'].val() + '/' + input['ga'].val() + '/' + input['ba'].val();
             var rgbm = input['rm'].val() + '/' + input['gm'].val() + '/' + input['bm'].val();
             if (typeof onSubmit === 'function') {
-                (rgbm, rgba);
+                onSubmit(rgbm, rgba);
                 }
             };
         $.each(primaryColors, insertTableRow);

@@ -141,6 +141,7 @@ public class ImageJobDescription extends ParameterMap {
      */
     public static ImageJobDescription getInstance(DigilibRequest dlReq, DigilibConfiguration dlcfg) {
         ImageJobDescription newMap = new ImageJobDescription(dlcfg);
+        newMap.initParams();
         // add all params to this map
         newMap.params.putAll(dlReq.getParams());
         newMap.initOptions();
@@ -159,6 +160,7 @@ public class ImageJobDescription extends ParameterMap {
      */
     public static ImageJobDescription getInstance(ParameterMap pm, DigilibConfiguration dlcfg) {
         ImageJobDescription newMap = new ImageJobDescription(dlcfg);
+        newMap.initParams();
         // add all params to this map
         newMap.params.putAll(pm.getParams());
         newMap.initOptions();
@@ -585,6 +587,9 @@ public class ImageJobDescription extends ParameterMap {
 	        ImageSet fileset = getImageSet();
 	        ImageInput hiresFile = fileset.getBiggest();
 	        hiresSize = hiresFile.getSize();
+	        if (hiresSize == null) {
+	        	throw new FileOpException("Can't get size from hires image file!");
+	        }
         }
         return hiresSize;
     }
@@ -793,7 +798,9 @@ public class ImageJobDescription extends ParameterMap {
     public Rectangle2D getOuterImgArea() throws IOException, ImageOpException {
         if (outerImgArea == null) {
         	// calculate scale parameters
-        	prepareScaleParams();
+        	if (imgArea == null) {
+        		prepareScaleParams();
+        	}
             // start with imgArea
             outerImgArea = imgArea;
 
