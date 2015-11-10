@@ -798,7 +798,9 @@ public class ImageJobDescription extends ParameterMap {
     public Rectangle2D getOuterImgArea() throws IOException, ImageOpException {
         if (outerImgArea == null) {
         	// calculate scale parameters
-        	prepareScaleParams();
+        	if (imgArea == null) {
+        		prepareScaleParams();
+        	}
             // start with imgArea
             outerImgArea = imgArea;
 
