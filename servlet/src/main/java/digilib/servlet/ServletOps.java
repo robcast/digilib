@@ -379,6 +379,10 @@ public class ServletOps {
             logger.error("No response!");
             return;
         }
+        
+        /*
+         * get image size
+         */
         ImageSize size = null;
         try {
             // get original image size
@@ -393,15 +397,24 @@ public class ServletOps {
                 throw new ServletException("Unable to write error response!", e);
             }
         }
+        
+        /*
+         * get resource URL
+         */
         String url = dlReq.getServletRequest().getRequestURL().toString();
         if (url.endsWith("/info.json")) {
             url = url.substring(0, url.lastIndexOf("/info.json"));
         } else if (url.endsWith("/")) {
             url = url.substring(0, url.lastIndexOf("/"));
         }
+        
+        /*
+         * send response
+         */
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json,application/ld+json");
         PrintWriter writer;
+        logger.debug("sending info.json");
         try {
             writer = response.getWriter();
             writer.println("{");

@@ -1,5 +1,7 @@
 package digilib.conf;
 
+import java.io.IOException;
+
 /*
  * #%L
  * A container class for storing a set of instruction parameters 
@@ -33,6 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 
 import digilib.image.ImageJobDescription;
+import digilib.image.ImageOpException;
 import digilib.io.DocuDirectory;
 import digilib.io.FileOpException;
 import digilib.util.NumRange;
@@ -72,9 +75,10 @@ public class PDFRequest extends ParameterMap {
 	 * 
 	 * @param dlcfg		The DigilibConfiguration. 		
 	 * @param request
-	 * @throws FileOpException 
+	 * @throws ImageOpException 
+	 * @throws IOException 
 	 */
-	public PDFRequest(HttpServletRequest request, DigilibConfiguration dlcfg) throws FileOpException {
+	public PDFRequest(HttpServletRequest request, DigilibConfiguration dlcfg) throws IOException, ImageOpException {
 		super(30);
 		dlConfig = dlcfg;
 		initParams();
@@ -105,9 +109,10 @@ public class PDFRequest extends ParameterMap {
 	 * Read the request object.
 	 * 
 	 * @param request
-	 * @throws FileOpException 
+     * @throws ImageOpException 
+     * @throws IOException 
 	 */
-	public void setWithRequest(HttpServletRequest request) throws FileOpException {
+	public void setWithRequest(HttpServletRequest request) throws IOException, ImageOpException {
 	    // read matching request parameters for the parameters in this map 
 		for (String k : params.keySet()) {
 			if (request.getParameterMap().containsKey(k)) {
@@ -145,7 +150,7 @@ public class PDFRequest extends ParameterMap {
 	}
 
 	
-	public ImageJobDescription getImageJobInformation(){
+	public ImageJobDescription getImageJobInformation() throws IOException, ImageOpException{
 		return ImageJobDescription.getInstance(this, dlConfig);
 	}
 	
