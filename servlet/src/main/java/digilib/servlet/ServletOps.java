@@ -47,6 +47,7 @@ import digilib.image.ImageOpException;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.ImageInput;
+import digilib.io.ImageSet;
 import digilib.util.ImageSize;
 
 public class ServletOps {
@@ -384,10 +385,11 @@ public class ServletOps {
          * get image size
          */
         ImageSize size = null;
+        ImageSet imageSet = null;
         try {
             // get original image size
-            ImageInput img;
-            img = dlReq.getJobDescription().getImageSet().getBiggest();
+            imageSet = dlReq.getJobDescription().getImageSet();
+            ImageInput img = imageSet.getBiggest();
             size = img.getSize();
         } catch (FileOpException e) {
             try {
@@ -429,6 +431,7 @@ public class ServletOps {
                             +"; rel=\"http://www.w3.org/ns/json-ld#context\""
                             +"; type=\"application/ld+json\"");
                 }
+                // write info.json
                 writer = response.getWriter();
                 writer.println("{");
                 writer.println("\"@context\" : \"http://iiif.io/api/image/2/context.json\",");
@@ -437,12 +440,26 @@ public class ServletOps {
                 writer.println("\"width\" : " + size.width + ",");
                 writer.println("\"height\" : " + size.height + ",");
                 writer.println("\"profile\" : [");
-                writer.println("\"http://iiif.io/api/image/2/level2.json\",");
-                writer.println("{");
-                writer.println("\"formats\" : [\"jpg\", \"png\"],");
-                writer.println("\"qualities\" : [\"color\", \"grey\"],");
-                writer.println("\"supports\" : [\"mirroring\", \"rotationArbitrary\", \"sizeAboveFull\"],");
-                writer.println("}]");
+                writer.println("  \"http://iiif.io/api/image/2/level2.json\",");
+                writer.println("  {");
+                writer.println("    \"formats\" : [\"jpg\", \"png\"],");
+                writer.println("    \"qualities\" : [\"color\", \"gray\"],");
+                writer.println("    \"supports\" : [\"mirroring\", \"rotationArbitrary\", \"sizeAboveFull\"]");
+                writer.println("  }]");
+                // add sizes of prescaled images
+                int numImgs = imageSet.size();
+                if (numImgs > 1) {
+                    writer.println(", \"sizes\" : [");
+                    for (int i = numImgs - 1; i > 0; --i) {
+                        ImageInput ii = imageSet.get(i);
+                        ImageSize is = ii.getSize();
+                        writer.println("  {\"width\" : "+is.getWidth()+", \"height\" : "+is.getHeight()+"}"
+                                +((i > 1)?",":""));
+                    }
+                    writer.println("]");
+                }
+                writer.println("}");
+                
             } else {
                 /*
                  * IIIF Image API version 1 image information

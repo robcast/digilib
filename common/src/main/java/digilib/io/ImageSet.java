@@ -35,6 +35,9 @@ import digilib.util.ImageSize;
 /**
  * Set of ImageInputs of the same image in different resolutions.
  * 
+ * The images are be added in the order of higher to lower resolutions.
+ * The first image is considered the hires "original".
+ * 
  * @author casties
  */
 public class ImageSet {
@@ -101,11 +104,10 @@ public class ImageSet {
 	 * @return
 	 */
 	public ImageInput getNextSmaller(ImageSize size) {
-		for (ListIterator<ImageInput> i = getHiresIterator(); i.hasNext();) {
-			ImageInput f = i.next();
-            ImageSize is = f.getSize();
+        for (ImageInput i : list) {
+            ImageSize is = i.getSize();
             if (is != null && is.isTotallySmallerThan(size)) {
-				return f;
+				return i;
 			}
 		}
 		return null;
