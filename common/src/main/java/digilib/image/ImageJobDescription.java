@@ -83,6 +83,8 @@ public class ImageJobDescription extends ParameterMap {
     protected Float paramWY = null;
     protected Float paramWW = null;
     protected Float paramWH = null;
+    protected float[] paramRGBM = null;
+    protected float[] paramRGBA = null;
     protected DocuDirCache dirCache = null;
 	protected ImageSize hiresSize = null;
 	protected ImageSize imgSize = null;
@@ -482,7 +484,7 @@ public class ImageJobDescription extends ParameterMap {
 
     
     /**
-     * Returns the mime-type of the input.
+     * Return the mime-type of the input.
      * 
      * @return
      * @throws IOException
@@ -540,7 +542,7 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Returns the ImageInput to use.
      * 
-     * uses getMinSourceSize().
+     * Note: uses getMinSourceSize().
      * 
      * @return
      * @throws IOException
@@ -577,7 +579,7 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     /**
-     * Returns the DocuDirectory for the input (file).
+     * Return the DocuDirectory for the input (file).
      * 
      * @return
      * @throws FileOpException
@@ -594,7 +596,7 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     /**
-     * Returns the ImageSet to load.
+     * Return the ImageSet to load.
      * 
      * @return
      * @throws FileOpException
@@ -623,7 +625,7 @@ public class ImageJobDescription extends ParameterMap {
     
     
     /**
-     * Returns the file path name from the request.
+     * Return the file path name from the request.
      * 
      * @return
      */
@@ -692,9 +694,9 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     /**
-     * Returns the minimum size the source image should have for scaling.
+     * Return the minimum size the source image should have for scaling.
      * 
-     * This function is called by getInput(). It must not assume a selected input image!
+     * Note: this function is called by getInput(). It must not assume a selected input image!
      * 
      * @return
      * @throws IOException
@@ -713,7 +715,7 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     /**
-     * Returns the size of the highest resolution image.
+     * Return the size of the highest resolution image.
      * 
      * @return
      * @throws IOException
@@ -732,7 +734,7 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     /**
-     * Returns the size of the selected input image.
+     * Return the size of the selected input image.
      * 
      * @return
      * @throws IOException
@@ -775,40 +777,37 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     /**
-     * Returns the width of the destination image.
-     * Uses dh parameter and aspect ratio if dw parameter is empty.
+     * Return the width of the destination image.
+     * Uses dw parameter.
      * 
      * @return
-     * @throws IOException
      */
-    public int getDw() throws IOException {
+    public int getDw() {
         //logger.debug("get_paramDW()");
         if (paramDW == null) {
             paramDW = getAsInt("dw");
-            paramDH = getAsInt("dh");
         }
         return paramDW;
     }
 
     /**
-     * Returns the height of the destination image.
-     * Uses dw parameter and aspect ratio if dh parameter is empty.
+     * Return the height of the destination image.
+     * Uses dh parameter.
      * 
      * @return
-     * @throws IOException
      */
-    public int getDh() throws IOException {
+    public int getDh() {
         //logger.debug("get_paramDH()");
         if (paramDH == null) {
-            paramDW = getAsInt("dw");
             paramDH = getAsInt("dh");
         }
         return paramDH;
     }
 
     /**
-     * Returns the relative width of the image area.
+     * Return the relative width of the image area.
      * Uses ww parameter.
+     * Converts ww in pixels to relative. 
      * 
      * @return
      * @throws IOException
@@ -827,8 +826,9 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     /**
-     * Returns the relative height of the image area.
+     * Return the relative height of the image area.
      * Uses wh parameter.
+     * Converts wh in pixels to relative. 
      * 
      * @return
      * @throws IOException
@@ -847,8 +847,9 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     /**
-     * Returns the relative x-offset of the image area.
+     * Return the relative x-offset of the image area.
      * Uses wx parameter.
+     * Converts wx in pixels to relative. 
      * 
      * @return
      * @throws IOException
@@ -867,8 +868,9 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     /**
-     * Returns the relative y-offset of the image area.
+     * Return the relative y-offset of the image area.
      * Uses wy parameter.
+     * Converts wy in pixels to relative. 
      * 
      * @return
      * @throws IOException
@@ -887,7 +889,7 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     /**
-     * Returns image quality as an integer.
+     * Return image quality as an integer.
      * 
      * @return
      */
@@ -922,7 +924,7 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     /**
-     * Returns the maximal area of the source image that will be used.
+     * Return the maximum area of the source image that will be used.
      * 
      * This was meant to include extra pixels outside the 
      * imgArea when rotating by oblique angles but is not yet implemented.
@@ -965,10 +967,11 @@ public class ImageJobDescription extends ParameterMap {
      * @return
      */
     public float[] getRGBM() {
-        float[] paramRGBM = null;// {0f,0f,0f};
-        Parameter p = params.get("rgbm");
-        if (p.hasValue() && (!p.getAsString().equals("0/0/0"))) {
-            return p.parseAsFloatArray("/");
+        if (paramRGBM == null) {
+            Parameter p = params.get("rgbm");
+            if (p.hasValue() && (!p.getAsString().equals("0/0/0"))) {
+                paramRGBM = p.parseAsFloatArray("/");
+            }
         }
         return paramRGBM;
     }
@@ -979,10 +982,11 @@ public class ImageJobDescription extends ParameterMap {
      * @return
      */
     public float[] getRGBA() {
-        float[] paramRGBA = null;// {0f,0f,0f};
-        Parameter p = params.get("rgba");
-        if (p.hasValue() && (!p.getAsString().equals("0/0/0"))) {
-            paramRGBA = p.parseAsFloatArray("/");
+        if (paramRGBA == null) {
+            Parameter p = params.get("rgba");
+            if (p.hasValue() && (!p.getAsString().equals("0/0/0"))) {
+                paramRGBA = p.parseAsFloatArray("/");
+            }
         }
         return paramRGBA;
     }
