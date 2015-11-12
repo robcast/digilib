@@ -278,11 +278,13 @@ public class DigilibRequest extends ParameterMap {
      * 
      * path should be non-URL-decoded and have no leading slash.
      * 
+     * URI template:
+     * {scheme}://{server}{/prefix}/{identifier}/{region}/{size}/{rotation}/{quality}.{format}
+     * 
      * @param path
      *            String with IIIF Image API path.
      * 
-     * @see <a href="http://www-sul.stanford.edu/iiif/image-api/1.1/">IIIF Image
-     *      API</a>
+     * @see <a href="http://iiif.io/api/image/2.0/">IIIF Image API</a>
      */
     public boolean setWithIiifPath(String path) {
         if (path == null) {
@@ -315,7 +317,7 @@ public class DigilibRequest extends ParameterMap {
             }
         }
         /*
-         * second parameter FN (encoded)
+         * second parameter identifier (encoded)
          */
         if (query.hasMoreTokens()) {
             token = getNextDecodedToken(query);
@@ -404,11 +406,16 @@ public class DigilibRequest extends ParameterMap {
 
 	/**
 	 * Populate a request from IIIF image API parameters.
+	 *
+	 * @see <a href="http://iiif.io/api/image/2.0/">IIIF Image API</a>
 	 * 
-	 * {scheme}://{server}{/prefix}/{identifier}/{region}/{size}/{rotation}/{quality}{.format}
-	 * 
-	 * @see <a href="http://www-sul.stanford.edu/iiif/image-api/1.1/">IIIF Image
-	 *      API</a>
+	 * @param identifier
+	 * @param region
+	 * @param size
+	 * @param rotation
+	 * @param quality
+	 * @param format
+	 * @return
 	 */
 	public boolean setWithIiifParams(String identifier, String region, String size, 
 			String rotation, String quality, String format) {
@@ -449,7 +456,7 @@ public class DigilibRequest extends ParameterMap {
                 options.setOption("info");
                 return true;
             } else if (region.equals("full")) {
-                // full region -- default
+                // full image -- default
             } else if (region.startsWith("pct:")) {
                 // pct:x,y,w,h -- region in % of original image
                 String[] parms = region.substring(4).split(",");
@@ -483,8 +490,8 @@ public class DigilibRequest extends ParameterMap {
                 }
             }
         } else {
-            // region omitted -- assume info request
-            options.setOption("info");
+            // region omitted -- redirect to info request
+            options.setOption("redirect-info");
             return true;
         }
         
@@ -493,11 +500,16 @@ public class DigilibRequest extends ParameterMap {
          */
         if (size != null) {
             if (size.equals("full")) {
-                // full -- size of original
+                /*
+                 * full -- size of original
+                 */
                 options.setOption("ascale");
                 setValue("scale", 1f);
+                
             } else if (size.startsWith("pct:")) {
-                // pct:n -- n% size of original
+                /*
+                 * pct:n -- n% size of original
+                 */
                 try {
                     float pct = Float.parseFloat(size.substring(4));
                     options.setOption("ascale");
@@ -507,17 +519,20 @@ public class DigilibRequest extends ParameterMap {
                     logger.error(errorMessage+e);
                     return false;
                 }
+                
             } else {
-                // w,h -- pixel size
+                /*
+                 * w,h -- pixel size
+                 */
                 try {
                     String[] parms = size.split(",", 2);
                     if (parms[0].length() > 0) {
                         // width param
                         if (parms[0].startsWith("!")) {
-                            // width (in digilib-like bounding box)
+                            // !w,h width (in digilib-like bounding box)
                             setValueFromString("dw", parms[0].substring(1));
                         } else if (parms[1].length() == 0) {
-                            // width only
+                            // w, width only
                             setValueFromString("dw", parms[0]);
                         } else {
                             // w,h -- according to spec, we should distort the image to match ;-(
@@ -546,6 +561,11 @@ public class DigilibRequest extends ParameterMap {
          * parameter rotation
          */
         if (rotation != null) {
+            if (rotation.startsWith("!")) {
+                // !n -- mirror and rotate
+                options.setOption("hmir");
+                rotation = rotation.substring(1);
+            }
             try {
                 float rot = Float.parseFloat(rotation);
                 setValue("rot", rot);
@@ -561,9 +581,9 @@ public class DigilibRequest extends ParameterMap {
          */
         if (quality != null) {
             // quality param
-            if (quality.equals("native") || quality.equals("color")) {
-                // native is default anyway
-            } else if (quality.equals("grey")) {
+            if (quality.equals("default") || quality.equals("native") || quality.equals("color")) {
+                // color is default anyway
+            } else if (quality.equals("gray") || quality.equals("grey")) {
                 setValueFromString("colop", "grayscale");
             } else {
                 errorMessage = "Invalid quality parameter in IIIF path!";

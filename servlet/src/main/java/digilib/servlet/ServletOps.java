@@ -412,20 +412,53 @@ public class ServletOps {
          * send response
          */
         response.setCharacterEncoding("UTF-8");
-        response.setContentType("application/json,application/ld+json");
-        PrintWriter writer;
         logger.debug("sending info.json");
         try {
-            writer = response.getWriter();
-            writer.println("{");
-            writer.println("\"@context\" : \"http://library.stanford.edu/iiif/image-api/1.1/context.json\",");
-            writer.println("\"@id\" : \"" + url + "\",");
-            writer.println("\"width\" : " + size.width + ",");
-            writer.println("\"height\" : " + size.height + ",");
-            writer.println("\"formats\" : [\"jpg\", \"png\"],");
-            writer.println("\"qualities\" : [\"native\", \"color\", \"grey\"],");
-            writer.println("\"profile\" : \"http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2\"");
-            writer.println("}");
+            PrintWriter writer;
+            if (dlReq.getDigilibConfig().getAsString("iiif-api-version").startsWith("2.")) {
+                /*
+                 * IIIF Image API version 2 image information
+                 */
+                // use JSON-LD content type only when asked
+                String accept = dlReq.getServletRequest().getHeader("Accept");
+                if (accept != null && accept.contains("application/ld+json")) {
+                    response.setContentType("application/ld+json");
+                } else {
+                    response.setContentType("application/json");
+                    response.setHeader("Link", "<http://iiif.io/api/image/2/context.json>"
+                            +"; rel=\"http://www.w3.org/ns/json-ld#context\""
+                            +"; type=\"application/ld+json\"");
+                }
+                writer = response.getWriter();
+                writer.println("{");
+                writer.println("\"@context\" : \"http://iiif.io/api/image/2/context.json\",");
+                writer.println("\"@id\" : \"" + url + "\",");
+                writer.println("\"@protocol\" : \"http://iiif.io/api/image\",");
+                writer.println("\"width\" : " + size.width + ",");
+                writer.println("\"height\" : " + size.height + ",");
+                writer.println("\"profile\" : [");
+                writer.println("\"http://iiif.io/api/image/2/level2.json\",");
+                writer.println("{");
+                writer.println("\"formats\" : [\"jpg\", \"png\"],");
+                writer.println("\"qualities\" : [\"color\", \"grey\"],");
+                writer.println("\"supports\" : [\"mirroring\", \"rotationArbitrary\", \"sizeAboveFull\"],");
+                writer.println("}]");
+            } else {
+                /*
+                 * IIIF Image API version 1 image information
+                 */
+                response.setContentType("application/json,application/ld+json");
+                writer = response.getWriter();
+                writer.println("{");
+                writer.println("\"@context\" : \"http://library.stanford.edu/iiif/image-api/1.1/context.json\",");
+                writer.println("\"@id\" : \"" + url + "\",");
+                writer.println("\"width\" : " + size.width + ",");
+                writer.println("\"height\" : " + size.height + ",");
+                writer.println("\"formats\" : [\"jpg\", \"png\"],");
+                writer.println("\"qualities\" : [\"native\", \"color\", \"grey\"],");
+                writer.println("\"profile\" : \"http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2\"");
+                writer.println("}");
+            }
         } catch (IOException e) {
             throw new ServletException("Unable to write response!", e);
         }

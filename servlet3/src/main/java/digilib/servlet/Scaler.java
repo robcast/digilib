@@ -252,9 +252,14 @@ public class Scaler extends HttpServlet {
             // extract the job information
             final ImageJobDescription jobTicket = ImageJobDescription.getInstance(dlRequest, dlConfig);
 
-            // handle the info-request
+            // handle the IIIF info-request
             if (dlRequest.hasOption("info")) {
                 ServletOps.sendIiifInfo(dlRequest, response, logger);
+                return;
+            }
+            if (dlRequest.hasOption("redirect-info")) {
+                // TODO: the redirect should have code 303
+                response.sendRedirect("info.json");
                 return;
             }
 
