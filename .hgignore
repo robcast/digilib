@@ -120,3 +120,7 @@ syntax: regexp
 ^doc/\.project$
 syntax: regexp
 ^doc/target$
+syntax: regexp
+^webapp/src/main/webapp/jquery/jquery\.cookie-range\.min\.js$
+syntax: regexp
+^webapp/src/main/webapp/jquery/jquery\.digilib-basic\.min\.js$
