@@ -2,7 +2,7 @@
  * #%L
  * digilib-webapp
  * %%
- * Copyright (C) 2011 - 2014 MPIWG Berlin, Bibliotheca Hertziana
+ * Copyright (C) 2011 - 2015 MPIWG Berlin, Bibliotheca Hertziana
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -45,7 +45,7 @@ function($) {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.3.4a',
+        'version' : 'jquery.digilib.js 2.3.6a',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
