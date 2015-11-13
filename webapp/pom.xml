@@ -37,16 +37,49 @@
 						</includes>
 					</configuration>
 				</plugin>
-		        <plugin>
-			        <groupId>org.apache.maven.plugins</groupId>
-			        <artifactId>maven-surefire-plugin</artifactId>
-			        <version>2.19</version>
-			        <configuration>
-			            <skip>${skipTests}</skip>
-			        </configuration>
-			    </plugin>
-        	</plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.19</version>
+					<configuration>
+						<skip>${skipTests}</skip>
+					</configuration>
+				</plugin>
+			</plugins>
 		</pluginManagement>
+		<plugins>
+                <plugin>
+                    <groupId>net.alchim31.maven</groupId>
+                    <artifactId>yuicompressor-maven-plugin</artifactId>
+                    <version>1.5.1</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>compress</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <jswarn>false</jswarn>
+                        <excludes> 
+                            <exclude>**/*.css</exclude>
+                        </excludes>
+                        <includes>
+                            <include>jquery/jquery.digilib.*.js</include>
+                        </includes>
+                        <aggregations>
+                            <aggregation>
+                                <insertNewLine>true</insertNewLine>
+                                <removeIncluded>true</removeIncluded>
+                                <output>${project.build.directory}/${project.build.finalName}/digilib-all-min.js</output>
+                                <includes>
+                                    <include>jquery/jquery.digilib.*.js</include>
+                                </includes>
+                            </aggregation>
+                        </aggregations>
+                    </configuration>
+                </plugin>
+		</plugins>
 	</build>
 	<profiles>
 		<profile>
@@ -103,14 +136,6 @@
 						<configuration>
 							<webXml>${basedir}/src/main/webapp/WEB-INF/web-3.0.xml</webXml>
 							<classifier>srv3</classifier>
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-compiler-plugin</artifactId>
-						<configuration>
-							<source>1.7</source>
-							<target>1.7</target>
 						</configuration>
 					</plugin>
 				</plugins>
