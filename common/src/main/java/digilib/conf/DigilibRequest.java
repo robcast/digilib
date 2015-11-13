@@ -585,6 +585,8 @@ public class DigilibRequest extends ParameterMap {
                 // color is default anyway
             } else if (quality.equals("gray") || quality.equals("grey")) {
                 setValueFromString("colop", "grayscale");
+            } else if (quality.equals("bitonal")) {
+                setValueFromString("colop", "bitonal");
             } else {
                 errorMessage = "Invalid quality parameter in IIIF path!";
                 logger.error(errorMessage);

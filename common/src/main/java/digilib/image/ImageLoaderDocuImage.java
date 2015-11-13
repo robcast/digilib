@@ -772,6 +772,17 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             BufferedImage dest = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
             op.filter(img.getRaster(), dest.getRaster());
             img = dest;
+        } else if (colop == ColorOp.BITONAL) {
+            /*
+             * convert image to bitonal black and white
+             * (nothing clever is done)
+             */
+            logger.debug("Color op: bitonal");
+            logger.debug("img=" + img);
+            BufferedImage dest = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
+            dest.createGraphics().drawImage(img, null, 0, 0);
+            img = dest;
+            logger.debug("bitonal img=" + img);
         } else if (colop == ColorOp.INVERT) {
             /*
              * invert colors i.e. invert every channel
