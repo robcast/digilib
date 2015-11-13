@@ -244,7 +244,7 @@ public interface DocuImage {
      * 
      */
     public enum ColorOp {
-        GRAYSCALE, NTSC_GRAY, INVERT, MAP_GRAY_BGR
+        GRAYSCALE, NTSC_GRAY, INVERT, MAP_GRAY_BGR, BITONAL
     };
 
     /**
