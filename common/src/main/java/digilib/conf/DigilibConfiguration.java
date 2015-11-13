@@ -96,6 +96,8 @@ public class DigilibConfiguration extends ParameterMap {
         newParameter("iiif-prefix", "IIIF", null, 'f');
         // IIIF Image API version to support (mostly relevant for info.json)
         newParameter("iiif-api-version", "2.0", null, 'f');        
+        // set CORS header on IIIF Image API info request
+        newParameter("iiif-info-cors", Boolean.TRUE, null, 'f');        
         // character to use as slash-replacement in IIIF identifier part
         newParameter("iiif-slash-replacement", "!", null, 'f');        
     }

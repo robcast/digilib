@@ -416,6 +416,16 @@ public class ServletOps {
         response.setCharacterEncoding("UTF-8");
         logger.debug("sending info.json");
         try {
+            /*
+             * set CORS header ACAO "*" for info response as per IIIF spec
+             */
+            if (dlReq.getDigilibConfig().getAsBoolean("iiif-info-cors")) {
+                String origin = dlReq.getServletRequest().getHeader("Origin");
+                if (origin != null) {
+                    response.setHeader("Access-Control-Allow-Origin", "*");
+                }
+            }
+            
             PrintWriter writer;
             if (dlReq.getDigilibConfig().getAsString("iiif-api-version").startsWith("2.")) {
                 /*

@@ -171,10 +171,7 @@
 		</profile>
         <profile>
             <id>cors-filter</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <!--  external servlet filter to add CORS headers -->
+            <!--  external servlet filter to add CORS headers. enable in web.xml -->
             <dependencies>
                 <dependency>
                     <groupId>org.eclipse.jetty</groupId>

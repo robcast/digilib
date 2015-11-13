@@ -50,18 +50,4 @@
             /Scaler/*
         </url-pattern>
   </servlet-mapping>
-
-	<!-- add CORS headers -->
-	<filter>
-		<filter-name>CORS</filter-name>
-		<!-- use either Tomcat's or Jetty's filter class -->
-		<!-- <filter-class>org.apache.catalina.filters.CorsFilter</filter-class> -->
-		<filter-class>org.eclipse.jetty.servlets.CrossOriginFilter</filter-class>
-		<async-supported>true</async-supported>
-	</filter>
-	<filter-mapping>
-		<filter-name>CORS</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-
 </web-app>
