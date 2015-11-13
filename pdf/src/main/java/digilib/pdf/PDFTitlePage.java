@@ -40,6 +40,7 @@ import com.itextpdf.text.Image;
 import com.itextpdf.text.Paragraph;
 
 import digilib.conf.PDFRequest;
+import digilib.image.ImageOpException;
 import digilib.io.FileOpException;
 import digilib.servlet.PDFCache;
 
@@ -78,6 +79,10 @@ public class PDFTitlePage {
             return new DigilibInfoReader(infoFn.getAbsolutePath());
         } catch (FileOpException e) {
             logger.warn("info.xml not found");
+        } catch (IOException e) {
+            logger.warn("image directory for info.xml not found");
+        } catch (ImageOpException e) {
+            logger.warn("problem with parameters for info.xml");
         }
         return null;
     }
@@ -86,8 +91,10 @@ public class PDFTitlePage {
 	 * generate iText-PDF-Contents for the title page
 	 * 
 	 * @return
+	 * @throws ImageOpException 
+	 * @throws IOException 
 	 */
-	public Element getPageContents(){
+	public Element getPageContents() throws IOException, ImageOpException{
 		Paragraph content = new Paragraph();
 		content.setAlignment(Element.ALIGN_CENTER);
 
@@ -165,7 +172,7 @@ public class PDFTitlePage {
 		return null;
 	}
 	
-	private String getTitle(){
+	private String getTitle() throws IOException, ImageOpException {
 		if(info_reader.hasInfo())
 			return info_reader.getAsString("title");
 		else

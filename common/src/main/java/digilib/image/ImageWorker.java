@@ -78,7 +78,6 @@ public class ImageWorker implements Callable<DocuImage> {
         docuImage.setQuality(jobinfo.getScaleQual());
 
         // get area of interest and scale factor
-        jobinfo.prepareScaleParams();
         Rectangle loadRect = jobinfo.getOuterImgArea().getBounds();
         double scaleX = jobinfo.getScaleX();
         double scaleY = jobinfo.getScaleY();

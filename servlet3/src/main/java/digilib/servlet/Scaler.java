@@ -237,14 +237,6 @@ public class Scaler extends HttpServlet {
 
         // parse request
         DigilibServletRequest dlRequest = new DigilibServletRequest(request, dlConfig);
-        // extract the job information
-        final ImageJobDescription jobTicket = ImageJobDescription.getInstance(dlRequest, dlConfig);
-        
-        // handle the info-request
-        if (dlRequest.hasOption("info")) {
-            ServletOps.sendIiifInfo(dlRequest, response, logger);
-            return;
-        }
 
         // type of error reporting
         ErrMsg errMsgType = defaultErrMsgType;
@@ -256,17 +248,26 @@ public class Scaler extends HttpServlet {
             errMsgType = ErrMsg.CODE;
         }
 
-        // error out if request was bad
-        if (dlRequest.errorMessage != null) {
-            digilibError(errMsgType, Error.UNKNOWN, dlRequest.errorMessage, response);
-            return;
-        }
-        
         try {
-            /*
-             * get the input file
-             */
-            ImageInput fileToLoad = (ImageInput) jobTicket.getInput();
+            // extract the job information
+            final ImageJobDescription jobTicket = ImageJobDescription.getInstance(dlRequest, dlConfig);
+
+            // handle the IIIF info-request
+            if (dlRequest.hasOption("info")) {
+                ServletOps.sendIiifInfo(dlRequest, response, logger);
+                return;
+            }
+            if (dlRequest.hasOption("redirect-info")) {
+                // TODO: the redirect should have code 303
+                response.sendRedirect("info.json");
+                return;
+            }
+
+            // error out if request was bad
+            if (dlRequest.errorMessage != null) {
+                digilibError(errMsgType, Error.UNKNOWN, dlRequest.errorMessage, response);
+                return;
+            }
 
             /*
              * check permissions
@@ -278,6 +279,11 @@ public class Scaler extends HttpServlet {
                     throw new AuthOpException();
                 }
             }
+
+            /*
+             * get the input file
+             */
+            ImageInput fileToLoad = jobTicket.getInput();
 
             /*
              * if requested, send image as a file

@@ -40,6 +40,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 import digilib.image.DocuImage;
 import digilib.image.ImageJobDescription;
+import digilib.image.ImageOpException;
 import digilib.image.ImageWorker;
 import digilib.conf.DigilibConfiguration;
 import digilib.conf.PDFRequest;
@@ -85,9 +86,10 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 * @throws IOException
+	 * @throws ImageOpException 
 	 */
 	protected OutputStream renderPDF() throws DocumentException, InterruptedException,
-			ExecutionException, IOException {
+			ExecutionException, IOException, ImageOpException {
 		// create document object
 		doc = new Document(PageSize.A4, 0, 0, 0, 0);
 		PdfWriter docwriter = null;
@@ -147,7 +149,13 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 	 */
 	public Document addTitlePage(Document doc) throws DocumentException {
 		PDFTitlePage titlepage = new PDFTitlePage(job_info);
-		doc.add(titlepage.getPageContents());
+		try {
+            doc.add(titlepage.getPageContents());
+        } catch (IOException e) {
+            throw new DocumentException(e);
+        } catch (ImageOpException e) {
+            throw new DocumentException(e);
+        }
 		doc.newPage();
 		return doc;
 	}

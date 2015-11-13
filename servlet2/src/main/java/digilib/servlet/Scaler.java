@@ -224,9 +224,7 @@ public class Scaler extends HttpServlet {
 
         // parse request
         DigilibServletRequest dlRequest = new DigilibServletRequest(request, dlConfig);
-        // extract the job information
-        ImageJobDescription jobTicket = ImageJobDescription.getInstance(dlRequest, dlConfig);
-
+        
         // type of error reporting
         ErrMsg errMsgType = ErrMsg.IMAGE;
         if (dlRequest.hasOption("errtxt")) {
@@ -236,10 +234,13 @@ public class Scaler extends HttpServlet {
         }
 
         try {
+            // extract the job information
+            ImageJobDescription jobTicket = ImageJobDescription.getInstance(dlRequest, dlConfig);
+
             /*
              * check if we can fast-track without scaling
              */
-            ImageInput fileToLoad = (ImageInput) jobTicket.getInput();
+            ImageInput fileToLoad = jobTicket.getInput();
 
             // check permissions
             if (useAuthorization) {
