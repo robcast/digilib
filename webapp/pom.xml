@@ -56,6 +56,7 @@
 					<execution>
 						<id>digilib-basic-minify</id>
 						<configuration>
+						    <!-- JS files -->
 							<jsSourceDir>jquery</jsSourceDir>
 							<jsTargetDir></jsTargetDir>
 							<jsSourceFiles>
@@ -71,11 +72,53 @@
 							</jsSourceFiles>
 							<jsFinalFile>jquery.digilib-basic.js</jsFinalFile>
 							<jsEngine>YUI</jsEngine>
+							<closureCreateSourceMap>true</closureCreateSourceMap>
+							<!--  CSS files -->
+							<cssSourceDir>jquery</cssSourceDir>
+							<cssSourceFiles>
+								<cssSourceFile>jquery.digilib.css</cssSourceFile>
+								<cssSourceFile>jquery.range.css</cssSourceFile>
+							</cssSourceFiles>
+							<cssFinalFile>jquery.digilib-basic.css</cssFinalFile>
 						</configuration>
 						<goals>
 							<goal>minify</goal>
 						</goals>
 					</execution>
+                    <execution>
+                        <id>digilib-ann-minify</id>
+                        <configuration>
+                            <jsSourceDir>jquery</jsSourceDir>
+                            <jsTargetDir></jsTargetDir>
+                            <jsSourceFiles>
+                                <jsSourceFile>jquery.digilib.js</jsSourceFile>
+                                <jsSourceFile>jquery.digilib.geometry.js</jsSourceFile>
+                                <jsSourceFile>jquery.digilib.arrows.js</jsSourceFile>
+                                <jsSourceFile>jquery.digilib.buttons.js</jsSourceFile>
+                                <jsSourceFile>jquery.digilib.dialogs.js</jsSourceFile>
+                                <jsSourceFile>jquery.digilib.sliders.js</jsSourceFile>
+                                <jsSourceFile>jquery.digilib.birdseye.js</jsSourceFile>
+                                <jsSourceFile>jquery.digilib.marks.js</jsSourceFile>
+                                <jsSourceFile>jquery.digilib.regions.js</jsSourceFile>
+                                <jsSourceFile>jquery.digilib.vector.js</jsSourceFile>
+                                <jsSourceFile>jquery.digilib.annotator.js</jsSourceFile>
+                                <jsSourceFile>showdown.js</jsSourceFile>
+                            </jsSourceFiles>
+                            <jsFinalFile>jquery.digilib-ann.js</jsFinalFile>
+                            <jsEngine>YUI</jsEngine>
+                            <closureCreateSourceMap>true</closureCreateSourceMap>
+                            <!--  CSS files -->
+                            <cssSourceDir>jquery</cssSourceDir>
+                            <cssSourceFiles>
+                                <cssSourceFile>jquery.digilib.css</cssSourceFile>
+                                <cssSourceFile>jquery.range.css</cssSourceFile>
+                            </cssSourceFiles>
+                            <cssFinalFile>jquery.digilib-ann.css</cssFinalFile>
+                        </configuration>
+                        <goals>
+                            <goal>minify</goal>
+                        </goals>
+                    </execution>
                     <execution>
                         <id>cookie-range-minify</id>
                         <configuration>
