@@ -16,6 +16,7 @@
 	
 	<properties>
         <skipTests>true</skipTests>
+        <servletapi>3</servletapi>
     </properties>
 
 	<build>
@@ -77,6 +78,7 @@
 							<cssSourceDir>jquery</cssSourceDir>
 							<cssSourceFiles>
 								<cssSourceFile>jquery.digilib.css</cssSourceFile>
+                                <cssSourceFile>jquery.digilib.buttons-full-32-sprite.css</cssSourceFile>
 								<cssSourceFile>jquery.range.css</cssSourceFile>
 							</cssSourceFiles>
 							<cssFinalFile>jquery.digilib-basic.css</cssFinalFile>
@@ -111,6 +113,7 @@
                             <cssSourceDir>jquery</cssSourceDir>
                             <cssSourceFiles>
                                 <cssSourceFile>jquery.digilib.css</cssSourceFile>
+                                <cssSourceFile>jquery.digilib.buttons-full-32-sprite.css</cssSourceFile>
                                 <cssSourceFile>jquery.range.css</cssSourceFile>
                             </cssSourceFiles>
                             <cssFinalFile>jquery.digilib-ann.css</cssFinalFile>
@@ -264,6 +267,37 @@
                     <version>9.2.13.v20150730</version>
                 </dependency>
             </dependencies>
+        </profile>
+        <profile>
+            <id>create-sprites</id>
+            <!-- create the button image sprite and CSS file -->
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>net.jangaroo</groupId>
+						<artifactId>smartsprites-maven-plugin</artifactId>
+						<version>1.8</version>
+						<configuration>
+							<rootDirPath>src/main/webapp/jquery</rootDirPath>
+							<outputDirPath>${basedir}/src/main/webapp/jquery/</outputDirPath>
+							<logLevel>INFO</logLevel>
+							<spritePngDepth>AUTO</spritePngDepth>
+							<spritePngIeSix>false</spritePngIeSix>
+							<cssFileEncoding>UTF-8</cssFileEncoding>
+							<cssFileSuffix>-sprite</cssFileSuffix>
+						</configuration>
+						<executions>
+							<execution>
+								<id>createSprites</id>
+								<phase>generate-resources</phase>
+								<goals>
+									<goal>createSprites</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
         </profile>
 	</profiles>
 	<dependencies>

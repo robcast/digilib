@@ -372,6 +372,10 @@ div.dl-digilib.dl-fullscreen div.dl-buttons {
 	z-index: 200;
 }
 
+div.dl-digilib.dl-fullscreen div.dl-buttons div.dl-button {
+	margin-bottom: 3px;
+}
+
 div.dl-digilib.dl-fullscreen div.dl-buttons div.dl-button:hover {
 	background-image: url('img/fullscreen/corona.png');
 	background-repeat: no-repeat;

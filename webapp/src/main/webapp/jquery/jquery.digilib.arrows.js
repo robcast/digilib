@@ -187,9 +187,9 @@
         // button properties
         var action = buttonConfig.onclick;
         var tooltip = buttonConfig.tooltip;
-        var icon = imagePath + buttonConfig.icon;
+        var iconId = buttonConfig.icon.slice(0, -4);
         // construct the button html
-        var $button = $('<div class="'+cssPrefix+'keep"><a href=""><img class="'+cssPrefix+'button" src="' + icon + '"/></a></div>');
+        var $button = $('<div class="'+cssPrefix+'keep"><a href=""><div id="'+cssPrefix+'button-'+iconId+'-img"></div></a></div>');
         if (!show) {
             $button.hide();
         }
