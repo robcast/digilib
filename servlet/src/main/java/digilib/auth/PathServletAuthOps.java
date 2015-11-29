@@ -37,10 +37,29 @@ import digilib.util.HashTree;
 import digilib.util.XMLListLoader;
 
 /**
- * Implementation of AuthOps using paths defined in an XML config file.
+ * Implements AuthOps using paths defined in an XML config file.
+ * <p/>
+ * Tags "digilib-paths" and "digilib-adresses" are read from the configuration file:
+ * <pre>
+ * {@code
+ * <digilib-paths>
+ *   <path name="histast/eastwood-collection" role="eastwood-coll" />
+ * </digilib-paths>
+ * }
+ * </pre>
+ * A user must supply one of the roles under "role" to access the directory "name".
+ * Roles under "role" must be separated by comma only (no spaces).
+ * <pre>  
+ * {@code
+ * <digilib-addresses>
+ *   <address ip="130.92.68" role="eastwood-coll,ptolemaios-geo" />
+ *   <address ip="130.92.151" role="ALL" />
+ * </digilib-addresses>
+ * }
+ * </pre>
+ * A computer with an ip address that matches "ip" is automatically granted all roles under "role".
+ * The ip address is matched from the left (in full quads). Roles under "role" must be separated by comma only (no spaces). 
  * 
- * The configuration file is read by an XMLListLoader into HashTree objects for
- * authentication paths and IP numbers.
  */
 public class PathServletAuthOps extends ServletAuthOpsImpl {
 
@@ -62,9 +81,10 @@ public class PathServletAuthOps extends ServletAuthOpsImpl {
     }
 
     /**
-     * Initialize.
+     * Initialize authentication operations.
      * 
-     * Read configuration files and setup authentication arrays.
+     * Reads tags "digilib-paths" and "digilib-adresses" from configuration file 
+     * and sets up authentication arrays.
      * 
      * @throws AuthOpException
      *             Exception thrown on error.
@@ -95,15 +115,13 @@ public class PathServletAuthOps extends ServletAuthOpsImpl {
     /**
      * Return authorization roles needed for request.
      * 
-     * Returns the list of authorization roles that are needed to access the
+     * Returns the list of authorization roles that are required to access the
      * specified path. No list means the path is free.
      * 
-     * The location information of the request is also considered.
+     * The location information of the request is determined by ServletRequest.getRemoteAddr().
      * 
-     * @param filepath
-     *            filepath to be accessed.
-     * @param request
-     *            ServletRequest with address information.
+     * @param dlRequest
+     *            DigilibServletRequest with image path and remote address information.
      * @throws AuthOpException
      *             Exception thrown on error.
      * @return List of Strings with role names.
