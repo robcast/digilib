@@ -222,19 +222,21 @@ digilib bird's eye view plugin
             $birdZoom.show();
         }
         // update birdTrafo
-        data.birdTrafo = digilib.fn.getImgTrafo(data.$birdImg, FULL_AREA);        
+        data.birdTrafo = digilib.fn.getImgTrafo(data.$birdImg, FULL_AREA);
         var zoomRect = data.birdTrafo.transform(zoomArea);
         console.debug("renderBirdArea:", zoomRect, "zoomArea:", zoomArea, "$birdTrafo:", data.birdTrafo);
-        // acount for border width
+        // compensate border width (different for fullscreen and embedded!)
         var bw = digilib.fn.getBorderWidth($birdZoom);
-        zoomRect.addPosition({x : -bw, y : -bw});
         if (data.settings.interactionMode === 'fullscreen') {
             // no animation for fullscreen
+            zoomRect.addPosition({x : -bw, y : -bw});
             zoomRect.adjustDiv($birdZoom);
         } else {
             // nice animation for embedded mode :-)
             // correct offsetParent because animate doesn't use offset
             var ppos = $birdZoom.offsetParent().offset();
+            zoomRect.enlarge({x : bw*2, y : bw*2});
+            zoomRect.addPosition({x : -bw-1, y : -bw-1});
             var dest = {
                 'left' : (zoomRect.x - ppos.left) + 'px',
                 'top' : (zoomRect.y - ppos.top) + 'px',
@@ -250,7 +252,7 @@ digilib bird's eye view plugin
         if (!data.settings.isBirdDivVisible) return;
         var birdRect = data.birdTrafo.transform(zoomArea);
         var $birdZoom = data.$birdZoom;
-        // acount for border width
+        // compensate border width
         var bw = digilib.fn.getBorderWidth($birdZoom);
         birdRect.addPosition({x : -bw, y : -bw});
         birdRect.adjustDiv(data.$birdZoom);
@@ -264,7 +266,6 @@ digilib bird's eye view plugin
         var $document = $(document);
         var $scaler = data.$scaler;
         var startPos, newRect, birdImgRect, birdZoomRect;
-        var bw = digilib.fn.getBorderWidth($birdZoom);
 
         // mousedown handler: start dragging bird zoom to a new position
         var birdZoomStartDrag = function(evt) {
@@ -274,8 +275,6 @@ digilib bird's eye view plugin
             birdImgRect = geom.rectangle($birdImg);
             birdZoomRect = geom.rectangle($birdZoom);
             // grow rectangle by border width
-            // birdZoomRect.enlarge({x : bw*2, y : bw*2});
-            // birdZoomRect.addPosition({x : bw, y : bw});
             newRect = null;
             data.$elem.find('.'+cssPrefix+'overlay').hide(); // hide all overlays (marks/regions)
             $document.on("mousemove.dlBirdMove", birdZoomMove);
@@ -291,9 +290,6 @@ digilib bird's eye view plugin
             newRect = birdZoomRect.copy();
             newRect.addPosition(delta);
             newRect.stayInside(birdImgRect);
-            // acount for border width
-            /* newRect.addPosition({x : -bw, y : -bw});
-            newRect.adjustDiv($birdZoom); */
             // reflect birdview zoom position in scaler image
             var area = data.birdTrafo.invtransform(newRect);
             $(data).trigger('changeZoomArea', area);
@@ -310,8 +306,6 @@ digilib bird's eye view plugin
                 startPos = birdZoomRect.getCenter();
                 birdZoomMove(evt); 
                 }
-            // ugly, but needed to prevent double border width compensation
-            /* newRect.addPosition({x : bw, y : bw}); */
             var newArea = data.birdTrafo.invtransform(newRect);
             data.zoomArea = newArea;
             digilib.fn.redisplay(data);
