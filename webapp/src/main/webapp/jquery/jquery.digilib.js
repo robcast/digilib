@@ -1524,6 +1524,7 @@ function($) {
         $(data).trigger('changeZoomArea', za);
         data.oldZoomArea = data.zoomArea;
         data.zoomArea = za;
+        return za;
     };
 
     /** move the zoom area and center it on rectangle "rect"
@@ -1536,6 +1537,7 @@ function($) {
             za = FULL_AREA.copy();
             }
         setZoomArea(data, za);
+        return za;
     };
 
     /** get image quality as a number (0..2).
