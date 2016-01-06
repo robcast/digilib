@@ -102,13 +102,16 @@ digilib bird's eye view plugin
         $data.on('changeZoomArea', handleChangeZoomArea);
     };
 
-
     var handleSetup = function (evt) {
         console.debug("birdseye: handleSetup");
         var data = this;
+        var visible = data.settings.isBirdDivVisible;
+        var auto = data.settings.autoBirdDiv;
         // bird's eye view creation
-        if (data.settings.isBirdDivVisible) {
+        if (visible || auto) {
             setupBirdDiv(data);
+        }
+        if (visible) {
             data.$birdDiv.show();
         }
     };
