@@ -59,12 +59,13 @@ digilib bird's eye view plugin
             showBirdDiv : function (data, show) {
                 var settings = data.settings;
                 if (data.$birdDiv == null) {
-                    // no bird div -> create
+                    // no bird div: create it
                     setupBirdDiv(data);
                 }
+                // console.debug('showBirdDiv, visible:' + settings.isBirdDivVisible +' , show:' + show);
                 var on = digilib.fn.showDiv(settings.isBirdDivVisible, data.$birdDiv, show);
                 settings.isBirdDivVisible = on;
-                //digilib.fn.highlightButtons(data, 'bird', on);
+                // digilib.fn.highlightButtons(data, 'bird', on);
                 updateBirdDiv(data);
                 digilib.fn.storeOptions(data);
             }
@@ -103,39 +104,40 @@ digilib bird's eye view plugin
     };
 
     var handleSetup = function (evt) {
-        console.debug("birdseye: handleSetup");
         var data = this;
         var visible = data.settings.isBirdDivVisible;
         var auto = data.settings.autoBirdDiv;
-        // bird's eye view creation
+        console.debug("birdseye: handleSetup, auto:"+auto, ", visible:"+visible);
+        // create bird's eye view
         if (visible || auto) {
             setupBirdDiv(data);
-        }
-        if (visible) {
-            data.$birdDiv.show();
         }
     };
 
     var handleUpdate = function (evt) {
         console.debug("birdseye: handleUpdate");
         var data = this;
-        if (data.settings.isBirdDivVisible) {
-            renderBirdArea(data);
-            setupBirdDrag(data);
-        }
+        // if (data.settings.isBirdDivVisible) {
+        //    renderBirdArea(data);
+        //    setupBirdDrag(data);
+        // }
     };
 
     var handleRedisplay = function (evt) {
     	// TODO: do we need this?
         console.debug("birdseye: handleRedisplay");
         var data = this;
+        if (data.settings.autoBirdDiv) {
+            data.settings.isBirdDivVisible = !digilib.fn.isFullArea(data.zoomArea);
+        }
         actions.showBirdDiv(data, data.settings.isBirdDivVisible);
     };
 
     var handleChangeZoomArea = function (evt, zoomArea) {
-        //console.debug("birdseye: handleDragZoom za="+zoomArea);
-    	var data = this;
-        updateBirdZoom(data, zoomArea);
+        var data = this;
+        if (data.settings.isBirdDivVisible && zoomArea.moved) {
+            moveBirdZoom(data, zoomArea);
+        }
     };
 
     // returns URL for bird's eye view image
@@ -156,8 +158,12 @@ digilib bird's eye view plugin
     var setupBirdDiv = function (data) {
         var cssPrefix = data.settings.cssPrefix;
         var $elem = data.$elem;
-        // the bird's eye div
-        var $birdDiv = $('<div class="'+cssPrefix+'birdview" style="display:none"/>');
+        // use bird's eye div from HTML if provided
+        var $birdDiv = $('#'+cssPrefix+'birdview');
+        if ($birdDiv.length == 0) {
+            $birdDiv = $('<div class="'+cssPrefix+'birdview" style="display:none"/>');
+            $elem.append($birdDiv);
+        }
         // the detail indicator frame
         var $birdZoom = $('<div class="'+cssPrefix+'birdzoom" style="display:none; background-color:transparent;"/>');
         // the small image
@@ -165,7 +171,6 @@ digilib bird's eye view plugin
         data.$birdDiv = $birdDiv;
         data.$birdZoom = $birdZoom;
         data.$birdImg = $birdImg;
-        $elem.append($birdDiv);
         $birdDiv.append($birdZoom);
         $birdDiv.append($birdImg);
         // $birdZoom.css(data.settings.birdIndicatorStyle);
@@ -202,11 +207,11 @@ digilib bird's eye view plugin
             data.birdTrafo = digilib.fn.getImgTrafo(data.$birdImg, FULL_AREA);
             // update display (zoom area indicator)
             if (data.settings.isBirdDivVisible) {
-                if (birdRect.width === 0) {
+                //if (birdRect.width === 0) {
                     // workaround: IE7 calls load handler when there is no size info yet 
-                    setTimeout(function () { $birdImg.triggerHandler('load'); }, 200);
-                    return;
-                    }
+                //    setTimeout(function () { $birdImg.triggerHandler('load'); }, 200);
+                //    return;
+                //    }
                 renderBirdArea(data);
                 }
         };
@@ -228,7 +233,7 @@ digilib bird's eye view plugin
         data.birdTrafo = digilib.fn.getImgTrafo(data.$birdImg, FULL_AREA);
         var zoomRect = data.birdTrafo.transform(zoomArea);
         console.debug("renderBirdArea:", zoomRect, "zoomArea:", zoomArea, "$birdTrafo:", data.birdTrafo);
-        // compensate border width (different for fullscreen and embedded!)
+        // compensate for border width (different for adjustDiv and animate!)
         var bw = digilib.fn.getBorderWidth($birdZoom);
         if (data.settings.interactionMode === 'fullscreen') {
             // no animation for fullscreen
@@ -250,15 +255,14 @@ digilib bird's eye view plugin
         }
     };
 
-    // move bird zoom indicator to reflect zoomed detail area
-    var updateBirdZoom = function(data, zoomArea) {
-        if (!data.settings.isBirdDivVisible) return;
-        var birdRect = data.birdTrafo.transform(zoomArea);
+    // move bird zoom indicator to reflect moved zoomarea directly
+    var moveBirdZoom = function(data, zoomArea) {
+        var zoomRect = data.birdTrafo.transform(zoomArea);
         var $birdZoom = data.$birdZoom;
-        // compensate border width
         var bw = digilib.fn.getBorderWidth($birdZoom);
-        birdRect.addPosition({x : -bw, y : -bw});
-        birdRect.adjustDiv(data.$birdZoom);
+        // compensate for border width
+        zoomRect.addPosition({x : -bw, y : -bw});
+        zoomRect.adjustDiv(data.$birdZoom);
     };
 
     // bird's eye view zoom area click and drag handler
@@ -295,6 +299,7 @@ digilib bird's eye view plugin
             newRect.stayInside(birdImgRect);
             // reflect birdview zoom position in scaler image
             var area = data.birdTrafo.invtransform(newRect);
+            area.moved = true;
             $(data).trigger('changeZoomArea', area);
             return false;
         };

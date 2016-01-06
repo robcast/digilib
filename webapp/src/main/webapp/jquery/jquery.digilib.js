@@ -944,9 +944,9 @@ function($) {
      */
     var redisplay = function (data) {
         var settings = data.settings;
-        if (settings.autoBirdDiv) {
-            settings.isBirdDivVisible = !isFullArea(data.zoomArea);
-            }
+        // if (settings.autoBirdDiv) {
+        //    settings.isBirdDivVisible = !isFullArea(data.zoomArea);
+        //    }
         if (settings.interactionMode === 'fullscreen') {
             // update location.href (browser URL) in fullscreen mode
             var url = getDigilibUrl(data);
@@ -1478,8 +1478,9 @@ function($) {
             var za = geom.rectangle($img);
             za.addPosition(delta.neg());
             // transform back
-            var newArea = data.imgTrafo.invtransform(za);
-            $data.trigger('changeZoomArea', newArea);
+            var area = data.imgTrafo.invtransform(za);
+            area.moved = true;
+            $data.trigger('changeZoomArea', area);
             return false;
             };
 
