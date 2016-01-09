@@ -2,7 +2,7 @@
  * #%L
  * digilib bird's eye view plugin
  * %%
- * Copyright (C) 2011 - 2013 Bibliotheca Hertziana, MPIWG Berlin
+ * Copyright (C) 2011 - 2016 Bibliotheca Hertziana, MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -115,12 +115,8 @@ digilib bird's eye view plugin
     };
 
     var handleUpdate = function (evt) {
-        console.debug("birdseye: handleUpdate");
-        var data = this;
-        // if (data.settings.isBirdDivVisible) {
-        //    renderBirdArea(data);
-        //    setupBirdDrag(data);
-        // }
+        // console.debug("birdseye: handleUpdate");
+        // var data = this;
     };
 
     var handleRedisplay = function (evt) {
@@ -144,8 +140,8 @@ digilib bird's eye view plugin
     var getBirdImgUrl = function (data) {
         var settings = data.settings;
         var birdDivOptions = {
-                dw : settings.birdDivWidth,
-                dh : settings.birdDivHeight
+            dw : settings.birdDivWidth,
+            dh : settings.birdDivHeight
         };
         var birdSettings = $.extend({}, settings, birdDivOptions);
         // use only the relevant parameters
@@ -207,11 +203,6 @@ digilib bird's eye view plugin
             data.birdTrafo = digilib.fn.getImgTrafo(data.$birdImg, FULL_AREA);
             // update display (zoom area indicator)
             if (data.settings.isBirdDivVisible) {
-                //if (birdRect.width === 0) {
-                    // workaround: IE7 calls load handler when there is no size info yet 
-                //    setTimeout(function () { $birdImg.triggerHandler('load'); }, 200);
-                //    return;
-                //    }
                 renderBirdArea(data);
                 }
         };

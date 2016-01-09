@@ -45,7 +45,7 @@ function($) {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.3.7c',
+        'version' : 'jquery.digilib.js 2.3.7d',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -363,6 +363,8 @@ function($) {
          */
         zoomArea : function (data, area) {
             if (area == null) {
+                // already defining area
+                if ($('#'+data.settings.cssPrefix+'areaoverlay').length > 0) return;
                 // interactively
                 var onComplete = function(data, rect) {
                     if (rect == null) return;
@@ -1320,7 +1322,7 @@ function($) {
         var bodyRect = geom.rectangle($body);
         var pt1, pt2;
         // overlay div prevents other elements from reacting to mouse events 
-        var $overlayDiv = $('<div class="'+CSS+'areaoverlay"/>');
+        var $overlayDiv = $('<div id="'+CSS+'areaoverlay" class="'+CSS+'areaoverlay"/>');
         $elem.append($overlayDiv);
         bodyRect.adjustDiv($overlayDiv);
         // area div 
@@ -1329,6 +1331,7 @@ function($) {
             $areaDiv.addClass(cls); // individual styling
         }
         $elem.append($areaDiv);
+        $scaler.addClass(CSS+'definearea');
 
         var areaStart = function (evt) {
             pt1 = geom.position(evt);
@@ -1364,6 +1367,7 @@ function($) {
             // unregister events
             $overlayDiv.off("mousemove.dlArea", areaMove);
             $overlayDiv.off("mouseup.dlArea", areaEnd);
+            $scaler.removeClass(CSS+'definearea');
             // clip and transform
             clickRect.clipTo(picRect);
             var rect = data.imgTrafo.invtransform(clickRect);
