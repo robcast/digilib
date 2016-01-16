@@ -226,21 +226,20 @@ digilib bird's eye view plugin
         console.debug("renderBirdArea:", zoomRect, "zoomArea:", zoomArea, "$birdTrafo:", data.birdTrafo);
         // compensate for border width (different for adjustDiv and animate!)
         var bw = digilib.fn.getBorderWidth($birdZoom);
+        zoomRect.addPosition({x : -bw, y : -bw});
         if (data.settings.interactionMode === 'fullscreen') {
             // no animation for fullscreen
-            zoomRect.addPosition({x : -bw, y : -bw});
             zoomRect.adjustDiv($birdZoom);
         } else {
             // nice animation for embedded mode :-)
             // correct offsetParent because animate doesn't use offset
+            // the direct parent should be positioned! (position: relative)
             var ppos = $birdZoom.offsetParent().offset();
-            zoomRect.enlarge({x : bw*2, y : bw*2});
-            zoomRect.addPosition({x : -bw-1, y : -bw-1});
             var dest = {
                 'left' : (zoomRect.x - ppos.left) + 'px',
                 'top' : (zoomRect.y - ppos.top) + 'px',
-                'width' : zoomRect.width,
-                'height' : zoomRect.height
+                'width' : zoomRect.width + bw*2,
+                'height' : zoomRect.height + bw*2
                 };
             $birdZoom.animate(dest);
         }
