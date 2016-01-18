@@ -446,7 +446,7 @@ public class ServletOps {
                 writer.println("{");
                 writer.println("\"@context\" : \"http://iiif.io/api/image/2/context.json\",");
                 writer.println("\"@id\" : \"" + url + "\",");
-                writer.println("\"@protocol\" : \"http://iiif.io/api/image\",");
+                writer.println("\"protocol\" : \"http://iiif.io/api/image\",");
                 writer.println("\"width\" : " + size.width + ",");
                 writer.println("\"height\" : " + size.height + ",");
                 writer.println("\"profile\" : [");
