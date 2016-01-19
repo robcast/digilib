@@ -82,8 +82,9 @@
          * show/hide annotations
          */
         toggleAnnotations : function (data) {
-            var show = !data.settings.isAnnotationsVisible;
-            data.settings.isAnnotationsVisible = show;
+            var show = !data.dlOpts.isAnnotationsVisible;
+            data.dlOpts.isAnnotationsVisible = show;
+            fn.storeOptions(data);
             fn.highlightButtons(data, 'annotations', show);
             renderAnnotations(data);
         },
@@ -106,7 +107,7 @@
         	// save new token in cookie
         	auth.withToken(function (tkn) {
         		data.dlOpts.annotationToken = auth.token;
-		        fn.storeOptions(data);
+ 		        fn.storeOptions(data);
 		        // clear annotations
         		data.annotations = [];
         		annotator.plugins.Store.annotations = [];
@@ -341,15 +342,17 @@
     var renderAnnotations = function (data) {
         if (data.annotations == null || data.annotator == null)
             return;
-		var annotations = data.annotations;
+        var annotations = data.annotations;
         var cssPrefix = data.settings.cssPrefix;
         var $elem = data.$elem;
         // show annotation user state
         $elem.find('div#'+cssPrefix+'button-annotationuser').attr('title', 'annotation user: '+data.settings.annotationUser);
         // create vector shapes
         var shapes = [];
-        for (var i = 0; i < annotations.length; ++i) {
-            shapes.push(createShape(data, annotations[i]));
+        if (data.dlOpts.isAnnotationsVisible) {
+            for (var i = 0; i < annotations.length; ++i) {
+                shapes.push(createShape(data, annotations[i]));
+            }
         }
         annotationLayer.shapes = shapes;
         // render vector layer
@@ -367,7 +370,7 @@
     var createShape = function (data, annot) {
         if (annot == null || annot.annotation == null)
             return;
-        if (!data.settings.isAnnotationsVisible) return;
+        if (!data.dlOpts.isAnnotationsVisible) return;
         var cssPrefix = data.settings.cssPrefix;
         var annotation = annot.annotation;
         var idx = '';
@@ -764,6 +767,13 @@
         console.debug("annotations: handleSetup");
         var data = this;
         var settings = data.settings;
+        // merge isVisible setting with value from cookie
+        if (data.dlOpts.isAnnotationsVisible == null) {
+            data.dlOpts.isAnnotationsVisible = settings.isAnnotationsVisible;
+        } else if (typeof data.dlOpts.isAnnotationsVisible == 'string') {
+            // make string into boolean
+	    data.dlOpts.isAnnotationsVisible = (data.dlOpts.isAnnotationsVisible == 'true');
+        }
         // create annotation shapes layer
         annotationLayer = {
             'projection': 'screen', 
