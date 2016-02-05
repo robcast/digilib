@@ -183,6 +183,30 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     /**
+     * Creates new ImageJobDescription by merging Parameters from a
+     * DigilibRequest and adding an ImageSEt.
+     * 
+     * @param dlReq
+     * @param imgs
+     * @param dlcfg
+     * @return
+     * @throws ImageOpException 
+     * @throws IOException 
+     */
+    public static ImageJobDescription getInstanceWithImgs(DigilibRequest dlReq, ImageSet imgs, DigilibConfiguration dlcfg) 
+            throws IOException, ImageOpException {
+        ImageJobDescription newMap = new ImageJobDescription(dlcfg);
+        // add all params to this map
+        newMap.params.putAll(dlReq.getParams());
+        newMap.initOptions();
+        newMap.setImageSet(imgs);
+        newMap.prepareScaleParams();
+        // add ImageJobDescription back into DigilibRequest
+        dlReq.setJobDescription(newMap);
+        return newMap;
+    }
+
+    /**
      * Creates new ImageJobDescription by merging Parameters from another
      * ParameterMap.
      * 
@@ -747,6 +771,14 @@ public class ImageJobDescription extends ParameterMap {
         return imgSize;
     }
 
+    /**
+     * Set the image size.
+     * 
+     * @param size
+     */
+    public void setImgSize(ImageSize size) {
+        this.imgSize = size;
+    }
       
     /**
      * Return the X scale factor.
