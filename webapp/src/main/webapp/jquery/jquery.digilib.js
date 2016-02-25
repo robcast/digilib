@@ -1861,6 +1861,7 @@ function($) {
             getImgTrafo : getImgTrafo,
             getQuality : getQuality,
             setQuality : setQuality,
+            setNumValue : setNumValue,
             getScaleMode : getScaleMode,
             setScaleMode : setScaleMode,
             getFitMode : getFitMode,
