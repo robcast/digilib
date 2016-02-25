@@ -6,7 +6,7 @@ The Scaler servlet takes parameters in the HTTP query string format:
 
 Unknown parameters will be silently ignored.
 
-Recognised parameters (as of Version 2.2.2, for the most recent list of 
+Recognised parameters (as of Version 2.3.7, for the most recent list of 
 parameters 
 [use the source](https://sourceforge.net/p/digilib/code/ci/default/tree/servlet/src/main/java/digilib/conf/DigilibServletRequest.java)
 ):
@@ -58,13 +58,16 @@ parameters
     `osize` mode.
 - `scale`: absolute scale factor applied to the highest resolution image
     for `ascale` mode.
-- `colop`: color operation. One of "GRAYSCALE" (produces grayscale 
-    image), "NTSC\_GRAY" (uses NTSC formula to produce grayscale image), 
-    "INVERT" (inverts colors), "MAP\_GRAY\_BGR" (produces false-color image 
-    mapping brightness values to color scale from blue via green to red).
+- `colop`: color operation. One of 
+    - `GRAYSCALE` (produces grayscale image)
+    - `NTSC_GRAY` (uses NTSC formula to produce grayscale image)
+    - `BITONAL` (produces black-and-white image) 
+    - `INVERT` (inverts colors)
+    - `MAP_GRAY_BGR` (produces false-color image mapping brightness values to color scale from blue via green to red).
 - `mo`: list of flags for the mode of operation separated by comma ",".
-    - `fit`: always scale the image to fit \[`dw` x `dh`\] (default).
-    - `clip`: send the file in its original resolution, cropped
+    - `fit`: scale the image proportionally to fit inside \[`dw` x `dh`\], preserving its aspect ratio (default).
+    - `squeeze`: scale the image to fit \[`dw` x `dh`\], changing its aspect ratio.
+    - `clip`: send the file in the highest resolution, cropped
         to fit \[`dw` x `dh`\].
     - `osize`: scale to original size based on image
         resolution (from the image metadata) and display resolution
@@ -81,14 +84,16 @@ parameters
     - `errcode`: send error response as HTTP status code.
     - `q0`-`q2`: quality of interpolation in scaling (q0:
         worst, q2 best).
-    - `lores`: try to use pre-scaled images (default)
     - `hires`: only use the highest resolution image.
+    - `autores`: use the pre-scaled image that is bigger than the requested size (default).
+    - `lores`: prefer the next-smaller pre-scaled image.
     - `vmir`: mirror image vertically.
     - `hmir`: mirror image horizontally.
     - `jpg`: the resulting image is always sent as JPEG
         (otherwise TIFF and PNG images are sent as PNG).
     - `png`: the resulting image is always sent as PNG
         (otherwise JPEG and J2K images are sent as JPEG).
+    - `pxarea`: interpret `wx`, `wy`, `ww`, `wh` as pixel coordinates on the highest resolution image.
 
 The image to be loaded is specified by the `request_path`
 (deprecated) and/or the `fn` parameter (preferred) and the optional
@@ -102,9 +107,9 @@ index `pn`:
 Find more information on the directory layout [here](image-directories.html).
 
 The image will always be scaled equally in horizontal and vertical direction,
-preserving the aspect ratio,
+preserving the aspect ratio (except with `mo=squeeze`),
 such that the resulting image does not exceed the rectangle \[`dw` x `dh`\].
 
 If only either height or width is given the image is scaled to match
 only the given dimension. The size of the resulting image in the other
-dimension is determined by the aspect ratio of the image.
+dimension is determined by the aspect ratio of the image or the selected area.

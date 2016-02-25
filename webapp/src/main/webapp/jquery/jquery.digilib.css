@@ -36,7 +36,7 @@ div.dl-digilib div.dl-area {
 div.dl-digilib div.dl-areaoverlay {
 	position: absolute;
 	z-index: 100;
-	background-image:url('.');
+	/* background-image:url('.'); */
 }
 
 div.dl-digilib div.dl-birdview {
@@ -370,6 +370,10 @@ div.dl-digilib.dl-fullscreen div.dl-buttons {
 	padding: 2px;
 	background-color: transparent;
 	z-index: 200;
+}
+
+div.dl-digilib.dl-fullscreen div.dl-buttons div.dl-button {
+	margin-bottom: 3px;
 }
 
 div.dl-digilib.dl-fullscreen div.dl-buttons div.dl-button:hover {

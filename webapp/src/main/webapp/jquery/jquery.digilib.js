@@ -45,7 +45,7 @@ function($) {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.3.7',
+        'version' : 'jquery.digilib.js 2.3.8',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -363,6 +363,8 @@ function($) {
          */
         zoomArea : function (data, area) {
             if (area == null) {
+                // already defining area
+                if ($('#'+data.settings.cssPrefix+'areaoverlay').length > 0) return;
                 // interactively
                 var onComplete = function(data, rect) {
                     if (rect == null) return;
@@ -944,9 +946,9 @@ function($) {
      */
     var redisplay = function (data) {
         var settings = data.settings;
-        if (settings.autoBirdDiv) {
-            settings.isBirdDivVisible = !isFullArea(data.zoomArea);
-            }
+        // if (settings.autoBirdDiv) {
+        //    settings.isBirdDivVisible = !isFullArea(data.zoomArea);
+        //    }
         if (settings.interactionMode === 'fullscreen') {
             // update location.href (browser URL) in fullscreen mode
             var url = getDigilibUrl(data);
@@ -1320,7 +1322,7 @@ function($) {
         var bodyRect = geom.rectangle($body);
         var pt1, pt2;
         // overlay div prevents other elements from reacting to mouse events 
-        var $overlayDiv = $('<div class="'+CSS+'areaoverlay"/>');
+        var $overlayDiv = $('<div id="'+CSS+'areaoverlay" class="'+CSS+'areaoverlay"/>');
         $elem.append($overlayDiv);
         bodyRect.adjustDiv($overlayDiv);
         // area div 
@@ -1329,6 +1331,7 @@ function($) {
             $areaDiv.addClass(cls); // individual styling
         }
         $elem.append($areaDiv);
+        $scaler.addClass(CSS+'definearea');
 
         var areaStart = function (evt) {
             pt1 = geom.position(evt);
@@ -1364,6 +1367,7 @@ function($) {
             // unregister events
             $overlayDiv.off("mousemove.dlArea", areaMove);
             $overlayDiv.off("mouseup.dlArea", areaEnd);
+            $scaler.removeClass(CSS+'definearea');
             // clip and transform
             clickRect.clipTo(picRect);
             var rect = data.imgTrafo.invtransform(clickRect);
@@ -1478,8 +1482,9 @@ function($) {
             var za = geom.rectangle($img);
             za.addPosition(delta.neg());
             // transform back
-            var newArea = data.imgTrafo.invtransform(za);
-            $data.trigger('changeZoomArea', newArea);
+            var area = data.imgTrafo.invtransform(za);
+            area.moved = true;
+            $data.trigger('changeZoomArea', area);
             return false;
             };
 
@@ -1524,6 +1529,7 @@ function($) {
         $(data).trigger('changeZoomArea', za);
         data.oldZoomArea = data.zoomArea;
         data.zoomArea = za;
+        return za;
     };
 
     /** move the zoom area and center it on rectangle "rect"
@@ -1536,6 +1542,7 @@ function($) {
             za = FULL_AREA.copy();
             }
         setZoomArea(data, za);
+        return za;
     };
 
     /** get image quality as a number (0..2).

@@ -317,12 +317,12 @@ digilib buttons plugin
         // button properties
         var action = buttonConfig.onclick;
         var tooltip = buttonConfig.tooltip;
-        var icon = imagePath + buttonConfig.icon;
+        var iconId = buttonConfig.icon.slice(0, -4);
         // construct the button html
         var html = '\
             <div id="'+cssPrefix+'button-'+buttonName+'" class="'+cssPrefix+'button" title="'+tooltip+'">\
                 <a href="">\
-                    <img class="'+cssPrefix+'button" src="'+icon+'"/>\
+                    <div id="'+cssPrefix+'button-'+iconId+'-img"></div>\
                 </a>\
             </div>';
         var $button = $(html);

@@ -42,7 +42,6 @@ import digilib.image.ImageJobDescription;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirent;
 import digilib.io.FileOpException;
-import digilib.io.FileOps;
 import digilib.meta.MetadataMap;
 import digilib.util.HashTree;
 import digilib.util.XMLListLoader;
@@ -50,9 +49,28 @@ import digilib.util.XMLListLoader;
 /**
  * Implementation of AuthOps using "access" information from file metadata and
  * roles mapped to IP-number ranges defined in an XML config file.
+ * <p/>
+ * Tags "digilib-access" and "digilib-adresses" are read from the configuration file:
+ * <pre>
+ * {@code
+ * <digilib-access>
+ *   <access type="group:mpiwg" role="user"/>
+ * </digilib-access>
+ * }
+ * </pre>
+ * A user must supply one of the roles under "role" to access any object with the metadata "access" type of "type".
+ * Roles under "role" must be separated by comma only (no spaces).
+ * <pre>  
+ * {@code
+ * <digilib-addresses>
+ *   <address ip="130.92.68" role="eastwood-coll,ptolemaios-geo" />
+ *   <address ip="130.92.151" role="ALL" />
+ * </digilib-addresses>
+ * }
+ * </pre>
+ * A computer with an ip address that matches "ip" is automatically granted all roles under "role".
+ * The ip address is matched from the left (in full quads). Roles under "role" must be separated by comma only (no spaces). 
  * 
- * The configuration file is read by an XMLListLoader into HashTree objects for
- * IP numbers.
  */
 public class MetaAccessServletAuthOps extends ServletAuthOpsImpl {
 
@@ -74,9 +92,10 @@ public class MetaAccessServletAuthOps extends ServletAuthOpsImpl {
     }
 
     /**
-     * Initialize.
+     * Initialize authentication operations.
      * 
-     * Read configuration files and setup authorization arrays.
+     * Reads tags "digilib-access" and "digilib-adresses" from configuration file 
+     * and sets up authentication arrays.
      * 
      * @throws AuthOpException
      *             Exception thrown on error.
@@ -136,7 +155,7 @@ public class MetaAccessServletAuthOps extends ServletAuthOpsImpl {
                 // try to get image file from DirCache
                 DigilibConfiguration config = dlRequest.getDigilibConfig();
                 DocuDirCache cache = (DocuDirCache) config.getValue(DigilibServletConfiguration.DIR_CACHE_KEY);
-                imgs = cache.getFile(dlRequest.getFilePath(), dlRequest.getAsInt("pn"), FileOps.FileClass.IMAGE);
+                imgs = cache.getFile(dlRequest.getFilePath(), dlRequest.getAsInt("pn"));
             }
         } catch (FileOpException e) {
             throw new AuthOpException("No file for auth check!");

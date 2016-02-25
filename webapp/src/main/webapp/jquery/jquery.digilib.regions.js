@@ -231,6 +231,7 @@ inner (optional)
             data.settings.isRegionVisible = show;
             fn.highlightButtons(data, 'regions', show);
             renderRegions(data, 1);
+            return show;
         },
 
         // display region coordinates in a selected edit line (for copying)
