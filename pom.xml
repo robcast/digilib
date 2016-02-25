@@ -8,7 +8,7 @@
 
   <groupId>digilib</groupId>
   <artifactId>digilib</artifactId>
-  <version>2.3.7</version>
+  <version>2.3.8</version>
   <packaging>pom</packaging>
 
   <name>digilib</name>
@@ -79,7 +79,7 @@
     <connection>scm:hg:http://hg.code.sf.net/p/digilib/code</connection>
     <developerConnection>scm:hg:https://hg.code.sf.net/p/digilib/code</developerConnection>
     <url>https://sourceforge.net/p/digilib/code/ci/default/tree</url>
-    <tag>release-2.3.7</tag>
+    <tag>release-2.3.8</tag>
   </scm>
   <issueManagement>
     <system>Trac</system>
@@ -196,57 +196,57 @@
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-common</artifactId>
-        <version>2.3.7</version>
+        <version>2.3.8</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-common-jai</artifactId>
-        <version>2.3.7</version>
+        <version>2.3.8</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-common-imagej</artifactId>
-        <version>2.3.7</version>
+        <version>2.3.8</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-common-bioformats</artifactId>
-        <version>2.3.7</version>
+        <version>2.3.8</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-doc</artifactId>
-        <version>2.3.7</version>
+        <version>2.3.8</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-pdf</artifactId>
-        <version>2.3.7</version>
+        <version>2.3.8</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-text</artifactId>
-        <version>2.3.7</version>
+        <version>2.3.8</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-servlet</artifactId>
-        <version>2.3.7</version>
+        <version>2.3.8</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-servlet2</artifactId>
-        <version>2.3.7</version>
+        <version>2.3.8</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-servlet3</artifactId>
-        <version>2.3.7</version>
+        <version>2.3.8</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-webapp</artifactId>
-        <version>2.3.7</version>
+        <version>2.3.8</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
