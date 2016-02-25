@@ -788,26 +788,28 @@
             rectangle : rectangle,
             transform : transform
     };
+    
     // install function called by digilib on plugin object
     var install = function() {
         // add constructor object to fn
         this.fn.geometry = geometry;
     };
+    
     // digilib plugin object
     var plugin = {
             name : 'geometry',
             install : install,
             fn : {},
-            // TODO: remove old init
-            init : init
     };
-    // TODO: remove old version of init returning contructor
-    var init = function () {
-        return geometry;
-    };
+
     // plug into digilib
     if ($.fn.digilib == null) {
-        $.error("jquery.digilib.geometry must be loaded after jquery.digilib!");
+        if ($.fn.digicat == null) {
+            $.error("jquery.digilib.geometry must be loaded after jquery.digilib!");
+        } else {
+            // plug into digicat (somewhat ugly)
+            $.fn.digicat('plugin', plugin);
+        }
     } else {
         $.fn.digilib('plugin', plugin);
     }
