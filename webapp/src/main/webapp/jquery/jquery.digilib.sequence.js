@@ -47,46 +47,64 @@ digilib plugin stub
             'imageSequence' : null,
             // optional prefix for image file names
             'imageSequenceBase' : null,
+            // contains the HTML to be shown as caption
+            'imageSequenceCaption' : null,
             // show captions for sequential images?
             'imageSequenceShowCaptions' : false
+    };
+
+    var hasSequence = function(settings) {
+        return settings.imageSequence != null;
     };
 
     var actions = {
          // replaces digilib.fn.gotoPage (monkey patch)
         gotoPage : function (data, pageNr) {
             var settings = data.settings;
-            settings.suppressParamNames = ['pt', 'fn'];
-            // settings.fn = 'numbers';
-            // settings.pt = '10';
-            var oldpn = settings.pn;
+            var currentPn = settings.pn;
+            if (hasSequence(settings)) {
+                settings.pt = settings.imageSequence.length;
+                }
             if (pageNr == null) {
-                pageNr = window.prompt("Goto image at index", oldpn);
-            }
+                pageNr = window.prompt("Goto image at index", currentPn);
+                }
             if (pageNr == '-0') {
                 pageNr = settings.pt;
-            }
+                }
             var pn = fn.setNumValue(settings, "pn", pageNr);
             if (pn == null) return false; // nothing happened
             if (pn < 1) {
                 alert("no such image (index number too low)");
-                settings.pn = oldpn;
+                settings.pn = currentPn;
                 return false;
                 }
-            // TODO: how do we get pt?
+            // set fn and pn parameters
             if (settings.pt != null) {
                 if (pn > settings.pt) {
                     alert("no such image (index number too high)");
-                    settings.pn = oldpn;
+                    settings.pn = currentPn;
                     return false;
                     }
+                settings.pn = pn;
+                setSequenceFn(settings);
                 }
             // reset mk and others(?)
             data.marks = [];
             data.zoomArea = FULL_AREA.copy();
             // then reload
-            console.error("fn", settings.fn, "pn", settings.pn);
             fn.redisplay(data);
             }
+    };
+
+    // set the fn parameter for the current page index number
+    var setSequenceFn = function(settings) {
+        var pn = settings.pn;
+        if (hasSequence(settings)) {
+             settings.fn = settings.imageSequenceBase == null
+                  ? settings.imageSequence[pn-1].fn
+                  : settings.imageSequenceBase + '/' + settings.imageSequence[pn-1].fn;
+             }
+        return settings.fn
     };
 
     // plugin installation routine, called by digilib on each plugin object.
@@ -110,12 +128,24 @@ digilib plugin stub
         // monkey patch for the original action in jquery.digilib.js
         digilib.fn.gotoPage = actions.gotoPage;
         // install event handlers
+        $data.bind('unpack', handleUnpack);
         $data.bind('setup', handleSetup);
         $data.bind('update', handleUpdate);
         $data.bind('redisplay', handleRedisplay);
         $data.bind('dragZoom', handleDragZoom);
     };
 
+    // set parameters for the first image to show
+    var handleUnpack = function (evt) {
+        var data = this;
+        var settings = data.settings;
+        if (settings.pn == null) {
+            settings.pn = '1';
+            }
+        setSequenceFn(settings);
+        // console.warn("fn", settings.fn, "pn", settings.pn);
+        settings.suppressParamNames = ['pt', 'fn'];
+    };
 
     var handleSetup = function (evt) {
         console.debug("sequence: handleSetup");
@@ -128,8 +158,9 @@ digilib plugin stub
     };
 
     var handleRedisplay = function (evt) {
-        console.debug("sequence: handleRedisplay");
         var data = this;
+        var settings = data.settings;
+        // console.warn("fn", settings.fn, "pn", settings.pn);
     };
 
     var handleDragZoom = function (evt, zoomArea) {
