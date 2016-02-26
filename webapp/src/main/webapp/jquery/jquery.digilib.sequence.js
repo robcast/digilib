@@ -53,10 +53,6 @@ digilib plugin stub
             'imageSequenceShowCaptions' : false
     };
 
-    var hasSequence = function(settings) {
-        return settings.imageSequence != null;
-    };
-
     var actions = {
          // replaces digilib.fn.gotoPage (monkey patch)
         gotoPage : function (data, pageNr) {
@@ -64,6 +60,9 @@ digilib plugin stub
             var currentPn = settings.pn;
             if (hasSequence(settings)) {
                 settings.pt = settings.imageSequence.length;
+                }
+            else if (hasDirInfo(data)) {
+                settings.pt = data.dirInfo.files.length;
                 }
             if (pageNr == null) {
                 pageNr = window.prompt("Goto image at index", currentPn);
@@ -78,7 +77,7 @@ digilib plugin stub
                 settings.pn = currentPn;
                 return false;
                 }
-            // set fn and pn parameters
+            // set pn and fn parameters
             if (settings.pt != null) {
                 if (pn > settings.pt) {
                     alert("no such image (index number too high)");
@@ -86,7 +85,9 @@ digilib plugin stub
                     return false;
                     }
                 settings.pn = pn;
-                setSequenceFn(settings);
+                if (hasSequence(settings)) {
+                    setSequenceFn(settings);
+                    }
                 }
             // reset mk and others(?)
             data.marks = [];
@@ -96,15 +97,40 @@ digilib plugin stub
             }
     };
 
+    // is a special image sequence defined?
+    var hasSequence = function(settings) {
+        return settings.imageSequence != null;
+    };
+
+    // are dirinfo json data available?
+    var hasDirInfo = function(data) {
+        return data.dirInfo != null;
+    };
+
     // set the fn parameter for the current page index number
     var setSequenceFn = function(settings) {
         var pn = settings.pn;
-        if (hasSequence(settings)) {
-             settings.fn = settings.imageSequenceBase == null
-                  ? settings.imageSequence[pn-1].fn
-                  : settings.imageSequenceBase + '/' + settings.imageSequence[pn-1].fn;
-             }
+        settings.fn = settings.imageSequenceBase == null
+          ? settings.imageSequence[pn-1].fn
+          : settings.imageSequenceBase + '/' + settings.imageSequence[pn-1].fn;
         return settings.fn
+    };
+
+    // get json data for current fn directory
+    var loadDirInfo = function (data) {
+        var settings = data.settings;
+        // bind default function (only once)
+        $(data).off('dirInfo', handleDirInfo);
+        $(data).on('dirInfo', handleDirInfo);
+        var url = settings.digilibBaseUrl + '/api/dirInfo-json.jsp';
+        url += '?' + fn.getParamString(settings, ['fn'], defaults);
+        // TODO: better error handling
+        $.getJSON(url, function (json) {
+            console.debug("sequence: got json data=", json);
+            data.dirInfo = json;
+            // send event
+            $(data).trigger('dirInfo', [json]);
+        });
     };
 
     // plugin installation routine, called by digilib on each plugin object.
@@ -132,19 +158,27 @@ digilib plugin stub
         $data.bind('setup', handleSetup);
         $data.bind('update', handleUpdate);
         $data.bind('redisplay', handleRedisplay);
-        $data.bind('dragZoom', handleDragZoom);
     };
 
     // set parameters for the first image to show
     var handleUnpack = function (evt) {
         var data = this;
         var settings = data.settings;
-        if (settings.pn == null) {
-            settings.pn = '1';
+        // an image sequence was defined in HTML
+        if (hasSequence(settings)) {
+            setSequenceFn(settings);
+            settings.suppressParamNames = ['pt', 'fn'];
             }
-        setSequenceFn(settings);
+        // get json info for the current directory
+        else {
+            loadDirInfo(data);
+        }
         // console.warn("fn", settings.fn, "pn", settings.pn);
-        settings.suppressParamNames = ['pt', 'fn'];
+    };
+
+    var handleDirInfo = function (evt) {
+        console.debug("sequence: handleDirInfo");
+        var data = this;
     };
 
     var handleSetup = function (evt) {
@@ -158,13 +192,10 @@ digilib plugin stub
     };
 
     var handleRedisplay = function (evt) {
+        console.debug("sequence: handleRedisplay");
         var data = this;
-        var settings = data.settings;
+        // var settings = data.settings;
         // console.warn("fn", settings.fn, "pn", settings.pn);
-    };
-
-    var handleDragZoom = function (evt, zoomArea) {
-        var data = this;
     };
 
     // plugin object, containing name, install and init routines
