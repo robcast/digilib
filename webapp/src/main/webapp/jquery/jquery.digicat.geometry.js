@@ -803,9 +803,9 @@
     };
 
     // plug into digilib
-    if ($.fn.digilib == null) {
-        $.error("jquery.digilib.geometry must be loaded after jquery.digilib!");
+    if ($.fn.digicat == null) {
+        $.error("jquery.digicat.geometry must be loaded after jquery.digicat!");
     } else {
-        $.fn.digilib('plugin', plugin);
+        $.fn.digicat('plugin', plugin);
     }
 })(jQuery);
