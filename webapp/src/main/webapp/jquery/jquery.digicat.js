@@ -223,6 +223,42 @@ function($) {
             redisplay(data);
         },
 
+        /** show the 'about' window
+         * 
+         * @param data
+         */
+        about : function(data) {
+            //FIXME: highlightButtons(data, 'about', on);
+            var $elem = data.$elem;
+            var settings = data.settings;
+            var cssPrefix = settings.cssPrefix;
+            var aboutSelector = '#'+cssPrefix+'about';
+            if (isOnScreen(data, aboutSelector)) {
+                $(aboutSelector).fadeToggle();
+                return;
+            }
+            // make relative logoUrl absolute
+            var logoUrl = settings.logoUrl;
+            if (logoUrl.charAt(0) !== '/' && logoUrl.substring(0,3) !== 'http') {
+                logoUrl = settings.digilibBaseUrl + '/' + logoUrl;
+            }
+            var html = '\
+                <div id="'+cssPrefix+'about" class="'+cssPrefix+'about" style="display:none">\
+                    <p>Digilib Image Viewer</p>\
+                    <a href="'+settings.homeUrl+'">\
+                        <img class="'+settings.cssPrefix+'logo" title="Digilib" src="'+logoUrl+'"/>\
+                    </a>\
+                    <p>Version: '+settings.version+'</p>\
+                </div>';
+            var $about = $(html);
+            $about.appendTo($elem);
+            $about.on('click.digilib', function () {
+                withdraw($about);
+                });
+            $about.fadeIn();
+            centerOnScreen(data, $about);
+        },
+
     };
 
     /**
@@ -307,6 +343,13 @@ function($) {
         var imgW = winW - insets.x;
         var imgH = winH - insets.y;
         return geom.size(imgW, imgH);
+    };
+
+    /** 
+     * returns a rectangle.with the fullscreen dimensions 
+     */
+    var getFullscreenRect = function (data) {
+        return geom.rectangle(getFullscreenImgSize(data));
     };
 
     /**
@@ -535,6 +578,30 @@ function($) {
     var isNumber = function(value) {
         return typeof value === 'number' && isFinite(value);
     };
+
+    /** center an item on the visible screen rect
+     */
+     var centerOnScreen = function (data, $div) {
+         if ($div == null) return;
+         var r = geom.rectangle($div);
+         var s = getFullscreenRect(data);
+         r.setCenter(s.getCenter());
+         r.getPosition().adjustDiv($div);
+     };
+
+     /** find an element in digilib $elem
+     */
+     var find = function (data, selector) {
+         var $obj = data.$elem.find(selector);
+         return ($obj.length > 0) ? $obj : null;
+     };
+
+    /** does element exist in digilib?
+     */
+     var isOnScreen = function (data, selector) {
+         var $obj = find(data, selector);
+         return ($obj != null);
+     };
 
     /**
      * functions to export to plugins.
