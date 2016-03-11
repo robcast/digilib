@@ -168,6 +168,8 @@ function($) {
                         elemSettings.scalerBaseUrl = elemSettings.digilibBaseUrl + '/servlet/Scaler';
                     }
                 }
+                // set up event handlers
+                $(data).on('update', handleUpdate);
                 // initialise plugins
                 for (n in plugins) {
                     var p = plugins[n];
@@ -478,6 +480,14 @@ function($) {
         $(data).trigger('imgerror');
     };
 
+    /** handle "update" display event.
+     */
+    var handleUpdate = function (evt) {
+        var data = this;
+        console.debug("handleupdate.");
+        setupDigicatDiv(data);
+    };
+
     /**
      * creates HTML structure for digilib in elem
      */
@@ -488,6 +498,7 @@ function($) {
         $elem.addClass(cssPrefix + 'digicat');
         var scalerUrl;
         var dlUrl;
+        var pt = settings.pt;
         var pg = settings.pg;
         var rows = settings.rows;
         var cols = settings.cols;
@@ -506,35 +517,37 @@ function($) {
             $tr = $('<tr/>');
             for (var cidx = 0; cidx < cols; ++cidx) {
                 $td = $('<td>');
-                settings.pn = pn;
-                /*
-                 * link
-                 */
-                dlUrl = getDigilibUrl(data, '/digilib.html');
-                $link = $('<a href="'+dlUrl+'" target="_blank"/>');
-                /*
-                 * scaler image
-                 */
-                $img = $('<img/>');
-                $img.addClass(cssPrefix + 'pic');
-                $img.on('error', function(evt, a, b) {
-                    handleScalerImgError(data, evt, a, b);
-                });
-                scalerUrl = getScalerUrl(data);
-                $img.attr('src', scalerUrl);
-                /*
-                 * image caption
-                 */
-                $cap = $('<div/>');
-                $cap.text(pn);
-                /*
-                 * assemble element
-                 */
+                if (pt == null || pn <= pt) {
+                    settings.pn = pn;
+                    /*
+                     * link
+                     */
+                    dlUrl = getDigilibUrl(data, '/digilib.html');
+                    $link = $('<a href="'+dlUrl+'" target="_blank"/>');
+                    /*
+                     * scaler image
+                     */
+                    $img = $('<img/>');
+                    $img.addClass(cssPrefix + 'pic');
+                    $img.on('error', function(evt, a, b) {
+                        handleScalerImgError(data, evt, a, b);
+                    });
+                    scalerUrl = getScalerUrl(data);
+                    $img.attr('src', scalerUrl);
+                    /*
+                     * image caption
+                     */
+                    $cap = $('<div/>');
+                    $cap.text(pn);
+                    /*
+                     * assemble element
+                     */
+                    $link.append($img);
+                    $link.append($cap);
+                    $td.append($link);
+                }
                 $td.css('width', tdw + 'px');
                 $td.css('height', tdh + 'px');
-                $link.append($img);
-                $link.append($cap);
-                $td.append($link);
                 $tr.append($td);
                 pn += 1;
             }
@@ -607,7 +620,15 @@ function($) {
      * functions to export to plugins.
      */
     fn = {
-        geometry : geom
+        geometry : geom,
+        parseQueryString : parseQueryString,
+        getScalerUrl : getScalerUrl,
+        getParamString : getParamString,
+        getDigilibUrl : getDigilibUrl,
+        unpackParams : unpackParams,
+        packParams : packParams,
+        setNumValue : setNumValue,
+        redisplay : redisplay
     };
 
     // hook digicat plugin into jquery
