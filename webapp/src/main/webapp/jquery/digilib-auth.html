@@ -24,17 +24,16 @@
         <script type="text/javascript" src="jquery.digilib.birdseye.js"></script>
         <script type="text/javascript" src="jquery.digilib.marks.js"></script>
         <script type="text/javascript" src="jquery.digilib.regions.js"></script>
-        <script type="text/javascript" src="jquery.digilib.auth.js"></script>
+        <script type="text/javascript" src="jquery.digilib.oauth.js"></script>
         <link rel="stylesheet" type="text/css" href="jquery.digilib.css" />
         <link rel="stylesheet" type="text/css" href="jquery.digilib.buttons-full-32-sprite.css" />
 
         <script type="text/javascript">
             $(document).ready(function(){
                 var opts = {
-                    interactionMode : 'fullscreen',
-                    showRegionNumbers : true,
-                    authScalerBaseUrl : 'http://localhost:18080/digilib-webapp/authenticated/servlet/Scaler'
-                    };
+                    authServerUrl : 'http://localhost:18080/openid-connect-server-webapp/authorize',
+                    authClientId : 'client'
+                };
                 var $div = $('div#digilib');
                 $div.digilib(opts);
             });
