@@ -25,6 +25,7 @@
           digilib.conf.DigilibServletConfiguration,
           digilib.conf.DigilibServletRequest,
           digilib.io.DocuDirCache,
+          digilib.image.DocuImage,
           digilib.image.DocuImageFactory,
           java.io.File"%>
 <%!
@@ -54,8 +55,7 @@ dlRequest.setValue("pt", docBean.getNumPages(dlRequest));
 // dir cache
 DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 // image JobCenter
-DigilibJobCenter imageProcessor =  (DigilibJobCenter)dlConfig.getValue("servlet.worker.imageexecutor");        
-
+DigilibJobCenter<DocuImage> imageProcessor =  (DigilibJobCenter<DocuImage>) dlConfig.getValue("servlet.worker.imageexecutor");
 %>
 
 <html>
@@ -196,8 +196,8 @@ DigilibJobCenter imageProcessor =  (DigilibJobCenter)dlConfig.getValue("servlet.
 <p>Supported image types</p>
 <ul>
 <% 
-  java.util.Iterator dlfs = DocuImageFactory.getInstance().getSupportedFormats();
-  for (Object f = dlfs.next(); dlfs.hasNext(); f = dlfs.next()) {
+  java.util.Iterator<String> dlfs = DocuImageFactory.getInstance().getSupportedFormats();
+  for (String f = dlfs.next(); dlfs.hasNext(); f = dlfs.next()) {
 %>
   <li><%= (String)f %></li>
 <% 

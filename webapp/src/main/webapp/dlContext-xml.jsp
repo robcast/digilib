@@ -25,8 +25,7 @@
           digilib.conf.DigilibServletRequest,
           digilib.io.DocuDirCache,
           digilib.io.DocuDirent,
-          java.util.HashMap,
-          java.io.File"%><%!
+          digilib.meta.MetadataMap"%><%!
 // create DocumentBean instance for all JSP requests
 DocumentBean docBean = new DocumentBean();
 
@@ -54,11 +53,11 @@ DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 int pn = dlRequest.getAsInt("pn");
 String fn = dlRequest.getFilePath();
 String ctx = "";
-DocuDirent f = dirCache.getFile(fn, pn, digilib.io.FileOps.FileClass.IMAGE);
+DocuDirent f = dirCache.getFile(fn, pn);
 if (f != null) {
     //ctx = "hasfile:"+f.getName();
     f.checkMeta();
-    HashMap meta = f.getMeta().getFileMeta();
+    MetadataMap meta = f.getMeta().getFileMeta();
     if (meta != null) {
     	//ctx = "JSP:hasmeta!";
     	if (meta.containsKey("context")) {

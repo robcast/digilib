@@ -44,8 +44,12 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Class loading index.meta files with metadata extracting some image file related information.
+ * 
  * Extracts into the MetadataMap all tags in the meta/img tag as key-value pairs and the content of the meta/context tag as XML.
- * Returns a map with filenames and MetadataMaps. 
+ * 
+ * Returns a map with filenames and MetadataMaps.
+ * 
+ * Implemented using javax.xml.parsers.SAXParser.
  * 
  * @see <a href="http://intern.mpiwg-berlin.mpg.de/digitalhumanities/mpiwg-metadata-documentation/formate/indexmeta-standard">index.meta spec</a>
  * @author Robert Casties

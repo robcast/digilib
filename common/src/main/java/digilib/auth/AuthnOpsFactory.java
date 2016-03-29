@@ -2,9 +2,9 @@ package digilib.auth;
 
 /*
  * #%L
- * digilib-common
+ * Authentication Ops factory.
  * %%
- * Copyright (C) 2013 MPIWG Berlin
+ * Copyright (C) 2016 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -20,40 +20,40 @@ package digilib.auth;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
- * Author: Robert Casties (robcast@berlios.de)
+ * Author: Robert Casties (robcast@users.sourceforge.net)
  */
 
 import org.apache.log4j.Logger;
 
 
 /**
- * Static factory for AuthOps.
+ * Static factory for authentication AuthnOps.
  * 
  * @author casties
  * 
  */
-public class AuthOpsFactory {
+public class AuthnOpsFactory {
     /** Log4J logger */
-    protected static Logger logger = Logger.getLogger(AuthOpsFactory.class);
+    protected static Logger logger = Logger.getLogger(AuthnOpsFactory.class);
 
-    /** AuthOps implementation class */
-    protected static Class<AuthOps> authOpsClass;
+    /** AuthnOps implementation class */
+    protected static Class<AuthnOps> authOpsClass;
 
-    public static AuthOps getAuthOpsInstance() {
-        AuthOps ao = null;
+    public static AuthnOps getAuthnOpsInstance() {
+        AuthnOps ao = null;
         try {
             ao = authOpsClass.newInstance();
         } catch (Exception e) {
-            logger.error("Unable to create AuthOps instance!", e);
+            logger.error("Unable to create AuthnOps instance!", e);
         }
         return ao;
     }
 
-    /** set the AuthOps implementation class.
+    /** set the AuthnOps implementation class.
      * @param clazz
      */
-    public static void setAuthOpsClass(Class<AuthOps> clazz) {
-        AuthOpsFactory.authOpsClass = clazz;
+    public static void setAuthnOpsClass(Class<AuthnOps> clazz) {
+        AuthnOpsFactory.authOpsClass = clazz;
     }
 
 }

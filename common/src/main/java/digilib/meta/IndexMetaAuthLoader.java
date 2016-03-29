@@ -42,12 +42,14 @@ import org.apache.log4j.Logger;
  */
 
 /**
- * Class loading index.meta files extracting some image file
- * related information.
+ * Class loading index.meta files extracting some image file related information.
+ * 
  * Extracts into the MetadataMap all tags in the meta/img tag as key-value
  * pairs and access conditions under the access key.
  * 
  * Returns a map with filenames and MetadataMaps.
+ * 
+ * Implemented using javax.xml.stream.XMLStreamReader.
  * 
  * @see <a
  *      href="http://intern.mpiwg-berlin.mpg.de/digitalhumanities/mpiwg-metadata-documentation/formate/indexmeta-standard">index.meta

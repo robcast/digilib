@@ -2,7 +2,7 @@ package digilib.auth;
 
 /*
  * #%L
- * AuthOpException -- Authentication exception class
+ * AuthOpException -- Authentication/authorization exception class
  * 
  * Digital Image Library servlet components
  * 

@@ -42,8 +42,10 @@ import javax.servlet.ServletContextListener;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.xml.sax.SAXException;
 
-import digilib.auth.AuthOps;
-import digilib.auth.AuthOpsFactory;
+import digilib.auth.AuthnOps;
+import digilib.auth.AuthnOpsFactory;
+import digilib.auth.AuthzOps;
+import digilib.auth.AuthzOpsFactory;
 import digilib.image.DocuImage;
 import digilib.io.AliasingDocuDirCache;
 import digilib.io.DocuDirCache;
@@ -76,7 +78,9 @@ import digilib.util.XMLListLoader;
  */
 public class DigilibServletConfiguration extends DigilibConfiguration implements ServletContextListener {
 
-    public static final String AUTH_OP_KEY = "servlet.auth.op";
+    public static final String AUTHN_OP_KEY = "servlet.authn.op";
+
+    public static final String AUTHZ_OP_KEY = "servlet.authz.op";
 
     public static final String IMAGEEXECUTOR_KEY = "servlet.worker.imageexecutor";
 
@@ -114,12 +118,15 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         newParameter(DIR_CACHE_KEY, null, null, 's');
         // Executor for image operations
         newParameter(IMAGEEXECUTOR_KEY, null, null, 's');
-        // AuthOps instance
-        newParameter(AUTH_OP_KEY, null, null, 's');
+        // AuthnOps instance
+        newParameter(AUTHN_OP_KEY, null, null, 's');
+        // AuthzOps instance
+        newParameter(AUTHZ_OP_KEY, null, null, 's');
         // classes TODO: do we need these as parameters?
         newParameter("servlet.filemeta.class", null, null, 's');
         newParameter("servlet.dirmeta.class", null, null, 's');
-        newParameter("servlet.authops.class", null, null, 's');
+        newParameter("servlet.authnops.class", null, null, 's');
+        newParameter("servlet.authzops.class", null, null, 's');
         newParameter("servlet.docudirectory.class", null, null, 's');
         newParameter("servlet.version", getVersion(), null, 's');
 
@@ -156,8 +163,10 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         newParameter("filemeta-class", "digilib.meta.IndexMetaFileMeta", null, 'f');
         // DirMeta implementation
         newParameter("dirmeta-class", "digilib.meta.IndexMetaDirMeta", null, 'f');
-        // AuthOps implementation
-        newParameter("authops-class", "digilib.auth.PathServletAuthOps", null, 'f');
+        // AuthnOps implementation
+        newParameter("authnops-class", "digilib.auth.IpAuthnOps", null, 'f');
+        // AuthzOps implementation
+        newParameter("authzops-class", "digilib.auth.PathAuthzOps", null, 'f');
         // DocuDirectory implementation
         newParameter("docudirectory-class", "digilib.io.BaseDirDocuDirectory", null, 'f');
 
@@ -293,13 +302,23 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         } catch (ClassNotFoundException e) {
             logger.error("Error setting Metadata classes!");
         }
-        try {
-            // initialise AuthOpsFactory
-            Class<AuthOps> authOpsClass = (Class<AuthOps>) Class.forName(config.getAsString("authops-class"));
-            config.setValue("servlet.authops.class", authOpsClass);
-            AuthOpsFactory.setAuthOpsClass(authOpsClass);
-        } catch (ClassNotFoundException e) {
-            logger.error("Error setting AuthOps class!");
+        if (config.getAsBoolean("use-authorization")) {
+            try {
+                // initialise AuthnOpsFactory
+                Class<AuthnOps> authnOpsClass = (Class<AuthnOps>) Class.forName(config.getAsString("authnops-class"));
+                config.setValue("servlet.authzops.class", authnOpsClass);
+                AuthnOpsFactory.setAuthnOpsClass(authnOpsClass);
+            } catch (ClassNotFoundException e) {
+                logger.error("Error setting AuthnOps class!");
+            }
+            try {
+                // initialise AuthzOpsFactory
+                Class<AuthzOps> authzOpsClass = (Class<AuthzOps>) Class.forName(config.getAsString("authzops-class"));
+                config.setValue("servlet.authzops.class", authzOpsClass);
+                AuthzOpsFactory.setAuthzOpsClass(authzOpsClass);
+            } catch (ClassNotFoundException e) {
+                logger.error("Error setting AuthzOps class!");
+            }
         }
         try {
             // initialise DocuDirectoryFactory
@@ -334,16 +353,19 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
                 dirCache = new DocuDirCache(FileClass.IMAGE, this);
             }
             config.setValue(DIR_CACHE_KEY, dirCache);
-            // useAuthentication
+            // useAuthorization
             if (config.getAsBoolean("use-authorization")) {
-                AuthOps authOp = AuthOpsFactory.getAuthOpsInstance();
-                // get config file
+                // set auth config file
                 File authConf = ServletOps.getConfigFile((File) config.getValue("auth-file"), context);
-                if (authConf != null) {
-                    authOp.setConfig(authConf);
-                }
-                config.setValue(AUTH_OP_KEY, authOp);
                 config.setValue("auth-file", authConf);
+                // initialise AuthnOps
+                AuthnOps authnOps = AuthnOpsFactory.getAuthnOpsInstance();
+                authnOps.init(this);
+                config.setValue(AUTHN_OP_KEY, authnOps);
+                // initialise AuthzOps (requires AuthnOps)
+                AuthzOps authzOps = AuthzOpsFactory.getAuthzOpsInstance();
+                authzOps.init(this);
+                config.setValue(AUTHZ_OP_KEY, authzOps);
             }
             // digilib worker threads
             int nt = config.getAsInt("worker-threads");

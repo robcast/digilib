@@ -55,7 +55,10 @@
   <parameter name="use-authorization" value="false" />
 
   <!-- Java class to use for authentication -->
-  <parameter name="authops-class" value="digilib.auth.PathServletAuthOps" />
+  <parameter name="authzops-class" value="digilib.auth.IpAuthnOps" />
+
+  <!-- Java class to use for authorization -->
+  <parameter name="authzops-class" value="digilib.auth.PathAuthzOps" />
 
   <!-- URL location of XML file with authorization requirements. -->
   <parameter name="auth-file" value="digilib-auth.xml" />

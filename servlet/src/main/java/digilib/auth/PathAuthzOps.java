@@ -32,14 +32,18 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import digilib.conf.DigilibConfiguration;
+import digilib.conf.DigilibServletConfiguration;
 import digilib.conf.DigilibServletRequest;
 import digilib.util.HashTree;
 import digilib.util.XMLListLoader;
 
 /**
- * Implements AuthOps using paths defined in an XML config file.
+ * Implements AuthzOps using paths defined in an XML config file. 
+ * 
+ * The name of the configuration file is read from the digilib config parameter "auth-file".
  * <p/>
- * Tags "digilib-paths" and "digilib-adresses" are read from the configuration file:
+ * The tag "digilib-paths" is read from the configuration file:
  * <pre>
  * {@code
  * <digilib-paths>
@@ -50,66 +54,41 @@ import digilib.util.XMLListLoader;
  * A user must supply one of the roles under "role" to access the directory "name".
  * Roles under "role" must be separated by comma only (no spaces).
  * <pre>  
- * {@code
- * <digilib-addresses>
- *   <address ip="130.92.68" role="eastwood-coll,ptolemaios-geo" />
- *   <address ip="130.92.151" role="ALL" />
- * </digilib-addresses>
- * }
- * </pre>
- * A computer with an ip address that matches "ip" is automatically granted all roles under "role".
- * The ip address is matched from the left (in full quads). Roles under "role" must be separated by comma only (no spaces). 
  * 
  */
-public class PathServletAuthOps extends ServletAuthOpsImpl {
+public class PathAuthzOps extends AuthzOpsImpl {
 
     private File configFile;
     private HashTree authPaths;
-    private HashTree authIPs;
-
-    /**
-     * Set configuration file.
-     * 
-     * @param confFile
-     *            XML config file.
-     * @throws AuthOpException
-     *             Exception thrown on error.
-     */
-    public void setConfig(File confFile) throws AuthOpException {
-        configFile = confFile;
-        init();
-    }
 
     /**
      * Initialize authentication operations.
      * 
-     * Reads tags "digilib-paths" and "digilib-adresses" from configuration file 
+     * Reads tag "digilib-paths" from configuration file 
      * and sets up authentication arrays.
      * 
      * @throws AuthOpException
      *             Exception thrown on error.
      */
-    public void init() throws AuthOpException {
+    @Override
+    public void init(DigilibConfiguration dlConfig) throws AuthOpException {
+        configFile = dlConfig.getAsFile("auth-file");
         logger.debug("xmlauthops.init (" + configFile + ")");
         Map<String, String> pathList = null;
-        Map<String, String> ipList = null;
         try {
             // load authPaths
             XMLListLoader pathLoader = new XMLListLoader("digilib-paths", "path", "name", "role");
             pathList = pathLoader.loadUri(configFile.toURI());
-            // load authIPs
-            XMLListLoader ipLoader = new XMLListLoader("digilib-addresses", "address", "ip", "role");
-            ipList = ipLoader.loadUri(configFile.toURI());
         } catch (Exception e) {
             throw new AuthOpException("ERROR loading authorization config file: " + e);
         }
-        if ((pathList == null) || (ipList == null)) {
+        if (pathList == null) {
             throw new AuthOpException("ERROR unable to load authorization config file!");
         }
         // setup path tree
         authPaths = new HashTree(pathList, "/", ",");
-        // setup ip tree
-        authIPs = new HashTree(ipList, ".", ",");
+        // set authentication
+        this.authnOps = (AuthnOps) dlConfig.getValue(DigilibServletConfiguration.AUTHN_OP_KEY);
     }
 
     /**
@@ -117,8 +96,6 @@ public class PathServletAuthOps extends ServletAuthOpsImpl {
      * 
      * Returns the list of authorization roles that are required to access the
      * specified path. No list means the path is free.
-     * 
-     * The location information of the request is determined by ServletRequest.getRemoteAddr().
      * 
      * @param dlRequest
      *            DigilibServletRequest with image path and remote address information.
@@ -131,23 +108,8 @@ public class PathServletAuthOps extends ServletAuthOpsImpl {
         HttpServletRequest request = dlRequest.getServletRequest();
         logger.debug("rolesForPath (" + filepath + ") by [" + request.getRemoteAddr() + "]");
 
-        // check if the requests address provides a role
-        List<String> provided = authIPs.match(request.getRemoteAddr());
-        if ((provided != null) && (provided.contains("ALL"))) {
-            // ALL switches off checking;
-            return null;
-        }
         // which roles are required?
         List<String> required = authPaths.match(filepath);
-        // do any provided roles match?
-        if ((provided != null) && (required != null)) {
-            for (int i = 0; i < provided.size(); i++) {
-                if (required.contains(provided.get(i))) {
-                    // satisfied
-                    return null;
-                }
-            }
-        }
         return required;
     }
 

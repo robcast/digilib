@@ -45,7 +45,7 @@ function($) {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.3.9a',
+        'version' : 'jquery.digilib.js 2.4.0a',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)

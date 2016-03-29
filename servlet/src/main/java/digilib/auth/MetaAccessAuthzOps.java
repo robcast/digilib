@@ -2,13 +2,13 @@ package digilib.auth;
 
 /*
  * #%L
- * Authentication class implementation using access information from 
+ * Authorization class implementation using access information from 
  * file metadata.
  * 
  * Digital Image Library servlet components
  * 
  * %%
- * Copyright (C) 2013 MPIWG Berlin
+ * Copyright (C) 2013-2016 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,7 +24,7 @@ package digilib.auth;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
- * Author: Robert Casties (robcast@berlios.de)
+ * Author: Robert Casties (robcast@users.souceforge.net)
  */
 
 import java.io.File;
@@ -43,82 +43,56 @@ import digilib.io.DocuDirCache;
 import digilib.io.DocuDirent;
 import digilib.io.FileOpException;
 import digilib.meta.MetadataMap;
-import digilib.util.HashTree;
 import digilib.util.XMLListLoader;
 
 /**
- * Implementation of AuthOps using "access" information from file metadata and
- * roles mapped to IP-number ranges defined in an XML config file.
+ * Implementation of AuthzOps using "access" information from file metadata. 
+ * 
+ * Requires FileMeta implementation providing "access", e.g. digilib.meta.IndexMetaFileMeta. 
+ * 
+ * The name of the configuration file is read from the digilib config parameter "auth-file".
  * <p/>
  * Tags "digilib-access" and "digilib-adresses" are read from the configuration file:
  * <pre>
  * {@code
  * <digilib-access>
- *   <access type="group:mpiwg" role="user"/>
+ *   <access type="group:mpiwg" role="mpiwg-user"/>
  * </digilib-access>
  * }
  * </pre>
  * A user must supply one of the roles under "role" to access any object with the metadata "access" type of "type".
  * Roles under "role" must be separated by comma only (no spaces).
- * <pre>  
- * {@code
- * <digilib-addresses>
- *   <address ip="130.92.68" role="eastwood-coll,ptolemaios-geo" />
- *   <address ip="130.92.151" role="ALL" />
- * </digilib-addresses>
- * }
- * </pre>
- * A computer with an ip address that matches "ip" is automatically granted all roles under "role".
- * The ip address is matched from the left (in full quads). Roles under "role" must be separated by comma only (no spaces). 
  * 
  */
-public class MetaAccessServletAuthOps extends ServletAuthOpsImpl {
+public class MetaAccessAuthzOps extends AuthzOpsImpl {
 
     private File configFile;
-    private HashTree authIPs;
     private Map<String, List<String>> rolesMap;
-
-    /**
-     * Set configuration file.
-     * 
-     * @param confFile
-     *            XML config file.
-     * @throws AuthOpException
-     *             Exception thrown on error.
-     */
-    public void setConfig(File confFile) throws AuthOpException {
-        configFile = confFile;
-        init();
-    }
 
     /**
      * Initialize authentication operations.
      * 
-     * Reads tags "digilib-access" and "digilib-adresses" from configuration file 
+     * Reads tag "digilib-access" from configuration file 
      * and sets up authentication arrays.
      * 
      * @throws AuthOpException
      *             Exception thrown on error.
      */
-    public void init() throws AuthOpException {
+    @Override
+    public void init(DigilibConfiguration dlConfig) throws AuthOpException {
+        configFile = dlConfig.getAsFile("auth-file");
         logger.debug("IpRoleServletAuthops.init (" + configFile + ")");
-        Map<String, String> ipList = null;
         Map<String, String> roleList = null;
         try {
-            // load authIPs
-            XMLListLoader ipLoader = new XMLListLoader("digilib-addresses", "address", "ip", "role");
-            ipList = ipLoader.loadUri(configFile.toURI());
             // load role mappings
             XMLListLoader roleLoader = new XMLListLoader("digilib-access", "access", "type", "role");
             roleList = roleLoader.loadUri(configFile.toURI());
         } catch (Exception e) {
             throw new AuthOpException("ERROR loading authorization config file: " + e);
         }
-        if ((ipList == null)||(roleList == null)) {
+        if (roleList == null) {
             throw new AuthOpException("ERROR unable to load authorization config file!");
         }
-        // setup ip tree
-        authIPs = new HashTree(ipList, ".", ",");
         // convert role list to map, splitting roles by ","
         rolesMap = new HashMap<String,List<String>>(roleList.size());
         for (String k : roleList.keySet()) {
@@ -126,6 +100,8 @@ public class MetaAccessServletAuthOps extends ServletAuthOpsImpl {
             String[] ra = rs.split(",");
             rolesMap.put(k, Arrays.asList(ra));
         }
+        // set authentication
+        this.authnOps = (AuthnOps) dlConfig.getValue(DigilibServletConfiguration.AUTHN_OP_KEY);
     }
 
     /**
@@ -161,15 +137,6 @@ public class MetaAccessServletAuthOps extends ServletAuthOpsImpl {
             throw new AuthOpException("No file for auth check!");
         }
         /*
-         * check if the requests address provides a role
-         */
-        List<String> provided = authIPs.match(request.getRemoteAddr());
-        if ((provided != null) && (provided.contains("ALL"))) {
-            // ALL switches off checking;
-            logger.debug("rolesForPath (" + imgs.getName() + ") by [" + request.getRemoteAddr() + "]: (ip-all)");
-            return null;
-        }
-        /*
          * get access restrictions from metadata
          */
         String access = null;
@@ -185,18 +152,8 @@ public class MetaAccessServletAuthOps extends ServletAuthOpsImpl {
             logger.debug("rolesForPath (" + imgs.getName() + ") by [" + request.getRemoteAddr() + "]: (none)");
             return null;
         }
-        // check provided against required roles
+        // get required roles
         List<String> required = rolesMap.get(access);
-        // do any provided roles match?
-        if ((provided != null) && (required != null)) {
-            for (String prov : provided) {
-                if (required.contains(prov)) {
-                    // satisfied
-                    logger.debug("rolesForPath (" + imgs.getName() + ") by [" + request.getRemoteAddr() + "]: (provided)");
-                    return null;
-                }
-            }
-        }
         logger.debug("rolesForPath (" + imgs.getName() + ") by [" + request.getRemoteAddr() + "]: "+required);
         return required;
     }

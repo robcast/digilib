@@ -36,7 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
 import digilib.auth.AuthOpException;
-import digilib.auth.AuthOps;
+import digilib.auth.AuthzOps;
 import digilib.conf.DigilibServletConfiguration;
 import digilib.conf.DigilibServletRequest;
 import digilib.io.DocuDirCache;
@@ -52,10 +52,10 @@ public class DocumentBean {
 	private static Logger logger = Logger.getLogger("digilib.docubean");
 
 	// AuthOps object to check authorization
-	private AuthOps authOp;
+	private AuthzOps authzOp;
 
 	// use authorization database
-	private boolean useAuthentication = true;
+	private boolean useAuthorization = true;
 
 	// path to add for authenticated access
 	private String authURLPath = "";
@@ -102,10 +102,10 @@ public class DocumentBean {
 		/*
 		 * authentication
 		 */
-		useAuthentication = dlConfig.getAsBoolean("use-authorization");
-		authOp = (AuthOps) dlConfig.getValue("servlet.auth.op");
+		useAuthorization = dlConfig.getAsBoolean("use-authorization");
+		authzOp = (AuthzOps) dlConfig.getValue("servlet.authz.op");
 		authURLPath = dlConfig.getAsString("auth-url-path");
-		if (useAuthentication && (authOp == null)) {
+		if (useAuthorization && (authzOp == null)) {
 			throw new ServletException(
 					"ERROR: use-authorization configured but no AuthOp!");
 		}
@@ -117,7 +117,7 @@ public class DocumentBean {
 	public boolean isAuthRequired(DigilibServletRequest request)
 			throws AuthOpException {
 		logger.debug("isAuthRequired");
-		return useAuthentication ? authOp.isAuthRequired(request) : false;
+		return useAuthorization ? authzOp.isAuthorizationRequired(request) : false;
 	}
 
 	/**
@@ -125,7 +125,7 @@ public class DocumentBean {
 	 */
 	public boolean isAuthorized(DigilibServletRequest request) throws AuthOpException {
 		logger.debug("isAuthorized");
-		return useAuthentication ? authOp.isAuthorized(request) : true;
+		return useAuthorization ? authzOp.isAuthorized(request) : true;
 	}
 
 	/**
@@ -143,8 +143,8 @@ public class DocumentBean {
 	public boolean doAuthentication(DigilibServletRequest request,
 			HttpServletResponse response) throws Exception {
 		logger.debug("doAuthentication");
-		if (!useAuthentication) {
-			// shortcut if no authentication
+		if (!useAuthorization) {
+			// shortcut if no authorization
 			return true;
 		}
 		// quick fix: add auth-url-path to base.url

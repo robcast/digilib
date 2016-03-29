@@ -2,12 +2,12 @@ package digilib.auth;
 
 /*
  * #%L
- * AuthOps -- Authentication interface class
+ * AuthzOps -- Authorization interface class
  * 
  * Digital Image Library servlet components
  * 
  * %%
- * Copyright (C) 2001 - 2013 MPIWG Berlin
+ * Copyright (C) 2001 - 2016 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,15 +23,14 @@ package digilib.auth;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
- * Author: Robert Casties (robcast@berlios.de)
+ * Author: Robert Casties (robcast@users.sourceforge.net)
  */
 
-import java.io.File;
-
+import digilib.conf.DigilibConfiguration;
 import digilib.conf.DigilibRequest;
 
-/** Class of operations requiring authentication. */
-public interface AuthOps {
+/** Class of operations providing authorization. */
+public interface AuthzOps {
 
     /**
      * Test if the request must be authorized to access the filepath.
@@ -44,10 +43,10 @@ public interface AuthOps {
      *             Exception thrown on error.
      * @return true if the user request must be authorized.
      */
-    public boolean isAuthRequired(DigilibRequest request) throws AuthOpException;
+    public boolean isAuthorizationRequired(DigilibRequest request) throws AuthOpException;
 
     /**
-     * Test if the request is allowed to access filepath.
+     * Test if the request is authorized to access filepath.
      * 
      * @param request
      *            Request with user information.
@@ -59,10 +58,10 @@ public interface AuthOps {
 
 
     /**
-     * Configure this AuthOps instance.
+     * Configure this AuthzOps instance.
      * 
      * @param confFile
      * @throws AuthOpException
      */
-    public void setConfig(File confFile) throws AuthOpException;
+    public void init(DigilibConfiguration dlConfig) throws AuthOpException;
 }

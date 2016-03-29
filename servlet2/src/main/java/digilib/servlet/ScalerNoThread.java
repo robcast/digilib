@@ -36,7 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
 import digilib.auth.AuthOpException;
-import digilib.auth.AuthOps;
+import digilib.auth.AuthzOps;
 import digilib.conf.DigilibServletConfiguration;
 import digilib.conf.DigilibServletRequest;
 import digilib.image.DocuImage;
@@ -98,7 +98,7 @@ public class ScalerNoThread extends HttpServlet {
     protected boolean useAuthorization = true;
 
     /** AuthOps instance */
-    protected AuthOps authOp;
+    protected AuthzOps authzOp;
 
     /**
      * Initialisation on first run.
@@ -124,7 +124,7 @@ public class ScalerNoThread extends HttpServlet {
         }
         // set our AuthOps
         useAuthorization = dlConfig.getAsBoolean("use-authorization");
-        authOp = (AuthOps) dlConfig.getValue("servlet.auth.op");
+        authzOp = (AuthzOps) dlConfig.getValue(DigilibServletConfiguration.AUTHZ_OP_KEY);
 
         // DocuDirCache instance
         dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
@@ -227,7 +227,7 @@ public class ScalerNoThread extends HttpServlet {
             // check permissions
             if (useAuthorization) {
                 // is the current request/user authorized?
-                if (!authOp.isAuthorized(dlRequest)) {
+                if (!authzOp.isAuthorized(dlRequest)) {
                     // send deny answer and abort
                     throw new AuthOpException();
                 }
