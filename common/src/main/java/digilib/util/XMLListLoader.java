@@ -66,17 +66,23 @@ public class XMLListLoader {
 	public XMLListLoader() {
 	}
 
-	public XMLListLoader(
-		String list_tag,
-		String entry_tag,
-		String key_att,
-		String value_att) {
-		logger.debug("xmlListLoader("+list_tag+","+entry_tag+","+key_att+","+value_att+")");
-		listTag = list_tag;
-		entryTag = entry_tag;
-		keyAtt = key_att;
-		valueAtt = value_att;
-	}
+    /**
+     * Creates an XMLListLoader with an outer <code>list_tag</code>. Every entry is an 
+     * <code>entry_tag</code> with two attributes: the <code>key_att</code>
+     * key and the <code>value_att</code> value.
+     * 
+     * @param list_tag
+     * @param entry_tag
+     * @param key_att
+     * @param value_att
+     */
+    public XMLListLoader(String list_tag, String entry_tag, String key_att, String value_att) {
+        logger.debug("xmlListLoader(" + list_tag + "," + entry_tag + "," + key_att + "," + value_att + ")");
+        listTag = list_tag;
+        entryTag = entry_tag;
+        keyAtt = key_att;
+        valueAtt = value_att;
+    }
 
 	/**
 	 *  inner class XMLListParser to be called by the parser
