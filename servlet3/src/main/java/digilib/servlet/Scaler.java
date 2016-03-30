@@ -277,7 +277,7 @@ public class Scaler extends HttpServlet {
                 // is the current request/user authorized?
                 if (!authzOp.isAuthorized(dlRequest)) {
                     // send deny answer and abort
-                    throw new AuthOpException();
+                    throw new AuthOpException("Access denied!");
                 }
             }
 

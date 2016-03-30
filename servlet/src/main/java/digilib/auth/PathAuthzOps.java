@@ -30,8 +30,6 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
 import digilib.conf.DigilibConfiguration;
 import digilib.conf.DigilibServletConfiguration;
 import digilib.conf.DigilibServletRequest;
@@ -105,9 +103,7 @@ public class PathAuthzOps extends AuthzOpsImpl {
      */
     public List<String> rolesForPath(DigilibServletRequest dlRequest) throws digilib.auth.AuthOpException {
         String filepath = dlRequest.getFilePath();
-        HttpServletRequest request = dlRequest.getServletRequest();
-        logger.debug("rolesForPath (" + filepath + ") by [" + request.getRemoteAddr() + "]");
-
+        logger.debug("rolesForPath: " + filepath);
         // which roles are required?
         List<String> required = authPaths.match(filepath);
         return required;
