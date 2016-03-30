@@ -306,7 +306,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
             try {
                 // initialise AuthnOpsFactory
                 Class<AuthnOps> authnOpsClass = (Class<AuthnOps>) Class.forName(config.getAsString("authnops-class"));
-                config.setValue("servlet.authzops.class", authnOpsClass);
+                config.setValue("servlet.authnops.class", authnOpsClass);
                 AuthnOpsFactory.setAuthnOpsClass(authnOpsClass);
             } catch (ClassNotFoundException e) {
                 logger.error("Error setting AuthnOps class!");
