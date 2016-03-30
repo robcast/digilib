@@ -146,6 +146,8 @@ public class DigilibServletRequest extends DigilibRequest {
         newParameter("scale", new Float(1), null, 's');
         // color conversion operation
         newParameter("colop", "", null, 's');
+        // OpenID Connect ID token
+        newParameter("id_token", "", null, 's');
 
         /*
          * Parameters of type 'i' are not exchanged between client and server,
