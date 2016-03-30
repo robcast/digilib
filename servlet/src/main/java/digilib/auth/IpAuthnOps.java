@@ -51,6 +51,7 @@ import digilib.util.XMLListLoader;
  * <digilib-addresses>
  *   <address ip="130.92.68" role="eastwood-coll,ptolemaios-geo" />
  *   <address ip="130.92.151" role="wtwg" />
+ *   <address ip="0:0:0:0:0:0:0:1" role="local" />
  * </digilib-addresses>
  * }
  * </pre>
@@ -64,7 +65,8 @@ public class IpAuthnOps implements AuthnOps {
     protected Logger logger = Logger.getLogger(this.getClass());
 
     protected File configFile;
-    protected HashTree authIPs;
+    protected HashTree authIP4s;
+    protected HashTree authIP6s;
 
     /**
      * Initialize authentication operations.
@@ -85,13 +87,14 @@ public class IpAuthnOps implements AuthnOps {
             XMLListLoader ipLoader = new XMLListLoader("digilib-addresses", "address", "ip", "role");
             ipList = ipLoader.loadUri(configFile.toURI());
         } catch (Exception e) {
-            throw new AuthOpException("ERROR loading authorization config file: " + e);
+            throw new AuthOpException("ERROR loading auth config file: " + e);
         }
         if (ipList == null) {
-            throw new AuthOpException("ERROR unable to load authorization config file!");
+            throw new AuthOpException("ERROR unable to load auth config file!");
         }
-        // setup ip tree
-        authIPs = new HashTree(ipList, ".", ",");
+        // setup ip trees
+        authIP4s = new HashTree(ipList, ".", ",");
+        authIP6s = new HashTree(ipList, ":", ",");
     }
 
     /* (non-Javadoc)
@@ -100,9 +103,17 @@ public class IpAuthnOps implements AuthnOps {
     @Override
     public boolean isUserInRole(DigilibRequest dlRequest, String role) throws AuthOpException {
         // check if the requests address provides a role
+        List<String> provided = null;
         HttpServletRequest request = ((DigilibServletRequest) dlRequest).getServletRequest();
         String ip = request.getRemoteAddr();
-        List<String> provided = authIPs.match(ip);
+        logger.debug("Testing role '"+role+"' for ip "+ip);
+        if (ip.contains(":")) {
+            // IPv6
+            provided = authIP6s.match(ip);
+        } else {
+            // IPv4
+            provided = authIP4s.match(ip);
+        }
         if ((provided != null) && (provided.contains(role))) {
             return true;
         }

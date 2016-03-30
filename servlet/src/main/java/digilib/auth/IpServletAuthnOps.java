@@ -44,6 +44,7 @@ import digilib.conf.DigilibServletRequest;
  * <digilib-addresses>
  *   <address ip="130.92.68" role="eastwood-coll,ptolemaios-geo" />
  *   <address ip="130.92.151" role="wtwg" />
+ *   <address ip="0:0:0:0:0:0:0:1" role="local" />
  * </digilib-addresses>
  * }
  * </pre>
@@ -60,9 +61,17 @@ public class IpServletAuthnOps extends IpAuthnOps {
     @Override
     public boolean isUserInRole(DigilibRequest dlRequest, String role) throws AuthOpException {
         // check if the requests address provides a role
+        List<String> provided = null;
         HttpServletRequest request = ((DigilibServletRequest) dlRequest).getServletRequest();
         String ip = request.getRemoteAddr();
-        List<String> provided = authIPs.match(ip);
+        logger.debug("Testing role '"+role+"' for ip "+ip);
+        if (ip.contains(":")) {
+            // IPv6
+            provided = authIP6s.match(ip);
+        } else {
+            // IPv4
+            provided = authIP4s.match(ip);
+        }
         if ((provided != null) && (provided.contains(role))) {
             return true;
         }
