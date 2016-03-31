@@ -74,7 +74,7 @@
         var authReq = {
                 'response_type' : 'id_token token',
                 'client_id' : data.settings.authClientId,
-                'redirect_uri' : url,
+                'redirect_uri' : encodeURIComponent(url),
                 'scope' : 'openid'
         };
         var qs = fn.getParamString(authReq, Object.keys(authReq));

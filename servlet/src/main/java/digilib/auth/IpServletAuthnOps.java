@@ -56,22 +56,31 @@ import digilib.conf.DigilibServletRequest;
 public class IpServletAuthnOps extends IpAuthnOps {
 
     /* (non-Javadoc)
+     * @see digilib.auth.IpAuthnOps#hasUserRoles()
+     */
+    @Override
+    public boolean hasUserRoles() {
+        // Servlet API does not support getting roles
+        return false;
+    }
+
+    /* (non-Javadoc)
+     * @see digilib.auth.IpAuthnOps#getUserRoles(digilib.conf.DigilibRequest)
+     */
+    @Override
+    public List<String> getUserRoles(DigilibRequest dlRequest) throws AuthOpException {
+        // Servlet API does not support getting roles
+        return null;
+    }
+
+    /* (non-Javadoc)
      * @see digilib.auth.IpAuthnOps#isUserInRole(digilib.conf.DigilibRequest, java.lang.String)
      */
     @Override
     public boolean isUserInRole(DigilibRequest dlRequest, String role) throws AuthOpException {
-        // check if the requests address provides a role
-        List<String> provided = null;
         HttpServletRequest request = ((DigilibServletRequest) dlRequest).getServletRequest();
-        String ip = request.getRemoteAddr();
-        logger.debug("Testing role '"+role+"' for ip "+ip);
-        if (ip.contains(":")) {
-            // IPv6
-            provided = authIP6s.match(ip);
-        } else {
-            // IPv4
-            provided = authIP4s.match(ip);
-        }
+        // check if the requests IP provides a role
+        List<String> provided = super.getUserRoles(dlRequest);
         if ((provided != null) && (provided.contains(role))) {
             return true;
         }

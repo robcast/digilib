@@ -84,11 +84,26 @@ public abstract class AuthzOpsImpl implements AuthzOps {
      */
     public boolean isRoleAuthorized(List<String> rolesRequired, DigilibServletRequest request) throws AuthOpException {
         if (rolesRequired == null) return true;
-        for (String r : rolesRequired) {
-            logger.debug("Testing role: " + r);
-            if (authnOps.isUserInRole(request, r)) {
-                logger.debug("Role Authorized");
-                return true;
+        if (authnOps.hasUserRoles()) {
+            // get and check list of provided roles (less calls)
+            List<String> rolesProvided = authnOps.getUserRoles(request);
+            if (rolesProvided == null) {
+                return false;
+            }
+            for (String r : rolesRequired) {
+                logger.debug("Testing role: " + r);
+                if (rolesProvided.contains(r)) {
+                    return true;
+                }
+            }
+        } else {
+            // check each role separately
+            for (String r : rolesRequired) {
+                logger.debug("Testing role: " + r);
+                if (authnOps.isUserInRole(request, r)) {
+                    logger.debug("Role Authorized");
+                    return true;
+                }
             }
         }
         return false;

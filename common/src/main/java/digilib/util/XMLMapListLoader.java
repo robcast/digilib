@@ -75,7 +75,7 @@ public class XMLMapListLoader {
      * @param entry_tag
      */
     public XMLMapListLoader(String list_tag, String entry_tag) {
-        logger.debug("xmlListLoader(" + list_tag + "," + entry_tag + ")");
+        logger.debug("XMLMapListLoader(" + list_tag + "," + entry_tag + ")");
         listTag = list_tag;
         entryTag = entry_tag;
     }
@@ -141,7 +141,7 @@ public class XMLMapListLoader {
                     text = "";
                 }
                 text += new String(ch, start, length);
-                elementData.put(text, CONTENT_KEY);
+                elementData.put(CONTENT_KEY, text);
             }
         }
 

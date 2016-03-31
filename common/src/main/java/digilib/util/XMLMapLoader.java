@@ -76,7 +76,7 @@ public class XMLMapLoader {
      * @param value_att
      */
     public XMLMapLoader(String list_tag, String entry_tag, String key_att, String value_att) {
-        logger.debug("xmlListLoader(" + list_tag + "," + entry_tag + "," + key_att + "," + value_att + ")");
+        logger.debug("XMLMapLoader(" + list_tag + "," + entry_tag + "," + key_att + "," + value_att + ")");
         listTag = list_tag;
         entryTag = entry_tag;
         keyAtt = key_att;

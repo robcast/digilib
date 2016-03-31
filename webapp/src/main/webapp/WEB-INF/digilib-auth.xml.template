@@ -20,8 +20,19 @@
       Roles under "role" must be separated by comma only (no spaces). 
     -->
     <address ip="127" role="local" />
+    <address ip="0:0:0:0:0:0:0:1" role="local" />
     <address ip="130.92.68" role="eastwood-coll,ptolemaios-geo" />
-    <address ip="130.92.151" role="ALL" />
   </digilib-addresses>
+
+  <digilib-oauth>
+    <!-- 
+      A request with an "id_token" parameter containing a valid token 
+      signed with the configured key including the configured issuer (iss)
+      and clientid (aud) is granted the configured roles.
+    -->
+    <openid issuer="https://id.some.where" clientid="myclient" roles="someusers" keytype="jwk">
+      {"kty":"RSA","e":"AQAB","kid":"rsa1","n":"qjQ5U3wXzamg9R...idGpIiVilMDVBs"}
+    </openid>
+  </digilib-oauth>
 
 </auth-config>

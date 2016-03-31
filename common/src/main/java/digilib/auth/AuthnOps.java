@@ -1,5 +1,7 @@
 package digilib.auth;
 
+import java.util.List;
+
 /*
  * #%L
  * AuthnOps -- Authentication interface class
@@ -43,6 +45,24 @@ public interface AuthnOps {
      */
     public boolean isUserInRole(DigilibRequest request, String role) throws AuthOpException;
 
+    /**
+     * Return if the implementation supports getUserRoles().
+     * 
+     * @return
+     */
+    public boolean hasUserRoles();
+    
+    /**
+     * Return the list of roles associated with the user represented by request.
+     * 
+     * Returns null if a list of roles is not available. Users of this API should
+     * check hasUserRoles().
+     * 
+     * @param request
+     * @return
+     * @throws AuthOpException
+     */
+    public List<String> getUserRoles(DigilibRequest request) throws AuthOpException;
 
     /**
      * Configure this AuthnOps instance.
