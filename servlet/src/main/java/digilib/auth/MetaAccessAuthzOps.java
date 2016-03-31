@@ -43,7 +43,7 @@ import digilib.io.DocuDirCache;
 import digilib.io.DocuDirent;
 import digilib.io.FileOpException;
 import digilib.meta.MetadataMap;
-import digilib.util.XMLListLoader;
+import digilib.util.XMLMapLoader;
 
 /**
  * Implementation of AuthzOps using "access" information from file metadata. 
@@ -85,7 +85,7 @@ public class MetaAccessAuthzOps extends AuthzOpsImpl {
         Map<String, String> roleList = null;
         try {
             // load role mappings
-            XMLListLoader roleLoader = new XMLListLoader("digilib-access", "access", "type", "role");
+            XMLMapLoader roleLoader = new XMLMapLoader("digilib-access", "access", "type", "role");
             roleList = roleLoader.loadUri(configFile.toURI());
         } catch (Exception e) {
             throw new AuthOpException("ERROR loading authorization config file: " + e);

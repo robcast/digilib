@@ -2,7 +2,7 @@ package digilib.util;
 
 /*
  * #%L
- * XMLListLoader -- Load an XML list into a Map
+ * XMLMapLoader -- Load an XML list into a Map
  * 
  * Digital Image Library servlet components
  *
@@ -26,7 +26,6 @@ package digilib.util;
  * Author: Robert Casties (robcast@berlios.de)
  */
 
-// JAXP packages
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -55,7 +54,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * 
  * @author casties
  */
-public class XMLListLoader {
+public class XMLMapLoader {
 
 	private Logger logger = Logger.getLogger(this.getClass());
 	private String listTag = "list";
@@ -63,11 +62,11 @@ public class XMLListLoader {
 	private String keyAtt = "key";
 	private String valueAtt = "value";
 
-	public XMLListLoader() {
+	public XMLMapLoader() {
 	}
 
     /**
-     * Creates an XMLListLoader with an outer <code>list_tag</code>. Every entry is an 
+     * Creates an XMLMapLoader with an outer <code>list_tag</code>. Every entry is an 
      * <code>entry_tag</code> with two attributes: the <code>key_att</code>
      * key and the <code>value_att</code> value.
      * 
@@ -76,7 +75,7 @@ public class XMLListLoader {
      * @param key_att
      * @param value_att
      */
-    public XMLListLoader(String list_tag, String entry_tag, String key_att, String value_att) {
+    public XMLMapLoader(String list_tag, String entry_tag, String key_att, String value_att) {
         logger.debug("xmlListLoader(" + list_tag + "," + entry_tag + "," + key_att + "," + value_att + ")");
         listTag = list_tag;
         entryTag = entry_tag;

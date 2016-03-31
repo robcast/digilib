@@ -59,7 +59,7 @@ import digilib.meta.MetaFactory;
 import digilib.servlet.ServletOps;
 import digilib.util.DigilibJobCenter;
 import digilib.util.Parameter;
-import digilib.util.XMLListLoader;
+import digilib.util.XMLMapLoader;
 
 /**
  * Class to hold the digilib servlet configuration parameters. The parameters
@@ -198,7 +198,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         File f = new File(fn);
         if (f.canRead()) {
             // setup config file list reader
-            XMLListLoader lilo = new XMLListLoader("digilib-config", "parameter", "name", "value");
+            XMLMapLoader lilo = new XMLMapLoader("digilib-config", "parameter", "name", "value");
             // read config file into HashMap
             Map<String, String> map = lilo.loadUri(f.toURI());
 

@@ -34,7 +34,7 @@ import java.util.Map.Entry;
 
 import digilib.conf.DigilibConfiguration;
 import digilib.io.FileOps.FileClass;
-import digilib.util.XMLListLoader;
+import digilib.util.XMLMapLoader;
 
 /**
  * @author casties
@@ -56,7 +56,7 @@ public class AliasingDocuDirCache extends DocuDirCache {
 		// read alias config file
 		try {
 			// load into pathMap
-			XMLListLoader mapLoader = new XMLListLoader("digilib-aliases",
+			XMLMapLoader mapLoader = new XMLMapLoader("digilib-aliases",
 					"mapping", "link", "dir");
 			pathMap = mapLoader.loadUri(confFile.toURI());
 		} catch (Exception e) {

@@ -38,7 +38,7 @@ import digilib.conf.DigilibConfiguration;
 import digilib.conf.DigilibRequest;
 import digilib.conf.DigilibServletRequest;
 import digilib.util.HashTree;
-import digilib.util.XMLListLoader;
+import digilib.util.XMLMapLoader;
 
 /**
  * Implements AuthnOps using paths defined in an XML config file.
@@ -84,7 +84,7 @@ public class IpAuthnOps implements AuthnOps {
         Map<String, String> ipList = null;
         try {
             // load authIPs
-            XMLListLoader ipLoader = new XMLListLoader("digilib-addresses", "address", "ip", "role");
+            XMLMapLoader ipLoader = new XMLMapLoader("digilib-addresses", "address", "ip", "role");
             ipList = ipLoader.loadUri(configFile.toURI());
         } catch (Exception e) {
             throw new AuthOpException("ERROR loading auth config file: " + e);

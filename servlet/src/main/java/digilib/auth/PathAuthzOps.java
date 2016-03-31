@@ -34,7 +34,7 @@ import digilib.conf.DigilibConfiguration;
 import digilib.conf.DigilibServletConfiguration;
 import digilib.conf.DigilibServletRequest;
 import digilib.util.HashTree;
-import digilib.util.XMLListLoader;
+import digilib.util.XMLMapLoader;
 
 /**
  * Implements AuthzOps using paths defined in an XML config file. 
@@ -75,7 +75,7 @@ public class PathAuthzOps extends AuthzOpsImpl {
         Map<String, String> pathList = null;
         try {
             // load authPaths
-            XMLListLoader pathLoader = new XMLListLoader("digilib-paths", "path", "name", "role");
+            XMLMapLoader pathLoader = new XMLMapLoader("digilib-paths", "path", "name", "role");
             pathList = pathLoader.loadUri(configFile.toURI());
         } catch (Exception e) {
             throw new AuthOpException("ERROR loading authorization config file: " + e);
