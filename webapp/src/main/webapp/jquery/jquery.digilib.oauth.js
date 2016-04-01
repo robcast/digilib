@@ -24,7 +24,9 @@
 /**
  * digilib OAuth / OpenID Connect plugin.
  * 
- * Switches Scaler into error-code mode and listens for image load errors.
+ * Provides "authenticate" login button.
+ * 
+ * Optionally switches Scaler into error-code mode and listens for image load errors.
  * When an error occurs, redirect browser to authentication URL.
  */
 (function($) {
@@ -169,6 +171,10 @@
         $.extend(digilib.buttons, buttons);
         // add "id_token" to Scaler parameters
         digilib.defaults.scalerParamNames.push('id_token');
+        digilib.defaults.previewImgParamNames.push('id_token');
+        if (digilib.defaults.birdDivParams != null) {
+            digilib.defaults.birdDivParams.push('id_token');
+        }
         
     };
 
