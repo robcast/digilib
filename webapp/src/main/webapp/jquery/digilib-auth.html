@@ -31,8 +31,9 @@
         <script type="text/javascript">
             $(document).ready(function(){
                 var opts = {
-                    authServerUrl : 'http://localhost:18080/openid-connect-server-webapp/authorize',
-                    authClientId : 'client'
+                    authServerUrl : 'http://localhost:18080/ldap-openid-connect-server/authorize',
+                    authClientId : 'client',
+                    authOnErrorMode : true
                 };
                 var $div = $('div#digilib');
                 $div.digilib(opts);

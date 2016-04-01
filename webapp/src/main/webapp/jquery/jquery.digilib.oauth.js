@@ -27,7 +27,6 @@
  * Switches Scaler into error-code mode and listens for image load errors.
  * When an error occurs, redirect browser to authentication URL.
  */
-
 (function($) {
 
     // plugin object with digilib data
@@ -99,6 +98,7 @@
                 fn.storeOptions(data);
                 // and set for Scaler
                 data.settings.id_token = fragp['id_token'];
+                // TODO: remove fragment from URL?
             }
         } else {
             if (data.dlOpts.id_token) {
@@ -122,26 +122,26 @@
 
     /** 
      * Handle image load error.
-     * Assume that it was an authentication error and try to use the authenticated Scaler url.
+     * 
+     * Assumes that it was an authentication error and tries to authenticate.
+     * Switches back to error image mode if token is present and 
+     * returnToErrorImgMode is set.
+     * 
      * @param {Object} evt
      */
     var handleImgerror = function (evt) {
         console.debug("oauth: handleImgerror");
         var data = this;
         var settings = data.settings;
-        if (settings.authScalerBaseUrl == null) return;
-        if (settings.scalerBaseUrl != settings.authScalerBaseUrl) {
-            // not using authScalerBaseUrl -- change URL
-            console.debug("oauth: switching to authenticated scaler.");
-            settings.noauthScalerBaseUrl = settings.scalerBaseUrl;
-            settings.scalerBaseUrl = settings.authScalerBaseUrl;
-            digilib.fn.redisplay(data);            
+        if (! settings.authOnErrorMode) return;
+        if (! settings.id_token) {
+            // not token -- authenticate
+            authenticate(data);
         } else {
             // we are authenticated, it must be a different kind of error
-            if (settings.returnToErrorImgMode && settings.noauthScalerBaseUrl != null) {
-                // remove error code flag and switch to noauth URL
+            if (settings.returnToErrorImgMode) {
+                // remove error code flag
                 delete data.scalerFlags['errcode'];
-                settings.scalerBaseUrl = settings.noauthScalerBaseUrl;
                 digilib.fn.redisplay(data);
             }
         }
