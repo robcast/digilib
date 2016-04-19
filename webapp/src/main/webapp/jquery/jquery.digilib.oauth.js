@@ -100,7 +100,8 @@
                 fn.storeOptions(data);
                 // and set for Scaler
                 data.settings.id_token = fragp['id_token'];
-                // TODO: remove fragment from URL?
+                // remove fragment from URL
+                window.location.hash = '';
             }
         } else {
             if (data.dlOpts.id_token) {
