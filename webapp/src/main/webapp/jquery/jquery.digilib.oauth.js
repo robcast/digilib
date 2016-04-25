@@ -69,6 +69,9 @@
     };
                 
 
+    /**
+     * Authenticate by redirecting to auth server.
+     */
     var authenticate = function (data) {
         console.debug("oauth: authenticate.");
         var url = fn.getDigilibUrl(data);
@@ -79,13 +82,15 @@
                 'scope' : 'openid'
         };
         var qs = fn.getParamString(authReq, Object.keys(authReq));
+        // redirect to auth server
         window.location.assign(data.settings.authServerUrl + '?' + qs);
     };
     
     
     /**
      * Handle parameter unpacking event.
-     * Make sure the errcode flag is set.
+     * Gets token from URL fragment or cookie.
+     * Sets errcode flag if required.
      */
     var handleUnpack = function (evt) {
         console.debug("oauth: handleUnpack");
@@ -109,6 +114,7 @@
                 data.settings.id_token = data.dlOpts.id_token;                
             }
         }
+        checkToken(data);
         // set scaler errcode mode
         if (data.settings.authOnErrorMode) {
             var flags = data.scalerFlags;
@@ -123,6 +129,73 @@
         }
     };
 
+    /**
+     * Check the id_token for well-formedness and validity,
+     * including expiry.
+     * 
+     * Discards the token if it is not valid.
+     */
+    var checkToken = function (data) {
+        console.debug("check token!");
+        var token = data.settings.id_token;
+        if (! token) {
+            console.debug("no token.");
+            return;
+        }
+        var parts = token.split('.');
+        if (parts.length != 3) {
+            console.error("Not well formed token!");
+            discardToken(data);
+            return;
+        }
+        var content = window.atob(parts[1]);
+        var payload = JSON.parse(content);
+        if (payload != null) {
+            console.debug("id_token:", payload);
+            // user name
+            var sub = payload['sub'];
+            // expiration date
+            var exp = payload['exp'];
+            if (sub && exp) {
+                var now = Date.now() / 1000;
+                if (exp - now < 300) {
+                    console.error("id_token expired!");
+                    discardToken(data);
+                    return;
+                } else {
+                    // set user name
+                    data.settings.id_token_sub = sub;
+                    return;
+                }
+            }
+        }
+        console.error("Invalid token!");
+        discardToken(data);
+    };
+    
+    /**
+     * Discard the id_token.
+     */
+    var discardToken = function (data) {
+        delete data.settings.id_token;
+        delete data.dlOpts.id_token;
+        fn.storeOptions(data);
+    };
+    
+    /**
+     * Display the authentication state on the authenticate button.
+     */
+    var showAuthState = function (data) {
+        var text = "Log in";
+        var user = data.settings.id_token_sub;
+        if (user) {
+            text = "Logged in as: " + user;
+        }
+        // show annotation user state
+        data.$elem.find('div#'+data.settings.cssPrefix+'button-authenticate')
+        .attr('title', text);
+    }
+    
     /** 
      * Handle image load error.
      * 
@@ -149,6 +222,17 @@
             }
         }
     };
+    
+    /**
+     * Handle the update event.
+     * 
+     * Calls showAuthState()
+     */
+    var handleUpdate = function (evt) {
+        console.debug("oauth: handleUpdate");
+        var data = this;
+        showAuthState(data);
+    }
 
     /** 
      * install additional buttons
@@ -188,8 +272,9 @@
         // install event handler
         $data.bind('unpack', handleUnpack);
         if (data.settings.authOnErrorMode) {
-            $data.bind('imgerror', handleImgerror);
+            $data.on('imgerror', handleImgerror);
         }
+        $data.on('update', handleUpdate);
     };
 
 
