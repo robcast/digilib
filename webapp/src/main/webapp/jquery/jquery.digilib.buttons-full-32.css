@@ -42,6 +42,12 @@ height: 32px;
 background-image: url(img/fullscreen/32/annotations.png); /** sprite-ref: dl-buttons; */
 }
 
+#dl-button-authenticate-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/authenticate.png); /** sprite-ref: dl-buttons; */
+}
+
 #dl-button-back-img {
 width: 32px; 
 height: 32px;

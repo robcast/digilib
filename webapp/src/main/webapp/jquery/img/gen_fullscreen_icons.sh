@@ -2,7 +2,7 @@
 #
 # script for creating PNG icons from icon SVG file
 
-SVGFILE="fullscreen3.svg"
+SVGFILE="fullscreen.svg"
 XSLTFILE="gen_fullscreen_icons.xsl"
 SVGDIR="fullscreen/svg_gen"
 # PNG directory relative to SVGDIR
@@ -16,15 +16,16 @@ mkdir -p $SVGDIR
 $SAXON $SVGFILE $XSLTFILE
 
 # create PNGs from separate SVGs using inkscape
-INKSCAPE=" /Volumes/Schlachteplatte/Applications/Inkscape.app/Contents/Resources/bin/inkscape"
+INKSCAPE=" /Volumes/User/Applications/Inkscape.app/Contents/Resources/bin/inkscape"
 #INKSCAPE=" /Applications/Inkscape.app/Contents/Resources/bin/inkscape"
 echo "running Inkscape to create PNGs"
 cd $SVGDIR
+WD=$( pwd )
 mkdir -p $PNGDIR
 ls *.svg | while read fx
 do 
     f=`basename "$fx" svg`
     #$INKSCAPE --file="$fx" --export-area-drawing --export-height=32 --export-png="$PNGDIR/${f}png"
-    $INKSCAPE --file="$fx" --export-height=32 --export-png="$PNGDIR/${f}png"
+    $INKSCAPE --without-gui --file="$WD/$fx" --export-height=32 --export-png="$WD/$PNGDIR/${f}png"
 done
 echo "done."

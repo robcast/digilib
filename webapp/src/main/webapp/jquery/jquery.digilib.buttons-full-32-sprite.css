@@ -48,374 +48,381 @@ height: 32px;
   background-position: left -192px;
 }
 
-#dl-button-back-img {
+#dl-button-authenticate-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -224px;
 }
 
-#dl-button-bg-img {
+#dl-button-back-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -256px;
 }
 
-#dl-button-birds-eye-img {
+#dl-button-bg-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
-  background-position: left -258px;
+  background-position: left -288px;
 }
 
-#dl-button-brightness-img {
+#dl-button-birds-eye-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -290px;
 }
 
-#dl-button-buttons-less-img {
+#dl-button-brightness-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -322px;
 }
 
-#dl-button-buttons-more-img {
+#dl-button-buttons-less-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -354px;
 }
 
-#dl-button-calibration-img {
+#dl-button-buttons-more-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -386px;
 }
 
-#dl-button-cat-img {
+#dl-button-calibration-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -418px;
 }
 
-#dl-button-contrast-img {
+#dl-button-cat-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -450px;
 }
 
-#dl-button-corona-img {
+#dl-button-contrast-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -482px;
 }
 
-#dl-button-delallregions-img {
+#dl-button-corona-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -514px;
 }
 
-#dl-button-delmark-img {
+#dl-button-delallregions-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -546px;
 }
 
-#dl-button-delregion-img {
+#dl-button-delmark-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -578px;
 }
 
-#dl-button-delregions-img {
+#dl-button-delregion-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -610px;
 }
 
-#dl-button-digilib-img {
+#dl-button-delregions-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -642px;
 }
 
-#dl-button-findcoords-img {
+#dl-button-digilib-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -674px;
 }
 
-#dl-button-findregion-img {
+#dl-button-findcoords-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -706px;
 }
 
-#dl-button-first-img {
+#dl-button-findregion-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -738px;
 }
 
-#dl-button-fwd-img {
+#dl-button-first-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -770px;
 }
 
-#dl-button-help-img {
+#dl-button-fwd-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -802px;
 }
 
-#dl-button-info-img {
+#dl-button-help-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -834px;
 }
 
-#dl-button-last-img {
+#dl-button-info-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -866px;
 }
 
-#dl-button-mark-img {
+#dl-button-last-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -898px;
 }
 
-#dl-button-measure-img {
+#dl-button-mark-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -930px;
 }
 
-#dl-button-mirror-horizontal-img {
+#dl-button-measure-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -962px;
 }
 
-#dl-button-mirror-vertical-img {
+#dl-button-mirror-horizontal-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -994px;
 }
 
-#dl-button-move-transparent-img {
+#dl-button-mirror-vertical-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1026px;
 }
 
-#dl-button-options-img {
+#dl-button-move-transparent-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1058px;
 }
 
-#dl-button-original-size-img {
+#dl-button-options-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1090px;
 }
 
-#dl-button-page-img {
+#dl-button-original-size-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1122px;
 }
 
-#dl-button-pagewidth-img {
+#dl-button-page-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1154px;
 }
 
-#dl-button-quality-img {
+#dl-button-pagewidth-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1186px;
 }
 
-#dl-button-reference-img {
+#dl-button-quality-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1218px;
 }
 
-#dl-button-regioninfo-img {
+#dl-button-reference-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1250px;
 }
 
-#dl-button-regions-img {
+#dl-button-regioninfo-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1282px;
 }
 
-#dl-button-reset-img {
+#dl-button-regions-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1314px;
 }
 
-#dl-button-rgb-img {
+#dl-button-reset-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1346px;
 }
 
-#dl-button-rotate-img {
+#dl-button-rgb-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1378px;
 }
 
-#dl-button-set-opacity-img {
+#dl-button-rotate-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1410px;
 }
 
-#dl-button-showregions-img {
+#dl-button-set-opacity-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1442px;
 }
 
-#dl-button-size-bigger-img {
+#dl-button-showregions-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1474px;
 }
 
-#dl-button-size-smaller-img {
+#dl-button-size-bigger-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1506px;
 }
 
-#dl-button-toggle-transparent-img {
+#dl-button-size-smaller-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1538px;
 }
 
-#dl-button-whitedisc-img {
+#dl-button-toggle-transparent-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1570px;
 }
 
-#dl-button-zoom-area-img {
+#dl-button-whitedisc-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1602px;
 }
 
-#dl-button-zoom-full-img {
+#dl-button-zoom-area-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1634px;
 }
 
-#dl-button-zoom-in-img {
+#dl-button-zoom-full-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1666px;
 }
 
-#dl-button-zoom-out-img {
+#dl-button-zoom-in-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1698px;
 }
 
-#dl-button-zoom-transparent-img {
+#dl-button-zoom-out-img {
 width: 32px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
   background-position: left -1730px;
 }
 
+#dl-button-zoom-transparent-img {
+width: 32px; 
+height: 32px;
+  background-image: url('img/dl-buttons-full-32-sprite.png');
+  background-position: left -1762px;
+}
+
 #dl-button-up-img {
 width: 32px; 
 height: 16px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
-  background-position: left -1762px;
+  background-position: left -1794px;
 }
 
 #dl-button-down-img {
 width: 32px; 
 height: 16px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
-  background-position: left -1778px;
+  background-position: left -1810px;
 }
 
 #dl-button-left-img {
 width: 16px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
-  background-position: left -1794px;
+  background-position: left -1826px;
 }
 
 #dl-button-right-img {
 width: 16px; 
 height: 32px;
   background-image: url('img/dl-buttons-full-32-sprite.png');
-  background-position: left -1826px;
+  background-position: left -1858px;
 }
 

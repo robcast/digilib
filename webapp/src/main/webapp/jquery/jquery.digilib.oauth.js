@@ -40,7 +40,7 @@
             authenticate : {
                 onclick : "authenticate",
                 tooltip : "Authenticate",
-                icon : "annotation-user.png"
+                icon : "authenticate.png"
             },
     };
                 
