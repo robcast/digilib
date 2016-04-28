@@ -31,6 +31,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.log4j.Logger;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwt.JwtClaims;
@@ -43,6 +46,7 @@ import org.jose4j.lang.JoseException;
 
 import digilib.conf.DigilibConfiguration;
 import digilib.conf.DigilibRequest;
+import digilib.conf.DigilibServletRequest;
 import digilib.util.XMLMapListLoader;
 
 /**
@@ -75,6 +79,8 @@ public class OpenIdAuthnOps implements AuthnOps {
     protected JwtConsumer firstPassJwtConsumer;
     protected Map<String, JwtConsumer> idpJwtConsumers;
     protected Map<String, List<String>> idpRoles;
+
+    protected String tokenCookieName;
     
 
     /* (non-Javadoc)
@@ -164,6 +170,9 @@ public class OpenIdAuthnOps implements AuthnOps {
                 continue;
             }
         }
+        
+        // set token cookie name
+        tokenCookieName = dlConfig.getAsString("auth-token-cookie");
     }
 
     /* (non-Javadoc)
@@ -179,10 +188,28 @@ public class OpenIdAuthnOps implements AuthnOps {
      */
     @Override
     public List<String> getUserRoles(DigilibRequest request) throws AuthOpException {
+        /*
+         * try token parameter first
+         */
         String id_token = request.getAsString("id_token");
         if (id_token == null || id_token.isEmpty()) {
-            logger.error("Missing id token!");
-            return null;
+            /*
+             * try token cookie next
+             */
+            HttpServletRequest srvReq = ((DigilibServletRequest) request).getServletRequest();            
+            Cookie[] cookies = srvReq.getCookies();
+            if (cookies != null) {
+                for (Cookie c : cookies) {
+                    if (c.getName() == tokenCookieName) {
+                        id_token = c.getValue();
+                        break;
+                    }
+                }
+            }
+            if (id_token == null || id_token.isEmpty()) {
+                logger.error("Missing id token!");
+                return null;
+            }
         }
         // the first JwtConsumer is just used to parse the JWT into a JwtContext object.
         try {

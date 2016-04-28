@@ -169,7 +169,8 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         newParameter("authzops-class", "digilib.auth.PathAuthzOps", null, 'f');
         // DocuDirectory implementation
         newParameter("docudirectory-class", "digilib.io.BaseDirDocuDirectory", null, 'f');
-
+        // name of cookie with authentication token
+        newParameter("auth-token-cookie", "id_token", null, 'f');
     }
 
     /**
