@@ -99,7 +99,14 @@
         var frag = window.location.hash;
         if (frag) {
             var fragp = fn.parseQueryString(frag.substr(1));
-            if (fragp['id_token'] != null) {
+            if (fragp['error'] != null) {
+                console.error("auth server returned error: "+fragp['error']);
+                discardToken(data);
+                // reset auth-on-error to exit loop
+                data.settings.authOnErrorMode = false;
+                // TODO: what now?
+                return;
+            } else if (fragp['id_token'] != null) {
                 // save id_token
                 data.dlOpts.id_token = fragp['id_token'];
                 fn.storeOptions(data);
