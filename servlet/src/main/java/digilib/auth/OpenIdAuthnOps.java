@@ -216,7 +216,10 @@ public class OpenIdAuthnOps implements AuthnOps {
     @Override
     public boolean isUserInRole(DigilibRequest request, String role) throws AuthOpException {
         List<String> provided = getUserRoles(request);
-        return provided.contains(role);
+        if (provided != null && provided.contains(role)) {
+            return true;
+        }
+        return false;
     }
 
 }
