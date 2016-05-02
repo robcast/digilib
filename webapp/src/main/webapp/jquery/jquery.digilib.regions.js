@@ -143,8 +143,10 @@ inner (optional)
         'userRegionSet' : ['defineregion', 'removeregion', 'removeallregions'],
         // url param for regions
         'rg' : null,
-        // array with region data
+        // precalculated array with region data, used by createRegionsFromJS
         'regions' : null,
+        // JSON array with region data (x,y,w,h,title,index), used by createRegionsFromJSON
+        'regionsJSON' : null,
         // function for extracting the sort string (for the region search window)
         'regionSortString' : null,
         // region attributes to copy from HTML
@@ -491,6 +493,18 @@ inner (optional)
             });
     };
 
+    // create regions from a JSON array of items (x,y,w,h,title,index)
+    var createRegionsFromJSON = function (data, items) {
+      var ww = data.settings.regionWidth;
+      $.each(items, function (index, item) {
+        addRegionDiv(data, {
+          rect: geom.rectangle(item.x, item.y, item.w || ww, item.h || ww),
+          attributes: {'class' : CSS+"regionJSON "+CSS+"overlay", title: item.title },
+          index: item.index || index+1
+          });
+        });
+    };
+
     // create regions from URL parameters
     var createRegionsFromURL = function (data) {
         var userRegions = unpackRegions(data);
@@ -593,6 +607,7 @@ inner (optional)
     };
 
     // show a region on top of the scaler image 
+    // TODO: faster rendering for large numbers of regions?
     var renderRegion = function (data, $regionDiv, anim) {
         if (!data.imgTrafo) return;
         var zoomArea = data.zoomArea;
@@ -724,6 +739,10 @@ inner (optional)
         // regions with content are given in a Javascript array
         if (settings.regions) {
             createRegionsFromJS(data, settings.regions);
+        }
+        // regions with content are given in a JSON array
+        if (settings.regionsJSON) {
+            createRegionsFromJSON(data, settings.regionsJSON);
         }
         // regions with content are given in HTML divs
         if (settings.processHtmlRegions) {
