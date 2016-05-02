@@ -33,8 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
 import digilib.conf.DigilibConfiguration;
 import digilib.conf.DigilibServletConfiguration;
 import digilib.conf.DigilibServletRequest;
@@ -52,22 +50,25 @@ import digilib.util.XMLMapLoader;
  * 
  * The name of the configuration file is read from the digilib config parameter "auth-file".
  * <p/>
- * Tags "digilib-access" and "digilib-adresses" are read from the configuration file:
+ * The tag "digilib-access" is read from the auth-file configuration file:
  * <pre>
  * {@code
  * <digilib-access>
  *   <access type="group:mpiwg" role="mpiwg-user"/>
+ *   <access type="default" role=""/>
  * </digilib-access>
  * }
  * </pre>
  * A user must supply one of the roles under "role" to access any object with the metadata "access" type of "type".
  * Roles under "role" must be separated by comma only (no spaces).
+ * Access type "default" applies to objects without metadata access tag.
  * 
  */
 public class MetaAccessAuthzOps extends AuthzOpsImpl {
 
-    private File configFile;
-    private Map<String, List<String>> rolesMap;
+    protected File configFile;
+    protected Map<String, List<String>> rolesMap;
+    protected List<String> defaultRoles = null;
 
     /**
      * Initialize authentication operations.
@@ -84,7 +85,7 @@ public class MetaAccessAuthzOps extends AuthzOpsImpl {
         logger.debug("IpRoleServletAuthops.init (" + configFile + ")");
         Map<String, String> roleList = null;
         try {
-            // load role mappings
+            // load access role mappings
             XMLMapLoader roleLoader = new XMLMapLoader("digilib-access", "access", "type", "role");
             roleList = roleLoader.loadUri(configFile.toURI());
         } catch (Exception e) {
@@ -98,9 +99,15 @@ public class MetaAccessAuthzOps extends AuthzOpsImpl {
         for (String k : roleList.keySet()) {
             String rs = roleList.get(k);
             String[] ra = rs.split(",");
-            rolesMap.put(k, Arrays.asList(ra));
+            if (k.equalsIgnoreCase("default") && !rs.isEmpty()) {
+                // set default roles
+                defaultRoles = Arrays.asList(ra);
+            } else {
+                // add access roles to map
+                rolesMap.put(k, Arrays.asList(ra));
+            }
         }
-        // set authentication
+        // set authentication ops
         this.authnOps = (AuthnOps) dlConfig.getValue(DigilibServletConfiguration.AUTHN_OP_KEY);
     }
 
@@ -120,7 +127,6 @@ public class MetaAccessAuthzOps extends AuthzOpsImpl {
      */
     @Override
     public List<String> rolesForPath(DigilibServletRequest dlRequest) throws AuthOpException {
-        HttpServletRequest request = dlRequest.getServletRequest();
         DocuDirent imgs;
         try {
             // try to get image file from JobDescription
@@ -143,19 +149,33 @@ public class MetaAccessAuthzOps extends AuthzOpsImpl {
         try {
             imgs.checkMeta();
             MetadataMap meta = imgs.getMeta().getFileMeta();
-            access = meta.get("access");
+            if (meta != null) {
+                access = meta.get("access");
+            }
         } catch (Exception e) {
             logger.error("Error getting access meta for file!");
         }
         if (access == null) {
-            // no access restriction - allow
-            logger.debug("rolesForPath (" + imgs.getName() + ") by [" + request.getRemoteAddr() + "]: (none)");
+            // no access tag - use default
+            logger.debug("Roles required for " + imgs.getName() + ": "+defaultRoles+"(default)");
+            return defaultRoles;
+        } else if (access.equalsIgnoreCase("free")) {
+            // access free
+            logger.debug("Roles required for " + imgs.getName() + ": (free)");
             return null;
         }
         // get required roles
-        List<String> required = rolesMap.get(access);
-        logger.debug("rolesForPath (" + imgs.getName() + ") by [" + request.getRemoteAddr() + "]: "+required);
-        return required;
+        if (rolesMap.containsKey(access)) {
+            List<String> required = rolesMap.get(access);
+            logger.debug("Roles required for " + imgs.getName() + ": "+required);
+            return required;
+        } else {
+            // no mapping to role
+            logger.error("Error: no role for access type '"+access+"'");
+            // use default
+            logger.debug("Roles required for " + imgs.getName() + ": "+defaultRoles+"(substituted default)");
+            return defaultRoles;            
+        }
     }
 
 }

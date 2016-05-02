@@ -41,7 +41,7 @@ import digilib.util.HashTree;
 import digilib.util.XMLMapLoader;
 
 /**
- * Implements AuthnOps using paths defined in an XML config file.
+ * Implements AuthnOps using IP adresses defined in an XML config file.
  * 
  * The name of the configuration file is read from the digilib config parameter "auth-file".
  * <p/>
@@ -112,7 +112,6 @@ public class IpAuthnOps implements AuthnOps {
     public List<String> getUserRoles(DigilibRequest dlRequest) throws AuthOpException {
         HttpServletRequest request = ((DigilibServletRequest) dlRequest).getServletRequest();
         String ip = request.getRemoteAddr();
-        logger.debug("Getting roles for ip "+ip);
         List<String> provided = null;
         if (ip.contains(":")) {
             // IPv6
@@ -121,6 +120,7 @@ public class IpAuthnOps implements AuthnOps {
             // IPv4
             provided = authIP4s.match(ip);
         }        
+        logger.debug("Roles provided by ip "+ip+": "+provided);
         return provided;
     }
 

@@ -103,9 +103,9 @@ public class PathAuthzOps extends AuthzOpsImpl {
      */
     public List<String> rolesForPath(DigilibServletRequest dlRequest) throws digilib.auth.AuthOpException {
         String filepath = dlRequest.getFilePath();
-        logger.debug("rolesForPath: " + filepath);
         // which roles are required?
         List<String> required = authPaths.match(filepath);
+        logger.debug("Roles required for "+filepath+": "+required);
         return required;
     }
 

@@ -28,17 +28,15 @@ package digilib.auth;
 
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
+import digilib.conf.DigilibConfiguration;
 import digilib.conf.DigilibRequest;
-import digilib.conf.DigilibServletRequest;
 
 /**
- * Implements AuthnOps using IP adresses defined in an XML config file and Servlet API isUserInRole().
+ * Implements AuthnOps using IP adresses defined in an XML config file and an OpenId Connect ID token.
  * 
  * The name of the configuration file is read from the digilib config parameter "auth-file".
  * <p/>
- * The tag "digilib-adresses" is read from the configuration file:
+ * The tags "digilib-adresses" and "digilib-oauth" are read from the configuration file:
  * <pre>  
  * {@code
  * <digilib-addresses>
@@ -46,22 +44,34 @@ import digilib.conf.DigilibServletRequest;
  *   <address ip="130.92.151" role="wtwg" />
  *   <address ip="0:0:0:0:0:0:0:1" role="local" />
  * </digilib-addresses>
+ * 
+ * <digilib-oauth>
+ *   <openid issuer="https://id.some.where" clientid="myclient" roles="someusers" keytype="jwk">
+ *     {"kty":"RSA","e":"AQAB","kid":"rsa1","n":"qjQ5U3wXzamg9R...idGpIiVilMDVBs"}
+ *   </openid>
+ * </digilib-oauth>
  * }
  * </pre>
  * A computer with an ip address that matches "ip" is automatically granted all roles under "role".
- * The ip address is matched from the left (in full quads). Roles under "role" must be separated by comma only (no spaces). 
+ * The ip address is matched from the left (in full quads). Roles under "role" must be separated by comma only (no spaces).
  * 
- * Uses ServletRequest.isUserInRole() if roles provided by IP are not sufficient.
+ * If roles provided by IP are not sufficient it uses the "id_token" parameter containing a valid token signed with the configured key
+ * including the configured issuer (iss) and clientid (aud) to grant the configured roles.
  */
-public class IpServletAuthnOps extends IpAuthnOps {
+public class IpOpenIdAuthnOps extends IpAuthnOps {
 
+    protected OpenIdAuthnOps openIdAuthnOps;
+    
     /* (non-Javadoc)
-     * @see digilib.auth.IpAuthnOps#hasUserRoles()
+     * @see digilib.auth.IpAuthnOps#init(digilib.conf.DigilibConfiguration)
      */
     @Override
-    public boolean hasUserRoles() {
-        // Servlet API does not support getting roles
-        return false;
+    public void init(DigilibConfiguration dlConfig) throws AuthOpException {
+        // init IpAuthnOps
+        super.init(dlConfig);
+        // init openIdAuthnOps
+        openIdAuthnOps = new OpenIdAuthnOps();
+        openIdAuthnOps.init(dlConfig);
     }
 
     /* (non-Javadoc)
@@ -69,23 +79,18 @@ public class IpServletAuthnOps extends IpAuthnOps {
      */
     @Override
     public List<String> getUserRoles(DigilibRequest dlRequest) throws AuthOpException {
-        // Servlet API does not support getting roles
-        return null;
-    }
-
-    /* (non-Javadoc)
-     * @see digilib.auth.IpAuthnOps#isUserInRole(digilib.conf.DigilibRequest, java.lang.String)
-     */
-    @Override
-    public boolean isUserInRole(DigilibRequest dlRequest, String role) throws AuthOpException {
-        HttpServletRequest request = ((DigilibServletRequest) dlRequest).getServletRequest();
-        // check if the requests IP provides a role
-        List<String> provided = super.getUserRoles(dlRequest);
-        if ((provided != null) && (provided.contains(role))) {
-            return true;
+        List<String> roles = super.getUserRoles(dlRequest);
+        if (roles == null) {
+            // no IP roles
+            roles = openIdAuthnOps.getUserRoles(dlRequest);
+        } else {
+            List<String> idRoles = openIdAuthnOps.getUserRoles(dlRequest);
+            if (idRoles != null) {
+                // add OpenID roles at the end
+                roles.addAll(idRoles);
+            }
         }
-        // use the ServletRequest
-        return request.isUserInRole(role);
+        return roles;
     }
 
 }

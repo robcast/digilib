@@ -170,7 +170,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         // DocuDirectory implementation
         newParameter("docudirectory-class", "digilib.io.BaseDirDocuDirectory", null, 'f');
         // name of cookie with authentication token
-        newParameter("auth-token-cookie", "id_token", null, 'f');
+        newParameter("authn-token-cookie", "id_token", null, 'f');
     }
 
     /**

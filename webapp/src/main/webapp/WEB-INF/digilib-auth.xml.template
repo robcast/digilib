@@ -4,6 +4,7 @@
 
   <digilib-paths>
     <!-- 
+      (authzops-class = "digilib.auth.PathAuthzOps")
       A user must supply one of the roles under "role"
       to access the directory "name".
       Roles under "role" must be separated by comma only (no spaces).  
@@ -12,8 +13,21 @@
     <path name="ptolemaios_geo" role="ptolemaios-geo" />
   </digilib-paths>
 
+  <digilib-access>
+    <!-- 
+      (authzops-class = "digilib.auth.MetaAccessAuthzOps")
+      A user must supply one of the roles under "role" to access any object 
+      with the metadata "access" type of "type".
+      Roles under "role" must be separated by comma only (no spaces).
+      Access type "default" applies to objects without metadata access tag.
+    -->
+    <access type="group:mpiwg" role="mpiwg-user"/>
+    <access type="default" role=""/>
+  </digilib-access>
+
   <digilib-addresses>
     <!-- 
+      (authnops-class = "digilib.auth.IpAuthnOps")
       A computer with an ip address that matches "ip"
       is automatically granted all roles under "role".
       The ip address is matched from the left (in full quads).
@@ -26,6 +40,7 @@
 
   <digilib-oauth>
     <!-- 
+      (authnops-class = "digilib.auth.OpenIdAuthnOps")
       A request with an "id_token" parameter containing a valid token 
       signed with the configured key including the configured issuer (iss)
       and clientid (aud) is granted the configured roles.

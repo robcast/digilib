@@ -172,7 +172,7 @@ public class OpenIdAuthnOps implements AuthnOps {
         }
         
         // set token cookie name
-        tokenCookieName = dlConfig.getAsString("auth-token-cookie");
+        tokenCookieName = dlConfig.getAsString("authn-token-cookie");
     }
 
     /* (non-Javadoc)
@@ -226,9 +226,9 @@ public class OpenIdAuthnOps implements AuthnOps {
             secondPassJwtConsumer.processContext(jwtContext);
             JwtClaims claims = jwtContext.getJwtClaims();
             String sub = claims.getSubject();
-            logger.debug("id_token authenticated user '"+sub+"'");
             // get roles
             List<String> provided = idpRoles.get(issuer);
+            logger.debug("Roles provided by id_token (sub='"+sub+"'): "+provided);
             return provided;
             
         } catch (InvalidJwtException | MalformedClaimException e) {
