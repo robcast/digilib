@@ -71,7 +71,7 @@ public class PathAuthzOps extends AuthzOpsImpl {
     @Override
     public void init(DigilibConfiguration dlConfig) throws AuthOpException {
         configFile = dlConfig.getAsFile("auth-file");
-        logger.debug("xmlauthops.init (" + configFile + ")");
+        logger.debug("PathAuthzOps.init (" + configFile + ")");
         Map<String, String> pathList = null;
         try {
             // load authPaths

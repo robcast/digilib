@@ -82,7 +82,7 @@ public class MetaAccessAuthzOps extends AuthzOpsImpl {
     @Override
     public void init(DigilibConfiguration dlConfig) throws AuthOpException {
         configFile = dlConfig.getAsFile("auth-file");
-        logger.debug("IpRoleServletAuthops.init (" + configFile + ")");
+        logger.debug("MetaAccessAuthzOps.init (" + configFile + ")");
         Map<String, String> roleList = null;
         try {
             // load access role mappings

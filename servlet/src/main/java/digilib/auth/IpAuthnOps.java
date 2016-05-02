@@ -80,7 +80,7 @@ public class IpAuthnOps implements AuthnOps {
     @Override
     public void init(DigilibConfiguration dlConfig) throws AuthOpException {
         configFile = dlConfig.getAsFile("auth-file");
-        logger.debug("ipauthnops.init (" + configFile + ")");
+        logger.debug("IpAuthnOps.init (" + configFile + ")");
         Map<String, String> ipList = null;
         try {
             // load authIPs
