@@ -200,7 +200,7 @@ public class OpenIdAuthnOps implements AuthnOps {
             Cookie[] cookies = srvReq.getCookies();
             if (cookies != null) {
                 for (Cookie c : cookies) {
-                    if (c.getName() == tokenCookieName) {
+                    if (c.getName().equals(tokenCookieName)) {
                         id_token = c.getValue();
                         break;
                     }
