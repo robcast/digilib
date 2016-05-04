@@ -55,6 +55,8 @@
             'returnToErrorImgMode' : true,
             // url param for ID Token
             'id_token' : null,
+            // name for ID token cookie
+            'token_cookie_name' : 'id_token'
 
     };
     
@@ -107,18 +109,23 @@
                 // TODO: what now?
                 return;
             } else if (fragp['id_token'] != null) {
-                // save id_token
-                data.dlOpts.id_token = fragp['id_token'];
-                fn.storeOptions(data);
+                var token = fragp['id_token'];
+                // save id_token in cookie
+                if ($.cookie) {
+                    // set path so Scaler can see it (relative part of base url)
+                    var cp = data.settings.digilibBaseUrl.replace(/^.*\/\/[^\/]+\//, '/');
+                    $.cookie(data.settings.token_cookie_name, token, {'path': cp});
+                }
                 // and set for Scaler
-                data.settings.id_token = fragp['id_token'];
+                data.settings.id_token = token;
                 // remove fragment from URL
                 window.location.hash = '';
             }
         } else {
-            if (data.dlOpts.id_token) {
+            // get token from cookie
+            if ($.cookie && $.cookie(data.settings.token_cookie_name)) {
                 // set token for Scaler
-                data.settings.id_token = data.dlOpts.id_token;                
+                data.settings.id_token = $.cookie(data.settings.token_cookie_name);                
             }
         }
         checkToken(data);
@@ -185,8 +192,9 @@
      */
     var discardToken = function (data) {
         delete data.settings.id_token;
-        delete data.dlOpts.id_token;
-        fn.storeOptions(data);
+        if ($.cookie) {
+            $.removeCookie(data.settings.token_cookie_name);
+        }
     };
     
     /**
