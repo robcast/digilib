@@ -38,16 +38,38 @@ import org.apache.log4j.Logger;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
- * Author: Robert Casties (robcast@berlios.de)
+ * Author: Robert Casties (robcast@users.sourceforge.net)
  */
 
 /**
- * Class loading index.meta files extracting some image file related information.
+ * Class loading index.meta files extracting image file related information.
  * 
  * Extracts into the MetadataMap all tags in the meta/img tag as key-value
- * pairs and access conditions under the access key.
+ * pairs and information from the meta/access tag under the "access" key.
  * 
- * Returns a map with filenames and MetadataMaps.
+ * <pre>
+ * {@code
+ *   <meta>
+ *     <img>
+ *       <original-dpi>600</original-dpi>
+ *     </img>
+ *     <access-conditions>
+ *       <access type="group">
+ *         <name>digigroup</name>
+ *       </access>
+ *     </access-conditions>
+ *   </meta>
+ * }
+ * </pre>
+ * 
+ * Returns a map with filenames and MetadataMaps with directory-wide information 
+ * under the key "":
+ * <pre>
+ *   {
+ *   "pageimg/page140r.jpg" : {"original-dpi" : 300}
+ *   "" : { "access" : "group:digigroup", "original-dpi" : 600}, 
+ *   }
+ * </pre>
  * 
  * Implemented using javax.xml.stream.XMLStreamReader.
  * 
