@@ -56,8 +56,9 @@
             // url param for ID Token
             'id_token' : null,
             // name for ID token cookie
-            'token_cookie_name' : 'id_token'
-
+            'token_cookie_name' : 'id_token',
+            // path of ID token cookie (guessed if empty)
+            'token_cookie_path' : null
     };
     
     var actions = { 
@@ -97,6 +98,7 @@
     var handleUnpack = function (evt) {
         console.debug("oauth: handleUnpack");
         var data = this;
+        var settings = data.settings;
         // unpack token from url fragment
         var frag = window.location.hash;
         if (frag) {
@@ -105,32 +107,31 @@
                 console.error("auth server returned error: "+fragp['error']);
                 discardToken(data);
                 // reset auth-on-error to exit loop
-                data.settings.authOnErrorMode = false;
+                settings.authOnErrorMode = false;
                 // TODO: what now?
                 return;
             } else if (fragp['id_token'] != null) {
                 var token = fragp['id_token'];
                 // save id_token in cookie
                 if ($.cookie) {
-                    // set path so Scaler can see it (relative part of base url)
-                    var cp = data.settings.digilibBaseUrl.replace(/^.*\/\/[^\/]+\//, '/');
-                    $.cookie(data.settings.token_cookie_name, token, {'path': cp});
+                    var opts = {'path': settings.token_cookie_path};
+                    $.cookie(settings.token_cookie_name, token, opts);
                 }
                 // and set for Scaler
-                data.settings.id_token = token;
+                settings.id_token = token;
                 // remove fragment from URL
                 window.location.hash = '';
             }
         } else {
             // get token from cookie
-            if ($.cookie && $.cookie(data.settings.token_cookie_name)) {
+            if ($.cookie && $.cookie(settings.token_cookie_name)) {
                 // set token for Scaler
-                data.settings.id_token = $.cookie(data.settings.token_cookie_name);                
+                data.settings.id_token = $.cookie(settings.token_cookie_name);                
             }
         }
         checkToken(data);
         // set scaler errcode mode
-        if (data.settings.authOnErrorMode) {
+        if (settings.authOnErrorMode) {
             var flags = data.scalerFlags;
             // remove other error flags
             for (f in flags) {
@@ -282,6 +283,11 @@
     var init = function (data) {
         console.debug('initialising oauth plugin. data:', data);
         var $data = $(data);
+        // set cookie path
+        if (data.settings.token_cookie_path == null) {
+            // use relative path of digilibBaseUrl
+            data.settings.token_cookie_path = data.settings.digilibBaseUrl.replace(/^.*\/\/[^\/]+\//, '/');
+        }
         // add buttons
         installButtons(data);
         // install event handler
