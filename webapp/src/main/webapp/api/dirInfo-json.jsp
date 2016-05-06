@@ -2,7 +2,7 @@
   #%L
   digilib-webapp
   %%
-  Copyright (C) 2004 - 2013 MPIWG Berlin
+  Copyright (C) 2016 Bibliotheca Hertziana, MPIWG Berlin
   %%
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Lesser General Public License as 
@@ -18,18 +18,17 @@
   License along with this program.  If not, see
   <http://www.gnu.org/licenses/lgpl-3.0.html>.
   #L%
-  Author: Robert Casties (robcast@berlios.de)
+  Authors: Robert Casties (robcast@users.sourceforge.net), Martin Raspe
   --%><%@ page language="java"
-    import="digilib.servlet.DocumentBean,
+    import="digilib.servlet.DigilibBean,
           digilib.conf.DigilibServletConfiguration,
           digilib.conf.DigilibServletRequest,
-          digilib.io.DocuDirCache,
           digilib.io.DocuDirectory,
           digilib.io.DocuDirent,
           digilib.io.FileOps,
           java.io.File"%><%!
 // create DocumentBean instance for all JSP requests
-DocumentBean docBean = new DocumentBean();
+DigilibBean docBean = new DigilibBean();
 
 // initialize DocumentBean instance in JSP init
 public void jspInit() {
@@ -40,38 +39,41 @@ public void jspInit() {
         System.out.println(e);
     }
 }
-%><%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %><%@ page contentType="application/json" %><%
+%><%@ page contentType="application/json" %><%
 // process request
-// get digilib config
-DigilibServletConfiguration dlConfig = docBean.getDlConfig();
-// parsing the query
-DigilibServletRequest dlRequest = new DigilibServletRequest(request);
-// dir cache
-DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
+docBean.setRequest(request);
 // get directory
-DocuDirectory dir = dirCache.getDirectory(dlRequest.getFilePath());
-FileOps.FileClass fc = FileOps.FileClass.IMAGE;
-int dirSize = dir != null ? dir.size(fc) : 0;
-
+DocuDirectory dir = docBean.getDirectory();
+int dirSize = docBean.getNumPages();
 %>
-{<% if (dir != null) { %>
-  "url-path" : "<%= dir.getDirName() %>",
-  "count" : "<%= dirSize %>",
-  "files" : [<%
-    if (!dlRequest.hasOption("mo", "dir")) {
-      for (int i = 0; i < dirSize; i++) {
-        DocuDirent f = dir.get(i, fc);
-        String fn = (f != null) ? f.getName() : "null";
+{<%  
+if (dir != null) {
 %>
-{
+  "url_path" : "<%= dir.getDirName() %>",
+<%
+    if (docBean.isUseAuthorization()) {
+%>  "auth_required" : <%= ! docBean.isAuthorized() %>,
+<%
+    }
+%>  "count" : "<%= dirSize %>",
+  "files" : [
+<%
+    if (!docBean.getRequest().hasOption("dir")) {
+        // list all files
+        for (int i = 0; i < dirSize; i++) {
+            DocuDirent f = dir.get(i);
+            String fn = (f != null) ? f.getName() : "null";
+%>{
   "index" : <%= i+1 %>,
-  "fn" : "<%=digilib.io.FileOps.basename(fn)%>",
-  "file" : "<%=fn%>"
+  "fn" : "<%= FileOps.basename(fn) %>",
+  "file" : "<%= fn %>"
 }<%
-    if (i+1 < dirSize) {%>,
-<%}
-      } // for 
+            if (i+1 < dirSize) {%>,
+<%          }
+        } // for 
     } // if not dironly
-  } // if dir 
 %>
-]}
+]<%
+} // if dir 
+%>
+}

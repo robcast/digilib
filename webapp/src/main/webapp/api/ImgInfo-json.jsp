@@ -2,7 +2,7 @@
   #%L
   digilib-webapp
   %%
-  Copyright (C) 2003 - 2013 MPIWG Berlin
+  Copyright (C) 2003 - 2016 MPIWG Berlin
   %%
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Lesser General Public License as 
@@ -20,16 +20,13 @@
   #L%
   Author: Robert Casties (robcast@berlios.de)
   --%><%@page language="java" 
-  import="digilib.io.FileOps, 
-          digilib.io.ImageFileSet, 
+  import="digilib.io.ImageSet, 
           digilib.io.ImageFile, 
           digilib.util.ImageSize,
-          digilib.io.DocuDirCache,
-          digilib.conf.DigilibServletRequest,
-          digilib.conf.DigilibServletConfiguration"
+          digilib.servlet.DigilibBean"
 	contentType="application/json"%><%!
 // create DocumentBean instance for all JSP requests
-digilib.servlet.DocumentBean docBean = new digilib.servlet.DocumentBean();
+DigilibBean docBean = new DigilibBean();
 
 // initialize DocumentBean instance in JSP init
 public void jspInit() {
@@ -42,29 +39,28 @@ public void jspInit() {
 }
 %><%
 // parsing the query
-DigilibServletConfiguration dlConfig = docBean.getDlConfig();
-DigilibServletRequest dlRequest = new DigilibServletRequest(request, dlConfig);
-docBean.setRequest(dlRequest);
-// dir cache
-DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
+docBean.setRequest(request);
 // get file
-FileOps.FileClass fc = FileOps.FileClass.IMAGE;
-ImageFileSet imgFile = (ImageFileSet) dirCache.getFile(dlRequest.getFilePath(), dlRequest.getAsInt("pn"), fc);
+ImageSet imgFile = docBean.getImageSet();
 
 %>{<%
-    if (imgFile != null) {
-        imgFile.checkMeta();
-		ImageFile img = (ImageFile) imgFile.getBiggest();
-		ImageSize imgSize = img.getSize(); 
-		%>
-  "filename" : "<%= imgFile.getName() %>",
-  "authentication_required" : <%= docBean.isAuthRequired(dlRequest) %>,
-  "aspect" : <%= imgFile.getAspect() %>,
+if (imgFile != null) {
+    imgFile.checkMeta();
+    ImageFile img = (ImageFile) imgFile.getBiggest();
+    ImageSize imgSize = img.getSize(); 
+%>
+  "filename" : "<%= img.getName() %>",
+<%
+    if (docBean.isUseAuthorization()) {
+%>  "auth_required" : <%= !docBean.isAuthorized() %>,
+<%
+    }
+%>  "aspect" : <%= imgFile.getAspect() %>,
   "dpi_x" : <%= imgFile.getResX() %>,
   "dpi_y" : <%= imgFile.getResY() %><%
   
         if (imgSize != null) { 
-            %>,
+%>,
   "width" : <%= imgSize.getWidth() %>,
   "height" : <%= imgSize.getHeight() %>
 <% 		}

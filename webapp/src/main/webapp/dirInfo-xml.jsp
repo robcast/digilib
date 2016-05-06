@@ -18,18 +18,17 @@
   License along with this program.  If not, see
   <http://www.gnu.org/licenses/lgpl-3.0.html>.
   #L%
-  Author: Robert Casties (robcast@berlios.de)
+  Author: Robert Casties (robcast@users.sourceforge.net)
   --%><%@ page language="java"
-    import="digilib.servlet.DocumentBean,
+    import="digilib.servlet.DigilibBean,
           digilib.conf.DigilibServletConfiguration,
           digilib.conf.DigilibServletRequest,
-          digilib.io.DocuDirCache,
           digilib.io.DocuDirectory,
           digilib.io.DocuDirent,
           digilib.io.FileOps,
           java.io.File"%><%!
 // create DocumentBean instance for all JSP requests
-DocumentBean docBean = new DocumentBean();
+DigilibBean docBean = new DigilibBean();
 
 // initialize DocumentBean instance in JSP init
 public void jspInit() {
@@ -43,16 +42,10 @@ public void jspInit() {
 %><%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %><%@ page contentType="text/xml" %><?xml version="1.0" encoding="UTF-8" ?>
 <%
 // process request
-// get digilib config
-DigilibServletConfiguration dlConfig = docBean.getDlConfig();
-// parsing the query
-DigilibServletRequest dlRequest = new DigilibServletRequest(request);
-// dir cache
-DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
+docBean.setRequest(request);
 // get directory
-DocuDirectory dir = dirCache.getDirectory(dlRequest.getFilePath());
-FileOps.FileClass fc = FileOps.FileClass.IMAGE;
-int dirSize = dir != null ? dir.size(fc) : 0;
+DocuDirectory dir = docBean.getDirectory();
+int dirSize = docBean.getNumPages();
 
 %><!-- Automatically generated XML snippet with directory info -->
 <dir><% if (dir != null) { %>
@@ -60,14 +53,18 @@ int dirSize = dir != null ? dir.size(fc) : 0;
   <name><%= dir.getDirName() %></name>
   <fsname><%= dir.getDir().getPath() %></fsname> 
 <%
-    if (!dlRequest.hasOption("mo", "dir")) {
+    if (docBean.isUseAuthorization()) {
+%>  <auth-required><%= ! docBean.isAuthorized() %></auth-required>
+<%
+    }
+    if (!docBean.getRequest().hasOption("dir")) {
       for (int i = 0; i < dirSize; i++) {
-        DocuDirent f = dir.get(i, fc);
+        DocuDirent f = dir.get(i);
         String fn = (f != null) ? f.getName() : "null";
 %>  <file>
     <index><%= i+1 %></index>
-   <name><c:out value="<%=digilib.io.FileOps.basename(fn)%>"/></name>
-    <fsname><c:out value="<%=fn%>"/></fsname>
+   <name><c:out value="<%= FileOps.basename(fn) %>"/></name>
+    <fsname><c:out value="<%= fn %>"/></fsname>
   </file>
 <%
       } // for 

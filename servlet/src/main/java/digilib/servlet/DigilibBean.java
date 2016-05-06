@@ -3,12 +3,12 @@ package digilib.servlet;
 /*
  * #%L
  * 
- * DocumentBean -- Access control bean for JSP
+ * DocumentBean -- digilib config access bean for JSP
  *
  * Digital Image Library servlet components
  * 
  * %%
- * Copyright (C) 2001 - 2016 MPIWG Berlin
+ * Copyright (C) 2016 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -41,22 +41,18 @@ import digilib.conf.DigilibServletConfiguration;
 import digilib.conf.DigilibServletRequest;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
-import digilib.io.FileOps.FileClass;
-import digilib.io.ImageInput;
 import digilib.io.ImageSet;
-import digilib.util.ImageSize;
 
 /**
- * Java bean providing access to digilib configuration and functionality for JSPs.
+ * Java bean providing access to digilib configuration for JSPs.
  * 
  * @author robcast
  *
- * @deprecated use {@link digilib.servlet.DigilibBean} instead.
  */
-public class DocumentBean {
+public class DigilibBean {
 
 	// general logger
-	private static Logger logger = Logger.getLogger("digilib.docubean");
+	private static Logger logger = Logger.getLogger("digilib.digibean");
 
 	// AuthOps object to check authorization
 	private AuthzOps authzOp;
@@ -64,31 +60,37 @@ public class DocumentBean {
 	// use authorization database
 	private boolean useAuthorization = true;
 
-	// path to add for authenticated access
-	private String authURLPath = "";
-
 	// DocuDirCache
 	private DocuDirCache dirCache = null;
 
 	// DigilibConfiguration object
-	private DigilibServletConfiguration dlConfig;
+	private DigilibServletConfiguration dlConfig = null;
 
-	// DigilibRequest object
+	// current DigilibRequest object
 	private DigilibServletRequest dlRequest = null;
+	
+	// current DocuDirectory
+	private DocuDirectory dlDir = null;
+	
+	// current FileSet
+	private ImageSet dlImgset = null;
+	
+	// current Filepath
+	private String dlFn = null;
 
 	/**
-	 * Constructor for DocumentBean.
+	 * Constructor for DigilibBean.
 	 */
-	public DocumentBean() {
-        logger.debug("new DocumentBean");
+	public DigilibBean() {
+        logger.debug("new DigilibBean");
 	}
 
-	public DocumentBean(ServletConfig conf) {
-        logger.debug("new DocumentBean");
+	public DigilibBean(ServletConfig conf) {
+        logger.debug("new DigilibBean");
 		try {
 			setConfig(conf);
 		} catch (Exception e) {
-			logger.fatal("ERROR: Unable to read config: ", e);
+			logger.fatal("ERROR: Unable to set config: ", e);
 		}
 	}
 
@@ -100,9 +102,8 @@ public class DocumentBean {
 		dlConfig = DigilibServletConfiguration.getCurrentConfig(context);
 		if (dlConfig == null) {
 			// no config
-			throw new ServletException("ERROR: No digilib configuration for DocumentBean!");
+			throw new ServletException("ERROR: No digilib configuration for DigilibBean!");
 		}
-
 		// get cache
 		dirCache = (DocuDirCache) dlConfig.getValue(DigilibServletConfiguration.DIR_CACHE_KEY);
 
@@ -111,22 +112,42 @@ public class DocumentBean {
 		 */
 		useAuthorization = dlConfig.getAsBoolean("use-authorization");
 		authzOp = (AuthzOps) dlConfig.getValue("servlet.authz.op");
-		authURLPath = dlConfig.getAsString("auth-url-path");
 		if (useAuthorization && (authzOp == null)) {
-			throw new ServletException(
-					"ERROR: use-authorization configured but no AuthOp!");
+			throw new ServletException("ERROR: use-authorization configured but no AuthzOp!");
 		}
 	}
 
 	/**
+	 * Returns if authorization is configured.
+	 * 
+	 * @return
+	 */
+	public boolean isUseAuthorization() {
+	    return this.useAuthorization;
+	}
+	
+    /**
+     * check if the request must be authorized to access filepath
+     */
+    public boolean isAuthRequired() throws AuthOpException {
+        return isAuthRequired(dlRequest);
+    }
+
+    /**
 	 * check if the request must be authorized to access filepath
 	 */
-	public boolean isAuthRequired(DigilibServletRequest request)
-			throws AuthOpException {
+	public boolean isAuthRequired(DigilibServletRequest request) throws AuthOpException {
 		logger.debug("isAuthRequired");
 		return useAuthorization ? authzOp.isAuthorizationRequired(request) : false;
 	}
 
+    /**
+     * check if the request is allowed to access filepath
+     */
+    public boolean isAuthorized() throws AuthOpException {
+        return isAuthorized(dlRequest);
+    }
+    
 	/**
 	 * check if the request is allowed to access filepath
 	 */
@@ -138,23 +159,22 @@ public class DocumentBean {
 	/**
 	 * check for authenticated access and redirect if necessary
 	 */
-	public boolean doAuthentication(HttpServletResponse response)
-			throws Exception {
-        logger.debug("doAuthenication-Method");
+	public boolean doAuthentication(HttpServletResponse response) throws Exception {
+        logger.debug("doAuthentication-Method");
 		return doAuthentication(dlRequest, response);
 	}
 
 	/**
 	 * check for authenticated access and redirect if necessary
 	 */
-	public boolean doAuthentication(DigilibServletRequest request,
-			HttpServletResponse response) throws Exception {
+	public boolean doAuthentication(DigilibServletRequest request, HttpServletResponse response) 
+	        throws Exception {
 		logger.debug("doAuthentication");
 		if (!useAuthorization) {
 			// shortcut if no authorization
 			return true;
 		}
-		// quick fix: add auth-url-path to base.url
+		/* quick fix: add auth-url-path to base.url
         if (isAuthRequired(request)) {
             String baseUrl = request.getAsString("base.url");
             if (!baseUrl.endsWith(authURLPath)) {
@@ -176,75 +196,93 @@ public class DocumentBean {
 								.getQueryString());
 			}
 		}
+		*/
 		return true;
 	}
 
+
+   /**
+     * Sets the current DigilibRequest using a HttpServletRequest. 
+     * 
+     * @param request
+     */
+    public void setRequest(HttpServletRequest request) throws Exception {
+        // create dlRequest
+        DigilibServletRequest dlRequest = new DigilibServletRequest(request, dlConfig);
+        // use for initialisation
+        setRequest(dlRequest);
+    }
+	
 	/**
-	 * Sets the current DigilibRequest. Also completes information in the request.
+	 * Sets the current DigilibRequest.
 	 * 
 	 * @param dlRequest
 	 *            The dlRequest to set.
 	 */
 	public void setRequest(DigilibServletRequest dlRequest) throws Exception {
 		this.dlRequest = dlRequest;
-		if (dirCache == null) {
-			return;
+        this.dlFn = dlRequest.getFilePath();
+		if (dirCache != null) {
+		    // get information about the file(set)
+		    dlImgset = (ImageSet) dirCache.getFile(dlFn, dlRequest.getAsInt("pn"));
+		    if (dlImgset != null) {
+	            // get information about the directory
+	            dlDir = dirCache.getDirectory(dlFn);
+		    } else {
+		        dlDir = null;
+		    }
+		} else {
+	        dlImgset = null;
+	        dlDir = null;
 		}
-		String fn = dlRequest.getFilePath();
-		// get information about the file
-		ImageSet fileset = (ImageSet) dirCache.getFile(fn, dlRequest.getAsInt("pn"));
-		if (fileset == null) {
-			return;
-		}
-		// add file name
-		dlRequest.setValue("img.fn", fileset);
-		// add dpi
-		dlRequest.setValue("img.dpix", new Double(fileset.getResX()));
-		dlRequest.setValue("img.dpiy", new Double(fileset.getResY()));
-		// get number of pages in directory
-		DocuDirectory dd = dirCache.getDirectory(fn);
-		if (dd != null) {
-			// add pt
-			dlRequest.setValue("pt", dd.size());
-		}
-		// get original pixel size
-		ImageInput origfile = fileset.getBiggest();
-		// check image for size (TODO: just if mo=hires?)
-		ImageSize pixsize = origfile.getSize();
-		if (pixsize != null) {
-			// add pixel size
-			dlRequest.setValue("img.pix_x", new Integer(pixsize.getWidth()));
-			dlRequest.setValue("img.pix_y", new Integer(pixsize.getHeight()));
-		}
-	}
-
-	/**
-	 * get the first page number in the directory (not yet functional)
-	 */
-	public int getFirstPage(DigilibServletRequest request) {
-		logger.debug("getFirstPage");
-		return 1;
 	}
 
 	/**
 	 * get the number of pages/files in the directory
 	 */
 	public int getNumPages() throws Exception {
-		return getNumPages(dlRequest);
+        logger.debug("getNumPages");
+	    if (dlDir != null) {
+	        return dlDir.size();
+	    }
+        return 0;
 	}
 
     /**
      * get the number of image pages/files in the directory
      */
     public int getNumPages(DigilibServletRequest request) throws Exception {
-        logger.debug("getNumPages");
-        DocuDirectory dd = (dirCache != null) ? dirCache.getDirectory(request
-                .getFilePath()) : null;
-        if (dd != null) {
-            return dd.size();
-        }
-        return 0;
+        setRequest(request);
+        return getNumPages();
     }
+
+    /**
+     * Returns the current DocuDirectory.
+     * 
+     * @return
+     */
+    public DocuDirectory getDirectory() {
+        return dlDir;
+    }
+    
+    /**
+     * Returns the current ImageSet.
+     * 
+     * @return
+     */
+    public ImageSet getImageSet() {
+        return dlImgset;
+    }
+    
+    /**
+     * Returns the current filepath (fn).
+     * 
+     * @return
+     */
+    public String getFilepath() {
+        return dlFn;
+    }
+    
 
 	/**
 	 * Returns the dlConfig.
@@ -256,71 +294,12 @@ public class DocumentBean {
 	}
 
     /**
-     * @return Returns the dlRequest.
+     * Returns the dlRequest.
+     * 
+     * @return 
      */
     public DigilibServletRequest getRequest() {
         return dlRequest;
     }
-
-    /**
-     * get the number of pages/files of type fc in the directory
-     * 
-     * @deprecated use {@link #getNumPages(DigilibServletRequest request)} instead
-     */
-    public int getNumPages(DigilibServletRequest request, FileClass fc) throws Exception {
-        return getNumPages(request);
-    }
-
-	/**
-	 * returns if the zoom area in the request can be moved
-	 * 
-	 * @return
-	 * 
-	 * only used by oldskin JSP
-	 */
-	public boolean canMoveRight() {
-		float ww = dlRequest.getAsFloat("ww");
-		float wx = dlRequest.getAsFloat("wx");
-		return (ww + wx < 1.0);
-	}
-
-	/**
-	 * returns if the zoom area in the request can be moved
-	 * 
-	 * @return
-     * 
-     * only used by oldskin JSP
-	 */
-	public boolean canMoveLeft() {
-		float ww = dlRequest.getAsFloat("ww");
-		float wx = dlRequest.getAsFloat("wx");
-		return ((ww < 1.0) && (wx > 0));
-	}
-
-	/**
-	 * returns if the zoom area in the request can be moved
-	 * 
-	 * @return
-     * 
-     * only used by oldskin JSP
-	 */
-	public boolean canMoveUp() {
-		float wh = dlRequest.getAsFloat("wh");
-		float wy = dlRequest.getAsFloat("wy");
-		return ((wh < 1.0) && (wy > 0));
-	}
-
-	/**
-	 * returns if the zoom area in the request can be moved
-	 * 
-	 * @return
-     * 
-     * only used by oldskin JSP
-	 */
-	public boolean canMoveDown() {
-		float wh = dlRequest.getAsFloat("wh");
-		float wy = dlRequest.getAsFloat("wy");
-		return (wh + wy < 1.0);
-	}
 
 }
