@@ -72,7 +72,7 @@ import digilib.util.ImageSize;
 public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
     /** DocuImage version */
-    public static final String version = "ImageLoaderDocuImage 2.1.8";
+    public static final String version = "ImageLoaderDocuImage 2.1.9";
 
     /** image object */
     protected BufferedImage img;
@@ -104,10 +104,14 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     /* lookup table for false-color */
     protected static LookupTable mapBgrByteTable;
     protected static boolean needsMapBgr = false;
-    /* set destination type to sRGB if available */
-    protected static boolean setDestSrgb = true;
-    /* set destination type to sRGB if available, even for non-RGB images */
+    /** set destination type to sRGB when loading if available */
+    protected static boolean setDestSrgb = false;
+    /** set destination type to sRGB when loading if available, even for non-RGB images */
     protected static boolean setDestSrgbForNonRgb = false;
+    /** set destination type for blur operation */
+    protected static boolean setDestForBlur = true;
+    /** set destination type for scale operation */
+    protected static boolean setDestForScale = true;
 
     static {
         /*
@@ -401,7 +405,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
              */
             logger.debug("loadSubimage: loading..");
             img = reader.read(0, readParam);
-            logger.debug("loadSubimage: loaded");
+            logger.debug("loadSubimage: loaded "+img);
             // invalidate image size if it was set
             imageSize = null;
             
@@ -547,7 +551,20 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         // scale with AffineTransformOp
         logger.debug("scaled from " + imgW + "x" + imgH + " img=" + img);
         AffineTransformOp scaleOp = new AffineTransformOp(AffineTransform.getScaleInstance(scaleX, scaleY), renderHint);
-        img = scaleOp.filter(img, null);
+        BufferedImage dest = null;
+        if (setDestForScale) {
+            // keep image type unless we know its unsuitable
+            int imgType = img.getType();
+            if (imgType != BufferedImage.TYPE_CUSTOM && imgType != BufferedImage.TYPE_BYTE_BINARY 
+                    && imgType != BufferedImage.TYPE_BYTE_INDEXED) {
+                // fix destination image
+                logger.debug("scale: fixing destination image type");
+                int dw = (int) Math.round(imgW * scaleX);
+                int dh = (int) Math.round(imgH * scaleY);
+                dest = new BufferedImage(dw, dh, imgType);
+            }
+        }
+        img = scaleOp.filter(img, dest);
         logger.debug("scaled to " + img.getWidth() + "x" + img.getHeight() + " img=" + img);
         // invalidate image size
         imageSize = null;
@@ -581,10 +598,14 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         // blur with convolve operation
         ConvolveOp blurOp = new ConvolveOp(blur, ConvolveOp.EDGE_NO_OP, renderHint);
         BufferedImage dest = null;
-        // blur needs explicit destination image type for 3BYTE_BGR *Java2D BUG*
-        if (img.getType() == BufferedImage.TYPE_3BYTE_BGR) {
-            logger.debug("blur: fixing destination image type");
-            dest = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+        if (setDestForBlur) {
+            int imgType = img.getType();
+            // keep image type unless we know its unsuitable (formerly only for 3BYTE_BGR *Java2D BUG*)
+            if (imgType != BufferedImage.TYPE_CUSTOM && imgType != BufferedImage.TYPE_BYTE_BINARY 
+                    && imgType != BufferedImage.TYPE_BYTE_INDEXED) {
+                logger.debug("blur: fixing destination image type");
+                dest = new BufferedImage(img.getWidth(), img.getHeight(), imgType);
+            }
         }
         img = blurOp.filter(img, dest);
         logger.debug("blurred: " + img);
