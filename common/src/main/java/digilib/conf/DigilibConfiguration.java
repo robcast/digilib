@@ -80,8 +80,10 @@ public class DigilibConfiguration extends ParameterMap {
         newParameter("digilib.version", getVersion(), null, 's');
         // sending image files as-is allowed
         newParameter("sendfile-allowed", Boolean.TRUE, null, 'f');
-        // Type of DocuImage instance
+        // type of DocuImage instance
         newParameter("docuimage-class", "digilib.image.ImageLoaderDocuImage", null, 'f');
+        // image hacks for DocuImage implementation
+        newParameter("docuimage-hacks", "", null, 'f');
         // degree of subsampling on image load
         newParameter("subsample-minimum", new Float(2f), null, 'f');
         // default scaling quality
@@ -175,7 +177,13 @@ public class DigilibConfiguration extends ParameterMap {
             DocuImage di = DocuImageFactory.getInstance();
             config.newParameter("servlet.docuimage.class", docuImageClass, null, 's');
             config.newParameter("servlet.docuimage.version", di.getVersion(), null, 's');
-            logger.debug("DocuImage ("+docuImageClass+") "+di.getVersion()); 
+            logger.debug("DocuImage ("+docuImageClass+") "+di.getVersion());
+            // set hacks on instance
+            try {
+                docuImageClass.newInstance().setHacks(config.getAsString("docuimage-hacks"));
+            } catch (InstantiationException | IllegalAccessException e) {
+                logger.error("Error creating instance of DocuImage class!");
+            }
             // log supported formats
             StringBuilder fmts = new StringBuilder();
             Iterator<String> dlfs = di.getSupportedFormats();

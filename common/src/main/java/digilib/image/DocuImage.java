@@ -308,4 +308,14 @@ public interface DocuImage {
      */
     public String getVersion();
 
+    /**
+     * Set implementation specific image hacks.
+     * 
+     * Sets static class members. Needs to be called only once per class.  
+     * 
+     * Format: comma separated key=value pairs (no spaces!).
+     * 
+     * @param hackString
+     */
+    public void setHacks(String hackString);
 }

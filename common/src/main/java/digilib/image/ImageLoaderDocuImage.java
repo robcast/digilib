@@ -48,7 +48,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.Iterator;
+import java.util.Map.Entry;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -72,7 +74,7 @@ import digilib.util.ImageSize;
 public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
     /** DocuImage version */
-    public static final String version = "ImageLoaderDocuImage 2.1.9";
+    public static final String version = "ImageLoaderDocuImage 2.2.0";
 
     /** image object */
     protected BufferedImage img;
@@ -87,7 +89,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     protected RenderingHints renderHint = null;
 
     /** convolution kernels for blur() */
-    protected static Kernel[] convolutionKernels = { 
+    protected static Kernel[] convolutionKernels = {
             null, new Kernel(1, 1, new float[] { 1f }),
             new Kernel(2, 2, new float[] { 0.25f, 0.25f, 
                                            0.25f, 0.25f }),
@@ -95,25 +97,39 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
                                            1f / 9f, 1f / 9f, 1f / 9f, 
                                            1f / 9f, 1f / 9f, 1f / 9f }) };
 
-    /* lookup tables for inverting images (byte) */
+    /** lookup table for inverting images (byte) */
     protected static LookupTable invertSingleByteTable;
+    /** lookup table for inverting images (byte) */
     protected static LookupTable invertRgbaByteTable;
-    protected static boolean needsInvertRgba = false;
-    /* RescaleOp for contrast/brightness operation */
-    protected static boolean needsRescaleRgba = false;
-    /* lookup table for false-color */
+    /** lookup table for false-color */
     protected static LookupTable mapBgrByteTable;
-    protected static boolean needsMapBgr = false;
-    /** set destination type to sRGB when loading if available */
-    protected static boolean setDestSrgb = false;
-    /** set destination type to sRGB when loading if available, even for non-RGB images */
-    protected static boolean setDestSrgbForNonRgb = false;
-    /** set destination type for blur operation */
-    protected static boolean setDestForBlur = true;
-    /** set destination type for scale operation */
-    protected static boolean setDestForScale = true;
 
+    /** hacks for specific platform bugs */ 
+    protected static enum Hacks {
+        /** table for LookupOp for inversion needs four channels including alpha */
+        needsInvertRgba,
+        /** table for RescaleOp for enhance needs four channels */
+        needsRescaleRgba,
+        /** destination image type for LookupOp(mapBgrByteTable) needs to be (A)BGR */ 
+        needsMapBgr, 
+        /** set destination type to sRGB (if available) when loading  */
+        setDestSrgb, 
+        /** set destination type to sRGB (if available) when loading, even for non-RGB images */
+        setDestSrgbForNonRgb, 
+        /** set destination type for blur operation */
+        setDestForBlur, 
+        /** set destination type for scale operation */
+        setDestForScale
+    }
+    
+    /** active hacks */
+    protected static EnumMap<Hacks, Boolean> imageHacks = new EnumMap<Hacks, Boolean>(Hacks.class);
+    
     static {
+        // init imageHacks
+        for (Hacks h : Hacks.values()) {
+            imageHacks.put(h, false);
+        }
         /*
          * create static lookup tables
          */
@@ -156,23 +172,56 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         if ((os.startsWith("Linux"))
             || (os.startsWith("Mac OS X") && osver.startsWith("10.7"))) {
             // GRAB(WTF?) works for Linux JDK1.6 with transparency
-            needsInvertRgba = true;
+            imageHacks.put(Hacks.needsInvertRgba, true);
             invertRgbaByteTable = new ByteLookupTable(0, new byte[][] { invertByte, invertByte, orderedByte, invertByte });
-            needsRescaleRgba = true;
-            needsMapBgr = true;
+            imageHacks.put(Hacks.needsRescaleRgba, true);
+            imageHacks.put(Hacks.needsMapBgr, true);
         } else if ((os.startsWith("Mac OS X") && (osver.startsWith("10.5") || osver.startsWith("10.6"))) 
             || (os.startsWith("Windows"))) {
-            needsRescaleRgba = true;
+            imageHacks.put(Hacks.needsRescaleRgba, true);
         }
         // this hopefully works for all
         mapBgrByteTable = new ByteLookupTable(0, new byte[][] { mapR, mapG, mapB });
-        logger.debug("ImageIO Hacks: needsRescaleRgba="+needsRescaleRgba+" needsInvertRgba="+needsInvertRgba+
-                " needsMapBgr="+needsMapBgr+" setDestSrgb="+setDestSrgb+" setDestSrgbForNonRgb="+setDestSrgbForNonRgb);
+        imageHacks.put(Hacks.setDestForBlur, true);
+        imageHacks.put(Hacks.setDestForScale, true);
+        // print current hacks
+        StringBuffer msg = new StringBuffer("Default DocuImage Hacks: ");
+        for (Entry<Hacks, Boolean> kv : imageHacks.entrySet()) {
+            msg.append(kv.getKey() + "=" + kv.getValue() + " ");
+        }
+        logger.debug(msg);
     }
 
     /** the size of the current image */
     protected ImageSize imageSize;
 
+    /* (non-Javadoc)
+     * @see digilib.image.DocuImageImpl#setHacks(java.lang.String)
+     */
+    @Override
+    public void setHacks(String hackString) {
+        if (hackString == null || hackString.isEmpty()) {
+            return;
+        }
+        // read hack values from String
+        try {
+            for (String h : hackString.split(",")) {
+                String[] hs = h.split("=");
+                Hacks key = Hacks.valueOf(hs[0]);
+                Boolean val = hs[1].equals("true");
+                imageHacks.put(key, val);
+            }
+        } catch (Exception e) {
+            logger.error("Error setting docuimage hacks!", e);
+        }
+        // print current hacks
+        StringBuffer msg = new StringBuffer("DocuImage Hacks: ");
+        for (Entry<Hacks, Boolean> kv : imageHacks.entrySet()) {
+            msg.append(kv.getKey() + "=" + kv.getValue() + " ");
+        }
+        logger.debug(msg);
+    }
+    
     /* (non-Javadoc)
      * @see digilib.image.DocuImageImpl#getVersion()
      */
@@ -378,7 +427,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             if (prescale > 1) {
                 readParam.setSourceSubsampling(prescale, prescale, 0, 0);
             }
-			if (ImageLoaderDocuImage.setDestSrgb) {
+			if (imageHacks.get(Hacks.setDestSrgb)) {
 				/*
 				 * try to set target color space to sRGB
 				 */
@@ -387,7 +436,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 					ColorModel cm = type.getColorModel();
 					ColorSpace cs = cm.getColorSpace();
 					logger.debug("loadSubimage: possible color model:" + cm + " color space:" + cs);
-					if (cs.getNumComponents() < 3 && !ImageLoaderDocuImage.setDestSrgbForNonRgb) {
+					if (cs.getNumComponents() < 3 && !imageHacks.get(Hacks.setDestSrgbForNonRgb)) {
 						// if the first type is not RGB do nothing
 						logger.debug("loadSubimage: image is not RGB " + type);
 						break;
@@ -552,7 +601,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         logger.debug("scaled from " + imgW + "x" + imgH + " img=" + img);
         AffineTransformOp scaleOp = new AffineTransformOp(AffineTransform.getScaleInstance(scaleX, scaleY), renderHint);
         BufferedImage dest = null;
-        if (setDestForScale) {
+        if (imageHacks.get(Hacks.setDestForScale)) {
             // keep image type unless we know its unsuitable
             int imgType = img.getType();
             if (imgType != BufferedImage.TYPE_CUSTOM && imgType != BufferedImage.TYPE_BYTE_BINARY 
@@ -598,7 +647,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         // blur with convolve operation
         ConvolveOp blurOp = new ConvolveOp(blur, ConvolveOp.EDGE_NO_OP, renderHint);
         BufferedImage dest = null;
-        if (setDestForBlur) {
+        if (imageHacks.get(Hacks.setDestForBlur)) {
             int imgType = img.getType();
             // keep image type unless we know its unsuitable (formerly only for 3BYTE_BGR *Java2D BUG*)
             if (imgType != BufferedImage.TYPE_CUSTOM && imgType != BufferedImage.TYPE_BYTE_BINARY 
@@ -698,7 +747,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     public void enhance(float mult, float add) throws ImageOpException {
         RescaleOp op = null;
         logger.debug("enhance: img=" + img);
-        if (needsRescaleRgba) {
+        if (imageHacks.get(Hacks.needsRescaleRgba)) {
             /*
              * Only one constant should work regardless of the number of bands
              * according to the JDK spec. Doesn't work on JDK 1.4 for OSX and
@@ -817,7 +866,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
                 logger.debug("Color op: unable to invert");
                 return;
             }
-            if (needsInvertRgba && cm.hasAlpha()) {
+            if (imageHacks.get(Hacks.needsInvertRgba) && cm.hasAlpha()) {
                 // fix for some cases
                 invtbl = invertRgbaByteTable;
             } else {
@@ -835,7 +884,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             ColorConvertOp grayOp = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_GRAY), renderHint);
             // create new 3-channel image
             int destType = BufferedImage.TYPE_INT_RGB;
-            if (needsMapBgr) {
+            if (imageHacks.get(Hacks.needsMapBgr)) {
                 // special case for funny Java2D implementations
                 if (img.getColorModel().hasAlpha()) {
                     destType = BufferedImage.TYPE_4BYTE_ABGR_PRE;

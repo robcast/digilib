@@ -220,4 +220,12 @@ public abstract class DocuImageImpl implements DocuImage {
 
     public abstract void writeImage(String mt, OutputStream ostream) throws ImageOpException, FileOpException;
 
+    /* (non-Javadoc)
+     * @see digilib.image.DocuImage#SetHacks(java.lang.String)
+     */
+    @Override
+    public void setHacks(String hacks) {
+        // doing nothing
+    }
+
 }
