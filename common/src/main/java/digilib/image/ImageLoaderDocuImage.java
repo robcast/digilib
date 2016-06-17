@@ -182,6 +182,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         }
         // this hopefully works for all
         mapBgrByteTable = new ByteLookupTable(0, new byte[][] { mapR, mapG, mapB });
+        imageHacks.put(Hacks.setDestSrgb, true);
         imageHacks.put(Hacks.setDestForBlur, true);
         imageHacks.put(Hacks.setDestForScale, true);
         // print current hacks
