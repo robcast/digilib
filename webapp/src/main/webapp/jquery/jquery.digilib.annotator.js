@@ -351,7 +351,7 @@
         var shapes = [];
         if (data.dlOpts.isAnnotationsVisible) {
             for (var i = 0; i < annotations.length; ++i) {
-                shapes.push(createShape(data, annotations[i]));
+                shapes = shapes.concat(createShape(data, annotations[i]));
             }
         }
         annotationLayer.shapes = shapes;
@@ -365,7 +365,7 @@
      * Create a vector shape for an annotation.
      * 
      * @param annot annotation wrapper object
-     * @returns vector shape object
+     * @returns array of vector shape objects
      */
     var createShape = function (data, annot) {
         if (annot == null || annot.annotation == null)
@@ -387,6 +387,7 @@
         var area = null;
         var type = null;
         var shape = null;
+        var shapes = [];
         if (annotation.areas != null && annotation.shapes == null) {
             console.warn("Annotation uses legacy 'areas' format! Converting...");
             /*
@@ -405,9 +406,14 @@
             delete annotation.areas;
             annotation.shapes = [annoShape];
         }
-        if (annotation.shapes != null) {
+        if (annotation.shapes == null) return;
+        for (var i = 0; i < annotation.shapes.length; ++i) {
+            if (i > 0) {
+                // make shape id unique
+                id = id + "." + i;
+            }
             // annotation shape
-            annoShape = annotation.shapes[0];
+            annoShape = annotation.shapes[i];
             type = annoShape.type;
             if (type === "point") {
                 area = geom.position(annoShape.geometry);
@@ -476,11 +482,9 @@
                 console.error("Unsupported annotation shape type: "+type);
                 return;
             }
-        } else {
-            console.error("Unable to create a shape for this annotation!");
-            return;
+            shapes.push(shape);
         }
-        return shape;
+        return shapes;
     };
     
     /**
