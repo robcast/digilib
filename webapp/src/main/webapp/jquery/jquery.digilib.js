@@ -101,7 +101,9 @@ function($) {
         // parameters used by background image
         'previewImgParamNames' : ['fn','pn','dw','dh','mo','rot'],
         // reserved space in full page display (default value accounts for body margins)
-        'scalerInsets' : { 'x' : 26, 'y': 20 }
+        'scalerInsets' : { 'x' : 26, 'y': 20 },
+        // number of decimal places, for cropping parameters wx,wy,wh,ww
+        'decimals' : 4
         };
 
     // list of plugins
@@ -221,7 +223,7 @@ function($) {
                             pos = url.indexOf('/digilib.html');
                             if (pos > 0) {
                                 elemSettings.digilibBaseUrl = url.substring(0, pos);
-                            }                    
+                            }
                         }
                     } else {
                         // may be we got the scaler URL from the img
@@ -844,22 +846,31 @@ function($) {
         retrieveOptions(data);
     };
 
-    /** put area into parameters
+    /** put area dimensions into parameters
      * 
      */
-    var packArea = function (settings, area) {
-        if (!area) return;
-        // zoom area
-        settings.wx = cropFloat(area.x);
-        settings.wy = cropFloat(area.y);
-        settings.ww = cropFloat(area.width);
-        settings.wh = cropFloat(area.height);
+    var packArea = function (data, area) {
+      // pack the dimensions of the zoom into parameters
+      if (!area) return;
+      // use higher precision if the image is large and mode="lpic" (large picture)
+      var decimals = defaults.decimals;
+      var imgInfo = data.imgInfo;
+      if (data.scalerFlags.lpic != null
+        && imgInfo != null
+        && Math.max(imgInfo.width, imgInfo.height) > 10000) {
+          decimals = 5;
+          }
+      var settings = data.settings;
+      settings.wx = cropFloat(area.x, decimals);
+      settings.wy = cropFloat(area.y, decimals);
+      settings.ww = cropFloat(area.width, decimals);
+      settings.wh = cropFloat(area.height, decimals);
     };
 
     /** pack scaler flags into parameters
      * 
      */
-    var packScalerFlags = function (settings, flags) {
+    var packScalerFlags = function (data, flags) {
         if (!flags) return;
         var mo = '';
         for (var f in flags) {
@@ -868,16 +879,15 @@ function($) {
             }
             mo += f;
         }
-        settings.mo = mo;
+        data.settings.mo = mo;
     };
 
     /** put objects back into parameters
      * 
      */
     var packParams = function (data) {
-        var settings = data.settings;
-        packArea(settings, data.zoomArea);
-        packScalerFlags(settings, data.scalerFlags);
+        packArea(data, data.zoomArea);
+        packScalerFlags(data, data.scalerFlags);
         // store user interface options in cookie
         storeOptions(data);
         // trigger pack handlers
@@ -971,7 +981,10 @@ function($) {
                         console.debug("cached img.load");
                         $img.trigger('load');
                     }
-                    if (data.scalerFlags.clip != null || data.scalerFlags.osize != null) {
+                    if (data.scalerFlags.clip != null
+                      || data.scalerFlags.osize != null
+                      || data.scalerFlags.lpic != null
+                    ) {
                         // we need image info, do we have it?
                         if (data.imgInfo == null) {
                             loadImageInfo(data);
@@ -1006,7 +1019,11 @@ function($) {
                 console.debug("cached img.load");
                 $img.trigger('load');
             }
-            if (data.scalerFlags.clip != null || data.scalerFlags.osize != null) {
+            // parameter "mo"
+            if (data.scalerFlags.clip != null
+              || data.scalerFlags.osize != null
+              || data.scalerFlags.lpic != null)
+            {
                 // we need image info, do we have it?
                 if (data.imgInfo == null) {
                     loadImageInfo(data);
@@ -1755,14 +1772,16 @@ function($) {
     /** return number with reduced precision.
      * ("crop senseless precision")
      */
-    var cropFloat = function (x) {
-        return parseInt(10000 * x, 10) / 10000;
+    var cropFloat = function (x, dec) {
+        // return parseInt(10000 * x, 10) / 10000;
+        var decimals = dec || defaults.decimals;
+        return +(Math.round(x + "e+" + decimals)  + "e-" + decimals);
     };
 
     /** return string from number with reduced precision.
      */
-    var cropFloatStr = function (x) {
-        return cropFloat(x).toString();
+    var cropFloatStr = function (x, dec) {
+        return cropFloat(x, dec).toString();
     };
 
     /**
