@@ -125,7 +125,7 @@ function($) {
          * @param options
          * @returns
          */
-        init : function(options) {
+        init : function(options, hook) {
             // import geometry classes
             if (plugins.geometry == null) {
                 $.error("jquery.digilib.geometry plugin not found!");
@@ -260,6 +260,11 @@ function($) {
                 }
                 // create HTML structure for scaler
                 setupScalerDiv(data);
+                // additional initializations before setup (e.g. for single nested settings)
+                if (typeof hook === 'function') {
+                  hook(data);
+                  console.debug('init hook', hook, data);
+                }
                 // send setup event
                 $(data).trigger('setup');
             });
