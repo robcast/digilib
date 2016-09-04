@@ -233,7 +233,7 @@
 	            // password entered in JS-prompt
 	            password = window.prompt("Please authenticate: Password", '');
 	            // set params for Auth plugin
-	         	auth.options.requestData.password = password;   
+	         	auth.options.requestData.password = password;
 	    		// try to use the safe url for the password
     			if (data.settings.annotationSafeTokenUrl != null) {
     				auth.options.tokenUrl = data.settings.annotationSafeTokenUrl;
@@ -792,11 +792,10 @@
         $(document).off("mousedown", annotator.checkForStartSelection);
         $(document).off("mouseup", annotator.checkForEndSelection);
         // set plugin parameters
-        var def = defaults.annotatorPluginSettings;
         var pluginParams = {};
         // merge settings 
         // (deep copy of defaults from plugin and options from HTML)
-        $.extend(true, pluginParams, defaults.annotatorPluginSettings, data.options.annotatorPluginSettings);
+        $.extend(true, pluginParams, defaults.annotatorPluginSettings, data.settings.annotatorPluginSettings);
         // function to evaluate plugin settings
         var evalParams = function (params) {
             if (params == null) return;
