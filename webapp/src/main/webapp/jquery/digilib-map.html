@@ -57,11 +57,28 @@
                     // annotationPageUri
                     // 'annotationPageUri' : function() { return window.location.href }
                 };
+                // store additional data (apart from 'rows') from loadAnnotationsFromSearch
+                var 	_onLoadAnnotationsFromSearch = function (data) {
+                      if (data == null) {
+                        data = {};
+                      }
+                    this.annotator.data = data;
+                    console.log('maps: data', data);
+                    return this._onLoadAnnotations(data.rows || []);
+                    };
+                // monkey patch the annotator Store plugin
+                var handleSetup = function (evt) {
+                    console.log('maps: handleSetup');
+                    this.annotator.plugins.Store._onLoadAnnotationsFromSearch = _onLoadAnnotationsFromSearch;
+                    }
+                // add zoom area params to loadAnnotationsFromSearch url
                 var 	getZoomArea = function (data) {
                     return data.zoomArea.toString();
                     };
+                // monkey patches for annotator_dl.js
                 var hook = function (data) {
                     data.settings.annotatorPluginSettings.Store.loadFromSearch.za = getZoomArea;
+                    $(data).on('setup', handleSetup); // too late, annotations have already been loaded
                     };
                 var $div = $('div#digilib');
                 $div.digilib(settings, hook);
