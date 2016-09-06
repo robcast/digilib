@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="initial-scale=1.0"/>
+        <title>Digilib jQuery: fullscreen</title>
+
+        <style type="text/css">
+            body {
+                 background: silver;
+            }
+        </style>
+
+        <script type="text/javascript" src="jquery.js"></script>
+        <script type="text/javascript" src="jquery.cookie.js"></script>
+        <script type="text/javascript" src="jquery.digilib.js"></script>
+        <link rel="stylesheet" type="text/css" href="jquery.digilib.css" />
+        <link rel="stylesheet" type="text/css" href="jquery.digilib.buttons-full-32-sprite.css" />
+        <script type="text/javascript" src="jquery.digilib.geometry.js"></script>
+        <script type="text/javascript" src="jquery.range.js"></script>
+        <link rel="stylesheet" type="text/css" href="jquery.range.css" />
+        <script type="text/javascript" src="jquery.digilib.buttons.js"></script>
+        <script type="text/javascript" src="jquery.digilib.dialogs.js"></script>
+        <script type="text/javascript" src="jquery.digilib.sliders.js"></script>
+        <script type="text/javascript" src="jquery.digilib.birdseye.js"></script>
+        <script type="text/javascript" src="jquery.digilib.marks.js"></script>
+        <script type="text/javascript" src="jquery.digilib.vector.js"></script>
+        <script type="text/javascript" src="showdown.js"></script>
+        <script type="text/javascript" src="annotator-dl.js"></script>
+        <script type="text/javascript" src="jquery.digilib.annotator.js"></script>
+        <link rel="stylesheet" type="text/css" href="annotator.min.css" />
+
+        <script type="text/javascript">
+            $(document).ready(function(){
+                var settings = {
+                    interactionMode : 'fullscreen',
+                    'buttonSettings' : {
+                        'fullscreen' : {
+                            // path to button images (must end with a slash)
+                            'imagePath' : 'img/fullscreen/32/',
+                            'buttonSetWidth' : 36,
+                            'standardSet' : ["reference",
+                                "zoomin","zoomout","zoomarea","zoomfull","pagewidth",
+                                "annotationpolygon","annotationuser","annotations",
+                                "bird","reset","about",],
+                            'buttonSets' : ['standardSet']
+                            },
+                         },
+                    // are annotations read-only?
+                    'annotationsReadOnly' : false,
+                    // URL of annotation server
+                    'annotationServerUrl' : 'http://hertz-test64.biblhertz.it:3000/map',
+                    // URL of authentication token server
+                    'annotationTokenUrl' : 'http://hertz-test64.biblhertz.it:3000/token',
+                    // list of Annotator plugins
+                    'annotatorPlugins' : ['Auth', 'DigilibIntegrator', 'Markdown', 'Store', 'Tags']
+                    // annotationPageUri
+                    // 'annotationPageUri' : function() { return window.location.href }
+                };
+                var 	getZoomArea = function (data) {
+                    return data.zoomArea.toString();
+                    };
+                var hook = function (data) {
+                    data.settings.annotatorPluginSettings.Store.loadFromSearch.za = getZoomArea;
+                    };
+                var $div = $('div#digilib');
+                $div.digilib(settings, hook);
+
+            });
+
+        </script>
+    </head>
+
+    <body>
+        <div id="digilib">
+            <p>digilib doesn't work! Please switch on Javascript or notify the server administrator!</p>
+            <!-- <img src="//digilib.sourceforge.net/images/digilib-logo-big.png" /> -->
+        </div>
+    </body>
+</html>
+
