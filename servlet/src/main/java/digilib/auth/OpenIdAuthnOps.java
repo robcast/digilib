@@ -76,10 +76,16 @@ public class OpenIdAuthnOps implements AuthnOps {
 
     protected File configFile;
 
+    /** JwtConsumer to parse the token without validation to extract the issuer */
     protected JwtConsumer firstPassJwtConsumer;
+    
+    /** Map of validating JwtConsumers by issuer (URL) */
     protected Map<String, JwtConsumer> idpJwtConsumers;
+    
+    /** Map of (List of) roles by issuer (URL) */ 
     protected Map<String, List<String>> idpRoles;
 
+    /** Name of the cookie that contains the token */
     protected String tokenCookieName;
     
 

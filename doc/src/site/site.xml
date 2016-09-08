@@ -35,6 +35,7 @@
       <item name="Configuring digilib" href="digilib-config.html"/>
       <item name="Directory layout" href="image-directories.html"/>
       <item name="Java settings and tuning" href="java-settings.html"/>
+      <item name="Access control" href="auth.html"/>
     </menu>
     <menu name="Development">
       <item name="The digilib Scaler API" href="scaler-api.html"/>

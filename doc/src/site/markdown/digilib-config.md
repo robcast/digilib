@@ -2,12 +2,14 @@
 
 ## digilib-config.xml
 
-The main configuration for digilib is `digilib-config.xml` in the `WEB-INF` 
-directory in the webapp. 
-(If you really need a different location you can define it in the `config-file`
+The main configuration for digilib is the XML file `digilib-config.xml` in the `WEB-INF` 
+directory in the webapp or a Java properties file `digilib.properties` somewhere in the classpath.
+(If you really need a different location for the XML file you can define it in the `config-file`
 init-parameter to the Servlet.)
 
-In the XML-based configuration file you can set several paths and options. 
+In the configuration file you can set lots of paths and options. digilib uses
+default values for all configuration settings that meet most requirements
+so you have to configure only the settings that you want to change.
 
 You have to adjust the **`basedir-list`** parameter to the directories
 where your images are installed. The directory path has to be an absolute 
@@ -31,11 +33,14 @@ A minimal configuration looks like this:
 	  <parameter name="basedir-list" value="/docuserver/images" />
 	</digilib-config>
 	
-A more customized configuration may look like this (for a full list of
-configuration options use the source: 
-[1](https://sourceforge.net/p/digilib/code/ci/default/tree/common/src/main/java/digilib/conf/DigilibConfiguration.java) 
-[2](https://sourceforge.net/p/digilib/code/ci/default/tree/servlet/src/main/java/digilib/conf/DigilibServletConfiguration.java)
-[3](https://sourceforge.net/p/digilib/code/ci/default/tree/servlet3/src/main/java/digilib/conf/DigilibServlet3Configuration.java)
+A more customized configuration may look like the following 
+(for another commented example see 
+[digilib-config.xml.template](https://sourceforge.net/p/digilib/code/ci/default/tree/webapp/src/main/webapp/WEB-INF/digilib-config.xml.template),
+for a full list of
+configuration options and their default values use the source:
+[DigilibConfiguration](https://sourceforge.net/p/digilib/code/ci/default/tree/common/src/main/java/digilib/conf/DigilibConfiguration.java),
+[DigilibServletConfiguration](https://sourceforge.net/p/digilib/code/ci/default/tree/servlet/src/main/java/digilib/conf/DigilibServletConfiguration.java),
+[DigilibServlet3Configuration](https://sourceforge.net/p/digilib/code/ci/default/tree/servlet3/src/main/java/digilib/conf/DigilibServlet3Configuration.java)
 ):
 
 	<!-- Digilib servlet config file -->
@@ -69,21 +74,11 @@ configuration options use the source:
 	  <!-- number of waiting requests in queue -->
 	  <parameter name="max-waiting-threads" value="20" />
 	
-	  <!-- Restrict access to authorized users.
-	       User authentication and roles are provided by the servlet container 
-	       (see tomcat-users.xml).
-	       Authorization for resources (directories) is evaluated by the servlet 
-	       (see auth-file). -->
+	  <!-- Restrict access to authorized users -->
 	  <parameter name="use-authorization" value="false"/>
 	
-	  <!-- Location of XML file with authorization requirements. -->
-	  <parameter name="auth-file" value="digilib-auth.xml"/>
-	
-	  <!-- Part of URL to indicate authenticated access to Tomcat. -->
-	  <parameter name="auth-url-path" value="authenticated/"/>
-	
 	  <!-- use mapping of "virtual directories" to real directories on the server -->
-	  <parameter name="use-mapping" value="false"/>
+	  <parameter name="use-mapping" value="true"/>
 	
 	  <!-- location of XML name mapping file -->
 	  <parameter name="mapping-file" value="digilib-map.xml"/>
@@ -96,56 +91,10 @@ You can supply your own icons for the "error" and "access denied"
 messages by the servlet. Standard images will be used if these
 parameters are not defined.
 
-You can specify the Java toolkit implementation with the `docuimage-class`
-parameter. The `ImageLoaderDocuImage` usually gives best performance
-and works with JDK 1.4 and up.
+If you need authorization set `use-authorization` to true and read the 
+[documentation on authentication and authorization](auth.html).
 
 You can see a summary of your running digilib configuration at the URL 
 [http://localhost:8080/digitallibrary/server/dlConfig.jsp](http://localhost:8080/digitallibrary/server/dlConfig.jsp)
 
-
-## digilib-auth.xml
-
-The digilib access authorization is defined in the file defined by the `auth-file`
-parameter (default: `digilib-auth.xml` in `WEB-INF` ).
-
-The file has two parts `diglib-paths` and `diglib-addresses`. It looks like this:
-
-	<auth-config>
-	
-	  <digilib-paths>
-	    <!-- 
-	      A user must supply one of the roles under "role"
-	      to access the directory "name".
-	      Roles under "role" must be separated by comma only (no spaces).  
-	    -->
-	    <path name="histast/eastwood-collection" role="eastwood-coll" />
-	    <path name="ptolemaios_geo" role="ptolemaios-geo" />
-	  </digilib-paths>
-	
-	  <digilib-addresses>
-	    <!-- 
-	      A computer with an ip address that matches "ip"
-	      is automatically granted all roles under "role".
-	      The ip address is matched from the left (in full quads).
-	      Roles under "role" must be separated by comma only (no spaces). 
-	    -->
-	    <address ip="127" role="local" />
-	    <address ip="130.92.68" role="eastwood-coll,ptolemaios-geo" />
-	    <address ip="130.92.151" role="ALL" />
-	  </digilib-addresses>
-	
-	</auth-config>
-
-`diglib-paths` defines restricted directories and the roles needed
-for access. The roles are defined with the users in `tomcat-users.xml`
-(see above). All subdirectories of the given directories have the same
-restrictions. All directories not listed here (and not subdirectories of listed
-directories) are freely accessible.
-
-`diglib-addresses` defines hosts or networks of computers that are
-automatically authenticated without username and password. Hosts can be assigned
-roles. The special keyword `ALL` authorizes for everything. If the
-role assigned to the computer is not sufficient to access a resource the user
-will be asked for username and password.
         
