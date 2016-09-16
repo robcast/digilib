@@ -26,7 +26,7 @@
         <script type="text/javascript" src="jquery.digilib.marks.js"></script>
         <script type="text/javascript" src="jquery.digilib.vector.js"></script>
         <script type="text/javascript" src="showdown.js"></script>
-        <script type="text/javascript" src="annotator-dl.js"></script>
+        <script type="text/javascript" src="map-annotator-dl.js"></script>
         <script type="text/javascript" src="jquery.digilib.annotator.js"></script>
         <link rel="stylesheet" type="text/css" href="annotator.min.css" />
 
@@ -47,42 +47,117 @@
                             },
                          },
                     // are annotations read-only?
+                    // URL of annotation server
+                    'annotationServerUrl' : 'http://localhost:3000/map',
+                    // are annotations read-only?
                     'annotationsReadOnly' : false,
                     // URL of annotation server
                     'annotationServerUrl' : 'http://hertz-test64.biblhertz.it:3000/map',
                     // URL of authentication token server
-                    'annotationTokenUrl' : 'http://hertz-test64.biblhertz.it:3000/token',
+                    'annotationTokenUrl' : 'http://localhost:3000/token',
                     // list of Annotator plugins
-                    'annotatorPlugins' : ['Auth', 'DigilibIntegrator', 'Markdown', 'Store', 'Tags']
-                    // annotationPageUri
-                    // 'annotationPageUri' : function() { return window.location.href }
+                    'annotatorPlugins' : ['Auth', 'Markdown', 'DigilibIntegrator', 'Store', 'Tags']
                 };
-                // store additional data (apart from 'rows') from loadAnnotationsFromSearch
-                var 	_onLoadAnnotationsFromSearch = function (data) {
-                      if (data == null) {
-                        data = {};
+                var _setupEditor = function() {
+                  var e = new Annotator.Editor();
+                  var _t = Annotator._t;
+                  this.editor = e;
+                  e.hide().on('hide', this.onEditorHide).on('save', this.onEditorSubmit);
+                  e.addField({
+                    id: 'map_name',
+                    type: 'input',
+                    label: _t('normal name') + '\u2026',
+                    load: function(field, annotation) {
+                      return $(field).find('#map_name').val(annotation.name || '');
+                      },
+                    submit: function(field, annotation) {
+                      return annotation.name = $(field).find('#map_name').val();
                       }
-                    this.annotator.data = data;
-                    console.log('maps: data', data);
+                    });
+                  e.addField({
+                    id: 'map_nr',
+                    type: 'input',
+                    label: _t('nr') + '\u2026',
+                    load: function(field, annotation) {
+                      return $(field).find('#map_nr').val(annotation.nr || '');
+                      },
+                    submit: function(field, annotation) {
+                      return annotation.nr = $(field).find('#map_nr').val();
+                      }
+                    });
+                  e.addField({
+                    id: 'map_legend',
+                    type: 'input',
+                    label: _t('legend') + '\u2026',
+                    load: function(field, annotation) {
+                      return $(field).find('#map_legend').val(annotation.legend || '');
+                      },
+                    submit: function(field, annotation) {
+                      return annotation.legend = $(field).find('#map_legend').val();
+                      }
+                    });
+                  e.addField({
+                    id: 'map_desc',
+                    type: 'textarea',
+                    label: _t('description') + '\u2026',
+                    load: function(field, annotation) {
+                      return $(field).find('#map_desc').val(annotation.desc || '');
+                    },
+                    submit: function(field, annotation) {
+                      return annotation.desc = $(field).find('#map_desc').val();
+                    }
+                  });
+                  e.addField({
+                    id: 'map_fmid',
+                    type: 'input',
+                    label: _t('zuccaro (fm) id') + '\u2026',
+                    load: function(field, annotation) {
+                      return $(field).find('#map_fmid').val(annotation.fmid || '');
+                    },
+                    submit: function(field, annotation) {
+                      return annotation.fmid = $(field).find('#map_fmid').val();
+                    }
+                  });
+                  e.addField({
+                    id: 'map_layer',
+                    type: 'select',
+                    label: _t('layer') + '\u2026',
+                    load: function(field, annotation) {
+                      return $(field).find('#map_layer').val(annotation.layer || '');
+                    },
+                    submit: function(field, annotation) {
+                      return annotation.layer = $(field).find('#map_layer').val();
+                    }
+                  });
+                  e.element.appendTo(this.wrapper);
+                  return this;
+                };
+
+                var _onLoadAnnotationsFromSearch = function(data) {
+                  if (data == null) {
+                    data = {};
+                    }
+                    this.element.data('digilib').annotationdata = data;
+                    console.debug("_onloadAnnotationsFromSearch", data);
                     return this._onLoadAnnotations(data.rows || []);
                     };
-                // monkey patch the annotator Store plugin
-                var handleSetup = function (evt) {
-                    console.log('maps: handleSetup');
-                    this.annotator.plugins.Store._onLoadAnnotationsFromSearch = _onLoadAnnotationsFromSearch;
-                    }
-                // add zoom area params to loadAnnotationsFromSearch url
+
                 var 	getZoomArea = function (data) {
                     return data.zoomArea.toString();
                     };
-                // monkey patches for annotator_dl.js
-                var hook = function (data) {
-                    data.settings.annotatorPluginSettings.Store.loadFromSearch.za = getZoomArea;
-                    $(data).on('setup', handleSetup); // too late, annotations have already been loaded
+                var 	getFn = function (data) {
+                    return data.settings.fn;
                     };
+                var hook = function (data) {
+                    var loadParams = data.settings.annotatorPluginSettings.Store.loadFromSearch;
+                    loadParams.za = getZoomArea;
+                    loadParams.fn = getFn;
+                    };
+                // monkey patch Store plugin
+                Annotator.prototype._setupEditor = _setupEditor;
+                Annotator.Plugin.Store.prototype._onLoadAnnotationsFromSearch = _onLoadAnnotationsFromSearch;
                 var $div = $('div#digilib');
                 $div.digilib(settings, hook);
-
             });
 
         </script>
