@@ -6,9 +6,28 @@
         <title>Digilib jQuery: fullscreen</title>
 
         <style type="text/css">
-            body {
-                 background: silver;
-            }
+            body { background: silver; }
+            div.dl-digilib polygon.dl-svg-annotationregion { fill-opacity: 0.3; }
+            div.dl-digilib polygon.map-generale { fill: gray; }
+            div.dl-digilib polygon.map-chiesa { fill: red; }
+            div.dl-digilib polygon.map-cappella { fill: darkred; }
+            div.dl-digilib polygon.map-oratorio { fill: darkred; }
+            div.dl-digilib polygon.map-chiostro { fill: darkred;}
+            div.dl-digilib polygon.map-convento { fill: darkred; }
+            div.dl-digilib polygon.map-collegio { fill: magenta; }
+            div.dl-digilib polygon.map-ospedale { fill: magenta; }
+            div.dl-digilib polygon.map-palazzo { fill: navy; }
+            div.dl-digilib polygon.map-casa { fill: blue; }
+            div.dl-digilib polygon.map-cortile { fill: white; }
+            div.dl-digilib polygon.map-pubblico { fill: blue; }
+            div.dl-digilib polygon.map-militare { fill: blue; }
+            div.dl-digilib polygon.map-economia { fill: blue; }
+            div.dl-digilib polygon.map-strada { fill: yellow; }
+            div.dl-digilib polygon.map-giardino { fill: green; }
+            div.dl-digilib polygon.map-fontana { fill: cyan; }
+            div.dl-digilib polygon.map-monumento { fill: darkorange; }
+            div.dl-digilib polygon.map-antico { fill: orange; }
+            div.dl-digilib polygon.map-natura { fill: darkgreen; }
         </style>
 
         <script type="text/javascript" src="jquery.js"></script>
@@ -46,21 +65,32 @@
                             'buttonSets' : ['standardSet']
                             },
                          },
-                    // are annotations read-only?
                     // URL of annotation server
                     'annotationServerUrl' : 'http://localhost:3000/map',
                     // are annotations read-only?
                     'annotationsReadOnly' : false,
-                    // URL of annotation server
-                    'annotationServerUrl' : 'http://hertz-test64.biblhertz.it:3000/map',
                     // URL of authentication token server
                     'annotationTokenUrl' : 'http://localhost:3000/token',
                     // list of Annotator plugins
                     'annotatorPlugins' : ['Auth', 'Markdown', 'DigilibIntegrator', 'Store', 'Tags']
                 };
+                var _loadAnnotationLayer = function(self, field, annotation) {
+                    var layers = self.element.data('digilib').annotationdata.layers;
+                    var select = $(field).find('#map_layer');
+                    select.empty().removeAttr('disabled');
+                    $.each(layers, function(index, layer) {
+                            select.append($('<option>', {
+                            selected: layer.ID == annotation.layer,
+                            html: layer.name,
+                            value: layer.ID
+                            }));
+                        });
+                    return annotation.layer || 0;
+                    };
                 var _setupEditor = function() {
                   var e = new Annotator.Editor();
                   var _t = Annotator._t;
+                  var self = this;
                   this.editor = e;
                   e.hide().on('hide', this.onEditorHide).on('save', this.onEditorSubmit);
                   e.addField({
@@ -123,8 +153,8 @@
                     type: 'select',
                     label: _t('layer') + '\u2026',
                     load: function(field, annotation) {
-                      return $(field).find('#map_layer').val(annotation.layer || '');
-                    },
+                        return _loadAnnotationLayer(self, field, annotation);
+                        },
                     submit: function(field, annotation) {
                       return annotation.layer = $(field).find('#map_layer').val();
                     }
@@ -138,24 +168,30 @@
                     data = {};
                     }
                     this.element.data('digilib').annotationdata = data;
-                    console.debug("_onloadAnnotationsFromSearch", data);
+                    // console.debug("_onloadAnnotationsFromSearch", data);
                     return this._onLoadAnnotations(data.rows || []);
                     };
 
-                var 	getZoomArea = function (data) {
+                var getZoomArea = function (data) {
                     return data.zoomArea.toString();
                     };
-                var 	getFn = function (data) {
+
+                var getFn = function (data) {
                     return data.settings.fn;
                     };
+
                 var hook = function (data) {
                     var loadParams = data.settings.annotatorPluginSettings.Store.loadFromSearch;
                     loadParams.za = getZoomArea;
                     loadParams.fn = getFn;
                     };
-                // monkey patch Store plugin
+
+                // monkey patch Annotator
                 Annotator.prototype._setupEditor = _setupEditor;
+
+                // monkey patch Annotator Store plugin
                 Annotator.Plugin.Store.prototype._onLoadAnnotationsFromSearch = _onLoadAnnotationsFromSearch;
+
                 var $div = $('div#digilib');
                 $div.digilib(settings, hook);
             });
@@ -166,7 +202,7 @@
     <body>
         <div id="digilib">
             <p>digilib doesn't work! Please switch on Javascript or notify the server administrator!</p>
-            <!-- <img src="//digilib.sourceforge.net/images/digilib-logo-big.png" /> -->
+            <!-- <img src="http://digilib.sourceforge.net/images/digilib-logo-big.png" /> -->
         </div>
     </body>
 </html>

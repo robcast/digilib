@@ -508,11 +508,12 @@
         //$annotation.data('rect', area);
         // add shared css class from annotations collection
         if (annotation.cssclass != null) {
-            $annotation.addClass(annotation.cssclass);
+            // $annotation.addClass(annotation.cssclass);
+            $annotation[0].classList.add(annotation.cssclass);
         }
         // add individual css class from this annotation
         if (annoShape.cssclass != null) {
-            $annotation.addClass(shape.cssclass);
+            $annotation[0].classList.add(shape.cssclass);
         }
         // hook up Annotator events
         $annotation.on("mouseover", annotator.onHighlightMouseover);
