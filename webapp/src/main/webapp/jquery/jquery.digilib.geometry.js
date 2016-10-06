@@ -799,7 +799,7 @@
     var plugin = {
             name : 'geometry',
             install : install,
-            fn : {},
+            fn : {}
     };
 
     // plug into digilib
