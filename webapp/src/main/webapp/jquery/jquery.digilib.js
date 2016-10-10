@@ -1911,21 +1911,22 @@ function($) {
     $.fn.digilib = function (action) {
         // plugin extension mechanism, called when the plugins' code is read 
         if (action === 'plugin') {
-            var plugin = arguments[1];
+            var plugin = arguments[1] || {};
             // each plugin needs a name
             if (plugin.name != null) {
                 plugins[plugin.name] = plugin;
-                // share common objects
-                plugin.defaults = defaults;
-                plugin.buttons = buttons;
-                plugin.actions = actions;
-                plugin.fn = fn;
-                plugin.plugins = plugins;
-                // and install
-                if (typeof plugin.install === 'function') {
-                    plugin.install(plugin);
                 }
-            }
+            // share common objects
+            plugin.defaults = defaults;
+            plugin.buttons = buttons;
+            plugin.actions = actions;
+            plugin.fn = fn;
+            plugin.plugins = plugins;
+            // and install
+            if (typeof plugin.install === 'function') {
+                plugin.install(plugin);
+                }
+            return plugin;
             // plugins will be initialised when action.init is called
         } else if (actions[action]) {
             // call action on this with the remaining arguments (inserting data as first argument)
