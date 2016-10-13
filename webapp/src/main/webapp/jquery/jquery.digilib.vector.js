@@ -499,7 +499,14 @@
                 var $h = $(svgElement('rect', attr));
                 $h.attr({'width': hs, 'height': hs});
                 $h.moveTo = function (p) {
-                    this.attr({'x': p.x-d, 'y': p.y-d });
+                    this.attr({'x': p.x-d, 'y': p.y-d});
+                    };
+                return $h;
+                },
+            'circle' : function () {
+                var $h = $(svgElement('circle', attr));
+                $h.moveTo = function (p) {
+                    this.attr({'cx': p.x, 'cy': p.y, 'r': d});
                     };
                 return $h;
                 },
