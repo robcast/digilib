@@ -28,8 +28,8 @@
 */
 
 /* TODO:
-    - infowindow for shapes
-        - display fractions
+    - infowindow for shapes (partially done)
+        - display fractions (1/3 etc.)
         - display angles
         - display Vitruvian intercolumnium types
     - display shapes overlay? (angles, distances?)
@@ -717,36 +717,36 @@
         // styles for shapes
         styles : {
             shape : {
-                stroke : 'red',
-                strokewidth : 1,
+                stroke : 'lightgreen',
+                'stroke-width' : 2,
                 fill : 'none'
                 },
             constr : {
                 stroke : 'cornsilk',
-                strokewidth : 1,
+                'stroke-width' : 1,
                 fill : 'none'
                 },
             guide : {
                 stroke : 'blue',
-                strokewidth : 1,
+                'stroke-width' : 1,
                 fill : 'none'
                 },
             selected : {
                 stroke : 'cyan',
-                strokewidth : 1,
+                'stroke-width' : 1,
                 fill : 'none'
                 },
             handle : {
                 stroke : 'blue',
-                strokewidth : 1,
+                'stroke-width' : 1,
                 fill : 'none',
                 hover : {
-                    fill : 'red',
+                    fill : 'yellow',
                     }
                 }
             },
         // implemented styles
-        implementedStyles : ['shape', 'constr', 'guide', 'selected'],
+        implementedStyles : ['shape', 'constr', 'guide', 'selected', 'handle'],
         // implemented measuring shape types, for select widget
         implementedShapes : ['Line', 'LineString', 'Proportion', 'Rect', 'Rectangle', 'Polygon', 'Circle', 'Ellipse', 'Oval', 'Grid'],
         // all measuring shape types
@@ -754,7 +754,7 @@
             Line :       { name : 'line',           display : 'length', },
             LineString : { name : 'linestring',     display : 'length'  },
             Proportion : { name : 'proportion',     display : 'length'  },
-            Rectangle :  { name : 'box',            display : 'area'    },
+            Rectangle :  { name : 'box',            display : 'diagonal'    },
             Rect :       { name : 'rectangle',      display : 'area'    },
             Square :     { name : 'square',         display : 'length'  },
             Polygon :    { name : 'polygon',        display : 'area'    },
@@ -804,7 +804,9 @@
         // keep original object when moving/scaling/rotating
         keepOriginal : false,
         // number of copies when drawing grids
-        gridCopies : 10
+        gridCopies : 10,
+        // info window
+        infoDiv : null
         };
 
     // debug routine
@@ -830,7 +832,8 @@
             var shape = newShape(data);
             var layer = data.measureLayer;
             $(data).trigger('createShape', shape);
-            digilib.actions.addShape(data, shape, shapeCompleted, layer);
+            digilib.actions.addShape(data, shape, shapeCompleted, layer);
+            console.debug('drawshape', shape);
             _debug_shape('action drawshape', shape);
             }
         };
@@ -879,6 +882,22 @@
     // event handler for changeShape
     var onChangeShape = function(event, shape) {
         var data = this;
+        // event handler for updating shape info
+        var select = function(event) {
+            selectShape(data, shape);
+            updateInfo(data, shape);
+            _debug_shape('onClick', shape);
+            };
+        var info = function(event) {
+            showInfoDiv(event, data, shape);
+            _debug_shape('onMouseover', shape);
+            };
+        var $elem = shape.geometry.type === 'Oval'
+            ? shape.$elem.children('path')
+            : shape.$elem;
+        console.debug('measure: onChangeShape', $elem);
+        $elem.on('mouseover.measure', info);
+        $elem.on('click.measure', select);
         updateInfo(data, shape);
         currentShape = null;
         _debug_shape('onChangeShape', shape);
@@ -886,15 +905,6 @@
 
     // event handler for renderShape
     var onRenderShape = function(event, shape) {
-        // event handler for updating shape info
-        var info = function(event) {
-            selectShape(data, shape);
-            updateInfo(data, shape);
-            _debug_shape('onClick', shape);
-            };
-        var data = this;
-        var $elem = shape.$elem;
-        $elem.on('click.measure', info);
         _debug_shape('onRenderShape', shape);
         };
 
@@ -962,47 +972,75 @@
         var val = parseFloat(widgets.value1.val());
         var fac = val / data.lastMeasuredValue;
         data.measureFactor = fac;
-        convertUnits(data);
+        updateUnits(data);
     };
 
     // convert measured value to second unit and display
     var updateMeasures = function(data, val, type) {
-        var info = data.settings.shapeInfo[type]
         var widgets = data.measureWidgets;
-        var display = info.display;
-        var u1 = parseFloat(widgets.unit1.val());
-        var u2 = parseFloat(widgets.unit2.val());
-        var ratio = u1 / u2;
-        var result = (display === 'area') // TODO: display unit²
-            ? val * ratio * ratio
-            : val * ratio;
+        var unit1 = parseFloat(widgets.unit1.val());
+        var unit2 = parseFloat(widgets.unit2.val());
+        var ratio = unit1 / unit2;
+        var result = scaleValue(data, type, val, ratio);
         widgets.shape.val(type);
         widgets.value1.val(fn.cropFloatStr(mRound(val)));
         widgets.value2.text(fn.cropFloatStr(mRound(result)));
         };
 
-    // convert measured pixel values to new units
-    var convertUnits = function(data) {
-        var type = getActiveShapeType(data);
+    // scale
+    var scaleValue = function(data, type, val, factor) {
+        var scaleArea = data.settings.shapeInfo[type].display === 'area';
+        var result = scaleArea
+            ? val * factor * factor
+            : val * factor;
+        return result;
+        };
+
+    // convert pixel values to other units
+    var pixelToUnit = function(data, type, px) {
+        var ratio = data.measureFactor;
+        var result = scaleValue(data, type, px, ratio);
+        return result;
+        };
+
+    // rectify pixel values according to digilib aspect ratio
+    var rectifiedPixel = function(data, shape) {
+        var type = shape.geometry.type;
         var display = data.settings.shapeInfo[type].display;
-        var val = data.lastMeasuredValue;
-        var fac = data.measureFactor;
-        var result = (display === 'area')
-            ? val * fac * fac
-            : val * fac;
+        var px = (display === 'area')
+            ? rectifiedArea(data, shape)
+            : rectifiedDist(data, shape);
+        return px;
+        };
+
+    // update last measured pixel values, display as converted to new units
+    var updateUnits = function(data) {
+        var type = getActiveShapeType(data);
+        var px = data.lastMeasuredValue;
+        var result = pixelToUnit(data, type, px);
         updateMeasures(data, result, type);
         };
 
     // display info for shape
     var updateInfo = function(data, shape) {
+        data.lastMeasuredValue = rectifiedPixel(data, shape);
+        setActiveShapeType(data, shape);
+        updateUnits(data);
+        };
+
+    // info data for shape
+    var getInfo = function(data, shape) {
+        var s = data.settings;
         var type = shape.geometry.type;
-        var display = data.settings.shapeInfo[type].display;
-        var val = (display === 'area')
+        var display = s.shapeInfo[type].display;
+        var name = s.shapeInfo[type].name;
+        var px = (display === 'area')
             ? rectifiedArea(data, shape)
             : rectifiedDist(data, shape);
-        data.lastMeasuredValue = val;
-        setActiveShapeType(data, type);
-        convertUnits(data);
+        var len = fn.cropFloat(pixelToUnit(data, type, px), 2);
+        var unit = data.measureWidgets.unit1.find('option:selected').text();
+        var html = '<div class="head">'+name+'</div><div><em>'+display+'</em>: '+len+' '+unit+'</div>';
+        return html;
         };
 
     // select/unselect shape (or toggle)
@@ -1101,26 +1139,28 @@
         };
 
     // set the current shape type (from shape select widget)
-    var changeShapeType = function(data) {
+    var changeActiveShapeType = function(data) {
         data.settings.activeShapeType = data.measureWidgets.shape.val();
         setCalibrationInputState(data);
         };
 
     // set the current shape type
-    var setActiveShapeType = function(data, type) {
-        data.settings.activeShapeType = type;
+    var setActiveShapeType = function(data, shape) {
+        data.settings.activeShapeType = shape.geometry.type;
         setCalibrationInputState(data);
         };
 
     // update Line Style classes (overwrite CSS)
     var updateLineStyles = function(data) {
         var s = data.settings;
+        var DL = s.cssPrefix;
         var $lineStyles = s.$lineStyles;
         var style = s.styles;
         $lineStyles.html(
             '.'+CSS+'guide {stroke: '+style.guide.stroke+'} '+
             '.'+CSS+'constr {stroke: '+style.constr.stroke+'} '+
-            '.'+CSS+'selected {stroke: '+style.selected.stroke+'}'
+            '.'+CSS+'selected {stroke: '+style.selected.stroke+'} '+
+            'div.'+DL+'digilib .'+DL+'svg-handle {stroke: '+style.handle.stroke+'}'
             );
         var widget = data.measureWidgets;
         var styleName = s.implementedStyles;
@@ -1199,6 +1239,35 @@
             $(document.body).off('mousemove.measure').off('mouseup.measure');
             });
         return false;
+        };
+
+    var createInfoDiv = function() {
+        var options = { id: CSS+'info', class: 'dl-keep '+CSS+'info' };
+        return $('<div>', options);
+        };
+
+    // show shape info
+    var showInfoDiv = function(event, data, shape) {
+        var settings = data.settings;
+        var $info = settings.infoDiv;
+        $info.offset({
+            left : event.pageX,
+            top  : event.pageY
+            });
+        var timer;
+        $info.html(getInfo(data, shape));
+        console.debug('Info', shape);
+        $info.on('mouseout', function() { timer = setTimeout(hideInfoDiv, 300) });
+        $info.on('mouseover', function() { clearTimeout(timer) });
+        $info.fadeIn();
+        return false;
+        };
+
+    // hide shape info
+    var hideInfoDiv = function() {
+        var $info = $('#'+CSS+'info');
+        $info.off('mouseout').off('mouseover');
+        $info.fadeOut();
         };
 
     // remove selected shapes - or the most recent one, if none was selected
@@ -1319,19 +1388,22 @@
                 },
                 'svg' : function (shape) {
                     var trafo = data.imgTrafo;
-                    var $s = factory['Rect'].svg(shape);
+                    var styles = data.settings.styles;
                     var props = shape.properties;
+                    props['stroke-width'] = styles.guide['stroke-width']; // draw a rectangle in guides style
+                    var $s = factory['Rect'].svg(shape);
                     var place = $s.place;
                     var guide = CSS+'guide';
+                    var shapeClass = CSS+'shape';
                     var constr = CSS+'constr';
                     $s.attr({'class' : guide});
                     var $g = $(fn.svgElement('g', {'id': shape.id + '-oval'}));
                     var $c1 = $(fn.svgElement('circle', {'id': shape.id + '-circ1', 'class': guide }));
                     var $c2 = $(fn.svgElement('circle', {'id': shape.id + '-circ2', 'class': guide }));
                     var $p1 = $(fn.svgElement('path',   {'id': shape.id + '-lines', 'class': guide }));
-                    var $p2 = $(fn.svgElement('path',   {'id': shape.id + '-arc', stroke: props.stroke, fill: 'none' }));
-                    var $p3 = $(fn.svgElement('path',   {'id': shape.id + '-constr', 'class': constr })); // debug construction
-                    $g.append($s).append($c1).append($c2).append($p1).append($p2).append($p3);
+                    var $p2 = $(fn.svgElement('path',   {'id': shape.id + '-constr', 'class': constr })); // debug construction
+                    var $arc = $(fn.svgElement('path',   {'id': shape.id + '-arc', 'class': shapeClass, stroke: props.stroke, 'stroke-width': styles.shape['stroke-width'], fill: 'none' }));
+                    $g.append($s).append($c1).append($c2).append($p1).append($p2).append($arc);
                     $g.place = function () {
                         var p = props.screenpos;
                         place.call($s); // place the framing rectangle (polygon)
@@ -1344,24 +1416,24 @@
                             var mid1 = side1.mid();
                             var mid2 = side2.mid();
                             var mid3 = side3.mid();
-                            var axis0 = side0.parallel(mid3); // short axis
-                            var axis1 = side1.parallel(mid0); // long axis
-                            var maxDiam = axis0.length()-1; // maximal diameter for small circles
-                            var handle = axis1.perpendicularPoint(p[3]); // drag point projected on long axis
-                            if (handle.distance(mid0) > axis1.length()) { // constrain handle
+                            var axis1 = side0.parallel(mid3); // short axis
+                            var axis2 = side1.parallel(mid0); // long axis
+                            var maxDiam = axis1.length()-1; // maximal diameter for small circles
+                            var handle = axis2.perpendicularPoint(p[3]); // drag point projected on long axis
+                            if (handle.distance(mid0) > axis2.length()) { // constrain handle
                                 handle.moveTo(mid2);
                             } else if (handle.distance(mid2) > maxDiam) {
                                 handle.moveTo(geom.line(mid2, handle).length(maxDiam).point());
                                 }
                             var m1 = handle.mid(mid2); // midpoints of the small circles
-                            var m2 = axis0.mirror(m1);
+                            var m2 = axis1.mirror(m1);
                             var rad1 = m1.distance(mid2); // radius of the small circles
-                            var rd = axis0.copy().length(rad1).point(); // radius distance from short axis
+                            var rd = axis1.copy().length(rad1).point(); // radius distance from short axis
                             var ld = geom.line(rd, m1);
                             var md = rd.mid(m1);
                             var bi = ld.perpendicular(md); // perpendicular bisector
-                            var m3 = axis0.intersection(bi); // midpoints of the big circles
-                            var m4 = axis1.mirror(m3);
+                            var m3 = axis1.intersection(bi); // midpoints of the big circles
+                            var m4 = axis2.mirror(m3);
                             var fp1 = geom.line(m3, m1).addEnd(rad1); // the four fitting points
                             var fp2 = geom.line(m3, m2).addEnd(rad1);
                             var fp3 = geom.line(m4, m1).addEnd(rad1);
@@ -1370,19 +1442,20 @@
                             // place the SVG shapes
                             $c1.attr({cx: m1.x, cy: m1.y, r: rad1});
                             $c2.attr({cx: m2.x, cy: m2.y, r: rad1});
-                            $p1.attr({d: // the guides
+                            $p1.attr({d: // the guidelines
                                 'M'+fp1+' L'+m3+' '+fp2+
                                 'M'+fp3+' L'+m4+' '+fp4+
                                 'M'+mid0+' L'+mid2+
                                 'M'+mid1+' L'+mid3});
-                            $p2.attr({d: 'M'+fp2+ // the arcs
+                            $p2.attr({d: 'M'+rd+' L'+m1+' M'+md+' '+m3}); // debug construction
+                            $arc.attr({d: 'M'+fp2+ // the arcs of the oval
                                 ' A'+rad2+','+rad2+' 0 0,1 '+fp1+
                                 ' A'+rad1+','+rad1+' 0 0,1 '+fp3+
                                 ' A'+rad2+','+rad2+' 0 0,1 '+fp4+
                                 ' A'+rad1+','+rad1+' 0 0,1 '+fp2});
-                            $p3.attr({d: 'M'+rd+' L'+m1+' M'+md+' '+m3}); // debug construction
                             p[3] = handle;
                             shape.geometry.coordinates[3] = trafo.invtransform(handle).toArray();
+                            props.measures = { rad1: rad1, rad2: rad2, axis1: axis1.length(), axis2: axis2.length() }; // use for info
                             }
                         };
                     return $g;
@@ -1456,7 +1529,7 @@
                 'type',
                 'value1', 'unit1', 'eq',
                 'value2', 'unit2',
-                'shapecolor', 'guidecolor', 'constrcolor', 'selectedcolor',
+                'shapecolor', 'guidecolor', 'constrcolor', 'selectedcolor', 'handlecolor',
                 'move'
                 ],
             info :       $('<img id="dl-measure-info" src="img/info.png" title="display info window for shapes"></img>'),
@@ -1470,10 +1543,11 @@
 			unit1 :      $('<select id="dl-measure-unit1" title="current measuring unit - click to change" />'),
 			unit2 :      $('<select id="dl-measure-unit2" title="secondary measuring unit - click to change" />'),
 			angle :      $('<span id="dl-measure-angle" class="dl-measure-number" title="last measured angle" />'),
-            shapecolor : $('<span id="dl-measure-shapecolor" title="select line color for shapes"></span>'),
-            guidecolor : $('<span id="dl-measure-guidecolor" title="select guide line color for shapes"></span>'),
-            constrcolor :$('<span id="dl-measure-constrcolor" title="select construction line color for shapes"></span>'),
-            selectedcolor :$('<span id="dl-measure-selectedcolor" title="select line color for selected shapes"></span>'),
+            shapecolor : $('<span id="dl-measure-shapecolor" class="dl-measure-color" title="select line color for shapes"></span>'),
+            guidecolor : $('<span id="dl-measure-guidecolor" class="dl-measure-color" title="select guide line color for shapes"></span>'),
+            constrcolor :$('<span id="dl-measure-constrcolor" class="dl-measure-color" title="select construction line color for shapes"></span>'),
+            selectedcolor :$('<span id="dl-measure-selectedcolor" class="dl-measure-color" title="select line color for selected shapes"></span>'),
+            handlecolor :$('<span id="dl-measure-handlecolor" class="dl-measure-color" title="select color for shape handles"></span>'),
             move :       $('<img id="dl-measure-move" src="img/move.png" title="move measuring bar around the screen"></img>')
 		    };
         var $measureBar = $('<div id="dl-measure-toolbar" />');
@@ -1512,10 +1586,10 @@
             $elem.digilib(action);
             return false;
             });
-        widgets.shape.on('change.measure',  function(evt) { changeShapeType(data) });
+        widgets.shape.on('change.measure',  function(evt) { changeActiveShapeType(data) });
         widgets.value1.on('change.measure', function(evt) { changeFactor(data) });
-        widgets.unit1.on('change.measure',  function(evt) { convertUnits(data) });
-        widgets.unit2.on('change.measure',  function(evt) { convertUnits(data) });
+        widgets.unit1.on('change.measure',  function(evt) { updateUnits(data) });
+        widgets.unit2.on('change.measure',  function(evt) { updateUnits(data) });
         widgets.unit1.attr('tabindex', -1);
         widgets.unit2.attr('tabindex', -1);
         widgets.value1.attr('tabindex', -1);
@@ -1583,6 +1657,8 @@
         $data.on('changeShape', onChangeShape);
         $data.on('positionShape', onPositionShape);
         $data.on('dragShape', onDragShape);
+        settings.infoDiv = createInfoDiv();
+        data.$elem.append(settings.infoDiv);
         };
 
     // plugin object with name and init

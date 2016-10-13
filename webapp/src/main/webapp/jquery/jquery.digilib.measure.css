@@ -15,6 +15,25 @@ div#dl-measure-toolbar {
     z-index: 20;
 }
 
+div#dl-measure-info {
+    font-size: 90%;
+    display: none;
+	border: 1px solid grey;
+	border-radius: 5px;
+	background-color:rgba(255, 255, 255, 0.3);
+    padding: 5px;
+    position: absolute;
+    z-index: 20;
+}
+
+div#dl-measure-info div.head {
+    font-weight: bold;
+}
+
+div#dl-measure-info em {
+    font-weight: bold;
+}
+
 input#dl-measure-value1 {
     font-size: 100%;
     width: 8em;
@@ -117,16 +136,19 @@ img#dl-measure-info {
     fill: none;
 }
 
-span#dl-measure-shapecolor,
-span#dl-measure-constrcolor,
-span#dl-measure-guidecolor,
-span#dl-measure-selectedcolor {
+.dl-measure-handle {
+    stroke: blue;
+    fill: none;
+}
+
+
+span.dl-measure-color {
     display: inline-block;
-    width: 8px;
-    height: 16px;
+    width: 12px;
+    height: 12px;
     vertical-align: middle;
-    margin: 0px 0px 2px 2px;
-    border: 1px solid darkgray;
+    margin: 1px;
+    border: 1px solid black;
     background-color: darkgray;
 }
 
