@@ -754,13 +754,13 @@
             Line :       { name : 'line',           display : 'length', },
             LineString : { name : 'linestring',     display : 'length'  },
             Proportion : { name : 'proportion',     display : 'length'  },
-            Rectangle :  { name : 'box',            display : 'diagonal'    },
+            Rectangle :  { name : 'box',            display : 'diagonal' },
             Rect :       { name : 'rectangle',      display : 'area'    },
             Square :     { name : 'square',         display : 'length'  },
             Polygon :    { name : 'polygon',        display : 'area'    },
             Circle :     { name : 'circle',         display : 'radius'  },
             Ellipse :    { name : 'ellipse',        display : 'area'    },
-            Oval :       { name : 'oval',           display : 'distance'  },
+            Oval :       { name : 'oval',           display : 'distance' },
             Grid :       { name : 'linegrid',       display : 'spacing' }
             },
         // currently selected shape type
@@ -832,7 +832,7 @@
             var shape = newShape(data);
             var layer = data.measureLayer;
             $(data).trigger('createShape', shape);
-            digilib.actions.addShape(data, shape, shapeCompleted, layer);
+            digilib.actions.addShape(data, shape, layer, shapeCompleted);
             console.debug('drawshape', shape);
             _debug_shape('action drawshape', shape);
             }
@@ -1401,7 +1401,8 @@
                     var $c1 = $(fn.svgElement('circle', {'id': shape.id + '-circ1', 'class': guide }));
                     var $c2 = $(fn.svgElement('circle', {'id': shape.id + '-circ2', 'class': guide }));
                     var $p1 = $(fn.svgElement('path',   {'id': shape.id + '-lines', 'class': guide }));
-                    var $p2 = $(fn.svgElement('path',   {'id': shape.id + '-constr', 'class': constr })); // debug construction
+                    var $p2 = $(fn.svgElement('path',   {'id': shape.id + '-constr', 'class': constr })); // debug construction
+
                     var $arc = $(fn.svgElement('path',   {'id': shape.id + '-arc', 'class': shapeClass, stroke: props.stroke, 'stroke-width': styles.shape['stroke-width'], fill: 'none' }));
                     $g.append($s).append($c1).append($c2).append($p1).append($p2).append($arc);
                     $g.place = function () {

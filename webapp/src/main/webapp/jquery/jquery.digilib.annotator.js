@@ -42,6 +42,14 @@
     // annotation shape layer
     var annotationLayer = null;
 
+    // translate shapes to Digilib
+    var shapeTypeMap = {
+      point: 'Point',
+      rectangle: 'Rectangle',
+      linestring: 'LineString',
+      polygon: 'Polygon'
+      };
+
     var buttons = {
         annotations : {
             onclick : "toggleAnnotations",
@@ -126,7 +134,7 @@
         setAnnotationMark : function (data, mpos, text) {
             if (mpos == null) {
                 // interactive
-                setAnnotationShape(data, 'Point');
+                addAnnotationShape(data, 'point');
             } else {
                 // use position and text (and user-id)
                 console.error("Sorry, currently only interactive annotations!");
@@ -143,7 +151,7 @@
         setAnnotationRect : function (data, rect, text) {
             if (rect == null) {
                 // interactive
-                setAnnotationShape(data, 'Rectangle');
+                addAnnotationShape(data, 'rectangle');
             } else {
                 // use position and text (and user-id)
                 console.error("Sorry, currently only interactive annotations!");
@@ -154,13 +162,13 @@
          * set a polygon-annotation by clicking (or giving a position and a text)
          *
          * @param data
-         * @param poly
+         * @param polygon
          * @param text
          */
-        setAnnotationPolygon : function (data, poly, text) {
-            if (poly == null) {
+        setAnnotationPolygon : function (data, polygon, text) {
+            if (polygon == null) {
                 // interactive
-                setAnnotationShape(data, 'Polygon');
+                addAnnotationShape(data, 'polygon');
             } else {
                 // use position and text (and user-id)
                 console.error("Sorry, currently only interactive annotations!");
@@ -174,10 +182,10 @@
          * @param poly
          * @param text
          */
-        setAnnotationPolyline : function (data, poly, text) {
-            if (poly == null) {
+        setAnnotationPolyline : function (data, polyline, text) {
+            if (polyline == null) {
                 // interactive
-                setAnnotationShape(data, 'LineString');
+                addAnnotationShape(data, 'linestring');
             } else {
                 // use position and text (and user-id)
                 console.error("Sorry, currently only interactive annotations!");
@@ -267,73 +275,67 @@
     /**
      * Add a shape-annotation where clicked.
      */
-    var setAnnotationShape = function (data, type) {
-        var annotator = data.annotator;
-        var shape = {'geometry': {'type': type}};
-        digilib.actions.addShape(data, shape, function (data, newshape) {
-        	console.debug("new annotation shape:", newshape);
-        	var annoShape = null;
-        	var pos = null;
-        	if (type === 'Point') {
-        		pos = geom.position(newshape.geometry.coordinates[0]);
-                // create annotation shape
-                annoShape = {'type': 'point', 'geometry': pos};
-                annoShape.geometry['units'] = 'fraction'; 
-        	} else if (type === 'Rectangle') {
-        		pos = geom.position(newshape.geometry.coordinates[0]);
-        		var pt2 = geom.position(newshape.geometry.coordinates[1]);
-        		var rect = geom.rectangle(pos, pt2);
-                // create annotation shape
-                annoShape = {'type': 'rectangle', 'geometry': rect};
-                annoShape.geometry['units'] = 'fraction'; 
-        	} else if (type === 'Polygon') {
-        		pos = geom.position(newshape.geometry.coordinates[0]);
-        		// create annotation shape
-                annoShape = {'type': 'polygon', 'geometry': {'coordinates': newshape.geometry.coordinates}};
-                annoShape.geometry['units'] = 'fraction'; 
-        	} else if (type === 'LineString') {
-        		pos = geom.position(newshape.geometry.coordinates[0]);
-        		// create annotation shape
-                annoShape = {'type': 'linestring', 'geometry': {'coordinates': newshape.geometry.coordinates}};
-                annoShape.geometry['units'] = 'fraction'; 
-        	} else {
-        		console.error("Unsupported annotation shape="+type);
-        		return;
-        	}
-            var mpos = data.imgTrafo.transform(pos);
-            createAnnotation(data, annoShape, mpos);        	
-        }, annotationLayer);
+    var addAnnotationShape = function (data, type) {
+      var onComplete = function (data, shape) {
+        if (! shape.type in data.shapeFactory) {
+          console.error("Unsupported annotation shape="+type);
+          return;
+          }
+        var newshape = {
+          type: shape.type,
+          geometry: shape.geometry
+          };
+        if (shape.type === 'Rectangle') {
+          var c = shape.geometry.coordinates;
+          newshape.geometry = geom.rectangle(c[0], c[1]);
+          }
+        newshape.geometry.units = 'fraction';
+        // screen position for annotation editor
+        var pos = geom.position(newshape.geometry.coordinates[0]);
+        var mpos = data.imgTrafo.transform(pos);
+        console.debug("creating annotation for shape:", newshape);
+        addAnnotationContent(data, newshape, mpos);
+        };
+      var shape = {
+        type: type,
+        geometry: {
+          type: shapeTypeMap[type]
+          }
+        };
+      digilib.actions.addShape(data, shape, annotationLayer, onComplete);
     };
     
     
     /**
      * Show editor and save annotation.
      */
-    var createAnnotation = function (data, shape, screenPos) {
-    	var annotator = data.annotator;
-	    annotator.selectedShapes = [shape];
-	    // create and edit new annotation
-	    var annotation = annotator.createAnnotation();
-	    var cleanup = function () {
-	    	annotator.unsubscribe('annotationEditorSubmit', save);
-	    	annotator.unsubscribe('annotationEditorHidden', cancel);
-	    };
-	    var save = function () {
-	    	console.log("annotation save.");
-	    	cleanup();
-	        annotator.setupAnnotation(annotation);
-	        // Fire annotationCreated events so that plugins can react to them
-	        annotator.publish('annotationCreated', [annotation]);
-	        renderAnnotations(data);
-	    };
-	    var cancel = function () {
-	    	console.log("annotation cancel.");
-	    	cleanup();
-            renderAnnotations(data);
-	    };
-	    annotator.subscribe('annotationEditorSubmit', save);
-	    annotator.subscribe('annotationEditorHidden', cancel);
-	    annotator.showEditor(annotation, screenPos.getAsCss());
+    var addAnnotationContent = function (data, shape, screenPos) {
+      var annotator = data.annotator;
+      annotator.selectedShapes = [shape];
+      // create and edit new annotation
+      var annotation = annotator.createAnnotation();
+      annotation.editing = true;
+      var cleanup = function () {
+        annotator.unsubscribe('annotationEditorSubmit', save);
+        annotator.unsubscribe('annotationEditorHidden', cancel);
+        delete annotation.editing;
+      };
+      var save = function () {
+        console.log("annotation save.");
+        cleanup();
+        annotator.setupAnnotation(annotation);
+        // Fire annotationCreated events so that plugins can react to them
+        annotator.publish('annotationCreated', [annotation]);
+        renderAnnotations(data);
+      };
+      var cancel = function () {
+        console.log("annotation cancel.");
+        cleanup();
+        renderAnnotations(data);
+      };
+      annotator.subscribe('annotationEditorSubmit', save);
+      annotator.subscribe('annotationEditorHidden', cancel);
+      annotator.showEditor(annotation, screenPos.getAsCss());
     };
     
     /**
@@ -351,7 +353,10 @@
         var shapes = [];
         if (data.dlOpts.isAnnotationsVisible) {
             for (var i = 0; i < annotations.length; ++i) {
-                shapes = shapes.concat(createShape(data, annotations[i]));
+                var annot = annotations[i];
+                var annoshapes = createShape(data, annot);
+                annotationLayer.shapeindex[annot.annotation.id] = annoshapes;
+                shapes = shapes.concat(annoshapes);
             }
         }
         annotationLayer.shapes = shapes;
@@ -390,19 +395,12 @@
         var shapes = [];
         if (annotation.areas != null && annotation.shapes == null) {
             console.warn("Annotation uses legacy 'areas' format! Converting...");
-            /*
-             * convert legacy annotation areas into shapes
-             */
+            // convert legacy annotation areas into shapes
             area = geom.rectangle(annotation.areas[0]);
             annoShape = {
                 'geometry' : area,
-                'units' : 'fraction'
-            };
-            if (area.isRectangle()) {
-                annoShape['type'] = 'rectangle';
-            } else {
-                annoShape['type'] = 'point';
-            }
+                'type': area.isRectangle() ? 'rectangle' : 'point'
+                };
             delete annotation.areas;
             annotation.shapes = [annoShape];
         }
@@ -415,73 +413,36 @@
             // annotation shape
             annoShape = annotation.shapes[i];
             type = annoShape.type;
+            var coordinates;
             if (type === "point") {
                 area = geom.position(annoShape.geometry);
-            	shape = {
-            			'id': id,
-            			'geometry': {
-            				'type' : 'Point',
-            				'coordinates' : [[area.x, area.y]]
-            			},
-            			'properties' : {
-                            'stroke' : 'yellow',
-                            'cssclass' : cssPrefix+'svg-annotation annotator-hl',
-                            'style' : 'pointer-events:all'
-                    	},
-                    	'annotation': annotation
-            	};
+                coordinates = [[area.x, area.y]];
             } else if (type === "rectangle") {
                 area = geom.rectangle(annoShape.geometry);
-                // render rectangle
-            	var pt1 = area.getPt1();
-            	var pt2 = area.getPt2();
-            	shape = {
-            			'id': id,
-            			'geometry': {
-            				'type' : 'Rectangle',
-            				'coordinates' : [[pt1.x, pt1.y], [pt2.x, pt2.y]]
-            			},
-            			'properties' : {
-                            'stroke' : 'yellow',
-                            'cssclass' : cssPrefix+'svg-annotationregion annotator-hl',
-                            'style' : 'pointer-events:all'
-                    	},
-                    	'annotation': annotation
-            	};
-            } else if (type === "polygon") {
-                // render polygon
-            	shape = {
-            			'id': id,
-            			'geometry': {
-            				'type' : 'Polygon',
-            				'coordinates' : annoShape.geometry.coordinates
-            			},
-            			'properties' : {
-                            'stroke' : 'yellow',
-                            'cssclass' : cssPrefix+'svg-annotationregion annotator-hl',
-                            'style' : 'pointer-events:all'
-                    	},
-                    	'annotation': annotation
-            	};
-            } else if (type === "linestring") {
-                // render polyline
-            	shape = {
-            			'id': id,
-            			'geometry': {
-            				'type' : 'LineString',
-            				'coordinates' : annoShape.geometry.coordinates
-            			},
-            			'properties' : {
-                            'stroke' : 'yellow',
-                            'cssclass' : cssPrefix+'svg-annotation annotator-hl',
-                            'style' : 'pointer-events:visiblePainted'
-                    	},
-                    	'annotation': annotation
-            	};
+                var pt1 = area.getPt1();
+                var pt2 = area.getPt2();
+                coordinates = [[pt1.x, pt1.y], [pt2.x, pt2.y]];
+            } else if (type in shapeTypeMap) {
+                coordinates = annoShape.geometry.coordinates;
             } else {
-                console.error("Unsupported annotation shape type: "+type);
+                console.error("Unsupported annotation shape="+type);
                 return;
             }
+            var shape = {
+               'id': id,
+               'annotation': annotation,
+               'geometry': {
+                 'type': shapeTypeMap[type],
+                 'units' : 'fraction',
+                 'coordinates': coordinates
+                 },
+               'properties': {
+                  'stroke': 'yellow',
+                  'cssclass': cssPrefix+'svg-annotationregion annotator-hl',
+                  'style': 'pointer-events:all'
+                  }
+               };
+            console.debug('createshape: '+type, annoShape, shape);
             shapes.push(shape);
         }
         return shapes;
@@ -515,9 +476,13 @@
         if (annoShape.cssclass != null) {
             $annotation[0].classList.add(shape.cssclass);
         }
-        // hook up Annotator events
-        $annotation.on("mouseover", annotator.onHighlightMouseover);
-        $annotation.on("mouseout", annotator.startViewerHideTimer);
+        // no mouseover when editing
+        if (shape.properties.editable || annotation.editing) {
+            $annotation[0].classList.remove('annotator-hl');
+        } else {
+          $annotation.on("mouseover", annotator.onHighlightMouseover);
+          $annotation.on("mouseout", annotator.startViewerHideTimer);
+        }
         /* $annotation.on('click.dlAnnotation', function(event) {
             $(data).trigger('annotationClick', [$annotation]);
         }); */ 
@@ -783,9 +748,12 @@
         annotationLayer = {
             'projection': 'screen', 
             'renderFn': fn.vectorDefaultRenderFn,
-            'shapes': []
+            'shapes': [],
+            'shapeindex': {}
         };
         digilib.actions.addVectorLayer(data, annotationLayer);
+        // make annotationLayer accessible for plugins
+        data.annotationLayer = annotationLayer;
         $(data).on("renderShape", handleRenderShape);
         // set up annotator (after html has been set up)
         var uri = getAnnotationPageUri(data);

@@ -28,7 +28,7 @@
  * 
  * Shapes are objects with "geometry" and "properties" members.
  * geometry is an object with "type" and "coordinates" members.
- * Currently supported types: "Point", "Line", "LineString", "Rectangle", "Polygon", "Circle". 
+ * Currently supported types: "Point", "Line", "LineString", "Rectangle", "Polygon", "Circle".
  * coordinates is a list of pairs of relative coordinates.
  * properties are the SVG properties "stroke", "stroke-width", "fill" and other properties.
  * A property 'editable':true will display drag-handles to change the shape.
@@ -100,21 +100,25 @@
          * @param onComplete
          * @param layer
          */
-        addShape : function (data, shape, onComplete, layer) {
+        addShape : function (data, shape, layer, onComplete) {
             if (layer == null) {
-                // assume shape layer is 0
-                layer = data.vectorLayers[0];
+              // assume shape layer is 0
+              layer = data.vectorLayers[0];
             }
             if (layer.shapes == null) {
             	layer.shapes = [];
             }
-        	if (shape.geometry.coordinates == null) {
+            if (shape.geometry == null) {
+              shape.geometry = {};
+            }
+            if (shape.geometry.coordinates == null) {
         		// define shape interactively
-        		defineShape(data, shape, layer, onComplete);
-        	} else {
-        		layer.shapes.push(shape);
+        		  defineShape(data, shape, layer, onComplete);
+        		  console.debug('addShape', shape);
+        		} else {
+        		  layer.shapes.push(shape);
             	renderShapes(data, layer);
-        	}
+            }
         },
 
         /**
@@ -206,8 +210,13 @@
         $.extend(digilib.defaults, defaults);
         $.extend(digilib.actions, actions);
         // export functions
-        digilib.fn.vectorDefaultRenderFn = renderShapes;
-        digilib.fn.svgElement = svgElement;
+        $.extend(digilib.fn, {
+            vectorDefaultRenderFn: renderShapes,
+            svgElement: svgElement,
+            createScreenCoords: createScreenCoords,
+            editShapeBegin: addEditHandles,
+            editShapeEnd: removeEditHandles
+            });
     };
 
     /** 
@@ -295,6 +304,7 @@
         for (var i = 0; i < shapes.length; ++i) {
             var shape = shapes[i];
             data.shapeFactory[shape.geometry.type].setup(data, shape);
+            console.debug('render', shape);
         }
         // sort shapes by size descending
         shapes.sort(function (a, b) {
@@ -529,18 +539,15 @@
     };
 
     /**
-     * create handles for a shape.
+     * add adjustment handles to a shape.
      * 
-     * Creates SVG elements for each screen point and append it to the SVG element.
+     * Creates a SVG element for each screen point and append them to the SVG element.
      * 
      * @param data
      * @param shape
-     * @param svg The SVG element where to append handle elements
-     * @param func If present, use a special create function
+     * @param layer
      */
-    //create handles for a shape.
-    var createHandles = function (data, shape, layer) {
-        if (!shape.properties.editable) { return };
+    var addEditHandles = function (data, shape, layer) {
         var $svg = $(layer.svgElem);
         var trafo = data.imgTrafo;
         // type of handle can be stated in layer
@@ -570,6 +577,22 @@
     };
 
     /**
+     * remove SVG adjustment handles from a shape.
+     * 
+     * @param data
+     * @param shape
+     */
+    var removeEditHandles = function (data, shape) {
+    	// remove vertex handles
+    	if (shape.$vertexElems != null) {
+    		for (var i = 0; i < shape.$vertexElems.length; ++i) {
+    			shape.$vertexElems[i].remove();
+    			}
+    		delete shape.$vertexElems;
+    		}
+    	};
+
+    /**
      * calculate screen positions from coordinates for a shape.
      * 
      * @param data
@@ -581,6 +604,9 @@
         var screenpos = $.map(coords, function (coord) {
             return trafo.transform(geom.position(coord));
             });
+        if (shape.properties == null) {
+          shape.properties = {};
+        }
         shape.properties.screenpos = screenpos;
         return screenpos;
     };
@@ -599,7 +625,7 @@
             xmin = (x < xmin) ? x : xmin;
             xmax = (x > xmax) ? x : xmax;
             ymin = (y < ymin) ? y : ymin;
-            ymax = (y > ymax) ? y : ymax;            
+            ymax = (y > ymax) ? y : ymax;
         }
         return geom.rectangle(xmin, ymin, xmax-xmin, ymax-ymin);
     };
@@ -633,7 +659,9 @@
         $elem.place();
         // render the SVG
         $(layer.svgElem).append($elem);
-        createHandles(data, shape, layer);
+        if (shape.properties.editable) {
+            addEditHandles(data, shape, layer);
+        }
         $(data).trigger("renderShape", shape);
     };
 
@@ -646,13 +674,7 @@
      * @param shape
      */
     var unrenderShape = function (data, shape) {
-    	// remove vertex handles
-    	if (shape.$vertexElems != null) {
-    		for (var i = 0; i < shape.$vertexElems.length; ++i) {
-    			shape.$vertexElems[i].remove();
-    		}
-    		delete shape.$vertexElems;
-    	}
+      removeEditHandles(data, shape);
     	// remove SVG element
     	if (shape.$elem != null) {
     		shape.$elem.remove();
@@ -767,10 +789,6 @@
      * @onComplete function (data, shape)
      */
     var defineShape = function (data, shape, layer, onComplete) {
-        if (layer == null) {
-            // assume shape layer is 0
-            layer = data.vectorLayers[0];
-        }
         var shapeType = shape.geometry.type;
         // call setup to make sure maxvtx is set
         data.shapeFactory[shapeType].setup(data, shape);
