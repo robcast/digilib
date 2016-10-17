@@ -1029,7 +1029,7 @@
         };
 
     // info data for shape
-    var getInfo = function(data, shape) {
+    var getInfoHTML = function(data, shape) {
         var s = data.settings;
         var type = shape.geometry.type;
         var display = s.shapeInfo[type].display;
@@ -1248,18 +1248,17 @@
 
     // show shape info
     var showInfoDiv = function(event, data, shape) {
-        var settings = data.settings;
-        var $info = settings.infoDiv;
+        var timer;
+        var settings = data.settings;
+        var $info = settings.infoDiv;
+        $info.html(getInfoHTML(data, shape));
+        $info.on('mouseout.measureinfo', function() { timer = setTimeout(hideInfoDiv, 300) });
+        $info.on('mouseover.measureinfo', function() { clearTimeout(timer) });
+        $info.fadeIn();
         $info.offset({
             left : event.pageX,
             top  : event.pageY
             });
-        var timer;
-        $info.html(getInfo(data, shape));
-        console.debug('Info', shape);
-        $info.on('mouseout.measureinfo', function() { timer = setTimeout(hideInfoDiv, 300) });
-        $info.on('mouseover.measureinfo', function() { clearTimeout(timer) });
-        $info.fadeIn();
         return false;
         };
 
