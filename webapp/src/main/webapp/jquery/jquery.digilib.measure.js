@@ -896,8 +896,8 @@
             ? shape.$elem.children('path')
             : shape.$elem;
         console.debug('measure: onChangeShape', $elem);
-        $elem.on('mouseover.measure', info);
-        $elem.on('click.measure', select);
+        $elem.on('mouseover.measureinfo', info);
+        $elem.on('click.measureselect', select);
         updateInfo(data, shape);
         currentShape = null;
         _debug_shape('onChangeShape', shape);
@@ -1257,8 +1257,8 @@
         var timer;
         $info.html(getInfo(data, shape));
         console.debug('Info', shape);
-        $info.on('mouseout', function() { timer = setTimeout(hideInfoDiv, 300) });
-        $info.on('mouseover', function() { clearTimeout(timer) });
+        $info.on('mouseout.measureinfo', function() { timer = setTimeout(hideInfoDiv, 300) });
+        $info.on('mouseover.measureinfo', function() { clearTimeout(timer) });
         $info.fadeIn();
         return false;
         };
