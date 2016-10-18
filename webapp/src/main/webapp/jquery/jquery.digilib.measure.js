@@ -1244,9 +1244,12 @@
 
     // show shape info
     var showInfoDiv = function(event, data, shape) {
-        var settings = data.settings;
-        var $info = settings.infoDiv;
-        $info.fadeIn();
+        var settings = data.settings;
+
+        var $info = settings.infoDiv;
+
+        $info.fadeIn();
+
         $info.html(getInfoHTML(data, shape));
         $info.offset({
             left : event.pageX + 4,
@@ -1429,11 +1432,11 @@
                         var p = props.screenpos;
                         place.call($s); // place the framing rectangle (polygon)
                         if (p.length > 3) { // p[3] is the mouse pointer
-                            var side0 = geom.line(p[0], p[1])
+                            var side0 = geom.line(p[0], p[1]) // the sides
                             var side1 = geom.line(p[1], props.pos[0]);
                             var side2 = geom.line(props.pos[0], props.pos[1]);
                             var side3 = geom.line(props.pos[1], p[0]);
-                            var mid0 = side0.mid(); // midpoints of sides
+                            var mid0 = side0.mid(); // the midpoints of the sides
                             var mid1 = side1.mid();
                             var mid2 = side2.mid();
                             var mid3 = side3.mid();
@@ -1446,34 +1449,44 @@
                             } else if (handle.distance(mid2) > maxDiam) {
                                 handle.moveTo(geom.line(mid2, handle).length(maxDiam).point());
                                 }
-                            var m1 = handle.mid(mid2); // midpoints of the small circles
+                            var m1 = handle.mid(mid2); // centers of the small circles
                             var m2 = axis1.mirror(m1);
                             var rad1 = m1.distance(mid2); // radius of the small circles
-                            var rd = axis1.copy().length(rad1).point(); // radius distance from short axis
-                            var ld = geom.line(rd, m1);
-                            var md = rd.mid(m1);
-                            var bi = ld.perpendicular(md); // perpendicular bisector
-                            var m3 = axis1.intersection(bi); // midpoints of the big circles
+                            var rd1 = axis1.copy().length(rad1).point(); // point in radius distance from midpoint of long axis
+                            var rd2 = axis2.mirror(rd1);
+                            var md1 = rd1.mid(m1); // midpoint of the line connecting this point with the small circle center
+                            var md2 = axis2.mirror(md1);
+                            var md3 = axis1.mirror(md1);
+                            var md4 = axis1.mirror(md2);
+                            var bi = geom.line(rd1, m1).perpendicular(md1); // construct the perpendicular bisector of the connection line
+                            var m3 = axis1.intersection(bi); // find the centers of the big circles
                             var m4 = axis2.mirror(m3);
                             var fp1 = geom.line(m3, m1).addEnd(rad1); // the four fitting points
                             var fp2 = geom.line(m3, m2).addEnd(rad1);
                             var fp3 = geom.line(m4, m1).addEnd(rad1);
                             var fp4 = geom.line(m4, m2).addEnd(rad1);
                             var rad2 = m3.distance(fp1); // radius of the big circles
-                            // place the SVG shapes
+                            // construct the SVG shapes
                             $c1.attr({cx: m1.x, cy: m1.y, r: rad1});
                             $c2.attr({cx: m2.x, cy: m2.y, r: rad1});
                             $p1.attr({d: // the guidelines
                                 'M'+fp1+' L'+m3+' '+fp2+
                                 'M'+fp3+' L'+m4+' '+fp4+
-                                'M'+mid0+' L'+mid2+
-                                'M'+mid1+' L'+mid3});
-                            $p2.attr({d: 'M'+rd+' L'+m1+' M'+md+' '+m3}); // debug construction
+                                'M'+rd1+' L'+rd2+
+                                'M'+m1+' L'+m2
+                            });
+                            $p2.attr({d: // the construction lines
+                                'M'+mid3+' L'+rd1+' '+m1+' '+mid2+
+                                'M'+mid1+' L'+rd2+' '+m2+' '+mid0+
+                                'M'+md1+' L'+m3+
+                                'M'+md4+' L'+m4
+                            });
                             $arc.attr({d: 'M'+fp2+ // the arcs of the oval
                                 ' A'+rad2+','+rad2+' 0 0,1 '+fp1+
                                 ' A'+rad1+','+rad1+' 0 0,1 '+fp3+
                                 ' A'+rad2+','+rad2+' 0 0,1 '+fp4+
-                                ' A'+rad1+','+rad1+' 0 0,1 '+fp2});
+                                ' A'+rad1+','+rad1+' 0 0,1 '+fp2
+                            });
                             p[3] = handle;
                             shape.geometry.coordinates[3] = trafo.invtransform(handle).toArray();
                             props.measures = { rad1: rad1, rad2: rad2, axis1: axis1.length(), axis2: axis2.length() }; // use for info
