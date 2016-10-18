@@ -748,20 +748,21 @@
         // implemented styles
         implementedStyles : ['shape', 'constr', 'guide', 'selected', 'handle'],
         // implemented measuring shape types, for select widget
-        implementedShapes : ['Line', 'LineString', 'Proportion', 'Rect', 'Rectangle', 'Polygon', 'Circle', 'Ellipse', 'Oval', 'Grid'],
+        implementedShapes : ['Line', 'LineString', 'Proportion', 'Rect', 'Rectangle', 'Polygon', 'Circle', 'Ellipse', 'Intercolumnium', 'Oval', 'Grid'],
         // all measuring shape types
         shapeInfo : {
-            Line :       { name : 'line',           display : 'length', },
-            LineString : { name : 'linestring',     display : 'length'  },
-            Proportion : { name : 'proportion',     display : 'length'  },
-            Rectangle :  { name : 'box',            display : 'diagonal' },
-            Rect :       { name : 'rectangle',      display : 'area'    },
-            Square :     { name : 'square',         display : 'length'  },
-            Polygon :    { name : 'polygon',        display : 'area'    },
-            Circle :     { name : 'circle',         display : 'radius'  },
-            Ellipse :    { name : 'ellipse',        display : 'area'    },
-            Oval :       { name : 'oval',           display : 'distance' },
-            Grid :       { name : 'linegrid',       display : 'spacing' }
+            Line:           { name : 'line',           display : 'length', },
+            LineString:     { name : 'linestring',     display : 'length'  },
+            Proportion:     { name : 'proportion',     display : 'length'  },
+            Rectangle:      { name : 'box',            display : 'diagonal' },
+            Rect:           { name : 'rectangle',      display : 'area'    },
+            Square:         { name : 'square',         display : 'length'  },
+            Polygon:        { name : 'polygon',        display : 'area'    },
+            Circle:         { name : 'circle',         display : 'radius'  },
+            Ellipse:        { name : 'ellipse',        display : 'area'    },
+            Intercolumnium: { name : 'intercolumnium', display : 'distance' },
+            Oval:           { name : 'oval',           display : 'distance' },
+            Grid:           { name : 'linegrid',       display : 'spacing' }
             },
         // currently selected shape type
         activeShapeType : 'Line',
@@ -1345,6 +1346,35 @@
                 'svg' : function (shape) {
                     var $s = factory['LineString'].svg(shape);
                     return $s;
+                }
+            };
+        factory['Intercolumnium'] = {
+                'setup' : function (data, shape) {
+                    shape.properties.maxvtx = 3;
+                },
+                'svg' : function (shape) {
+                    var props = shape.properties;
+                    var guide = CSS+'guide';
+                    var $s = factory['LineString'].svg(shape);
+                    var place = $s.place;
+                    var $c1 = $(fn.svgElement('circle', {'id': shape.id + '-circ1', 'class': guide }));
+                    var $c2 = $(fn.svgElement('circle', {'id': shape.id + '-circ2', 'class': guide }));
+                    var $g = $(fn.svgElement('g', {'id': shape.id + '-intercolumnium'}));
+                    $g.append($s).append($c1).append($c2);
+                    $g.place = function () {
+                        var p = props.screenpos;
+                        var vtx = props.vtx;
+                        place.call($s); // place the linestring
+                        if (p.length > 2) { // p[2] is the mouse pointer
+                            var m1 = p[1].mid(p[2]);
+                            var line = geom.line(m1, p[1]);
+                            var m2 = p[0].copy().add(line.vector());
+                            var rad = line.length();
+                            $c1.attr({cx: m1.x, cy: m1.y, r: rad});
+                            $c2.attr({cx: m2.x, cy: m2.y, r: rad});
+                        }
+                    }
+                 return $g;
                 }
             };
         factory['Rect'] = {
