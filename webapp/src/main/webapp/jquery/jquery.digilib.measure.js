@@ -733,7 +733,7 @@
                 },
             selected : {
                 stroke : 'cyan',
-                'stroke-width' : 1,
+                'stroke-width' : 4,
                 fill : 'none'
                 },
             handle : {
@@ -883,21 +883,6 @@
     var onChangeShape = function(event, shape) {
         var data = this;
         // event handler for updating shape info
-        var select = function(event) {
-            selectShape(data, shape);
-            updateInfo(data, shape);
-            _debug_shape('onClick', shape);
-            };
-        var info = function(event) {
-            showInfoDiv(event, data, shape);
-            _debug_shape('onMouseover', shape);
-            };
-        var $elem = shape.geometry.type === 'Oval'
-            ? shape.$elem.children('path')
-            : shape.$elem;
-        console.debug('measure: onChangeShape', $elem);
-        $elem.on('mouseover.measureinfo', info);
-        $elem.on('click.measureselect', select);
         updateInfo(data, shape);
         currentShape = null;
         _debug_shape('onChangeShape', shape);
@@ -905,12 +890,22 @@
 
     // event handler for renderShape
     var onRenderShape = function(event, shape) {
+        var data = this;
+        var select = function(event) {
+            selectShape(data, shape);
+            updateInfo(data, shape);
+            _debug_shape('onClick', shape);
+            };
+        var info = function(event) {
+            showInfoDiv(event, data, shape);
+            _debug_shape('showInfoDiv', shape);
+            };
+        var $elem = shape.geometry.type === 'Oval'
+            ? shape.$elem.children('path')
+            : shape.$elem;
+        $elem.on('mouseover.measureinfo', info);
+        $elem.on('click.measureselect', select);
         _debug_shape('onRenderShape', shape);
-        };
-
-    // round to 4 decimal places after point
-    var mRound = function (num) {
-        return Math.round(num * 10000 + 0.00001) / 10000
         };
 
     // get last vertex before current one
@@ -983,8 +978,8 @@
         var ratio = unit1 / unit2;
         var result = scaleValue(data, type, val, ratio);
         widgets.shape.val(type);
-        widgets.value1.val(fn.cropFloatStr(mRound(val)));
-        widgets.value2.text(fn.cropFloatStr(mRound(result)));
+        widgets.value1.val(fn.cropFloatStr(val));
+        widgets.value2.text(fn.cropFloatStr(result));
         };
 
     // scale
@@ -1248,16 +1243,13 @@
 
     // show shape info
     var showInfoDiv = function(event, data, shape) {
-        var timer;
         var settings = data.settings;
         var $info = settings.infoDiv;
+        $info.fadeIn();
         $info.html(getInfoHTML(data, shape));
-        $info.on('mouseout.measureinfo', function() { timer = setTimeout(hideInfoDiv, 300) });
-        $info.on('mouseover.measureinfo', function() { clearTimeout(timer) });
-        $info.fadeIn();
         $info.offset({
-            left : event.pageX,
-            top  : event.pageY
+            left : event.pageX + 4,
+            top  : event.pageY + 4
             });
         return false;
         };
@@ -1265,7 +1257,6 @@
     // hide shape info
     var hideInfoDiv = function() {
         var $info = $('#'+CSS+'info');
-        $info.off('mouseout').off('mouseover');
         $info.fadeOut();
         };
 
@@ -1480,7 +1471,7 @@
                         place.call($s);
                         var p = props.screenpos;
                         var d = p[0].distance(p[1]);
-                        var angle = mRound(p[0].deg(p[1]));
+                        var angle = fn.cropFloat(p[0].deg(p[1]));
                         var scale = 10;
                         var fac = Math.ceil((1-scale)/2);
                         var x = p[0].x + fac * d;
@@ -1657,8 +1648,12 @@
         $data.on('changeShape', onChangeShape);
         $data.on('positionShape', onPositionShape);
         $data.on('dragShape', onDragShape);
-        settings.infoDiv = createInfoDiv();
-        data.$elem.append(settings.infoDiv);
+        var $info = createInfoDiv();
+        var timer;
+        settings.infoDiv = $info;
+        $info.appendTo(data.$elem)
+            .on('mouseout.measureinfo', function() { timer = setTimeout(hideInfoDiv, 300) })
+            .on('mouseover.measureinfo', function() { clearTimeout(timer) });
         };
 
     // plugin object with name and init
