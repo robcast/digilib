@@ -213,6 +213,7 @@
         $.extend(digilib.fn, {
             vectorDefaultRenderFn: renderShapes,
             svgElement: svgElement,
+            svgAttr: svgAttr,
             createScreenCoords: createScreenCoords,
             editShapeBegin: addEditHandles,
             editShapeEnd: removeEditHandles
@@ -333,6 +334,23 @@
     };
 
     /**
+     * set standard SVG attributes
+     * 
+     * @param data
+     */
+    var svgAttr = function (data, shape) {
+        var settings = data.settings;
+        var props = shape.properties;
+        return {
+            'id': shape.id || digilib.fn.createId(shape.id, css+'svg-'),
+            'stroke': props['stroke'] || settings.defaultStroke,
+            'stroke-width' : props['stroke-width'] || settings.defaultStrokeWidth,
+            'fill' : props['fill'] || settings.defaultFill,
+            'class' : props['cssclass'],
+            'style' : props['style']
+            };
+        };
+    /**
      * setup Shape SVG creation functions
      * (more functions can be plugged into data.settings.ShapeFactory)
      * 
@@ -342,18 +360,6 @@
         var settings = data.settings;
         var css = settings.cssPrefix;
         var hs = settings.editHandleSize;
-        // set standard SVG attributes
-        var svgAttr = function (shape) {
-            var props = shape.properties;
-            return {
-                'id': shape.id || digilib.fn.createId(shape.id, css+'svg-'),
-                'stroke': props['stroke'] || settings.defaultStroke,
-                'stroke-width' : props['stroke-width'] || settings.defaultStrokeWidth,
-                'fill' : props['fill'] || settings.defaultFill,
-                'class' : props['cssclass'],
-                'style' : props['style']
-                };
-            };
         var factory = {
             'Point' : {
                 'setup' : function (data, shape) {
@@ -362,7 +368,7 @@
                     shape.properties.sorta = 0;
                 },
                 'svg' : function (shape) {
-                    var $s = $(svgElement('path', svgAttr(shape)));
+                    var $s = $(svgElement('path', svgAttr(data, shape)));
                     $s.place = function () {
                         // point uses pin-like path of size 3*pu
                         var p = shape.properties.screenpos[0];
@@ -380,7 +386,7 @@
                     shape.properties.sorta = 0;
                 },
                 'svg' : function (shape) {
-                    var $s = $(svgElement('line', svgAttr(shape)));
+                    var $s = $(svgElement('line', svgAttr(data, shape)));
                     $s.place = function () {
                         var p = shape.properties.screenpos;
                         this.attr({'x1': p[0].x, 'y1': p[0].y, 'x2': p[1].x, 'y2': p[1].y});
@@ -398,7 +404,7 @@
                     }
                 },
                 'svg' : function (shape) {
-                    var $s = $(svgElement('rect', svgAttr(shape)));
+                    var $s = $(svgElement('rect', svgAttr(data, shape)));
                     $s.place = function () {
                         var p = shape.properties.screenpos;
                         var r = geom.rectangle(p[0], p[1]);
@@ -416,7 +422,7 @@
                     }
                 },
                 'svg' : function (shape) {
-                    var $s = $(svgElement('polygon', svgAttr(shape)));
+                    var $s = $(svgElement('polygon', svgAttr(data, shape)));
                     $s.place = function () {
                         var p = shape.properties.screenpos;
                         this.attr({'points': p.join(" ")});
@@ -433,7 +439,7 @@
                     }
                 },
                 'svg' : function (shape) {
-                    var $s = $(svgElement('polyline', svgAttr(shape)));
+                    var $s = $(svgElement('polyline', svgAttr(data, shape)));
                     $s.place = function () {
                         var p = shape.properties.screenpos;
                         this.attr({'points': p.join(" ")});
@@ -452,7 +458,7 @@
                     }
                 },
                 'svg' : function (shape) {
-                    var $s = $(svgElement('circle', svgAttr(shape)));
+                    var $s = $(svgElement('circle', svgAttr(data, shape)));
                     $s.place = function () {
                         var p = shape.properties.screenpos;
                         this.attr({'cx': p[0].x, 'cy': p[0].y, 'r': p[0].distance(p[1])});
@@ -471,7 +477,7 @@
                     }
                 },
                 'svg' : function (shape) {
-                    var $s = $(svgElement('ellipse', svgAttr(shape)));
+                    var $s = $(svgElement('ellipse', svgAttr(data, shape)));
                     $s.place = function () {
                         var p = shape.properties.screenpos;
                         this.attr({'cx': p[0].x, 'cy': p[0].y,

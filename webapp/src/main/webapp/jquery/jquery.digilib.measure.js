@@ -733,7 +733,7 @@
                 },
             selected : {
                 stroke : 'cyan',
-                'stroke-width' : 4,
+                'stroke-width' : 3,
                 fill : 'none'
                 },
             handle : {
@@ -893,7 +893,7 @@
     var onRenderShape = function(event, shape) {
         var data = this;
         var select = function(event) {
-            selectShape(data, shape);
+            selectShape(data, this, shape);
             updateInfo(data, shape);
             _debug_shape('onClick', shape);
             };
@@ -901,9 +901,7 @@
             showInfoDiv(event, data, shape);
             _debug_shape('showInfoDiv', shape);
             };
-        var $elem = shape.geometry.type === 'Oval'
-            ? shape.$elem.children('path')
-            : shape.$elem;
+        var $elem = shape.$interactor || shape.$elem;
         $elem.on('mouseover.measureinfo', info);
         $elem.on('click.measureselect', select);
         _debug_shape('onRenderShape', shape);
@@ -1040,11 +1038,12 @@
         };
 
     // select/unselect shape (or toggle)
-    var selectShape = function(data, shape, select) {
+    var selectShape = function(data, elem, shape, select) {
         var css = CSS+'selected';
         if (select == null) { // toggle
             select = !shape.properties.selected }
-        var cssclass = shapeClass(shape.geometry.type, select ? css : null)
+        var cssclass = shapeClass(shape.geometry.type, select ? css : null);
+        $(elem).attr("class", cssclass);
         shape.$elem.attr("class", cssclass);
         shape.properties.cssclass = cssclass;
         shape.properties.selected = select;
@@ -1323,9 +1322,9 @@
     // attach/detach keyup/down event handlers
     var attachKeyHandlers = function(data, on) {
         if (on) {
-            $(document.body).on('keydown.measure', 
+            $(document.body).on('keydown.measure',
                 function(evt) { onKeyDown(evt, data) });
-            $(document.body).on('keyup.measure', 
+            $(document.body).on('keyup.measure',
                 function(evt) { onKeyUp(evt, data) });
             }
         else {
@@ -1377,7 +1376,8 @@
                             $c2.attr({cx: m2.x, cy: m2.y, r: rad});
                         }
                     }
-                 return $g;
+                    shape.$interactor = $s;
+                    return $g;
                 }
             };
         factory['Rect'] = {
@@ -1425,8 +1425,8 @@
                     var $c2 = $(fn.svgElement('circle', {'id': shape.id + '-circ2', 'class': guide }));
                     var $p1 = $(fn.svgElement('path',   {'id': shape.id + '-lines', 'class': guide }));
                     var $p2 = $(fn.svgElement('path',   {'id': shape.id + '-constr', 'class': constr })); // debug construction
-
-                    var $arc = $(fn.svgElement('path',   {'id': shape.id + '-arc', 'class': shapeClass, stroke: props.stroke, 'stroke-width': styles.shape['stroke-width'], fill: 'none' }));
+                    props['stroke-width'] = styles.shape['stroke-width'];
+                    var $arc = $(fn.svgElement('path',  fn.svgAttr(data, shape)));
                     $g.append($s).append($c1).append($c2).append($p1).append($p2).append($arc);
                     $g.place = function () {
                         var p = props.screenpos;
@@ -1492,6 +1492,7 @@
                             props.measures = { rad1: rad1, rad2: rad2, axis1: axis1.length(), axis2: axis2.length() }; // use for info
                             }
                         };
+                    shape.$interactor = $arc;
                     return $g;
                 }
             };
@@ -1523,6 +1524,7 @@
                         $r.attr({x:x, y:y, height:d*scale, width:d*scale, transform:transform});
                         $pat.attr({patternTransform:transform});
                         };
+                    shape.$interactor = $s;
                     return $g;
                 }
             };
