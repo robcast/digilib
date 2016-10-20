@@ -340,6 +340,7 @@
      */
     var svgAttr = function (data, shape) {
         var settings = data.settings;
+        var css = settings.cssPrefix;
         var props = shape.properties;
         return {
             'id': shape.id || digilib.fn.createId(shape.id, css+'svg-'),
@@ -358,7 +359,6 @@
      */
     var getShapeFactory = function (data) {
         var settings = data.settings;
-        var css = settings.cssPrefix;
         var hs = settings.editHandleSize;
         var factory = {
             'Point' : {
