@@ -127,7 +127,7 @@
             units  : [{
 				name : "foot",
 				factor : "0.304797",
-				subunits : "12"
+				subunits : 12
 				},
 				{
 				name : "inch",
@@ -136,17 +136,17 @@
 				{
 				name : "yard",
 				factor : "0.914391",
-				subunits : "3"
+				subunits : 3
 				},
 				{
 				name : "pole",
 				factor : "5.0291505",
-				subunits : "11"
+				subunits : 11
 				},
 				{
 				name : "chain",
 				factor : "20.116602",
-				subunits : "4"
+				subunits : 4
 				},
 				{
 				name : "furlong",
@@ -155,7 +155,7 @@
 				{
 				name : "mile",
 				factor : "1609.32816",
-				subunits : "8"
+				subunits : 8
 				}]
             },
             {
@@ -164,15 +164,17 @@
             units  : [{
 				name : "palmo d'architetto (Rom)",
 				factor : "0.223425",
-				subunits : "12"
+				subunits : 12
 				},
 				{
 				name : "braccio (Florenz)",
-				factor : "0.5836"
+				factor : "0.5836",
+				subunits : 20
 				},
 				{
 				name : "braccio (Mailand)",
-				factor : "0.5949"
+				factor : "0.5949",
+				subunits : 12
 				},
 				{
 				name : "canna d'architetto (Rom)",
@@ -191,8 +193,36 @@
 				factor : "2.3344"
 				},
 				{
+				name : "canna agrimensoria (Florenz)",
+				factor : "2.9181",
+				subunits : 5
+				},
+        {
 				name : "canna (Neapel)",
-				factor : "2.0961"
+				factor : "2.10936",
+				subunits : 8
+				},
+        {
+				name : "catena (Neapel)",
+				factor : "18.4569",
+				},
+        {
+				name : "pertica (Neapel)",
+				factor : "2.6367",
+				},
+        {
+				name : "palmo (Neapel)",
+				factor : "0.26367",
+				subunits : 12
+				},
+        {
+				name : "passo itinerario (Neapel)",
+				factor : "1.84569",
+				subunits : 8
+				},
+        {
+				name : "oncia (Neapel)",
+				factor : "0.021972",
 				},
 				{
 				name : "miglio (Lombardei)",
@@ -225,6 +255,11 @@
 				{
 				name : "palmo (Florenz)",
 				factor : "0.2918"
+				},
+				{
+				name : "passetto (Florenz)",
+				factor : "1.1673",
+				subunits : 40
 				},
 				{
 				name : "piede (Brescia)",
@@ -603,6 +638,35 @@
 				factor : "0.01"
 				},
 				{
+				name : "rubbio (Roma, Lazio)",
+				factor : "18484,38"
+				},
+				{
+				name : "pezza (Roma, vigne)",
+				factor : "2640,63",
+				},
+				{
+				name : "braccio quadrato (Toscana)",
+				factor : "0.3406",
+				subunits : 400
+				},
+				{
+				name : "quadrato (Toscana)",
+				factor : "3406,19"
+				},
+				{
+				name : "stioro (Toscana)",
+				factor : "525,01"
+				},
+				{
+				name : "staio (Toscana)",
+				factor : "1703,10",
+				},
+				{
+				name : "tornatura (Toscana)",
+				factor : "2080,44"
+				},
+				{
 				name : "Ar",
 				factor : "100"
 				},
@@ -907,40 +971,97 @@
         _debug_shape('onRenderShape', shape);
         };
 
-    // get last vertex before current one
-    var getLastVertex = function(shape, vertex) {
+    // get the vertex before the given one
+    var getPrecedingVertex = function(shape, vertex) {
         var props = shape.properties;
         var vtx = vertex == null ? props.vtx : vertex;
         return (vtx === 0) ? props.screenpos.length-1 : vtx-1;
         };
 
-    // calculate the distance of a shape vertex to the last (in rectified digilib coords)
-    var getVertexDistance = function(data, shape, vtx) {
-        if (vtx == null) {
-            vtx = shape.properties.vtx; }
+    // calculate the angle between three points (rectified)
+    var getRectifiedAngleY = function (data, shape, tip, v1) {
         var coords = shape.geometry.coordinates;
-        var last = getLastVertex(shape, vtx);
-        // safely assume that screenpos and coords have equal length?
-        var dist = fn.getDistance(data, geom.position(coords[last]), geom.position(coords[vtx]));
+        var line = geom.line(coords[tip], coords[v1]);
+        var dist = fn.getDistance(data,
+            geom.position(coords[v1]),
+            geom.position(coords[v2])
+            );
         return dist.rectified;
         };
 
-    // calculate distance from current to last vertex (in rectified digilib coords)
-    var rectifiedDist = function(data, shape) {
+    // calculate the angle between three points (rectified)
+    var getRectifiedAngle = function (data, shape, tip, v1, v2) {
+        var coords = shape.geometry.coordinates;
+        var line1 = geom.line(coords[tip], coords[v1]);
+        var line2 = geom.line(coords[tip], coords[v2]);
+        var dist = fn.getDistance(data,
+            geom.position(coords[v1]),
+            geom.position(coords[v2])
+            );
+        return dist.rectified;
+        };
+
+    // calculate the distance between two digilib coords (rectified) ### (needed?)
+    var getRectifiedDistance = function (data, shape, vtx1, vtx2) {
+        var coords = shape.geometry.coordinates;
+        var dist = fn.getDistance(data,
+            geom.position(coords[vtx1]),
+            geom.position(coords[vtx2])
+            );
+        return dist.rectified;
+        };
+
+    // calculate the distance between two screen points
+    var getScreenDistance = function (shape, v1, v2) {
+        var p = shape.properties.screenpos;
+        return p[v1].distance(p[v2]);
+        };
+
+    // convert a length into both units 
+    var convertLength = function (data, dist) {
+        var factor = data.measureFactor;
+        var unit1 = unitFactor(data, 1);
+        var unit2 = unitFactor(data, 2);
+        var ratio = unit1 / unit2;
+        var len1 = scaleValue(dist, factor);
+        var len2 = scaleValue(len1, ratio);
+        var name1 = data.measureUnit1;
+        var name2 = data.measureUnit2;
+        return [name1, len1, name2, len2];
+        };
+
+    // convert a distance between 2 coordinates (indexed) into both units
+    // ### do we need this?
+    var convertDistance = function (data, shape, dist) {
+        return convertLength(data, getRectifiedDistance(data, shape, v1, v2));
+        };
+
+    // calculate the distance from one shape vertex to the one before it (in rectified digilib coords)
+    var getPrecedingVertexDistance = function(data, shape, vtx) {
+        // if (vtx == null) {
+        //    vtx = shape.properties.vtx;
+        //    }
+        var preVtx = getPrecedingVertex(shape, vtx || shape.properties.vtx);
+        // [safely assume that the 'screenpos' and 'coords' arrays have equal length?]
+        return getScreenDistance(shape, preVtx, vtx);
+        };
+
+    // calculate distance from current to preceding vertex (in rectified digilib coords)
+    var getRectifiedLength = function(data, shape) {
         var coords = shape.geometry.coordinates;
         var total = 0;
         if (shape.geometry.type === 'LineString') { // sum up distances
             for (vtx = 1; vtx < coords.length; vtx++) {
-                total += getVertexDistance(data, shape, vtx);
+                total += getPrecedingVertexDistance(data, shape, vtx);
                 }
         } else {
-            total = getVertexDistance(data, shape);
+            total = getPrecedingVertexDistance(data, shape);
             }
         return total;
         };
 
-    // calculate the area of a polygon (rectified digilib coords)
-    var rectifiedArea = function(data, shape) {
+    // calculate the area of a polygon (using digilib coords)
+    var getRectifiedArea = function(data, shape) {
         var ar = fn.getImgAspectRatio(data);
         var rectifyPoint = function (c) {
             return geom.position(ar * c[0], c[1]);
@@ -966,73 +1087,76 @@
         var val = parseFloat(widgets.value1.val());
         var fac = val / data.lastMeasuredValue;
         data.measureFactor = fac;
-        updateUnits(data);
+        updateUnits(data);    // convert a distance between 2 points into both units 
     };
 
+    // scale area
+    var scaleArea = function(val, factor) {
+        return val * factor * factor;
+        };
+
+    // scale length
+    var scaleValue = function(val, factor) {
+        return val * factor;
+        };
+
+    // UGLY: info whether to show area (not length) for this shape type
+    var showArea = function(data, type) {
+        return data.settings.shapeInfo[type].display === 'area';
+        };
+
     // convert measured value to second unit and display
-    var updateMeasures = function(data, val, type) {
+    var updateConversion = function(data, val, type, showArea) {
         var widgets = data.measureWidgets;
-        var unit1 = parseFloat(widgets.unit1.val());
-        var unit2 = parseFloat(widgets.unit2.val());
+        var unit1 = unitFactor(data, 1);
+        var unit2 = unitFactor(data, 2);
         var ratio = unit1 / unit2;
-        var result = scaleValue(data, type, val, ratio);
+        var result = showArea
+          ? scaleArea(val, ratio)
+          : scaleValue(val, ratio);
         widgets.shape.val(type);
         widgets.value1.val(fn.cropFloatStr(val));
         widgets.value2.text(fn.cropFloatStr(result));
         };
 
-    // scale
-    var scaleValue = function(data, type, val, factor) {
-        var scaleArea = data.settings.shapeInfo[type].display === 'area';
-        var result = scaleArea
-            ? val * factor * factor
-            : val * factor;
-        return result;
-        };
-
-    // convert pixel values to other units
-    var pixelToUnit = function(data, type, px) {
-        var ratio = data.measureFactor;
-        var result = scaleValue(data, type, px, ratio);
-        return result;
-        };
-
-    // rectify pixel values according to digilib aspect ratio
-    var rectifiedPixel = function(data, shape) {
-        var type = shape.geometry.type;
-        var display = data.settings.shapeInfo[type].display;
-        var px = (display === 'area')
-            ? rectifiedArea(data, shape)
-            : rectifiedDist(data, shape);
-        return px;
-        };
-
     // update last measured pixel values, display as converted to new units
     var updateUnits = function(data) {
         var type = getActiveShapeType(data);
+        var factor = data.measureFactor;
         var px = data.lastMeasuredValue;
-        var result = pixelToUnit(data, type, px);
-        updateMeasures(data, result, type);
+        var area = showArea(data, type);
+        var val = area
+          ? scaleArea(px, factor)
+          : scaleValue(px, factor);
+        updateConversion(data, val, type, area);
         };
 
     // display info for shape
     var updateInfo = function(data, shape) {
-        data.lastMeasuredValue = rectifiedPixel(data, shape);
+        data.lastMeasuredValue = showArea(data, shape.geometry.type)
+          ? getRectifiedArea(data, shape) // ### needed? (use screenpos)
+          : getRectifiedLength(data, shape);
         setActiveShapeType(data, shape);
         updateUnits(data);
+        };
+
+    // get unit value from widget
+    var unitFactor = function(data, index) {
+        return parseFloat(data.measureWidgets['unit'+index].val());
         };
 
     // info data for shape
     var getInfoHTML = function(data, shape) {
         var s = data.settings;
+        var factor = data.measureFactor;
         var type = shape.geometry.type;
-        var display = s.shapeInfo[type].display;
+        var scaled = showArea(data, type)
+          ? scaleArea(getRectifiedArea(data, shape), factor)
+          : scaleValue(getRectifiedLength(data, shape), factor);
+        var len = fn.cropFloat(scaled, 2);
         var name = s.shapeInfo[type].name;
-        var px = (display === 'area')
-            ? rectifiedArea(data, shape)
-            : rectifiedDist(data, shape);
-        var len = fn.cropFloat(pixelToUnit(data, type, px), 2);
-        var unit = data.measureWidgets.unit1.find('option:selected').text();
+        var display = s.shapeInfo[type].display;
+        var unit = data.measureUnit1;
         var html = '<div class="head">'+name+'</div><div><em>'+display+'</em>: '+len+' '+unit+'</div>';
         return html;
         };
@@ -1095,15 +1219,15 @@
             var vtx = props.vtx;
             if (screenpos == null || vtx == null) {
                 return; }
-            var lastPos = screenpos[getLastVertex(shape)];
-            var thisPos = screenpos[vtx]; // mouse position
-            var fac = data.measureFactor;
-            shape.geometry.coordinates[vtx] = data.imgTrafo.invtransform(thisPos);
-            var unitDist = getVertexDistance(data, shape) * fac;
+            var lastPos = screenpos[getPrecedingVertex(shape)];
+            shape.geometry.coordinates[vtx] = data.imgTrafo.invtransform(thisPos); // ### needed? just work with screenpos?
+            var factor = data.measureFactor;
+            var screenDist = getPrecedingVertexDistance(data, shape);
+            var unitDist = scaleValue(screenDist, factor);
             var roundDist = Math.round(unitDist); // round to the nearest integer
-            var newPos = (roundDist === 0)
-                ? thisPos
-                : lastPos.scale(thisPos, roundDist/unitDist); // calculate snap position
+            if (roundDist === 0) {
+                return; }
+            var newPos = lastPos.scale(thisPos, roundDist/unitDist); // calculate snap position
             screenpos[vtx].moveTo(newPos);
             };
         };
@@ -1143,6 +1267,12 @@
     var setActiveShapeType = function(data, shape) {
         data.settings.activeShapeType = shape.geometry.type;
         setCalibrationInputState(data);
+        };
+
+    // set the current unit (from unit select widget)
+    var changeUnit = function(data, name) {
+        data[name] = $(widget).find('option:selected').text();
+        updateUnits(data);
         };
 
     // update Line Style classes (overwrite CSS)
@@ -1210,7 +1340,7 @@
             $svg.removeAttr("display"); }
         else {
             $svg.attr("display", "none"); }
-    };
+    };                                                                    
 
     // initial position of measure bar (bottom left of browser window)
     var setScreenPosition = function(data, $bar) {
@@ -1347,7 +1477,30 @@
                 },
                 'svg' : function (shape) {
                     var $s = factory['LineString'].svg(shape);
+                    var p = shape.properties.screenpos;
+                    var len1 = p[1].distance(p[0]);
+                    var len2 = p[1].distance(p[2]);
+                    var ang = null;
+                    var angy = null;
+                    props.measures = {
+                      len1: len1,
+                      len2: len2,
+                      rat1: len1 / len2,
+                      rat2: len2 / len1,
+                      ang:  ang,
+                      angy: angy
+                    };
                     return $s;
+                },
+                'info' : function (data, shape) {
+                    return [
+                        { len1: 'leg a'},
+                        { len2: 'leg b'},
+                        { rat1: 'ratio a/b'},
+                        { rat2: 'ratio b/a'},
+                        { ang:  'contained angle'},
+                        { angy: 'angle y-axis - leg a'},
+                        ];
                 }
             };
         factory['Intercolumnium'] = {
@@ -1398,7 +1551,8 @@
                             var p2 = p3.copy().add(line1.vector());
                             p[2] = p2.mid(p3); // handle position
                             shape.geometry.coordinates[2] = trafo.invtransform(p[2]).toArray();
-                            props.pos = [p2, p3]; // save other points
+                            props.p2 = p2;
+                            props.p3 = p3; // save other points
                             }
                         this.attr({points: [p[0], p[1], p2, p3].join(" ")});
                         };
@@ -1433,9 +1587,9 @@
                         place.call($s); // place the framing rectangle (polygon)
                         if (p.length > 3) { // p[3] is the mouse pointer
                             var side0 = geom.line(p[0], p[1]) // the sides
-                            var side1 = geom.line(p[1], props.pos[0]);
-                            var side2 = geom.line(props.pos[0], props.pos[1]);
-                            var side3 = geom.line(props.pos[1], p[0]);
+                            var side1 = geom.line(p[1], props.p2); // use 'Rect' points
+                            var side2 = geom.line(props.p2, props.p3);
+                            var side3 = geom.line(props.p3, p[0]);
                             var mid0 = side0.mid(); // the midpoints of the sides
                             var mid1 = side1.mid();
                             var mid2 = side2.mid();
@@ -1490,6 +1644,9 @@
                             p[3] = handle;
                             shape.geometry.coordinates[3] = trafo.invtransform(handle).toArray();
                             props.measures = { rad1: rad1, rad2: rad2, axis1: axis1.length(), axis2: axis2.length() }; // use for info
+                            // area: (r² * phi) + (R² * (pi - phi)) - ((axis1 - 2r) * dist(m3, mid(axis1)))
+                            // length of the periphery parts: q1 = r * phi, q2 = R * (pi - phi) 
+                            // circumference: 2 * (q1 + q2);
                             }
                         };
                     shape.$interactor = $arc;
@@ -1559,32 +1716,32 @@
     var setupMeasureBar = function(data) {
         console.debug('measure: setupMeasureBar');
         var widgets = {
-            names : [
-                'info',
-                'startb', 'shape',
-                'type',
-                'value1', 'unit1', 'eq',
-                'value2', 'unit2',
-                'shapecolor', 'guidecolor', 'constrcolor', 'selectedcolor', 'handlecolor',
-                'move'
-                ],
-            info :       $('<img id="dl-measure-info" src="img/info.png" title="display info window for shapes"></img>'),
-            startb :     $('<button id="dl-measure-startb" title="click to draw a measuring shape on top of the image">M</button>'),
-            shape :      $('<select id="dl-measure-shape" title="select a shape to use for measuring" />'),
-			eq :         $('<span class="dl-measure-label">=</span>'),
-			type :       $('<span id="dl-measure-shapetype" class="dl-measure-label">length</span>'),
-			fac :        $('<span id="dl-measure-factor" class="dl-measure-number" />'),
-			value1 :     $('<input id="dl-measure-value1" class="dl-measure-input" title="last measured value - click to change the value" value="0.0" />'),
-			value2 :     $('<span id="dl-measure-value2" class="dl-measure-label" title="last measured value, converted to the secondary unit" value="0.0"/>'),
-			unit1 :      $('<select id="dl-measure-unit1" title="current measuring unit - click to change" />'),
-			unit2 :      $('<select id="dl-measure-unit2" title="secondary measuring unit - click to change" />'),
-			angle :      $('<span id="dl-measure-angle" class="dl-measure-number" title="last measured angle" />'),
-            shapecolor : $('<span id="dl-measure-shapecolor" class="dl-measure-color" title="select line color for shapes"></span>'),
-            guidecolor : $('<span id="dl-measure-guidecolor" class="dl-measure-color" title="select guide line color for shapes"></span>'),
-            constrcolor :$('<span id="dl-measure-constrcolor" class="dl-measure-color" title="select construction line color for shapes"></span>'),
-            selectedcolor :$('<span id="dl-measure-selectedcolor" class="dl-measure-color" title="select line color for selected shapes"></span>'),
-            handlecolor :$('<span id="dl-measure-handlecolor" class="dl-measure-color" title="select color for shape handles"></span>'),
-            move :       $('<img id="dl-measure-move" src="img/move.png" title="move measuring bar around the screen"></img>')
+        names: [
+          'info',
+          'startb', 'shape',
+          'type',
+          'value1', 'unit1', 'eq',
+          'value2', 'unit2',
+          'shapecolor', 'guidecolor', 'constrcolor', 'selectedcolor', 'handlecolor',
+          'move'
+          ],
+        info:         $('<img id="dl-measure-info" src="img/info.png" title="display info window for shapes"></img>'),
+        startb:       $('<button id="dl-measure-startb" title="click to draw a measuring shape on top of the image">M</button>'),
+        shape:        $('<select id="dl-measure-shape" title="select a shape to use for measuring" />'),
+        eq:           $('<span class="dl-measure-label">=</span>'),
+        type:         $('<span id="dl-measure-shapetype" class="dl-measure-label">length</span>'),
+        fac:          $('<span id="dl-measure-factor" class="dl-measure-number" />'),
+        value1:       $('<input id="dl-measure-value1" class="dl-measure-input" title="last measured value - click to change the value" value="0.0" />'),
+        value2:       $('<span id="dl-measure-value2" class="dl-measure-label" title="last measured value, converted to the secondary unit" value="0.0"/>'),
+        unit1:        $('<select name="measureUnit1" id="dl-measure-unit1" title="current measuring unit - click to change" />'),
+        unit2:        $('<select name="measureUnit2" id="dl-measure-unit2" title="secondary measuring unit - click to change" />'),
+        angle:        $('<span id="dl-measure-angle" class="dl-measure-number" title="last measured angle" />'),
+        shapecolor:   $('<span id="dl-measure-shapecolor" class="dl-measure-color" title="select line color for shapes"></span>'),
+        guidecolor:   $('<span id="dl-measure-guidecolor" class="dl-measure-color" title="select guide line color for shapes"></span>'),
+        constrcolor:  $('<span id="dl-measure-constrcolor" class="dl-measure-color" title="select construction line color for shapes"></span>'),
+        selectedcolor:$('<span id="dl-measure-selectedcolor" class="dl-measure-color" title="select line color for selected shapes"></span>'),
+        handlecolor:  $('<span id="dl-measure-handlecolor" class="dl-measure-color" title="select color for shape handles"></span>'),
+        move:         $('<img id="dl-measure-move" src="img/move.png" title="move measuring bar around the screen"></img>')
 		    };
         var $measureBar = $('<div id="dl-measure-toolbar" />');
         var widgetName = widgets.names;
@@ -1624,8 +1781,8 @@
             });
         widgets.shape.on('change.measure',  function(evt) { changeActiveShapeType(data) });
         widgets.value1.on('change.measure', function(evt) { changeFactor(data) });
-        widgets.unit1.on('change.measure',  function(evt) { updateUnits(data) });
-        widgets.unit2.on('change.measure',  function(evt) { updateUnits(data) });
+        widgets.unit1.on('change.measure',  function(evt) { changeUnit(data, this.name) });
+        widgets.unit2.on('change.measure',  function(evt) { changeUnit(data, this.name) });
         widgets.unit1.attr('tabindex', -1);
         widgets.unit2.attr('tabindex', -1);
         widgets.value1.attr('tabindex', -1);

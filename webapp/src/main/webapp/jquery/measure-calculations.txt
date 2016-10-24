@@ -1,0 +1,1234 @@
+// archi1calc, arch1draw und info-Berechnungen
+
+// Switch units (click on the "=" label ?)
+// pure CSS icons
+// calibrate drawing (osize?)
+
+// Umrechnung, Bruchzahl-Darstellung
+
+procedure TFMain.CalcResult;
+ label Output;
+ var
+   StrZaehler, StrNenner, StrVorkomma : string;
+   VorKomma, NachKomma,
+   Result,              {Ergebnis mit gerundeten werten}
+   Zaehler : TZahl;
+   Nenner  : integer;
+   NoBruch : boolean;
+
+ begin {TFMain.CalcResult}
+   NoBruch   := True;
+   RawResult := Calc(InputLine.ValueFloat, UnitVon, UnitZu);   {Dreisatzberechnung}
+   Result    := RawResult;
+   if NOT Opt.BruchOut then goto Output;    {Output erfolgt nicht in Bruchform}
+   with UnitZu do if subunit > 0 		    {rundet auf ganze Untereinheiten}
+     then Result := round(RawResult * subunit)/subunit;
+   if GanzZahl(Result) then goto Output;     {Abweichung < Toleranzgrenze?}
+   VorKomma  := Int(Result);
+   Nachkomma := Frac(Result);
+   Zaehler := Nachkomma;               {keine ganze Zahl: berechne Bruchzahl}
+   Nenner  := 1;
+   repeat
+     inc(Nenner);
+     Zaehler := Zaehler + Nachkomma;
+     if Nenner > Opt.MaxNenner then goto Output;   {Nenner ist zu gro�}
+     until GanzZahl(Zaehler);
+   NoBruch := False;
+   Result := (Vorkomma + Zaehler/Nenner);
+   str(Zaehler:0:0, StrZaehler);
+   str(Nenner:0, StrNenner);
+   ResultStr := StrZaehler + '/' + StrNenner;
+   if Vorkomma <> 0 then begin                     {gemischter Bruch}
+     str(Vorkomma:0:0, StrVorkomma);
+     ResultStr := StrVorkomma + Space + ResultStr;
+     end;
+Output:
+   if NoBruch then begin
+     str(Result:0:Opt.Stellen, ResultStr);
+     ZeroesOff(ResultStr);
+     end;
+   DiffResult  := RD(Result - RawResult, succ(opt.stellen));
+   if DiffResult = 0
+     then RoundFrom := 0
+     else RoundFrom := Calc(Result, UnitZu, UnitVon);
+ end;
+
+
+// algorithm for fractions
+
+def dec2frac(num, epsilon, max_iter=20):
+    d = [0, 1] + ([0] * max_iter)
+    z = num
+    n = 1
+    t = 1
+
+    while num and t < max_iter and abs(n/d[t] - num) > epsilon:
+        t += 1
+        z = 1/(z - int(z))
+        d[t] = d[t-1] * int(z) + d[t-2]
+        # int(x + 0.5) is equivalent to rounding x.
+        n = int(num * d[t] + 0.5)
+
+    return n, d[t]
+
+//
+    take decimal x
+    count the number of digits after the decimal point; call this n
+    create a fraction (10^n * x) / 10^n
+    remove common factors from the numerator and denominator.
+
+so if you have 0.44, you would count 2 places are the decimal point - n = 2, and then write
+
+    (0.44 * 10^2) / 10^2
+    = 44 / 100
+    factorising (removing common factor of 4) gives 11 / 25 
+
+// Maßstab (how to calibrate map?)
+procedure TFMassStab.BCalcClick(Sender: TObject);
+var PalmiCm, ResultCm : Extended;
+begin
+  ResultCm := 0;
+  try
+    PalmiCm  := Pixel2.ValueFloat / Pixel1.ValueFloat * Len1.Valuefloat;
+    ResultCm := PalmiCm / Len2.Valuefloat * MLen.Valuefloat;
+  finally
+    MResult.Valuefloat := ResultCm;
+    end;
+end;
+
+// Tabellen
+{---------------}
+ procedure TFMain.FillShows;
+{---------------}
+ const
+   Sign : array[TRechenArt] of char = ('+', 'x', ':');
+   tabs : array[0..7] of integer = (40, 50, 60, 70, 80, 90, 100, 110);
+   { Damit "TListbox" TABs akzeptiert, mu� die undokumentierte
+     property "TabWidth" auf einen Wert > 0 gesetzt sein!}
+ var
+   T : TFList;
+   NN, RR, DD  : string; {Input, Result, Delta}
+   N, N1, S, R, D : TZahl;
+   art  : TRechenArt;
+   count: longint;
+ begin
+   N := InputLine.ValueFloat;
+   for art := add to divi do begin
+     case art of
+       add   : T := FListAdd;
+       multi : T := FListMul;
+       divi  : T := FListDiv;
+       end;
+     if T.Visible then with opt do begin
+       str(N:0:Stellen, NN); ZeroesOff(NN);
+// falls Add von - nach + anzeigen soll
+       N1 := N {- (zeilen div 2) * delta[add]};
+       T.ListBox1.Clear;
+       T.ListBox1.Items.Add(NN + ' ' + UnitVon.Name);
+       for count := 1 to Zeilen do begin
+         D := count * delta[art];
+         case art of
+           add:   S := N1 + D;
+           multi: S := N * D;
+           divi:  S := N / D;
+           end;
+         R := calc(S, UnitVon, UnitZu);
+	 str(R:0:Stellen, RR);
+         PadZeroes(RR);
+// falls Add von - nach + anzeigen soll
+{	 if art = add
+            then str(N1-N+D:8:Stellen, DD)
+            else}
+         str(D:8:Stellen, DD);
+         PadZeroes(DD);
+	 T.Listbox1.items.add(sign[art] + DD
+          + TAB + ' => ' + RR + TAB + UnitZu.name);
+         end; {for count}
+// SendMessage(T.Listbox1.handle, lb_settabstops, 4, longint(@tabs));
+       end; {with options}
+     end; {for art}
+   end;
+
+// Dreisatz
+procedure TFDreisatz.Calc(Sender: TObject);
+var Ratio: Extended;
+    PercStr: String;
+begin
+  if checknull(EdDr2)
+    then Ratio := EdDr1.ValueFloat / EdDr2.ValueFloat
+    else Ratio := 1;
+  if XZaehler then
+    // if checknull(EdDr2) AND checknull(EdDr3)
+    EdDrX.Valuefloat := Ratio * EdDr3.ValueFloat
+  else begin
+    if checknull(EdDr1)
+      then EdDrX.Valuefloat := EdDr3.ValueFloat / Ratio;
+      end;
+  if XPercent then begin
+    Ratio   := Ratio * 100.0;
+    PercStr := ' %';
+    end
+  else PercStr := '';
+  LbRatio.Caption := FloatToStrF(Ratio, ffFixed, 18, 2) + PercStr;
+end;
+
+// arch1draw
+function Gradient(A, B: TEPoint): TXY;
+begin
+  with result do begin
+    X := A.X - B.X;
+    Y := A.Y - B.Y;
+    end;
+end;
+
+function Gra (A, B: TEPoint): extended;
+begin
+  with Gradient(A, B) do result := Y / X;
+end;
+
+
+function Abstand(DX, DY: extended): extended;
+begin
+  Result := sqrt( sqr(DX) + sqr(DY)); // Pythagoras
+end;
+
+function Winkel(Dx, Dy: extended): extended;
+// berechnet aus einem Steigungsverh�ltnis den winkel in pi (pi = 180�)
+begin
+  if Dx = 0 then // Vertikale Linie
+    if Dy <= 0 then result := 0 else result := pi
+  else begin
+    result := arctan(Dy/Dx) + PI_2;
+    if Dx < 0 then result := result + pi;
+    end;
+end;
+
+function WinkelGrad(Dx, Dy: extended): extended;
+begin
+  result := Winkel(Dx, Dy) * 180 / pi;
+end;
+
+function ColumnProp(Ratio: Extended): string;
+// erzeugt die Vtriuvianischen Interkolumnien
+begin
+  Ratio := 1 / Ratio;
+  if Ratio < 1.75 then result := 'pyknostylos (1:1�)'
+  else if Ratio < 2.125 then result := 'systylos (1:2)'
+  else if Ratio < 2.625 then result := 'eustylos (1:2�)'
+  else if Ratio < 3.25 then result := 'diastylos (1:3)'
+  else result := 'ar�ostylos (1:3� - 1:4)';
+  if (abs(Ratio - 1.5)  < Gw)
+  OR (abs(Ratio - 2)    < Gw)
+  OR (abs(Ratio - 2.25) < Gw)
+  OR (abs(Ratio - 3)    < Gw)
+  OR (abs(Ratio - 3.5)  < Gw)
+  OR (abs(Ratio - 4)    < Gw)
+    then result := '= ' + result
+    else result := '~ ' + result;
+end;
+
+function SimpleProp(Ratio: Extended): string;
+// schreibt das Verh�ltnis z. B. als 1:2.89 oder 4.1:1
+begin
+  if Ratio < 1
+    then result := '1:' + FS(1/Ratio)
+    else result := FS(Ratio) +  ':1';
+end;
+
+function Proportion(Ratio: extended): string;
+//  versucht, ganzzahlige Verh�ltnisse zu ermitteln
+var
+   Ganz: Boolean;
+   Nenner  : longint;
+   Zaehler : extended;
+begin
+   Zaehler := 0;
+   Nenner  := 0;
+   repeat
+     inc(Nenner);
+     Zaehler := Zaehler + Ratio;
+     Ganz := GanzZahl(Zaehler);
+     until Ganz OR (Nenner > 20);
+   if Ganz
+     then result := FStr(Zaehler,0)
+        + ':' +  InttoStr(Nenner)
+     else result := SimpleProp(Ratio);
+     // result := FS(ratio);
+end;
+
+function TEpoint.DistanceTo(P: TEPoint): extended;
+begin
+  Result := Abstand(X - P.X, Y - P.Y); // Pythagoras
+end;
+
+function TEpoint.Clockwise(P1, P2: TEPoint): boolean;
+begin
+  Result := abs(Winkel(X - P1.X, Y - P1.Y) - Winkel(X - P2.X, Y - P2.Y)) < PI;
+end;
+
+procedure TEPoint.TurnTo(A, B, TurnAngle: Extended);
+// A/B = Drehpunkt, Self = Punkt, TurnAngle = Drehwinkel
+var D, NewAngle: Extended;
+begin
+  D := Abstand(A - X, B - Y); // Entfernung zum Drehpunkt
+  NewAngle := Winkel(A - X, B - Y) + TurnAngle;  // absoluter Winkel plus Drehwinkel
+  MoveTo(A - D * sin(NewAngle), B + D * cos(NewAngle)); // neue Position
+end;
+
+procedure TEpoint.ScaleTo(A, B, Ratio: Extended);
+begin
+  MoveTo((X-A) * Ratio + A, (Y-B) * Ratio + B);
+end;
+
+procedure TEPoint.MoveTo(A, B: Extended);
+begin
+  X := A;
+  Y := B;
+end;
+
+procedure TEpoint.ForceThales(P: TEPoint; var A, B: Longint);
+// keep point A/B on a circle around the line Self -> P
+var
+  Mx, My, radius, dist, scale: Extended;
+begin
+  Mx := Mid(X, P.X);
+  My := Mid(Y, P.Y);
+  radius := Abstand(X - Mx, Y - My);
+  dist := Abstand(A - Mx, B - My);
+  try
+     scale := radius / dist;
+     A := round (Mx + (A - Mx) * scale);
+     B := round (My + (B - My) * scale);
+  except
+     A := round(X);
+     B := round(Y);
+     end;
+end;
+
+procedure TEpoint.ForceDirection(P: TEPoint; var A, B: Longint);
+// keep point A/B on the axis Self -> P
+var dx, dy, ddx, ddy, NewX, NewY: Extended;
+begin
+  ddy := P.Y - Y; // distance
+  ddx := P.X - X;
+  dx  := A - X;
+  dy  := B - Y;
+  if abs(ddy) < abs(ddx) then try // keep X value of clickpoint
+    B := round(Y + ddy * dx / ddx);
+    except end
+  else try // keep Y calue of clickpoint
+    A := round(X + ddx * dy / ddy);
+    except end;
+end;
+
+procedure TEpoint.ForceDistDirection(P: TEPoint; var A, B: Longint);
+// keep point A/B on the axis Self -> P, preserving the distance to Self
+var T: TXY;
+begin
+  T := DistDirection(P, Abstand(A - X, B - Y));
+  A := round(T.X); B := round(T.Y);
+end;
+
+function TEpoint.DistDirection(P: TEPoint; Dist: Extended): TXY;
+// return point A/B on the axis Self -> P, with the distance dist
+var ratio, dx, dy: Extended;
+begin
+  dx := P.X - X; dy := P.Y - Y;
+  ratio := dist / Abstand(dx, dy);
+  result.X := X + dx * ratio;
+  result.Y := Y + dy * ratio;
+end;
+// ---------- TDrawObject --------------
+
+function TDrawObject.Nearest(A, B: longint): longint;
+var i : longint; Mindist, D: extended;
+begin
+  MinDist := 1000.0; // just a big value;
+  for i := 0 to Points.count-1 do
+    with Pt(i) do begin
+      D := Abstand(A - X, B - Y);
+      if Mindist > D then begin
+         MinDist := D;
+         result := i;
+         end;
+      end;
+end;
+
+function TDrawObject.MinDist(A, B: longint): extended;
+var i : longint; D: extended;
+begin
+  result := 1000.0; // just a big value;
+  for i := 0 to Points.count-1 do
+    with Pt(i) do begin
+      D := Abstand(A - X, B - Y);
+      if result > D then result := D;
+      end;
+end;
+
+function TDrawObject.Snap(var A, B: longint): boolean;
+var i : longint; D: extended;
+begin
+  result := false;
+  for i := 0 to Points.count-1 do
+    with Pt(i) do begin
+      D := Abstand(A - X, B - Y);
+      result := D < CritDistance;
+      if result then begin
+        A := X;
+        B := Y;
+        break;
+        end;
+      end;
+end;
+
+procedure TDrawObject.Move(A, B: extended);
+var i : longint;
+begin
+  with Points do
+   for i := 0 to Count -1 do
+    with TEPoint(items[i]) do MoveTo(X+A, Y+B);
+end;
+
+procedure TDrawObject.Turn(A, B, Angle: Extended);
+var i : longint;
+begin
+  with Points do
+   for i := 0 to Count -1 do
+    TEPoint(items[i]).TurnTo(A, B, Angle);
+end;
+
+procedure TDrawObject.Scale(A, B, Ratio: Extended);
+var i : longint;
+begin
+  with Points do
+   for i := 0 to Count -1 do
+    TEPoint(items[i]).ScaleTo(A, B, Ratio);
+end;
+// ---------- TLine --------------
+
+procedure TLine.Click(X, Y: longint);
+begin
+  inherited;
+  if State = 1 then begin
+    InfoProc('Endpunkt festlegen');
+    NewPoint(X, Y) // add a second point
+    end
+  else begin
+    Drag(X, Y);
+    Finish;
+    end;
+  Draw;
+end;
+
+function  TLine.Properties: String;
+begin
+  result := inherited Properties
+    + 'L�nge :' + #9
+    +  FS(Dist(0,1) * Faktor)+ CRLF
+    + 'Winkel zur Y-Achse: '
+    +  FS(WinkelGrad(EPt(0).X - EPt(1).X, EPt(0).Y - EPt(1).Y)) + '�';
+end;
+
+// ---------- TArc --------------
+
+function  TArc.Properties: String;
+var Angle, Radius: Extended;
+begin
+  Radius := Dist(0,1);
+  Angle :=
+    WinkelGrad(EPt(0).X - EPt(1).X, EPt(0).Y - EPt(1).Y)-
+    WinkelGrad(EPt(0).X - EPt(2).X, EPt(0).Y - EPt(2).Y);
+  if Angle < 0 then Angle := Angle + 360.0;
+  result := inherited Properties
+    + 'Radius:' + #9#9
+    +  FS(Radius*Faktor)+ CRLF
+    + 'Sehnenl�nge:' + #9
+    +  FS(Dist(1,2)*Faktor) + CRLF
+    + 'Bogenl�nge:' + #9
+    +  FS(Angle*Radius*Faktor*pi/180.0) + CRLF
+    + '�ffnungswinkel:' + #9
+    +  FS(Angle) + '�';
+end;
+
+procedure TArc.Click(X, Y: longint);
+begin
+  inherited;
+  case state of
+  1: begin
+       InfoProc('Startwinkel angeben');
+       LeadLine := TLine.Create;
+       Leadline.Click(X, Y);
+       Leadline.LOpt.LineColor := Opt.MarkColor;
+       NewPoint(X, Y);
+       end;
+  2: begin
+       InfoProc('Endwinkel festlegen');
+       SetPoint(1, X, Y);
+       NewPoint(X, Y);
+       Draw;
+       end;
+  3: begin
+       LeadLine.Draw;
+       LeadLine.Free;
+       C.brush.style := bsClear; // transparente Intervalle
+       Finish;
+       Draw;
+       end;
+  end; {case}
+end;
+
+procedure TArc.Finish;
+begin
+  with Ept(0) do Ept(2).ScaleTo(X, Y, Dist(0,1)/Dist(0,2));
+  inherited;
+end;
+
+
+procedure TCircle.Finish;
+var M: TEPoint;
+begin
+  // create all 4 quadrant points
+  if LOpt.CircMid then begin
+    M := EPt(0);
+    with Ept(1) do NewPoint(2*M.X-X, 2*M.Y-Y)
+    end
+  else begin
+    with MidXY(EPt(0), EPt(1)) do NewPoint(X, Y);
+    Points.Exchange(0,2);
+    M := Ept(0);
+    LOpt.CircMid := True;
+    end;
+  with Lot(M, Ept(1),1)  do NewPoint(X, Y);
+  with Lot(M, Ept(1),-1) do NewPoint(X, Y);
+  inherited;
+end;
+
+procedure TCircle.Drag(X, Y: longint);
+begin
+  if NOT dragging then exit;
+  Draw;
+  SetPoint(1, X, Y);
+  Draw;
+end;
+
+procedure TCircle.Draw;
+var A, B, M: TPoint;
+    D: Longint;
+begin
+  inherited;
+  if LOpt.CircMid then begin
+    M := Pt(0);
+    D := round(Dist(0,1));
+    end
+  else begin
+    M := MidP(EPt(0), EPt(1));
+    D := round(Dist(0,1)/2);
+    end;
+  with M, C do Ellipse(X-D, Y-D, X+D, Y+D);
+  WriteResults;
+end;
+
+function  TCircle.Properties: String;
+begin
+  result := inherited Properties
+    + 'Radius : '
+    +  FS(Dist(0,1) * Faktor);
+end;
+
+procedure TCircle.WriteResults;
+begin
+  if dragging OR not LineOpt.ShowTags then exit;
+  inherited;
+  WriteDist(1,2); // Durchmesser
+end;
+
+// ---------- TReck --------------
+
+procedure TReck.Finish;
+var i: integer;
+begin
+  for i := 1 to 3 do
+    with MidXY(Ept(0), Ept(i)) do NewPoint(X,Y);
+  for i := 1 to 2 do
+    with MidXY(Ept(i), Ept(i+1)) do NewPoint(X,Y);
+  inherited;
+end;
+
+procedure TReck.Draw; //
+begin
+  inherited;
+  with C do begin
+    Polygon([Pt(0), Pt(1), Pt(2), Pt(3)]);
+    WriteResults;
+    if LOpt.Diags AND NOT dragging then DrawDiag(0);
+    end;
+end;
+
+procedure TReck.Click(X,Y: longint);
+begin
+  inherited;
+  case state of
+  1: begin
+        LeadLine := TLine.Create;
+        Leadline.Click(X, Y);
+        Leadline.LOpt.LineColor := Opt.MarkColor;
+        NewPoint(X,Y); // add a second point;
+        if LOpt.DiagsFirst
+           then InfoProc('Diagonale festlegen')
+           else InfoProc('Seitenl�nge festlegen');
+        end;
+  2: begin
+        if LOpt.DiagsFirst
+           then InfoProc('Rechteckseite festlegen')
+           else InfoProc('Rechteckh�he festlegen');
+        SetPoint(1, X, Y);         // new position
+        with Pt(1) do NewPoint(X,Y);
+        with Pt(0) do NewPoint(X,Y);
+        Draw;
+        end;
+  3: begin
+        Leadline.Draw;
+        Leadline.Free;
+        Finish;
+        Draw;
+        end
+  end; {case}
+end;
+
+procedure TReck.Drag(X,Y: longint);
+begin
+  if not Dragging then exit;
+  case state of
+  1: begin   // draw only a line
+    inherited draw;
+    Leadline.Drag(X,Y);
+    end;
+  2: begin
+    Draw; // clear old with XOR
+    if LOpt.Diagsfirst then begin
+       EPt(0).ForceThales(EPt(2), X, Y);
+       ConstructDiag(X, Y);
+       end
+    else ConstructSide(X, Y);
+    Draw; // draw new with XOR
+    end;
+  end; {case}
+end;
+
+function  TReck.Properties: String;
+begin
+  result := inherited Properties;
+  if Dist(1,2) = 0 then exit;
+  result := result
+    + 'Proportion:' + #9
+    +  Proportion(Dist(0,1)/Dist(1,2)) + CRLF
+    + 'Grundlinie:' + #9
+    +  FS(Dist(0,1) * Faktor)+ CRLF
+    + 'H�he:' + #9#9
+    +  FS(Dist(1,2) * Faktor)+ CRLF
+    + 'L�nge der Diagonale:' + #9
+    +  FS(Dist(0,2) * Faktor)+ CRLF
+    + 'Winkel zur Y-Achse:' + #9
+    +  FS(WinkelGrad(EPt(0).X - EPt(1).X, EPt(0).Y - EPt(1).Y)) + '�';
+end;
+
+procedure TReck.WriteResults;
+begin
+  if Dragging OR NOT LOpt.ShowTags then exit;
+  inherited;
+  WriteDist(0, 1);
+  WriteDist(1, 2);
+  if LOpt.Showprops then with Pt(0) do try
+    C.TextOut(
+      round((Pt(2).X+X)/2),
+      round((Pt(2).Y+Y)/2),
+      Proportion(Dist(0,1)/Dist(1,2)));
+  except end;
+end;
+
+procedure TREck.DrawDiag(nr: byte);
+var PenSave: TPenStyle;
+begin
+  with C do begin
+    PenSave := Pen.Style;
+    pen.Style := psDot;
+    pen.mode  := pmCopy;
+    brush.style := bsClear; // transparente Intervalle
+    if odd(nr)
+      then PolyLine([Pt(3), Pt(1)])
+      else PolyLine([Pt(2), Pt(0)]);
+    Pen.Style := PenSave;
+    end;
+end;
+
+procedure TREck.ConstructSide(X, Y: longint);
+var P1, P2: TEpoint;
+    dx, dy, ddx, ddy: Extended;
+begin
+  P1 := EPt(0);
+  P2 := EPt(1);
+  ddy := P2.Y - P1.Y; // distance
+  ddx := P2.X - P1.X;
+  // if LOpt.Diagsfirst
+  if abs(ddy) > abs(ddx) then try // take X value of clickpoint
+    dx  := X - P2.X;
+    dy  := ddx * dx / ddy;
+    except dy := 0;
+    end
+  else try // take Y calue of clickpoint
+    dy  := P2.Y - Y;
+    dx  := ddy * dy / ddx;
+    except dx := 0;
+    end;
+  SetPoint(2, P2.X + dx, P2.Y - dy);
+  SetPoint(3, P1.X + dx, P1.Y - dy);
+end;
+
+procedure TREck.ConstructDiag(X, Y: longint);
+var P0, P2: TPoint;
+
+begin
+  P0 := Pt(0);
+  P2 := Pt(2);
+  SetPoint(1, P2.X + P0.X - X, P2.Y + P0.Y - Y);
+  SetPoint(3, X, Y);
+end;
+
+procedure TSquare.Click(X,Y: longint);
+var P0, P1: TEpoint;
+    ddx, ddy: Extended;
+begin
+  case state of
+  0: inherited;
+  1: begin
+      SetPoint(1, X, Y);         // new position
+      LeadLine.Draw;
+      Leadline.Free;
+      P0 := Ept(0);
+      P1 := EPt(1);
+      ddy := P1.Y - P0.Y; // distance
+      ddx := P1.X - P0.X;
+      if LOpt.DiagsFirst then begin
+        ddx := ddx / 2;
+        ddy := ddy / 2;
+        with P1 do NewPoint(X, Y); // P2 is diagonally opposite of P0
+        with P0 do NewPoint(X + ddx - ddy, Y + ddy + ddx); // P3
+        with P0 do SetPoint(1, X + ddx + ddy, Y + ddy - ddx); // move P1
+        end
+      else begin
+        with P1 do NewPoint(X + ddy, Y - ddx);
+        with P0 do NewPoint(X + ddy, Y - ddx);
+        end;
+      Finish;
+      LOpt.Showprops := false;
+      Draw;
+      end;
+  end; {case}
+end;
+
+procedure TSquare.WriteResults;
+begin
+  if Dragging OR NOT LOpt.ShowTags then exit;
+  WriteDist(0, 1);
+  WriteDist(0, 2);
+end;
+
+constructor TCompound.create;
+begin
+  inherited create;
+  FCompoundObjects := TObjList.Create;
+end;
+
+procedure TCompound.free;
+var i : longint;
+begin
+  try
+    FCompoundObjects.Free;
+    inherited free;
+  except end;
+end;
+
+function TCompound.Copy: TDrawObject;
+var i: integer;
+begin
+  result := inherited Copy;
+  with FCompoundObjects do
+    while NextObj do TCompound(result).FCompoundObjects.Add(ONext.Copy);
+end;
+
+procedure TCompound.Click(A, B: longint);
+begin
+  inc(FState);
+  if FCompoundObjects.ObjType <> otCompound
+    then FCompoundObjects.Click(A, B)
+    else begin
+      Drag(A, B);
+      Finish;
+      end;
+end;
+
+procedure TCompound.Drag(A, B: longint);
+begin
+  FCompoundObjects.Drag(A, B);
+end;
+
+procedure TCompound.Move(A, B: extended);
+var i : longint;
+begin
+  with FCompoundObjects do while NextObj do ONext.Move(A, B);
+end;
+
+procedure TCompound.Draw;
+var i : longint;
+begin
+  with FCompoundObjects do while NextObj do ONext.Draw;
+end;
+
+function  TCompound.Properties: String;
+begin
+  result := inherited Properties
+    + 'Zahl der Elemente: '
+    +  IntToStr(FCompoundObjects.Count);
+end;
+
+procedure TCompound.Turn(A, B, Angle: Extended);
+var i : longint;
+begin
+  with FCompoundObjects do while NextObj do ONext.Turn(A, B, Angle);
+end;
+
+procedure TCompound.Scale(A,B, Ratio: Extended);
+var i : longint;
+begin
+  with FCompoundObjects do while NextObj do ONext.Scale(A, B, Ratio);
+end;
+
+procedure TCompound.SaveToFile;
+var i, z : longint;
+begin
+  try
+    Writeln(F, '[', Name, ']');
+    Writeln(F, 'TY=', Classname);
+    Wrint('Objects=', FCompoundObjects.Count);
+    with FCompoundObjects do while NextObj do ONext.SaveToFile;
+  except end;
+end;
+
+procedure TCompound.SetHigh(b: Boolean);
+var i : longint;
+begin
+  inherited;
+  FCompoundObjects.Highlight := b;
+end;
+
+function  TCompound.GetHigh: boolean;
+begin
+  GetHigh := FCompoundObjects.Highlight;
+end;
+
+procedure TCompound.SetState(i: longint);
+begin
+  FState := i;
+  FCompoundObjects.SetState(i);
+end;
+
+procedure TCompound.ReadFromFile(L: TStrings);
+var Z: longint;
+begin
+  state := dsComplete;
+  // vorerst keine Funktion
+end;
+
+function TCompound.MinDist(A, B: longint): extended;
+var i: longint; D: extended;
+begin
+  result := 1000.0; // sets to a big value;
+  with FCompoundObjects do while NextObj do begin
+    D := ONext.Mindist(A, B);
+    if result > D then result := D;
+    end;
+end;
+
+function  TCompound.StatusPt(index: Longint): TPoint;
+begin
+  with FCompoundObjects do try
+    result := ObjNr(count-1).Pt(index);
+  except
+    result := Point(0,0);
+    end;
+end;
+
+function TCompound.Snap(var A, B: longint): boolean;
+begin
+  result := FCompoundObjects.Snap(A, B);
+end;
+
+procedure TCompound.Add(T: TDrawObject);
+begin
+  FCompoundObjects.Add(T);
+end;
+
+procedure TCompound.Swallow(T: TCompound);
+var i : integer;
+begin
+  with T.FCompoundObjects do begin
+    while NextObj do Self.Add(ONext);
+    Clear;
+    end;
+  try
+    T.Free; // st�rzt ab?
+  except end;
+end;
+
+// ---------- TGrid --------------
+constructor TGrid.create;
+begin
+  inherited;
+  FCompoundObjects.ObjType := otLine;
+end;
+
+procedure TGrid.Click(X,Y: longint);
+var P: TPoint;
+    i: longint;
+    dx, dy, Nearest: longint;
+    Line: TDrawObject;
+begin
+  case state of
+  0..1: inherited;
+  2: with FCompoundObjects do begin
+       Line := ObjNr(0);
+       Line.Lopt.ShowTags := false;
+       Line.Lopt.ShowPts := false;
+       P := Line.Pt(Line.Nearest(X, Y));
+       dx := X - P.X;
+       dy := Y - P.Y;
+       for i := 1 to 10 do begin
+           Line := Line.Copy;
+           Line.Move(dx, dy);
+           Add(Line);
+           end;
+       Finish;
+       Draw;    
+       end;
+  end; {case}
+end;
+
+
+// ---------- TOval --------------
+constructor TOval.create;
+begin
+  inherited;
+  FCompoundObjects.ObjType := otRect;
+end;
+
+procedure TOval.Drag(A, B: longint);
+begin
+  if state = 3 then S1.ForceDistDirection(M, A, B);
+  inherited;
+end;
+
+procedure TOval.Click(X,Y: longint);
+var P: TPoint;
+    Rect, Kreis1, Kreis2, Arc1, Arc2: TDrawObject;
+    A, B: Extended;
+    L1 : TXY;
+begin
+  case state of
+  0..1: inherited;
+  2: with FCompoundObjects do begin
+       inherited;             // finish rect
+       Rect := ObjNr(0);
+       with Rect do begin
+         M := Ept(5); A := Dist(0, 1); B := Dist(1, 2);
+         if A > B then begin // set start point of circle on short side
+            S1 := EPt(6); S2 := EPt(4); LongDist := A; ShortDist := B; end
+         else begin
+            S1 := EPt(4); S2 := EPt(6); LongDist := B; ShortDist := A; end;
+         end;
+       P := S1.ScreenPt;
+       ObjType := otCircle;
+       Click(P.X, P.Y);     // start circle
+       InfoProc('Kleiner Kreis');
+       end;
+  3: with FCompoundObjects do begin
+       Rect   := ObjNr(0);                         // middle of oval
+       Kreis1 := ObjNr(1);
+       Kreis1.Finish;                              // finish small circle
+       M1 := Kreis1.Ept(0);
+       Kreis2 := Kreis1.Copy;
+       Add(Kreis2);                                // copy circle
+       Kreis2.Move(2 * (M.X - M1.X), 2 * (M.Y - M1.Y)); // move it to other end of rect
+       M2 := Kreis2.Ept(0);
+       L1 := S2.DistDirection(M, S1.DistanceTo(M1));
+       with M1 do Newpoint(X, Y);
+       with L1 do Newpoint(X, Y);
+       with MidXY(M1, EPt(1)) do Newpoint(X, Y);
+       with Lot(Ept(2), Ept(1), 10) do Newpoint(X, Y);
+       with Schnittpunkt(Ept(3), EPt(2), EPt(1), M) do M3 := Newpoint(X, Y);
+       ObjType := otArc;
+       Arc1 := TArc.Create;
+       Add(Arc1);
+       with M3.ScreenPt do Arc1.NewPoint(X, Y);    // start circle
+       with M1.ScreenPt do A1 := Arc1.NewPoint(X, Y);
+       with M2.ScreenPt do A2 := Arc1.NewPoint(X, Y);
+       with M3 do begin
+          A1.ScaleTo(X, Y, DistanceTo(S2)/DistanceTo(A1));
+          A2.ScaleTo(X, Y, DistanceTo(S2)/DistanceTo(A1));
+          end;
+//       if M3.Clockwise(A1, A2) then Arc1.Points.Exchange(1,2);
+//       Arc2 := Arc1.Copy;
+//       with M do Arc2.Turn(X,Y, pi);
+//       Add(Arc2);
+//       Arc1.Draw;
+       // Kreis3.LOpt.CircMid := True;    // draw from midpoint
+       Finish;
+       Draw;
+       end;
+  end; {case}
+end;
+
+procedure TOVal.WriteResults;
+begin
+  inherited;
+end;
+
+// ---------- TIntercol --------------
+constructor TIntercol.create;
+begin
+  inherited;
+  FCompoundObjects.ObjType := otCircle;
+end;
+
+procedure TInterCol.Drag(A, B: longint);
+begin
+  if state = 2 then with FCompoundObjects.ObjNr(0) do
+    Ept(1).ForceDirection(Ept(2), A, B);
+  inherited;
+end;
+
+
+procedure TInterCol.Click(X, Y: longint);
+var A, B: Extended;
+    Kreis1, Kreis2, Linie: TDrawObject;
+begin
+  case state of
+  0: begin
+       inherited; // create circle
+       InfoProc('S�ulendurchmesser');
+       end;
+  1: begin
+       inherited; // finish circle
+       FCompoundObjects.ObjType := otLine;
+       FCompoundObjects.Click(X, Y); // create line
+       InfoProc('S�ulenabstand');
+       end;
+  2: with FCompoundObjects do begin
+       Linie  := ObjNr(1);
+       Kreis1 := ObjNr(0);
+       Linie.Finish; // finish line
+       Kreis2 := Kreis1.Copy;
+       Add(Kreis2); // copy circle
+       A := Linie.Ept(1).X-Kreis1.Ept(2).X;
+       B := Linie.Ept(1).Y-Kreis1.Ept(2).Y;
+       Kreis2.Move(A, B); // move it to end of line
+       Finish;
+       Draw;
+       end;
+  end; {case}
+end;
+
+function  Tintercol.Properties: String;
+var Diam, Dist, Prop: Extended;
+begin
+  with FCompoundObjects do begin
+    Diam := ObjNr(0).Dist(1,2);
+    Dist := ObjNr(1).Dist(0,1);
+    try
+      Prop := Diam/Dist;
+    except
+      Prop := 0;
+      end;    
+    end;
+  result := Name + CRLF
+    + 'S�ulen-Durchmesser:' + #9
+    +  FS(Diam * Faktor)+ CRLF
+    + 'S�ulen-Abstand:' + #9#9
+    +  FS(Dist * Faktor)+ CRLF
+    + 'Verh�ltnis:' + #9 + Proportion(Prop) + CRLF
+    + Columnprop(Prop);
+end;
+
+// ---------- TIntercol --------------
+procedure TRatio.Click(X, Y: longint);
+begin
+  case state of
+  0: begin
+       inherited; // create line
+       InfoProc('Erste Strecke');
+       end;
+  1: begin
+       inherited; // finish line
+       FCompoundObjects.Click(X, Y); // create line
+       InfoProc('Zweite Strecke');
+       end;
+  2: with FCompoundObjects do begin
+       // Linie := ObjNr(0);
+       Finish;
+       Draw;
+       end;
+  end; {case}
+end;
+
+function  TRatio.Properties: String;
+var D1, D2, Prop, Angle: Extended;
+    P0, P1, P2: TEPoint;
+begin
+  with FCompoundObjects do begin
+    D1 := ObjNr(0).Dist(0,1);
+    D2 := ObjNr(1).Dist(0,1);
+    try
+      Prop   := D1/D2;
+    except
+      Prop   := 0;
+      end;
+    P0 := ObjNr(0).EPt(0);
+    P1 := ObjNr(0).EPt(1);
+    P2 := ObjNr(1).EPt(1);
+  Angle :=
+    WinkelGrad(P1.X - P2.X, P1.Y - P2.Y)-
+    WinkelGrad(P1.X - P0.X, P1.Y - P0.Y);
+  if Angle < 0 then Angle := Angle + 360.0;
+    end;
+  result := Name + CRLF
+    + 'Strecke A:' + #9
+    +  FS(D1 * Faktor)+ CRLF
+    + 'Strecke B:' + #9
+    +  FS(D2 * Faktor)+ CRLF
+    + 'Verh�ltnis:' + #9
+     + Proportion(Prop)+ CRLF
+    + '�ffnungswinkel:' + #9
+    +  FS(Angle) + '�';
+end;
+
+procedure TReady.AddObj(T: TDrawObject);
+begin
+end;
+
+procedure TReady.Click(X, Y: longint);
+begin
+  inherited;
+  with FCompoundObjects do case state of
+  1: begin
+        LeadLine := TLine.Create;
+        Leadline.Click(X, Y);
+        Leadline.LOpt.LineColor := Opt.MarkColor;
+        end;
+  2: begin
+        Leadline.Draw;
+        Leadline.Free;
+        Finish;
+        Draw;
+        end;
+  end;
+
+end;
+
+procedure TReady.Drag(A, B: longint);
+begin
+  if not Dragging then exit;
+  with FCompoundObjects do case state of
+  1: begin   // draw only a line
+     inherited draw;
+     Leadline.Drag(A, B);
+     end;
+  2: begin
+     Draw; // clear old with XOR
+     // Turn, Scale
+     Draw; // draw new with XOR
+     end;
+  end; {case}   
+end;
+
+
+// -----------------------------------------------------------
+procedure TObjList.InfoState;
+begin
+  case drawState of
+    dsOnMove     : Infoproc('Anfangspunkt setzen');
+    dsOnTurn     : Infoproc('Drehpunkt setzen');
+    dsOnScale    : Infoproc('Nullpunkt setzen');
+    end;
+end;
+
+// -----------------------------------------------------------
+procedure TObjList.NextState;
+begin
+  State := succ(drawState);
+  case drawState of
+    dsMoving     : Infoproc('Zielpunkt festlegen');
+    dsTurnStart  : Infoproc('Startwinkel angeben');
+    dsTurning    : Infoproc('Neuen Winkel festlegen');
+    dsScaleStart : Infoproc('Vergleichsstrecke angeben');
+    dsScaling    : Infoproc('neue L�nge festlegen');
+    end;
+end;
+
+procedure TObjList.Drag(A, B: longint);
+begin
+  case DrawState of
+    dsMoving       : Move(A, B);
+    dsTurnStart,
+    dsTurning      : Turn(A, B);
+    dsScaleStart,
+    dsScaling      : Scale(A, B);
+    dsDrawing      : try
+      obj.Drag(A, B);
+      except end;
+    end;
+end;
+
+procedure TObjList.CombineObjects;
+var i, j, k : integer;
+    C  : TCompound;
+    T  : TDrawObject;
+begin
+  if not highlight then exit;
+  NewObj(ord(otCompound),'');
+  j := count-2;
+  for i := j downto 0 do begin
+    T := ObjNr(i);
+    if T.Highlight then
+      if (T is TCompound)
+        then TCompound(Obj).Swallow(TCompound(T))
+      else begin
+        TCompound(Obj).Add(T);
+        Delete(i);
+        end;
+    end;
+  Pack;
+  ObjType   := otLine;
+  Obj.State := dsComplete;
+  Obj.Highlight := TRUE;
+  ResetList;
+end;
+
+procedure TObjList.CopyObj;
+var i, j: integer;
+begin
+  j := count-1;
+  while NextObj do with ONext do
+    if highlight then Add(Copy);
+end;
+
+function TObjList.Snap(var A, B: longint): boolean;
+var i : longint;
+begin
+  for i := 0 to Count - 1 do begin
+    result := ObjNr(i).Snap(A, B);
+    if result then break;
+    end;
+end;
+
+end.
+
+
