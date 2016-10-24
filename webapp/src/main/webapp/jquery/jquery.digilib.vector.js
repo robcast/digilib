@@ -305,7 +305,7 @@
         for (var i = 0; i < shapes.length; ++i) {
             var shape = shapes[i];
             data.shapeFactory[shape.geometry.type].setup(data, shape);
-            console.debug('render', shape);
+            // console.debug('render', shape);
         }
         // sort shapes by size descending
         shapes.sort(function (a, b) {
