@@ -442,7 +442,7 @@
                   'style': 'pointer-events:all'
                   }
                };
-            console.debug('createshape: '+type, annoShape, shape);
+            // console.debug('createshape: '+type, annoShape, shape);
             shapes.push(shape);
         }
         return shapes;

@@ -216,7 +216,8 @@
             svgAttr: svgAttr,
             createScreenCoords: createScreenCoords,
             editShapeBegin: addEditHandles,
-            editShapeEnd: removeEditHandles
+            editShapeEnd: removeEditHandles,
+            redrawShape: redrawShape
             });
     };
 
@@ -558,26 +559,26 @@
         var trafo = data.imgTrafo;
         // type of handle can be stated in layer
         var type = layer.handleType;
-        var newHandle = data.handleFactory[type] || data.handleFactory['square'];
         var handles = [];
-        var createHandle = function (i, item) {
+        var createHandle = data.handleFactory[type] || data.handleFactory['square'];
+        var insertHandle = function (i, item) {
             var p = trafo.transform(geom.position(item));
-            var $handle = newHandle();
+            var $handle = createHandle();
+            $handle.attr('vertex', i);
             $handle.moveTo(p);
             handles.push($handle);
             $svg.append($handle);
             return $handle;
             };
-        var coords = shape.geometry.coordinates;
-        $.each(coords, createHandle);
-        // vertexElems must be defined before calling getVertexDragHandler()
+        $.each(shape.geometry.coordinates, insertHandle);
         shape.$vertexElems = handles;
+        // not needed?
         var done = function (data, shape, evt) {
-            unrenderShape(data, shape);
-            renderShape(data, shape, layer);
-            }
+            redrawShape(data, shape, layer);
+            };
+        // vertexElems must be defined before calling getVertexDragHandler()
         var attachEvent = function (i, item) {
-            item.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, i, done));
+            item.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, i));
             };
         $.each(handles, attachEvent);
     };
@@ -635,7 +636,7 @@
         }
         return geom.rectangle(xmin, ymin, xmax-xmin, ymax-ymin);
     };
-    
+
     /**
      * render a shape on screen.
      * 
@@ -659,12 +660,15 @@
         }
         // create the SVG
         var $elem = data.shapeFactory[shapeType].svg(shape);
+        // let shape know where it is rendered
         shape.$elem = $elem;
+        shape.layer = layer;
         // place the SVG on screen
         createScreenCoords(data, shape);
         $elem.place();
         // render the SVG
         $(layer.svgElem).append($elem);
+        // add adjustment handles
         if (shape.properties.editable) {
             addEditHandles(data, shape, layer);
         }
@@ -686,6 +690,20 @@
     		shape.$elem.remove();
     		delete shape.$elem;
     	}
+    };
+
+    /**
+     * re-render a shape.
+     * 
+     * Removes the SVG element from layer and renders the (updated) shape again.
+     * 
+     * @param data
+     * @param shape
+     * @param layer
+     */
+    var redrawShape = function (data, shape, layer) {
+        unrenderShape(data, shape);
+        renderShape(data, shape, layer || shape.layer);
     };
 
     /**
@@ -859,9 +877,8 @@
                             rerender = true;
 	            		}
 	            		if (rerender) {
-	            		    unrenderShape(data, shape);
 	            		    shape.properties.vtx = vtx;
-	            		    renderShape(data, shape, layer);
+	            		    redrawShape(data, shape, layer);
 	            		}
             		} else {
             			console.error("unknown event type!");
