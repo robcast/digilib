@@ -1279,8 +1279,9 @@ function($) {
             // adjust scaler div size (beware: setting position makes the element relative)
             imgRect.getSize().adjustDiv($scaler);
             // show image in case it was hidden (for example in zoomDrag)
-            $img.css('visibility', 'visible');
-            $scaler.css({'opacity' : '1'});
+            $img.css('visibility', 'visible').fadeIn();
+            // $scaler.css({'opacity' : '1'});
+            $scaler.animate({opacity: 1}, 'fast');
             data.hasPreviewBg = false;
             // update display (render marks, etc.)
             updateDisplay(data);
@@ -1414,8 +1415,6 @@ function($) {
         var imgTrafo = data.imgTrafo;
         var scalerPos = geom.position($scaler);
         var bgRect = null;
-        // hide the scaler img, show background of div instead
-        $img.css('visibility', 'hidden');
         // use current image as first background
         var scalerCss = {
                 'background-image' : 'url(' + $img.attr('src') + ')',
@@ -1465,6 +1464,8 @@ function($) {
             }
         }
         $scaler.css(scalerCss);
+        // hide the scaler img, show background of div instead
+        $img.css('visibility', 'hidden').hide();
         data.hasPreviewBg = true;
     };
 
