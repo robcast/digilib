@@ -66,7 +66,9 @@
         // default SVG fill
         'defaultFill' : 'none',
         // grab handle size
-        'editHandleSize' : 10
+        'editHandleSize' : 10,
+        // handle type (square, diamond, circle, cross)
+        'editHandleType' : 'square'
     };
 
     var actions = {
@@ -557,10 +559,10 @@
     var addEditHandles = function (data, shape, layer) {
         var $svg = $(layer.svgElem);
         var trafo = data.imgTrafo;
-        // type of handle can be stated in layer
-        var type = layer.handleType;
+        // type of handle can be stated in layer or in settings
+        var type = layer.handleType || data.settings.editHandleType;
         var handles = [];
-        var createHandle = data.handleFactory[type] || data.handleFactory['square'];
+        var createHandle = data.handleFactory[type];
         var insertHandle = function (i, item) {
             var p = trafo.transform(geom.position(item));
             var $handle = createHandle();
