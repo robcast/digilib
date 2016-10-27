@@ -882,18 +882,18 @@
 
     // plugin actions
     var actions = {
-        measurebar : function(data) {
+        measurebar: function(data) {
             var $measureBar = data.$measureBar;
             if ($measureBar == null) {
-                $measureBar = setupMeasureBar(data);
-				};
-			$measureBar.toggle();
-			var on = $measureBar.is(":visible");
-			attachKeyHandlers(data, on);
-			showSVG(data, on);
-			return;
-            },
-        drawshape : function(data) {
+              $measureBar = setupMeasureBar(data);
+              };
+            $measureBar.toggle();
+            var on = $measureBar.is(":visible");
+            attachKeyHandlers(data, on);
+            showSVG(data, on);
+            return;
+        },
+        drawshape: function(data) {
             var shape = newShape(data);
             var layer = data.measureLayer;
             $(data).trigger('createShape', shape);
@@ -940,7 +940,7 @@
     // event handler for dragShape
     var onDragShape = function(event, shape) {
         var data = this;
-        updateInfo(data, shape);
+        updateMeasuredValue(data, shape);
         _debug_shape('onDragShape', shape);
     };
 
@@ -948,7 +948,7 @@
     var onChangeShape = function(event, shape) {
         var data = this;
         // event handler for updating shape info
-        updateInfo(data, shape);
+        updateMeasuredValue(data, shape);
         currentShape = null;
         _debug_shape('onChangeShape', shape);
     };
@@ -958,7 +958,8 @@
         var data = this;
         var select = function(event) {
             selectShape(data, this, shape);
-            updateInfo(data, shape);
+            setActiveShapeType(data, shape);
+            updateMeasuredValue(data, shape);
             _debug_shape('onClick', shape);
             };
         var info = function(event) {
@@ -969,13 +970,6 @@
         $elem.on('mouseover.measureinfo', info);
         $elem.on('click.measureselect', select);
         _debug_shape('onRenderShape', shape);
-        };
-
-    // get the vertex before the given one
-    var getPrecedingVertex = function(shape, vertex) {
-        var props = shape.properties;
-        var vtx = vertex == null ? props.vtx : vertex;
-        return (vtx === 0) ? props.screenpos.length-1 : vtx-1;
         };
 
     // calculate the angle between three points (rectified)
@@ -1011,47 +1005,41 @@
         return dist.rectified;
         };
 
-    // calculate the distance between two screen points
+    // convert a distance between 2 coordinates (indexed) into both units
+    // ### do we need this?
+    var convertDistance = function (data, shape, dist) {
+        return convertLength(data, getScreenDistance(data, shape, v1, v2));
+        };
+
+    // calculate the distance between two vertices
     var getScreenDistance = function (shape, v1, v2) {
         var p = shape.properties.screenpos;
         return p[v1].distance(p[v2]);
         };
 
-    // convert a length into both units 
-    var convertLength = function (data, dist) {
-        var factor = data.measureFactor;
-        var unit1 = unitFactor(data, 1);
-        var unit2 = unitFactor(data, 2);
-        var ratio = unit1 / unit2;
-        var len1 = scaleValue(dist, factor);
-        var len2 = scaleValue(len1, ratio);
-        var name1 = data.measureUnit1;
-        var name2 = data.measureUnit2;
-        return [name1, len1, name2, len2];
-        };
-
-    // convert a distance between 2 coordinates (indexed) into both units
-    // ### do we need this?
-    var convertDistance = function (data, shape, dist) {
-        return convertLength(data, getRectifiedDistance(data, shape, v1, v2));
+    // get the vertex before the given one
+    var getPrecedingVertex = function(shape, vertex) {
+        var props = shape.properties;
+        var vtx = vertex == null ? props.vtx : vertex;
+        return (vtx === 0) ? props.screenpos.length-1 : vtx-1;
         };
 
     // calculate the distance from one shape vertex to the one before it (in rectified digilib coords)
-    var getPrecedingVertexDistance = function(data, shape, vtx) {
-        // if (vtx == null) {
-        //    vtx = shape.properties.vtx;
-        //    }
-        var preVtx = getPrecedingVertex(shape, vtx || shape.properties.vtx);
+    var getPrecedingVertexDistance = function(data, shape, v1) {
         // [safely assume that the 'screenpos' and 'coords' arrays have equal length?]
-        return getScreenDistance(shape, preVtx, vtx);
+        if (v1 == null) {
+          v1 = shape.properties.vtx;
+        }
+        var v0 = getPrecedingVertex(shape, v1);
+        return getScreenDistance(shape, v0, v1);
         };
 
     // calculate distance from current to preceding vertex (in rectified digilib coords)
     var getRectifiedLength = function(data, shape) {
-        var coords = shape.geometry.coordinates;
+        // var coords = shape.geometry.coordinates;
         var total = 0;
         if (shape.geometry.type === 'LineString') { // sum up distances
-            for (vtx = 1; vtx < coords.length; vtx++) {
+            for (vtx = 1; vtx < shape.screenpos.length; vtx++) {
                 total += getPrecedingVertexDistance(data, shape, vtx);
                 }
         } else {
@@ -1083,21 +1071,19 @@
 
     // recalculate factor after a new value was entered into input element "value1"
     var changeFactor = function(data) {
-        var widgets = data.measureWidgets;
-        var val = parseFloat(widgets.value1.val());
-        var fac = val / data.lastMeasuredValue;
-        data.measureFactor = fac;
-        updateUnits(data);    // convert a distance between 2 points into both units 
+        var val = parseFloat(data.measureWidgets.value1.val());
+        data.measureFactor = val / data.lastMeasuredValue;
+        updateUnits(data); // convert a distance between 2 points into both units 
     };
-
-    // scale area
-    var scaleArea = function(val, factor) {
-        return val * factor * factor;
-        };
 
     // scale length
     var scaleValue = function(val, factor) {
         return val * factor;
+        };
+
+    // scale area
+    var scaleArea = function(val, factor) {
+        return val * factor * factor;
         };
 
     // UGLY: info whether to show area (not length) for this shape type
@@ -1105,18 +1091,29 @@
         return data.settings.shapeInfo[type].display === 'area';
         };
 
+    // convert a length into both units 
+    var convertLength = function (data, dist) {
+        var factor = data.measureFactor;
+        var unit1 = unitFactor(data, 1);
+        var unit2 = unitFactor(data, 2);
+        var ratio = unit1 / unit2;
+        var len1 = scaleValue(dist, factor);
+        var len2 = scaleValue(len1, ratio);
+        var name1 = data.measureUnit1;
+        var name2 = data.measureUnit2;
+        return [len1, len2, name1, name2];
+        };
+
     // convert measured value to second unit and display
-    var updateConversion = function(data, val, type, showArea) {
+    var updateConversion = function(data, val1, type) {
         var widgets = data.measureWidgets;
         var unit1 = unitFactor(data, 1);
         var unit2 = unitFactor(data, 2);
         var ratio = unit1 / unit2;
-        var result = showArea
-          ? scaleArea(val, ratio)
-          : scaleValue(val, ratio);
+        var val2 = scaleValue(val1, ratio);
         widgets.shape.val(type);
-        widgets.value1.val(fn.cropFloatStr(val));
-        widgets.value2.text(fn.cropFloatStr(result));
+        widgets.value1.val(fn.cropFloatStr(val1));
+        widgets.value2.text(fn.cropFloatStr(val2));
         };
 
     // update last measured pixel values, display as converted to new units
@@ -1124,19 +1121,17 @@
         var type = getActiveShapeType(data);
         var factor = data.measureFactor;
         var px = data.lastMeasuredValue;
-        var area = showArea(data, type);
-        var val = area
-          ? scaleArea(px, factor)
-          : scaleValue(px, factor);
-        updateConversion(data, val, type, area);
+        // var area = showArea(data, type);
+        //nvar val = area
+        //  ? scaleArea(px, factor)
+        var val = scaleValue(px, factor);
+        updateConversion(data, val, type);
         };
 
     // display info for shape
-    var updateInfo = function(data, shape) {
-        data.lastMeasuredValue = showArea(data, shape.geometry.type)
-          ? getRectifiedArea(data, shape) // ### needed? (use screenpos)
-          : getRectifiedLength(data, shape);
-        setActiveShapeType(data, shape);
+    var updateMeasuredValue = function(data, shape) {
+        data.lastMeasuredValue = getPrecedingVertexDistance(data, shape);
+        console.debug(shape, data.lastMeasuredValue);
         updateUnits(data);
         };
 
@@ -1153,11 +1148,14 @@
         var scaled = showArea(data, type)
           ? scaleArea(getRectifiedArea(data, shape), factor)
           : scaleValue(getRectifiedLength(data, shape), factor);
-        var len = fn.cropFloat(scaled, 2);
         var name = s.shapeInfo[type].name;
         var display = s.shapeInfo[type].display;
-        var unit = data.measureUnit1;
-        var html = '<div class="head">'+name+'</div><div><em>'+display+'</em>: '+len+' '+unit+'</div>';
+        var l = convertLength(data, scaled);
+        var html = '<div class="head">'+name+'</div>'
+          +'<div><em>'+display+'</em>: '
+          +fn.cropFloat(l[0], 2)+' '+l[2]+' = '
+          +fn.cropFloat(l[1], 2)+' '+l[3]
+          +'</div>';
         return html;
         };
 
@@ -1171,7 +1169,7 @@
         shape.$elem.attr("class", cssclass);
         shape.properties.cssclass = cssclass;
         shape.properties.selected = select;
-    };
+        };
 
     // construct CSS class for svg shape
     var shapeClass = function(shapeType, more) {
@@ -1220,7 +1218,7 @@
             if (screenpos == null || vtx == null) {
                 return; }
             var lastPos = screenpos[getPrecedingVertex(shape)];
-            shape.geometry.coordinates[vtx] = data.imgTrafo.invtransform(thisPos); // ### needed? just work with screenpos?
+            // shape.geometry.coordinates[vtx] = data.imgTrafo.invtransform(thisPos); // ### needed? just work with screenpos?
             var factor = data.measureFactor;
             var screenDist = getPrecedingVertexDistance(data, shape);
             var unitDist = scaleValue(screenDist, factor);
@@ -1270,8 +1268,8 @@
         };
 
     // set the current unit (from unit select widget)
-    var changeUnit = function(data, name) {
-        data[name] = $(widget).find('option:selected').text();
+    var changeUnit = function(data, widget) {
+        data[widget.name] = $(widget).find('option:selected').text();
         updateUnits(data);
         };
 
@@ -1340,7 +1338,7 @@
             $svg.removeAttr("display"); }
         else {
             $svg.attr("display", "none"); }
-    };                                                                    
+    };
 
     // initial position of measure bar (bottom left of browser window)
     var setScreenPosition = function(data, $bar) {
@@ -1781,11 +1779,13 @@
             });
         widgets.shape.on('change.measure',  function(evt) { changeActiveShapeType(data) });
         widgets.value1.on('change.measure', function(evt) { changeFactor(data) });
-        widgets.unit1.on('change.measure',  function(evt) { changeUnit(data, this.name) });
-        widgets.unit2.on('change.measure',  function(evt) { changeUnit(data, this.name) });
+        widgets.unit1.on('change.measure',  function(evt) { changeUnit(data, this) });
+        widgets.unit2.on('change.measure',  function(evt) { changeUnit(data, this) });
         widgets.unit1.attr('tabindex', -1);
         widgets.unit2.attr('tabindex', -1);
         widgets.value1.attr('tabindex', -1);
+        changeUnit(data, widgets.unit1[0]);
+        changeUnit(data, widgets.unit2[0]);
         };
 
     // event handler for setup phase
@@ -1809,7 +1809,7 @@
     var handleUpdate = function (evt) {
         var data = this;
         console.debug("measure: handleUpdate");
-        };
+    };
 
     // plugin installation called by digilib on plugin object
     var install = function (plugin) {
