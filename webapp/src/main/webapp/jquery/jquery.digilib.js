@@ -1279,9 +1279,10 @@ function($) {
             // adjust scaler div size (beware: setting position makes the element relative)
             imgRect.getSize().adjustDiv($scaler);
             // show image in case it was hidden (for example in zoomDrag)
-            $img.css('visibility', 'visible').fadeIn();
+            $img.css('visibility', 'visible');
+            $img.fadeIn();
             // $scaler.css({'opacity' : '1'});
-            $scaler.animate({opacity: 1}, 'fast');
+            $scaler.fadeTo('slow', 1);
             data.hasPreviewBg = false;
             // update display (render marks, etc.)
             updateDisplay(data);
@@ -1462,10 +1463,12 @@ function($) {
                 scalerCss[data.bgSizeName] += ', ' + Math.round(fullRect.width) + 'px ' + Math.round(fullRect.height) + 'px';
                 scalerCss['background-position'] += ', ' + Math.round(fullRect.x) + 'px '+ Math.round(fullRect.y) + 'px';
             }
+            // console.debug('setPreviewBg', scalerCss);
         }
         $scaler.css(scalerCss);
         // hide the scaler img, show background of div instead
-        $img.css('visibility', 'hidden').hide();
+        $img.css('visibility', 'hidden');
+        $img.hide();
         data.hasPreviewBg = true;
     };
 

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
         <meta name="viewport" content="initial-scale=1.0"/>
         <title>Digilib measure test</title>
 
@@ -34,11 +34,14 @@
 
         <script type="text/javascript">
             $(document).ready(function(){
-                var opts = {
-                    interactionMode : 'fullscreen',
-                    showRegionNumbers : true,
-                    };
                 var $div = $('div#digilib');
+                var opts = {
+                    mo: 'lpic',
+                    interactionMode: 'fullscreen',
+                    previewImgWidth: 1000,
+                    previewImgHeight: 1000,
+                    maxBgSize: 10000
+                    };
                 $div.digilib(opts);
             });
         </script>
