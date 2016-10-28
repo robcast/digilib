@@ -1412,7 +1412,6 @@ function($) {
      */
     var setPreviewBg = function(data, newZoomArea) {
         var $scaler = data.$scaler;
-        var $img = data.$img;
         var imgTrafo = data.imgTrafo;
         var scalerPos = geom.position($scaler);
         var bgRect = null;
@@ -1421,7 +1420,6 @@ function($) {
                 'background-image' : 'url(' + $img.attr('src') + ')',
                 'background-repeat' : 'no-repeat',
                 'background-position' : '0px 0px',
-                'opacity' : '0.7',
                 'cursor' : 'move'
         };
         if (newZoomArea != null) {
@@ -1466,9 +1464,6 @@ function($) {
             // console.debug('setPreviewBg', scalerCss);
         }
         $scaler.css(scalerCss);
-        // hide the scaler img, show background of div instead
-        $img.css('visibility', 'hidden');
-        $img.hide();
         data.hasPreviewBg = true;
     };
 
@@ -1493,6 +1488,10 @@ function($) {
             $elem.find('.'+data.settings.cssPrefix+'overlay').hide(); // hide all overlays (marks/regions)
             startPos = geom.position(evt);
             delta = null;
+            // hide the scaler img, show background of div instead
+            $img.css('visibility', 'hidden');
+            $img.hide();
+            $scaler.fadeTo('slow', 0.7);
             // set low res background immediately on mousedown
             setPreviewBg(data);
             $document.on("mousemove.dlZoomDrag", dragMove);
@@ -1522,7 +1521,9 @@ function($) {
             if (delta == null || delta.distance() < 2) {
                 // no movement
                 $img.css('visibility', 'visible');
-                $scaler.css({'opacity' : '1', 'background-image' : 'none'});
+                $img.fadeIn();
+                $scaler.fadeTo('slow', 1);
+                // $scaler.css({'opacity' : '1', 'background-image' : 'none'});
                 data.hasPreviewBg = false;
                 // unhide marks etc.
                 updateDisplay(data);
