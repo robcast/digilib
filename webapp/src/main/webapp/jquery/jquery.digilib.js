@@ -1417,7 +1417,7 @@ function($) {
         var bgRect = null;
         // use current image as first background
         var scalerCss = {
-                'background-image' : 'url(' + $img.attr('src') + ')',
+                'background-image' : 'url(' + data.$img.attr('src') + ')',
                 'background-repeat' : 'no-repeat',
                 'background-position' : '0px 0px',
                 'cursor' : 'move'
