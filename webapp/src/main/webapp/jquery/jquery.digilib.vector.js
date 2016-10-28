@@ -580,7 +580,7 @@
             };
         // vertexElems must be defined before calling getVertexDragHandler()
         var attachEvent = function (i, item) {
-            item.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, i));
+            item.one("mousedown.dlVertexDrag", getVertexDragHandler(data, shape, i, done));
             };
         $.each(handles, attachEvent);
     };
