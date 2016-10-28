@@ -1280,7 +1280,9 @@ function($) {
             imgRect.getSize().adjustDiv($scaler);
             // show image in case it was hidden (for example in zoomDrag)
             $img.css('visibility', 'visible');
-            $scaler.css({'opacity' : '1'});
+            $img.fadeIn();
+            // $scaler.css({'opacity' : '1'});
+            $scaler.fadeTo('slow', 1);
             data.hasPreviewBg = false;
             // update display (render marks, etc.)
             updateDisplay(data);
@@ -1410,18 +1412,14 @@ function($) {
      */
     var setPreviewBg = function(data, newZoomArea) {
         var $scaler = data.$scaler;
-        var $img = data.$img;
         var imgTrafo = data.imgTrafo;
         var scalerPos = geom.position($scaler);
         var bgRect = null;
-        // hide the scaler img, show background of div instead
-        $img.css('visibility', 'hidden');
         // use current image as first background
         var scalerCss = {
-                'background-image' : 'url(' + $img.attr('src') + ')',
+                'background-image' : 'url(' + data.$img.attr('src') + ')',
                 'background-repeat' : 'no-repeat',
                 'background-position' : '0px 0px',
-                'opacity' : '0.7',
                 'cursor' : 'move'
         };
         if (newZoomArea != null) {
@@ -1463,6 +1461,7 @@ function($) {
                 scalerCss[data.bgSizeName] += ', ' + Math.round(fullRect.width) + 'px ' + Math.round(fullRect.height) + 'px';
                 scalerCss['background-position'] += ', ' + Math.round(fullRect.x) + 'px '+ Math.round(fullRect.y) + 'px';
             }
+            // console.debug('setPreviewBg', scalerCss);
         }
         $scaler.css(scalerCss);
         data.hasPreviewBg = true;
@@ -1489,6 +1488,10 @@ function($) {
             $elem.find('.'+data.settings.cssPrefix+'overlay').hide(); // hide all overlays (marks/regions)
             startPos = geom.position(evt);
             delta = null;
+            // hide the scaler img, show background of div instead
+            $img.css('visibility', 'hidden');
+            $img.hide();
+            $scaler.fadeTo('slow', 0.7);
             // set low res background immediately on mousedown
             setPreviewBg(data);
             $document.on("mousemove.dlZoomDrag", dragMove);
@@ -1518,7 +1521,9 @@ function($) {
             if (delta == null || delta.distance() < 2) {
                 // no movement
                 $img.css('visibility', 'visible');
-                $scaler.css({'opacity' : '1', 'background-image' : 'none'});
+                $img.fadeIn();
+                $scaler.fadeTo('slow', 1);
+                // $scaler.css({'opacity' : '1', 'background-image' : 'none'});
                 data.hasPreviewBg = false;
                 // unhide marks etc.
                 updateDisplay(data);
