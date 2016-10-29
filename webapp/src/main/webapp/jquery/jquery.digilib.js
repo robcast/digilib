@@ -102,6 +102,8 @@ function($) {
         'previewImgParamNames' : ['fn','pn','dw','dh','mo','rot'],
         // reserved space in full page display (default value accounts for body margins)
         'scalerInsets' : { 'x' : 26, 'y': 20 },
+        // how transparent does the background image get while changing the zoom area?
+        'scalerFadedOpacity' : 0.7,
         // number of decimal places, for cropping parameters wx,wy,wh,ww
         'decimals' : 4
         };
@@ -375,6 +377,8 @@ function($) {
                 // interactively
                 var onComplete = function(data, rect) {
                     if (rect == null) return;
+                    // hide image
+                    fadeScalerImg(data, 0);
                     setZoomArea(data, rect);
                     // reset modes
                     setFitMode(data, 'both');
@@ -395,6 +399,8 @@ function($) {
          */
         zoomFull : function (data, mode) {
             setZoomArea(data, FULL_AREA.copy());
+            // hide image
+            fadeScalerImg(data, 0);
             setFitMode(data, mode);
             // zoom full only works in screen mode
             setScaleMode(data, 'screen');
@@ -562,8 +568,7 @@ function($) {
             }
             return url;
         },
-        
-        
+
         /** set image quality
          * 
          * @param data
@@ -1279,10 +1284,7 @@ function($) {
             // adjust scaler div size (beware: setting position makes the element relative)
             imgRect.getSize().adjustDiv($scaler);
             // show image in case it was hidden (for example in zoomDrag)
-            $img.css('visibility', 'visible');
-            $img.fadeIn();
-            // $scaler.css({'opacity' : '1'});
-            $scaler.fadeTo('slow', 1);
+            fadeScalerImg(data, 1);
             data.hasPreviewBg = false;
             // update display (render marks, etc.)
             updateDisplay(data);
@@ -1328,6 +1330,8 @@ function($) {
         newarea.y -= 0.5 * (newarea.height - area.height);
         newarea = FULL_AREA.fit(newarea);
         setZoomArea(data, newarea);
+        // hide image
+        fadeScalerImg(data, 0);
         // reset modes
         setScaleMode(data, 'screen');
         setFitMode(data, 'both');
@@ -1489,9 +1493,7 @@ function($) {
             startPos = geom.position(evt);
             delta = null;
             // hide the scaler img, show background of div instead
-            $img.css('visibility', 'hidden');
-            $img.hide();
-            $scaler.fadeTo('slow', 0.7);
+            fadeScalerImg(data, 0);
             // set low res background immediately on mousedown
             setPreviewBg(data);
             $document.on("mousemove.dlZoomDrag", dragMove);
@@ -1519,12 +1521,9 @@ function($) {
             $document.off("mousemove.dlZoomDrag", dragMove);
             $document.off("mouseup.dlZoomDrag", dragEnd);
             if (delta == null || delta.distance() < 2) {
-                // no movement
-                $img.css('visibility', 'visible');
-                $img.fadeIn();
-                $scaler.fadeTo('slow', 1);
-                // $scaler.css({'opacity' : '1', 'background-image' : 'none'});
+                // no change, show image again
                 data.hasPreviewBg = false;
+                fadeScalerImg(data, 1);
                 // unhide marks etc.
                 updateDisplay(data);
                 return false; 
@@ -1579,6 +1578,23 @@ function($) {
         var flags = data.scalerFlags;
         var q = flags.q2 || flags.q1 || 'q0'; // assume q0 as default
         return parseInt(q[1], 10);
+    };
+
+    /** hide or show image, fade scaler background
+     * 
+     */
+    var fadeScalerImg = function (data, show) {
+        var $img = data.$img;
+        var $scaler = data.$scaler;
+        if (show == null || show == 0) {
+          $scaler.fadeTo('fast', data.settings.scalerFadedOpacity);
+          // $img.css('visibility', 'hidden');
+          $img.fadeOut();
+        } else {
+          $scaler.fadeTo('slow', 1);
+          // $img.css('visibility', 'visible');
+          $img.fadeIn();
+        }
     };
 
     /** set image quality as a number (0..2).
@@ -1882,6 +1898,7 @@ function($) {
             storeOptions : storeOptions,
             redisplay : redisplay,
             updateDisplay : updateDisplay,
+            fadeScalerImg : fadeScalerImg,
             showDiv : showDiv,
             defineArea : defineArea,
             setZoomArea : setZoomArea,

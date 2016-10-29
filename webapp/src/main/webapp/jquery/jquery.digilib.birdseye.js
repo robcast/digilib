@@ -274,6 +274,8 @@ digilib bird's eye view plugin
             // grow rectangle by border width
             newRect = null;
             data.$elem.find('.'+cssPrefix+'overlay').hide(); // hide all overlays (marks/regions)
+            // hide image
+            digilib.fn.fadeScalerImg(data, 0);
             $document.on("mousemove.dlBirdMove", birdZoomMove);
             $document.on("mouseup.dlBirdMove", birdZoomEndDrag);
             return false;
