@@ -103,7 +103,7 @@ function($) {
         // reserved space in full page display (default value accounts for body margins)
         'scalerInsets' : { 'x' : 26, 'y': 20 },
         // how transparent does the background image get while changing the zoom area?
-        'scalerFadedOpacity' : 0.7,
+        'scalerFadedOpacity' : 0.6,
         // number of decimal places, for cropping parameters wx,wy,wh,ww
         'decimals' : 4
         };
@@ -1309,7 +1309,7 @@ function($) {
      * 
      */
     var handleChangeZoomArea = function (evt, newZa) {
-        console.debug("handleChangeZoomArea:", newZa);
+        // console.debug("handleChangeZoomArea:", newZa);
         var data = this;
         // hide all overlays (marks/regions)
         data.$elem.find('.'+data.settings.cssPrefix+'overlay').hide();
@@ -1587,13 +1587,13 @@ function($) {
         var $img = data.$img;
         var $scaler = data.$scaler;
         if (show == null || show == 0) {
-          $scaler.fadeTo('fast', data.settings.scalerFadedOpacity);
           // $img.css('visibility', 'hidden');
-          $img.fadeOut();
+          $scaler.fadeTo('fast', data.settings.scalerFadedOpacity);
+          $img.fadeOut({queue: false});
         } else {
-          $scaler.fadeTo('slow', 1);
           // $img.css('visibility', 'visible');
-          $img.fadeIn();
+          $img.fadeIn({queue: false});
+          $scaler.fadeTo('slow', 1);
         }
     };
 
