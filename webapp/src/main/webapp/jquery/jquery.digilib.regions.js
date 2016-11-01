@@ -689,7 +689,7 @@ inner (optional)
         za.setCenter(rect.getCenter()).stayInside(FULL_AREA);
         fn.setZoomArea(data, za);
         // hide image
-        fn.fadeScalerImg(data, 0);
+        fn.fadeScalerImg(data, 'fadeOut');
         fn.redisplay(data);
     };
 
