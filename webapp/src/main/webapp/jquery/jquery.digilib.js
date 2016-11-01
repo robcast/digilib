@@ -377,11 +377,9 @@ function($) {
                 // interactively
                 var onComplete = function(data, rect) {
                     if (rect == null) return;
-                    // hide image
-                    fadeScalerImg(data, 0);
+                    // hide image, show dimmed background
+                    fadeScalerImg(data, 'fadeOut');
                     setZoomArea(data, rect);
-                    // reset modes
-                    setFitMode(data, 'both');
                     setScaleMode(data, 'screen');
                     redisplay(data);
                     };
@@ -398,11 +396,9 @@ function($) {
          * @param mode
          */
         zoomFull : function (data, mode) {
-            setZoomArea(data, FULL_AREA.copy());
-            // hide image
-            fadeScalerImg(data, 0);
             setFitMode(data, mode);
-            // zoom full only works in screen mode
+            data.$scaler.css('opacity', data.settings.scalerFadedOpacity);
+            setZoomArea(data, FULL_AREA.copy());
             setScaleMode(data, 'screen');
             redisplay(data);
         },
@@ -512,6 +508,8 @@ function($) {
             var settings = data.settings;
             var paramNames = settings.digilibParamNames;
             var params = data.queryParams;
+            // dim image, show something is happening
+            data.$scaler.css('opacity', data.settings.scalerFadedOpacity);
             // delete all digilib parameters
             for (var i = 0; i < paramNames.length; i++) {
                 var paramName = paramNames[i];
@@ -1283,11 +1281,16 @@ function($) {
             $scaler.css('cursor', 'auto');
             // adjust scaler div size (beware: setting position makes the element relative)
             imgRect.getSize().adjustDiv($scaler);
-            // show image in case it was hidden (for example in zoomDrag)
-            fadeScalerImg(data, 1);
+            // initial load of scaler background (for preview)
+            if (!data.hasPreviewBg) {
+                setPreviewBg(data, data.zoomArea);
+            }
             data.hasPreviewBg = false;
+            // show image in case it was hidden (for example in zoomDrag)
+            fadeScalerImg(data, 'fadeIn');
             // update display (render marks, etc.)
             updateDisplay(data);
+            console.debug("* load handler finished");
         };
     };
 
@@ -1330,11 +1333,11 @@ function($) {
         newarea.y -= 0.5 * (newarea.height - area.height);
         newarea = FULL_AREA.fit(newarea);
         setZoomArea(data, newarea);
-        // hide image
-        fadeScalerImg(data, 0);
+        // hide image, show dimmed background
+        fadeScalerImg(data, 'fadeOut');
         // reset modes
         setScaleMode(data, 'screen');
-        setFitMode(data, 'both');
+        // setFitMode(data, 'both'); // ###?
         redisplay(data);
     };
 
@@ -1427,14 +1430,15 @@ function($) {
                 'cursor' : 'move'
         };
         if (newZoomArea != null) {
-            // check if aspect ratio has changed
-            if (Math.abs(newZoomArea.getAspect() - data.zoomArea.getAspect()) > 0.001 ) {
-                var newRect = data.imgTrafo.transform(newZoomArea);
+            // check if aspect ratio has changed 
+            if (Math.abs(newZoomArea.getAspect() - data.zoomArea.getAspect()) > 0.001) {
+                var newRect = imgTrafo.transform(newZoomArea);
                 var newAspect = newRect.getAspect();
                 var newSize = data.maxImgSize.fitAspect(newAspect);
                 // set scaler to presumed new size
                 newSize.adjustDiv($scaler);
-                console.debug("adjusting aspect ratio for preview", data.maxImgSize, newSize);
+                console.debug("adjusting aspect ratio of preview:",
+                  data.maxImgSize.toString(), '=>', newSize.toString());
             }
             // get transform for new zoomArea (use 'screen' instead of data.scaleMode)
             imgTrafo = getImgTrafo($scaler, newZoomArea, data.settings.rot,
@@ -1465,8 +1469,8 @@ function($) {
                 scalerCss[data.bgSizeName] += ', ' + Math.round(fullRect.width) + 'px ' + Math.round(fullRect.height) + 'px';
                 scalerCss['background-position'] += ', ' + Math.round(fullRect.x) + 'px '+ Math.round(fullRect.y) + 'px';
             }
-            // console.debug('setPreviewBg', scalerCss);
         }
+        console.debug('* setPreviewBg', scalerCss[data.bgSizeName], 'pos', scalerCss['background-position']);
         $scaler.css(scalerCss);
         data.hasPreviewBg = true;
     };
@@ -1492,8 +1496,8 @@ function($) {
             $elem.find('.'+data.settings.cssPrefix+'overlay').hide(); // hide all overlays (marks/regions)
             startPos = geom.position(evt);
             delta = null;
-            // hide the scaler img, show background of div instead
-            fadeScalerImg(data, 0);
+            // hide image, show dimmed background
+            fadeScalerImg(data, 'hide');
             // set low res background immediately on mousedown
             setPreviewBg(data);
             $document.on("mousemove.dlZoomDrag", dragMove);
@@ -1523,7 +1527,7 @@ function($) {
             if (delta == null || delta.distance() < 2) {
                 // no change, show image again
                 data.hasPreviewBg = false;
-                fadeScalerImg(data, 1);
+                fadeScalerImg(data, 'fadeIn');
                 // unhide marks etc.
                 updateDisplay(data);
                 return false; 
@@ -1586,14 +1590,25 @@ function($) {
     var fadeScalerImg = function (data, show) {
         var $img = data.$img;
         var $scaler = data.$scaler;
-        if (show == null || show == 0) {
-          // $img.css('visibility', 'hidden');
-          $scaler.fadeTo('fast', data.settings.scalerFadedOpacity);
-          $img.fadeOut({queue: false});
+        if (show == null || show === 'hide') {
+          $scaler.css('opacity', data.settings.scalerFadedOpacity);
+          $img.fadeOut(function(){
+            console.debug("* img hide", $img.css('display'));
+            });
+        } else if (show === 'fadeOut') {
+          $scaler.fadeTo('fast', data.settings.scalerFadedOpacity, function() {
+            console.debug("* scaler fadeOut", $img.css('display'), $img.css('opacity'));
+            $img.fadeOut(function(){
+              console.debug("* img fadeOut", $img.css('display'));
+              });
+          });
         } else {
-          // $img.css('visibility', 'visible');
-          $img.fadeIn({queue: false});
-          $scaler.fadeTo('slow', 1);
+          $img.fadeIn(function(){
+              console.debug("* img fadeIn", $img.css('display'));
+              $scaler.fadeTo('slow', 1, function() {
+                  console.debug("* scaler fadeIn", $img.css('display'), $img.css('opacity'));
+              });
+          });
         }
     };
 
