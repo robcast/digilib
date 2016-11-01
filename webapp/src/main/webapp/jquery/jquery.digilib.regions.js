@@ -688,6 +688,8 @@ inner (optional)
         za.setProportion(1, true); // avoid extreme zoomArea proportions
         za.setCenter(rect.getCenter()).stayInside(FULL_AREA);
         fn.setZoomArea(data, za);
+        // hide image
+        fn.fadeScalerImg(data, 0);
         fn.redisplay(data);
     };
 
