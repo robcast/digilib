@@ -1285,12 +1285,11 @@ function($) {
             if (!data.hasPreviewBg) {
                 setPreviewBg(data, data.zoomArea);
             }
-            data.hasPreviewBg = false;
             // show image in case it was hidden (for example in zoomDrag)
             fadeScalerImg(data, 'fadeIn');
             // update display (render marks, etc.)
             updateDisplay(data);
-            console.debug("* load handler finished");
+            // console.debug("* load handler finished");
         };
     };
 
@@ -1470,7 +1469,7 @@ function($) {
                 scalerCss['background-position'] += ', ' + Math.round(fullRect.x) + 'px '+ Math.round(fullRect.y) + 'px';
             }
         }
-        console.debug('* setPreviewBg', scalerCss[data.bgSizeName], 'pos', scalerCss['background-position']);
+        // console.debug('* setPreviewBg', scalerCss[data.bgSizeName], 'pos', scalerCss['background-position']);
         $scaler.css(scalerCss);
         data.hasPreviewBg = true;
     };
@@ -1526,7 +1525,6 @@ function($) {
             $document.off("mouseup.dlZoomDrag", dragEnd);
             if (delta == null || delta.distance() < 2) {
                 // no change, show image again
-                data.hasPreviewBg = false;
                 fadeScalerImg(data, 'fadeIn');
                 // unhide marks etc.
                 updateDisplay(data);
@@ -1593,22 +1591,23 @@ function($) {
         if (show == null || show === 'hide') {
           $scaler.css('opacity', data.settings.scalerFadedOpacity);
           $img.fadeOut(function(){
-            console.debug("* img hide", $img.css('display'));
+            // console.debug("* img hide", $img.css('display'));
             });
         } else if (show === 'fadeOut') {
           $scaler.fadeTo('fast', data.settings.scalerFadedOpacity, function() {
-            console.debug("* scaler fadeOut", $img.css('display'), $img.css('opacity'));
+            // console.debug("* scaler fadeOut", $img.css('display'), $img.css('opacity'));
             $img.fadeOut(function(){
               console.debug("* img fadeOut", $img.css('display'));
               });
-          });
+            });
         } else {
+          data.hasPreviewBg = false;
           $img.fadeIn(function(){
-              console.debug("* img fadeIn", $img.css('display'));
-              $scaler.fadeTo('slow', 1, function() {
-                  console.debug("* scaler fadeIn", $img.css('display'), $img.css('opacity'));
-              });
-          });
+            // console.debug("* img fadeIn", $img.css('display'));
+            });
+          $scaler.fadeTo('slow', 1, function() {
+            // console.debug("* scaler fadeIn", $img.css('display'), $img.css('opacity'));
+            });
         }
     };
 
