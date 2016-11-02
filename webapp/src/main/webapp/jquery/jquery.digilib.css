@@ -97,8 +97,10 @@ div.dl-digilib div.dl-about {
 	position: absolute;
 	padding: 10px;	
 	font-family: Verdana, Arial, Helvetica, sans-serif;
-	border: 2px solid aqua;
-	background-color: silver;
+	color: silver;
+	border: 1px solid black;
+	background-color: #303030;
+	border-radius: 5px;
 	text-align: center;
 	display: none;
 	z-index: 100;
@@ -107,13 +109,12 @@ div.dl-digilib div.dl-about {
 div.dl-digilib div.dl-region {
 	position: absolute;
 	border: none;
-    color: white;
+  color: white;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size: 11px;
+  font-size: 11px;
 	background-color: red;
-    opacity: 0.3;
+  opacity: 0.3;
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
-	filter: alpha(opacity=30);
 }
 
 div.dl-digilib div.dl-region a:link,
@@ -129,9 +130,8 @@ div.dl-digilib div.dl-region:hover {
 div.dl-digilib div.dl-regionArea {
 	background-color: red;
 	border: none;
-    opacity: 0.3;
+  opacity: 0.3;
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
-	filter: alpha(opacity=30);
 }
 
 div.dl-digilib div.dl-regionHTML {
@@ -164,7 +164,6 @@ div.dl-digilib div.dl-highlightregion {
 	border: 5px solid aqua;
 	opacity: 0.8;
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
-	filter: alpha(opacity=80);
 }
 
 div.dl-digilib div.dl-findregion {
@@ -172,7 +171,6 @@ div.dl-digilib div.dl-findregion {
 	border: 5px solid aqua;
 	opacity: 0.8;
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
-	filter: alpha(opacity=80);
 }
 
 div.dl-digilib select.dl-finddata {
@@ -355,7 +353,6 @@ div.dl-digilib table.dl-scalertable td.dl-arrow:hover {
     background-color: black;
 	opacity: 0.3;
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
-	filter: alpha(opacity=30);
 }
 
 div.dl-digilib table.dl-scalertable img.button {
@@ -428,7 +425,6 @@ div.dl-digilib.dl-embedded div.dl-buttons {
 	background-color: gray;
 	opacity: 0.5;
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
-	filter: alpha(opacity=50);
 	z-index: 100;
 }
 
@@ -446,4 +442,13 @@ div.dl-digilib.dl-embedded div.dl-birdview {
 	right: 0px;
 }
 
-
+#dl-zoominfo {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  padding: 3px;
+  border: 1px solid black;
+  border-radius: 5px;
+  background-color: #303030;
+  color: silver;
+}

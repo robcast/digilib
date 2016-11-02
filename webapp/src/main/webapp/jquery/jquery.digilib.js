@@ -104,6 +104,8 @@ function($) {
         'scalerInsets' : { 'x' : 26, 'y': 20 },
         // how transparent does the background image get while changing the zoom area?
         'scalerFadedOpacity' : 0.6,
+        // show a little window with file size and zoom information
+        'showZoomInfo' : false,
         // number of decimal places, for cropping parameters wx,wy,wh,ww
         'decimals' : 4
         };
@@ -263,6 +265,10 @@ function($) {
                 // create HTML structure for scaler
                 setupScalerDiv(data);
                 // additional initializations before setup (e.g. for single nested settings)
+                if (settings.showZoomInfo) {
+                  actions.zoomInfo(data);
+                  loadImageInfo(data);
+                }
                 if (typeof hook === 'function') {
                   hook(data);
                   console.debug('init hook', hook, data);
@@ -320,6 +326,28 @@ function($) {
                 });
             $about.fadeIn();
             centerOnScreen(data, $about);
+        },
+
+        /** show the 'zoominfo' window
+         * 
+         * @param data
+         */
+        zoomInfo : function(data) {
+            var $elem = data.$elem;
+            var settings = data.settings;
+            var cssPrefix = settings.cssPrefix;
+            var zoomInfoSelector = '#'+cssPrefix+'zoominfo';
+            if (isOnScreen(data, zoomInfoSelector)) {
+                $(zoomInfoSelector).fadeToggle();
+                return;
+            }
+            var html = '\
+                <div id="'+cssPrefix+'zoominfo" class="'+cssPrefix+'zoominfo" style="display:none">\
+                  <div id="'+cssPrefix+'zoominfo1" />\
+                  <div id="'+cssPrefix+'zoominfo2" />\
+                </div>';
+            var $zoominfo = $(html);
+            $zoominfo.appendTo($elem);
         },
 
         /** goto given page nr (+/-: relative)
@@ -1062,6 +1090,20 @@ function($) {
         var data = this;
         updateImgTrafo(data);
         setupZoomDrag(data);
+        updateZoomInfo(data);
+    };
+
+    var updateZoomInfo = function (data) {
+        if (!data.settings.showZoomInfo) {
+          return;
+        }
+        var $zoominfo = $('#'+data.settings.cssPrefix+'zoominfo');
+        // console.debug(data.$elem.width(), data.zoomArea.width, json.width);
+        var json = data.imgInfo;
+        var px = data.$img.width();
+        var percent = Math.round(px / data.zoomArea.width / json.width * 100);
+        $zoominfo.children().first().text(json.width+'x'+json.height);
+        $zoominfo.children().last().text('zoom '+percent+'%');
     };
 
     /** 
@@ -1304,6 +1346,8 @@ function($) {
     var handleImageInfo = function (evt, json) {
         console.debug("handleImageInfo:", json);
         var data = this;
+        var $zoominfo = $('#'+data.settings.cssPrefix+'zoominfo');
+        $zoominfo.fadeIn();
         updateDisplay(data);
     };
 
