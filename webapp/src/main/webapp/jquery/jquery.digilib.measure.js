@@ -1350,7 +1350,9 @@
 
     // drag measureBar around
     var dragMeasureBar = function(event) {
-        var $div = $(this).parent();
+        var $elem = $(this);
+        $elem.addClass('dragging');
+        var $div = $elem.parent();
         var x = $div.offset().left - event.pageX;
         var y = $div.offset().top - event.pageY;
         $(document.body).on('mousemove.measure', function(event) {
@@ -1360,6 +1362,7 @@
             });
         }).on('mouseup.measure', function(event) {
             $(document.body).off('mousemove.measure').off('mouseup.measure');
+            $elem.removeClass('dragging');
             });
         return false;
         };
@@ -1715,7 +1718,7 @@
         console.debug('measure: setupMeasureBar');
         var widgets = {
         names: [
-          'info',
+          'about',
           'startb', 'shape',
           'type',
           'value1', 'unit1', 'eq',
@@ -1723,7 +1726,7 @@
           'shapecolor', 'guidecolor', 'constrcolor', 'selectedcolor', 'handlecolor',
           'move'
           ],
-        info:         $('<img id="dl-measure-info" src="img/info.png" title="display info window for shapes"></img>'),
+        about:         $('<img id="dl-measure-about" src="img/info.png" title="display info window for shapes"></img>'),
         startb:       $('<button id="dl-measure-startb" title="click to draw a measuring shape on top of the image">M</button>'),
         shape:        $('<select id="dl-measure-shape" title="select a shape to use for measuring" />'),
         eq:           $('<span class="dl-measure-label">=</span>'),
