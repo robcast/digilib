@@ -1,12 +1,16 @@
 /* 
  * CSS style file for jQuery digilib
  *
- * Martin Raspe, Robert Casties, 11.1.2011
+ * Martin Raspe, Robert Casties, 2016
  */
 * {
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
+}
+
+body {
+  background-color: #303030;
 }
 
 div.dl-digilib .dl-disabled {
@@ -28,9 +32,9 @@ div.dl-digilib div.dl-scaler {
 }
 
 div.dl-digilib div.dl-area {
-    display: none;
+  display: none;
 	position: absolute;
-	border: 2px solid #ff0000;
+	border: 2px solid lightgreen;
 }
 
 div.dl-digilib div.dl-areaoverlay {
@@ -40,13 +44,13 @@ div.dl-digilib div.dl-areaoverlay {
 }
 
 div.dl-digilib div.dl-birdview {
-	border: 1px solid white;
+	border: 1px solid black;
 	z-index: 10;
 }
 
 div.dl-digilib div.dl-birdzoom {
     position: absolute;
-    border: 2px solid #ff0000;
+    border: 2px solid lightgreen;
     z-index: 100;
 }
 
@@ -96,9 +100,10 @@ div.dl-digilib div.dl-annotationregion:hover {
 div.dl-digilib div.dl-about {
 	position: absolute;
 	padding: 10px;	
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	border: 2px solid aqua;
-	background-color: silver;
+  color: silver;
+	border: 1px solid black;
+	background-color: #303030;
+	border-radius: 5px;
 	text-align: center;
 	display: none;
 	z-index: 100;
@@ -107,9 +112,8 @@ div.dl-digilib div.dl-about {
 div.dl-digilib div.dl-region {
 	position: absolute;
 	border: none;
-    color: white;
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size: 11px;
+  color: white;
+  font-size: 11px;
 	background-color: red;
     opacity: 0.3;
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
@@ -159,28 +163,28 @@ div.dl-digilib map.dl-regioncontent {
 
 div.dl-digilib div.dl-highlightregion {
 	background-color: transparent;
-	border: 5px solid aqua;
+	border: 5px solid lightgreen;
 	opacity: 0.8;
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
 }
 
 div.dl-digilib div.dl-findregion {
 	background-color: transparent;
-	border: 5px solid aqua;
+	border: 5px solid lightgreen;
 	opacity: 0.8;
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
 }
 
 div.dl-digilib select.dl-finddata {
-    border: 1px solid black;
-    width: 240px;
+  border: 1px solid black;
+  width: 240px;
 }
 
 div.dl-digilib #dl-calibration {
-	background: url('img/blue.png');
-	position: absolute;
-	border: 2px solid aqua;
-	width: 400px;
+  color: silver;
+	border: 1px solid black;
+	background-color: #303030;
+	border-radius: 5px;	width: 400px;
 	display: none;
 	z-index: 100;
 	}
@@ -189,16 +193,18 @@ div.dl-digilib #dl-ruler {
 	width: 100%;
 	height: 100%;
 	padding-bottom: 10px;
-	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-size: 12px;
-	font-weight: bold;
 	text-align: center;
-	color: aqua;
+  color: silver;
+	border: 1px solid black;
+	background-color: #303030;
+	border-radius: 5px;
 	background: url('img/ruler-top.gif') 0px -1px repeat-x;
 	}
 
 div.dl-digilib #dl-cm {
 	padding: 5px;
+	margin-top: 10px;
 	}
 
 div.dl-digilib #dl-calibrationError {
@@ -213,37 +219,35 @@ div.dl-digilib #dl-calibrationInput {
 
 div.dl-digilib .dl-error {
 	color: red;
-	background-color: maroon;
-	}
-
-div.dl-digilib button.dl-button {
-	margin: 0px 10px 10px 10px;
-	border-width: 1px;
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	font-size: 12px;
-	color: white;
-	background: transparent;
 	}
 
 div.dl-digilib table.dl-rgbslider td.dl-rgb {
     width: 180px;
     padding: 6px;
-    border: 2px solid aqua;
+    color: silver;
+    border: 1px solid black;
+    background-color: #303030;
+    border-radius: 5px;
 }
 
 div.dl-digilib div.dl-rgbslider {
-    display: none;
-	border: 2px solid aqua;
-	background-color: silver;
-	padding: 10px;
+  display: none;
+  color: silver;
+	border: 1px solid black;
+	background-color: #303030;
+	border-radius: 5px;	padding: 10px;
 	position: absolute;
-    top: 0px;	
-    }
+  top: 0px;	
+}
+
 div.dl-digilib div.dl-rgbsliderpreview,
 div.dl-digilib div.dl-singlesliderpreview {
-	border: 2px solid aqua;
+  color: silver;
+	border: 1px solid black;
+	background-color: #303030;
+	border-radius: 5px;
 	margin: 10px 0px;
-    }
+}
 
 div.dl-digilib table.dl-rgbslider,
 div.dl-digilib table.dl-rgbslidergrey,
@@ -263,69 +267,81 @@ div.dl-digilib table.dl-singlesliderpreview td {
     }
 
 div.dl-digilib td.dl-color div {
-    color: aqua;
-    border: 2px solid aqua;
-    text-align: center;
-    padding: 20px 0px;
-    margin: 0px 20px 20px 0px;
-    }
+  color: silver;
+	border: 1px solid black;
+	background-color: #303030;
+	border-radius: 5px;    text-align: center;
+  padding: 20px 0px;
+  margin: 0px 20px 20px 0px;
+}
 
 div.dl-digilib td.dl-r div {
-    background-color: #800000;
-    }
+  background-color: #800000;
+  padding: 2px;
+  }
 
 div.dl-digilib td.dl-g div {
-    background-color: #008000;
-    }
+  background-color: #008000;
+  padding: 2px;
+  }
 
 div.dl-digilib td.dl-b div {
-    background-color: #000080;
-    }
+  background-color: #000080;
+  padding: 2px;
+  }
 
 div.dl-digilib div.dl-singleslider {
-    display: none;
-	border: 2px solid aqua;
-	background-color: silver;
+  display: none;
+  color: silver;
+	border: 1px solid black;
+	background-color: #303030;
+	border-radius: 5px;
 	width: 300px;
 	padding: 10px;
 	position: absolute;
-    top: 0px;	
-    z-index: 100;
-    }
+  top: 0px;	
+  z-index: 100;
+}
 
 div.dl-digilib div.dl-slider {
-	border: 1px solid aqua;
+  color: silver;
+	border: 1px solid black;
+	background-color: #303030;
+	border-radius: 5px;
 	margin: 30px;
 	z-index: 100;
 	height: 6px;
 	}
 
 div.dl-digilib div.dl-regionInfo {
-    display: none;
-    position: absolute;
-    overflow: visible;
+  display: none;
+  position: absolute;
+  overflow: visible;
 	padding: 10px;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-size: 12px;
-	border: 2px solid aqua;
-	color: black;
-	background-color: silver;
-    width: 300px;
+  color: silver;
+	border: 1px solid black;
+	background-color: #303030;
+	border-radius: 5px;
+  width: 300px;
 	z-index: 100;
 }
 
 div.dl-digilib div.dl-regionInfo a {
-    color: white;
-    text-decoration: none;
-    font-size: 11px;
+  color: white;
+  text-decoration: none;
+  font-size: 11px;
 	font-weight: bold;
 	width: 300px;
 }
 
 .dl-infobutton {
-    background-color: aqua;
-    color: gray;
-    padding: 0px 4px;
+  color: silver;
+	border: 1px solid black;
+	background-color: #303030;
+	border-radius: 5px;
+	padding: 0px 4px;
 }
 
 div.dl-info {
@@ -440,4 +456,59 @@ div.dl-digilib.dl-embedded div.dl-birdview {
 	right: 0px;
 }
 
+.range-input {
+  position: relative;
+  height: 25px;
+}
+
+.range-rail {
+  background: url('img/range-rail-x.png') repeat-x 0 -2px;
+  height: 10px;
+}
+
+.range-selection {
+  position: absolute;
+  background: #aaa;
+  height: 3px;
+  top: 5px;
+  border-top: 1px solid #999;
+}
+
+.range-handle {
+  display: block;
+  position: absolute;
+  top: 0px;
+  background: url('img/range-thumb.png') no-repeat 0 -12px;
+  width:14px;
+  height: 26px;
+  border-radius: 10px;
+}
+
+#dl-zoominfo {
+  color: silver;
+	border: 1px solid black;
+	background-color: #303030;
+	border-radius: 5px;
+	padding: 5px;
+	position: fixed;
+	right: 5px;
+	bottom: 10px;
+}
+
+button, input[type=button], input[type=submit], input[type=text], #dl-calibrationInput {
+  color: silver;
+	border: 1px solid black;
+	background-color: #303030;
+	border-radius: 5px;
+	padding: 3px;
+}
+
+button:hover, input[type=button]:hover, input[type=submit]:hover {
+  border-color: silver;
+}
+
+input[type=text]:focus, #dl-calibrationInput:focus {
+	background-color: darkgray;
+	color: black;
+}
 
