@@ -100,6 +100,9 @@ digilib sliders plugin
     var actions = {
         // shows brightness slider
         sliderBrgt : function (data) {
+            if (removeSlider(data)) {
+              return;
+            }
             // adjust min and max for contrast value (not nice to change sliderOptions)
             var maxBrgt = Math.max(Math.round(255 * Math.pow(2, data.settings.cont)), 255);
             var options = sliderOptions.brightness;
@@ -117,6 +120,9 @@ digilib sliders plugin
 
         // shows contrast slider
         sliderCont : function (data) {
+            if (removeSlider(data)) {
+              return;
+            }
             var options = sliderOptions.contrast;
             var onChange = function($slider, val) {
                 var m = Math.pow(2, parseFloat(val));
@@ -132,6 +138,9 @@ digilib sliders plugin
 
         // shows rotate slider
         sliderRot : function (data) {
+            if (removeSlider(data)) {
+              return;
+            }
             var options = sliderOptions.rotation;
             var onChange = null;
             var onSubmit = function(val) {
@@ -142,6 +151,9 @@ digilib sliders plugin
 
         // shows RGB sliders
         sliderRGB : function (data) {
+            if (removeSlider(data)) {
+              return;
+            }
             var onSubmit = function(m, a) {
                 digilib.actions.setRGB(data, m, a);
                 };
@@ -248,8 +260,6 @@ digilib sliders plugin
         var cls = cssPrefix + cssSuffix;
         var tiny = cssPrefix + 'tinyslider';
         var $elem = data.$elem;
-        var sliderSelector = '#'+cssPrefix+'slider';
-        if (fn.isOnScreen(data, sliderSelector)) return null; // already onscreen
         var html = '\
             <div id="'+cssPrefix+'slider" class="'+cls+'">\
                 <form class="'+cls+'">\
@@ -302,6 +312,19 @@ digilib sliders plugin
         fn.centerOnScreen(data, $div);
         return $div;
     };
+
+    /** removes slider window if on screen
+     */
+    var removeSlider = function (data) {
+        var selector = '#'+ data.settings.cssPrefix + 'slider';
+        if (fn.isOnScreen(data, selector)) {
+          var $div = $(selector);
+          fn.withdraw($div);
+          return true;
+        }
+        return false;
+    };
+
 
     /** creates a TinyRange slider
      */
@@ -366,9 +389,10 @@ digilib sliders plugin
         the new value is passed to the "onSubmit" function.
      */
     var singleSlider = function (data, options, onChange, onSubmit) {
+        var settings = data.settings;
         var classname = 'singleslider';
-        var $div = $('<div/>');
-        var startvalue = data.settings[options.param] || options.start;
+        var $div = $('<div>');
+        var startvalue = settings[options.param] || options.start;
         var $slider = tinySlider(data, options, startvalue);
         var getValue = function () {
             // get the new value and do something with it
@@ -381,7 +405,7 @@ digilib sliders plugin
         setupFormDiv(data, $div, classname, getValue);
         var hasPreview = options.preview;
         if (hasPreview) {
-            var cls = data.settings.cssPrefix + classname;
+            var cls = settings.cssPrefix + classname;
             var $preview = preview(cls);
             $div.append($preview);
             $slider.data({
@@ -398,8 +422,8 @@ digilib sliders plugin
     var rgbSlider = function (data, onSubmit) {
         var css = data.settings.cssPrefix;
         var cls = css + 'rgbslider';
-        var $div = $('<div/>');
-        var $table = $('<table class="'+cls+'" />');
+        var $div = $('<div>');
+        var $table = $('<table>', { class: cls });
         var $preview = preview(cls);
         $div.append($table);
         $div.append($preview);
@@ -407,7 +431,7 @@ digilib sliders plugin
         var insertTableRow = function(index, value) {
             var color = colorVals[value];
             // start values are set in "handleSetup"
-            var $tr = $('<tr/>').appendTo($table);
+            var $tr = $('<tr>').appendTo($table);
             var html = '\
                 <td class="'+css+'color '+css+value+'">\
                     <div>'+color.label+'</div>\
@@ -417,8 +441,8 @@ digilib sliders plugin
             var $cont = tinySlider(data, sliderOptions.contrast, color.m);
             $table.data(value+'a', $brgt.data('$text'));
             $table.data(value+'m', $cont.data('$text'));
-            $('<td class="'+css+'rgb"/>').append($brgt).appendTo($tr);
-            $('<td class="'+css+'rgb"/>').append($cont).appendTo($tr);
+            $('<td>', { class: css+'rgb' }).append($brgt).appendTo($tr);
+            $('<td>', { class: css+'rgb' }).append($cont).appendTo($tr);
             };
         var onChange = function ($slider) {
             // show effects of color brightness/contrast on a grey scale
