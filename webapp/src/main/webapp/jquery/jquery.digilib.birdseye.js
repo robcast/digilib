@@ -35,7 +35,7 @@ digilib bird's eye view plugin
     var FULL_AREA;
 
     var buttons = {
-            bird : {
+            bird: {
                 'onclick' : "showBirdDiv",
                 'tooltip' : "show bird's eye view",
                 'icon' : "birds-eye.png"
@@ -56,7 +56,7 @@ digilib bird's eye view plugin
 
     var actions = {
             // event handler: toggles the visibility of the bird's eye window 
-            showBirdDiv : function (data, show) {
+            showBirdDiv: function (data, show) {
                 var settings = data.settings;
                 if (data.$birdDiv == null) {
                     // no bird div: create it
@@ -87,8 +87,11 @@ digilib bird's eye view plugin
         // insert in button list -- not elegant
         if (digilib.plugins.buttons != null) {
             // if (digilib.defaults.buttonSettings != null) {
-            digilib.defaults.buttonSettings.fullscreen.standardSet.splice(9, 0, 'bird');
-            digilib.defaults.buttonSettings.embedded.standardSet.splice(5, 0, 'bird');
+            var fset = digilib.defaults.buttonSettings.fullscreen.standardSet;
+            var eset = digilib.defaults.buttonSettings.embedded.standardSet;
+            // dynamic insert before [about, reset, moreoptions]
+            fset.splice(fset.length - 3, 0, 'bird');
+            eset.splice(eset.length - 3, 0, 'bird');
         }
     };
 
@@ -140,8 +143,8 @@ digilib bird's eye view plugin
     var getBirdImgUrl = function (data) {
         var settings = data.settings;
         var birdDivOptions = {
-            dw : settings.birdDivWidth,
-            dh : settings.birdDivHeight
+            dw: settings.birdDivWidth,
+            dh: settings.birdDivHeight
         };
         var birdSettings = $.extend({}, settings, birdDivOptions);
         // use only the relevant parameters
