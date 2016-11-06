@@ -4,9 +4,9 @@
  * Martin Raspe, Robert Casties, 2016
  */
 * {
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 body {
@@ -14,7 +14,7 @@ body {
 }
 
 div.dl-digilib .dl-disabled {
-    display: none;
+  display: none;
 }
 
 div.dl-digilib,
@@ -25,154 +25,158 @@ div.dl-digilib input {
 }
 
 div.dl-digilib div.dl-scaler {
-	background-color: gray;
-	z-index: 0;
-	width: 0px;
-	height: 0px;
+  background-color: gray;
+  z-index: 0;
+  width: 0px;
+  height: 0px;
 }
 
 div.dl-digilib div.dl-area {
   display: none;
-	position: absolute;
-	border: 2px solid lightgreen;
+  position: absolute;
+  border: 2px solid lightgreen;
 }
 
 div.dl-digilib div.dl-areaoverlay {
-	position: absolute;
-	z-index: 100;
-	/* background-image:url('.'); */
+  position: absolute;
+  z-index: 100;
+  /* background-image:url('.'); */
 }
 
 div.dl-digilib div.dl-birdview {
-	border: 1px solid black;
-	z-index: 10;
+  border: 1px solid black;
+  border-radius: 5px;
+  background-color: #303030;
+  box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.3);
+  z-index: 10;
 }
 
 div.dl-digilib div.dl-birdzoom {
-    position: absolute;
-    border: 2px solid lightgreen;
-    z-index: 100;
+  position: absolute;
+  border: 2px solid lightgreen;
+  z-index: 15;
 }
 
 div.dl-digilib div.dl-mark {
-	position: absolute;
-	color: white;
-	background: url('img/mark-bg-16.png');
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	font-weight: bold;
-	font-size: 11px;
-	height: 16px;
-	width: 16px;
-	padding-top: 1px;
-	text-align: center;
-	z-index: 10;
+  position: absolute;
+  color: white;
+  background: url('img/mark-bg-16.png');
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  font-size: 11px;
+  height: 16px;
+  width: 16px;
+  padding-top: 1px;
+  text-align: center;
+  z-index: 10;
 }
 
 div.dl-digilib div.dl-annotationmark {
-    position: absolute;
-    color: black;
-    background: url('img/annotationmark-bg-16.png');
-    /* background-color: yellow; */
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-weight: bold;
-    font-size: 11px;
-    height: 16px;
-    width: 16px;
-    padding-top: 1px;
-    text-align: center;
-    z-index: 10;
+  position: absolute;
+  color: black;
+  background: url('img/annotationmark-bg-16.png');
+  /* background-color: yellow; */
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  font-size: 11px;
+  height: 16px;
+  width: 16px;
+  padding-top: 1px;
+  text-align: center;
+  z-index: 10;
 }
 
 div.dl-digilib div.dl-annotationregion {
-    background-color: rgba(255, 255, 10, 0.3);
-    /* border: 1px solid black; */
-    padding: 2px 4px;
-    color: black;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-weight: bold;
-    font-size: 11px;
+  background-color: rgba(255, 255, 10, 0.3);
+  /* border: 1px solid black; */
+  padding: 2px 4px;
+  color: black;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  font-size: 11px;
 }
 div.dl-digilib div.dl-annotationregion:hover {
-    background-color: transparent;
-    border: 2px solid yellow;
+  background-color: transparent;
+  border: 2px solid yellow;
 }
-    
+  
 div.dl-digilib div.dl-about {
-	position: absolute;
-	padding: 10px;	
+  position: absolute;
+  padding: 10px;
   color: silver;
-	border: 1px solid black;
-	background-color: #303030;
-	border-radius: 5px;
-	text-align: center;
-	display: none;
-	z-index: 100;
+  border: 1px solid black;
+  background-color: #303030;
+  border-radius: 5px;
+  box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.3);
+  text-align: center;
+  display: none;
+  z-index: 100;
 }
 
 div.dl-digilib div.dl-region {
-	position: absolute;
-	border: none;
+  position: absolute;
+  border: none;
   color: white;
   font-size: 11px;
-	background-color: red;
-    opacity: 0.3;
-	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
+  background-color: red;
+  opacity: 0.3;
+  -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
 }
 
 div.dl-digilib div.dl-region a:link,
 div.dl-digilib div.dl-region a:visited {
-    color: white;
+  color: white;
 }
 
 div.dl-digilib div.dl-region:hover {
-	background-color: transparent;
-	border: 2px solid red;
+  background-color: transparent;
+  border: 2px solid red;
 }
 
 div.dl-digilib div.dl-regionArea {
-	background-color: red;
-	border: none;
-    opacity: 0.3;
-	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
+  background-color: red;
+  border: none;
+  opacity: 0.3;
+  -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
 }
 
 div.dl-digilib div.dl-regionHTML {
-	background-color: blue;
+  background-color: blue;
 }
 
 div.dl-digilib div.dl-regionHTML:hover {
-	background-color: transparent;
-	border: 2px solid blue;
+  background-color: transparent;
+  border: 2px solid blue;
 }
 
 div.dl-digilib div.dl-region a.dl-regionnumber {
-    color: white;
-    text-decoration: none;
-	font-weight: bold;
-	font-size: 11px;
-	text-align: center;
-    padding: 0px 2px;
-    margin-right: 4px;
-    border: 1px solid white;
-    display: inline-block;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 11px;
+  text-align: center;
+  padding: 0px 2px;
+  margin-right: 4px;
+  border: 1px solid white;
+  display: inline-block;
 }
 
 div.dl-digilib map.dl-regioncontent {
-    display: none;
+  display: none;
 }
 
 div.dl-digilib div.dl-highlightregion {
-	background-color: transparent;
-	border: 5px solid lightgreen;
-	opacity: 0.8;
-	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
+  background-color: transparent;
+  border: 5px solid lightgreen;
+  opacity: 0.8;
+  -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
 }
 
 div.dl-digilib div.dl-findregion {
-	background-color: transparent;
-	border: 5px solid lightgreen;
-	opacity: 0.8;
-	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
+  background-color: transparent;
+  border: 5px solid lightgreen;
+  opacity: 0.8;
+  -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
 }
 
 div.dl-digilib select.dl-finddata {
@@ -182,71 +186,75 @@ div.dl-digilib select.dl-finddata {
 
 div.dl-digilib #dl-calibration {
   color: silver;
-	border: 1px solid black;
-	background-color: #303030;
-	border-radius: 5px;	width: 400px;
-	display: none;
-	z-index: 100;
-	}
+  border: 1px solid black;
+  background-color: #303030;
+  border-radius: 5px;  width: 400px;
+  box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.3);
+  display: none;
+  z-index: 100;
+  }
 
 div.dl-digilib #dl-ruler {
-	width: 100%;
-	height: 100%;
-	padding-bottom: 10px;
-	font-size: 12px;
-	text-align: center;
+  width: 100%;
+  height: 100%;
+  padding-bottom: 10px;
+  font-size: 12px;
+  text-align: center;
   color: silver;
-	border: 1px solid black;
-	background-color: #303030;
-	border-radius: 5px;
-	background: url('img/ruler-top.gif') 0px -1px repeat-x;
-	}
+  border: 1px solid black;
+  background-color: #303030;
+  border-radius: 5px;
+  box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.3);
+  background: url('img/ruler-top.gif') 0px -1px repeat-x;
+  }
 
 div.dl-digilib #dl-cm {
-	padding: 5px;
-	margin-top: 10px;
-	}
+  padding: 5px;
+  margin-top: 10px;
+  }
 
 div.dl-digilib #dl-calibrationError {
-	color: red;
-	padding: 10px;
-	display: none;
-	}
+  color: red;
+  padding: 10px;
+  display: none;
+  }
 
 div.dl-digilib #dl-calibrationInput {
-	margin: 0px 10px;
-	}
+  margin: 0px 10px;
+  }
 
 div.dl-digilib .dl-error {
-	color: red;
-	}
+  color: red;
+  }
 
 div.dl-digilib table.dl-rgbslider td.dl-rgb {
-    width: 180px;
-    padding: 6px;
-    color: silver;
-    border: 1px solid black;
-    background-color: #303030;
-    border-radius: 5px;
+  width: 180px;
+  padding: 6px;
+  color: silver;
+  border: 1px solid black;
+  background-color: #303030;
+  border-radius: 5px;
 }
 
 div.dl-digilib div.dl-rgbslider {
   display: none;
   color: silver;
-	border: 1px solid black;
-	background-color: #303030;
-	border-radius: 5px;	padding: 10px;
-	position: absolute;
-  top: 0px;	
+  border: 1px solid black;
+  background-color: #303030;
+  border-radius: 5px;  padding: 10px;
+  box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.3);
+  position: absolute;
+  top: 0px;
 }
 
 div.dl-digilib div.dl-rgbsliderpreview,
 div.dl-digilib div.dl-singlesliderpreview {
   color: silver;
-	border: 1px solid black;
-	background-color: #303030;
-	border-radius: 5px;
-	margin: 10px 0px;
+  border: 1px solid black;
+  background-color: #303030;
+  border-radius: 5px;
+  box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.3);
+  margin: 10px 0px;
 }
 
 div.dl-digilib table.dl-rgbslider,
@@ -255,22 +263,24 @@ div.dl-digilib table.dl-rgbsliderpreview,
 div.dl-digilib table.dl-singleslider,
 div.dl-digilib table.dl-singleslidergrey,
 div.dl-digilib table.dl-singlesliderpreview {
-    width: 100%;
-    border-collapse: collapse;
-    }
+  width: 100%;
+  border-collapse: collapse;
+  }
 
 div.dl-digilib table.dl-rgbslidergrey td,
 div.dl-digilib table.dl-rgbsliderpreview td,
 div.dl-digilib table.dl-singleslidergrey td,
 div.dl-digilib table.dl-singlesliderpreview td {
-    height: 20px;
-    }
+  height: 20px;
+  }
 
 div.dl-digilib td.dl-color div {
   color: silver;
-	border: 1px solid black;
-	background-color: #303030;
-	border-radius: 5px;    text-align: center;
+  border: 1px solid black;
+  background-color: #303030;
+  text-align: center;
+  border-radius: 5px;
+  box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.3);
   padding: 20px 0px;
   margin: 0px 20px 20px 0px;
 }
@@ -293,167 +303,171 @@ div.dl-digilib td.dl-b div {
 div.dl-digilib div.dl-singleslider {
   display: none;
   color: silver;
-	border: 1px solid black;
-	background-color: #303030;
-	border-radius: 5px;
-	width: 300px;
-	padding: 10px;
-	position: absolute;
-  top: 0px;	
+  border: 1px solid black;
+  background-color: #303030;
+  width: 300px;
+  padding: 10px;
+  position: absolute;
+  top: 0px;
+  border-radius: 5px;
+  box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.3);
   z-index: 100;
 }
 
 div.dl-digilib div.dl-slider {
   color: silver;
-	border: 1px solid black;
-	background-color: #303030;
-	border-radius: 5px;
-	margin: 30px;
-	z-index: 100;
-	height: 6px;
-	}
+  border: 1px solid black;
+  background-color: #303030;
+  margin: 30px;
+  z-index: 100;
+  height: 6px;
+  border-radius: 5px;
+  box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.3);
+  }
 
 div.dl-digilib div.dl-regionInfo {
   display: none;
   position: absolute;
   overflow: visible;
-	padding: 10px;
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	font-size: 12px;
+  padding: 10px;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 12px;
   color: silver;
-	border: 1px solid black;
-	background-color: #303030;
-	border-radius: 5px;
+  border: 1px solid black;
+  background-color: #303030;
+  border-radius: 5px;
+  box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.3);
   width: 300px;
-	z-index: 100;
+  z-index: 100;
 }
 
 div.dl-digilib div.dl-regionInfo a {
   color: white;
   text-decoration: none;
   font-size: 11px;
-	font-weight: bold;
-	width: 300px;
+  font-weight: bold;
+  width: 300px;
 }
 
 .dl-infobutton {
   color: silver;
-	border: 1px solid black;
-	background-color: #303030;
-	border-radius: 5px;
-	padding: 0px 4px;
+  border: 1px solid black;
+  background-color: #303030;
+  border-radius: 5px;
+  box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.3);
+  padding: 0px 4px;
 }
 
 div.dl-info {
-    display: none;
-    margin: 10px;
+  display: none;
+  margin: 10px;
 }
 
 div.dl-infoheader {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 /* scroll arrows */
 div.dl-digilib table.dl-scalertable {
-	border: 0;
-	padding: 0;
+  border: 0;
+  padding: 0;
 }
 div.dl-digilib table.dl-scalertable td {
-    padding: 0;
+  padding: 0;
 }
 div.dl-digilib table.dl-scalertable td.dl-arrow {
 }
 div.dl-digilib table.dl-scalertable td.dl-arrow:hover {
-    background-color: black;
-	opacity: 0.3;
-	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
+  background-color: black;
+  opacity: 0.3;
+  -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
 }
 
 div.dl-digilib table.dl-scalertable img.button {
-    opacity: 1;
+  opacity: 1;
 }
 
 /* special definitions for fullscreen */
 div.dl-digilib.dl-fullscreen div.dl-buttons {
-	position: fixed;
-	right: 0px;
-	top: 0px;
-	padding: 2px;
-	background-color: transparent;
-	z-index: 200;
+  position: fixed;
+  right: 0px;
+  top: 0px;
+  padding: 2px;
+  background-color: transparent;
+  z-index: 200;
 }
 
 div.dl-digilib.dl-fullscreen div.dl-buttons div.dl-button {
-	margin-bottom: 3px;
+  margin-bottom: 3px;
 }
 
 div.dl-digilib.dl-fullscreen div.dl-buttons div.dl-button:hover {
-	background-image: url('img/fullscreen/corona.png');
-	background-repeat: no-repeat;
+  background-image: url('img/fullscreen/corona.png');
+  background-repeat: no-repeat;
 }
 
 div.dl-digilib.dl-fullscreen div.dl-button-on {
-	background-image: url('img/fullscreen/whitedisc.png');
-	background-repeat: no-repeat;
+  background-image: url('img/fullscreen/whitedisc.png');
+  background-repeat: no-repeat;
 }
 
 div.dl-digilib.dl-fullscreen div.dl-birdview {
-	position: fixed;
-	bottom: 8px;
-	right: 48px;
+  position: fixed;
+  bottom: 5px;
+  right: 5px;
+  box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.3);
 }
 
 /* no borders for button images */
 div.dl-digilib a img.dl-button {
-    border:none;
+  border:none;
 }
 
 /* SVG */
 div.dl-digilib .dl-svg-handle {
-	stroke: blue;
+  stroke: blue;
 }
 div.dl-digilib .dl-svg-handle:hover {
-	fill: red;
+  fill: red;
 }
 div.dl-digilib .dl-svg-annotationregion {
-    fill: rgba(255, 255, 10, 0.3);
-    stroke: none;
+  fill: rgba(255, 255, 10, 0.3);
+  stroke: none;
 }
 div.dl-digilib .dl-svg-annotationregion:hover {
-    fill: transparent;
-    stroke: yellow;
-    stroke-width: 2px;
+  fill: transparent;
+  stroke: yellow;
+  stroke-width: 2px;
 }
-
 
 /* special definitions for embedded */
 div.dl-digilib.dl-embedded {
-	position: relative;
+  position: relative;
 }
 
 div.dl-digilib.dl-embedded div.dl-buttons {
-	position: absolute;
-	right: 0px;
-	top: 0px;
-	padding: 1px;
-	background-color: gray;
-	opacity: 0.5;
-	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
-	z-index: 100;
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  padding: 1px;
+  background-color: gray;
+  opacity: 0.5;
+  -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+  z-index: 100;
 }
 
 div.dl-digilib.dl-embedded div.dl-buttons div.dl-button:hover {
-	background-color: black;
+  background-color: black;
 }
 
 div.dl-digilib.dl-embedded div.dl-button-on {
-	background-color: green;
+  background-color: green;
 }
 
 div.dl-digilib.dl-embedded div.dl-birdview {
-	position: absolute;
-	bottom: 0px;
-	right: 0px;
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
 }
 
 .range-input {
@@ -486,29 +500,36 @@ div.dl-digilib.dl-embedded div.dl-birdview {
 
 #dl-zoominfo {
   color: silver;
-	border: 1px solid black;
-	background-color: #303030;
-	border-radius: 5px;
-	padding: 5px;
-	position: fixed;
-	right: 5px;
-	bottom: 10px;
+  border: 1px solid black;
+  background-color: #303030;
+  padding: 5px;
+  font-size: 90%;
+  position: fixed;
+  right: 5px;
+  bottom: 5px;
+  border-radius: 5px;
+  box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.3);
+  z-index: 5;
 }
 
 button, input[type=button], input[type=submit], input[type=text], #dl-calibrationInput {
   color: silver;
-	border: 1px solid black;
-	background-color: #303030;
-	border-radius: 5px;
-	padding: 3px;
+  border: 1px solid black;
+  background-color: #303030;
+  padding: 3px;
+  margin-right: 5px;
+  border-radius: 5px;
+  box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.3);
 }
 
-button:hover, input[type=button]:hover, input[type=submit]:hover {
-  border-color: silver;
+button:hover, input[type=button]:hover, input[type=submit]:hover, input[type=text]:hover, #dl-calibrationInput:hover {
+  /* border-color: silver; */
+  box-shadow: 0px 0px 5px 3px rgba(100,100,100,0.4);
 }
 
 input[type=text]:focus, #dl-calibrationInput:focus {
-	background-color: darkgray;
-	color: black;
+  background-color: darkgray;
+  color: black;
+  box-shadow: 0px 0px 5px 3px rgba(100,100,100,0.4);
 }
 

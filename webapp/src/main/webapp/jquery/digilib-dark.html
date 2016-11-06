@@ -37,7 +37,12 @@
                 previewImgHeight: 2048,
                 maxBgSize: 100000
                 };
-            $div.digilib(opts);
+            var hook = function (data) {
+                data.settings.buttonSettings.fullscreen.standardSet =
+                    ["zoomin","zoomout","zoomarea","zoomfull","pagewidth","bird",
+                     "about","reset","moreoptions"]
+                };
+            $div.digilib(opts, hook);
         });
     </script>
   </head>
