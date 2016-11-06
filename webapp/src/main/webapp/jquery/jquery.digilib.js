@@ -1026,11 +1026,12 @@ function($) {
                             loadImageInfo(data);
                         }
                     }
-                    // update if we have a preview
-                    if (data.hasPreviewBg) {
-                        $(data).trigger('update');
-                    }
-                    //FIXME: highlightButtons(data);
+                    // update if we have a preview 
+                    // --- too early here, 'update' is triggered by scalerImgLoadedHandler
+                    // if (data.hasPreviewBg) {
+                        // $(data).trigger('update');
+                    // }
+                    // FIXME: highlightButtons(data);
                     // send event
                     $(data).trigger('redisplay');
                 } catch (e) {

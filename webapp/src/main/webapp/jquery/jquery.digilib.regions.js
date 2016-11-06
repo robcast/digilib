@@ -232,7 +232,7 @@ inner (optional)
             var show = !data.settings.isRegionVisible;
             data.settings.isRegionVisible = show;
             fn.highlightButtons(data, 'regions', show);
-            renderRegions(data, 0);
+            renderRegions(data, 1);
             return show;
         },
 
@@ -762,7 +762,7 @@ inner (optional)
         console.debug("regions: handleUpdate");
         var settings = data.settings;
         fn.highlightButtons(data, 'regions' , settings.isRegionVisible);
-        renderRegions(data);
+        renderRegions(data, 1);
     };
 
     // additional buttons
