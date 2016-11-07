@@ -171,9 +171,9 @@ inner (optional)
             }
             var onComplete = function (data, rect) {
                 if (rect == null) return;
-                var count = getRegions(data, 'regionURL').length;
+                var index = getRegions(data, 'regionURL').length + 1;
                 var attr = {'class' : CSS+'regionURL '+CSS+'overlay'};
-                var item = {'rect' : rect, 'index' : count, 'attributes' : attr};
+                var item = {'rect' : rect, 'index' : index, 'attributes' : attr};
                 var $regionDiv = addRegionDiv(data, item);
                 fn.highlightButtons(data, 'defineregion', 0);
                 redisplay(data);
