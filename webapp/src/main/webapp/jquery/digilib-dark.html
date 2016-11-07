@@ -31,18 +31,14 @@
             var $div = $('div#digilib');
             var opts = {
                 interactionMode: 'fullscreen',
+                showPageButtons: false,
                 showRegionNumbers: true,
                 showZoomInfo: true,
                 previewImgWidth: 4096,
                 previewImgHeight: 2048,
                 maxBgSize: 100000
                 };
-            var hook = function (data) {
-                data.settings.buttonSettings.fullscreen.standardSet =
-                    ["zoomin","zoomout","zoomarea","zoomfull","pagewidth","bird",
-                     "about","reset","moreoptions"]
-                };
-            $div.digilib(opts, hook);
+            $div.digilib(opts);
         });
     </script>
   </head>
