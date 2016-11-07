@@ -102,6 +102,10 @@ function($) {
         'previewImgParamNames' : ['fn','pn','dw','dh','mo','rot'],
         // reserved space in full page display (default value accounts for body margins)
         'scalerInsets' : { 'x' : 26, 'y': 20 },
+        // how transparent does the background image get while changing the zoom area?
+        'scalerFadedOpacity' : 0.6,
+        // show a little window with file size and zoom information
+        'showZoomInfo' : false,
         // number of decimal places, for cropping parameters wx,wy,wh,ww
         'decimals' : 4
         };
@@ -261,6 +265,10 @@ function($) {
                 // create HTML structure for scaler
                 setupScalerDiv(data);
                 // additional initializations before setup (e.g. for single nested settings)
+                if (settings.showZoomInfo) {
+                  actions.zoomInfo(data);
+                  loadImageInfo(data);
+                }
                 if (typeof hook === 'function') {
                   hook(data);
                   console.debug('init hook', hook, data);
@@ -320,6 +328,28 @@ function($) {
             centerOnScreen(data, $about);
         },
 
+        /** show the 'zoominfo' window
+         * 
+         * @param data
+         */
+        zoomInfo : function(data) {
+            var $elem = data.$elem;
+            var settings = data.settings;
+            var cssPrefix = settings.cssPrefix;
+            var zoomInfoSelector = '#'+cssPrefix+'zoominfo';
+            if (isOnScreen(data, zoomInfoSelector)) {
+                $(zoomInfoSelector).fadeToggle();
+                return;
+            }
+            var html = '\
+                <div id="'+cssPrefix+'zoominfo" class="'+cssPrefix+'zoominfo" style="display:none">\
+                  <div id="'+cssPrefix+'zoominfo1" />\
+                  <div id="'+cssPrefix+'zoominfo2" />\
+                </div>';
+            var $zoominfo = $(html);
+            $zoominfo.appendTo($elem);
+        },
+
         /** goto given page nr (+/-: relative)
          * 
          * @param data
@@ -375,9 +405,9 @@ function($) {
                 // interactively
                 var onComplete = function(data, rect) {
                     if (rect == null) return;
+                    // hide image, show dimmed background
+                    fadeScalerImg(data, 'fadeOut');
                     setZoomArea(data, rect);
-                    // reset modes
-                    setFitMode(data, 'both');
                     setScaleMode(data, 'screen');
                     redisplay(data);
                     };
@@ -394,9 +424,9 @@ function($) {
          * @param mode
          */
         zoomFull : function (data, mode) {
-            setZoomArea(data, FULL_AREA.copy());
             setFitMode(data, mode);
-            // zoom full only works in screen mode
+            data.$scaler.css('opacity', data.settings.scalerFadedOpacity);
+            setZoomArea(data, FULL_AREA.copy());
             setScaleMode(data, 'screen');
             redisplay(data);
         },
@@ -506,6 +536,8 @@ function($) {
             var settings = data.settings;
             var paramNames = settings.digilibParamNames;
             var params = data.queryParams;
+            // dim image, show something is happening
+            data.$scaler.css('opacity', data.settings.scalerFadedOpacity);
             // delete all digilib parameters
             for (var i = 0; i < paramNames.length; i++) {
                 var paramName = paramNames[i];
@@ -562,8 +594,7 @@ function($) {
             }
             return url;
         },
-        
-        
+
         /** set image quality
          * 
          * @param data
@@ -995,11 +1026,12 @@ function($) {
                             loadImageInfo(data);
                         }
                     }
-                    // update if we have a preview
-                    if (data.hasPreviewBg) {
-                        $(data).trigger('update');
-                    }
-                    //FIXME: highlightButtons(data);
+                    // update if we have a preview 
+                    // --- too early here, 'update' is triggered by scalerImgLoadedHandler
+                    // if (data.hasPreviewBg) {
+                        // $(data).trigger('update');
+                    // }
+                    // FIXME: highlightButtons(data);
                     // send event
                     $(data).trigger('redisplay');
                 } catch (e) {
@@ -1059,6 +1091,20 @@ function($) {
         var data = this;
         updateImgTrafo(data);
         setupZoomDrag(data);
+        updateZoomInfo(data);
+    };
+
+    var updateZoomInfo = function (data) {
+        if (!data.settings.showZoomInfo) {
+          return;
+        }
+        var $zoominfo = $('#'+data.settings.cssPrefix+'zoominfo');
+        // console.debug(data.$elem.width(), data.zoomArea.width, json.width);
+        var json = data.imgInfo;
+        var px = data.$img.width();
+        var percent = Math.round(px / data.zoomArea.width / json.width * 100);
+        $zoominfo.children().first().text(json.width+'x'+json.height);
+        $zoominfo.children().last().text('zoom '+percent+'%');
     };
 
     /** 
@@ -1278,14 +1324,15 @@ function($) {
             $scaler.css('cursor', 'auto');
             // adjust scaler div size (beware: setting position makes the element relative)
             imgRect.getSize().adjustDiv($scaler);
+            // initial load of scaler background (for preview)
+            if (!data.hasPreviewBg) {
+                setPreviewBg(data, data.zoomArea);
+            }
             // show image in case it was hidden (for example in zoomDrag)
-            $img.css('visibility', 'visible');
-            $img.fadeIn();
-            // $scaler.css({'opacity' : '1'});
-            $scaler.fadeTo('slow', 1);
-            data.hasPreviewBg = false;
+            fadeScalerImg(data, 'fadeIn');
             // update display (render marks, etc.)
             updateDisplay(data);
+            // console.debug("* load handler finished");
         };
     };
 
@@ -1300,6 +1347,8 @@ function($) {
     var handleImageInfo = function (evt, json) {
         console.debug("handleImageInfo:", json);
         var data = this;
+        var $zoominfo = $('#'+data.settings.cssPrefix+'zoominfo');
+        $zoominfo.fadeIn();
         updateDisplay(data);
     };
 
@@ -1307,7 +1356,7 @@ function($) {
      * 
      */
     var handleChangeZoomArea = function (evt, newZa) {
-        console.debug("handleChangeZoomArea:", newZa);
+        // console.debug("handleChangeZoomArea:", newZa);
         var data = this;
         // hide all overlays (marks/regions)
         data.$elem.find('.'+data.settings.cssPrefix+'overlay').hide();
@@ -1328,9 +1377,11 @@ function($) {
         newarea.y -= 0.5 * (newarea.height - area.height);
         newarea = FULL_AREA.fit(newarea);
         setZoomArea(data, newarea);
+        // hide image, show dimmed background
+        fadeScalerImg(data, 'fadeOut');
         // reset modes
         setScaleMode(data, 'screen');
-        setFitMode(data, 'both');
+        // setFitMode(data, 'both'); // ###?
         redisplay(data);
     };
 
@@ -1423,14 +1474,15 @@ function($) {
                 'cursor' : 'move'
         };
         if (newZoomArea != null) {
-            // check if aspect ratio has changed
-            if (Math.abs(newZoomArea.getAspect() - data.zoomArea.getAspect()) > 0.001 ) {
-                var newRect = data.imgTrafo.transform(newZoomArea);
+            // check if aspect ratio has changed 
+            if (Math.abs(newZoomArea.getAspect() - data.zoomArea.getAspect()) > 0.001) {
+                var newRect = imgTrafo.transform(newZoomArea);
                 var newAspect = newRect.getAspect();
                 var newSize = data.maxImgSize.fitAspect(newAspect);
                 // set scaler to presumed new size
                 newSize.adjustDiv($scaler);
-                console.debug("adjusting aspect ratio for preview", data.maxImgSize, newSize);
+                console.debug("adjusting aspect ratio of preview:",
+                  data.maxImgSize.toString(), '=>', newSize.toString());
             }
             // get transform for new zoomArea (use 'screen' instead of data.scaleMode)
             imgTrafo = getImgTrafo($scaler, newZoomArea, data.settings.rot,
@@ -1461,8 +1513,8 @@ function($) {
                 scalerCss[data.bgSizeName] += ', ' + Math.round(fullRect.width) + 'px ' + Math.round(fullRect.height) + 'px';
                 scalerCss['background-position'] += ', ' + Math.round(fullRect.x) + 'px '+ Math.round(fullRect.y) + 'px';
             }
-            // console.debug('setPreviewBg', scalerCss);
         }
+        // console.debug('* setPreviewBg', scalerCss[data.bgSizeName], 'pos', scalerCss['background-position']);
         $scaler.css(scalerCss);
         data.hasPreviewBg = true;
     };
@@ -1488,10 +1540,8 @@ function($) {
             $elem.find('.'+data.settings.cssPrefix+'overlay').hide(); // hide all overlays (marks/regions)
             startPos = geom.position(evt);
             delta = null;
-            // hide the scaler img, show background of div instead
-            $img.css('visibility', 'hidden');
-            $img.hide();
-            $scaler.fadeTo('slow', 0.7);
+            // hide image, show dimmed background
+            fadeScalerImg(data, 'hide');
             // set low res background immediately on mousedown
             setPreviewBg(data);
             $document.on("mousemove.dlZoomDrag", dragMove);
@@ -1519,12 +1569,8 @@ function($) {
             $document.off("mousemove.dlZoomDrag", dragMove);
             $document.off("mouseup.dlZoomDrag", dragEnd);
             if (delta == null || delta.distance() < 2) {
-                // no movement
-                $img.css('visibility', 'visible');
-                $img.fadeIn();
-                $scaler.fadeTo('slow', 1);
-                // $scaler.css({'opacity' : '1', 'background-image' : 'none'});
-                data.hasPreviewBg = false;
+                // no change, show image again
+                fadeScalerImg(data, 'fadeIn');
                 // unhide marks etc.
                 updateDisplay(data);
                 return false; 
@@ -1579,6 +1625,35 @@ function($) {
         var flags = data.scalerFlags;
         var q = flags.q2 || flags.q1 || 'q0'; // assume q0 as default
         return parseInt(q[1], 10);
+    };
+
+    /** hide or show image, fade scaler background
+     * 
+     */
+    var fadeScalerImg = function (data, show) {
+        var $img = data.$img;
+        var $scaler = data.$scaler;
+        if (show == null || show === 'hide') {
+          $scaler.css('opacity', data.settings.scalerFadedOpacity);
+          $img.fadeOut(function(){
+            // console.debug("* img hide", $img.css('display'));
+            });
+        } else if (show === 'fadeOut') {
+          $scaler.fadeTo('fast', data.settings.scalerFadedOpacity, function() {
+            // console.debug("* scaler fadeOut", $img.css('display'), $img.css('opacity'));
+            $img.fadeOut(function(){
+              console.debug("* img fadeOut", $img.css('display'));
+              });
+            });
+        } else {
+          data.hasPreviewBg = false;
+          $img.fadeIn(function(){
+            // console.debug("* img fadeIn", $img.css('display'));
+            });
+          $scaler.fadeTo('slow', 1, function() {
+            // console.debug("* scaler fadeIn", $img.css('display'), $img.css('opacity'));
+            });
+        }
     };
 
     /** set image quality as a number (0..2).
@@ -1882,6 +1957,7 @@ function($) {
             storeOptions : storeOptions,
             redisplay : redisplay,
             updateDisplay : updateDisplay,
+            fadeScalerImg : fadeScalerImg,
             showDiv : showDiv,
             defineArea : defineArea,
             setZoomArea : setZoomArea,

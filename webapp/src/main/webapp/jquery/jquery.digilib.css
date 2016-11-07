@@ -113,7 +113,6 @@ div.dl-digilib div.dl-region {
 	background-color: red;
     opacity: 0.3;
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
-	filter: alpha(opacity=30);
 }
 
 div.dl-digilib div.dl-region a:link,
@@ -131,7 +130,6 @@ div.dl-digilib div.dl-regionArea {
 	border: none;
     opacity: 0.3;
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
-	filter: alpha(opacity=30);
 }
 
 div.dl-digilib div.dl-regionHTML {
@@ -164,7 +162,6 @@ div.dl-digilib div.dl-highlightregion {
 	border: 5px solid aqua;
 	opacity: 0.8;
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
-	filter: alpha(opacity=80);
 }
 
 div.dl-digilib div.dl-findregion {
@@ -172,7 +169,6 @@ div.dl-digilib div.dl-findregion {
 	border: 5px solid aqua;
 	opacity: 0.8;
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
-	filter: alpha(opacity=80);
 }
 
 div.dl-digilib select.dl-finddata {
@@ -355,7 +351,6 @@ div.dl-digilib table.dl-scalertable td.dl-arrow:hover {
     background-color: black;
 	opacity: 0.3;
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
-	filter: alpha(opacity=30);
 }
 
 div.dl-digilib table.dl-scalertable img.button {
@@ -428,7 +423,6 @@ div.dl-digilib.dl-embedded div.dl-buttons {
 	background-color: gray;
 	opacity: 0.5;
 	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
-	filter: alpha(opacity=50);
 	z-index: 100;
 }
 

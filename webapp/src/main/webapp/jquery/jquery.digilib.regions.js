@@ -171,9 +171,9 @@ inner (optional)
             }
             var onComplete = function (data, rect) {
                 if (rect == null) return;
-                var count = getRegions(data, 'regionURL').length;
+                var index = getRegions(data, 'regionURL').length + 1;
                 var attr = {'class' : CSS+'regionURL '+CSS+'overlay'};
-                var item = {'rect' : rect, 'index' : count, 'attributes' : attr};
+                var item = {'rect' : rect, 'index' : index, 'attributes' : attr};
                 var $regionDiv = addRegionDiv(data, item);
                 fn.highlightButtons(data, 'defineregion', 0);
                 redisplay(data);
@@ -232,7 +232,7 @@ inner (optional)
             var show = !data.settings.isRegionVisible;
             data.settings.isRegionVisible = show;
             fn.highlightButtons(data, 'regions', show);
-            renderRegions(data, 0);
+            renderRegions(data, 1);
             return show;
         },
 
@@ -689,7 +689,7 @@ inner (optional)
         za.setCenter(rect.getCenter()).stayInside(FULL_AREA);
         fn.setZoomArea(data, za);
         // hide image
-        fn.fadeScalerImg(data, 0);
+        fn.fadeScalerImg(data, 'fadeOut');
         fn.redisplay(data);
     };
 
@@ -762,7 +762,7 @@ inner (optional)
         console.debug("regions: handleUpdate");
         var settings = data.settings;
         fn.highlightButtons(data, 'regions' , settings.isRegionVisible);
-        renderRegions(data);
+        renderRegions(data, 1);
     };
 
     // additional buttons
