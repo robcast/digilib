@@ -423,7 +423,7 @@ digilib sliders plugin
         var css = data.settings.cssPrefix;
         var cls = css + 'rgbslider';
         var $div = $('<div>');
-        var $table = $('<table>', { class: cls });
+        var $table = $('<table class="'+cls+'"/>');
         var $preview = preview(cls);
         $div.append($table);
         $div.append($preview);
@@ -441,8 +441,8 @@ digilib sliders plugin
             var $cont = tinySlider(data, sliderOptions.contrast, color.m);
             $table.data(value+'a', $brgt.data('$text'));
             $table.data(value+'m', $cont.data('$text'));
-            $('<td>', { class: css+'rgb' }).append($brgt).appendTo($tr);
-            $('<td>', { class: css+'rgb' }).append($cont).appendTo($tr);
+            $('<td> class="'+cls+'"/>').append($brgt).appendTo($tr);
+            $('<td> class="'+cls+'"/>').append($cont).appendTo($tr);
             };
         var onChange = function ($slider) {
             // show effects of color brightness/contrast on a grey scale
