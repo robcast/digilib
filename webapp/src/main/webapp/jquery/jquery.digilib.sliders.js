@@ -441,8 +441,8 @@ digilib sliders plugin
             var $cont = tinySlider(data, sliderOptions.contrast, color.m);
             $table.data(value+'a', $brgt.data('$text'));
             $table.data(value+'m', $cont.data('$text'));
-            $('<td> class="'+cls+'"/>').append($brgt).appendTo($tr);
-            $('<td> class="'+cls+'"/>').append($cont).appendTo($tr);
+            $('<td class="'+cls+'"/>').append($brgt).appendTo($tr);
+            $('<td class="'+cls+'"/>').append($cont).appendTo($tr);
             };
         var onChange = function ($slider) {
             // show effects of color brightness/contrast on a grey scale
