@@ -22,7 +22,7 @@
  */
 /**
  * digilib measure plugin (measure distances on the digilib image in historic units etc.)
-**/ 
+**/                                             
 
 /* jslint browser: true, debug: true, forin: true
 */
@@ -50,7 +50,7 @@
     // the functions made available by digilib
     var fn = {
         // dummy function to avoid errors, gets overwritten by buttons plugin
-        highlightButtons : function () {
+        highlightButtons: function () {
             console.debug('measure: dummy function - highlightButtons');
             }
         };
@@ -68,810 +68,810 @@
 
     // the conversion data
     var UNITS = {
-        comment : [
+        comment: [
           "Angaben nach:",
           "Klimpert, Richard: Lexikon der Münzen, Maße, Gewichte, Zählarten und Zeitgrößen aller Länder der Erde 2) Berlin 1896 (Reprint Graz 1972)",
           "Doursther, Horace: Dictionnaire universel des poids et mesures anciens et modernes. Paris 1840 (Reprint Amsterdam 1965)"
           ],
-        sections : [{
-            name  : "Längenmaße: metrisch",
-            group  : "1",
-            units  : [{
-				name : "m",
-				factor : "1"
+        sections: [{
+            name: "Längenmaße: metrisch",
+            group: "1",
+            units: [{
+				name: "m",
+				factor: "1"
 				},
 				{
-				name : "mm",
-				factor : "0.001"
+				name: "mm",
+				factor: "0.001"
 				},
 				{
-				name : "cm",
-				factor : "0.01"
+				name: "cm",
+				factor: "0.01"
 				},
 				{
-				name : "dm",
-				factor : "0.1"
+				name: "dm",
+				factor: "0.1"
 				},
 				{
-				name : "km",
-				factor : "1000"
+				name: "km",
+				factor: "1000"
 				}]
             },
             {
-            name  : "Längenmaße: nautisch",
-            group  : "1",
-            units  : [{
-				name : "geographische Meile",
-				factor : "7420"
+            name: "Längenmaße: nautisch",
+            group: "1",
+            units: [{
+				name: "geographische Meile",
+				factor: "7420"
 				},
 				{
-				name : "Seemeile",
-				factor : "1854.965"
+				name: "Seemeile",
+				factor: "1854.965"
 				},
 				{
-				name : "fathom",
-				factor : "1.828782"
+				name: "fathom",
+				factor: "1.828782"
 				},
 				{
-				name : "cable",
-				factor : "182.8782"
+				name: "cable",
+				factor: "182.8782"
 				},
 				{
-				name : "league",
-				factor : "5564.895"
+				name: "league",
+				factor: "5564.895"
 				}]
             },
             {
-            name  : "Längenmaße: England",
-            group  : "1",
-            units  : [{
-				name : "foot",
-				factor : "0.304797",
-				subunits : 12
+            name: "Längenmaße: England",
+            group: "1",
+            units: [{
+				name: "foot",
+				factor: "0.304797",
+				subunits: 12
 				},
 				{
-				name : "inch",
-				factor : "0.02539975"
+				name: "inch",
+				factor: "0.02539975"
 				},
 				{
-				name : "yard",
-				factor : "0.914391",
-				subunits : 3
+				name: "yard",
+				factor: "0.914391",
+				subunits: 3
 				},
 				{
-				name : "pole",
-				factor : "5.0291505",
-				subunits : 11
+				name: "pole",
+				factor: "5.0291505",
+				subunits: 11
 				},
 				{
-				name : "chain",
-				factor : "20.116602",
-				subunits : 4
+				name: "chain",
+				factor: "20.116602",
+				subunits: 4
 				},
 				{
-				name : "furlong",
-				factor : "201.16602"
+				name: "furlong",
+				factor: "201.16602"
 				},
 				{
-				name : "mile",
-				factor : "1609.32816",
-				subunits : 8
+				name: "mile",
+				factor: "1609.32816",
+				subunits: 8
 				}]
             },
             {
-            name  : "Längenmaße: Italien",
-            group  : "1",
-            units  : [{
-				name : "palmo d'architetto (Rom)",
-				factor : "0.223425",
-				subunits : 12
+            name: "Längenmaße: Italien",
+            group: "1",
+            units: [{
+				name: "palmo d'architetto (Rom)",
+				factor: "0.223425",
+				subunits: 12
 				},
 				{
-				name : "braccio (Florenz)",
-				factor : "0.5836",
-				subunits : 20
+				name: "braccio (Florenz)",
+				factor: "0.5836",
+				subunits: 20
 				},
 				{
-				name : "braccio (Mailand)",
-				factor : "0.5949",
-				subunits : 12
+				name: "braccio (Mailand)",
+				factor: "0.5949",
+				subunits: 12
 				},
 				{
-				name : "canna d'architetto (Rom)",
-				factor : "2.23425"
+				name: "canna d'architetto (Rom)",
+				factor: "2.23425"
 				},
 				{
-				name : "canna di commercio (Rom)",
-				factor : "1.9920"
+				name: "canna di commercio (Rom)",
+				factor: "1.9920"
 				},
 				{
-				name : "canna d'architetto (Florenz)",
-				factor : "2.9180"
+				name: "canna d'architetto (Florenz)",
+				factor: "2.9180"
 				},
 				{
-				name : "canna di commercio (Florenz)",
-				factor : "2.3344"
+				name: "canna di commercio (Florenz)",
+				factor: "2.3344"
 				},
 				{
-				name : "canna agrimensoria (Florenz)",
-				factor : "2.9181",
-				subunits : 5
+				name: "canna agrimensoria (Florenz)",
+				factor: "2.9181",
+				subunits: 5
 				},
         {
-				name : "canna (Neapel)",
-				factor : "2.10936",
-				subunits : 8
+				name: "canna (Neapel)",
+				factor: "2.10936",
+				subunits: 8
 				},
         {
-				name : "catena (Neapel)",
-				factor : "18.4569",
+				name: "catena (Neapel)",
+				factor: "18.4569",
 				},
         {
-				name : "pertica (Neapel)",
-				factor : "2.6367",
+				name: "pertica (Neapel)",
+				factor: "2.6367",
 				},
         {
-				name : "palmo (Neapel)",
-				factor : "0.26367",
-				subunits : 12
+				name: "palmo (Neapel)",
+				factor: "0.26367",
+				subunits: 12
 				},
         {
-				name : "passo itinerario (Neapel)",
-				factor : "1.84569",
-				subunits : 8
+				name: "passo itinerario (Neapel)",
+				factor: "1.84569",
+				subunits: 8
 				},
         {
-				name : "oncia (Neapel)",
-				factor : "0.021972",
+				name: "oncia (Neapel)",
+				factor: "0.021972",
 				},
 				{
-				name : "miglio (Lombardei)",
-				factor : "1784.808"
+				name: "miglio (Lombardei)",
+				factor: "1784.808"
 				},
 				{
-				name : "miglio (Neapel)",
-				factor : "1855.110"
+				name: "miglio (Neapel)",
+				factor: "1855.110"
 				},
 				{
-				name : "miglio (Rom)",
-				factor : "1489.50"
+				name: "miglio (Rom)",
+				factor: "1489.50"
 				},
 				{
-				name : "minuta (Rom)",
-				factor : "0.00372375"
+				name: "minuta (Rom)",
+				factor: "0.00372375"
 				},
 				{
-				name : "oncia (Rom)",
-				factor : "0.01861875"
+				name: "oncia (Rom)",
+				factor: "0.01861875"
 				},
 				{
-				name : "oncia (Mailand)",
-				factor : "0.49575"
+				name: "oncia (Mailand)",
+				factor: "0.49575"
 				},
 				{
-				name : "palmo di commercio (Rom)",
-				factor : "0.249"
+				name: "palmo di commercio (Rom)",
+				factor: "0.249"
 				},
 				{
-				name : "palmo (Florenz)",
-				factor : "0.2918"
+				name: "palmo (Florenz)",
+				factor: "0.2918"
 				},
 				{
-				name : "passetto (Florenz)",
-				factor : "1.1673",
-				subunits : 40
+				name: "passetto (Florenz)",
+				factor: "1.1673",
+				subunits: 40
 				},
 				{
-				name : "piede (Brescia)",
-				factor : "0.471"
+				name: "piede (Brescia)",
+				factor: "0.471"
 				},
 				{
-				name : "piede (Carrara)",
-				factor : "0.2933"
+				name: "piede (Carrara)",
+				factor: "0.2933"
 				},
 				{
-				name : "piede (Como)",
-				factor : "0.4512"
+				name: "piede (Como)",
+				factor: "0.4512"
 				},
 				{
-				name : "piede (Modena)",
-				factor : "0.523048"
+				name: "piede (Modena)",
+				factor: "0.523048"
 				},
 				{
-				name : "piede (Reggio Em.)",
-				factor : "0.530898"
+				name: "piede (Reggio Em.)",
+				factor: "0.530898"
 				},
 				{
-				name : "piede (Venedig)",
-				factor : "0.347735"
+				name: "piede (Venedig)",
+				factor: "0.347735"
 				},
 				{
-				name : "piede (Vicenza)",
-				factor : "0.3574"
+				name: "piede (Vicenza)",
+				factor: "0.3574"
 				},
 				{
-				name : "piede (Verona)",
-				factor : "0.3429"
+				name: "piede (Verona)",
+				factor: "0.3429"
 				},
 				{
-				name : "piede (Rom)",
-				factor : "0.297587"
+				name: "piede (Rom)",
+				factor: "0.297587"
 				},
 				{
-				name : "piede Lombardo",
-				factor : "0.435185"
+				name: "piede Lombardo",
+				factor: "0.435185"
 				},
 				{
-				name : "piede liprando (Turin)",
-				factor : "0.51377"
+				name: "piede liprando (Turin)",
+				factor: "0.51377"
 				},
 				{
-				name : "piede manuale (Turin)",
-				factor : "0.342511"
+				name: "piede manuale (Turin)",
+				factor: "0.342511"
 				},
 				{
-				name : "piede (Neapel, 'palmo')",
-				factor : "0.26455"
+				name: "piede (Neapel, 'palmo')",
+				factor: "0.26455"
 				},
 				{
-				name : "soldo (Florenz)",
-				factor : "0.2918"
+				name: "soldo (Florenz)",
+				factor: "0.2918"
 				},
 				{
-				name : "trabucco piemontese (Turin)",
-				factor : "3.08259"
+				name: "trabucco piemontese (Turin)",
+				factor: "3.08259"
 				}]
             },
             {
-            name  : "Längenmaße: Niederlande",
-            group  : "1",
-            units  : [{
-				name : "voet (Amsterdam)",
-				factor : "0.283113"
+            name: "Längenmaße: Niederlande",
+            group: "1",
+            units: [{
+				name: "voet (Amsterdam)",
+				factor: "0.283113"
 				},
 				{
-				name : "voet (Antwerpen)",
-				factor : "0.2868"
+				name: "voet (Antwerpen)",
+				factor: "0.2868"
 				},
 				{
-				name : "voet (Aelst)",
-				factor : "0.2772"
+				name: "voet (Aelst)",
+				factor: "0.2772"
 				},
 				{
-				name : "voet (Breda)",
-				factor : "0.28413"
+				name: "voet (Breda)",
+				factor: "0.28413"
 				},
 				{
-				name : "voet (Brügge)",
-				factor : "0.27439"
+				name: "voet (Brügge)",
+				factor: "0.27439"
 				},
 				{
-				name : "voet (Brüssel)",
-				factor : "0.2757503"
+				name: "voet (Brüssel)",
+				factor: "0.2757503"
 				},
 				{
-				name : "voet (Groningen)",
-				factor : "0.2922"
+				name: "voet (Groningen)",
+				factor: "0.2922"
 				},
 				{
-				name : "voet (Haarlem)",
-				factor : "0.2858"
+				name: "voet (Haarlem)",
+				factor: "0.2858"
 				},
 				{
-				name : "voet (Kortrijk)",
-				factor : "0.2977"
+				name: "voet (Kortrijk)",
+				factor: "0.2977"
 				},
 				{
-				name : "voet (Tournai)",
-				factor : "0.2977"
+				name: "voet (Tournai)",
+				factor: "0.2977"
 				},
 				{
-				name : "voet (Utrecht)",
-				factor : "0.2683"
+				name: "voet (Utrecht)",
+				factor: "0.2683"
 				},
 				{
-				name : "voet (Ypern)",
-				factor : "0.2739"
+				name: "voet (Ypern)",
+				factor: "0.2739"
 				},
 				{
-				name : "pied (Hainaut)",
-				factor : "0.2934"
+				name: "pied (Hainaut)",
+				factor: "0.2934"
 				},
 				{
-				name : "pied St. Hubert (Lüttich)",
-				factor : "0.294698"
+				name: "pied St. Hubert (Lüttich)",
+				factor: "0.294698"
 				},
 				{
-				name : "pied St. Lambert (Lüttich)",
-				factor : "0.291796"
+				name: "pied St. Lambert (Lüttich)",
+				factor: "0.291796"
 				},
 				{
-				name : "pied Ste. Gertrude (Nivelles)",
-				factor : "0.27709"
+				name: "pied Ste. Gertrude (Nivelles)",
+				factor: "0.27709"
 				},
 				{
-				name : "steenvoet (Oudenaerde)",
-				factor : "0.2977"
+				name: "steenvoet (Oudenaerde)",
+				factor: "0.2977"
 				},
 				{
-				name : "houtvoet (Oudenaerde)",
-				factor : "0.292"
+				name: "houtvoet (Oudenaerde)",
+				factor: "0.292"
 				}]
             },
             {
-            name  : "Längenmaße: Frankreich",
-            group  : "1",
-            units  : [{
-				name : "pied du Roi (Paris)",
-				factor : "0.32483938497"
+            name: "Längenmaße: Frankreich",
+            group: "1",
+            units: [{
+				name: "pied du Roi (Paris)",
+				factor: "0.32483938497"
 				},
 				{
-				name : "pied (Arras)",
-				factor : "0.29777"
+				name: "pied (Arras)",
+				factor: "0.29777"
 				},
 				{
-				name : "pied (Cambrai)",
-				factor : "0.29777"
+				name: "pied (Cambrai)",
+				factor: "0.29777"
 				},
 				{
-				name : "Burgundischer Fuß",
-				factor : "0.33212"
+				name: "Burgundischer Fuß",
+				factor: "0.33212"
 				}]
             },
             {
-            name  : "Längenmaße: Südeuropa",
-            group  : "1",
-            units  : [{
-				name : "pié de Burgos (Spanien)",
-				factor : "0.278635"
+            name: "Längenmaße: Südeuropa",
+            group: "1",
+            units: [{
+				name: "pié de Burgos (Spanien)",
+				factor: "0.278635"
 				},
 				{
-				name : "pé (Portugal)",
-				factor : "0.33"
+				name: "pé (Portugal)",
+				factor: "0.33"
 				}]
             },
             {
-            name  : "Längenmaße: deutschspr. Länder",
-            group  : "1",
-            units  : [{
-				name : "Fuß (Basel)",
-				factor : "0.29820"
+            name: "Längenmaße: deutschspr. Länder",
+            group: "1",
+            units: [{
+				name: "Fuß (Basel)",
+				factor: "0.29820"
 				},
 				{
-				name : "Fuß (Bayern)",
-				factor : "0.2918592"
+				name: "Fuß (Bayern)",
+				factor: "0.2918592"
 				},
 				{
-				name : "Fuß (Braunschweig)",
-				factor : "0.2853624"
+				name: "Fuß (Braunschweig)",
+				factor: "0.2853624"
 				},
 				{
-				name : "Fuß (Gotha)",
-				factor : "0.287622"
+				name: "Fuß (Gotha)",
+				factor: "0.287622"
 				},
 				{
-				name : "Fuß (Hamburg)",
-				factor : "0.286575"
+				name: "Fuß (Hamburg)",
+				factor: "0.286575"
 				},
 				{
-				name : "Fuß (Hessen)",
-				factor : "0.287669"
+				name: "Fuß (Hessen)",
+				factor: "0.287669"
 				},
 				{
-				name : "Fuß (Köln)",
-				factor : "0.2876"
+				name: "Fuß (Köln)",
+				factor: "0.2876"
 				},
 				{
-				name : "Fuß (Mecklenburg)",
-				factor : "0.291006"
+				name: "Fuß (Mecklenburg)",
+				factor: "0.291006"
 				},
 				{
-				name : "Fuß (Münster)",
-				factor : "0.2908"
+				name: "Fuß (Münster)",
+				factor: "0.2908"
 				},
 				{
-				name : "Fuß (Pommern)",
-				factor : "0.2921"
+				name: "Fuß (Pommern)",
+				factor: "0.2921"
 				},
 				{
-				name : "Fuß (rheinisch)",
-				factor : "0.3138535"
+				name: "Fuß (rheinisch)",
+				factor: "0.3138535"
 				},
 				{
-				name : "Fuß (Sachsen)",
-				factor : "0.2831901"
+				name: "Fuß (Sachsen)",
+				factor: "0.2831901"
 				},
 				{
-				name : "Fuß (Preußen)",
-				factor : "0.3138535"
+				name: "Fuß (Preußen)",
+				factor: "0.3138535"
 				},
 				{
-				name : "Fuß (Wien)",
-				factor : "0.3180807"
+				name: "Fuß (Wien)",
+				factor: "0.3180807"
 				},
 				{
-				name : "Fuß (Württemberg)",
-				factor : "0.2864903"
+				name: "Fuß (Württemberg)",
+				factor: "0.2864903"
 				},
 				{
-				name : "Werkschuh (Frankfurt)",
-				factor : "0.2846143"
+				name: "Werkschuh (Frankfurt)",
+				factor: "0.2846143"
 				},
 				{
-				name : "Meile (Preußen)",
-				factor : "7532.485"
+				name: "Meile (Preußen)",
+				factor: "7532.485"
 				},
 				{
-				name : "Postmeile (Österreich)",
-				factor : "7585.937"
+				name: "Postmeile (Österreich)",
+				factor: "7585.937"
 				},
 				{
-				name : "Dezimalfuß (Preußen)",
-				factor : "0.3766242"
+				name: "Dezimalfuß (Preußen)",
+				factor: "0.3766242"
 				}]
             },
             {
-            name  : "Längenmaße: Osteuropa",
-            group  : "1",
-            units  : [{
-				name : "Fuß (Böhmen)",
-				factor : "0.2964"
+            name: "Längenmaße: Osteuropa",
+            group: "1",
+            units: [{
+				name: "Fuß (Böhmen)",
+				factor: "0.2964"
 				},
 				{
-				name : "Fuß (Mähren)",
-				factor : "0.29596"
+				name: "Fuß (Mähren)",
+				factor: "0.29596"
 				},
 				{
-				name : "stopa (Krakauer Fuß)",
-				factor : "0.3564"
+				name: "stopa (Krakauer Fuß)",
+				factor: "0.3564"
 				},
 				{
-				name : "stopa (Warschauer Fuß)",
-				factor : "0.288"
+				name: "stopa (Warschauer Fuß)",
+				factor: "0.288"
 				},
 				{
-				name : "Fuß (Rußland)",
-				factor : "0.3556"
+				name: "Fuß (Rußland)",
+				factor: "0.3556"
 				},
 				{
-				name : "arschin",
-				factor : "0.7112"
+				name: "arschin",
+				factor: "0.7112"
 				},
 				{
-				name : "saschen (Faden)",
-				factor : "2.133"
+				name: "saschen (Faden)",
+				factor: "2.133"
 				},
 				{
-				name : "werst",
-				factor : "1066.8"
+				name: "werst",
+				factor: "1066.8"
 				},
 				{
-				name : "milja",
-				factor : "7468"
+				name: "milja",
+				factor: "7468"
 				}]
             },
             {
-            name  : "Längenmaße: Antike",
-            group  : "1",
-            units  : [{
-				name : "pes romanus",
-				factor : "0.2945"
+            name: "Längenmaße: Antike",
+            group: "1",
+            units: [{
+				name: "pes romanus",
+				factor: "0.2945"
 				},
 				{
-				name : "pollex (Zoll)",
-				factor : "0.0245416667"
+				name: "pollex (Zoll)",
+				factor: "0.0245416667"
 				},
 				{
-				name : "digitus (Fingerbreite)",
-				factor : "0.01840625"
+				name: "digitus (Fingerbreite)",
+				factor: "0.01840625"
 				},
 				{
-				name : "palmus (Handbreite)",
-				factor : "0.073625"
+				name: "palmus (Handbreite)",
+				factor: "0.073625"
 				},
 				{
-				name : "cubitus (Elle)",
-				factor : "0.44175"
+				name: "cubitus (Elle)",
+				factor: "0.44175"
 				},
 				{
-				name : "passus (Doppelschritt)",
-				factor : "1.4725"
+				name: "passus (Doppelschritt)",
+				factor: "1.4725"
 				},
 				{
-				name : "pertica",
-				factor : "2.945"
+				name: "pertica",
+				factor: "2.945"
 				},
 				{
-				name : "actus",
-				factor : "35.34"
+				name: "actus",
+				factor: "35.34"
 				},
 				{
-				name : "mille passus (Meile)",
-				factor : "1472.5"
+				name: "mille passus (Meile)",
+				factor: "1472.5"
 				},
 				{
-				name : "stadium (600 Fuß)",
-				factor : "176.7"
+				name: "stadium (600 Fuß)",
+				factor: "176.7"
 				},
 				{
-				name : "stadium (1/8 Meile)",
-				factor : "184.0625"
+				name: "stadium (1/8 Meile)",
+				factor: "184.0625"
 				},
 				{
-				name : "stadion (Olympia)",
-				factor : "192.25"
+				name: "stadion (Olympia)",
+				factor: "192.25"
 				},
 				{
-				name : "Fuß (attisch)",
-				factor : "0.308"
+				name: "Fuß (attisch)",
+				factor: "0.308"
 				},
 				{
-				name : "Fuß (Babylon)",
-				factor : "0.35"
+				name: "Fuß (Babylon)",
+				factor: "0.35"
 				},
 				{
-				name : "Fuß (Delphi)",
-				factor : "0.1848"
+				name: "Fuß (Delphi)",
+				factor: "0.1848"
 				},
 				{
-				name : "Fuß (Olympia)",
-				factor : "0.32041667"
+				name: "Fuß (Olympia)",
+				factor: "0.32041667"
 				}]
             },
             {
-            name  : "Fläche",
-            group  : "4",
-            units  : [{
-				name : "qm",
-				factor : "1"
+            name: "Fläche",
+            group: "4",
+            units: [{
+				name: "qm",
+				factor: "1"
 				},
 				{
-				name : "qmm",
-				factor : "0.000001"
+				name: "qmm",
+				factor: "0.000001"
 				},
 				{
-				name : "qcm",
-				factor : "0.0001"
+				name: "qcm",
+				factor: "0.0001"
 				},
 				{
-				name : "qdm",
-				factor : "0.01"
+				name: "qdm",
+				factor: "0.01"
 				},
 				{
-				name : "rubbio (Roma, Lazio)",
-				factor : "18484,38"
+				name: "rubbio (Roma, Lazio)",
+				factor: "18484,38"
 				},
 				{
-				name : "pezza (Roma, vigne)",
-				factor : "2640,63",
+				name: "pezza (Roma, vigne)",
+				factor: "2640,63",
 				},
 				{
-				name : "braccio quadrato (Toscana)",
-				factor : "0.3406",
-				subunits : 400
+				name: "braccio quadrato (Toscana)",
+				factor: "0.3406",
+				subunits: 400
 				},
 				{
-				name : "quadrato (Toscana)",
-				factor : "3406,19"
+				name: "quadrato (Toscana)",
+				factor: "3406,19"
 				},
 				{
-				name : "stioro (Toscana)",
-				factor : "525,01"
+				name: "stioro (Toscana)",
+				factor: "525,01"
 				},
 				{
-				name : "staio (Toscana)",
-				factor : "1703,10",
+				name: "staio (Toscana)",
+				factor: "1703,10",
 				},
 				{
-				name : "tornatura (Toscana)",
-				factor : "2080,44"
+				name: "tornatura (Toscana)",
+				factor: "2080,44"
 				},
 				{
-				name : "Ar",
-				factor : "100"
+				name: "Ar",
+				factor: "100"
 				},
 				{
-				name : "Morgen",
-				factor : "2500"
+				name: "Morgen",
+				factor: "2500"
 				},
 				{
-				name : "Hektar",
-				factor : "10000"
+				name: "Hektar",
+				factor: "10000"
 				},
 				{
-				name : "qkm",
-				factor : "1000000"
+				name: "qkm",
+				factor: "1000000"
 				},
 				{
-				name : "square inch",
-				factor : "0.0006452"
+				name: "square inch",
+				factor: "0.0006452"
 				},
 				{
-				name : "square foot",
-				factor : "0.09288"
+				name: "square foot",
+				factor: "0.09288"
 				},
 				{
-				name : "square yard",
-				factor : "0.836",
-				subunits : "9"
+				name: "square yard",
+				factor: "0.836",
+				subunits: "9"
 				},
 				{
-				name : "pole (rod, perch)",
-				factor : "25.289"
+				name: "pole (rod, perch)",
+				factor: "25.289"
 				},
 				{
-				name : "rood",
-				factor : "1012",
-				subunits : "40"
+				name: "rood",
+				factor: "1012",
+				subunits: "40"
 				},
 				{
-				name : "acre",
-				factor : "4048",
-				subunits : "4"
+				name: "acre",
+				factor: "4048",
+				subunits: "4"
 				},
 				{
-				name : "square mile",
-				factor : "2590000"
+				name: "square mile",
+				factor: "2590000"
 				}]
             },
             {
-            name  : "Sonstige",
-            group  : "0",
-            units  : [{
-				name : "Maßstab 1:200",
-				factor : "200"
+            name: "Sonstige",
+            group: "0",
+            units: [{
+				name: "Maßstab 1:200",
+				factor: "200"
 				},
 				{
-				name : "Maßstab",
-				factor : "1:100",
-				add : "100"
+				name: "Maßstab",
+				factor: "1:100",
+				add: "100"
 				},
 				{
-				name : "Maßstab 1:75",
-				factor : "75"
+				name: "Maßstab 1:75",
+				factor: "75"
 				},
 				{
-				name : "Maßstab 1:60",
-				factor : "60"
+				name: "Maßstab 1:60",
+				factor: "60"
 				},
 				{
-				name : "Maßstab",
-				factor : "1:50",
-				add : "50"
+				name: "Maßstab",
+				factor: "1:50",
+				add: "50"
 				},
 				{
-				name : "Maßstab 1:25",
-				factor : "25"
+				name: "Maßstab 1:25",
+				factor: "25"
 				},
 				{
-				name : "Maßstab 1:20",
-				factor : "20"
+				name: "Maßstab 1:20",
+				factor: "20"
 				},
 				{
-				name : "Maßstab 1:10",
-				factor : "10"
+				name: "Maßstab 1:10",
+				factor: "10"
 				},
 				{
-				name : "Maßstab 1:5",
-				factor : "5"
+				name: "Maßstab 1:5",
+				factor: "5"
 				},
 				{
-				name : "Maßstab 1:3",
-				factor : "3"
+				name: "Maßstab 1:3",
+				factor: "3"
 				}]
           }]
         };
     var buttons = {
-        measure : {
-            onclick : "measurebar",
-            tooltip : "show the measuring toolbar",
-            icon : "measure.png"
+        measure: {
+            onclick: "measurebar",
+            tooltip: "show the measuring toolbar",
+            icon: "measure.png"
             },
-        drawshape : {
-            onclick : "drawshape",
-            tooltip : "draw a shape",
+        drawshape: {
+            onclick: "drawshape",
+            tooltip: "draw a shape",
             }
         };
 
     var defaults = {
         // buttonset of this plugin
-        measureButtonSet : ['measurebar'],
+        measureButtonSet: ['measurebar'],
         // unit data
-        units : UNITS,
+        units: UNITS,
         // styles for shapes
-        styles : {
-            shape : {
-                stroke : 'lightgreen',
-                'stroke-width' : 2,
-                fill : 'none'
+        styles: {
+            shape: {
+                stroke: 'lightgreen',
+                'stroke-width': 2,
+                fill: 'none'
                 },
-            constr : {
-                stroke : 'cornsilk',
-                'stroke-width' : 1,
-                fill : 'none'
+            constr: {
+                stroke: 'cornsilk',
+                'stroke-width': 1,
+                fill: 'none'
                 },
-            guide : {
-                stroke : 'blue',
-                'stroke-width' : 1,
-                fill : 'none'
+            guide: {
+                stroke: 'blue',
+                'stroke-width': 1,
+                fill: 'none'
                 },
-            selected : {
-                stroke : 'cyan',
-                'stroke-width' : 3,
-                fill : 'none'
+            selected: {
+                stroke: 'cyan',
+                'stroke-width': 3,
+                fill: 'none'
                 },
-            handle : {
-                stroke : 'blue',
-                'stroke-width' : 1,
-                fill : 'none',
-                hover : {
-                    fill : 'yellow',
+            handle: {
+                stroke: 'blue',
+                'stroke-width': 1,
+                fill: 'none',
+                hover: {
+                    fill: 'yellow',
                     }
                 }
             },
         // implemented styles
-        implementedStyles : ['shape', 'constr', 'guide', 'selected', 'handle'],
+        implementedStyles: ['shape', 'constr', 'guide', 'selected', 'handle'],
         // implemented measuring shape types, for select widget
-        implementedShapes : ['Line', 'LineString', 'Proportion', 'Rect', 'Rectangle', 'Polygon', 'Circle', 'Ellipse', 'Intercolumnium', 'Oval', 'Grid'],
+        implementedShapes: ['Line', 'LineString', 'Proportion', 'Rect', 'Rectangle', 'Polygon', 'Circle', 'Ellipse', 'Intercolumnium', 'Oval', 'Grid'],
         // all measuring shape types
-        shapeInfo : {
-            Line:           { name : 'line',           display : 'length', },
-            LineString:     { name : 'linestring',     display : 'length'  },
-            Proportion:     { name : 'proportion',     display : 'length'  },
-            Rectangle:      { name : 'box',            display : 'diagonal' },
-            Rect:           { name : 'rectangle',      display : 'area'    },
-            Square:         { name : 'square',         display : 'length'  },
-            Polygon:        { name : 'polygon',        display : 'area'    },
-            Circle:         { name : 'circle',         display : 'radius'  },
-            Ellipse:        { name : 'ellipse',        display : 'area'    },
-            Intercolumnium: { name : 'intercolumnium', display : 'distance' },
-            Oval:           { name : 'oval',           display : 'distance' },
-            Grid:           { name : 'linegrid',       display : 'spacing' }
+        shapeInfo: {
+            Line:           { name: 'line',           display: 'length', },
+            LineString:     { name: 'linestring',     display: 'length'  },
+            Proportion:     { name: 'proportion',     display: 'length'  },
+            Rectangle:      { name: 'box',            display: 'diagonal' },
+            Rect:           { name: 'rectangle',      display: 'area'    },
+            Square:         { name: 'square',         display: 'length'  },
+            Polygon:        { name: 'polygon',        display: 'area'    },
+            Circle:         { name: 'circle',         display: 'radius'  },
+            Ellipse:        { name: 'ellipse',        display: 'area'    },
+            Intercolumnium: { name: 'intercolumnium', display: 'distance' },
+            Oval:           { name: 'oval',           display: 'distance' },
+            Grid:           { name: 'linegrid',       display: 'spacing' }
             },
         // currently selected shape type
-        activeShapeType : 'Line',
+        activeShapeType: 'Line',
         // last measured distance
-        lastMeasuredValue : 0,
+        lastMeasuredValue: 0,
         // measuring unit (index into unit list)
-        unitFrom : 17,
+        unitFrom: 17,
         // converted unit (index into unit list)
-        unitTo : 0,
+        unitTo: 0,
         // maximal denominator for mixed fractions
-        maxDenominator : 20,
+        maxDenominator: 20,
         // number of decimal places for convert results
-        maxDecimals : 3,
+        maxDecimals: 3,
         // show convert result as mixed fraction?
-        showMixedFraction : false,
+        showMixedFraction: false,
         // show angle relative to last line?
-        showRelativeAngle : false,
+        showRelativeAngle: false,
         // show distance numbers?
-        showDistanceNumbers : true,
+        showDistanceNumbers: true,
         // show ratio of rectangle sides?
-        showRectangleRatios : false,
+        showRectangleRatios: false,
         // draw line ends as small crosses
-        drawEndPoints : true,
+        drawEndPoints: true,
         // draw mid points of lines
-        drawMidPoints : false,
+        drawMidPoints: false,
         // draw circle centers
-        drawCenters : false,
+        drawCenters: false,
         // draw rectangles from the diagonal and one point
-        drawFromDiagonal : false,
+        drawFromDiagonal: false,
         // draw circles from center
-        drawFromCenter : true,
+        drawFromCenter: true,
         // snap to endpoints
-        snapEndPoints : false,
+        snapEndPoints: false,
         // snap to mid points of lines
-        snapMidPoints : false,
+        snapMidPoints: false,
         // snap to circle centers
-        snapCenters : false,
+        snapCenters: false,
         // snap distance (in screen pixels)
-        snapDistance : 5,
+        snapDistance: 5,
         // keep original object when moving/scaling/rotating
-        keepOriginal : false,
+        keepOriginal: false,
         // number of copies when drawing grids
-        gridCopies : 10,
+        gridCopies: 10,
         // info window
-        infoDiv : null
+        infoDiv: null
         };
 
     // debug routine
@@ -1048,25 +1048,42 @@
         return total;
         };
 
-    // calculate the area of a polygon (using digilib coords)
-    var getRectifiedArea = function(data, shape) {
-        var ar = fn.getImgAspectRatio(data);
-        var rectifyPoint = function (c) {
-            return geom.position(ar * c[0], c[1]);
+    // are points ordered clockwise?
+    var isClockwise = function(data, shape) {
+        var sum = sumEdges(rectifyCoords(data, shape));
+        return sum > 0;
+        };
+
+    // sum up the edges (for area)
+    var sumEdges = function(coords) {
+        var sum = 0;
+        j = coords.length-1; // set j to the last vertex
+        for (i = 0; i < coords.length; i++) {
+            sum += (coords[j].x + coords[i].x) * (coords[j].y - coords[i].y); 
+            j = i;  // set j to the current vertex, i increments
+            }
+        return sum;
+        };
+
+    // rectify shape coords
+    var rectifyCoords = function(shape, aspect) {
+        var rectifyPoint = function (p) {
+            return geom.position(aspect * p[0], p[1]);
             };
         var coords = $.map(shape.geometry.coordinates, rectifyPoint);
+        return coords;
+        };
+
+    // calculate the area of a polygon (using digilib coords)
+    var getRectifiedArea = function(data, shape) {
+        var aspect = fn.getImgAspectRatio(data);
+        var coords = rectifyCoords(shape, aspect);
          // formula for ellipse area
         if (shape.geometry.type === 'Ellipse') {
             return Math.abs((coords[0].x-coords[1].x) * (coords[0].y-coords[1].y) * Math.PI);
             }
         // algorithm for polygon area
-        var area = 0;
-        j = coords.length-1; // set j to the last vertex
-        for (i = 0; i < coords.length; i++) {
-            area += (coords[j].x + coords[i].x) * (coords[j].y - coords[i].y); 
-            j = i;  // set j to the current vertex, i increments
-            }
-        return Math.abs(area/2);
+        return Math.abs(sumEdges(coords)/2);
         };
 
     // recalculate factor after a new value was entered into input element "value1"
@@ -1183,17 +1200,17 @@
         var shapeType = getActiveShapeType(data);
         var style = data.settings.styles.shape;
         return {
-            'id': fn.createId(null, CSS),
-            'geometry': {
-                'type': shapeType
+            id: fn.createId(null, CSS),
+            geometry: {
+                type: shapeType
                 },
-            'properties': {
-                'editable': true,
-                'selected': false,
-                'stroke': style['stroke'],
-                'stroke-width': style['stroke-width'],
-                'cssclass': shapeClass(shapeType)
-                // 'center' : data.settings.drawFromCenter
+            properties: {
+                editable: true,
+                selected: false,
+                cssclass: shapeClass(shapeType),
+                stroke: style['stroke'],
+                'stroke-width': style['stroke-width']
+                // 'center': data.settings.drawFromCenter
                 }
             };
         };
@@ -1357,8 +1374,8 @@
         var y = $div.offset().top - event.pageY;
         $(document.body).on('mousemove.measure', function(event) {
             $div.offset({
-                left : event.pageX + x,
-                top  : event.pageY + y
+                left: event.pageX + x,
+                top: event.pageY + y
             });
         }).on('mouseup.measure', function(event) {
             $(document.body).off('mousemove.measure').off('mouseup.measure');
@@ -1382,8 +1399,8 @@
 
         $info.html(getInfoHTML(data, shape));
         $info.offset({
-            left : event.pageX + 4,
-            top  : event.pageY + 4
+            left: event.pageX + 4,
+            top: event.pageY + 4
             });
         return false;
         };
@@ -1473,10 +1490,10 @@
             return;
             }
         factory['Proportion'] = {
-                'setup' : function (data, shape) {
+                setup: function (data, shape) {
                     shape.properties.maxvtx = 3;
                 },
-                'svg' : function (shape) {
+                svg: function (shape) {
                     var $s = factory['LineString'].svg(shape);
                     var p = shape.properties.screenpos;
                     var len1 = p[1].distance(p[0]);
@@ -1493,7 +1510,7 @@
                     };
                     return $s;
                 },
-                'info' : function (data, shape) {
+                info: function (data, shape) {
                     return [
                         { len1: 'leg a'},
                         { len2: 'leg b'},
@@ -1505,10 +1522,10 @@
                 }
             };
         factory['Intercolumnium'] = {
-                'setup' : function (data, shape) {
+                'setup': function (data, shape) {
                     shape.properties.maxvtx = 3;
                 },
-                'svg' : function (shape) {
+                'svg': function (shape) {
                     var props = shape.properties;
                     var guide = CSS+'guide';
                     var $s = factory['LineString'].svg(shape);
@@ -1535,10 +1552,10 @@
                 }
             };
         factory['Rect'] = {
-                'setup' : function (data, shape) {
+                setup: function (data, shape) {
                     shape.properties.maxvtx = 3;
                 },
-                'svg' : function (shape) {
+                svg: function (shape) {
                     var trafo = data.imgTrafo;
                     var $s = factory['Polygon'].svg(shape);
                     var props = shape.properties;
@@ -1561,26 +1578,27 @@
                 }
             };
         factory['Oval'] = {
-                'setup' : function (data, shape) {
+                setup: function (data, shape) {
                     shape.properties.maxvtx = 4;
                 },
-                'svg' : function (shape) {
+                svg: function (shape) {
                     var trafo = data.imgTrafo;
                     var styles = data.settings.styles;
                     var props = shape.properties;
+                    var guideClass = CSS+'guide';
+                    var shapeClass = CSS+'shape';
+                    var constrClass = CSS+'constr';
                     props['stroke-width'] = styles.guide['stroke-width']; // draw a rectangle in guides style
                     var $s = factory['Rect'].svg(shape);
                     var place = $s.place;
-                    var guide = CSS+'guide';
-                    var shapeClass = CSS+'shape';
-                    var constr = CSS+'constr';
-                    $s.attr({'class' : guide});
+                    var sweep = sumEdges(rectifyCoords(shape, 1)) > 0 ? '1' : '0';
+                    $s.attr({class: guideClass});
                     var $g = $(fn.svgElement('g', {'id': shape.id + '-oval'}));
-                    var $c1 = $(fn.svgElement('circle', {'id': shape.id + '-circ1', 'class': guide }));
-                    var $c2 = $(fn.svgElement('circle', {'id': shape.id + '-circ2', 'class': guide }));
-                    var $p1 = $(fn.svgElement('path',   {'id': shape.id + '-lines', 'class': guide }));
-                    var $p2 = $(fn.svgElement('path',   {'id': shape.id + '-constr', 'class': constr })); // debug construction
-                    props['stroke-width'] = styles.shape['stroke-width'];
+                    var $c1 = $(fn.svgElement('circle', {id: shape.id + '-circ1', class: guideClass }));
+                    var $c2 = $(fn.svgElement('circle', {id: shape.id + '-circ2', class: guideClass }));
+                    var $p1 = $(fn.svgElement('path',   {id: shape.id + '-lines', class: guideClass }));
+                    var $p2 = $(fn.svgElement('path',   {id: shape.id + '-constr', class: constrClass }));
+                    props['stroke-width'] = styles.shape['stroke-width']; // draw the oval in shape style
                     var $arc = $(fn.svgElement('path',  fn.svgAttr(data, shape)));
                     $g.append($s).append($c1).append($c2).append($p1).append($p2).append($arc);
                     $g.place = function () {
@@ -1637,10 +1655,10 @@
                                 'M'+md4+' L'+m4
                             });
                             $arc.attr({d: 'M'+fp2+ // the arcs of the oval
-                                ' A'+rad2+','+rad2+' 0 0,1 '+fp1+
-                                ' A'+rad1+','+rad1+' 0 0,1 '+fp3+
-                                ' A'+rad2+','+rad2+' 0 0,1 '+fp4+
-                                ' A'+rad1+','+rad1+' 0 0,1 '+fp2
+                                ' A'+rad2+','+rad2+' 0 0,'+sweep+' '+fp1+
+                                ' A'+rad1+','+rad1+' 0 0,'+sweep+' '+fp3+
+                                ' A'+rad2+','+rad2+' 0 0,'+sweep+' '+fp4+
+                                ' A'+rad1+','+rad1+' 0 0,'+sweep+' '+fp2
                             });
                             p[3] = handle;
                             shape.geometry.coordinates[3] = trafo.invtransform(handle).toArray();
@@ -1655,10 +1673,10 @@
                 }
             };
         factory['Grid'] = {
-                'setup' : function (data, shape) {
+                setup: function (data, shape) {
                     shape.properties.maxvtx = 2;
                 },
-                'svg' : function (shape) {
+                svg: function (shape) {
                     var $s = factory['Line'].svg(shape);
                     var place = $s.place;
                     var gridID = shape.id + '-grid';
@@ -1707,8 +1725,8 @@
                 };
             var w = widget[item+'color'];
             w.colorPicker({
-                pickerDefault : style[item].stroke,
-                onColorChange : changeStroke
+                pickerDefault: style[item].stroke,
+                onColorChange: changeStroke
                 });
             };
         $.each(styleName, setupColorPicker);
@@ -1864,13 +1882,13 @@
     // plugin object with name and init
     // shared objects filled by digilib on registration
     var pluginProperties = {
-            name : 'measure',
-            install : install,
-            init : init,
-            buttons : {},
-            actions : {},
-            fn : {},
-            plugins : {}
+            name: 'measure',
+            install: install,
+            init: init,
+            buttons: {},
+            actions: {},
+            fn: {},
+            plugins: {}
         };
 
     if ($.fn.digilib == null) {
