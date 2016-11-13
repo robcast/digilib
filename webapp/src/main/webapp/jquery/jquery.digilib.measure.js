@@ -832,6 +832,8 @@
         activeShapeType: 'Line',
         // last measured distance
         lastMeasuredValue: 0,
+        // last measured angle to x-axis
+        lastMeasuredAngle: 0,
         // measuring unit (index into unit list)
         unitFrom: 17,
         // converted unit (index into unit list)
@@ -1017,6 +1019,12 @@
         return p[v1].distance(p[v2]);
         };
 
+    // calculate the angle of the line between two vertices
+    var getScreenAngle = function (shape, v1, v2) {
+        var p = shape.properties.screenpos;
+        return geom.line(p[v1], p[v2]).deg();
+        };
+
     // get the vertex before the given one
     var getPrecedingVertex = function(shape, vertex) {
         var props = shape.properties;
@@ -1034,12 +1042,21 @@
         return getScreenDistance(shape, v0, v1);
         };
 
+    // calculate the angle from one shape vertex to the one before it (in rectified digilib coords)
+    var getPrecedingVertexAngle = function(data, shape, v1) {
+        if (v1 == null) {
+          v1 = shape.properties.vtx;
+        }
+        var v0 = getPrecedingVertex(shape, v1);
+        return getScreenAngle(shape, v0, v1);
+        };
+
     // calculate distance from current to preceding vertex (in rectified digilib coords)
     var getRectifiedLength = function(data, shape) {
         // var coords = shape.geometry.coordinates;
         var total = 0;
         if (shape.geometry.type === 'LineString') { // sum up distances
-            for (vtx = 1; vtx < shape.screenpos.length; vtx++) {
+            for (vtx = 1; vtx < shape.properties.screenpos.length; vtx++) {
                 total += getPrecedingVertexDistance(data, shape, vtx);
                 }
         } else {
@@ -1103,11 +1120,6 @@
         return val * factor * factor;
         };
 
-    // UGLY: info whether to show area (not length) for this shape type
-    var showArea = function(data, type) {
-        return data.settings.shapeInfo[type].display === 'area';
-        };
-
     // convert a length into both units 
     var convertLength = function (data, dist) {
         var factor = data.measureFactor;
@@ -1138,17 +1150,17 @@
         var type = getActiveShapeType(data);
         var factor = data.measureFactor;
         var px = data.lastMeasuredValue;
-        // var area = showArea(data, type);
-        //nvar val = area
-        //  ? scaleArea(px, factor)
         var val = scaleValue(px, factor);
         updateConversion(data, val, type);
+        var angle = data.lastMeasuredAngle;
+        data.measureWidgets.angle.text(fn.cropFloatStr(angle, 1)+'°');
         };
 
     // display info for shape
     var updateMeasuredValue = function(data, shape) {
         data.lastMeasuredValue = getPrecedingVertexDistance(data, shape);
-        console.debug(shape, data.lastMeasuredValue);
+        data.lastMeasuredAngle = getPrecedingVertexAngle(data, shape);
+        console.debug(shape, data.lastMeasuredValue, data.lastMeasuredAngle);
         updateUnits(data);
         };
 
@@ -1162,9 +1174,10 @@
         var s = data.settings;
         var factor = data.measureFactor;
         var type = shape.geometry.type;
-        var scaled = showArea(data, type)
-          ? scaleArea(getRectifiedArea(data, shape), factor)
-          : scaleValue(getRectifiedLength(data, shape), factor);
+        // var scaled = showArea(data, type)
+        //   ? scaleArea(getRectifiedArea(data, shape), factor)
+        //   : scaleValue(getRectifiedLength(data, shape), factor);
+        var scaled = scaleValue(getRectifiedLength(data, shape), factor);
         var name = s.shapeInfo[type].name;
         var display = s.shapeInfo[type].display;
         var l = convertLength(data, scaled);
@@ -1213,16 +1226,6 @@
                 // 'center': data.settings.drawFromCenter
                 }
             };
-        };
-
-    // disable the calibration input 
-    var setCalibrationInputState = function(data) {
-        var widgets = data.measureWidgets;
-        var type = getActiveShapeType(data);
-        var display = data.settings.shapeInfo[type].display;
-        var state = display !== 'length' && display !== 'radius' && display !== 'spacing';
-        widgets.value1.prop('disabled', state);
-        widgets.type.text(display);
         };
 
     // returns a screenpoint manipulation function
@@ -1275,13 +1278,11 @@
     // set the current shape type (from shape select widget)
     var changeActiveShapeType = function(data) {
         data.settings.activeShapeType = data.measureWidgets.shape.val();
-        setCalibrationInputState(data);
         };
 
     // set the current shape type
     var setActiveShapeType = function(data, shape) {
         data.settings.activeShapeType = shape.geometry.type;
-        setCalibrationInputState(data);
         };
 
     // set the current unit (from unit select widget)
@@ -1802,6 +1803,7 @@
           'type',
           'value1', 'unit1', 'eq',
           'value2', 'unit2',
+          'angle',
           'shapecolor', 'guidecolor', 'constrcolor', 'selectedcolor', 'handlecolor',
           'move'
           ],
@@ -1809,13 +1811,13 @@
         startb:       $('<button id="dl-measure-startb" title="click to draw a measuring shape on top of the image">M</button>'),
         shape:        $('<select id="dl-measure-shape" title="select a shape to use for measuring" />'),
         eq:           $('<span class="dl-measure-label">=</span>'),
-        type:         $('<span id="dl-measure-shapetype" class="dl-measure-label">length</span>'),
+        type:         $('<span id="dl-measure-shapetype" class="dl-measure-label">measured</span>'),
         fac:          $('<span id="dl-measure-factor" class="dl-measure-number" />'),
         value1:       $('<input id="dl-measure-value1" class="dl-measure-input" title="last measured value - click to change the value" value="0.0" />'),
         value2:       $('<span id="dl-measure-value2" class="dl-measure-label" title="last measured value, converted to the secondary unit" value="0.0"/>'),
         unit1:        $('<select name="measureUnit1" id="dl-measure-unit1" title="current measuring unit - click to change" />'),
         unit2:        $('<select name="measureUnit2" id="dl-measure-unit2" title="secondary measuring unit - click to change" />'),
-        angle:        $('<span id="dl-measure-angle" class="dl-measure-number" title="last measured angle" />'),
+        angle:        $('<span id="dl-measure-angle" class="dl-measure-label" title="last measured angle" />'),
         shapecolor:   $('<span id="dl-measure-shapecolor" class="dl-measure-color" title="select line color for shapes"></span>'),
         guidecolor:   $('<span id="dl-measure-guidecolor" class="dl-measure-color" title="select guide line color for shapes"></span>'),
         constrcolor:  $('<span id="dl-measure-constrcolor" class="dl-measure-color" title="select construction line color for shapes"></span>'),

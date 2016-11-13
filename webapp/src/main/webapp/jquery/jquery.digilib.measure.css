@@ -94,6 +94,12 @@ span.dl-measure-label {
   margin-right: 3px;
 }
 
+#dl-measure-angle {
+  display: inline-block;
+  width: 6em;
+  text-align: right;
+}
+
 .dl-measure-number {
   display: inline-block;
   color: lightgreen;

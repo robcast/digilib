@@ -24,7 +24,7 @@
  */
 
 (function($) {
-//var dlGeometry = function() {
+    var RAD2DEG = 180.0 / Math.PI;
     /*
      * Size class
      */
@@ -214,7 +214,7 @@
 
         // degree of angle between line and the positive X axis
         that.deg = function (pos) {
-            return this.rad(pos) / Math.PI * 180;
+            return this.rad(pos) * RAD2DEG;
         };
 
         // returns position in css-compatible format
@@ -732,7 +732,7 @@
     transform.getRotation = function(angle) {
         // returns a Transform that is a rotation by angle degrees around [0,0]
         if (angle !== 0) {
-            var t = Math.PI * parseFloat(angle) / 180.0;
+            var t = parseFloat(angle) / RAD2DEG;
             var cost = Math.cos(t);
             var sint = Math.sin(t);
             var traf = {
@@ -796,13 +796,13 @@
             rectangle : rectangle,
             transform : transform
     };
-    
+
     // install function called by digilib on plugin object
     var install = function() {
         // add constructor object to fn
         this.fn.geometry = geometry;
     };
-    
+
     // digilib plugin object
     var plugin = {
             name : 'geometry',
