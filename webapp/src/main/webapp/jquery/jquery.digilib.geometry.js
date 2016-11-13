@@ -374,6 +374,14 @@
         that.mid = function(factor) {
             return this.origin().mid(this.point(factor));
             };
+        // radians of angle between line and the positive X axis
+        that.rad = function() {
+            return this.origin().rad(this.point());
+            };
+        // degree of angle between line and the positive X axis
+        that.deg = function() {
+            return this.origin().deg(this.point());
+            };
         // factor of point (assuming it is on the line)
         that.factor = function(p) {
             return (dx === 0)

@@ -812,7 +812,7 @@
         // implemented styles
         implementedStyles: ['shape', 'constr', 'guide', 'selected', 'handle'],
         // implemented measuring shape types, for select widget
-        implementedShapes: ['Line', 'LineString', 'Proportion', 'Rect', 'Rectangle', 'Polygon', 'Circle', 'Ellipse', 'Intercolumnium', 'Oval', 'Grid'],
+        implementedShapes: ['Line', 'LineString', 'Proportion', 'Rect', 'Rectangle', 'Polygon', 'Circle', 'Intercolumnium', 'Oval', 'EllipseArc', 'Grid'],
         // all measuring shape types
         shapeInfo: {
             Line:           { name: 'line',           display: 'length', },
@@ -823,9 +823,9 @@
             Square:         { name: 'square',         display: 'length'  },
             Polygon:        { name: 'polygon',        display: 'area'    },
             Circle:         { name: 'circle',         display: 'radius'  },
-            Ellipse:        { name: 'ellipse',        display: 'area'    },
             Intercolumnium: { name: 'intercolumnium', display: 'distance' },
             Oval:           { name: 'oval',           display: 'distance' },
+            EllipseArc:     { name: 'ellipse',        display: 'area'    },
             Grid:           { name: 'linegrid',       display: 'spacing' }
             },
         // currently selected shape type
@@ -1527,11 +1527,11 @@
                 },
                 'svg': function (shape) {
                     var props = shape.properties;
-                    var guide = CSS+'guide';
+                    var guideClass = CSS+'guide';
                     var $s = factory['LineString'].svg(shape);
                     var place = $s.place;
-                    var $c1 = $(fn.svgElement('circle', {'id': shape.id + '-circ1', 'class': guide }));
-                    var $c2 = $(fn.svgElement('circle', {'id': shape.id + '-circ2', 'class': guide }));
+                    var $c1 = $(fn.svgElement('circle', {'id': shape.id + '-circ1', 'class': guideClass }));
+                    var $c2 = $(fn.svgElement('circle', {'id': shape.id + '-circ2', 'class': guideClass }));
                     var $g = $(fn.svgElement('g', {'id': shape.id + '-intercolumnium'}));
                     $g.append($s).append($c1).append($c2);
                     $g.place = function () {
@@ -1605,7 +1605,7 @@
                         var p = props.screenpos;
                         place.call($s); // place the framing rectangle (polygon)
                         if (p.length > 3) { // p[3] is the mouse pointer
-                            var side0 = geom.line(p[0], p[1]) // the sides
+                            var side0 = geom.line(p[0], p[1]); // the sides
                             var side1 = geom.line(p[1], props.p2); // use 'Rect' points
                             var side2 = geom.line(props.p2, props.p3);
                             var side3 = geom.line(props.p3, p[0]);
@@ -1666,6 +1666,67 @@
                             // area: (r² * phi) + (R² * (pi - phi)) - ((axis1 - 2r) * dist(m3, mid(axis1)))
                             // length of the periphery parts: q1 = r * phi, q2 = R * (pi - phi) 
                             // circumference: 2 * (q1 + q2);
+                            }
+                        };
+                    shape.$interactor = $arc;
+                    return $g;
+                }
+            };
+        factory['EllipseArc'] = {
+                setup: function (data, shape) {
+                    shape.properties.maxvtx = 3;
+                },
+                svg: function (shape) {
+                    var trafo = data.imgTrafo;
+                    var styles = data.settings.styles;
+                    var d = data.settings.editHandleSize/3;
+                    var props = shape.properties;
+                    var guideClass = CSS+'guide';
+                    var handleClass = CSS+'handle';
+                    var shapeClass = CSS+'shape';
+                    props['stroke-width'] = styles.guide['stroke-width']; // draw a rectangle in guides style
+                    var $s = factory['Rect'].svg(shape);
+                    var place = $s.place;
+                    $s.attr({class: guideClass});
+                    props['stroke-width'] = styles.shape['stroke-width']; // draw the ellipse in shape style
+                    var $arc = $(fn.svgElement('path', fn.svgAttr(data, shape)));
+                    var $p = $(fn.svgElement('path', {id: shape.id + '-constr', class: guideClass }));
+                    var $c1 = $(fn.svgElement('circle', {'id': shape.id + '-circ1', 'class': handleClass }));
+                    var $c2 = $(fn.svgElement('circle', {'id': shape.id + '-circ2', 'class': handleClass }));
+                    var $g = $(fn.svgElement('g', {'id': shape.id + '-ellpisearc'}));
+                    $g.append($s).append($arc).append($p).append($c1).append($c2);
+                    $g.place = function () {
+                        var p = props.screenpos;
+                        place.call($s); // place the framing rectangle (polygon)
+                        if (p.length > 2) { // p[3] is the mouse pointer
+                            var side0 = geom.line(p[0], p[1]); // the sides
+                            var mid0 = side0.mid(); // the midpoints of the sides
+                            var axis1 = side0.parallel(p[2]); // short axis
+                            var axis2 = geom.line(mid0, p[2]); // long axis
+                            var m = axis2.mid();
+                            var rad1 = m.distance(mid0);
+                            var rad2 = mid0.distance(p[0]);
+                            var angle = axis2.deg();
+                            var e = Math.sqrt(Math.abs(rad1*rad1 - rad2*rad2)); // distance of focus to m
+                            if (rad1 > rad2) {
+                              var f1 = geom.line(m, mid0).scale(e/rad1).point();
+                              var f2 = geom.line(m, p[2]).scale(e/rad1).point();
+                              $p.attr({d: // the construction lines
+                                  'M'+mid0+' L'+f1+
+                                  'M'+p[2]+' L'+f2
+                              });
+                              $c1.attr({cx: f1.x, cy: f1.y, r: d});
+                              $c2.attr({cx: f2.x, cy: f2.y, r: d});
+                            } else {
+                              $p.attr({d: ''});
+                              $c1.attr({r: 0});
+                              $c2.attr({r: 0});
+                            }
+                            $arc.attr({d: 'M'+mid0+ // the definition point of the ellipse
+                                ' A'+rad1+' '+rad2+' '+angle+' 1 1 '+p[2]+
+                                ' A'+rad1+' '+rad2+' '+angle+' 1 1 '+mid0
+                            });
+                            props.measures = { rad1: rad1, rad2: rad2, axis1: axis1.length(), axis2: axis2.length() }; // use for info
                             }
                         };
                     shape.$interactor = $arc;
