@@ -1859,8 +1859,8 @@ function($) {
      */
     var cropFloat = function (x, dec) {
         // return parseInt(10000 * x, 10) / 10000;
-        var decimals = dec || defaults.decimals;
-        return +(Math.round(x + "e+" + decimals)  + "e-" + decimals);
+        var m = Math.pow(10, dec || defaults.decimals);
+        return Math.round(x * m) / m;
     };
 
     /** return string from number with reduced precision.
