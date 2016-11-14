@@ -815,18 +815,80 @@
         implementedShapes: ['Line', 'LineString', 'Proportion', 'Rect', 'Rectangle', 'Polygon', 'Circle', 'Intercolumnium', 'Oval', 'EllipseArc', 'Grid'],
         // all measuring shape types
         shapeInfo: {
-            Line:           { name: 'line',           display: 'length', },
-            LineString:     { name: 'linestring',     display: 'length'  },
-            Proportion:     { name: 'proportion',     display: 'length'  },
-            Rectangle:      { name: 'box',            display: 'diagonal' },
-            Rect:           { name: 'rectangle',      display: 'area'    },
-            Square:         { name: 'square',         display: 'length'  },
-            Polygon:        { name: 'polygon',        display: 'area'    },
-            Circle:         { name: 'circle',         display: 'radius'  },
-            Intercolumnium: { name: 'intercolumnium', display: 'distance' },
-            Oval:           { name: 'oval',           display: 'distance' },
-            EllipseArc:     { name: 'ellipse',        display: 'area'    },
-            Grid:           { name: 'linegrid',       display: 'spacing' }
+            Line: { name: 'line', labels: [
+              { len1: 'length'},
+              { angx: 'angle to x-axis'}
+              ]},
+            LineString: { name: 'linestring', labels: [
+              { len1: 'total length'},
+              { seg: 'nr of segments'}
+              ]},
+            Proportion: { name: 'proportion', labels: [
+              { len1: 'first leg'},
+              { len2: 'second leg'},
+              { rat1: 'proportion'},
+              { ang:  'contained angle'},
+              { angx: 'angle to x-axis'}
+              ]},
+            Rectangle: { name: 'box', labels: [
+              { len1: 'side a'},
+              { len2: 'side b'},
+              { diag: 'diagonal'},
+              { rat1: 'proportion'},
+              { area: 'area'}
+              ]},
+            Rect: { name: 'rectangle', labels: [
+              { len1: 'side a'},
+              { len2: 'side b'},
+              { diag: 'diagonal'},
+              { rat1: 'proportion'},
+              { angx: 'angle to x-axis'},
+              { area: 'area'}
+              ]},
+            Square: { name: 'square', labels: [
+              { len1: 'side'},
+              { diag: 'diagonal'},
+              { area: 'area'}
+              ]},
+            Polygon: { name: 'polygon', labels: [
+              { len1: 'circumference'},
+              { area: 'area'}
+              ]},
+            Circle: { name: 'circle', labels: [
+              { rad1: 'radius'},
+              { circ: 'circumference'},
+              { area: 'area'}
+              ]},
+            Intercolumnium: { name: 'intercolumnium', labels: [
+              { len1: 'modulus'},
+              { len2: 'interval'},
+              { rat1:  'proportion'}
+              ]},
+            Oval: { name: 'oval', labels: [
+              { len1: 'long axis'},
+              { len2: 'short axis'},
+              { rad1: 'small radius'},
+              { rad2: 'large radius'},
+              { rat1: 'proportion'},
+              { rat2: 'proportion of arcs'},
+              { circ: 'circumference'},
+              { area: 'area'},
+              { angx: 'angle to x-axis'}
+              ]},
+            EllipseArc: { name: 'ellipse', labels: [
+              { len1: 'long axis'},
+              { len2: 'short axis'},
+              { rat1: 'proportion'},
+              { dist: 'focus distance'},
+              { circ: 'circumference'},
+              { area: 'area'},
+              { angx: 'angle to x-axis'}
+              ]},
+            Grid: { name: 'linegrid', labels: [
+              { len1: 'unit'},
+              { area: 'area'},
+              { angx: 'angle to x-axis'}
+              ]},
             },
         // currently selected shape type
         activeShapeType: 'Line',
@@ -974,95 +1036,11 @@
         _debug_shape('onRenderShape', shape);
         };
 
-    // calculate the angle between three points (rectified)
-    var getRectifiedAngleY = function (data, shape, tip, v1) {
-        var coords = shape.geometry.coordinates;
-        var line = geom.line(coords[tip], coords[v1]);
-        var dist = fn.getDistance(data,
-            geom.position(coords[v1]),
-            geom.position(coords[v2])
-            );
-        return dist.rectified;
-        };
-
-    // calculate the angle between three points (rectified)
-    var getRectifiedAngle = function (data, shape, tip, v1, v2) {
-        var coords = shape.geometry.coordinates;
-        var line1 = geom.line(coords[tip], coords[v1]);
-        var line2 = geom.line(coords[tip], coords[v2]);
-        var dist = fn.getDistance(data,
-            geom.position(coords[v1]),
-            geom.position(coords[v2])
-            );
-        return dist.rectified;
-        };
-
-    // calculate the distance between two digilib coords (rectified) ### (needed?)
-    var getRectifiedDistance = function (data, shape, vtx1, vtx2) {
-        var coords = shape.geometry.coordinates;
-        var dist = fn.getDistance(data,
-            geom.position(coords[vtx1]),
-            geom.position(coords[vtx2])
-            );
-        return dist.rectified;
-        };
-
-    // convert a distance between 2 coordinates (indexed) into both units
-    // ### do we need this?
-    var convertDistance = function (data, shape, dist) {
-        return convertLength(data, getScreenDistance(data, shape, v1, v2));
-        };
-
-    // calculate the distance between two vertices
-    var getScreenDistance = function (shape, v1, v2) {
-        var p = shape.properties.screenpos;
-        return p[v1].distance(p[v2]);
-        };
-
-    // calculate the angle of the line between two vertices
-    var getScreenAngle = function (shape, v1, v2) {
-        var p = shape.properties.screenpos;
-        return geom.line(p[v1], p[v2]).deg();
-        };
-
     // get the vertex before the given one
-    var getPrecedingVertex = function(shape, vertex) {
+    var getPrecedingVertex = function(shape) {
+        var v = shape.properties.vtx;
         var props = shape.properties;
-        var vtx = vertex == null ? props.vtx : vertex;
-        return (vtx === 0) ? props.screenpos.length-1 : vtx-1;
-        };
-
-    // calculate the distance from one shape vertex to the one before it (in rectified digilib coords)
-    var getPrecedingVertexDistance = function(data, shape, v1) {
-        // [safely assume that the 'screenpos' and 'coords' arrays have equal length?]
-        if (v1 == null) {
-          v1 = shape.properties.vtx;
-        }
-        var v0 = getPrecedingVertex(shape, v1);
-        return getScreenDistance(shape, v0, v1);
-        };
-
-    // calculate the angle from one shape vertex to the one before it (in rectified digilib coords)
-    var getPrecedingVertexAngle = function(data, shape, v1) {
-        if (v1 == null) {
-          v1 = shape.properties.vtx;
-        }
-        var v0 = getPrecedingVertex(shape, v1);
-        return getScreenAngle(shape, v0, v1);
-        };
-
-    // calculate distance from current to preceding vertex (in rectified digilib coords)
-    var getRectifiedLength = function(data, shape) {
-        // var coords = shape.geometry.coordinates;
-        var total = 0;
-        if (shape.geometry.type === 'LineString') { // sum up distances
-            for (vtx = 1; vtx < shape.properties.screenpos.length; vtx++) {
-                total += getPrecedingVertexDistance(data, shape, vtx);
-                }
-        } else {
-            total = getPrecedingVertexDistance(data, shape);
-            }
-        return total;
+        return (v === 0) ? props.screenpos.length-1 : v-1;
         };
 
     // are points ordered clockwise?
@@ -1089,18 +1067,6 @@
             };
         var coords = $.map(shape.geometry.coordinates, rectifyPoint);
         return coords;
-        };
-
-    // calculate the area of a polygon (using digilib coords)
-    var getRectifiedArea = function(data, shape) {
-        var aspect = fn.getImgAspectRatio(data);
-        var coords = rectifyCoords(shape, aspect);
-         // formula for ellipse area
-        if (shape.geometry.type === 'Ellipse') {
-            return Math.abs((coords[0].x-coords[1].x) * (coords[0].y-coords[1].y) * Math.PI);
-            }
-        // algorithm for polygon area
-        return Math.abs(sumEdges(coords)/2);
         };
 
     // recalculate factor after a new value was entered into input element "value1"
@@ -1158,8 +1124,12 @@
 
     // display info for shape
     var updateMeasuredValue = function(data, shape) {
-        data.lastMeasuredValue = getPrecedingVertexDistance(data, shape);
-        data.lastMeasuredAngle = getPrecedingVertexAngle(data, shape);
+        var props = shape.properties;
+        var screenpos = props.screenpos;
+        var thisPos = screenpos[props.vtx];
+        var lastPos = screenpos[getPrecedingVertex(shape)];
+        data.lastMeasuredValue = thisPos.distance(lastPos);
+        data.lastMeasuredAngle = thisPos.deg(lastPos);
         console.debug(shape, data.lastMeasuredValue, data.lastMeasuredAngle);
         updateUnits(data);
         };
@@ -1174,18 +1144,24 @@
         var s = data.settings;
         var factor = data.measureFactor;
         var type = shape.geometry.type;
-        // var scaled = showArea(data, type)
-        //   ? scaleArea(getRectifiedArea(data, shape), factor)
-        //   : scaleValue(getRectifiedLength(data, shape), factor);
-        var scaled = scaleValue(getRectifiedLength(data, shape), factor);
+        var m = shape.properties.measures || {};
         var name = s.shapeInfo[type].name;
-        var display = s.shapeInfo[type].display;
-        var l = convertLength(data, scaled);
-        var html = '<div class="head">'+name+'</div>'
-          +'<div><em>'+display+'</em>: '
-          +fn.cropFloat(l[0], 2)+' '+l[2]+' = '
-          +fn.cropFloat(l[1], 2)+' '+l[3]
-          +'</div>';
+        var labels = s.shapeInfo[type].labels;
+        // var l = convertLength(data, scaled);
+        var htmlLine = function (item, i) {
+          var key = Object.keys(item)[0];
+          var label = item[key];
+          var value = m[key];
+          return value
+            ? '<div><em>'+label+'</em>: '
+              +fn.cropFloat(value, 2)
+              // +fn.cropFloat(l[0], 2)+' '+l[2]+' = '
+              // +fn.cropFloat(l[1], 2)+' '+l[3]
+              +'</div>'
+            : '';
+          };
+        var lines = $.map(labels, htmlLine);
+        var html = '<div class="head">'+name+'</div>'+lines.join('');
         return html;
         };
 
@@ -1237,10 +1213,10 @@
             var vtx = props.vtx;
             if (screenpos == null || vtx == null) {
                 return; }
-            var lastPos = screenpos[getPrecedingVertex(shape)];
-            // shape.geometry.coordinates[vtx] = data.imgTrafo.invtransform(thisPos); // ### needed? just work with screenpos?
             var factor = data.measureFactor;
-            var screenDist = getPrecedingVertexDistance(data, shape);
+            var thisPos = screenpos[vtx];
+            var lastPos = screenpos[getPrecedingVertex(shape)];
+            var screenDist = thisPos.distance(lastPos);
             var unitDist = scaleValue(screenDist, factor);
             var roundDist = Math.round(unitDist); // round to the nearest integer
             if (roundDist === 0) {
@@ -1331,18 +1307,18 @@
         var $u2 = widgets.unit2;
         var section = data.settings.units.sections;
         var addOptions = function(i, item) {
-            var $opt = $('<option class="dl-section" disabled="disabled">'+ item.name +'</option>');
+          var $opt = $('<option class="dl-section" disabled="disabled">'+ item.name +'</option>');
+          $u1.append($opt);
+          $u2.append($opt.clone());
+          var unit = item.units;
+          var addOption = function(i, item) {
+            var $opt = $('<option class="dl-units" value="'+ item.factor + '">'+ item.name + '</option>');
+            $opt.data('unit', item);
             $u1.append($opt);
             $u2.append($opt.clone());
-            var unit = item.units;
-            var addOption = function(i, item) {
-				var $opt = $('<option class="dl-units" value="'+ item.factor + '">'+ item.name + '</option>');
-				$opt.data('unit', item);
-				$u1.append($opt);
-				$u2.append($opt.clone());
-				};
-            $.each(unit, addOption);
             };
+          $.each(unit, addOption);
+          };
         $.each(section, addOptions);
         $u1.children(':not(:disabled)')[data.settings.unitFrom].selected = true;
         $u2.children(':not(:disabled)')[data.settings.unitTo].selected = true;
@@ -1386,7 +1362,7 @@
         };
 
     var createInfoDiv = function() {
-        var options = { id: CSS+'info', class: 'dl-keep '+CSS+'info' };
+        var options = { id: CSS+'info', 'class': 'dl-keep '+CSS+'info' };
         return $('<div>', options);
         };
 
@@ -1490,36 +1466,35 @@
             console.error("No SVG factory found: jquery.digilib.vector not loaded?");
             return;
             }
-        factory['Proportion'] = {
+       // algorithm for polygon area: Math.abs(sumEdges(coords)/2);
+       factory['Proportion'] = {
                 setup: function (data, shape) {
                     shape.properties.maxvtx = 3;
                 },
                 svg: function (shape) {
-                    var $s = factory['LineString'].svg(shape);
-                    var p = shape.properties.screenpos;
-                    var len1 = p[1].distance(p[0]);
-                    var len2 = p[1].distance(p[2]);
-                    var ang = null;
-                    var angy = null;
-                    props.measures = {
-                      len1: len1,
-                      len2: len2,
-                      rat1: len1 / len2,
-                      rat2: len2 / len1,
-                      ang:  ang,
-                      angy: angy
-                    };
+                   var props = shape.properties;
+                   var $s = factory['LineString'].svg(shape);
+                    var lplace = $s.place;
+                    $s.place = function () {
+                      lplace.call($s)
+                      var p = props.screenpos;
+                      if (p.length > 2) { // p[2] is the mouse pointer
+                        var len1 = p[1].distance(p[0]);
+                        var len2 = p[1].distance(p[2]);
+                        var ang1 = p[1].deg(p[0]);
+                        var ang2 = p[1].deg(p[2]);
+                        var ang = Math.abs(ang1 - ang2);
+                        props.measures = {
+                          len1: len1,
+                          len2: len2,
+                          rat: len1 / len2,
+                          inv: len2 / len1,
+                          ang: ang,
+                          angx: ang1
+                          };
+                        }
+                      };
                     return $s;
-                },
-                info: function (data, shape) {
-                    return [
-                        { len1: 'leg a'},
-                        { len2: 'leg b'},
-                        { rat1: 'ratio a/b'},
-                        { rat2: 'ratio b/a'},
-                        { ang:  'contained angle'},
-                        { angy: 'angle y-axis - leg a'},
-                        ];
                 }
             };
         factory['Intercolumnium'] = {
@@ -1530,25 +1505,30 @@
                     var props = shape.properties;
                     var guideClass = CSS+'guide';
                     var $s = factory['LineString'].svg(shape);
-                    var place = $s.place;
+                    shape.$interactor = $s;
                     var $c1 = $(fn.svgElement('circle', {'id': shape.id + '-circ1', 'class': guideClass }));
                     var $c2 = $(fn.svgElement('circle', {'id': shape.id + '-circ2', 'class': guideClass }));
                     var $g = $(fn.svgElement('g', {'id': shape.id + '-intercolumnium'}));
                     $g.append($s).append($c1).append($c2);
                     $g.place = function () {
-                        var p = props.screenpos;
-                        var vtx = props.vtx;
-                        place.call($s); // place the linestring
-                        if (p.length > 2) { // p[2] is the mouse pointer
-                            var m1 = p[1].mid(p[2]);
-                            var line = geom.line(m1, p[1]);
-                            var m2 = p[0].copy().add(line.vector());
-                            var rad = line.length();
-                            $c1.attr({cx: m1.x, cy: m1.y, r: rad});
-                            $c2.attr({cx: m2.x, cy: m2.y, r: rad});
+                      $s.place(); // place the linestring
+                      var p = props.screenpos;
+                      if (p.length > 2) { // p[2] is the mouse pointer
+                        var m1 = p[1].mid(p[2]);
+                        var line = geom.line(m1, p[1]);
+                        var m2 = p[0].copy().add(line.vector());
+                        var rad = line.length();
+                        $c1.attr({cx: m1.x, cy: m1.y, r: rad});
+                        $c2.attr({cx: m2.x, cy: m2.y, r: rad});
+                        var diam = rad * 2;
+                        var inter = p[0].distance(p[1]);
+                        props.measures = {
+                          len1: diam,
+                          len2: inter,
+                          rat: diam / inter
+                          };
                         }
-                    }
-                    shape.$interactor = $s;
+                      };
                     return $g;
                 }
             };
@@ -1572,6 +1552,18 @@
                             shape.geometry.coordinates[2] = trafo.invtransform(p[2]).toArray();
                             props.p2 = p2;
                             props.p3 = p3; // save other points
+                            var len1 = line1.length();
+                            var len2 = p[0].distance(p3);
+                            var diag = p[0].distance(p2);
+                            var ang = line1.deg();
+                            props.measures = {
+                              len1: len1,
+                              len2: len2,
+                              rat: len1 / len2,
+                              diag: diag,
+                              area: len1 * len2,
+                              angx: ang
+                            };
                             }
                         this.attr({points: [p[0], p[1], p2, p3].join(" ")});
                         };
@@ -1591,20 +1583,20 @@
                     var constrClass = CSS+'constr';
                     props['stroke-width'] = styles.guide['stroke-width']; // draw a rectangle in guides style
                     var $s = factory['Rect'].svg(shape);
-                    var place = $s.place;
                     var sweep = sumEdges(rectifyCoords(shape, 1)) > 0 ? '1' : '0';
                     $s.attr({class: guideClass});
                     var $g = $(fn.svgElement('g', {'id': shape.id + '-oval'}));
-                    var $c1 = $(fn.svgElement('circle', {id: shape.id + '-circ1', class: guideClass }));
-                    var $c2 = $(fn.svgElement('circle', {id: shape.id + '-circ2', class: guideClass }));
-                    var $p1 = $(fn.svgElement('path',   {id: shape.id + '-lines', class: guideClass }));
-                    var $p2 = $(fn.svgElement('path',   {id: shape.id + '-constr', class: constrClass }));
+                    var $c1 = $(fn.svgElement('circle', {id: shape.id + '-circ1', 'class': guideClass }));
+                    var $c2 = $(fn.svgElement('circle', {id: shape.id + '-circ2', 'class': guideClass }));
+                    var $p1 = $(fn.svgElement('path',   {id: shape.id + '-lines', 'class': guideClass }));
+                    var $p2 = $(fn.svgElement('path',   {id: shape.id + '-constr', 'class': constrClass }));
                     props['stroke-width'] = styles.shape['stroke-width']; // draw the oval in shape style
                     var $arc = $(fn.svgElement('path',  fn.svgAttr(data, shape)));
                     $g.append($s).append($c1).append($c2).append($p1).append($p2).append($arc);
+                    shape.$interactor = $arc;
                     $g.place = function () {
+                        $s.place(); // place the framing rectangle (polygon)
                         var p = props.screenpos;
-                        place.call($s); // place the framing rectangle (polygon)
                         if (p.length > 3) { // p[3] is the mouse pointer
                             var side0 = geom.line(p[0], p[1]); // the sides
                             var side1 = geom.line(p[1], props.p2); // use 'Rect' points
@@ -1663,13 +1655,20 @@
                             });
                             p[3] = handle;
                             shape.geometry.coordinates[3] = trafo.invtransform(handle).toArray();
-                            props.measures = { rad1: rad1, rad2: rad2, axis1: axis1.length(), axis2: axis2.length() }; // use for info
-                            // area: (r² * phi) + (R² * (pi - phi)) - ((axis1 - 2r) * dist(m3, mid(axis1)))
-                            // length of the periphery parts: q1 = r * phi, q2 = R * (pi - phi) 
-                            // circumference: 2 * (q1 + q2);
+                            var len1 = axis1.length();
+                            var len2 = axis2.length();
+                            props.measures = {
+                              rad1: rad1,
+                              rad2: rad2,
+                              len1: len1,
+                              len2: len2,
+                              rat1: len1 / len2
+                              // area: (r² * phi) + (R² * (pi - phi)) - ((axis1 - 2r) * dist(m3, mid(axis1)))
+                              // length of the periphery parts: q1 = r * phi, q2 = R * (pi - phi) 
+                              // circumference: 2 * (q1 + q2);
+                              };
                             }
                         };
-                    shape.$interactor = $arc;
                     return $g;
                 }
             };
@@ -1687,27 +1686,27 @@
                     var shapeClass = CSS+'shape';
                     props['stroke-width'] = styles.guide['stroke-width']; // draw a rectangle in guides style
                     var $s = factory['Rect'].svg(shape);
-                    var place = $s.place;
                     $s.attr({class: guideClass});
                     props['stroke-width'] = styles.shape['stroke-width']; // draw the ellipse in shape style
                     var $arc = $(fn.svgElement('path', fn.svgAttr(data, shape)));
-                    var $p = $(fn.svgElement('path', {id: shape.id + '-constr', class: guideClass }));
-                    var $c1 = $(fn.svgElement('circle', {'id': shape.id + '-circ1', 'class': handleClass }));
-                    var $c2 = $(fn.svgElement('circle', {'id': shape.id + '-circ2', 'class': handleClass }));
+                    var $p = $(fn.svgElement('path', {id: shape.id + '-constr', 'class': guideClass }));
+                    var $c1 = $(fn.svgElement('circle', {id: shape.id + '-circ1', 'class': handleClass }));
+                    var $c2 = $(fn.svgElement('circle', {id: shape.id + '-circ2', 'class': handleClass }));
                     var $g = $(fn.svgElement('g', {'id': shape.id + '-ellpisearc'}));
                     $g.append($s).append($arc).append($p).append($c1).append($c2);
+                    shape.$interactor = $arc;
                     $g.place = function () {
+                        $s.place(); // place the framing rectangle (polygon)
                         var p = props.screenpos;
-                        place.call($s); // place the framing rectangle (polygon)
                         if (p.length > 2) { // p[3] is the mouse pointer
                             var side0 = geom.line(p[0], p[1]); // the sides
                             var mid0 = side0.mid(); // the midpoints of the sides
-                            var axis1 = side0.parallel(p[2]); // short axis
-                            var axis2 = geom.line(mid0, p[2]); // long axis
-                            var m = axis2.mid();
+                            var axis1 = geom.line(mid0, p[2]); // long axis
+                            var axis2 = side0.parallel(p[2]); // short axis
+                            var m = axis1.mid();
                             var rad1 = m.distance(mid0);
                             var rad2 = mid0.distance(p[0]);
-                            var angle = axis2.deg();
+                            var angle = axis1.deg();
                             var e = Math.sqrt(Math.abs(rad1*rad1 - rad2*rad2)); // distance of focus to m
                             if (rad1 > rad2) {
                               var f1 = geom.line(m, mid0).scale(e/rad1).point();
@@ -1727,10 +1726,18 @@
                                 ' A'+rad1+' '+rad2+' '+angle+' 1 1 '+p[2]+
                                 ' A'+rad1+' '+rad2+' '+angle+' 1 1 '+mid0
                             });
-                            props.measures = { rad1: rad1, rad2: rad2, axis1: axis1.length(), axis2: axis2.length() }; // use for info
+                            var len1 = axis1.length();
+                            var len2 = axis2.length();
+                            props.measures = {
+                              angx: angle,
+                              len1: len1,
+                              len2: len2,
+                              rat1: len1 / len2,
+                              dist: e * 2,
+                              area: len1 * len2 * Math.PI
+                              };
                             }
                         };
-                    shape.$interactor = $arc;
                     return $g;
                 }
             };
@@ -1740,7 +1747,7 @@
                 },
                 svg: function (shape) {
                     var $s = factory['Line'].svg(shape);
-                    var place = $s.place;
+                    shape.$interactor = $s;
                     var gridID = shape.id + '-grid';
                     var props = shape.properties;
                     var $g = $(fn.svgElement('g', {id: shape.id + '-g'}));
@@ -1750,7 +1757,7 @@
                     var $r = $(fn.svgElement('rect', {id: shape.id + '-rect', stroke: props.stroke, fill: 'url(#'+gridID+')'}));
                     $g.append($defs.append($pat.append($path))).append($r).append($s);
                     $g.place = function () {
-                        place.call($s);
+                        $s.place();
                         var p = props.screenpos;
                         var d = p[0].distance(p[1]);
                         var angle = fn.cropFloat(p[0].deg(p[1]));
@@ -1761,8 +1768,12 @@
                         var transform = 'rotate('+angle+' '+p[0].x+' '+p[0].y+')';
                         $r.attr({x:x, y:y, height:d*scale, width:d*scale, transform:transform});
                         $pat.attr({patternTransform:transform});
+                        props.measures = {
+                          angx: angle,
+                          len1: d,
+                          area: d * d
+                          };
                         };
-                    shape.$interactor = $s;
                     return $g;
                 }
             };
