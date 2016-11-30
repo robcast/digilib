@@ -217,8 +217,9 @@
             svgElement: svgElement,
             svgAttr: svgAttr,
             createScreenCoords: createScreenCoords,
-            editShapeBegin: addEditHandles,
-            editShapeEnd: removeEditHandles,
+            startEditShape: startEditShape,
+            undoEditShape: undoEditShape,
+            finishEditShape: finishEditShape,
             redrawShape: redrawShape
             });
     };
@@ -600,6 +601,40 @@
     		delete shape.$vertexElems;
     		}
     	};
+
+    /**
+     * make shape editable, add handles and events
+     * 
+     * @param data
+     * @param shape
+     */
+    var startEditShape = function (data, shape) {
+        shape.properties.editable = true;
+        shape.savecoords = shape.geometry.coordinates.slice(0); // clone coords
+        redrawShape(data, shape);
+        };
+
+    /**
+     * end editing shape
+     * 
+     * @param data
+     * @param shape
+     */
+    var finishEditShape = function (data, shape) {
+        shape.properties.editable = false;
+        redrawShape(data, shape);
+        };
+
+    /**
+     * restore edited shape to previous state
+     * 
+     * @param data
+     * @param shape
+     */
+    var undoEditShape = function (data, shape) {
+        shape.geometry.coordinates = shape.savecoords;
+        finishEditShape(data, shape);
+    	 };
 
     /**
      * calculate screen positions from coordinates for a shape.
