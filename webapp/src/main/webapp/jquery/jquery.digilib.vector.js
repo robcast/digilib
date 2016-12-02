@@ -217,9 +217,9 @@
             svgElement: svgElement,
             svgAttr: svgAttr,
             createScreenCoords: createScreenCoords,
-            startEditShape: startEditShape,
-            undoEditShape: undoEditShape,
-            finishEditShape: finishEditShape,
+            startShapeEdit: startShapeEdit,
+            undoShapeEdit: undoShapeEdit,
+            finishShapeEdit: finishShapeEdit,
             redrawShape: redrawShape
             });
     };
@@ -608,7 +608,7 @@
      * @param data
      * @param shape
      */
-    var startEditShape = function (data, shape) {
+    var startShapeEdit = function (data, shape) {
         shape.properties.editable = true;
         shape.savecoords = shape.geometry.coordinates.slice(0); // clone coords
         redrawShape(data, shape);
@@ -620,7 +620,7 @@
      * @param data
      * @param shape
      */
-    var finishEditShape = function (data, shape) {
+    var finishShapeEdit = function (data, shape) {
         shape.properties.editable = false;
         redrawShape(data, shape);
         };
@@ -631,9 +631,9 @@
      * @param data
      * @param shape
      */
-    var undoEditShape = function (data, shape) {
+    var undoShapeEdit = function (data, shape) {
         shape.geometry.coordinates = shape.savecoords;
-        finishEditShape(data, shape);
+        finishShapeEdit(data, shape);
     	 };
 
     /**
