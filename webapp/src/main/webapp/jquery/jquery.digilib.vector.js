@@ -68,7 +68,9 @@
         // grab handle size
         'editHandleSize' : 10,
         // handle type (square, diamond, circle, cross)
-        'editHandleType' : 'square'
+        'editHandleType' : 'square',
+        // add or remove polygon points?
+        'editPolygonPoints' : true
     };
 
     var actions = {
@@ -567,7 +569,7 @@
         var insertHandle = function (i, item) {
             var p = trafo.transform(geom.position(item));
             var $handle = createHandle();
-            $handle.attr('vertex', i);
+            $handle.data('vertex', i);
             $handle.moveTo(p);
             handles.push($handle);
             $svg.append($handle);
@@ -634,7 +636,115 @@
     var undoShapeEdit = function (data, shape) {
         shape.geometry.coordinates = shape.savecoords;
         finishShapeEdit(data, shape);
-    	 };
+    	  };
+
+    /**
+     * shape has a polygon type
+     * 
+     * @param shape
+     */
+    var hasPolygonType = function  (shape) {
+        var type = shape.geometry.type;
+        return (type === 'Polygon' || type === 'LineString');
+        };
+
+    /**
+     * activate polygon edit (add/remove points)
+     * 
+     * @param data
+     * @param shape
+     */
+    var enablePolygonEdit = function (data, shape) {
+        var $w = polygonPointWidget(data);
+        var onHandleMouseDown = function (event) {
+          $w.fadeOut();
+          };
+        var onHandleMouseLeave = function (event) {
+          $w.data.timer = setTimeout(onHandleMouseDown, 500);
+          };
+        var onHandleMouseEnter = function (event) {
+          $w.data({ vertex: $(this).data('vertex'), shape: shape, timer: false });
+          $w.fadeIn().offset({
+            left : event.pageX + 5,
+            top  : event.pageY + 5
+          });
+        };
+        var addEventsToHandle = function(i, $handle) {
+            $handle
+              .on('mouseenter.handle', onHandleMouseEnter)
+              .on('mouseleave.handle', onHandleMouseLeave)
+              .on('mousedown.handle', onHandleMouseDown);
+              };
+        $.each(shape.$vertexElems, addEventsToHandle);
+        };
+
+    /**
+     * deactivate polygon edit (add/remove points)
+     * 
+     * @param data
+     * @param shape
+     */
+    var disablePolygonEdit = function (data) {
+        var $w = data.$polygonPointWidget;
+        if ($w == null) {
+          return;
+        }
+        $w.data({ vertex: null, shape: null, timer: false });
+        $w.fadeOut();
+        };
+
+    /**
+     * create HTML div to add/remove polygon points
+     * 
+     * @param data
+     */
+    var polygonPointWidget = function (data)	{
+        var css = data.settings.cssPrefix;
+        var $w = data.$polygonPointWidget;
+        if ($w == null) {
+          // setup html
+          var html = '\
+            <div id="'+css+'polygonPointWidget">\
+              <div id="'+css+'iconplus"><div class="icon plus" /></div>\
+              <div id="'+css+'iconminus"><div class="icon minus" /></div>\
+            </div>';
+          $w = $(html);
+          $w.appendTo(data.$elem);
+          // setup mouse bindings
+          var onPlusClick = function (event) {
+            var vertex = $w.data('vertex');
+            var shape = $w.data('shape');
+            var coords = shape.geometry.coordinates;
+            var v1 = parseInt(vertex) > 0 ? vertex-1 : coords.length-1;
+            var pt = geom.position(coords[vertex]).mid(geom.position(coords[v1]));
+            console.debug('+ point', coords[vertex], pt);
+            coords.splice(vertex, 0, pt);
+            redrawShape(data, shape);
+            };
+          var onMinusClick = function (event) {
+            var vertex = $w.data('vertex');
+            var shape = $w.data('shape');
+            var coords = shape.geometry.coordinates;
+            if (vertex == null || coords.length < 4) { return; }
+            console.debug('- point', coords[vertex]);
+            coords.splice(vertex, 1);
+            redrawShape(data, shape);
+            };
+          var onEnter = function (event) {
+            clearTimeout($w.data.timer);
+            };
+          var onLeave = function (event) {
+            $w.fadeOut();
+            };
+          var $plus = $w.children().first();
+          var $minus = $w.children().last();
+          $plus.on('click', onPlusClick);
+          $minus.on('click', onMinusClick);
+          $w.on('mouseenter', onEnter).on('mouseleave', onLeave);
+          data.$polygonPointWidget = $w;
+        }
+        return $w;
+        };
 
     /**
      * calculate screen positions from coordinates for a shape.
@@ -708,6 +818,9 @@
         // add adjustment handles
         if (shape.properties.editable) {
             addEditHandles(data, shape, layer);
+            if (hasPolygonType(shape) && data.settings.editPolygonPoints) {
+                enablePolygonEdit(data, shape);
+            }
         }
         $(data).trigger("renderShape", shape);
     };
@@ -727,6 +840,9 @@
     		shape.$elem.remove();
     		delete shape.$elem;
     	}
+      if (hasPolygonType(shape) && data.settings.editPolygonPoints) {
+        disablePolygonEdit(data);
+      }
     };
 
     /**
