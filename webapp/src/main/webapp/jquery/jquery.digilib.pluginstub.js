@@ -20,6 +20,7 @@
  * #L%
  * Authors: Robert Casties, Martin Raspe
  */
+
 /**
 digilib plugin stub
  */
@@ -74,10 +75,10 @@ digilib plugin stub
         console.debug('initialising STUB plugin. data:', data);
         var $data = $(data);
         // install event handlers
-        $data.bind('setup', handleSetup);
-        $data.bind('update', handleUpdate);
-        $data.bind('redisplay', handleRedisplay);
-        $data.bind('dragZoom', handleDragZoom);
+        $data.on('setup', handleSetup);
+        $data.on('update', handleUpdate);
+        $data.on('redisplay', handleRedisplay);
+        $data.on('dragZoom', handleDragZoom);
     };
 
 
@@ -97,6 +98,7 @@ digilib plugin stub
     };
 
     var handleDragZoom = function (evt, zoomArea) {
+        console.debug("STUB: handleDragZoom");
         var data = this;
     };
 
