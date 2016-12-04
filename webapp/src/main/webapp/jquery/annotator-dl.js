@@ -2292,12 +2292,12 @@
     };
 
     Store.prototype.updateAnnotation = function(annotation, data) {
-      this.publish("annotationStored", [annotation, data]);
       if (__indexOf.call(this.annotations, annotation) < 0) {
         console.error(Annotator._t("Trying to update unregistered annotation!"));
       } else {
         $.extend(annotation, data);
       }
+      this.publish("annotationStored", [data]);
       return $(annotation.highlights).data('annotation', annotation);
     };
 

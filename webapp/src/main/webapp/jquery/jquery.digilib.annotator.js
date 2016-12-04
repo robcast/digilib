@@ -323,18 +323,22 @@
       };
       var save = function () {
         console.log("annotation save");
-        // Fire annotationCreated events so that plugins can react to them
+        cleanup();
+        annotator.setupAnnotation(annotation);
+        // UGLY: depends on data.annotations(side effect of setupAnnotation)
+        var annoWrapper = data.annotations[data.annotations.length -1];
+        // calculate shape coordinates
+        createShape(data, annoWrapper);
+        // Fire annotationCreated events so that the Annotator Store plugin saves the annotation in the Db 
         annotator.publish('annotationCreated', [annotation]);
       };
-      var store = function (orig, stored) {
+      var store = function (stored) {
         if (stored == null) {
           console.warn('Annotation Store did not return the stored annotation');
           stored = annotation;
           }
         console.debug("annotation stored", stored);
-        cleanup();
         renderAnnotations(data);
-        annotator.setupAnnotation(stored);
       };
       var cancel = function () {
         console.log("annotation cancel");
