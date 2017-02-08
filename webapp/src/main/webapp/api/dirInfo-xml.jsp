@@ -23,6 +23,7 @@
     import="digilib.servlet.DigilibBean,
           digilib.conf.DigilibServletConfiguration,
           digilib.conf.DigilibServletRequest,
+          digilib.conf.DigilibOption,
           digilib.io.DocuDirectory,
           digilib.io.DocuDirent,
           digilib.io.FileOps,
@@ -57,7 +58,7 @@ int dirSize = docBean.getNumPages();
 %>  <auth-required><%= ! docBean.isAuthorized() %></auth-required>
 <%
     }
-    if (!docBean.getRequest().hasOption("dir")) {
+    if (!docBean.getRequest().hasOption(DigilibOption.dir)) {
       for (int i = 0; i < dirSize; i++) {
         DocuDirent f = dir.get(i);
         String fn = (f != null) ? f.getName() : "null";

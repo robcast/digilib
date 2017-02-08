@@ -23,6 +23,7 @@
     import="digilib.servlet.DigilibBean,
           digilib.conf.DigilibServletConfiguration,
           digilib.conf.DigilibServletRequest,
+          digilib.conf.DigilibOption,
           digilib.io.DocuDirectory,
           digilib.io.DocuDirent,
           digilib.io.FileOps,
@@ -58,7 +59,7 @@ if (dir != null) {
 %>  "count" : "<%= dirSize %>",
   "files" : [
 <%
-    if (!docBean.getRequest().hasOption("dir")) {
+    if (!docBean.getRequest().hasOption(DigilibOption.dir)) {
         // list all files
         for (int i = 0; i < dirSize; i++) {
             DocuDirent f = dir.get(i);

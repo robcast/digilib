@@ -30,6 +30,7 @@ import java.util.concurrent.Callable;
 import org.apache.log4j.Logger;
 
 import digilib.conf.DigilibConfiguration;
+import digilib.conf.DigilibOption;
 import digilib.io.FileOpException;
 
 /**
@@ -147,10 +148,10 @@ public class ImageWorker implements Callable<DocuImage> {
          * mirror image
          * operation mode: "hmir": mirror horizontally, "vmir": mirror vertically
          */
-        if (jobinfo.hasOption("hmir")) {
+        if (jobinfo.hasOption(DigilibOption.hmir)) {
             docuImage.mirror(0);
         }
-        if (jobinfo.hasOption("vmir")) {
+        if (jobinfo.hasOption(DigilibOption.vmir)) {
             docuImage.mirror(90);
         }
         if (stopNow) {

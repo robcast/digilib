@@ -1,49 +1,36 @@
 package digilib.util;
 
-/*
- * #%L
- * Set for option flags.
- * %%
- * Copyright (C) 2010 - 2013 MPIWG Berlin
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 3 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-3.0.html>.
- * #L%
- * Author: Robert Casties (robcast@berlios.de)
- */
-
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.StringTokenizer;
+
+import org.apache.log4j.Logger;
+
+import digilib.conf.DigilibOption;
 
 /**
  * @author casties
  *
  */
-@SuppressWarnings("serial")
-public class OptionsSet extends HashSet<String> {
+public class OptionsSet {
 
+	/** content EnumSet */
+	private EnumSet<DigilibOption> options;
+	
+    /** logger */
+    protected static final Logger logger = Logger.getLogger(OptionsSet.class);
+
+	/** String separating options in a String. */
 	protected String optionSep = ",";
 	
 	public OptionsSet() {
-		super();
+		options = EnumSet.noneOf(DigilibOption.class);
 	}
 
 	/** Constructor with String of options.
 	 * @param s
 	 */
 	public OptionsSet(String s) {
-		super();
+		options = EnumSet.noneOf(DigilibOption.class);
 		parseString(s);
 	}
 
@@ -55,7 +42,12 @@ public class OptionsSet extends HashSet<String> {
 			StringTokenizer i = new StringTokenizer(s, optionSep);
 			while (i.hasMoreTokens()) {
 				String opt = i.nextToken();
-				this.add(opt);
+				try {
+					DigilibOption dlOpt = DigilibOption.valueOf(opt);
+					options.add(dlOpt);
+				} catch (IllegalArgumentException e) {
+					logger.warn("Ignored unknown digilib option: "+opt); 
+				}
 			}
 		}
 	}
@@ -66,8 +58,8 @@ public class OptionsSet extends HashSet<String> {
 	 * @param opt
 	 * @return
 	 */
-	public boolean setOption(String opt) {
-	    return this.add(opt);
+	public boolean setOption(DigilibOption opt) {
+	    return options.add(opt);
 	}
 	
 	/**
@@ -76,13 +68,16 @@ public class OptionsSet extends HashSet<String> {
 	 * @param opt
 	 * @return
 	 */
-	public boolean hasOption(String opt) {
-		return this.contains(opt);
+	public boolean hasOption(DigilibOption opt) {
+		return options.contains(opt);
 	}
 
+	/* (non-Javadoc)
+	 * @see java.util.AbstractCollection#toString()
+	 */
 	public String toString() {
 		StringBuffer b = new StringBuffer();
-		for (String s: this) {
+		for (DigilibOption s: options) {
 			if (b.length() > 0) {
 				b.append(optionSep);
 			}
@@ -92,6 +87,20 @@ public class OptionsSet extends HashSet<String> {
 	}
 	
 	
+	/**
+	 * @return the options
+	 */
+	public EnumSet<DigilibOption> getOptions() {
+		return options;
+	}
+
+	/**
+	 * @param options the options to set
+	 */
+	public void setOptions(EnumSet<DigilibOption> options) {
+		this.options = options;
+	}
+
 	public String getOptionSep() {
 		return optionSep;
 	}

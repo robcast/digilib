@@ -420,7 +420,7 @@ public class DigilibRequest extends ParameterMap {
 	public boolean setWithIiifParams(String identifier, String region, String size, 
 			String rotation, String quality, String format) {
         // alway set HTTP status code error reporting
-        options.setOption("errcode");
+        options.setOption(DigilibOption.errcode);
         
         /*
          * parameter identifier (encoded)
@@ -453,7 +453,7 @@ public class DigilibRequest extends ParameterMap {
         if (region != null) {
             if (region.equals("info.json")) {
                 // info request
-                options.setOption("info");
+                options.setOption(DigilibOption.info);
                 return true;
             } else if (region.equals("full")) {
                 // full image -- default
@@ -482,7 +482,7 @@ public class DigilibRequest extends ParameterMap {
                     logger.error(errorMessage);
                     return false;
                 } else {
-                    options.setOption("pxarea");
+                    options.setOption(DigilibOption.pxarea);
                     setValueFromString("wx", parms[0]);
                     setValueFromString("wy", parms[1]);
                     setValueFromString("ww", parms[2]);
@@ -491,7 +491,7 @@ public class DigilibRequest extends ParameterMap {
             }
         } else {
             // region omitted -- redirect to info request
-            options.setOption("redirect-info");
+            options.setOption(DigilibOption.redirect_info);
             return true;
         }
         
@@ -503,7 +503,7 @@ public class DigilibRequest extends ParameterMap {
                 /*
                  * full -- size of original
                  */
-                options.setOption("ascale");
+                options.setOption(DigilibOption.ascale);
                 setValue("scale", 1f);
                 
             } else if (size.startsWith("pct:")) {
@@ -512,7 +512,7 @@ public class DigilibRequest extends ParameterMap {
                  */
                 try {
                     float pct = Float.parseFloat(size.substring(4));
-                    options.setOption("ascale");
+                    options.setOption(DigilibOption.ascale);
                     setValue("scale", pct / 100);
                 } catch (NumberFormatException e) {
                     errorMessage = "Error parsing size parameter in IIIF path! ";
@@ -536,7 +536,7 @@ public class DigilibRequest extends ParameterMap {
                             setValueFromString("dw", parms[0]);
                         } else {
                             // w,h -- according to spec, we should distort the image to match ;-(
-                        	options.setOption("squeeze");
+                        	options.setOption(DigilibOption.squeeze);
                             setValueFromString("dw", parms[0]);
                         }
                     }
@@ -552,7 +552,7 @@ public class DigilibRequest extends ParameterMap {
             }
         } else {
             // size omitted -- assume "full"
-            options.setOption("ascale");
+            options.setOption(DigilibOption.ascale);
             setValue("scale", 1f);
             return true;
         }
@@ -563,7 +563,7 @@ public class DigilibRequest extends ParameterMap {
         if (rotation != null) {
             if (rotation.startsWith("!")) {
                 // !n -- mirror and rotate
-                options.setOption("hmir");
+                options.setOption(DigilibOption.hmir);
                 rotation = rotation.substring(1);
             }
             try {
@@ -601,10 +601,10 @@ public class DigilibRequest extends ParameterMap {
             // format param (we only support jpg and png)
             if (format.equals("jpg")) {
                 // force jpg
-                options.setOption("jpg");
+                options.setOption(DigilibOption.jpg);
             } else if (format.equals("png")) {
                 // force png
-                options.setOption("png");
+                options.setOption(DigilibOption.png);
             } else {
                 errorMessage = "Invalid format parameter in IIIF path!";
                 logger.error(errorMessage);

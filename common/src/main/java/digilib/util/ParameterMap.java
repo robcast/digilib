@@ -30,6 +30,8 @@ package digilib.util;
 import java.io.File;
 import java.util.HashMap;
 
+import digilib.conf.DigilibOption;
+
 
 /** HashMap of digilib.servlet.Parameter's.
  * 
@@ -71,7 +73,7 @@ public class ParameterMap {
         // TODO: initParams?
 		// clone params to this map
 		newPm.params = (HashMap<String, Parameter>) pm.params.clone();
-		newPm.options = (OptionsSet) pm.options.clone();
+		newPm.options.setOptions(pm.options.getOptions().clone());
 		return newPm;
 	}
 
@@ -321,7 +323,7 @@ public class ParameterMap {
 	 * @param opt
 	 * @return
 	 */
-	public boolean hasOption(String opt) {
+	public boolean hasOption(DigilibOption opt) {
 		return options.hasOption(opt);
 	}
 
