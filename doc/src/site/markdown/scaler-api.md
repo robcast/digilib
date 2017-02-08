@@ -6,9 +6,10 @@ The Scaler servlet takes parameters in the HTTP query string format:
 
 Unknown parameters will be silently ignored.
 
-Recognised parameters (as of Version 2.3.7, for the most recent list of 
-parameters 
-[use the source](https://sourceforge.net/p/digilib/code/ci/default/tree/servlet/src/main/java/digilib/conf/DigilibServletRequest.java)
+Recognised parameters (as of Version 2.5.0, for the most up to date information use the source for
+[parameters](https://sourceforge.net/p/digilib/code/ci/default/tree/servlet/src/main/java/digilib/conf/DigilibServletRequest.java)
+and
+[mode options](https://sourceforge.net/p/digilib/code/ci/default/tree/common/src/main/java/digilib/conf/DigilibOption.java)
 ):
 
 - `request_path`: (optional) path to file or directory.
@@ -64,9 +65,11 @@ parameters
     - `BITONAL` (produces black-and-white image) 
     - `INVERT` (inverts colors)
     - `MAP_GRAY_BGR` (produces false-color image mapping brightness values to color scale from blue via green to red).
-- `mo`: list of flags for the mode of operation separated by comma ",".
-    - `fit`: scale the image proportionally to fit inside \[`dw` x `dh`\], preserving its aspect ratio (default).
-    - `squeeze`: scale the image to fit \[`dw` x `dh`\], changing its aspect ratio.
+- `mo`: list of options for the mode of operation separated by comma ",".
+    - `fit`: scale the (selected area of the) image proportionally to fit inside [dw x dh], preserving its aspect ratio (default).
+    - `squeeze`: scale the (selected area of the) image to fill [dw x dh], changing its aspect ratio (since v2.3.3).
+    - `crop`: scale the (selected area of the) image proportionally to fill [dw x dh] with the shorter side, cropping the longer side (since v2.5).
+    - `fill`: scale the (selected area of the) image proportionally to fill [dw x dh] with the longer side, filling out the image on the shorter side if possible (since v2.3.3).
     - `clip`: send the file in the highest resolution, cropped
         to fit \[`dw` x `dh`\].
     - `osize`: scale to original size based on image

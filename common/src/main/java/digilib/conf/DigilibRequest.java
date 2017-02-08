@@ -55,7 +55,7 @@ import digilib.util.ParameterMap;
  * wh: height of image area(float from 0 to 1). <br>
  * ws: scale factor. <br>
  * mo: special options like 'fit'. <br>
- * ...et al
+ * ...et cetera
  * 
  * @author casties
  * 
