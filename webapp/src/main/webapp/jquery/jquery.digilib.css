@@ -440,4 +440,12 @@ div.dl-digilib.dl-embedded div.dl-birdview {
 	right: 0px;
 }
 
+#dl-polygonPointWidget { display: none; background-color: rgba(255, 255, 255, 0.7); border: 1px solid grey; border-radius: 5px; width: 23px; z-index: 200; }
+#dl-polygonPointWidget > div { height: 23px }
+#dl-polygonPointWidget > div:hover { background-color: rgba(0, 255, 255, 0.3); }
+
+.plus.icon { color: grey; position: absolute; margin-left: 5px; margin-top: 10px; }
+.plus.icon:before { content: ''; position: absolute; width: 12px; height: 2px; background-color: currentColor; }
+.plus.icon:after { content: '';  position: absolute; width: 12px; height: 2px; background-color: currentColor; -webkit-transform: rotate(90deg); transform: rotate(90deg); }
+.minus.icon { color: grey; position: absolute; margin-left: 5px; margin-top: 10px; width: 12px; height: 2px; background-color: currentColor; }
 

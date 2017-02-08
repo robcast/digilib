@@ -307,7 +307,7 @@
     
     
     /**
-     * Show editor and save annotation.
+     * Show editor, edit and save new annotation.
      */
     var addAnnotationContent = function (data, shape, screenPos) {
       var annotator = data.annotator;
@@ -316,23 +316,36 @@
       var annotation = annotator.createAnnotation();
       annotation.editing = true;
       var cleanup = function () {
+        annotator.unsubscribe('annotationStore', store);
         annotator.unsubscribe('annotationEditorSubmit', save);
         annotator.unsubscribe('annotationEditorHidden', cancel);
         delete annotation.editing;
       };
       var save = function () {
-        console.log("annotation save.");
+        console.log("annotation save");
         cleanup();
         annotator.setupAnnotation(annotation);
-        // Fire annotationCreated events so that plugins can react to them
+        // UGLY: depends on data.annotations(side effect of setupAnnotation)
+        var annoWrapper = data.annotations[data.annotations.length -1];
+        // calculate shape coordinates
+        createShape(data, annoWrapper);
+        // Fire annotationCreated events so that the Annotator Store plugin saves the annotation in the Db 
         annotator.publish('annotationCreated', [annotation]);
+      };
+      var store = function (stored) {
+        if (stored == null) {
+          console.warn('Annotation Store did not return the stored annotation');
+          stored = annotation;
+          }
+        console.debug("annotation stored", stored);
         renderAnnotations(data);
       };
       var cancel = function () {
-        console.log("annotation cancel.");
+        console.log("annotation cancel");
         cleanup();
         renderAnnotations(data);
       };
+      annotator.subscribe('annotationStored', store);
       annotator.subscribe('annotationEditorSubmit', save);
       annotator.subscribe('annotationEditorHidden', cancel);
       annotator.showEditor(annotation, screenPos.getAsCss());

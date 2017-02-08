@@ -2277,6 +2277,7 @@
       var _this = this;
       if (__indexOf.call(this.annotations, annotation) >= 0) {
         return this._apiRequest('destroy', annotation, (function() {
+          _this.publish("annotationDestroyed", [annotation]);
           return _this.unregisterAnnotation(annotation);
         }));
       }
@@ -2296,6 +2297,7 @@
       } else {
         $.extend(annotation, data);
       }
+      this.publish("annotationStored", [data]);
       return $(annotation.highlights).data('annotation', annotation);
     };
 
@@ -2305,6 +2307,7 @@
 
     Store.prototype._onLoadAnnotations = function(data) {
       var a, annotation, annotationMap, newData, _k, _l, _len2, _len3, _ref3;
+      this.publish("annotationRead", [this.annotations, data]);
       if (data == null) {
         data = [];
       }
@@ -2336,6 +2339,7 @@
       if (data == null) {
         data = {};
       }
+      this.publish("annotationSearchResult", [this.annotations, data]);
       return this._onLoadAnnotations(data.rows || []);
     };
 
