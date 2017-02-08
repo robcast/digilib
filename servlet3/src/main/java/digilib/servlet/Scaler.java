@@ -43,6 +43,7 @@ import org.apache.log4j.Logger;
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthzOps;
 import digilib.conf.DigilibConfiguration;
+import digilib.conf.DigilibOption;
 import digilib.conf.DigilibServlet3Configuration;
 import digilib.conf.DigilibServletConfiguration;
 import digilib.conf.DigilibServletRequest;
@@ -241,11 +242,11 @@ public class Scaler extends HttpServlet {
 
         // type of error reporting
         ErrMsg errMsgType = defaultErrMsgType;
-        if (dlRequest.hasOption("errimg")) {
+        if (dlRequest.hasOption(DigilibOption.errimg)) {
             errMsgType = ErrMsg.IMAGE;
-        } else if (dlRequest.hasOption("errtxt")) {
+        } else if (dlRequest.hasOption(DigilibOption.errtxt)) {
             errMsgType = ErrMsg.TEXT;
-        } else if (dlRequest.hasOption("errcode")) {
+        } else if (dlRequest.hasOption(DigilibOption.errcode)) {
             errMsgType = ErrMsg.CODE;
         }
 
@@ -254,11 +255,11 @@ public class Scaler extends HttpServlet {
             final ImageJobDescription jobTicket = ImageJobDescription.getInstance(dlRequest, dlConfig);
 
             // handle the IIIF info-request
-            if (dlRequest.hasOption("info")) {
+            if (dlRequest.hasOption(DigilibOption.info)) {
                 ServletOps.sendIiifInfo(dlRequest, response, logger);
                 return;
             }
-            if (dlRequest.hasOption("redirect-info")) {
+            if (dlRequest.hasOption(DigilibOption.redirect_info)) {
                 // TODO: the redirect should have code 303
                 response.sendRedirect("info.json");
                 return;
@@ -291,7 +292,7 @@ public class Scaler extends HttpServlet {
              */
             if (sendFileAllowed && jobTicket.getSendAsFile()) {
                 String mt = null;
-                if (jobTicket.hasOption("rawfile")) {
+                if (jobTicket.hasOption(DigilibOption.rawfile)) {
                 	// mo=rawfile sends as octet-stream
                     mt = "application/octet-stream";
                 }

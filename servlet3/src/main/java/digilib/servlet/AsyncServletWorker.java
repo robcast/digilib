@@ -38,6 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
 import digilib.conf.DigilibConfiguration;
+import digilib.conf.DigilibOption;
 import digilib.image.DocuImage;
 import digilib.image.ImageJobDescription;
 import digilib.image.ImageOpException;
@@ -104,9 +105,9 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
              * set forced destination image type
              */
             String mt = null;
-            if (jobinfo.hasOption("jpg")) {
+            if (jobinfo.hasOption(DigilibOption.jpg)) {
                 mt = "image/jpeg";
-            } else if (jobinfo.hasOption("png")) {
+            } else if (jobinfo.hasOption(DigilibOption.png)) {
                 mt = "image/png";
             }
             /*

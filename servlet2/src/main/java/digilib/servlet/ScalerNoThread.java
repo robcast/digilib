@@ -37,6 +37,7 @@ import org.apache.log4j.Logger;
 
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthzOps;
+import digilib.conf.DigilibOption;
 import digilib.conf.DigilibServletConfiguration;
 import digilib.conf.DigilibServletRequest;
 import digilib.image.DocuImage;
@@ -210,9 +211,9 @@ public class ScalerNoThread extends HttpServlet {
 
         // type of error reporting
         ErrMsg errMsgType = ErrMsg.IMAGE;
-        if (dlRequest.hasOption("errtxt")) {
+        if (dlRequest.hasOption(DigilibOption.errtxt)) {
             errMsgType = ErrMsg.TEXT;
-        } else if (dlRequest.hasOption("errcode")) {
+        } else if (dlRequest.hasOption(DigilibOption.errcode)) {
             errMsgType = ErrMsg.CODE;
         }
 
@@ -236,7 +237,7 @@ public class ScalerNoThread extends HttpServlet {
             // if requested, send image as a file
             if (sendFileAllowed && jobTicket.getSendAsFile()) {
                 String mt = null;
-                if (jobTicket.hasOption("rawfile")) {
+                if (jobTicket.hasOption(DigilibOption.rawfile)) {
                     mt = "application/octet-stream";
                 }
                 logger.debug("Sending RAW File as is.");
@@ -260,9 +261,9 @@ public class ScalerNoThread extends HttpServlet {
             DocuImage img = job.call();
             // forced destination image type
             String mt = null;
-            if (jobTicket.hasOption("jpg")) {
+            if (jobTicket.hasOption(DigilibOption.jpg)) {
                 mt = "image/jpeg";
-            } else if (jobTicket.hasOption("png")) {
+            } else if (jobTicket.hasOption(DigilibOption.png)) {
                 mt = "image/png";
             }
             // send image
