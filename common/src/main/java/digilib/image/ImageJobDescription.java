@@ -262,7 +262,7 @@ public class ImageJobDescription extends ParameterMap {
             /*
              * crop to fit -- don't scale
              */
-            imgArea = prepareCropToFit();
+            imgArea = prepareClipToFit();
 
         } else if (isAbsoluteScale()) {
             /*
@@ -280,6 +280,7 @@ public class ImageJobDescription extends ParameterMap {
      * Scale to fit: scale factor based on destination size dw/dh and user area.
      * 
      * Uses a uniform scale factor for x and y.
+     * 
      * Sets ScaleX and ScaleY.
      */
     protected Rectangle2D prepareScaleToFit() throws IOException {
@@ -327,21 +328,25 @@ public class ImageJobDescription extends ParameterMap {
             if (scaleX > scaleY) {
                 scaleY = scaleX;
                 // crop mode uses whole destination rect
-                long croppedAreaHeight = (long) (getDh() / scaleY);
+                long croppedAreaHeight = Math.round(getDh() / scaleY);
                 if (areaHeight > croppedAreaHeight) {
                 	// center cropped area
                 	areaY += (areaHeight - croppedAreaHeight) / 2;
                 }
                 areaHeight = croppedAreaHeight;
+                // re-compute scaleY
+                scaleY = getDh() / (double) areaHeight;
             } else {
                 scaleX = scaleY;
                 // crop mode uses whole destination rect
-                long croppedAreaWidth = (long) (getDw() / scaleX);
+                long croppedAreaWidth = Math.round(getDw() / scaleX);
                 if (areaWidth > croppedAreaWidth) {
                 	// center cropped area
                 	areaX += (areaWidth - croppedAreaWidth) / 2;
                 }
                 areaWidth = croppedAreaWidth;
+                // re-compute scaleX
+                scaleX = getDw() / (double) areaWidth;
             }
         } else {
             // use the smaller factor to get fit-in-box
@@ -349,23 +354,27 @@ public class ImageJobDescription extends ParameterMap {
                 scaleX = scaleY;
                 if (hasOption("fill")) {
                     // fill mode uses whole destination rect
-                    long filledAreaWidth = (long) (getDw() / scaleX);
+                    long filledAreaWidth = Math.round(getDw() / scaleX);
                     if (filledAreaWidth > areaWidth) {
                     	// center filled area
                     	areaX -= (filledAreaWidth - areaWidth) / 2;
                     }
                     areaWidth = filledAreaWidth;
+                    // re-compute scaleX
+                    scaleX = getDw() / (double) areaWidth;
                 }
             } else {
                 scaleY = scaleX;
                 if (hasOption("fill")) {
                     // fill mode uses whole destination rect
-                    long filledAreaHeight = (long) (getDh() / scaleY);
+                    long filledAreaHeight = Math.round(getDh() / scaleY);
                     if (filledAreaHeight > areaHeight) {
                     	// center filled area
                     	areaY -= (filledAreaHeight - areaHeight) / 2;
                     }
                     areaHeight = filledAreaHeight;
+                    // re-compute scaleY
+                    scaleY = getDh() / (double) areaHeight;
                 }
             }
         }
@@ -376,7 +385,8 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Squeeze to fit: scale factor based on destination size and user area.
      * 
-     * Uses separate scale factors for x and y
+     * Uses separate scale factors for x and y to fill destination size changing aspect ratio.
+     * 
      * Sets ScaleX and ScaleY.
      */
     protected Rectangle2D prepareSqueezeToFit() throws IOException {
@@ -419,7 +429,9 @@ public class ImageJobDescription extends ParameterMap {
      * Absolute scale factor: either original size, based on dpi, or absolute. 
      * 
      * Uses a uniform scale factor for x and y.
+     * 
      * Sets ScaleX and ScaleY.
+     * 
      * @throws ImageOpException 
      */
     protected Rectangle2D prepareAbsoluteScale() throws IOException, ImageOpException {
@@ -502,11 +514,11 @@ public class ImageJobDescription extends ParameterMap {
 
 
     /**
-     * Crop to fit: don't scale.
+     * Clip to fit: don't scale.
      * 
-     * Sets ScaleX and ScaleY.
+     * Sets ScaleX and ScaleY to 1.0.
      */
-    protected Rectangle2D prepareCropToFit() throws IOException {
+    protected Rectangle2D prepareClipToFit() throws IOException {
         /*
          * minimum source size = hires size
          */
@@ -788,6 +800,8 @@ public class ImageJobDescription extends ParameterMap {
 
     /**
      * Return the size of the selected input image.
+     * 
+     * Note: may use getMinSourceSize().
      * 
      * @return
      * @throws IOException

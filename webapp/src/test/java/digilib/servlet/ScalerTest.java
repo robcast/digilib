@@ -108,18 +108,38 @@ public class ScalerTest {
     }
 
     /**
-     * Test scaling with mo=fit
+     * Test scaling with mo=fit.
+     * 
+     * Fit selected area to destination image width, staying below destination image height.
+     * 
      * @throws Exception
      */
     @Test
-    public void testScaleFit() throws Exception {
+    public void testScaleFitWidth() throws Exception {
         BufferedImage img = loadImage("ww=0.0836&wh=0.0378&wx=0&wy=0.961&dw=173&dh=235&mo=fit,errcode", null);
         assertEquals("height", 125, img.getHeight());
         assertEquals("width", 173, img.getWidth());
     }
 
     /**
-     * Test scaling with mo=squeeze
+     * Test scaling with mo=fill.
+     * 
+     * Fit selected area to destination image width, expanding area to destination image height.
+     *  
+     * @throws Exception
+     */
+    @Test
+    public void testScaleFillHeight() throws Exception {
+        BufferedImage img = loadImage("ww=0.0836&wh=0.0378&wx=0.0833&wy=0.9224&dw=173&dh=235&mo=fill,errcode", null);
+        assertEquals("height", 235, img.getHeight());
+        assertEquals("width", 173, img.getWidth());
+    }
+
+    /**
+     * Test scaling with mo=squeeze.
+     * 
+     * Fit selected area to destination image width and height by changing aspect ratio.
+     * 
      * @throws Exception
      */
     @Test
@@ -127,6 +147,19 @@ public class ScalerTest {
         BufferedImage img = loadImage("ww=0.0836&wh=0.0378&wx=0&wy=0.961&dw=173&dh=235&mo=squeeze,errcode", null);
         assertEquals("height", 235, img.getHeight());
         assertEquals("width", 173, img.getWidth());        
+    }
+
+    /**
+     * Test scaling with mo=crop.
+     * 
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testScaleCrop() throws Exception {
+        BufferedImage img = loadImage("ww=0.0836&wh=0.0378&wx=0&wy=0.961&dw=173&dh=235&mo=fit,errcode", null);
+        assertEquals("height", 125, img.getHeight());
+        assertEquals("width", 173, img.getWidth());
     }
 
     /**
@@ -152,7 +185,7 @@ public class ScalerTest {
     }
 
     /**
-     * Test forced image type with mo=jpg
+     * Test content-type and pixel color of forced image type with mo=jpg
      * @throws Exception
      */
     @Test
@@ -163,7 +196,7 @@ public class ScalerTest {
     }
 
     /**
-     * Test forced image type with mo=png
+     * Test content-type and pixel color of forced image type with mo=png
      * @throws Exception
      */
     @Test
