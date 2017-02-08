@@ -184,7 +184,7 @@ public class ImageJobDescription extends ParameterMap {
 
     /**
      * Creates new ImageJobDescription by merging Parameters from a
-     * DigilibRequest and adding an ImageSEt.
+     * DigilibRequest and adding an ImageSet.
      * 
      * @param dlReq
      * @param imgs
@@ -322,21 +322,50 @@ public class ImageJobDescription extends ParameterMap {
         } else if (scaleY == 0) {
             // dh undefined
             scaleY = scaleX;
+        } else if (hasOption("crop")) {
+            // use the bigger factor to get fill-the-box
+            if (scaleX > scaleY) {
+                scaleY = scaleX;
+                // crop mode uses whole destination rect
+                long croppedAreaHeight = (long) (getDh() / scaleY);
+                if (areaHeight > croppedAreaHeight) {
+                	// center cropped area
+                	areaY += (areaHeight - croppedAreaHeight) / 2;
+                }
+                areaHeight = croppedAreaHeight;
+            } else {
+                scaleX = scaleY;
+                // crop mode uses whole destination rect
+                long croppedAreaWidth = (long) (getDw() / scaleX);
+                if (areaWidth > croppedAreaWidth) {
+                	// center cropped area
+                	areaX += (areaWidth - croppedAreaWidth) / 2;
+                }
+                areaWidth = croppedAreaWidth;
+            }
         } else {
             // use the smaller factor to get fit-in-box
             if (scaleX > scaleY) {
                 scaleX = scaleY;
                 if (hasOption("fill")) {
                     // fill mode uses whole destination rect
-                    // TODO: should we center, clip or shift the area?
-                    areaWidth = (long) (getDw() / scaleX);
+                    long filledAreaWidth = (long) (getDw() / scaleX);
+                    if (filledAreaWidth > areaWidth) {
+                    	// center filled area
+                    	areaX -= (filledAreaWidth - areaWidth) / 2;
+                    }
+                    areaWidth = filledAreaWidth;
                 }
             } else {
                 scaleY = scaleX;
                 if (hasOption("fill")) {
                     // fill mode uses whole destination rect
-                    // TODO: should we center, clip or shift the area?
-                    areaHeight = (long) (getDh() / scaleY);
+                    long filledAreaHeight = (long) (getDh() / scaleY);
+                    if (filledAreaHeight > areaHeight) {
+                    	// center filled area
+                    	areaY -= (filledAreaHeight - areaHeight) / 2;
+                    }
+                    areaHeight = filledAreaHeight;
                 }
             }
         }
@@ -691,7 +720,7 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     /**
-     * Do not scale, just crop.
+     * Do not scale, just crop original resolution.
      * 
      * @return
      */
