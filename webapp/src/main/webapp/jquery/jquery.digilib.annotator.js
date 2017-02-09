@@ -275,40 +275,48 @@
     /**
      * Add a shape-annotation where clicked.
      */
-    var addAnnotationShape = function (data, type) {
-      var onComplete = function (data, shape) {
-        if (! shape.type in data.shapeFactory) {
-          console.error("Unsupported annotation shape="+type);
-          return;
-          }
-        var newshape = {
-          type: shape.type,
-          geometry: shape.geometry
-          };
-        if (shape.type === 'Rectangle') {
-          var c = shape.geometry.coordinates;
-          newshape.geometry = geom.rectangle(c[0], c[1]);
-          }
-        newshape.geometry.units = 'fraction';
-        // screen position for annotation editor
-        var pos = geom.position(newshape.geometry.coordinates[0]);
-        var mpos = data.imgTrafo.transform(pos);
-        console.debug("creating annotation for shape:", newshape);
-        addAnnotationContent(data, newshape, mpos);
-        };
-      var shape = {
-        type: type,
-        geometry: {
-          type: shapeTypeMap[type]
-          }
-        };
-      digilib.actions.addShape(data, shape, annotationLayer, onComplete);
-    };
+	    var addAnnotationShape = function(data, type) {
+		var onComplete = function(data, shape) {
+			if (!shape.type in data.shapeFactory) {
+				console.error("Unsupported annotation shape=" + type);
+				return;
+			}
+			// annotation shape is different from digilib vector shape
+			var annoshape = {
+				type : type,
+				geometry : shape.geometry
+			};
+			if (shape.geometry.type === 'Point') {
+				// point needs "x", "y" coordinate members
+				var c = shape.geometry.coordinates;
+				annoshape.geometry = geom.position(c[0]);
+			}
+			if (shape.geometry.type === 'Rectangle') {
+				// rectangle needs "x", "y", "width", "height" coordinate members
+				var c = shape.geometry.coordinates;
+				annoshape.geometry = geom.rectangle(geom.position(c[0]), geom.position(c[1]));
+			}
+			annoshape.geometry.units = 'fraction';
+			// screen position for annotation editor
+			var pos = geom.position(shape.geometry.coordinates[0]);
+			var mpos = data.imgTrafo.transform(pos);
+			console.debug("creating annotation for shape:", annoshape);
+			// show annotatorjs edit box
+			addAnnotationContent(data, annoshape, mpos);
+		};
+		// initial digilib vector shape
+		var shape = {
+			geometry : {
+				type : shapeTypeMap[type]
+			}
+		};
+		digilib.actions.addShape(data, shape, annotationLayer, onComplete);
+	};
     
     
     /**
-     * Show editor, edit and save new annotation.
-     */
+	 * Show editor, edit and save new annotation.
+	 */
     var addAnnotationContent = function (data, shape, screenPos) {
       var annotator = data.annotator;
       annotator.selectedShapes = [shape];
