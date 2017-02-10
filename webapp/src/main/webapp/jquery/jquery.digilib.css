@@ -211,6 +211,20 @@ div.dl-digilib #dl-calibrationInput {
 	margin: 0px 10px;
 	}
 
+div.dl-digilib #dl-userpass {
+	background-color: silver;
+	width: 300px;
+	padding: 10px;
+	border: 1px solid black;
+	position: absolute;
+	display: none;
+	z-index: 100;
+	}
+
+div.dl-digilib #dl-userpass div {
+	padding-top: 10px;
+	}
+
 div.dl-digilib .dl-error {
 	color: red;
 	background-color: maroon;

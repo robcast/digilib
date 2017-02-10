@@ -31,7 +31,7 @@
  */
 (function($) {
     // version of this plugin
-    var version = 'jquery.digilib.annotator.js 1.3.5';
+    var version = 'jquery.digilib.annotator.js 1.3.6';
 
     // affine geometry
     var geom = null;
@@ -107,21 +107,26 @@
         		console.error("setAnnotationUser: No Auth plugin!!");
         		return;
         	}
-        	// set new user in digilib and Annotator Auth plugin
-        	setAnnotationUser(data, auth, user, password);
-        	// get new token
-        	auth.token = null;
-        	auth._unsafeToken = null;
-        	// save new token in cookie
-        	auth.withToken(function (tkn) {
-        		data.dlOpts.annotationToken = auth.token;
- 		        fn.storeOptions(data);
-		        // clear annotations
-        		data.annotations = [];
-        		annotator.plugins.Store.annotations = [];
-	        	// reload annotations
-        		annotator.plugins.Store.pluginInit();
-        	});
+        	if (user == null) {
+				if (fn.showUserPasswordDialog != null) {
+					fn.showUserPasswordDialog(data, "Please enter user name and password for annotation server.", 
+							function (userInput, passInput) {
+								console.debug("got username and password for annotation auth.");
+								setAnnotationUser(data, auth, userInput, passInput);
+							});
+				} else {
+			        // fall back to JS-prompt
+			        user = window.prompt("Please authenticate (Cancel to log out): User name", data.settings.annotationUser);
+			        if (user != null && user != 'anonymous') {
+			            // password entered in JS-prompt
+			            password = window.prompt("Please authenticate: Password (Beware! Password is visible!)", '');
+			        }
+					setAnnotationUser(data, auth, user, password);
+				}
+        	} else {
+	        	// set new user in digilib and Annotator Auth plugin
+	        	setAnnotationUser(data, auth, user, password);
+        	}
         },
 
         /**
@@ -234,41 +239,51 @@
      * @param password password (optional)
      */
 	var setAnnotationUser = function (data, auth, user, password) {
-		if (user == null) {
-	        // user name entered in JS-prompt
-	        user = window.prompt("Please authenticate (Cancel to log out): User name", data.settings.annotationUser);
-	        if (user != null && user != 'anonymous') {
-	            // password entered in JS-prompt
-	            password = window.prompt("Please authenticate: Password", '');
-	            // set params for Auth plugin
-	         	auth.options.requestData.password = password;
-	    		// try to use the safe url for the password
-    			if (data.settings.annotationSafeTokenUrl != null) {
-    				auth.options.tokenUrl = data.settings.annotationSafeTokenUrl;
-    			} else {
-    				console.warn("Sending token password over standard-URL!");
-    			}
-	        } else {
-	        	// use anonymous user
-	        	user = 'anonymous';
-	         	delete auth.options.requestData.password; 
-    			if (data.settings.annotationSafeTokenUrl != null) {
-    				// reset url to unsafe
-    				auth.options.tokenUrl = data.settings.annotationTokenUrl;
-    			}
-	        }
+        if (user != null && user != '' && user != 'anonymous') {
+            // set params for Auth plugin
+         	auth.options.requestData.password = password;
+    		// try to use the safe url for the password
+			if (data.settings.annotationSafeTokenUrl != null) {
+				auth.options.tokenUrl = data.settings.annotationSafeTokenUrl;
+			} else {
+				console.warn("Sending token password over standard-URL!");
+			}
+        } else {
+        	// use anonymous user
+        	user = 'anonymous';
+         	delete auth.options.requestData.password; 
+			if (data.settings.annotationSafeTokenUrl != null) {
+				// reset url to unsafe
+				auth.options.tokenUrl = data.settings.annotationTokenUrl;
+			}
         }
+        console.debug("setting annotation user to "+user);
         // set user in digilib
         data.settings.annotationUser = user;
         data.dlOpts.annotationUser = user;
         fn.storeOptions(data);
+        var annotator = data.annotator;
         // set params for Auth plugin
         auth.options.requestData.user = user;
         // set params for Permissions plugin
-        var perms = data.annotator.plugins.Permissions;
+        var perms = annotator.plugins.GroupPermissions || annotator.plugins.Permissions;
         if (perms != null) {
         	perms.setUser(user);
         }
+    	// get new token
+    	auth.token = null;
+    	auth._unsafeToken = null;
+    	// save new token in cookie
+    	auth.withToken(function (tkn) {
+    		console.debug("setting new annotation token.", tkn, auth.token);
+    		data.dlOpts.annotationToken = auth.token;
+		    fn.storeOptions(data);
+	        // clear annotations
+    		data.annotations = [];
+    		data.annotator.plugins.Store.annotations = [];
+        	// reload annotations
+    		data.annotator.plugins.Store.pluginInit();
+    	});
    	};
 
 
@@ -559,7 +574,7 @@
     var getHandleUnauthorized = function (data) {
     	return function (auth) {
     		// prompt for user name and set user
-    		setAnnotationUser(data, auth);
+    		actions.setAnnotationUser(data);
             // then try again
             return true;
        	};

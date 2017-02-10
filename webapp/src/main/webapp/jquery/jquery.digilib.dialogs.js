@@ -60,6 +60,11 @@ digilib dialogs plugin
         // shows ScaleModeSelector
         dialogScaleMode : function (data) {
             fn.showScaleModeDialog(data);
+        },
+
+        // shows user name and password dialog
+        dialogUserPassword : function (data) {
+            fn.showUserPasswordDialog(data);
         }
     };
 
@@ -83,7 +88,7 @@ digilib dialogs plugin
                     <div id="'+cssPrefix+'calibrationError" class="'+cssPrefix+'calibration-error">Please enter a numeric value like this: 12.3</div>\
                 </div>\
             </div>';
-        $calDiv = $(html);
+        var $calDiv = $(html);
         $calDiv.appendTo($elem);
         var $input = $calDiv.find('#'+cssPrefix+'calibrationInput');
         var $ok = $calDiv.find('#'+cssPrefix+'calibrationOk');
@@ -134,7 +139,7 @@ digilib dialogs plugin
             <div id="'+cssPrefix+'scalemode" style="display:none; z-index:1000; position:absolute">\
                 <select class="'+cssPrefix+'scalemode" />\
             </div>';
-        $scaleDiv = $(html);
+        var $scaleDiv = $(html);
         $scaleDiv.appendTo($elem);
         var mode = fn.getScaleMode(data);
         var $select = $scaleDiv.find('select');
@@ -169,6 +174,64 @@ digilib dialogs plugin
         }
     };
 
+    
+    /** 
+     * creates and displays HTML structure for user name and password dialog.
+     */
+    var showUserPasswordDialog = function (data, msg, callback) {
+        var $elem = data.$elem;
+        var settings = data.settings;
+        var cssPrefix = settings.cssPrefix;
+        var userpassId = cssPrefix+'userpass';
+        if (fn.isOnScreen(data, '#'+userpassId)) return; // already onscreen
+        var html = '\
+            <div id="'+userpassId+'" class="'+cssPrefix+'userpass">\
+	            <div>'+msg+'</div>\
+	            <div>User name: <input type="text" id="'+cssPrefix+'userInput" size="19"/></div>\
+	            <div>Password: <input type="password" id="'+cssPrefix+'passInput" size="20"/></div>\
+	            <div style="text-align:center">\
+	              <button class="'+cssPrefix+'button" id="'+cssPrefix+'userpassOk">OK</button>\
+	              <button class="'+cssPrefix+'button" id="'+cssPrefix+'userpassCancel">Cancel</button>\
+	            </div>\
+            </div>';
+        var $calDiv = $(html);
+        $calDiv.appendTo($elem);
+        var $userInput = $calDiv.find('#'+cssPrefix+'userInput');
+        var $passInput = $calDiv.find('#'+cssPrefix+'passInput');
+        var $ok = $calDiv.find('#'+cssPrefix+'userpassOk');
+        var $cancel = $calDiv.find('#'+cssPrefix+'userpassCancel');
+        var handler = function(event) {
+            // var _data = data;
+            if (event.keyCode == 27 || event.target.id == cssPrefix+'userpassCancel') {
+                fn.withdraw($calDiv);
+                return false;
+            }
+            if (event.keyCode == 13 || event.target.id == cssPrefix+'userpassOk') {
+                var user = $userInput.val();
+                var pass = $passInput.val();
+                fn.withdraw($calDiv);
+                if (callback != null) {
+                	callback(user, pass);
+                }
+                return false;
+            }
+        };
+        $ok.on("click.dialog", handler);
+        $cancel.on("click.dialog", handler);
+        $userInput.on("keypress.dialog", handler);
+        $passInput.on("keypress.dialog", handler);
+        $userInput.on("focus.dialog", handler);
+        $passInput.on("focus.dialog", handler);
+        $calDiv.fadeIn();
+        fn.centerOnScreen(data, $calDiv);
+        $userInput.focus();
+        return $calDiv;
+    };
+    
+
+    /**
+     * Hook dialogs into buttons.
+     */
     var setButtonActions = function () {
         if (fn.setButtonAction == null) {
             console.debug('dialogs: could not assign button actions. Maybe jquery.digilib.buttons.js was not loaded?');
@@ -194,6 +257,7 @@ digilib dialogs plugin
         // export functions
         fn.showCalibrationDialog = showCalibrationDialog;
         fn.showScaleModeDialog = showScaleModeDialog;
+        fn.showUserPasswordDialog = showUserPasswordDialog;
     };
 
     // plugin initialization
