@@ -300,7 +300,7 @@
 			// screen position for annotation editor
 			var pos = geom.position(shape.geometry.coordinates[0]);
 			var mpos = data.imgTrafo.transform(pos);
-			console.debug("creating annotation for shape:", annoshape);
+			console.debug("creating annotation shape:", annoshape);
 			// show annotatorjs edit box
 			addAnnotationContent(data, annoshape, mpos);
 		};
@@ -431,7 +431,7 @@
                 // make shape id unique
                 id = id + "." + i;
             }
-            // annotation shape
+            // create vector shape for annotation
             annoShape = annotation.shapes[i];
             type = annoShape.type;
             var coordinates;
@@ -449,6 +449,12 @@
                 console.error("Unsupported annotation shape="+type);
                 return;
             }
+            // different css class for area-like shapes
+            if (type === "rectangle" || type === "polygon") {
+                var cssclass = cssPrefix+'svg-annotationregion annotator-hl';
+            } else {
+            	var cssclass = cssPrefix+'svg-annotation annotator-hl';
+            }
             var shape = {
                'id': id,
                'annotation': annotation,
@@ -459,7 +465,7 @@
                  },
                'properties': {
                   'stroke': 'yellow',
-                  'cssclass': cssPrefix+'svg-annotationregion annotator-hl',
+                  'cssclass': cssclass,
                   'style': 'pointer-events:all'
                   }
                };

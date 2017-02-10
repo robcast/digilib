@@ -52,7 +52,7 @@
 			<plugin>
 				<groupId>com.samaxes.maven</groupId>
 				<artifactId>minify-maven-plugin</artifactId>
-				<version>1.7.4</version>
+				<version>1.7.6</version>
 				<executions>
 					<execution>
 						<id>digilib-basic-minify</id>
@@ -73,7 +73,8 @@
 							</jsSourceFiles>
 							<jsFinalFile>jquery.digilib-basic.js</jsFinalFile>
 							<jsEngine>YUI</jsEngine>
-							<closureCreateSourceMap>true</closureCreateSourceMap>
+							<!-- <jsEngine>CLOSURE</jsEngine>
+							<closureCreateSourceMap>true</closureCreateSourceMap> -->
 							<!--  CSS files -->
 							<cssSourceDir>jquery</cssSourceDir>
 							<cssSourceFiles>
@@ -106,8 +107,9 @@
                                 <jsSourceFile>jquery.digilib.oauth.js</jsSourceFile>
                             </jsSourceFiles>
                             <jsFinalFile>jquery.digilib-auth.js</jsFinalFile>
-                            <jsEngine>YUI</jsEngine>
-                            <closureCreateSourceMap>true</closureCreateSourceMap>
+							<jsEngine>YUI</jsEngine>
+							<!-- <jsEngine>CLOSURE</jsEngine>
+							<closureCreateSourceMap>true</closureCreateSourceMap> -->
                             <!--  CSS files -->
                             <cssSourceDir>jquery</cssSourceDir>
                             <cssSourceFiles>
@@ -141,8 +143,9 @@
                                 <jsSourceFile>showdown.js</jsSourceFile>
                             </jsSourceFiles>
                             <jsFinalFile>jquery.digilib-ann.js</jsFinalFile>
-                            <jsEngine>YUI</jsEngine>
-                            <closureCreateSourceMap>true</closureCreateSourceMap>
+							<jsEngine>YUI</jsEngine>
+							<!-- <jsEngine>CLOSURE</jsEngine>
+							<closureCreateSourceMap>true</closureCreateSourceMap> -->
                             <!--  CSS files -->
                             <cssSourceDir>jquery</cssSourceDir>
                             <cssSourceFiles>
@@ -172,6 +175,21 @@
                             <goal>minify</goal>
                         </goals>
                     </execution>
+                    <!-- <execution>
+                        <id>annotator-dl-minify</id>
+                        <configuration>
+                            <jsSourceDir>jquery</jsSourceDir>
+                            <jsTargetDir></jsTargetDir>
+                            <jsSourceFiles>
+                                <jsSourceFile>annotator-dl.js</jsSourceFile>
+                            </jsSourceFiles>
+                            <jsFinalFile>annotator-dl.js</jsFinalFile>
+                            <jsEngine>YUI</jsEngine>
+                        </configuration>
+                        <goals>
+                            <goal>minify</goal>
+                        </goals>
+                    </execution> -->
 				</executions>
 			</plugin>
 		</plugins>
