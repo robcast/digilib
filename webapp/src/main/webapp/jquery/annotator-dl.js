@@ -1,13 +1,13 @@
 
 /*
-** Annotator v1.2.9-dev-cab39d7
+** Annotator v1.2.10-dev-976a5f0
 ** https://github.com/okfn/annotator/
 **
-** Copyright 2015, the Annotator project contributors.
+** Copyright 2017, the Annotator project contributors.
 ** Dual licensed under the MIT and GPLv3 licenses.
 ** https://github.com/okfn/annotator/blob/master/LICENSE
 **
-** Built at: 2015-02-20 19:20:03Z
+** Built at: 2017-02-13 17:46:12Z
  */
 
 
@@ -613,7 +613,11 @@
           }
         }
         if (r.end == null) {
-          node = this.endContainer.childNodes[this.endOffset - 1];
+          if (this.endOffset) {
+            node = this.endContainer.childNodes[this.endOffset - 1];
+          } else {
+            node = this.endContainer.previousSibling;
+          }
           r.end = Util.getLastTextNodeUpTo(node);
           r.endOffset = r.end.nodeValue.length;
         }
@@ -1249,7 +1253,7 @@
     };
 
     Annotator.prototype.isAnnotator = function(element) {
-      return !!$(element).parents().addBack().filter('[class^=annotator-]').not('[class=annotator-hl]').not(this.wrapper).length;
+      return !!$(element).parents().addBack().filter('[class^=annotator-]').not('[class^=annotator-hl]').not(this.wrapper).length;
     };
 
     Annotator.prototype.onHighlightMouseover = function(event) {
@@ -1677,16 +1681,16 @@
             left: event.pageX - mousedown.left
           };
           if (mousedown.element === resize[0]) {
-            height = textarea.outerHeight();
-            width = textarea.outerWidth();
+            height = textarea.height();
+            width = textarea.width();
             directionX = editor.hasClass(classes.invert.x) ? -1 : 1;
             directionY = editor.hasClass(classes.invert.y) ? 1 : -1;
             textarea.height(height + (diff.top * directionY));
             textarea.width(width + (diff.left * directionX));
-            if (textarea.outerHeight() !== height) {
+            if (textarea.height() !== height) {
               mousedown.top = event.pageY;
             }
-            if (textarea.outerWidth() !== width) {
+            if (textarea.width() !== width) {
               mousedown.left = event.pageX;
             }
           } else if (mousedown.element === controls[0]) {
@@ -2277,7 +2281,7 @@
       var _this = this;
       if (__indexOf.call(this.annotations, annotation) >= 0) {
         return this._apiRequest('destroy', annotation, (function() {
-          _this.publish("annotationDestroyed", [annotation]);
+          _this.publish('annotationDestroyed', [annotation]);
           return _this.unregisterAnnotation(annotation);
         }));
       }
@@ -2297,7 +2301,7 @@
       } else {
         $.extend(annotation, data);
       }
-      this.publish("annotationStored", [data]);
+      this.publish('annotationStored', [data]);
       return $(annotation.highlights).data('annotation', annotation);
     };
 
@@ -2307,10 +2311,10 @@
 
     Store.prototype._onLoadAnnotations = function(data) {
       var a, annotation, annotationMap, newData, _k, _l, _len2, _len3, _ref3;
-      this.publish("annotationRead", [this.annotations, data]);
       if (data == null) {
         data = [];
       }
+      this.publish("annotationRead", [this.annotations, data]);
       annotationMap = {};
       _ref3 = this.annotations;
       for (_k = 0, _len2 = _ref3.length; _k < _len2; _k++) {
@@ -2339,7 +2343,7 @@
       if (data == null) {
         data = {};
       }
-      this.publish("annotationSearchResult", [this.annotations, data]);
+      this.publish('annotationSearchResult', [this.annotations, data]);
       return this._onLoadAnnotations(data.rows || []);
     };
 
@@ -2930,7 +2934,8 @@
     GroupPermissions.prototype._cleanPermissions = function(annotation) {
       var perm, type, _k, _len2, _ref3, _results;
       perm = annotation.permissions['admin'];
-      _ref3 = ['delete', 'update', 'read'];
+      annotation.permissions['delete'] = perm;
+      _ref3 = ['update', 'read'];
       _results = [];
       for (_k = 0, _len2 = _ref3.length; _k < _len2; _k++) {
         type = _ref3[_k];
