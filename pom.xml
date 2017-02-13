@@ -9,7 +9,7 @@
 
   <groupId>digilib</groupId>
   <artifactId>digilib</artifactId>
-  <version>2.5.0</version>
+  <version>2.5.1</version>
   <packaging>pom</packaging>
 
   <name>digilib</name>
@@ -196,57 +196,57 @@
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-common</artifactId>
-        <version>2.5.0</version>
+        <version>2.5.1</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-common-jai</artifactId>
-        <version>2.5.0</version>
+        <version>2.5.1</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-common-imagej</artifactId>
-        <version>2.5.0</version>
+        <version>2.5.1</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-common-bioformats</artifactId>
-        <version>2.5.0</version>
+        <version>2.5.1</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-doc</artifactId>
-        <version>2.5.0</version>
+        <version>2.5.1</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-pdf</artifactId>
-        <version>2.5.0</version>
+        <version>2.5.1</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-text</artifactId>
-        <version>2.5.0</version>
+        <version>2.5.1</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-servlet</artifactId>
-        <version>2.5.0</version>
+        <version>2.5.1</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-servlet2</artifactId>
-        <version>2.5.0</version>
+        <version>2.5.1</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-servlet3</artifactId>
-        <version>2.5.0</version>
+        <version>2.5.1</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-webapp</artifactId>
-        <version>2.5.0</version>
+        <version>2.5.1</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
