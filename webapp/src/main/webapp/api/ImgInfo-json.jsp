@@ -37,7 +37,7 @@ public void jspInit() {
         System.out.println(e);
     }
 }
-%><%
+%><%@ page contentType="application/json" pageEncoding="UTF-8" %><%
 // parsing the query
 docBean.setRequest(request);
 // get file

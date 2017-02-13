@@ -38,7 +38,7 @@ public void jspInit() {
         System.out.println(e);
     }
 }
-%><?xml version="1.0" encoding="UTF-8" ?>
+%><%@ page contentType="text/xml" pageEncoding="UTF-8"%><?xml version="1.0" encoding="UTF-8" ?>
 <%
 // process request
 // get digilib config

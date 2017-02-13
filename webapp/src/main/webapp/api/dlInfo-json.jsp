@@ -34,7 +34,7 @@ public void jspInit() {
         System.out.println(e);
     }
 }
-%><%
+%><%@ page contentType="application/json" pageEncoding="UTF-8" %><%
 // parsing the query
 DigilibServletRequest dlRequest = new DigilibServletRequest(request);
 docBean.setRequest(dlRequest);

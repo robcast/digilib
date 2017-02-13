@@ -40,7 +40,7 @@ public void jspInit() {
         System.out.println(e);
     }
 }
-%><%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %><%@ page contentType="text/xml" %><?xml version="1.0" encoding="UTF-8" ?>
+%><%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %><%@ page contentType="text/xml" pageEncoding="UTF-8"%><?xml version="1.0" encoding="UTF-8" ?>
 <%
 // process request
 docBean.setRequest(request);

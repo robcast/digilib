@@ -40,7 +40,7 @@ public void jspInit() {
         System.out.println(e);
     }
 }
-%><%@ page contentType="application/json" %><%
+%><%@ page contentType="application/json" pageEncoding="UTF-8" %><%
 // process request
 docBean.setRequest(request);
 // get directory
