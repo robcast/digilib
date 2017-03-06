@@ -303,7 +303,8 @@ function($) {
             var cssPrefix = settings.cssPrefix;
             var aboutSelector = '#'+cssPrefix+'about';
             if (isOnScreen(data, aboutSelector)) {
-                $(aboutSelector).fadeToggle();
+            	// fade out and kill, so we can re-render with new info
+                $(aboutSelector).fadeOut(function () {$(this).remove()});
                 return;
             }
             // make relative logoUrl absolute
@@ -311,6 +312,7 @@ function($) {
             if (logoUrl.charAt(0) !== '/' && logoUrl.substring(0,3) !== 'http') {
                 logoUrl = settings.digilibBaseUrl + '/' + logoUrl;
             }
+            // add image info if available
             var imgInfoDiv = '';
             if (data.imgInfo != null) {
             	var info = data.imgInfo;
@@ -386,8 +388,10 @@ function($) {
                     return false;
                     }
                 }
-            // reset mk and others(?)
+            // reset mk and others 
+            // TODO: should be event
             data.marks = [];
+            data.imgInfo = null;
             data.zoomArea = FULL_AREA.copy();
             // then reload
             redisplay(data);
