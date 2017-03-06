@@ -311,6 +311,14 @@ function($) {
             if (logoUrl.charAt(0) !== '/' && logoUrl.substring(0,3) !== 'http') {
                 logoUrl = settings.digilibBaseUrl + '/' + logoUrl;
             }
+            var imgInfoDiv = '';
+            if (data.imgInfo != null) {
+            	var info = data.imgInfo;
+            	imgInfoDiv = '<p>Image: ' + info.filename + '<br/>' 
+            		+ '(' + info.width + 'x' + info.height + 'px'
+            		+ ((info.dpi_x > 0) ? (', ' + info.dpi_x + 'dpi') : '')
+            		+ ')</p>';
+            }
             var html = '\
                 <div id="'+cssPrefix+'about" class="'+cssPrefix+'about" style="display:none">\
                     <p>Digilib Image Viewer</p>\
@@ -318,6 +326,7 @@ function($) {
                         <img class="'+settings.cssPrefix+'logo" title="Digilib" src="'+logoUrl+'"/>\
                     </a>\
                     <p>Version: '+settings.version+'</p>\
+                    '+imgInfoDiv+'\
                 </div>';
             var $about = $(html);
             $about.appendTo($elem);
