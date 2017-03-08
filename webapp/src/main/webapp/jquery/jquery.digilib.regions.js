@@ -756,6 +756,15 @@ inner (optional)
         }
     };
 
+    var handleNewpage = function (evt) {
+        console.debug("regions: handle newpage");
+        var data = this;
+        // new page, new regions
+        // TODO: best way to reset?
+        data.settings.rg = null;
+        actions.removeAllUserRegions(data);
+    };
+
     // event handler, sets buttons and shows regions when scaler img is reloaded
     var handleUpdate = function (evt) {
         var data = this;
@@ -812,6 +821,7 @@ inner (optional)
         $data.on('update', handleUpdate);
         $data.on('newRegion', handleNewRegion);
         $data.on('regionClick', handleRegionClick);
+        $data.on('newpage', handleNewpage);
         // default: autoZoom to region, when clicked
         if (settings.autoZoomOnClick && settings.onClickRegion == null) {
             settings.onClickRegion = zoomToRegion;

@@ -24,14 +24,15 @@
 /**
  * digilib plugin for annotations.
  *
- * Currently supported are point-like annotations (like marks) and rectangular region annotations.
+ * Currently supported are point-like (like marks), rectangular region-like, polygon, 
+ * and polyline annotations.
  *
  * Annotations are displayed using code from the Annotator (http://annotatorjs.org) project
  * and stored on a Annotator-API compatible server.
  */
 (function($) {
     // version of this plugin
-    var version = 'jquery.digilib.annotator.js 1.3.6';
+    var version = 'jquery.digilib.annotator.js 1.3.7';
 
     // affine geometry
     var geom = null;
@@ -196,7 +197,6 @@
                 console.error("Sorry, currently only interactive annotations!");
             }
         }
-
     };
 
     /** 
@@ -648,7 +648,16 @@
         }
     };
 
+    var handleNewpage = function (evt) {
+        console.debug("annotations: handle newpage");
+        var data = this;
+        // new page, new annotations
+        // TODO: best way to reset?
+        data.annotations = [];
+        handleSetup.apply(data);
+    };
 
+    
     var defaults = {
         // are annotations active?
         'isAnnotationsVisible' : true,
@@ -769,6 +778,7 @@
         // install event handler
         $data.on('setup', handleSetup);
         $data.on('update', handleUpdate);
+        $data.on('newpage', handleNewpage);
         //$data.on('annotationClick', handleAnnotationClick);
     };
 

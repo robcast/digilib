@@ -98,6 +98,7 @@
         $data.on('update', handleUpdate);
         $data.on('pack', handlePack);
         $data.on('unpack', handleUnpack);
+        $data.on('newpage', handleNewpage);
     };
 
     var handleUpdate = function(evt) {
@@ -106,6 +107,13 @@
         if (data.marks != null) {
             renderMarks(data);
         }
+    };
+    
+    var handleNewpage = function (evt) {
+        console.debug("marks: handle newpage");
+        var data = this;
+        // new page, new marks
+        data.marks = [];
     };
 
     /**

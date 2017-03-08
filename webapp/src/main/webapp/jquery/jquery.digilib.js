@@ -45,7 +45,7 @@ function($) {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digilib.js 2.5.2b',
+        'version' : 'jquery.digilib.js 2.5.3a',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -245,9 +245,12 @@ function($) {
                         elemSettings.scalerBaseUrl = elemSettings.digilibBaseUrl + '/servlet/Scaler';
                     }
                 }
-                // set up event handlers
+                /*
+                 * set up event handlers 
+                 */
                 $(data).on('update', handleUpdate); // handleUpdate needs to be the first handler for update
                 $(data).on('changeZoomArea', handleChangeZoomArea);
+                $(data).on('newpage', handleNewpage);
                 // initialise plugins
                 for (n in plugins) {
                     var p = plugins[n];
@@ -388,11 +391,8 @@ function($) {
                     return false;
                     }
                 }
-            // reset mk and others 
-            // TODO: should be event
-            data.marks = [];
-            data.imgInfo = null;
-            data.zoomArea = FULL_AREA.copy();
+            // send newpage event (plugins can remove marks etc.)
+            $(data).trigger('newpage');
             // then reload
             redisplay(data);
         },
@@ -1349,13 +1349,27 @@ function($) {
         };
     };
 
+    /**
+     * handle image load error event
+     */
     var handleScalerImgError = function (data, evt, a, b) {
         console.error("error loading scaler image:", evt);
+        // trigger event for plugins
         $(data).trigger('imgerror');
     };
+    
+    /**
+     * handle newpage event
+     */
+    var handleNewpage = function (data) {
+        console.debug("handle newpage");
+        // reset local page settings
+        data.imgInfo = null;
+        data.zoomArea = FULL_AREA.copy();
+    };
 
-    /** handle imageInfo loaded event
-     * 
+    /** 
+     * handle imageInfo loaded event
      */
     var handleImageInfo = function (evt, json) {
         console.debug("handleImageInfo:", json);
