@@ -165,8 +165,8 @@ digilib dialogs plugin
             fn.centerOnScreen($scaleDiv);
         } else {
             var $button = fn.findButtonByName(data, 'scale');
-            var buttonRect = geom.rectangle($button);
-            var divRect = geom.rectangle($scaleDiv);
+            var buttonRect = new geom.Rectangle($button);
+            var divRect = new geom.Rectangle($scaleDiv);
             $scaleDiv.offset({
                 left : Math.abs(buttonRect.x - divRect.width - 4),
                 top : buttonRect.y + 4

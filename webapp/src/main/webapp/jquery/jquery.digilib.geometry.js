@@ -2,7 +2,7 @@
  * #%L
  * required digilib geometry plugin
  * %%
- * Copyright (C) 2011 - 2013 MPIWG Berlin, Bibliotheca Hertziana
+ * Copyright (C) 2011 - 2017 MPIWG Berlin, Bibliotheca Hertziana
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -25,499 +25,655 @@
 
 (function($) {
     var RAD2DEG = 180.0 / Math.PI;
-    /*
+    /**
      * Size class
      */
-    var size = function(w, h) {
-        var that;
+    function Size(w, h) {
         if (typeof w === "object") {
             // assume an object having width and height
-            that = {
-                width : w.width,
-                height : w.height
-            };
+            this.width = w.width, this.height = w.height;
         } else {
-            that = {
-                width : parseFloat(w),
-                height : parseFloat(h)
-            };
+            this.width = parseFloat(w), this.height = parseFloat(h);
         }
-        // returns true if both sizes are equal
-        that.equals = function(other) {
-            return (this.width === other.width && this.height === other.height);
-        };
-        // returns the aspect ratio of this size
-        that.getAspect = function() {
-            return (this.width / this.height);
-        };
-        // returns a size of a given aspect ratio that fits into this one 
-        that.fitAspect = function(aspect) {
-            var s = size(this);
-            if (aspect > this.getAspect()) {
-                // size is more horizontally stretched than this
-                s.height = s.width / aspect;
-            } else {
-                s.width = s.height * aspect;
-            }
-            return s;
-        };
-        // adjusts size of jQuery element "$elem" to this size
-        that.adjustDiv = function($elem) {
-            $elem.width(this.width).height(this.height);
-        };
-        that.toString = function() {
-            return (this.width + "x" + this.height);
-        };
-        return that;
+    }
+
+    /**
+     * returns true if both sizes are equal
+     */
+    Size.prototype.equals = function(other) {
+        return (this.width === other.width && this.height === other.height);
     };
 
-    /*
+    /**
+     * returns the aspect ratio of this size
+     */
+    Size.prototype.getAspect = function() {
+        return (this.width / this.height);
+    };
+
+    /**
+     * returns a size of a given aspect ratio that fits into this one
+     */
+    Size.prototype.fitAspect = function(aspect) {
+        var s = new Size(this);
+        if (aspect > this.getAspect()) {
+            // size is more horizontally stretched than this
+            s.height = s.width / aspect;
+        } else {
+            s.width = s.height * aspect;
+        }
+        return s;
+    };
+
+    /**
+     * adjusts size of jQuery element "$elem" to this size
+     */
+    Size.prototype.adjustDiv = function($elem) {
+        $elem.width(this.width).height(this.height);
+    };
+
+    Size.prototype.toString = function() {
+        return (this.width + "x" + this.height);
+    };
+
+    /**
      * Position class
      */
-    var position = function(x, y) {
-        var that;
+    function Position(x, y) {
         if (typeof x === "object") {
             if (x instanceof jQuery) {
                 // jQuery object
                 var pos = x.offset();
-                that = {
-                    x : pos.left,
-                    y : pos.top
-                };
+                this.x = pos.left;
+                this.y = pos.top;
             } else if ($.isArray(x)) {
-                that = {
-                    x : x[0],
-                    y : x[1]
-                };
+                this.x = x[0];
+                this.y = x[1];
             } else {
                 if (x.x != null) {
                     // position object
-                    that = {
-                        x : parseFloat(x.x),
-                        y : parseFloat(x.y)
-                    };
+                    this.x = parseFloat(x.x);
+                    this.y = parseFloat(x.y);
                 }
                 if (x.pageX != null) {
                     // event object
-                    that = {
-                        x : x.pageX,
-                        y : x.pageY
-                    };
+                    this.x = x.pageX;
+                    this.y = x.pageY;
                 }
             }
         } else {
-            that = {
-                x : parseFloat(x),
-                y : parseFloat(y)
-            };
-        };
-        // return a copy of this position
-        that.copy = function() {
-            return position(this);
-        };
-        // compare function
-        that.equals = function(other) {
-            return (this.x === other.x && this.y === other.y);
-        };
-        // add vector or position to this
-        that.add = function(other) {
-            if ($.isArray(other)) {
-                this.x += other[0];
-                this.y += other[1];
-            } else {
-                this.x += other.x;
-                this.y += other.y;
-            }
-            return this;
-        };
-        // returns negative position
-        that.neg = function() {
-            return position({
-                x : -this.x,
-                y : -this.y
-            });
-        };
-        // returns new position that is the difference between this and other
-        that.delta = function(other) {
-            return position({
-                x : other.x - this.x,
-                y : other.y - this.y
-            });
-        };
-        // returns other position scaled by ratio with regard to this point
-        that.scale = function(other, ratio) {
-            var d = this.delta(other);
-            return position({
-                x : this.x + d.x * ratio,
-                y : this.y + d.y * ratio
-            });
-        };
-        // adjusts CSS position of $elem to this position
-        that.adjustDiv = function($elem) {
-            $elem.offset({
-                left : this.x,
-                top : this.y
-            });
-        };
-        // move this position to another
-        that.moveTo = function(other) {
-            this.x = other.x;
-            this.y = other.y;
-            return this;
-        };
-        // adjust this position so that is is inside rect
-        that.clipTo = function (rect) {
-            var p1 = rect.getPt1();
-            var p2 = rect.getPt2();
-            this.x = Math.max(this.x, p1.x);
-            this.y = Math.max(this.y, p1.y);
-            this.x = Math.min(this.x, p2.x);
-            this.y = Math.min(this.y, p2.y);
-            return this;
-        };
-        // returns distance of this position to pos (length if pos == null)
-        that.distance = function(pos) {
-            if (pos == null) {
-                pos = {
-                    x : 0,
-                    y : 0
-                };
-            }
-            var dx = pos.x - this.x;
-            var dy = pos.y - this.y;
-            return Math.sqrt(dx * dx + dy * dy);
-        };
-        // nearest of several points
-        that.nearest = function (points) {
-            var nearest = points[0];
-            var dist = this.distance(nearest);
-            $.each(points, function(index, item) {
-                var len = this.distance(item);
-                if (len < dist) {
-                    dist = len;
-                    nearest = item;
-                    }
-                });
-            return nearest;
-        };
-        // midpoint of this and other pos
-        that.mid = function (pos) {
-            return position({
-                x : (this.x + pos.x)/2,
-                y : (this.y + pos.y)/2
-            });
-        };
-        // radians of angle between line and the positive X axis
-        that.rad = function (pos) {
-            return Math.atan2(pos.y - this.y, pos.x - this.x);
-        };
+            this.x = parseFloat(x);
+            this.y = parseFloat(y);
+        }
+    }
 
-        // degree of angle between line and the positive X axis
-        that.deg = function (pos) {
-            return this.rad(pos) * RAD2DEG;
-        };
-
-        // returns position in css-compatible format
-        that.getAsCss = function() {
-            return {
-                left : this.x,
-                top : this.y
-            };
-        };
-        // return as string
-        that.toString = function() {
-            return (this.x + "," + this.y);
-        };
-        // return as array
-        that.toArray = function() {
-            return [this.x, this.y];
-        };
-        return that;
+    /**
+     * return a copy of this position
+     */
+    Position.prototype.copy = function() {
+        return new Position(this);
     };
 
-    /*
+    /**
+     * compare function
+     */
+    Position.prototype.equals = function(other) {
+        return (this.x === other.x && this.y === other.y);
+    };
+
+    /**
+     * add vector or position to this
+     */
+    Position.prototype.add = function(other) {
+        if ($.isArray(other)) {
+            this.x += other[0];
+            this.y += other[1];
+        } else {
+            this.x += other.x;
+            this.y += other.y;
+        }
+        return this;
+    };
+
+    /**
+     * returns negative position
+     */
+    Position.prototype.neg = function() {
+        return new Position({
+            x : -this.x,
+            y : -this.y
+        });
+    };
+
+    /**
+     * returns new position that is the difference between this and other
+     */
+    Position.prototype.delta = function(other) {
+        return new Position({
+            x : other.x - this.x,
+            y : other.y - this.y
+        });
+    };
+
+    /**
+     * returns other position scaled by ratio with regard to this point
+     */
+    Position.prototype.scale = function(other, ratio) {
+        var d = this.delta(other);
+        return new Position({
+            x : this.x + d.x * ratio,
+            y : this.y + d.y * ratio
+        });
+    };
+
+    /**
+     * adjusts CSS position of $elem to this position
+     */
+    Position.prototype.adjustDiv = function($elem) {
+        $elem.offset({
+            left : this.x,
+            top : this.y
+        });
+    };
+
+    /**
+     * move this position to another
+     */
+    Position.prototype.moveTo = function(other) {
+        this.x = other.x;
+        this.y = other.y;
+        return this;
+    };
+
+    /**
+     * adjust this position so that is is inside rect
+     */
+    Position.prototype.clipTo = function(rect) {
+        var p1 = rect.getPt1();
+        var p2 = rect.getPt2();
+        this.x = Math.max(this.x, p1.x);
+        this.y = Math.max(this.y, p1.y);
+        this.x = Math.min(this.x, p2.x);
+        this.y = Math.min(this.y, p2.y);
+        return this;
+    };
+
+    /**
+     * returns distance of this position to pos (length if pos == null)
+     */
+    Position.prototype.distance = function(pos) {
+        if (pos == null) {
+            pos = {
+                x : 0,
+                y : 0
+            };
+        }
+        var dx = pos.x - this.x;
+        var dy = pos.y - this.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    /**
+     * nearest of several points
+     */
+    Position.prototype.nearest = function(points) {
+        var nearest = points[0];
+        var dist = this.distance(nearest);
+        $.each(points, function(index, item) {
+            var len = this.distance(item);
+            if (len < dist) {
+                dist = len;
+                nearest = item;
+            }
+        });
+        return nearest;
+    };
+
+    /**
+     * midpoint of this and other pos
+     */
+    Position.prototype.mid = function(pos) {
+        return new Position({
+            x : (this.x + pos.x) / 2,
+            y : (this.y + pos.y) / 2
+        });
+    };
+
+    /**
+     * radians of angle between line and the positive X axis
+     */
+    Position.prototype.rad = function(pos) {
+        return Math.atan2(pos.y - this.y, pos.x - this.x);
+    };
+
+    /**
+     * degree of angle between line and the positive X axis
+     */
+    Position.prototype.deg = function(pos) {
+        return this.rad(pos) * RAD2DEG;
+    };
+
+    /**
+     * returns position in css-compatible format
+     */
+    Position.prototype.getAsCss = function() {
+        return {
+            left : this.x,
+            top : this.y
+        };
+    };
+
+    /**
+     * return as string
+     */
+    Position.prototype.toString = function() {
+        return (this.x + "," + this.y);
+    };
+
+    /**
+     * return as array
+     */
+    Position.prototype.toArray = function() {
+        return [ this.x, this.y ];
+    };
+
+    /**
      * Line class (for on-screen geometry)
      */
-    var line = function(p, q) {
-        var that = { // definition point
-            x : p.x,
-            y : p.y
-            };
+    function Line(p, q) {
+        this.x = p.x;
+        this.y = p.y;
         if (q.x != null) { // second point
-            that.dx = q.x - that.x;
-            that.dy = q.y - that.y;
+            this.dx = q.x - that.x;
+            this.dy = q.y - that.y;
         } else if ($.isArray(q)) { // vector
-            that.dx = q[0];
-            that.dy = q[1];
+            this.dx = q[0];
+            this.dy = q[1];
         } else if (q === 0) { // slope
-            that.dx = 0;
-            that.dy = 1;
+            this.dx = 0;
+            this.dy = 1;
         } else if (q === Infinity) {
-            that.dx = 1;
-            that.dy = 0;
+            this.dx = 1;
+            this.dy = 0;
         } else if (q === -Infinity) {
-            that.dx = -1;
-            that.dy = 0;
+            this.dx = -1;
+            this.dy = 0;
         } else if (typeof q === 'number' && isFinite(q)) {
-            that.dx = 1;
-            that.dy = 1/q;
+            this.dx = 1;
+            this.dy = 1 / q;
         } else {
-            that.dx = 1;
-            that.dy = 1;
-            }
-        // get/set origin of line
-        that.origin = function(p) {
-            if (p == null) {
-                return position(this.x, this.y);
-                }
-            this.x = p.x;
-            this.y = p.y;
-            return this;
-            };
-        // get/set vector
-        that.vector = function(vector) {
-            if (vector == null) {
-                return [this.dx, this.dy];
-                }
-            this.dx = vector[0];
-            this.dy = vector[1];
-            return this;
-            };
-        // return a vector with the contrary direction
-        that.invertedVector = function() {
-            return [-this.dx, -this.dy];
-            };
-        // return a vector that is perpendicular to this line
-        that.perpendicularVector = function(clockwise) {
-            return clockwise ? [-this.dy, this.dx] : [this.dy, -this.dx];
-            };
-        // return vector distance
-        that.dist = function() {
-            return Math.sqrt(this.dx * this.dx + this.dy * this.dy);
-            };
-        // multiply vector with a ratio
-        that.scale = function(ratio) {
-            this.dx *= ratio;
-            this.dy *= ratio
-            return this;
-            };
-        // get/set vector length
-        that.length = function(length) {
-            var dist = this.dist();
-            if (length == null) {
-                return dist;
-                }
-            return this.scale(length/dist);
-            };
-        // return the slope
-        that.slope = function() {
-            return this.dx/this.dy;
-            };
-        // return a copy of this line
-        that.copy = function() {
-            return line(position(this.x, this.y), this.vector());
-            };
-        // invert direction
-        that.invert = function() {
-            this.vector(this.invertedVector);
-            return this;
-            };
-        // return a parallel line through a point (with the same vector)
-        that.parallel = function(p) {
-            return line(position(p.x, p.y), this.vector());
-            };
-        // return a perpendicular line from the origin (optionally from another point) with direction
-        that.perpendicular = function(p, clockwise) {
-            var point = (p == null || p.x == null)
-                ? position(this.x, this.y) : p;
-            return line(point, this.perpendicularVector(clockwise));
-            };
-        // return the intersection with a perpendicular line through a point
-        that.perpendicularPoint = function(p) {
-            return this.intersection(this.perpendicular(p));
-            };
-        // return perpendicular line from point
-        that.perpendicularLine = function(p) {
-            return line(p, this.perpendicularPoint(p));
-            };
-        // return point in mirrored position (with regard to this line)
-        that.mirror = function(p) {
-            var line = this.perpendicularLine(p);
-            return line.addEnd(line.vector());
-            };
-        // return a position by adding a vector/position/distance to origin
-        that.add = function(item) {
-            if (item == null) {
-                return this.origin();
-            } else if ($.isArray(item)) { // add a vector
-                return position(this.x + item[0], this.y + item[1])
-            } else if (item.x != null) { // add a position
-                return position(this.x + item.x, this.y + item.y);
-            } else if (typeof item === 'number' && isFinite(item)) { // add a distance
-                ratio = item/this.dist();
-                return position(this.x + this.dx*ratio, this.y + this.dy*ratio);
-            } else {
-                return this.origin();
-                }
-            };
-        // return a position by adding a vector/position/distance to end point
-        that.addEnd = function(item) {
-            return this.add(item).add(this.vector());
-            };
-        // end point on the line (pointed to by vector)
-        that.point = function(factor) {
-            if (factor == null) { factor = 1; }
-            var vector = [factor*this.dx, factor*this.dy];
-            return this.add(vector);
-            };
-        // midpoint on the line (half of vector distance, multiplied by factor)
-        that.mid = function(factor) {
-            return this.origin().mid(this.point(factor));
-            };
-        // radians of angle between line and the positive X axis
-        that.rad = function() {
-            return this.origin().rad(this.point());
-            };
-        // degree of angle between line and the positive X axis
-        that.deg = function() {
-            return this.origin().deg(this.point());
-            };
-        // factor of point (assuming it is on the line)
-        that.factor = function(p) {
-            return (dx === 0)
-                ? (p.y - this.y)/this.dy
-                : (p.x - this.x)/this.dx;
-            };
-        // intersection point with other line
-        that.intersection = function(line) {
-            var denominator = this.dy*line.dx - this.dx*line.dy
-            if (denominator === 0) { // parallel
-                return null; }
-            var num = this.dx*(line.y - this.y) + this.dy*(this.x - line.x);
-            return line.point(num/denominator);
-            };
-        return that;
-        };
+            this.dx = 1;
+            this.dy = 1;
+        }
+    }
+    ;
 
-    /*
+    /**
+     * get/set origin of line
+     */
+    Line.prototype.origin = function(p) {
+        if (p == null) {
+            return new Position(this.x, this.y);
+        }
+        this.x = p.x;
+        this.y = p.y;
+        return this;
+    };
+
+    /**
+     * get/set vector
+     */
+    Line.prototype.vector = function(vector) {
+        if (vector == null) {
+            return [ this.dx, this.dy ];
+        }
+        this.dx = vector[0];
+        this.dy = vector[1];
+        return this;
+    };
+
+    /**
+     * return a vector with the contrary direction
+     */
+    Line.prototype.invertedVector = function() {
+        return [ -this.dx, -this.dy ];
+    };
+
+    /**
+     * return a vector that is perpendicular to this line
+     */
+    Line.prototype.perpendicularVector = function(clockwise) {
+        return clockwise ? [ -this.dy, this.dx ] : [ this.dy, -this.dx ];
+    };
+
+    /**
+     * return vector distance
+     */
+    Line.prototype.dist = function() {
+        return Math.sqrt(this.dx * this.dx + this.dy * this.dy);
+    };
+
+    /**
+     * multiply vector with a ratio
+     */
+    Line.prototype.scale = function(ratio) {
+        this.dx *= ratio;
+        this.dy *= ratio
+        return this;
+    };
+
+    /**
+     * get/set vector length
+     */
+    Line.prototype.length = function(length) {
+        var dist = this.dist();
+        if (length == null) {
+            return dist;
+        }
+        return this.scale(length / dist);
+    };
+
+    /**
+     * return the slope
+     */
+    Line.prototype.slope = function() {
+        return this.dx / this.dy;
+    };
+
+    /**
+     * return a copy of this line
+     */
+    Line.prototype.copy = function() {
+        return new Line(new Position(this.x, this.y), this.vector());
+    };
+
+    /**
+     * invert direction
+     */
+    Line.prototype.invert = function() {
+        this.vector(this.invertedVector);
+        return this;
+    };
+
+    /**
+     * return a parallel line through a point (with the same vector)
+     */
+    Line.prototype.parallel = function(p) {
+        return new Line(new Position(p.x, p.y), this.vector());
+    };
+
+    /**
+     * return a perpendicular line from the origin (optionally from another
+     * point) with direction
+     */
+    Line.prototype.perpendicular = function(p, clockwise) {
+        var point = (p == null || p.x == null) ? new Position(this.x, this.y)
+                : p;
+        return new Line(point, this.perpendicularVector(clockwise));
+    };
+
+    /**
+     * return the intersection with a perpendicular line through a point
+     */
+    Line.prototype.perpendicularPoint = function(p) {
+        return this.intersection(this.perpendicular(p));
+    };
+
+    /**
+     * return perpendicular line from point
+     */
+    Line.prototype.perpendicularLine = function(p) {
+        return new Line(p, this.perpendicularPoint(p));
+    };
+
+    /**
+     * return point in mirrored position (with regard to this line)
+     */
+    Line.prototype.mirror = function(p) {
+        var line = this.perpendicularLine(p);
+        return line.addEnd(line.vector());
+    };
+
+    /**
+     * return a position by adding a vector/position/distance to origin
+     */
+    Line.prototype.add = function(item) {
+        if (item == null) {
+            return this.origin();
+        } else if ($.isArray(item)) { // add a vector
+            return new Position(this.x + item[0], this.y + item[1])
+        } else if (item.x != null) { // add a position
+            return new Position(this.x + item.x, this.y + item.y);
+        } else if (typeof item === 'number' && isFinite(item)) { // add a
+                                                                    // distance
+            ratio = item / this.dist();
+            return new Position(this.x + this.dx * ratio, this.y + this.dy
+                    * ratio);
+        } else {
+            return this.origin();
+        }
+    };
+
+    /**
+     * return a position by adding a vector/position/distance to end point
+     */
+    Line.prototype.addEnd = function(item) {
+        return this.add(item).add(this.vector());
+    };
+
+    /**
+     * end point on the line (pointed to by vector)
+     */
+    Line.prototype.point = function(factor) {
+        if (factor == null) {
+            factor = 1;
+        }
+        var vector = [ factor * this.dx, factor * this.dy ];
+        return this.add(vector);
+    };
+
+    /**
+     * midpoint on the line (half of vector distance, multiplied by factor)
+     */
+    Line.prototype.mid = function(factor) {
+        return this.origin().mid(this.point(factor));
+    };
+
+    /**
+     * radians of angle between line and the positive X axis
+     */
+    Line.prototype.rad = function() {
+        return this.origin().rad(this.point());
+    };
+
+    /**
+     * degree of angle between line and the positive X axis
+     */
+    Line.prototype.deg = function() {
+        return this.origin().deg(this.point());
+    };
+
+    /**
+     * factor of point (assuming it is on the line)
+     */
+    Line.prototype.factor = function(p) {
+        return (dx === 0) ? (p.y - this.y) / this.dy : (p.x - this.x) / this.dx;
+    };
+
+    /**
+     * intersection point with other line
+     */
+    Line.prototype.intersection = function(line) {
+        var denominator = this.dy * line.dx - this.dx * line.dy
+        if (denominator === 0) { // parallel
+            return null;
+        }
+        var num = this.dx * (line.y - this.y) + this.dy * (this.x - line.x);
+        return line.point(num / denominator);
+    };
+
+            
+    /**
      * Rectangle class
      */
-    var rectangle = function(x, y, w, h) {
-        var that = {};
+    function Rectangle(x, y, w, h) {
         if (typeof x === "object") {
             if (x instanceof jQuery) {
                 // jQuery object
                 var pos = x.offset();
-                that = {
-                    x : pos.left,
-                    y : pos.top,
-                    width : x.width(),
-                    height : x.height()
-                };
+                this.x = pos.left;
+                this.y = pos.top;
+                this.width = x.width();
+                this.height = x.height();
             } else if (y == null) {
                 // assume x is rectangle
-                that = {
-                    x : parseFloat(x.x) || 0,
-                    y : parseFloat(x.y) || 0,
-                    width : parseFloat(x.width) || 0,
-                    height : parseFloat(x.height) || 0
-                };
+                this.x = parseFloat(x.x) || 0;
+                this.y = parseFloat(x.y) || 0;
+                this.width = parseFloat(x.width) || 0;
+                this.height = parseFloat(x.height) || 0;
             } else {
                 // assume x and y are Position
-                that = {
-                    x : Math.min(x.x, y.x),
-                    y : Math.min(x.y, y.y),
-                    width : Math.abs(y.x - x.x),
-                    height : Math.abs(y.y - x.y)
-                };
+                this.x = Math.min(x.x, y.x);
+                this.y = Math.min(x.y, y.y);
+                this.width = Math.abs(y.x - x.x);
+                this.height = Math.abs(y.y - x.y);
             }
         } else {
-            that = {
-                x : parseFloat(x),
-                y : parseFloat(y),
-                width : parseFloat(w),
-                height : parseFloat(h)
-            };
+            this.x = parseFloat(x);
+            this.y = parseFloat(y);
+            this.width = parseFloat(w);
+            this.height = parseFloat(h);
         }
-        // returns a copy of this Rectangle
-        that.copy = function() {
-            return rectangle(this);
+    };
+
+    /**
+     * returns a copy of this Rectangle
+     */
+        Rectangle.prototype.copy = function() {
+            return new Rectangle(this);
         };
-        // returns the position of this Rectangle
-        that.getPosition = function() {
-            return position(this);
+        
+        /**
+         * returns the position of this Rectangle
+         */
+        Rectangle.prototype.getPosition = function() {
+            return new Position(this);
         };
-        // returns the size of this Rectangle
-        that.getSize = function() {
-            return size(this);
+        
+        /**
+         * returns the size of this Rectangle
+         */
+        Rectangle.prototype.getSize = function() {
+            return new Size(this);
         };
-        // returns the upper left corner position
-        that.getPt1 = that.getPosition;
-        // returns the lower right corner position of this Rectangle
-        that.getPt2 = function() {
-            return position({
+        
+        /**
+         * returns the upper left corner position
+         */
+        Rectangle.prototype.getPt1 = Rectangle.prototype.getPosition;
+        
+        /**
+         * returns the lower right corner position of this Rectangle
+         */
+        Rectangle.prototype.getPt2 = function() {
+            return new Position({
                 x : this.x + this.width,
                 y : this.y + this.height
             });
         };
-        // sets the upper left corner position to pos
-        that.setPosition = function(pos) {
+        
+        /**
+         * sets the upper left corner position to pos
+         */
+        Rectangle.prototype.setPosition = function(pos) {
             this.x = pos.x;
             this.y = pos.y;
             return this;
         };
-        // adds pos to the position
-        that.setPt1 = that.setPosition; // TODO: not really the same
-        that.addPosition = function(pos) {
+        
+        Rectangle.prototype.setPt1 = Rectangle.prototype.setPosition; 
+        // TODO: not really the same
+        
+        /**
+         * adds pos to the position
+         */
+        Rectangle.prototype.addPosition = function(pos) {
             this.x += pos.x;
             this.y += pos.y;
             return this;
         };
-        // adds pos to the dimensions
-        that.enlarge = function(pos) {
+        
+        /**
+         * adds pos to the dimensions
+         */
+        Rectangle.prototype.enlarge = function(pos) {
             this.width += pos.x;
             this.height += pos.y;
             return this;
         };
-        // sets the lower right corner to position pos
-        that.setPt2 = function(pos) {
+        
+        /**
+         * sets the lower right corner to position pos
+         */
+        Rectangle.prototype.setPt2 = function(pos) {
             this.width = pos.x - this.x;
             this.height = pos.y - this.y;
             return this;
         };
-        // returns the center position of this Rectangle
-        that.getCenter = function() {
-            return position({
+        
+        /**
+         * returns the center position of this Rectangle
+         */
+        Rectangle.prototype.getCenter = function() {
+            return new Position({
                 x : this.x + this.width / 2,
                 y : this.y + this.height / 2
             });
         };
-        // moves this rectangle's center to position pos
-        that.setCenter = function(pos) {
+        
+        /**
+         * moves this rectangle's center to position pos
+         */
+        Rectangle.prototype.setCenter = function(pos) {
             this.x = pos.x - this.width / 2;
             this.y = pos.y - this.height / 2;
             return this;
         };
-        // returns true if both rectangles have equal position and size
-        that.equals = function(other) {
+        
+        /**
+         * returns true if both rectangles have equal position and size
+         */
+        Rectangle.prototype.equals = function(other) {
             var eq = (this.x === other.x && this.y === other.y && this.width === other.width);
             return eq;
         };
-        // returns a rectangle with the difference width, height and position
-        that.delta = function(other) {
-            return rectangle(other.x - this.x, other.y - this.y, 
+        
+        /**
+         * returns a rectangle with the difference width, height and position
+         */
+        Rectangle.prototype.delta = function(other) {
+            return new Rectangle(other.x - this.x, other.y - this.y, 
             		other.width - this.width, other.height - this.height);
         };
-        // returns the area of this Rectangle
-        that.getArea = function() {
+        
+        /**
+         * returns the area of this Rectangle
+         */
+        Rectangle.prototype.getArea = function() {
             return (this.width * this.height);
         };
-        // returns the aspect ratio of this Rectangle
-        that.getAspect = function() {
+        
+        /**
+         * returns the aspect ratio of this Rectangle
+         */
+        Rectangle.prototype.getAspect = function() {
             return (this.width / this.height);
         };
-        // eliminates negative width and height
-        that.normalize = function() {
+        
+        /**
+         * eliminates negative width and height
+         */
+        Rectangle.prototype.normalize = function() {
             var p = this.getPt2();
             this.x = Math.min(this.x, p.x);
             this.y = Math.min(this.y, p.y);
@@ -525,28 +681,43 @@
             this.height = Math.abs(this.height);
             return this;
         };
-        // returns if Position "pos" lies inside of this rectangle
-        that.containsPosition = function(pos) {
+        
+        /**
+         * returns if Position "pos" lies inside of this rectangle
+         */
+        Rectangle.prototype.containsPosition = function(pos) {
             var ct = ((pos.x >= this.x) && (pos.y >= this.y)
                     && (pos.x <= this.x + this.width) && (pos.y <= this.y
                     + this.height));
             return ct;
         };
-        // returns true if rectangle "rect" is contained in this rectangle
-        that.containsRect = function(rect) {
+        
+        /**
+         * returns true if rectangle "rect" is contained in this rectangle
+         */
+        Rectangle.prototype.containsRect = function(rect) {
             return (this.containsPosition(rect.getPt1()) && this
                     .containsPosition(rect.getPt2()));
         };
-        // returns true if rectangle "rect" and this rectangle overlap
-        that.overlapsRect = function(rect) {
+        
+        /**
+         * returns true if rectangle "rect" and this rectangle overlap
+         */
+        Rectangle.prototype.overlapsRect = function(rect) {
             return this.intersect(rect) != null;
         };
-        // returns the ratio of height to width
-        that.getProportion = function() {
+        
+        /**
+         * returns the ratio of height to width
+         */
+        Rectangle.prototype.getProportion = function() {
             return this.height/this.width;
         };
-        // shrink/grow rectangle until it has the given proportion
-        that.setProportion = function(ratio, canGrow) {
+        
+        /**
+         * shrink/grow rectangle until it has the given proportion
+         */
+        Rectangle.prototype.setProportion = function(ratio, canGrow) {
             var prop = this.getProportion();
             if (ratio < prop == canGrow) {
                 this.width = this.height / ratio;
@@ -555,9 +726,12 @@
             }
             return this;
         };
-        // changes this rectangle's x/y values so it stays inside of rectangle
-        // "rect", keeping the proportions
-        that.stayInside = function(rect) {
+        
+        /**
+         * changes this rectangle's x/y values so it stays inside of rectangle
+         * "rect", keeping the proportions
+         */
+        Rectangle.prototype.stayInside = function(rect) {
             this.x = Math.max(this.x, rect.x);
             this.y = Math.max(this.y, rect.y);
             if (this.x + this.width > rect.x + rect.width) {
@@ -568,26 +742,34 @@
             }
             return this;
         };
-        // clips this rectangle so it stays inside of rectangle "rect"
-        that.clipTo = function(rect) {
+        
+        /**
+         * clips this rectangle so it stays inside of rectangle "rect"
+         */
+        Rectangle.prototype.clipTo = function(rect) {
             var p1 = rect.getPt1();
             var p2 = rect.getPt2();
             var this2 = this.getPt2();
-            this.setPosition(position(Math.max(this.x, p1.x), Math.max(this.y, p1.y)));
-            this.setPt2(position(Math.min(this2.x, p2.x), Math.min(this2.y, p2.y)));
+            this.setPosition(new Position(Math.max(this.x, p1.x), Math.max(this.y, p1.y)));
+            this.setPt2(new Position(Math.min(this2.x, p2.x), Math.min(this2.y, p2.y)));
             return this;
         };
-        // returns the intersection of rectangle "rect" and this one
-        that.intersect = function(rect) {
+
+        /**
+         * returns the intersection of rectangle "rect" and this one
+         */
+        Rectangle.prototype.intersect = function(rect) {
             var r = rect.copy();
             var result = r.clipTo(this);
             if (result.width < 0 || result.height < 0) result = null;
             return result;
         };
 
-        // returns a copy of rectangle "rect" that fits into this one
-        // (moving it first)
-        that.fit = function(rect) {
+        /**
+         * returns a copy of rectangle "rect" that fits into this one (moving it
+         * first)
+         */
+        Rectangle.prototype.fit = function(rect) {
             var r = rect.copy();
             r.x = Math.max(r.x, this.x);
             r.y = Math.max(r.y, this.x);
@@ -600,16 +782,21 @@
             return r.intersect(this);
         };
 
-        // adjusts position and size of jQuery element "$elem" to this rectangle
-        that.adjustDiv = function($elem) {
+        /**
+         * adjusts position and size of jQuery element "$elem" to this rectangle
+         */
+        Rectangle.prototype.adjustDiv = function($elem) {
             $elem.offset({
                 left : this.x,
                 top : this.y
             });
             $elem.width(this.width).height(this.height);
         };
-        // returns position and size of this rectangle in css-compatible format
-        that.getAsCss = function() {
+        
+        /**
+         * returns position and size of this rectangle in css-compatible format
+         */
+        Rectangle.prototype.getAsCss = function() {
             return {
                 left : this.x,
                 top : this.y,
@@ -617,49 +804,62 @@
                 height : this.height
             };
         };
-        // returns position and size of this rectangle formatted for SVG attributes
-        that.getAsSvg = function() {
+        
+        /**
+         * returns position and size of this rectangle formatted for SVG
+         * attributes
+         */
+        Rectangle.prototype.getAsSvg = function() {
             return [this.x, this.y, this.width, this.height].join(" ");
         };
-        // returns if this rectangle is a rectangle
-        that.isRectangle = function () {
+        
+        /**
+         * returns if this rectangle is a rectangle
+         */
+        Rectangle.prototype.isRectangle = function () {
         	return this.width > 0 && this.height > 0;
         };
-        // returns size and position of this rectangle formatted for ??? (w x h@x,y)
-        that.toString = function() {
+        
+        /**
+         * returns size and position of this rectangle formatted as string "(w x
+         * h@x,y)"
+         */
+        Rectangle.prototype.toString = function() {
             return this.width + "x" + this.height + "@" + this.x + "," + this.y;
         };
-        return that;
-    };
 
-    /*
+        
+    /**
      * Transform class
      * 
      * defines a class of affine transformations
      */
-    var transform = function(spec) {
-        var that = {
-            m00 : 1.0,
-            m01 : 0.0,
-            m02 : 0.0,
-            m10 : 0.0,
-            m11 : 1.0,
-            m12 : 0.0,
-            m20 : 0.0,
-            m21 : 0.0,
-            m22 : 1.0
-        };
+    function Transform(spec) {
+        // 3x3 transform matrix
+        this.m00 = 1.0;
+        this.m01 = 0.0;
+        this.m02 = 0.0;
+        this.m10 = 0.0;
+        this.m11 = 1.0;
+        this.m12 = 0.0;
+        this.m20 = 0.0;
+        this.m21 = 0.0;
+        this.m22 = 1.0;
+        
         if (spec) {
-            jQuery.extend(that, spec);
+            jQuery.extend(this, spec);
         }
-        ;
-        that.concat = function(trafA) {
-            // add Transform trafA to this Transform (i.e. this = trafC = trafA * this)
+    };
+    
+    /**
+     *  add Transform trafA to this Transform (i.e. this = trafC = trafA * this)
+     */
+        Transform.prototype.concat = function(trafA) {
             var trafC = {};
-            for ( var i = 0; i < 3; i++) {
-                for ( var j = 0; j < 3; j++) {
+            for (var i = 0; i < 3; i++) {
+                for (var j = 0; j < 3; j++) {
                     var c = 0.0;
-                    for ( var k = 0; k < 3; k++) {
+                    for (var k = 0; k < 3; k++) {
                         c += trafA["m" + i + k] * this["m" + k + j];
                     }
                     trafC["m" + i + j] = c;
@@ -668,22 +868,28 @@
             jQuery.extend(this, trafC);
             return this;
         };
-        that.transform = function(rect) {
-            // returns transformed Rectangle or Position with this Transform
-            // applied
+        
+        /**
+         * returns transformed Rectangle or Position with this Transform
+         * applied
+         */
+        Transform.prototype.transform = function(rect) {
+            // 
             var x = this.m00 * rect.x + this.m01 * rect.y + this.m02;
             var y = this.m10 * rect.x + this.m11 * rect.y + this.m12;
-            var pt = position(x, y);
+            var pt = new Position(x, y);
             if (rect.width != null) {
                 // transform the other corner point
                 var pt2 = this.transform(rect.getPt2());
-                return rectangle(pt, pt2);
+                return new Rectangle(pt, pt2);
             }
             return pt;
         };
-        that.invtransform = function(rect) {
-            // returns transformed Rectangle or Position with the inverse of
-            // this Transform applied
+        
+        /**
+         * returns transformed Rectangle or Position with the inverse of this Transform applied
+         */
+        Transform.prototype.invtransform = function(rect) {
             var det = this.m00 * this.m11 - this.m01 * this.m10;
             var x = (this.m11 * rect.x - this.m01 * rect.y - this.m11
                     * this.m02 + this.m01 * this.m12)
@@ -691,15 +897,16 @@
             var y = (-this.m10 * rect.x + this.m00 * rect.y + this.m10
                     * this.m02 - this.m00 * this.m12)
                     / det;
-            var pt = position(x, y);
+            var pt = new Position(x, y);
             if (rect.width != null) {
                 // transform the other corner point
                 var pt2 = this.invtransform(rect.getPt2());
-                return rectangle(pt, pt2);
+                return new Rectangle(pt, pt2);
             }
             return pt;
         };
-        that.toString = function(pretty) {
+        
+        Transform.prototype.toString = function(pretty) {
             var s = '[';
             if (pretty)
                 s += '\n';
@@ -719,18 +926,11 @@
                 s += '\n';
             return s;
         };
-        // add class methods to instance
-        that.getRotation = transform.getRotation;
-        that.getRotationAround = transform.getRotationAround;
-        that.getTranslation = transform.getTranslation;
-        that.getMirror = transform.getMirror;
-        that.getScale = transform.getScale;
 
-        return that;
-    };
-
-    transform.getRotation = function(angle) {
-        // returns a Transform that is a rotation by angle degrees around [0,0]
+        /**
+         * returns a Transform that is a rotation by angle degrees around [0,0]
+         */
+        Transform.prototype.getRotation = function(angle) {
         if (angle !== 0) {
             var t = parseFloat(angle) / RAD2DEG;
             var cost = Math.cos(t);
@@ -741,29 +941,31 @@
                 m10 : sint,
                 m11 : cost
             };
-            return transform(traf);
+            return new Transform(traf);
         }
-        return transform();
+        return new Transform();
     };
 
-    transform.getRotationAround = function(angle, pos) {
-        // returns a Transform that is a rotation by angle degrees around pos
-        var traf = transform.getTranslation(pos.neg());
-        traf.concat(transform.getRotation(angle));
-        traf.concat(transform.getTranslation(pos));
+    /**
+     * returns a Transform that is a rotation by angle degrees around pos
+     */
+    Transform.prototype.getRotationAround = function(angle, pos) {
+        var traf = this.getTranslation(pos.neg());
+        traf.concat(this.getRotation(angle));
+        traf.concat(this.getTranslation(pos));
         return traf;
     };
 
-    transform.getTranslation = function(pos) {
+    Transform.prototype.getTranslation = function(pos) {
         // returns a Transform that is a translation by [pos.x, pos,y]
         var traf = {
             m02 : pos.x,
             m12 : pos.y
         };
-        return transform(traf);
+        return new Transform(traf);
     };
 
-    transform.getMirror = function(type) {
+    Transform.prototype.getMirror = function(type) {
         // returns a Transform that is a mirror about the axis type
         if (type === 'x') {
             var traf = {
@@ -776,25 +978,26 @@
                 m11 : 1
             };
         }
-        return transform(traf);
+        return new Transform(traf);
     };
 
-    transform.getScale = function(size) {
+    Transform.prototype.getScale = function(size) {
         // returns a Transform that is a scale by [size.width, size.height]
         var traf = {
             m00 : size.width,
             m11 : size.height
         };
-        return transform(traf);
+        return new Transform(traf);
     };
 
+    
     // export constructor functions to digilib plugin
     var geometry = {
-            size : size,
-            position : position,
-            line : line,
-            rectangle : rectangle,
-            transform : transform
+            Size : Size,
+            Position : Position,
+            Line : Line,
+            Rectangle : Rectangle,
+            Transform : Transform
     };
 
     // install function called by digilib on plugin object

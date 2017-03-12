@@ -139,7 +139,7 @@ function($) {
                 // geometry plugin puts classes in the shared fn
                 geom = fn.geometry;
             }
-            FULL_AREA  = geom.rectangle(0, 0, 1, 1);
+            FULL_AREA  = new geom.Rectangle(0, 0, 1, 1);
             // settings for this digilib instance are merged from defaults and options
             // (no deep copy because lists would be joined)
             var settings = $.extend({}, defaults, options);
@@ -426,7 +426,7 @@ function($) {
                     };
                 defineArea(data, onComplete);
             } else {
-                data.zoomArea = geom.rectangle(area);
+                data.zoomArea = new geom.Rectangle(area);
                 redisplay(data);
             }
         },
@@ -880,7 +880,7 @@ function($) {
     var unpackParams = function (data) {
         var settings = data.settings;
         // zoom area
-        var zoomArea = geom.rectangle(settings.wx, settings.wy, settings.ww, settings.wh);
+        var zoomArea = new geom.Rectangle(settings.wx, settings.wy, settings.ww, settings.wh);
         data.zoomArea = zoomArea;
         // mo (Scaler flags)
         var flags = {};
@@ -1138,14 +1138,14 @@ function($) {
         var imgW = winW - insets.x;
         var imgH = winH - insets.y;
         console.debug('getFullscreenImgSize - screen w/h:', winW, winH, 'window.width', $win.width(), 'img w/h:', imgW, imgH);
-        return geom.size(imgW, imgH);
+        return new geom.Size(imgW, imgH);
     };
 
     /** 
      * returns a rectangle.with the fullscreen dimensions 
      */
     var getFullscreenRect = function (data) {
-        return geom.rectangle(getFullscreenImgSize(data));
+        return new geom.Rectangle(getFullscreenImgSize(data));
     };
 
     /** 
@@ -1186,7 +1186,7 @@ function($) {
             $img = $('<img/>');
         } else {
             // embedded mode -- try to keep img tag
-            data.maxImgSize = geom.rectangle($elem).getSize();
+            data.maxImgSize = new geom.Rectangle($elem).getSize();
             $elem.addClass(cssPrefix+'embedded');
             scalerUrl = getScalerUrl(data);
             $img = $elem.find('img');
@@ -1248,7 +1248,7 @@ function($) {
      * Returns Transform between normalized coordinates and image pixel coordinates.
      */
     var getImgTrafo = function ($img, area, rot, hmir, vmir, mode, data) {
-        var picrect = geom.rectangle($img);
+        var picrect = new geom.Rectangle($img);
         // handle pixel-by-pixel and original-size modes 
         if (mode != null) {
             var imgInfo = data.imgInfo;
@@ -1272,15 +1272,15 @@ function($) {
                 }
             }
         }
-        var trafo = geom.transform();
+        var trafo = new geom.Transform();
         // move zoom area offset to center
-        trafo.concat(trafo.getTranslation(geom.position(-area.x, -area.y)));
+        trafo.concat(trafo.getTranslation(new geom.Position(-area.x, -area.y)));
         // scale zoom area size to [1,1]
-        trafo.concat(trafo.getScale(geom.size(1/area.width, 1/area.height)));
+        trafo.concat(trafo.getScale(new geom.Size(1/area.width, 1/area.height)));
         // rotate and mirror (around transformed image center i.e. [0.5,0.5])
         if (rot || hmir || vmir) {
             // move [0.5,0.5] to center
-            trafo.concat(trafo.getTranslation(geom.position(-0.5, -0.5)));
+            trafo.concat(trafo.getTranslation(new geom.Position(-0.5, -0.5)));
             if (hmir) {
                 // mirror about center
                 trafo.concat(trafo.getMirror('y'));
@@ -1294,7 +1294,7 @@ function($) {
                 trafo.concat(trafo.getRotation(parseFloat(rot)));
                 }
             // move back
-            trafo.concat(trafo.getTranslation(geom.position(0.5, 0.5)));
+            trafo.concat(trafo.getTranslation(new geom.Position(0.5, 0.5)));
             }
         // scale to screen position and size
         trafo.concat(trafo.getScale(picrect));
@@ -1318,7 +1318,7 @@ function($) {
                     data.scaleMode, data);
             console.debug("updateImgTrafo: ", data.imgTrafo);
             // update imgRect
-            data.imgRect = geom.rectangle($img);
+            data.imgRect = new geom.Rectangle($img);
         }
     };
 
@@ -1330,7 +1330,7 @@ function($) {
             var $img = $(this);
             console.debug("scaler img loaded=",$img);
             var $scaler = data.$scaler;
-            var imgRect = geom.rectangle($img);
+            var imgRect = new geom.Rectangle($img);
             data.imgRect = imgRect;
             // reset busy cursor
             $('body').css('cursor', 'auto');
@@ -1419,9 +1419,9 @@ function($) {
         var CSS = data.settings.cssPrefix;
         var $elem = data.$elem;
         var $scaler = data.$scaler;
-        var picRect = geom.rectangle($scaler);
+        var picRect = new geom.Rectangle($scaler);
         var $body = $('body');
-        var bodyRect = geom.rectangle($body);
+        var bodyRect = new geom.Rectangle($body);
         var pt1, pt2;
         // overlay div prevents other elements from reacting to mouse events 
         var $overlayDiv = $('<div id="'+CSS+'areaoverlay" class="'+CSS+'areaoverlay"/>');
@@ -1436,7 +1436,7 @@ function($) {
         $scaler.addClass(CSS+'definearea');
 
         var areaStart = function (evt) {
-            pt1 = geom.position(evt);
+            pt1 = new geom.Position(evt);
             // setup and show area div
             pt1.adjustDiv($areaDiv);
             $areaDiv.width(0).height(0);
@@ -1449,8 +1449,8 @@ function($) {
 
         // mouse move handler
         var areaMove = function (evt) {
-            pt2 = geom.position(evt);
-            var rect = geom.rectangle(pt1, pt2);
+            pt2 = new geom.Position(evt);
+            var rect = new geom.Rectangle(pt1, pt2);
             rect.clipTo(picRect);
             // update area div
             rect.adjustDiv($areaDiv);
@@ -1459,9 +1459,9 @@ function($) {
 
         // mouseup handler: end moving
         var areaEnd = function (evt) {
-            pt2 = geom.position(evt);
+            pt2 = new geom.Position(evt);
             // assume a click and continue if the area is too small
-            var clickRect = geom.rectangle(pt1, pt2);
+            var clickRect = new geom.Rectangle(pt1, pt2);
             if (clickRect.getArea() <= 5) {
                 onComplete(data, null);
                 return false;
@@ -1491,7 +1491,7 @@ function($) {
     var setPreviewBg = function(data, newZoomArea) {
         var $scaler = data.$scaler;
         var imgTrafo = data.imgTrafo;
-        var scalerPos = geom.position($scaler);
+        var scalerPos = new geom.Position($scaler);
         var bgRect = null;
         // use current image as first background
         var scalerCss = {
@@ -1565,7 +1565,7 @@ function($) {
             // don't start dragging if not zoomed
             if (isFullArea(data.zoomArea)) return false;
             $elem.find('.'+data.settings.cssPrefix+'overlay').hide(); // hide all overlays (marks/regions)
-            startPos = geom.position(evt);
+            startPos = new geom.Position(evt);
             delta = null;
             // hide image, show dimmed background
             fadeScalerImg(data, 'hide');
@@ -1578,10 +1578,10 @@ function($) {
 
         // mousemove handler: drag zoomed image
         var dragMove = function (evt) {
-            var pos = geom.position(evt);
+            var pos = new geom.Position(evt);
             delta = startPos.delta(pos);
             // send message event with current zoom position
-            var za = geom.rectangle($img);
+            var za = new geom.Rectangle($img);
             za.addPosition(delta.neg());
             // transform back
             var area = data.imgTrafo.invtransform(za);
@@ -1603,7 +1603,7 @@ function($) {
                 return false; 
             }
             // get old zoom area (screen coordinates)
-            var za = geom.rectangle($img);
+            var za = new geom.Rectangle($img);
             // move
             za.addPosition(delta.neg());
             // transform back
@@ -1800,8 +1800,8 @@ function($) {
 	    		}
 	    	}
 	    	var ar = getImgAspectRatio(data);
-	    	var r1 = geom.position(p1.x * ar, p1.y);
-	    	var r2 = geom.position(p2.x * ar, p2.y);
+	    	var r1 = new geom.Position(p1.x * ar, p1.y);
+	    	var r2 = new geom.Position(p2.x * ar, p2.y);
 	    	dist['rectified'] = r1.distance(r2);
     	}
     	return dist;
@@ -1907,7 +1907,7 @@ function($) {
     */
     var centerOnScreen = function (data, $div) {
         if ($div == null) return;
-        var r = geom.rectangle($div);
+        var r = new geom.Rectangle($div);
         var s = fn.getFullscreenRect(data);
         r.setCenter(s.getCenter());
         r.getPosition().adjustDiv($div);

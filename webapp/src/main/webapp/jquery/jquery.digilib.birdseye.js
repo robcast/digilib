@@ -77,7 +77,7 @@ digilib bird's eye view plugin
         console.debug('installing birdseye plugin. digilib:', digilib);
         // import geometry classes
         geom = digilib.fn.geometry;
-        FULL_AREA = geom.rectangle(0,0,1,1);
+        FULL_AREA = new geom.Rectangle(0,0,1,1);
         // add defaults
         $.extend(digilib.defaults, defaults);
         // add actions
@@ -200,7 +200,7 @@ digilib bird's eye view plugin
     var birdImgLoadedHandler = function (data) {
         return function () {
             var $birdImg = $(this);
-            var birdRect = geom.rectangle($birdImg);
+            var birdRect = new geom.Rectangle($birdImg);
             console.debug("birdImg loaded!", $birdImg, "rect=", birdRect, "data=", data);
             // create Transform from current area and picsize
             data.birdTrafo = digilib.fn.getImgTrafo(data.$birdImg, FULL_AREA);
@@ -269,11 +269,11 @@ digilib bird's eye view plugin
 
         // mousedown handler: start dragging bird zoom to a new position
         var birdZoomStartDrag = function(evt) {
-            startPos = geom.position(evt);
+            startPos = new geom.Position(evt);
             // position may have changed
             data.birdTrafo = digilib.fn.getImgTrafo($birdImg, FULL_AREA);
-            birdImgRect = geom.rectangle($birdImg);
-            birdZoomRect = geom.rectangle($birdZoom);
+            birdImgRect = new geom.Rectangle($birdImg);
+            birdZoomRect = new geom.Rectangle($birdZoom);
             // grow rectangle by border width
             newRect = null;
             data.$elem.find('.'+cssPrefix+'overlay').hide(); // hide all overlays (marks/regions)
@@ -286,7 +286,7 @@ digilib bird's eye view plugin
 
         // mousemove handler: drag
         var birdZoomMove = function(evt) {
-            var pos = geom.position(evt);
+            var pos = new geom.Position(evt);
             var delta = startPos.delta(pos);
             // move birdZoom div, keeping size
             newRect = birdZoomRect.copy();

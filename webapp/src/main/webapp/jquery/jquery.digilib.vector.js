@@ -413,7 +413,7 @@
                     var $s = $(svgElement('rect', svgAttr(data, shape)));
                     $s.place = function () {
                         var p = shape.properties.screenpos;
-                        var r = geom.rectangle(p[0], p[1]);
+                        var r = new geom.Rectangle(p[0], p[1]);
                         this.attr({'x': r.x, 'y': r.y, 'width': r.width, 'height': r.height});
                         };
                     return $s;
@@ -567,7 +567,7 @@
         var handles = [];
         var createHandle = data.handleFactory[type];
         var insertHandle = function (i, item) {
-            var p = trafo.transform(geom.position(item));
+            var p = trafo.transform(new geom.Position(item));
             var $handle = createHandle();
             $handle.data('vertex', i);
             $handle.moveTo(p);
@@ -716,7 +716,7 @@
             var shape = $w.data('shape');
             var coords = shape.geometry.coordinates;
             var v1 = parseInt(vertex) > 0 ? vertex-1 : coords.length-1;
-            var pt = geom.position(coords[vertex]).mid(geom.position(coords[v1]));
+            var pt = new geom.Position(coords[vertex]).mid(new geom.Position(coords[v1]));
             console.debug('+ point', coords[vertex], pt);
             coords.splice(vertex, 0, pt);
             redrawShape(data, shape);
@@ -756,7 +756,7 @@
         var coords = shape.geometry.coordinates;
         var trafo = data.imgTrafo;
         var screenpos = $.map(coords, function (coord) {
-            return trafo.transform(geom.position(coord));
+            return trafo.transform(new geom.Position(coord));
             });
         if (shape.properties == null) {
           shape.properties = {};
@@ -781,7 +781,7 @@
             ymin = (y < ymin) ? y : ymin;
             ymax = (y > ymax) ? y : ymax;
         }
-        return geom.rectangle(xmin, ymin, xmax-xmin, ymax-ymin);
+        return new geom.Rectangle(xmin, ymin, xmax-xmin, ymax-ymin);
     };
 
     /**
@@ -888,7 +888,7 @@
         var dragStart = function (evt) { // start dragging
             // cancel if not left-click
             if (evt.which != 1) return;
-            pStart = geom.position(evt);
+            pStart = new geom.Position(evt);
             props.startpos = pStart;
             props.vtx = vtx;
             $(data).trigger('positionShape', shape);
@@ -899,7 +899,7 @@
         };
 
         var dragMove = function (evt) { // dragging
-            var pt = geom.position(evt);
+            var pt = new geom.Position(evt);
             pt.clipTo(imgRect);
             pos[vtx].moveTo(pt);
             if (isSupported(data, shapeType)) {
@@ -917,7 +917,7 @@
         };
 
         var dragEnd = function (evt) { // end dragging
-            var pt = geom.position(evt);
+            var pt = new geom.Position(evt);
             if ((pt.distance(pStart) < 5) && evt.type === 'mouseup') {
             	// not drag but click to start
                 return false;
@@ -971,14 +971,14 @@
         data.shapeFactory[shapeType].setup(data, shape);
         var $elem = data.$elem;
         var $body = $('body');
-        var bodyRect = geom.rectangle($body);
+        var bodyRect = new geom.Rectangle($body);
         // overlay div prevents other elements from reacting to mouse events 
         var $overlayDiv = $('<div class="'+data.settings.cssPrefix+'shapeOverlay" style="position:absolute; z-index:100;"/>');
         $elem.append($overlayDiv);
         bodyRect.adjustDiv($overlayDiv);
 
         var shapeStart = function (evt) {
-            var pt = geom.position(evt);
+            var pt = new geom.Position(evt);
             // setup shape
             var p1 = data.imgTrafo.invtransform(pt).toArray();
             var p2 = p1.slice(0);

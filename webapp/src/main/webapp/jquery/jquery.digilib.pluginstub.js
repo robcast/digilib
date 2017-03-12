@@ -63,7 +63,7 @@ digilib plugin stub
         console.debug('installing STUB plugin. digilib:', digilib);
         // import geometry classes
         geom = digilib.fn.geometry;
-        FULL_AREA = geom.rectangle(0,0,1,1);
+        FULL_AREA = new geom.Rectangle(0,0,1,1);
         // add defaults, actions, buttons to the main digilib object
         $.extend(digilib.defaults, defaults);
         $.extend(digilib.actions, actions);

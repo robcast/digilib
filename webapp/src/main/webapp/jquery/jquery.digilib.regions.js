@@ -414,7 +414,7 @@ inner (optional)
         if (pos == null) {
             return null;
             }
-        var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
+        var rect = new geom.Rectangle(pos[0], pos[1], pos[2], pos[3]);
         if (!fn.isNumber(rect.x) || !fn.isNumber(rect.y)) {
             return null;
             }
@@ -498,7 +498,7 @@ inner (optional)
       var ww = data.settings.regionWidth;
       $.each(items, function (index, item) {
         addRegionDiv(data, {
-          rect: geom.rectangle(item.x, item.y, item.w || ww, item.h || ww),
+          rect: new geom.Rectangle(item.x, item.y, item.w || ww, item.h || ww),
           attributes: {'class' : CSS+"regionJSON "+CSS+"overlay", title: item.title },
           index: item.index || index+1
           });
@@ -649,7 +649,7 @@ inner (optional)
         var coords = rg.split(",");
         var regions = $.map(coords, function (coord, index) {
             var pos = coord.split("/", 4);
-            var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
+            var rect = new geom.Rectangle(pos[0], pos[1], pos[2], pos[3]);
             var attr = {'class' : CSS+"regionURL "+CSS+"overlay"};
             var item = {'rect' : rect, 'index' : index+1, 'attributes' : attr};
             return item;
@@ -814,7 +814,7 @@ inner (optional)
         var $elem = data.$elem;
         var settings = data.settings;
         CSS = settings.cssPrefix;
-        FULL_AREA  = geom.rectangle(0, 0, 1, 1);
+        FULL_AREA  = new geom.Rectangle(0, 0, 1, 1);
         // install event handlers
         var $data = $(data);
         $data.on('setup', handleSetup);

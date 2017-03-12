@@ -188,7 +188,7 @@ digilib transparent plugin
             }
         var imgTrafo = data.imgTrafo;
         var $scaler = data.$scaler;
-        var scalerPos = geom.position($scaler);
+        var scalerPos = new geom.Position($scaler);
         var tRect = null;
         var newCss = {};
         $div.css(newCss);
@@ -227,7 +227,7 @@ digilib transparent plugin
         var tc = data.settings.tc;
         if (tc == null) return ;
         var pos = coord.split("/", 4);
-        var rect = geom.rectangle(pos[0], pos[1], pos[2], pos[3]);
+        var rect = new geom.Rectangle(pos[0], pos[1], pos[2], pos[3]);
         return rect;
     };
 
@@ -262,7 +262,7 @@ digilib transparent plugin
         if (fn.slider == null) {
             return console.error('jquery.digilib.sliders.js is needed for transparent plugin')
             }
-        FULL_AREA = geom.rectangle(0,0,1,1);
+        FULL_AREA = new geom.Rectangle(0,0,1,1);
         // add defaults, actions, buttons to the main digilib object
         $.extend(digilib.defaults, defaults);
         $.extend(digilib.actions, actions);

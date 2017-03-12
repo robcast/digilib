@@ -98,7 +98,7 @@
             }
             var deltaX = tdx * factor * za.width;
             var deltaY = tdy * factor * za.height;
-            var delta = geom.position(deltaX, deltaY);
+            var delta = new geom.Position(deltaX, deltaY);
             za.addPosition(delta);
             za = FULL_AREA.fit(za);
             digilib.fn.setZoomArea(data, za);
@@ -113,7 +113,7 @@
         console.debug('installing arrows plugin. digilib:', digilib);
         // import geometry classes
         geom = digilib.fn.geometry;
-        FULL_AREA = geom.rectangle(0, 0, 1, 1);
+        FULL_AREA = new geom.Rectangle(0, 0, 1, 1);
         // add defaults, actions
         $.extend(true, digilib.defaults, defaults); // make deep copy
         $.extend(digilib.buttons, buttons);

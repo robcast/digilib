@@ -134,7 +134,7 @@
             for ( var i = 0; i < pa.length; i++) {
                 var pos = pa[i].split("/");
                 if (pos.length > 1) {
-                    marks.push(geom.position(pos[0], pos[1]));
+                    marks.push(new geom.Position(pos[0], pos[1]));
                 }
             }
         }
@@ -205,7 +205,7 @@
         $scaler.one('mousedown.dlSetMark', function(evt) {
             // event handler adding a new mark
             console.log("setmark at=", evt);
-            var mpos = geom.position(evt);
+            var mpos = new geom.Position(evt);
             var pos = data.imgTrafo.invtransform(mpos);
             data.marks.push(pos);
             digilib.fn.redisplay(data);

@@ -921,7 +921,7 @@
         var coords = shape.geometry.coordinates;
         var last = getLastVertex(shape, vtx);
         // safely assume that screenpos and coords have equal length?
-        var dist = fn.getDistance(data, geom.position(coords[last]), geom.position(coords[vtx]));
+        var dist = fn.getDistance(data, new geom.Position(coords[last]), new geom.Position(coords[vtx]));
         return dist.rectified;
         };
 
@@ -943,7 +943,7 @@
     var rectifiedArea = function(data, shape) {
         var ar = fn.getImgAspectRatio(data);
         var rectifyPoint = function (c) {
-            return geom.position(ar * c[0], c[1]);
+            return new geom.Position(ar * c[0], c[1]);
             };
         var coords = $.map(shape.geometry.coordinates, rectifyPoint);
          // formula for ellipse area
@@ -1215,9 +1215,9 @@
     // initial position of measure bar (bottom left of browser window)
     var setScreenPosition = function(data, $bar) {
         if ($bar == null) return;
-        var barH = geom.rectangle($bar).height;
+        var barH = (new geom.Rectangle($bar)).height;
         var screenH = fn.getFullscreenRect(data).height;
-        geom.position(10, screenH - barH).adjustDiv($bar);
+        new geom.Position(10, screenH - barH).adjustDiv($bar);
     };
 
     // drag measureBar around
@@ -1369,7 +1369,7 @@
                         place.call($s); // place the linestring
                         if (p.length > 2) { // p[2] is the mouse pointer
                             var m1 = p[1].mid(p[2]);
-                            var line = geom.line(m1, p[1]);
+                            var line = new geom.Line(m1, p[1]);
                             var m2 = p[0].copy().add(line.vector());
                             var rad = line.length();
                             $c1.attr({cx: m1.x, cy: m1.y, r: rad});
@@ -1392,7 +1392,7 @@
                         var p = props.screenpos;
                         var vtx = props.vtx;
                         if (p.length > 2) { // p[2] is the mouse pointer
-                            var line1 = geom.line(p[0], p[1]); // base line
+                            var line1 = new geom.Line(p[0], p[1]); // base line
                             var line2 = line1.parallel(p[2]);
                             var p3 = line1.perpendicular().intersection(line2);
                             var p2 = p3.copy().add(line1.vector());
@@ -1432,10 +1432,10 @@
                         var p = props.screenpos;
                         place.call($s); // place the framing rectangle (polygon)
                         if (p.length > 3) { // p[3] is the mouse pointer
-                            var side0 = geom.line(p[0], p[1]) // the sides
-                            var side1 = geom.line(p[1], props.pos[0]);
-                            var side2 = geom.line(props.pos[0], props.pos[1]);
-                            var side3 = geom.line(props.pos[1], p[0]);
+                            var side0 = new geom.Line(p[0], p[1]) // the sides
+                            var side1 = new geom.Line(p[1], props.pos[0]);
+                            var side2 = new geom.Line(props.pos[0], props.pos[1]);
+                            var side3 = new geom.Line(props.pos[1], p[0]);
                             var mid0 = side0.mid(); // the midpoints of the sides
                             var mid1 = side1.mid();
                             var mid2 = side2.mid();
@@ -1447,7 +1447,7 @@
                             if (handle.distance(mid0) > axis2.length()) { // constrain handle
                                 handle.moveTo(mid2);
                             } else if (handle.distance(mid2) > maxDiam) {
-                                handle.moveTo(geom.line(mid2, handle).length(maxDiam).point());
+                                handle.moveTo(new geom.Line(mid2, handle).length(maxDiam).point());
                                 }
                             var m1 = handle.mid(mid2); // centers of the small circles
                             var m2 = axis1.mirror(m1);
@@ -1458,13 +1458,13 @@
                             var md2 = axis2.mirror(md1);
                             var md3 = axis1.mirror(md1);
                             var md4 = axis1.mirror(md2);
-                            var bi = geom.line(rd1, m1).perpendicular(md1); // construct the perpendicular bisector of the connection line
+                            var bi = new geom.Line(rd1, m1).perpendicular(md1); // construct the perpendicular bisector of the connection line
                             var m3 = axis1.intersection(bi); // find the centers of the big circles
                             var m4 = axis2.mirror(m3);
-                            var fp1 = geom.line(m3, m1).addEnd(rad1); // the four fitting points
-                            var fp2 = geom.line(m3, m2).addEnd(rad1);
-                            var fp3 = geom.line(m4, m1).addEnd(rad1);
-                            var fp4 = geom.line(m4, m2).addEnd(rad1);
+                            var fp1 = new geom.Line(m3, m1).addEnd(rad1); // the four fitting points
+                            var fp2 = new geom.Line(m3, m2).addEnd(rad1);
+                            var fp3 = new geom.Line(m4, m1).addEnd(rad1);
+                            var fp4 = new geom.Line(m4, m2).addEnd(rad1);
                             var rad2 = m3.distance(fp1); // radius of the big circles
                             // construct the SVG shapes
                             $c1.attr({cx: m1.x, cy: m1.y, r: rad1});
@@ -1683,7 +1683,7 @@
         console.debug('initialising measure plugin. data:', data);
         var settings = data.settings;
         CSS = settings.cssPrefix+'measure-';
-        FULL_AREA  = geom.rectangle(0, 0, 1, 1);
+        FULL_AREA  = new geom.Rectangle(0, 0, 1, 1);
         // install event handlers
         var $data = $(data);
         $data.on('setup', handleSetup);

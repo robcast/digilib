@@ -304,16 +304,16 @@
 			if (shape.geometry.type === 'Point') {
 				// point needs "x", "y" coordinate members
 				var c = shape.geometry.coordinates;
-				annoshape.geometry = geom.position(c[0]);
+				annoshape.geometry = new geom.Position(c[0]);
 			}
 			if (shape.geometry.type === 'Rectangle') {
 				// rectangle needs "x", "y", "width", "height" coordinate members
 				var c = shape.geometry.coordinates;
-				annoshape.geometry = geom.rectangle(geom.position(c[0]), geom.position(c[1]));
+				annoshape.geometry = new geom.Rectangle(new geom.Position(c[0]), new geom.Position(c[1]));
 			}
 			annoshape.geometry.units = 'fraction';
 			// screen position for annotation editor
-			var pos = geom.position(shape.geometry.coordinates[0]);
+			var pos = new geom.Position(shape.geometry.coordinates[0]);
 			var mpos = data.imgTrafo.transform(pos);
 			console.debug("creating annotation shape:", annoshape);
 			// show annotatorjs edit box
@@ -432,7 +432,7 @@
         if (annotation.areas != null && annotation.shapes == null) {
             console.warn("Annotation uses legacy 'areas' format! Converting...");
             // convert legacy annotation areas into shapes
-            area = geom.rectangle(annotation.areas[0]);
+            area = new geom.Rectangle(annotation.areas[0]);
             annoShape = {
                 'geometry' : area,
                 'type': area.isRectangle() ? 'rectangle' : 'point'
@@ -451,10 +451,10 @@
             type = annoShape.type;
             var coordinates;
             if (type === "point") {
-                area = geom.position(annoShape.geometry);
+                area = new geom.Position(annoShape.geometry);
                 coordinates = [[area.x, area.y]];
             } else if (type === "rectangle") {
-                area = geom.rectangle(annoShape.geometry);
+                area = new geom.Rectangle(annoShape.geometry);
                 var pt1 = area.getPt1();
                 var pt2 = area.getPt2();
                 coordinates = [[pt1.x, pt1.y], [pt2.x, pt2.y]];
@@ -615,7 +615,7 @@
     var zoomToAnnotation = function (data, $div) {
         var settings = data.settings;
         var rect = $div.data('rect');
-        var za = geom.rectangle(rect);
+        var za = new geom.Rectangle(rect);
         var w = settings.annotationAutoWidth;
         if (za.width == null || za.width == 0) za.width = w; 
         if (za.height == null || za.height == 0) za.height = w; 
