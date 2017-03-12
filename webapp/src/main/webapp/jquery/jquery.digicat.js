@@ -2,7 +2,7 @@
  * #%L
  * digilib-webapp
  * %%
- * Copyright (C) 2016 MPIWG Berlin
+ * Copyright (C) 2016-2017 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -36,7 +36,7 @@ function($) {
 
     var defaults = {
         // version of this script
-        'version' : 'jquery.digicat.js 0.1a',
+        'version' : 'jquery.digicat.js 0.2a',
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
@@ -344,14 +344,14 @@ function($) {
         ;
         var imgW = winW - insets.x;
         var imgH = winH - insets.y;
-        return geom.size(imgW, imgH);
+        return new geom.Size(imgW, imgH);
     };
 
     /** 
      * returns a rectangle.with the fullscreen dimensions 
      */
     var getFullscreenRect = function (data) {
-        return geom.rectangle(getFullscreenImgSize(data));
+        return new geom.Rectangle(getFullscreenImgSize(data));
     };
 
     /**
@@ -596,7 +596,7 @@ function($) {
      */
      var centerOnScreen = function (data, $div) {
          if ($div == null) return;
-         var r = geom.rectangle($div);
+         var r = new geom.Rectangle($div);
          var s = getFullscreenRect(data);
          r.setCenter(s.getCenter());
          r.getPosition().adjustDiv($div);

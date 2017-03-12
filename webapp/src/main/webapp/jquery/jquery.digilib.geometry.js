@@ -1013,10 +1013,11 @@
             fn : {}
     };
 
-    // plug into digilib
-    if ($.fn.digilib == null) {
-        $.error("jquery.digilib.geometry must be loaded after jquery.digilib!");
+    // plug into digilib/digicat
+    var pluginhost = $.fn.digilib || $.fn.digicat;
+    if (pluginhost == null) {
+        $.error("jquery.digilib.geometry must be loaded after jquery.digilib/digicat!");
     } else {
-        $.fn.digilib('plugin', plugin);
+        pluginhost('plugin', plugin);
     }
 })(jQuery);
