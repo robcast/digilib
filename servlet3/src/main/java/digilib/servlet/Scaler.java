@@ -142,7 +142,7 @@ public class Scaler extends HttpServlet {
         authzOp = (AuthzOps) dlConfig.getValue(DigilibServletConfiguration.AUTHZ_OP_KEY);
 
         // DocuDirCache instance
-        dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
+        dirCache = (DocuDirCache) dlConfig.getValue(DigilibServletConfiguration.DIR_CACHE_KEY);
 
         // Executor
         imageJobCenter = (DigilibJobCenter<DocuImage>) dlConfig.getValue("servlet.worker.imageexecutor");

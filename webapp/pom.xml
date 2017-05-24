@@ -276,6 +276,17 @@
 				</dependency>
 			</dependencies>
 		</profile>
+        <profile>
+            <id>iiif-presentation</id>
+            <dependencies>
+                <dependency>
+                    <groupId>digilib</groupId>
+                    <artifactId>digilib-iiif-presentation</artifactId>
+                    <type>jar</type>
+                    <scope>compile</scope>
+                </dependency>
+            </dependencies>
+        </profile>
 		<profile>
 			<id>codec-jai</id>
 			<dependencies>

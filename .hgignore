@@ -130,3 +130,5 @@ syntax: regexp
 ^webapp/src/main/webapp/jquery/jquery\.digilib-basic\.js$
 syntax: regexp
 ^webapp/src/main/webapp/jquery/jquery\.digilib-basic\.min\.css$
+syntax: regexp
+^iiif-presentation/target$
