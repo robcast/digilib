@@ -31,7 +31,9 @@ public class ManifestServletConfiguration extends DigilibServletConfiguration {
      */
     public ManifestServletConfiguration() {
         super();
-        // more parameters...
+
+        // Scaler servlet name used in constructing IIIF image API paths
+        newParameter("scaler-servlet-path", "Scaler", null, 'f');
     }
 
     /*

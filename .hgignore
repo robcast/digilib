@@ -132,3 +132,9 @@ syntax: regexp
 ^webapp/src/main/webapp/jquery/jquery\.digilib-basic\.min\.css$
 syntax: regexp
 ^iiif-presentation/target$
+syntax: regexp
+^iiif-presentation/\.settings$
+syntax: regexp
+^iiif-presentation/\.classpath$
+syntax: regexp
+^iiif-presentation/\.project$

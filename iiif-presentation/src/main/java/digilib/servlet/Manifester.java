@@ -71,25 +71,25 @@ public class Manifester extends HttpServlet {
 	DigilibServletConfiguration dlConfig = null;
 
 	/** general logger */
-	Logger logger = Logger.getLogger("digilib.texter");
+	Logger logger = Logger.getLogger("digilib.manifester");
 
 	/** logger for accounting requests */
-	protected static Logger accountlog = Logger.getLogger("account.texter.request");
-
-	/** FileOps instance */
-	FileOps fileOp;
+	protected static Logger accountlog = Logger.getLogger("account.manifester.request");
 
 	/** AuthOps instance */
 	AuthzOps authzOp;
-
-	/** ServletOps instance */
-	ServletOps servletOp;
 
 	/** DocuDirCache instance */
 	DocuDirCache dirCache;
 
 	/** use authentication */
 	boolean useAuthorization = false;
+	
+	/** scaler servlet path */
+	String scalerServletPath;
+
+	/** character for IIIF path separation */
+    private String iiifPathSep;
 
 	/*
 	 * (non-Javadoc)
@@ -117,6 +117,10 @@ public class Manifester extends HttpServlet {
 		authzOp = (AuthzOps) dlConfig.getValue(DigilibServletConfiguration.AUTHZ_OP_KEY);
 		// DocuDirCache instance
 		dirCache = (DocuDirCache) dlConfig.getValue(DigilibServletConfiguration.DIR_CACHE_KEY);
+		// Scaler path
+		scalerServletPath = dlConfig.getAsString("scaler-servlet-path");
+		// IIIF path separator
+		iiifPathSep = dlConfig.getAsString("iiif-slash-replacement");
 	}
 
 	/*
@@ -162,7 +166,15 @@ public class Manifester extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND);
 				return;
 			}
-			/*
+            if (dlDir.size() == 0) {
+                logger.debug("Directory has no files: " + dlFn);
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+
+            ManifestParams params = new ManifestParams();
+
+            /*
 			 * set CORS header ACAO "*" for info response as per IIIF spec
 			 */
 			if (dlConfig.getAsBoolean("iiif-info-cors")) {
@@ -181,32 +193,41 @@ public class Manifester extends HttpServlet {
 			}
 
 			/*
-			 * get manifest URL
+			 * get manifest base URL
 			 */
-			String url = request.getRequestURL().toString();
-			if (url.endsWith("/")) {
-				url = url.substring(0, url.lastIndexOf("/"));
+			String baseurl = request.getRequestURL().toString();
+			// get base URL for Servlets
+			int srvPathLen = request.getServletPath().length() + request.getPathInfo().length();
+			String servletBaseUrl = baseurl.substring(0, baseurl.length() - srvPathLen);
+			// clean manifest base URL
+			if (baseurl.endsWith("/")) {
+				baseurl = baseurl.substring(0, baseurl.length() - 1);
 			}
-
+			// pathInfo = IIIF id with prefix
+			String iiifPath = request.getPathInfo();
+            if (iiifPath.endsWith("/")) {
+                iiifPath = iiifPath.substring(0, iiifPath.length() - 1);
+            }
+			
+			params.manifestUrl = baseurl;
+			params.imgApiUrl = servletBaseUrl +"/" + this.scalerServletPath;
+			params.iiifPath = iiifPath;
+			params.docuDir = dlDir;
+			
 			/*
-			 * create json representation
+			 * start json representation
 			 */
 			ServletOutputStream out = response.getOutputStream();
 			JsonGenerator manifest = Json.createGenerator(out).writeStartObject();
 			/*
 			 * manifest metadata
 			 */
-			writeManifestMeta(dlFn, url, manifest);
+			writeManifestMeta(manifest, dlFn, params);
+			
 			/*
 			 * sequences
 			 */
-			manifest.writeStartArray("sequences");
-			/*
-			 * first sequence
-			 */
-			writeSequence(dlDir, url, manifest);
-			
-			manifest.writeEnd(); // sequences
+			writeSequences(manifest, params);
 			
 			manifest.writeEnd(); // manifest
 			manifest.close();
@@ -216,20 +237,50 @@ public class Manifester extends HttpServlet {
 		}
 	}
 
+    /**
+     * @param manifest
+     * @param dlFn
+     * @param params 
+     */
+    protected void writeManifestMeta(JsonGenerator manifest, String dlFn, ManifestParams params) {
+        manifest.write("@context", "http://iiif.io/api/presentation/2/context.json")
+            .write("@type", "sc:Manifest")
+            .write("@id", params.manifestUrl + "/manifest")
+            .write("label", "(Scanned work " + dlFn + ")")
+            .write("description", "(Automatically generated manifest for scanned work " + dlFn + ")");
+    }
+
+    /**
+     * @param dlDir
+     * @param url
+     * @param manifest
+     * @param servletBaseUrl 
+     */
+    protected void writeSequences(JsonGenerator manifest, ManifestParams params) {
+        manifest.writeStartArray("sequences");
+        /*
+         * first sequence
+         */
+        writeSequence(manifest, params);
+        
+        manifest.writeEnd(); // sequences
+    }
+
 	/**
 	 * @param dlDir
 	 * @param url
 	 * @param manifest
+	 * @param servletUrl 
 	 */
-	protected void writeSequence(DocuDirectory dlDir, String url, JsonGenerator manifest) {
+	protected void writeSequence(JsonGenerator manifest, ManifestParams params) {
 		manifest.writeStartObject()
-			.write("@id", url + "/sequence/default")
+			.write("@id", params.manifestUrl + "/sequence/default")
 			.write("@type", "sc:Sequence")
 			.write("label", "Scan image order");
 		/*
 		 * canvases
 		 */
-		writeCanvases(dlDir, url, manifest);
+		writeCanvases(manifest, params);
 		
 		manifest.writeEnd(); // sequence
 	}
@@ -238,15 +289,16 @@ public class Manifester extends HttpServlet {
 	 * @param dlDir
 	 * @param url
 	 * @param manifest
+	 * @param servletUrl 
 	 */
-	protected void writeCanvases(DocuDirectory dlDir, String url, JsonGenerator manifest) {
+	protected void writeCanvases(JsonGenerator manifest, ManifestParams params) {
 		/*
 		 * list of canvases
 		 */
 		manifest.writeStartArray("canvases");
 		
 		int idx = 0;
-		for (DocuDirent imgFile : dlDir) {
+		for (DocuDirent imgFile : params.docuDir) {
 			idx += 1;
 			ImageFileSet imgFs = (ImageFileSet) imgFile;
 			ImageInput img = imgFs.getBiggest();
@@ -254,7 +306,7 @@ public class Manifester extends HttpServlet {
 			/*
 			 * canvas
 			 */
-			writeCanvas(url, manifest, idx, imgFile, imgSize);
+			writeCanvas(manifest, idx, imgFile, imgSize, params);
 		}
 		
 		manifest.writeEnd(); // canvases
@@ -266,21 +318,23 @@ public class Manifester extends HttpServlet {
 	 * @param idx
 	 * @param imgFile
 	 * @param imgSize
+	 * @param servletUrl 
 	 */
-	protected void writeCanvas(String url, JsonGenerator manifest, int idx, DocuDirent imgFile, ImageSize imgSize) {
-		manifest.writeStartObject()
-			.write("@type", "sc:Canvas")
-			.write("@id", url + "/canvas/p" + idx)
-			.write("label", "image " + imgFile.getName())
-			.write("height", imgSize.getHeight())
-			.write("width", imgSize.getWidth());
-		/*
-		 * images
-		 */
-		writeImages(url, manifest, idx, imgFile, imgSize);
-		
-		manifest.writeEnd(); // canvas
-	}
+    protected void writeCanvas(JsonGenerator manifest, int idx, DocuDirent imgFile, ImageSize imgSize,
+            ManifestParams params) {
+        manifest.writeStartObject()
+            .write("@type", "sc:Canvas")
+            .write("@id", params.manifestUrl + "/canvas/p" + idx)
+            .write("label", "image " + imgFile.getName())
+            .write("height", imgSize.getHeight())
+            .write("width", imgSize.getWidth());
+        /*
+         * images
+         */
+        writeImages(manifest, idx, imgFile, imgSize, params);
+
+        manifest.writeEnd(); // canvas
+    }
 
 	/**
 	 * @param url
@@ -288,19 +342,21 @@ public class Manifester extends HttpServlet {
 	 * @param idx
 	 * @param imgFile
 	 * @param imgSize
+	 * @param servletUrl 
 	 */
-	protected void writeImages(String url, JsonGenerator manifest, int idx, DocuDirent imgFile, ImageSize imgSize) {
-		/*
-		 * list of images (just one)
-		 */
-		manifest.writeStartArray("images");
-		/*
-		 * image
-		 */
-		writeImage(url, manifest, idx, imgFile, imgSize);
-		
-		manifest.writeEnd(); // images
-	}
+    protected void writeImages(JsonGenerator manifest, int idx, DocuDirent imgFile, ImageSize imgSize,
+            ManifestParams params) {
+        /*
+         * list of images (just one)
+         */
+        manifest.writeStartArray("images");
+        /*
+         * image
+         */
+        writeImage(manifest, idx, imgFile, imgSize, params);
+
+        manifest.writeEnd(); // images
+    }
 
 	/**
 	 * @param url
@@ -308,62 +364,71 @@ public class Manifester extends HttpServlet {
 	 * @param idx
 	 * @param imgFile
 	 * @param imgSize
+	 * @param servletUrl 
 	 */
-	protected void writeImage(String url, JsonGenerator manifest, int idx, DocuDirent imgFile, ImageSize imgSize) {
-		manifest.writeStartObject()
-			.write("@type", "oa:Annotation")
-			.write("@id", url + "/annotation/p" + idx + "-image")
-			.write("motivation", "sc:painting");
-		/*
-		 * resource
-		 */
-		writeResource(url, manifest, imgFile, imgSize);
-		
-		manifest.write("on", url + "/canvas/p" + idx)
-			.writeEnd(); // image
-	}
+    protected void writeImage(JsonGenerator manifest, int idx, DocuDirent imgFile, ImageSize imgSize,
+            ManifestParams params) {
+        manifest.writeStartObject()
+            .write("@type", "oa:Annotation")
+            .write("@id", params.manifestUrl + "/annotation/p" + idx + "-image")
+            .write("motivation", "sc:painting");
+        /*
+         * resource
+         */
+        writeResource(manifest, imgFile, imgSize, params);
+
+        manifest.write("on", params.manifestUrl + "/canvas/p" + idx).writeEnd(); // image
+    }
 
 	/**
 	 * @param url
 	 * @param manifest
 	 * @param imgFile
 	 * @param imgSize
+	 * @param servletUrl 
 	 */
-	protected void writeResource(String url, JsonGenerator manifest, DocuDirent imgFile, ImageSize imgSize) {
+    protected void writeResource(JsonGenerator manifest, DocuDirent imgFile, ImageSize imgSize,
+            ManifestParams params) {
+        // base URL for image using IIIF image API
+        String iiifImgBaseUrl = params.imgApiUrl + params.iiifPath + this.iiifPathSep + FileOps.basename(imgFile.getName());
+        // IIIF image parameters
+        String imgUrl = iiifImgBaseUrl + "/full/full/0/default.jpg";
 		manifest.writeStartObject("resource")
-			.write("@id", url + "/" + imgFile.getName())
-			.write("@type", "dctypes:Image");
-		/*
-		 * service
-		 */
-		writeService(manifest);
-		
-		manifest.write("height", imgSize.getHeight())
-			.write("width", imgSize.getWidth())
-			.writeEnd(); // resource
+			.write("@id", imgUrl)
+			.write("@type", "dctypes:Image")
+			.write("format", "image/jpeg")
+		    .write("height", imgSize.getHeight())
+			.write("width", imgSize.getWidth());
+        /*
+         * (iiif) service
+         */
+        writeService(manifest, iiifImgBaseUrl, params);
+        
+        manifest.writeEnd(); // resource
 	}
 
 	/**
 	 * @param manifest
+	 * @param iiifImgBaseUrl 
+	 * @param servletUrl 
 	 */
-	protected void writeService(JsonGenerator manifest) {
+	protected void writeService(JsonGenerator manifest, String iiifImgBaseUrl, ManifestParams params) {
 		manifest.writeStartObject("service")
 			.write("@context", "http://iiif.io/api/image/2/context.json")
-			.write("@id", "digilib-iiif???")
+			.write("@id", iiifImgBaseUrl)
 			.write("profile", "http://iiif.io/api/image/2/profiles/level2.json")
 			.writeEnd(); // service
 	}
 
 	/**
-	 * @param dlFn
-	 * @param url
-	 * @param manifest
+	 * Class holding parameters to construct manifest.
+	 * @author casties
+	 *
 	 */
-	protected void writeManifestMeta(String dlFn, String url, JsonGenerator manifest) {
-		manifest.write("@context", "http://iiif.io/api/presentation/2/context.json")
-			.write("@type", "sc:Manifest")
-			.write("@id", url + "/manifest")
-			.write("label", "(Scanned work " + dlFn + ")");
+	protected class ManifestParams {
+	    public DocuDirectory docuDir;
+        String manifestUrl;
+	    String imgApiUrl;
+	    String iiifPath;	    
 	}
-
 }
