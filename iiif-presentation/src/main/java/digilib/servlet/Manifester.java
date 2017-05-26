@@ -428,6 +428,9 @@ public class Manifester extends HttpServlet {
 	 */
     protected void writeImage(JsonGenerator manifest, int idx, DocuDirent imgFile, ImageSize imgSize,
             ManifestParams params) {
+        /*
+         * image
+         */        
         manifest.writeStartObject()
             .write("@type", "oa:Annotation")
             .write("@id", params.manifestUrl + "/annotation/p" + idx + "-image")
@@ -437,7 +440,8 @@ public class Manifester extends HttpServlet {
          */
         writeResource(manifest, imgFile, imgSize, params);
 
-        manifest.write("on", params.manifestUrl + "/canvas/p" + idx).writeEnd(); // image
+        manifest.write("on", params.manifestUrl + "/canvas/p" + idx)
+            .writeEnd(); // image
     }
 
 	/**
@@ -453,6 +457,9 @@ public class Manifester extends HttpServlet {
         String iiifImgBaseUrl = params.imgApiUrl + "/" + params.identifier + this.iiifPathSep + FileOps.basename(imgFile.getName());
         // IIIF image parameters
         String imgUrl = iiifImgBaseUrl + "/full/full/0/default.jpg";
+        /*
+         * resource
+         */
 		manifest.writeStartObject("resource")
 			.write("@id", imgUrl)
 			.write("@type", "dctypes:Image")
@@ -462,7 +469,7 @@ public class Manifester extends HttpServlet {
         /*
          * (iiif) service
          */
-        writeService(manifest, iiifImgBaseUrl, params);
+        writeService(manifest, iiifImgBaseUrl, imgSize, params);
         
         manifest.writeEnd(); // resource
 	}
@@ -470,13 +477,30 @@ public class Manifester extends HttpServlet {
 	/**
 	 * @param manifest
 	 * @param iiifImgBaseUrl 
+	 * @param imgSize 
 	 * @param servletUrl 
 	 */
-	protected void writeService(JsonGenerator manifest, String iiifImgBaseUrl, ManifestParams params) {
+    protected void writeService(JsonGenerator manifest, String iiifImgBaseUrl, ImageSize imgSize,
+            ManifestParams params) {
+	    /*
+	     * service
+	     */
 		manifest.writeStartObject("service")
 			.write("@context", "http://iiif.io/api/image/2/context.json")
 			.write("@id", iiifImgBaseUrl)
 			.write("profile", "http://iiif.io/api/image/2/profiles/level2.json")
+			// maximum size
+            .write("height", imgSize.getHeight())
+            .write("width", imgSize.getWidth())
+            /* other sizes
+            .writeStartArray("sizes")
+            .writeStartObject()
+            .write("width", 100)
+            .write("height", 100)
+            .writeEnd() // size
+            .writeEnd() // sizes
+            */
+            
 			.writeEnd(); // service
 	}
 
