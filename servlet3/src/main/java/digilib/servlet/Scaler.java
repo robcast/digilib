@@ -260,8 +260,14 @@ public class Scaler extends HttpServlet {
                 return;
             }
             if (dlRequest.hasOption(DigilibOption.redirect_info)) {
+            	StringBuffer url = request.getRequestURL();
+            	if (url.toString().endsWith("/")) {
+            		url.append("info.json");
+            	} else {
+            		url.append("/info.json");
+            	}
                 // TODO: the redirect should have code 303
-                response.sendRedirect("info.json");
+                response.sendRedirect(url.toString());
                 return;
             }
 
