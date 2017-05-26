@@ -28,6 +28,8 @@ package digilib.servlet;
  */
 
 import java.io.IOException;
+import java.util.EnumSet;
+import java.util.List;
 
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
@@ -41,7 +43,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
+import digilib.auth.AuthOpException;
 import digilib.auth.AuthzOps;
+import digilib.conf.DigilibRequest.ParsingOption;
 import digilib.conf.DigilibServletConfiguration;
 import digilib.conf.DigilibServletRequest;
 import digilib.conf.ManifestServletConfiguration;
@@ -123,6 +127,36 @@ public class Manifester extends HttpServlet {
 		iiifPathSep = dlConfig.getAsString("iiif-slash-replacement");
 	}
 
+    /**
+     * Returns modification time relevant to the request for caching.
+     * 
+     * @see javax.servlet.http.HttpServlet#getLastModified(javax.servlet.http.HttpServletRequest)
+     */
+    public long getLastModified(HttpServletRequest request) {
+        accountlog.debug("GetLastModified from " + request.getRemoteAddr() + " for " + request.getQueryString());
+        long mtime = -1;
+        try {
+            // create new digilib request
+			DigilibServletRequest dlRequest = new DigilibServletRequest(request, dlConfig,
+					EnumSet.of(ParsingOption.omitIiifImageApi));
+			// get list of IIIF parameters
+			@SuppressWarnings("unchecked")
+			List<String> iiifParams = (List<String>) dlRequest.getValue("request.iiif.elements");
+			// get identifier (first parameter)
+			String identifier = iiifParams.get(0);
+			// decode identifier to file path
+			dlRequest.setValueFromString("fn", dlRequest.decodeIiifIdentifier(identifier));
+            DocuDirectory dd = dirCache.getDirectory(dlRequest.getFilePath());
+            if (dd != null) {
+                mtime = dd.getDirMTime() / 1000 * 1000;
+            }
+        } catch (Exception e) {
+            logger.error("error in getLastModified: " + e.getMessage());
+        }
+        logger.debug("  returns " + mtime);
+        return mtime;
+    }
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -150,13 +184,27 @@ public class Manifester extends HttpServlet {
 	}
 
 	protected void processRequest(HttpServletRequest request, HttpServletResponse response) {
-
-		/*
-		 * request parameters
-		 */
-		// create new request with defaults
-		DigilibServletRequest dlRequest = new DigilibServletRequest(request, dlConfig);
 		try {
+			// create DigilibRequest from ServletRequest, omit IIIF Image API parsing
+			DigilibServletRequest dlRequest = new DigilibServletRequest(request, dlConfig,
+					EnumSet.of(ParsingOption.omitIiifImageApi));
+			// get list of IIIF parameters
+			@SuppressWarnings("unchecked")
+			List<String> iiifParams = (List<String>) dlRequest.getValue("request.iiif.elements");
+			if (iiifParams == null) {
+				logger.error("Invalid IIIF request.");
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid IIIF request.");
+				return;
+			}
+			// get identifier (first parameter)
+			String identifier = iiifParams.get(0);
+			if (identifier == null) {
+				logger.error("IIIF identifier missing");
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "IIIF identifier missing.");
+				return;
+			}
+			// decode identifier to file path
+			dlRequest.setValueFromString("fn", dlRequest.decodeIiifIdentifier(identifier));
 			// get directory path
 			String dlFn = dlRequest.getFilePath();
 			// get information about the directory
@@ -184,6 +232,18 @@ public class Manifester extends HttpServlet {
 				}
 			}
 
+            /*
+             * check permissions
+             */
+            if (useAuthorization) {
+                // is the current request/user authorized?
+                if (!authzOp.isAuthorized(dlRequest)) {
+                	// TODO: does this work for directories?
+                    // send deny answer and abort
+                    throw new AuthOpException("Access denied!");
+                }
+            }
+
 			// use JSON-LD content type only when asked
 			String accept = request.getHeader("Accept");
 			if (accept != null && accept.contains("application/ld+json")) {
@@ -195,23 +255,16 @@ public class Manifester extends HttpServlet {
 			/*
 			 * get manifest base URL
 			 */
-			String baseurl = request.getRequestURL().toString();
+			String url = request.getRequestURL().toString();
 			// get base URL for Servlets
 			int srvPathLen = request.getServletPath().length() + request.getPathInfo().length();
-			String servletBaseUrl = baseurl.substring(0, baseurl.length() - srvPathLen);
-			// clean manifest base URL
-			if (baseurl.endsWith("/")) {
-				baseurl = baseurl.substring(0, baseurl.length() - 1);
-			}
-			// pathInfo = IIIF id with prefix
-			String iiifPath = request.getPathInfo();
-            if (iiifPath.endsWith("/")) {
-                iiifPath = iiifPath.substring(0, iiifPath.length() - 1);
-            }
+			String servletBaseUrl = url.substring(0, url.length() - srvPathLen);
+			// manifest base URL
+			String baseurl = servletBaseUrl + request.getServletPath() + "/" + dlConfig.getAsString("iiif-prefix") + "/" + identifier;
 			
 			params.manifestUrl = baseurl;
-			params.imgApiUrl = servletBaseUrl +"/" + this.scalerServletPath;
-			params.iiifPath = iiifPath;
+			params.imgApiUrl = servletBaseUrl +"/" + this.scalerServletPath + "/" + dlConfig.getAsString("iiif-prefix");
+			params.identifier = identifier;
 			params.docuDir = dlDir;
 			
 			/*
@@ -234,6 +287,13 @@ public class Manifester extends HttpServlet {
 
 		} catch (IOException e) {
 			logger.error("ERROR sending manifest: ", e);
+		} catch (AuthOpException e) {
+			logger.debug("Permission denied.");
+			try {
+				response.sendError(HttpServletResponse.SC_FORBIDDEN);
+			} catch (IOException e1) {
+				logger.error("Error sending error: ", e);
+			}
 		}
 	}
 
@@ -325,7 +385,7 @@ public class Manifester extends HttpServlet {
         manifest.writeStartObject()
             .write("@type", "sc:Canvas")
             .write("@id", params.manifestUrl + "/canvas/p" + idx)
-            .write("label", "image " + imgFile.getName())
+            .write("label", "image " + FileOps.basename(imgFile.getName()))
             .write("height", imgSize.getHeight())
             .write("width", imgSize.getWidth());
         /*
@@ -390,7 +450,7 @@ public class Manifester extends HttpServlet {
     protected void writeResource(JsonGenerator manifest, DocuDirent imgFile, ImageSize imgSize,
             ManifestParams params) {
         // base URL for image using IIIF image API
-        String iiifImgBaseUrl = params.imgApiUrl + params.iiifPath + this.iiifPathSep + FileOps.basename(imgFile.getName());
+        String iiifImgBaseUrl = params.imgApiUrl + "/" + params.identifier + this.iiifPathSep + FileOps.basename(imgFile.getName());
         // IIIF image parameters
         String imgUrl = iiifImgBaseUrl + "/full/full/0/default.jpg";
 		manifest.writeStartObject("resource")
@@ -429,6 +489,6 @@ public class Manifester extends HttpServlet {
 	    public DocuDirectory docuDir;
         String manifestUrl;
 	    String imgApiUrl;
-	    String iiifPath;	    
+	    String identifier;	    
 	}
 }
