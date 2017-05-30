@@ -41,6 +41,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
+import digilib.conf.DigilibServletConfiguration;
 import digilib.conf.DigilibServletRequest;
 import digilib.image.DocuImage;
 import digilib.image.ImageOpException;
@@ -52,16 +53,39 @@ import digilib.util.ImageSize;
 
 public class ServletOps {
 
-    private static Logger logger = Logger.getLogger("servlet.op");
+    protected static Logger logger = Logger.getLogger("servlet.op");
+    
+    protected static DigilibServletConfiguration dlConfig;
+    
+    /** set CORS header ACAO* for info requests */
+    protected static boolean corsForInfoRequests = true;
+
+    /** set CORS header ACAO* for image requests */
+    protected static boolean corsForImageRequests = true;
 
     /**
+	 * @return the dlConfig
+	 */
+	public static DigilibServletConfiguration getDlConfig() {
+		return dlConfig;
+	}
+
+	/**
+	 * @param dlConfig the dlConfig to set
+	 */
+	public static void setDlConfig(DigilibServletConfiguration dlConfig) {
+		ServletOps.dlConfig = dlConfig;
+		corsForInfoRequests = dlConfig.getAsBoolean("iiif-info-cors");
+		corsForImageRequests = dlConfig.getAsBoolean("iiif-image-cors");
+	}
+
+	/**
      * convert a string with a list of pathnames into an array of strings using
      * the system's path separator string
      */
     public static String[] getPathArray(String paths) {
         // split list into directories
-        StringTokenizer dirs = new StringTokenizer(paths,
-                java.io.File.pathSeparator);
+		StringTokenizer dirs = new StringTokenizer(paths, java.io.File.pathSeparator);
         int n = dirs.countTokens();
         if (n < 1) {
             return null;
@@ -247,6 +271,9 @@ public class ServletOps {
     		logger.error("No response!");
     		return;
     	}
+    	/*
+    	 * set content-type
+    	 */
         if (mt == null) {
             // auto-detect mime-type
             mt = FileOps.mimeForFile(f);
@@ -255,7 +282,6 @@ public class ServletOps {
             }
         }
         response.setContentType(mt);
-        // open file
         if (mt.startsWith("application")) {
             if (name == null) {
                 // no download name -- use filename
@@ -263,7 +289,19 @@ public class ServletOps {
             }
             response.addHeader("Content-Disposition", "attachment; filename=\""+name+"\"");
         }
-        FileInputStream inFile = null;
+
+        /*
+		 * set CORS header ACAO "*" for image response
+		 */
+		if (corsForImageRequests) {
+			// TODO: would be nice to check request for Origin header
+			response.setHeader("Access-Control-Allow-Origin", "*");
+		}
+
+        /*
+         * open file
+         */
+		FileInputStream inFile = null;
         try {
             inFile = new FileInputStream(f);
             OutputStream outStream = response.getOutputStream();
@@ -314,9 +352,8 @@ public class ServletOps {
      * @throws ImageOpException
      * @throws ServletException Exception on sending data.
      */
-    public static void sendImage(DocuImage img, String mimeType,
-            HttpServletResponse response, Logger logger) throws ImageOpException,
-            ServletException {
+	public static void sendImage(DocuImage img, String mimeType, HttpServletResponse response, Logger logger)
+			throws ImageOpException, ServletException {
     	if (response == null) {
     		logger.error("No response!");
     		return;
@@ -353,6 +390,15 @@ public class ServletOps {
             	return;
             }
             
+
+            /*
+    		 * set CORS header ACAO "*" for image response
+    		 */
+    		if (corsForImageRequests) {
+    			// TODO: would be nice to check request for Origin header
+    			response.setHeader("Access-Control-Allow-Origin", "*");
+    		}
+
             /*
              * write the image
              */
@@ -377,7 +423,8 @@ public class ServletOps {
      * @throws ServletException
      * @see <a href="http://www-sul.stanford.edu/iiif/image-api/1.1/#info">IIIF Image Information Request</a>
      */
-    public static void sendIiifInfo(DigilibServletRequest dlReq, HttpServletResponse response, Logger logger) throws ServletException {
+	public static void sendIiifInfo(DigilibServletRequest dlReq, HttpServletResponse response, Logger logger)
+			throws ServletException {
         if (response == null) {
             logger.error("No response!");
             return;
@@ -421,7 +468,7 @@ public class ServletOps {
             /*
              * set CORS header ACAO "*" for info response as per IIIF spec
              */
-            if (dlReq.getDigilibConfig().getAsBoolean("iiif-info-cors")) {
+            if (corsForInfoRequests) {
                 String origin = dlReq.getServletRequest().getHeader("Origin");
                 if (origin != null) {
                     response.setHeader("Access-Control-Allow-Origin", "*");
@@ -429,7 +476,7 @@ public class ServletOps {
             }
             
             PrintWriter writer;
-            if (dlReq.getDigilibConfig().getAsString("iiif-api-version").startsWith("2.")) {
+            if (dlConfig.getAsString("iiif-api-version").startsWith("2.")) {
                 /*
                  * IIIF Image API version 2 image information
                  */

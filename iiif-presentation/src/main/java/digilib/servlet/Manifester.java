@@ -3,7 +3,7 @@ package digilib.servlet;
 /*
  * #%L
  * 
- * Texter.java -- Servlet for displaying text
+ * Manifester.java -- Servlet for creating IIIF Presentation API manifests.
  * 
  * Digital Image Library servlet components
  * %%
@@ -58,7 +58,7 @@ import digilib.io.ImageInput;
 import digilib.util.ImageSize;
 
 /**
- * Servlet for displaying text
+ * Servlet for creating IIIF Presentation API manifests.
  * 
  * 
  * @author casties
@@ -69,31 +69,34 @@ public class Manifester extends HttpServlet {
 	private static final long serialVersionUID = 6678666342141409868L;
 
 	/** Servlet version */
-	public static String tlVersion = ManifestServletConfiguration.getClassVersion();
+	public static String mfVersion = ManifestServletConfiguration.getClassVersion();
 
 	/** DigilibConfiguration instance */
-	DigilibServletConfiguration dlConfig = null;
+	protected DigilibServletConfiguration dlConfig = null;
 
 	/** general logger */
-	Logger logger = Logger.getLogger("digilib.manifester");
+	protected Logger logger = Logger.getLogger("digilib.manifester");
 
 	/** logger for accounting requests */
 	protected static Logger accountlog = Logger.getLogger("account.manifester.request");
 
 	/** AuthOps instance */
-	AuthzOps authzOp;
+	protected AuthzOps authzOp;
 
 	/** DocuDirCache instance */
-	DocuDirCache dirCache;
+	protected DocuDirCache dirCache;
 
 	/** use authentication */
-	boolean useAuthorization = false;
+	protected boolean useAuthorization = false;
 	
 	/** scaler servlet path */
-	String scalerServletPath;
+	protected String scalerServletPath;
 
 	/** character for IIIF path separation */
-    private String iiifPathSep;
+	protected String iiifPathSep;
+
+    /** set CORS header ACAO* for info requests */
+    protected boolean corsForInfoRequests = true;
 
 	/*
 	 * (non-Javadoc)
@@ -103,7 +106,7 @@ public class Manifester extends HttpServlet {
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 
-		System.out.println("***** Digital Image Library IIF Manifest Servlet (version " + tlVersion + ") *****");
+		System.out.println("***** Digital Image Library IIF Manifest Servlet (version " + mfVersion + ") *****");
 
 		// get our ServletContext
 		ServletContext context = config.getServletContext();
@@ -114,7 +117,7 @@ public class Manifester extends HttpServlet {
 			throw new ServletException("No Configuration!");
 		}
 		// say hello in the log file
-		logger.info("***** Digital Image Library IIIF Manifest Servlet (version " + tlVersion + ") *****");
+		logger.info("***** Digital Image Library IIIF Manifest Servlet (version " + mfVersion + ") *****");
 
 		// set our AuthOps
 		useAuthorization = dlConfig.getAsBoolean("use-authorization");
@@ -125,6 +128,8 @@ public class Manifester extends HttpServlet {
 		scalerServletPath = dlConfig.getAsString("scaler-servlet-path");
 		// IIIF path separator
 		iiifPathSep = dlConfig.getAsString("iiif-slash-replacement");
+		// CORS for info requests
+		corsForInfoRequests = dlConfig.getAsBoolean("iiif-info-cors");
 	}
 
     /**
@@ -225,7 +230,7 @@ public class Manifester extends HttpServlet {
             /*
 			 * set CORS header ACAO "*" for info response as per IIIF spec
 			 */
-			if (dlConfig.getAsBoolean("iiif-info-cors")) {
+			if (corsForInfoRequests) {
 				String origin = request.getHeader("Origin");
 				if (origin != null) {
 					response.setHeader("Access-Control-Allow-Origin", "*");

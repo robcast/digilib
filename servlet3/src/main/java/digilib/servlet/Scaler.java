@@ -42,7 +42,6 @@ import org.apache.log4j.Logger;
 
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthzOps;
-import digilib.conf.DigilibConfiguration;
 import digilib.conf.DigilibOption;
 import digilib.conf.DigilibServlet3Configuration;
 import digilib.conf.DigilibServletConfiguration;
@@ -104,7 +103,7 @@ public class Scaler extends HttpServlet {
     protected boolean sendFileAllowed = true;
 
     /** DigilibConfiguration instance */
-    protected DigilibConfiguration dlConfig;
+    protected DigilibServletConfiguration dlConfig;
 
     /** use authorization database */
     protected boolean useAuthorization = false;
@@ -147,6 +146,9 @@ public class Scaler extends HttpServlet {
         // Executor
         imageJobCenter = (DigilibJobCenter<DocuImage>) dlConfig.getValue("servlet.worker.imageexecutor");
 
+        // configure ServletOps
+        ServletOps.setDlConfig(dlConfig);
+        
         denyImgFile = ServletOps.getFile(dlConfig.getAsFile("denied-image"), context);
         errorImgFile = ServletOps.getFile(dlConfig.getAsFile("error-image"), context);
         notfoundImgFile = ServletOps.getFile(dlConfig.getAsFile("notfound-image"), context);
