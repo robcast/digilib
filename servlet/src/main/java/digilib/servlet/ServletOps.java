@@ -225,6 +225,7 @@ public class ServletOps {
      * The local file is copied to the <code>OutputStream</code> of the
      * <code>ServletResponse</code>. If mt is null then the mime-type is
      * auto-detected with mimeForFile.
+     * 
      * @param f
      *            Image file to be sent.
      * @param mt
@@ -342,6 +343,7 @@ public class ServletOps {
             }
             // set the content type
             response.setContentType(mimeType);
+            // check content type
             String respType = response.getContentType();
             if (! mimeType.equals(respType)) {
             	// this shouldn't happen
