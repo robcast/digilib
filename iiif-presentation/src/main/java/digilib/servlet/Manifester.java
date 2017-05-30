@@ -311,8 +311,8 @@ public class Manifester extends HttpServlet {
         manifest.write("@context", "http://iiif.io/api/presentation/2/context.json")
             .write("@type", "sc:Manifest")
             .write("@id", params.manifestUrl + "/manifest")
-            .write("label", "(Scanned work " + dlFn + ")")
-            .write("description", "(Automatically generated manifest for scanned work " + dlFn + ")");
+            .write("label", "[Scanned work " + dlFn + "]")
+            .write("description", "[Automatically generated manifest for scanned work " + dlFn + "]");
     }
 
     /**
