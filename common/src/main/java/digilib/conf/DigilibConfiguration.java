@@ -97,7 +97,7 @@ public class DigilibConfiguration extends ParameterMap {
         // prefix for IIIF image API paths (used by DigilibRequest)
         newParameter("iiif-prefix", "IIIF", null, 'f');
         // IIIF Image API version to support (mostly relevant for info.json)
-        newParameter("iiif-api-version", "2.0", null, 'f');        
+        newParameter("iiif-api-version", "2.1", null, 'f');        
         // character to use as slash-replacement in IIIF identifier part
         newParameter("iiif-slash-replacement", "!", null, 'f');        
     }
