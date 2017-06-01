@@ -67,6 +67,10 @@
         <servlet-name>Manifester</servlet-name>
         <url-pattern>/servlet/Manifester/*</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Manifester</servlet-name>
+        <url-pattern>/Manifester/*</url-pattern>
+    </servlet-mapping>
 
 
   
