@@ -30,6 +30,7 @@ package digilib.io;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import digilib.conf.DigilibConfiguration;
@@ -47,7 +48,7 @@ import digilib.meta.MetaFactory;
  * 
  * @author casties
  */
-public abstract class DocuDirectory extends Directory {
+public abstract class DocuDirectory extends Directory implements Iterable<DocuDirent> {
 
     /** type of files in this DocuDirectory */
     protected FileClass fileClass = FileClass.IMAGE;
@@ -346,6 +347,15 @@ public abstract class DocuDirectory extends Directory {
 
     public DirMeta getMeta() {
         return meta;
+    }
+    
+    /**
+     * Returns an Iterator over all DocuDirents in this DocuDirectory in default order.
+     * 
+     * @return
+     */
+    public Iterator<DocuDirent> iterator() {
+    	return files.iterator();
     }
 
     private boolean isBasenameInList(List<DocuDirent> fileList, int idx, String fn) {

@@ -130,7 +130,7 @@ public class ParameterMap {
 	
 	/** Get the Parameter with the corresponding key.
 	 * 
-	 * Returns null if no element is associated with key.
+	 * Returns empty string if no element is associated with key.
 	 * 
 	 * @param key
 	 * @return
@@ -142,7 +142,7 @@ public class ParameterMap {
 
 	/** Get the Parameter with the corresponding key.
 	 * 
-	 * Returns null if no element is associated with key.
+	 * Returns 0 if no element is associated with key.
 	 * 
 	 * @param key
 	 * @return
@@ -154,7 +154,7 @@ public class ParameterMap {
 
 	/** Get the Parameter with the corresponding key.
 	 * 
-	 * Returns null if no element is associated with key.
+	 * Returns 0 if no element is associated with key.
 	 * 
 	 * @param key
 	 * @return
@@ -166,7 +166,7 @@ public class ParameterMap {
 
 	/** Get the Parameter with the corresponding key.
 	 * 
-	 * Returns null if no element is associated with key.
+	 * Returns false if no element is associated with key.
 	 * 
 	 * @param key
 	 * @return
