@@ -472,8 +472,14 @@ public class DigilibRequest extends ParameterMap {
                 // info request
                 options.setOption(DigilibOption.info);
                 return true;
+                
             } else if (region.equals("full")) {
-                // full image -- default
+                // full image -- digilib default
+            	
+            } else if (region.equals("square")) {
+                // "squared" crop of full image (square of shortest side length)
+            	options.setOption(DigilibOption.sqarea);
+            	
             } else if (region.startsWith("pct:")) {
                 // pct:x,y,w,h -- region in % of original image
                 String[] parms = region.substring(4).split(",");
@@ -522,6 +528,14 @@ public class DigilibRequest extends ParameterMap {
                  */
                 options.setOption(DigilibOption.ascale);
                 setValue("scale", 1f);
+                
+            } else if (size.equals("max")) {
+                /*
+                 * max -- size of original unless constrained by max image size or area
+                 */
+                options.setOption(DigilibOption.ascale);
+                setValue("scale", 1f);
+                // TODO: check with max image size
                 
             } else if (size.startsWith("pct:")) {
                 /*

@@ -503,7 +503,12 @@ public class ServletOps {
                 writer.println("  {");
                 writer.println("    \"formats\" : [\"jpg\", \"png\"],");
                 writer.println("    \"qualities\" : [\"color\", \"gray\"],");
-                writer.println("    \"supports\" : [\"mirroring\", \"rotationArbitrary\", \"sizeAboveFull\"]");
+                if (dlConfig.getAsInt("max-image-size") > 0) {
+                	writer.println("    \"maxArea\" : " + dlConfig.getAsInt("max-image-size") + ",");
+                }
+                writer.println("    \"supports\" : ["
+                		+ "\"mirroring\", \"rotationArbitrary\", \"sizeAboveFull\", \"regionSquare\""
+                		+ "]");
                 writer.println("  }]");
                 // add sizes of prescaled images
                 int numImgs = imageSet.size();

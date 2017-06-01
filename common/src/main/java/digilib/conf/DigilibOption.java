@@ -92,6 +92,10 @@ public enum DigilibOption {
 	 * image.
 	 */
 	pxarea,
+	/**
+	 * select square image region from the full image (short side of the image)^2. 
+	 */
+	sqarea,
 	/** send IIIF image info (instead of image). */
 	info,
 	/** send redirect to IIIF image info URI */

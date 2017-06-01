@@ -897,6 +897,17 @@ public class ImageJobDescription extends ParameterMap {
         		// area in absolute pixels - convert to relative
         		hiresSize = getHiresSize();
         		paramWW = paramWW / hiresSize.getWidth(); 
+        	} else if (hasOption(DigilibOption.sqarea)) {
+        		// square full size area
+        		hiresSize = getHiresSize();
+        		float aspect = hiresSize.getAspect();
+				if (aspect < 1) {
+        			// portrait
+        			paramWW = 1f;
+        		} else {
+        			// landscape
+        			paramWW = 1f / aspect;
+        		}
         	}
         }
         return paramWW;
@@ -918,6 +929,17 @@ public class ImageJobDescription extends ParameterMap {
         		// area in absolute pixels - convert to relative
         		hiresSize = getHiresSize();
         		paramWH = paramWH / hiresSize.getHeight(); 
+        	} else if (hasOption(DigilibOption.sqarea)) {
+        		// square full size area
+        		hiresSize = getHiresSize();
+        		float aspect = hiresSize.getAspect();
+				if (aspect < 1) {
+        			// portrait
+        			paramWH = aspect;
+        		} else {
+        			// landscape
+        			paramWH = 1f;
+        		}
         	}
         }
         return paramWH;
@@ -939,6 +961,17 @@ public class ImageJobDescription extends ParameterMap {
         		// area in absolute pixels - convert to relative
         		ImageSize imgSize = getHiresSize();
         		paramWX = paramWX / imgSize.getWidth(); 
+        	} else if (hasOption(DigilibOption.sqarea)) {
+        		// square full size area
+        		hiresSize = getHiresSize();
+        		float aspect = hiresSize.getAspect();
+				if (aspect < 1) {
+        			// portrait
+        			paramWX = 0f;
+        		} else {
+        			// landscape
+        			paramWX = (1f - (1f / aspect)) / 2f;
+        		}
         	}
         }
         return paramWX;
@@ -960,6 +993,17 @@ public class ImageJobDescription extends ParameterMap {
         		// area in absolute pixels - convert to relative
         		ImageSize imgSize = getHiresSize();
         		paramWY = paramWY / imgSize.getHeight(); 
+        	} else if (hasOption(DigilibOption.sqarea)) {
+        		// square full size area
+        		hiresSize = getHiresSize();
+        		float aspect = hiresSize.getAspect();
+				if (aspect < 1) {
+        			// portrait
+        			paramWY = (1f - aspect) / 2f;
+        		} else {
+        			// landscape
+        			paramWY = 0f;
+        		}
         	}
         }
         return paramWY;
