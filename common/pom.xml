@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>digilib</artifactId>
 		<groupId>digilib</groupId>
-		<version>2.5.1</version>
+		<version>2.5.3</version>
 	</parent>
 	
 	<artifactId>digilib-common</artifactId>
