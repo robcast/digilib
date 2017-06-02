@@ -1,1 +1,0 @@
-../../../../target/digilib-webapp-2.5-SNAPSHOT/jquery/jquery.digilib-auth.js
