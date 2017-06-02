@@ -147,6 +147,9 @@ public class Scaler extends HttpServlet {
         // Executor
         imageJobCenter = (DigilibJobCenter<DocuImage>) dlConfig.getValue("servlet.worker.imageexecutor");
 
+        // configure ServletOps
+        ServletOps.setDlConfig(dlConfig);
+        
         denyImgFile = ServletOps.getFile(dlConfig.getAsFile("denied-image"), context);
         errorImgFile = ServletOps.getFile(dlConfig.getAsFile("error-image"), context);
         notfoundImgFile = ServletOps.getFile(dlConfig.getAsFile("notfound-image"), context);

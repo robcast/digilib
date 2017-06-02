@@ -62,28 +62,25 @@ public class Texter extends HttpServlet {
 	public static String tlVersion = TextServletConfiguration.getClassVersion();
 
 	/** DigilibConfiguration instance */
-	DigilibServletConfiguration dlConfig = null;
+	protected DigilibServletConfiguration dlConfig = null;
 
 	/** general logger */
-	Logger logger = Logger.getLogger("digilib.texter");
+	protected Logger logger = Logger.getLogger("digilib.texter");
 
     /** logger for accounting requests */
     protected static Logger accountlog = Logger.getLogger("account.texter.request");
 
 	/** FileOps instance */
-	FileOps fileOp;
+    protected FileOps fileOp;
 
 	/** AuthOps instance */
-	AuthzOps authzOp;
-
-	/** ServletOps instance */
-	ServletOps servletOp;
+    protected AuthzOps authzOp;
 
 	/** DocuDirCache instance */
-	DocuDirCache dirCache;
+    protected DocuDirCache dirCache;
 
 	/** use authentication */
-	boolean useAuthorization = false;
+    protected boolean useAuthorization = false;
 
 	/*
 	 * (non-Javadoc)
@@ -113,6 +110,8 @@ public class Texter extends HttpServlet {
 		authzOp = (AuthzOps) dlConfig.getValue(DigilibServletConfiguration.AUTHZ_OP_KEY);
 		// DocuDirCache instance
 		dirCache = (DocuDirCache) dlConfig.getValue(TextServletConfiguration.TEXT_DIR_CACHE_KEY);
+        // configure ServletOps
+        ServletOps.setDlConfig(dlConfig);        
 	}
 
 	/*
@@ -192,7 +191,7 @@ public class Texter extends HttpServlet {
 	 * @return The wanted Textfile or null if there wasn't a file.
 	 */
 
-	private TextFile getTextFile(DigilibServletRequest dlRequest, String subDirectory) {
+	protected TextFile getTextFile(DigilibServletRequest dlRequest, String subDirectory) {
 		String loadPathName = dlRequest.getFilePath() + subDirectory;
 		// find the file(set)
 		return (TextFile) dirCache.getFile(loadPathName, dlRequest.getAsInt("pn"));

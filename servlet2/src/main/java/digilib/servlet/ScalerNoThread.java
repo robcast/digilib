@@ -130,6 +130,9 @@ public class ScalerNoThread extends HttpServlet {
         // DocuDirCache instance
         dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 
+        // configure ServletOps
+        ServletOps.setDlConfig(dlConfig);
+        
         denyImgFile = ServletOps.getFile((File) dlConfig.getValue("denied-image"), context);
         errorImgFile = ServletOps.getFile((File) dlConfig.getValue("error-image"), context);
         notfoundImgFile = ServletOps.getFile((File) dlConfig.getValue("notfound-image"), context);

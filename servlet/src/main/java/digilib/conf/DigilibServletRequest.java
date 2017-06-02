@@ -1,5 +1,7 @@
 package digilib.conf;
 
+import java.util.EnumSet;
+
 /*
  * #%L
  * DigilibRequest.java
@@ -73,7 +75,6 @@ public class DigilibServletRequest extends DigilibRequest {
      * ServletRequest. All undefined parameters are set to default values.
      * 
      * @param request
-     * @throws ImageOpException 
      */
     public DigilibServletRequest(HttpServletRequest request) {
         super();
@@ -86,10 +87,26 @@ public class DigilibServletRequest extends DigilibRequest {
      * ServletRequest. All undefined parameters are set to default values.
      * 
      * @param request
-     * @throws ImageOpException 
+     * @param config
      */
     public DigilibServletRequest(HttpServletRequest request, DigilibConfiguration config) {
         super(config);
+        setWithRequest(request);
+        initOptions();
+    }
+
+    /**
+     * Creates a new instance of DigilibRequest with parameters from a
+     * ServletRequest. All undefined parameters are set to default values.
+     * 
+     * @param request
+     * @param config
+     * @param parsingOptions
+     */
+	public DigilibServletRequest(HttpServletRequest request, DigilibConfiguration config,
+			EnumSet<ParsingOption> parsingOptions) {
+        super(config);
+        this.parsingOptions = parsingOptions;
         setWithRequest(request);
         initOptions();
     }
@@ -100,52 +117,12 @@ public class DigilibServletRequest extends DigilibRequest {
      */
     @Override
     protected void initParams() {
-        // TODO: check if we can call super.initParams()
+        super.initParams();
         /*
-         * Definition of parameters and default values. Parameter of type 's'
+         * Definition of additional parameters and default values. Parameter of type 's'
          * are for the servlet.
          */
 
-        // url of the page/document (second part)
-        newParameter("fn", "", null, 's');
-        // page number
-        newParameter("pn", new Integer(1), null, 's');
-        // width of client in pixels
-        newParameter("dw", new Integer(0), null, 's');
-        // height of client in pixels
-        newParameter("dh", new Integer(0), null, 's');
-        // left edge of image (float from 0 to 1)
-        newParameter("wx", new Float(0), null, 's');
-        // top edge in image (float from 0 to 1)
-        newParameter("wy", new Float(0), null, 's');
-        // width of image (float from 0 to 1)
-        newParameter("ww", new Float(1), null, 's');
-        // height of image (float from 0 to 1)
-        newParameter("wh", new Float(1), null, 's');
-        // scale factor
-        newParameter("ws", new Float(1), null, 's');
-        // special options like 'fit' for gifs
-        newParameter("mo", this.options, null, 's');
-        // rotation angle (degree)
-        newParameter("rot", new Float(0), null, 's');
-        // contrast enhancement factor
-        newParameter("cont", new Float(0), null, 's');
-        // brightness enhancement factor
-        newParameter("brgt", new Float(0), null, 's');
-        // color multiplicative factors
-        newParameter("rgbm", "0/0/0", null, 's');
-        // color additive factors
-        newParameter("rgba", "0/0/0", null, 's');
-        // display dpi resolution (total)
-        newParameter("ddpi", new Float(0), null, 's');
-        // display dpi X resolution
-        newParameter("ddpix", new Float(0), null, 's');
-        // display dpi Y resolution
-        newParameter("ddpiy", new Float(0), null, 's');
-        // scale factor for mo=ascale
-        newParameter("scale", new Float(1), null, 's');
-        // color conversion operation
-        newParameter("colop", "", null, 's');
         // OpenID Connect ID token
         newParameter("id_token", "", null, 's');
 
@@ -154,39 +131,12 @@ public class DigilibServletRequest extends DigilibRequest {
          * but are for the servlets or JSPs internal use.
          */
 
-        // url of the page/document (first part, may be empty)
-        newParameter("request.path", "", null, 'i');
-        // base URL (from http:// to below /servlet)
-        newParameter("base.url", null, null, 'i');
         // DocuImage instance for this request
         newParameter("docu.image", image, null, 'i');
         image = null;
         // HttpServletRequest for this request
         newParameter("servlet.request", servletRequest, null, 'i');
         servletRequest = null;
-
-        /*
-         * Parameters of type 'c' are for the clients use
-         */
-
-        // "real" filename
-        newParameter("img.fn", "", null, 'c');
-        // image dpi x
-        newParameter("img.dpix", new Integer(0), null, 'c');
-        // image dpi y
-        newParameter("img.dpiy", new Integer(0), null, 'c');
-        // hires image size x
-        newParameter("img.pix_x", new Integer(0), null, 'c');
-        // hires image size y
-        newParameter("img.pix_y", new Integer(0), null, 'c');
-        
-        /*
-         * set local variables from config
-         */
-        if (config != null) {
-            iiifPrefix = config.getAsString("iiif-prefix");
-            iiifSlashReplacement = config.getAsString("iiif-slash-replacement");
-        }
     }
 
     /*
@@ -212,7 +162,9 @@ public class DigilibServletRequest extends DigilibRequest {
         setValue("servlet.request", request);
         // request path (after servlet, before "?")
         String path = request.getPathInfo();
-        // decide if its IIIF API
+        /*
+         * is it IIIF API?
+         */
         if (path != null && path.startsWith(iiifPrefix, 1)) {
             // for IIIF we need the undecoded path :-(
             String uri = request.getRequestURI();
@@ -228,7 +180,9 @@ public class DigilibServletRequest extends DigilibRequest {
                 setValue("dw", -1);
             }
         } else {
-            // decide if it's old-style or new-style digilib
+            /*
+             * is it old-style or new-style digilib?
+             */
             String qs = ((HttpServletRequest) request).getQueryString();
             if (qs != null) {
                 if (qs.indexOf("&amp;") > -1) {

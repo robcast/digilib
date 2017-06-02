@@ -31,6 +31,9 @@ package digilib.conf;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
@@ -63,12 +66,25 @@ import digilib.util.ParameterMap;
 public class DigilibRequest extends ParameterMap {
 
     private static Logger logger = Logger.getLogger("digilib.request");
+    
+    /**
+     * special options for parsing the request. 
+     */
+    public static enum ParsingOption {
+    	omitIiifImageApi
+    }
 
+    /** active pasing options */
+    public EnumSet<ParsingOption> parsingOptions = EnumSet.noneOf(ParsingOption.class);
+    
     /** IIIF path prefix (taken from config) */
     protected String iiifPrefix = "IIIF";
     
     /** IIIF slash replacement (taken from config) */
     protected String iiifSlashReplacement = null;
+    
+    /** parse IIIF path as IIIF image API */
+    public boolean parseIiifImageApi = true;
     
     /** error message while configuring */
     public String errorMessage = null;
@@ -154,6 +170,9 @@ public class DigilibRequest extends ParameterMap {
         newParameter("request.path", "", null, 'i');
         // base URL (from http:// to below /servlet)
         newParameter("base.url", null, null, 'i');
+        // elements of IIIF API path
+        newParameter("request.iiif.elements", null, null, 'i');
+        
         /*
          * Parameters of type 'c' are for the clients use
          */
@@ -291,13 +310,9 @@ public class DigilibRequest extends ParameterMap {
             return false;
         }
         
-        String identifier = null;
-        String region = null;
-        String size = null;
-        String rotation = null;
-        String quality = null;
-        String format = null;
-
+        List<String> params = new ArrayList<String>(5);
+        setValue("request.iiif.elements", params);
+        
         // enable passing of delimiter to get empty parameters
         StringTokenizer query = new StringTokenizer(path, "/", true);
         String token;
@@ -317,80 +332,89 @@ public class DigilibRequest extends ParameterMap {
             }
         }
         /*
-         * second parameter identifier (encoded)
+         * following parameters
          */
-        if (query.hasMoreTokens()) {
+        while (query.hasMoreTokens()) {
             token = getNextDecodedToken(query);
             if (!token.equals("/")) {
-                identifier = token;
+            	params.add(token);
                 // skip /
                 if (query.hasMoreTokens()) {
                     query.nextToken();
                 }
-            }
-        }
-        /*
-         * third parameter region
-         */
-        if (query.hasMoreTokens()) {
-            token = getNextDecodedToken(query);
-            if (!token.equals("/")) {
-                region = token;
-                // skip /
-                if (query.hasMoreTokens()) {
-                    query.nextToken();
-                }
-            }
-        }
-        /*
-         * fourth parameter size
-         */
-        if (query.hasMoreTokens()) {
-            token = getNextDecodedToken(query);
-            if (!token.equals("/")) {
-                size = token;
-                // skip /
-                if (query.hasMoreTokens()) {
-                    query.nextToken();
-                }
-            }
-        }
-        /*
-         * fifth parameter rotation
-         */
-        if (query.hasMoreTokens()) {
-            token = getNextDecodedToken(query);
-            if (!token.equals("/")) {
-                rotation = token;
-                // skip /
-                if (query.hasMoreTokens()) {
-                    query.nextToken();
-                }
-            }
-        }
-        /*
-         * sixth parameter quality.format
-         */
-        if (query.hasMoreTokens()) {
-            token = getNextDecodedToken(query);
-            // quality.format -- color depth and output format
-            try {
-                String[] parms = token.split("\\.");
-                // quality param
-                quality = parms[0];
-                // format param
-                if (parms.length > 1) {
-                    format = parms[1];
-                }
-            } catch (Exception e) {
-                errorMessage = "Error parsing quality and format parameters in IIIF path!";
-                logger.error(errorMessage, e);
-                return false;
+            } else {
+            	// empty parameter
+            	params.add(null);
             }
         }
 
+        if (parsingOptions.contains(ParsingOption.omitIiifImageApi)) {
+        	return true;
+        }
+        
+        /*
+         * parse sequence of parameters as IIIF image API
+         */
+        String identifier = null;
+        String region = null;
+        String size = null;
+        String rotation = null;
+        String quality = null;
+        String format = null;
+
+		if (params.size() > 0) {
+			/*
+			 * first parameter identifier (encoded)
+			 */
+			identifier = params.get(0);
+			
+			if (params.size() > 1) {
+				/*
+				 * second parameter region
+				 */
+				region = params.get(1);
+				
+				if (params.size() > 2) {
+					/*
+					 * third parameter size
+					 */
+					size = params.get(2);
+					
+					if (params.size() > 3) {
+						/*
+						 * fourth parameter rotation
+						 */
+						rotation = params.get(3);
+						
+						if (params.size() > 4) {
+							/*
+							 * fifth parameter quality.format
+							 */
+							String qf = params.get(4);
+							if (qf != null) {
+								// quality.format -- color depth and output
+								// format
+								try {
+									String[] parms = qf.split("\\.");
+									// quality param
+									quality = parms[0];
+									// format param
+									if (parms.length > 1) {
+										format = parms[1];
+									}
+								} catch (Exception e) {
+									errorMessage = "Error parsing quality and format parameters in IIIF path!";
+									logger.error(errorMessage, e);
+									return false;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
         // set request with these parameters
-        return setWithIiifParams(identifier, region, size, rotation, quality, format);        
+        return setWithIiifImageParams(identifier, region, size, rotation, quality, format);
     }
 
     private String getNextDecodedToken(StringTokenizer tokens) {
@@ -417,7 +441,7 @@ public class DigilibRequest extends ParameterMap {
 	 * @param format
 	 * @return
 	 */
-	public boolean setWithIiifParams(String identifier, String region, String size, 
+	public boolean setWithIiifImageParams(String identifier, String region, String size, 
 			String rotation, String quality, String format) {
         // alway set HTTP status code error reporting
         options.setOption(DigilibOption.errcode);
@@ -427,14 +451,7 @@ public class DigilibRequest extends ParameterMap {
          */
         if (identifier != null) {
             try {
-                if (identifier.contains("%")) {
-                    // still escape chars -- decode again
-                    identifier = URLDecoder.decode(identifier, "UTF-8");
-                }
-                if (iiifSlashReplacement != null && identifier.contains(iiifSlashReplacement)) {
-                    // change replacement back to slash
-                    identifier = identifier.replace(iiifSlashReplacement, "/");
-                }
+                identifier = decodeIiifIdentifier(identifier);
                 setValueFromString("fn", identifier);
             } catch (UnsupportedEncodingException e) {
                 errorMessage = "Error decoding identifier in IIIF path!";
@@ -455,8 +472,14 @@ public class DigilibRequest extends ParameterMap {
                 // info request
                 options.setOption(DigilibOption.info);
                 return true;
+                
             } else if (region.equals("full")) {
-                // full image -- default
+                // full image -- digilib default
+            	
+            } else if (region.equals("square")) {
+                // "squared" crop of full image (square of shortest side length)
+            	options.setOption(DigilibOption.sqarea);
+            	
             } else if (region.startsWith("pct:")) {
                 // pct:x,y,w,h -- region in % of original image
                 String[] parms = region.substring(4).split(",");
@@ -505,6 +528,14 @@ public class DigilibRequest extends ParameterMap {
                  */
                 options.setOption(DigilibOption.ascale);
                 setValue("scale", 1f);
+                
+            } else if (size.equals("max")) {
+                /*
+                 * max -- size of original unless constrained by max image size or area
+                 */
+                options.setOption(DigilibOption.ascale);
+                setValue("scale", 1f);
+                // TODO: check with max image size
                 
             } else if (size.startsWith("pct:")) {
                 /*
@@ -612,6 +643,23 @@ public class DigilibRequest extends ParameterMap {
             }
         }
         return true;
+	}
+
+	/**
+	 * @param identifier
+	 * @return
+	 * @throws UnsupportedEncodingException
+	 */
+	public String decodeIiifIdentifier(String identifier) throws UnsupportedEncodingException {
+		if (identifier.contains("%")) {
+		    // still escape chars -- decode again
+		    identifier = URLDecoder.decode(identifier, "UTF-8");
+		}
+		if (iiifSlashReplacement != null && identifier.contains(iiifSlashReplacement)) {
+		    // change replacement back to slash
+		    identifier = identifier.replace(iiifSlashReplacement, "/");
+		}
+		return identifier;
 	}
 
 	

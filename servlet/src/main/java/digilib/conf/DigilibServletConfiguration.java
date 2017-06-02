@@ -171,6 +171,10 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         newParameter("docudirectory-class", "digilib.io.BaseDirDocuDirectory", null, 'f');
         // name of cookie with authentication token
         newParameter("authn-token-cookie", "id_token", null, 'f');
+        // set CORS header on IIIF Image API info request
+        newParameter("iiif-info-cors", Boolean.TRUE, null, 'f');        
+        // set CORS header on IIIF Image API image request
+        newParameter("iiif-image-cors", Boolean.TRUE, null, 'f');        
     }
 
     /**

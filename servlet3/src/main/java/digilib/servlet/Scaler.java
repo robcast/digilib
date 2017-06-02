@@ -42,7 +42,6 @@ import org.apache.log4j.Logger;
 
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthzOps;
-import digilib.conf.DigilibConfiguration;
 import digilib.conf.DigilibOption;
 import digilib.conf.DigilibServlet3Configuration;
 import digilib.conf.DigilibServletConfiguration;
@@ -104,7 +103,7 @@ public class Scaler extends HttpServlet {
     protected boolean sendFileAllowed = true;
 
     /** DigilibConfiguration instance */
-    protected DigilibConfiguration dlConfig;
+    protected DigilibServletConfiguration dlConfig;
 
     /** use authorization database */
     protected boolean useAuthorization = false;
@@ -142,11 +141,14 @@ public class Scaler extends HttpServlet {
         authzOp = (AuthzOps) dlConfig.getValue(DigilibServletConfiguration.AUTHZ_OP_KEY);
 
         // DocuDirCache instance
-        dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
+        dirCache = (DocuDirCache) dlConfig.getValue(DigilibServletConfiguration.DIR_CACHE_KEY);
 
         // Executor
         imageJobCenter = (DigilibJobCenter<DocuImage>) dlConfig.getValue("servlet.worker.imageexecutor");
 
+        // configure ServletOps
+        ServletOps.setDlConfig(dlConfig);
+        
         denyImgFile = ServletOps.getFile(dlConfig.getAsFile("denied-image"), context);
         errorImgFile = ServletOps.getFile(dlConfig.getAsFile("error-image"), context);
         notfoundImgFile = ServletOps.getFile(dlConfig.getAsFile("notfound-image"), context);
@@ -260,8 +262,14 @@ public class Scaler extends HttpServlet {
                 return;
             }
             if (dlRequest.hasOption(DigilibOption.redirect_info)) {
+            	StringBuffer url = request.getRequestURL();
+            	if (url.toString().endsWith("/")) {
+            		url.append("info.json");
+            	} else {
+            		url.append("/info.json");
+            	}
                 // TODO: the redirect should have code 303
-                response.sendRedirect("info.json");
+                response.sendRedirect(url.toString());
                 return;
             }
 

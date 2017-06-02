@@ -276,6 +276,36 @@
 				</dependency>
 			</dependencies>
 		</profile>
+        <profile>
+            <id>iiif-presentation</id>
+            <!-- IIIF presentation servlet uses servlet3 and has a web.xml -->
+            <dependencies>
+                <dependency>
+                    <groupId>digilib</groupId>
+                    <artifactId>digilib-iiif-presentation</artifactId>
+                    <type>jar</type>
+                    <scope>compile</scope>
+                </dependency>
+                <dependency>
+                    <groupId>digilib</groupId>
+                    <artifactId>digilib-servlet3</artifactId>
+                    <type>jar</type>
+                    <scope>compile</scope>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <configuration>
+                            <webXml>${basedir}/src/main/webapp/WEB-INF/web-iiif-pres.xml</webXml>
+                            <classifier>srv3p</classifier>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
 		<profile>
 			<id>codec-jai</id>
 			<dependencies>

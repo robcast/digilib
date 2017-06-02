@@ -51,5 +51,27 @@
         </url-pattern>
   </servlet-mapping>
   
+    <!-- The Manifest servlet -->
+    <servlet>
+        <servlet-name>Manifester</servlet-name>
+        <servlet-class>digilib.servlet.Manifester</servlet-class>
+    </servlet>
+    <!-- The Intialisation Listener -->
+    <listener>
+        <listener-class>
+            digilib.conf.ManifestServletConfiguration
+        </listener-class>
+    </listener>
+    <!-- The mapping for the Manifest servlet -->
+    <servlet-mapping>
+        <servlet-name>Manifester</servlet-name>
+        <url-pattern>/servlet/Manifester/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Manifester</servlet-name>
+        <url-pattern>/Manifester/*</url-pattern>
+    </servlet-mapping>
+
+
   
 </web-app>
