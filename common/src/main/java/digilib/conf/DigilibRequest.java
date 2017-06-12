@@ -355,7 +355,7 @@ public class DigilibRequest extends ParameterMap {
         /*
          * parse sequence of parameters as IIIF image API
          */
-        String identifier = null;
+        String identifier = ""; // empty name means image root directory
         String region = null;
         String size = null;
         String rotation = null;
