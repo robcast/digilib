@@ -202,11 +202,9 @@ public class Manifester extends HttpServlet {
 				return;
 			}
 			// get identifier (first parameter)
-			String identifier = iiifParams.get(0);
-			if (identifier == null) {
-				logger.error("IIIF identifier missing");
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "IIIF identifier missing.");
-				return;
+			String identifier = ""; // allow empty identifier for image root dir
+			if (iiifParams.size() > 0) {			
+				identifier = iiifParams.get(0);
 			}
 			// decode identifier to file path
 			dlRequest.setValueFromString("fn", dlRequest.decodeIiifIdentifier(identifier));
