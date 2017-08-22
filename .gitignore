@@ -1,0 +1,13 @@
+/.project
+/target/
+/common/target/
+/common-bioformats/target/
+/common-imagej/target/
+/common-jai/target/
+/doc/target/
+/iiif-presentation/target/
+/pdf/target/
+/servlet/target/
+/servlet2/target/
+/servlet3/target/
+/webapp/target/

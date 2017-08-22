@@ -10,15 +10,16 @@
   </skin>
   <bannerLeft>
     <name>digilib - a versatile image viewing environment for the internet</name>
-    <href>http://digilib.sourceforge.net/</href>
+    <href>https://robcast.github.io/digilib/</href>
   </bannerLeft>
   <bannerRight>
     <src>images/digilib-logo-small.png</src>
-    <href>http://digilib.sourceforge.net/</href>
+    <href>https://robcast.github.io/digilib/</href>
   </bannerRight>
   <poweredBy>
-    <logo name="Built by Maven" href="http://maven.apache.org/" img="http://maven.apache.org/images/logos/maven-feather.png"/>  
-    <logo name="Hosted by SourceForge" href="http://www.sourceforge.net/" img="http://upload.wikimedia.org/wikipedia/commons/0/0b/Sourceforge_logo.png"/>
+    <logo name="Built by Maven" href="http://maven.apache.org/" img="https://maven.apache.org/images/logos/maven-feather.png"/>
+    <logo name="Hosted by GitHub" href="https://github.com/" img="https://assets-cdn.github.com/images/modules/logos_page/GitHub-Logo.png" width="200px"/>
+    <logo name="Hosted by SourceForge" href="http://www.sourceforge.net/" img="https://upload.wikimedia.org/wikipedia/commons/0/0b/Sourceforge_logo.png"/>
   </poweredBy>
   <body>
     <menu name="Overview">
