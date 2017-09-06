@@ -267,13 +267,14 @@ public class ServletOps {
     public static void sendFile(File f, String mt, String name, HttpServletResponse response, Logger logger)
             throws ImageOpException, IOException {
         logger.debug("sendRawFile(" + mt + ", " + f + ")");
-    	if (response == null) {
-    		logger.error("No response!");
-    		return;
-    	}
-    	/*
-    	 * set content-type
-    	 */
+        if (response == null) {
+            logger.error("No response!");
+            return;
+        }
+        
+        /*
+         * set content-type
+         */
         if (mt == null) {
             // auto-detect mime-type
             mt = FileOps.mimeForFile(f);
@@ -282,34 +283,44 @@ public class ServletOps {
             }
         }
         response.setContentType(mt);
+        
+        /*
+         * set content-disposition with filename.
+         * uses image filename.
+         */
+        if (name == null) {
+            // no download name -- use filename
+            name = f.getName();
+        }
         if (mt.startsWith("application")) {
-            if (name == null) {
-                // no download name -- use filename
-                name = f.getName();
-            }
-            response.addHeader("Content-Disposition", "attachment; filename=\""+name+"\"");
+            response.addHeader("Content-Disposition", "attachment; filename=\"" + name + "\"");
+        } else {
+            response.addHeader("Content-Disposition", "inline; filename=\"" + name + "\"");
         }
 
         /*
-		 * set CORS header ACAO "*" for image response
-		 */
-		if (corsForImageRequests) {
-			// TODO: would be nice to check request for Origin header
-			response.setHeader("Access-Control-Allow-Origin", "*");
-		}
+         * set CORS header ACAO "*" for image response
+         */
+        if (corsForImageRequests) {
+            // TODO: would be nice to check request for Origin header
+            response.setHeader("Access-Control-Allow-Origin", "*");
+        }
 
         /*
          * open file
          */
-		FileInputStream inFile = null;
+        FileInputStream inFile = null;
         try {
             inFile = new FileInputStream(f);
             OutputStream outStream = response.getOutputStream();
-            // TODO: should we set content length? 
+            // TODO: should we set content length?
             // see http://www.prozesse-und-systeme.de/servletFlush.html
-            response.setContentLength( (int) f.length());
+            response.setContentLength((int) f.length());
             byte dataBuffer[] = new byte[4096];
             int len;
+            /*
+             * write file to stream
+             */
             while ((len = inFile.read(dataBuffer)) != -1) {
                 // copy out file
                 outStream.write(dataBuffer, 0, len);
@@ -352,17 +363,16 @@ public class ServletOps {
      * @throws ImageOpException
      * @throws ServletException Exception on sending data.
      */
-	public static void sendImage(DocuImage img, String mimeType, HttpServletResponse response, Logger logger)
-			throws ImageOpException, ServletException {
-    	if (response == null) {
-    		logger.error("No response!");
-    		return;
-    	}
-        logger.debug("sending to response. committed=" + response.isCommitted());
+    public static void sendImage(DocuImage img, String mimeType, HttpServletResponse response, Logger logger)
+            throws ImageOpException, ServletException {
+        if (response == null) {
+            logger.error("No response!");
+            return;
+        }
         try {
             /*
-             * determine the content-type: if mime type is set use that 
-             * otherwise if source is JPG then dest will be JPG else it's PNG
+             * determine the content-type: if mime type is set use that otherwise if source
+             * is JPG then dest will be JPG else it's PNG
              */
             if (mimeType == null) {
                 mimeType = img.getMimetype();
@@ -372,46 +382,43 @@ public class ServletOps {
                     mimeType = "image/jpeg";
                 }
             }
-            if ((mimeType.equals("image/jpeg") || mimeType.equals("image/jp2") || 
-                    mimeType.equals("image/fpx"))) {
+            if ((mimeType.equals("image/jpeg") || mimeType.equals("image/jp2") || mimeType.equals("image/fpx"))) {
                 mimeType = "image/jpeg";
             } else {
                 mimeType = "image/png";
             }
             // set the content type
             response.setContentType(mimeType);
-            // check content type
-            String respType = response.getContentType();
-            if (! mimeType.equals(respType)) {
-            	// this shouldn't happen
-            	logger.error("Crap! ServletResponse lost content type! ["+respType+"] Aborting!");
-            	// TODO: would this even help?
-            	response.getOutputStream().close();
-            	return;
-            }
-            
 
             /*
-    		 * set CORS header ACAO "*" for image response
-    		 */
-    		if (corsForImageRequests) {
-    			// TODO: would be nice to check request for Origin header
-    			response.setHeader("Access-Control-Allow-Origin", "*");
-    		}
+             * set content-disposition with filename.
+             * uses filename provided in DocuImage.
+             */
+            String name = (String) img.getHint("download-filename");
+            if (name != null) {
+                response.addHeader("Content-Disposition", "inline; filename=\"" + name + "\"");
+            }
+            
+            /*
+             * set CORS header ACAO "*" for image response
+             */
+            if (corsForImageRequests) {
+                // TODO: would be nice to check request for Origin header
+                response.setHeader("Access-Control-Allow-Origin", "*");
+            }
 
             /*
              * write the image
              */
             OutputStream outstream = response.getOutputStream();
             img.writeImage(mimeType, outstream);
-            
+
         } catch (IOException e) {
             throw new ServletException("Error sending image:", e);
-        } finally { 
-        	img.dispose(); 
-    	}
+        } finally {
+            img.dispose();
+        }
     }
-
 
     /**
      * Returns IIIF compatible image information as application/json response.

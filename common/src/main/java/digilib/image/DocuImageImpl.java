@@ -30,6 +30,7 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -71,7 +72,7 @@ public abstract class DocuImageImpl implements DocuImage {
     protected ImageInput input;
     
     /** image specific hints */
-    protected Map<String, Object> hints;
+    protected Map<String, Object> hints = new HashMap<String, Object>();
 
     /** 
      * Returns the version.
