@@ -318,4 +318,20 @@ public interface DocuImage {
      * @param hackString
      */
     public void setHacks(String hackString);
+    
+    /**
+     * Set optional image specific hints with additional information.
+     * 
+     * @param key
+     * @param value
+     */
+    public void setHint(String key, Object value);
+    
+    /**
+     * Returns the image specific hint with the given key.
+     * 
+     * @param key
+     * @return
+     */
+    public Object getHint(String key);
 }
