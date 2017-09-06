@@ -77,7 +77,7 @@
   </licenses>
   <scm>
     <connection>scm:git:git://github.com/robcast/digilib.git</connection>
-    <developerConnection>scm:git:git@github.com:robcast/digilib.git</developerConnection>
+    <developerConnection>scm:git:https:github.com:robcast/digilib.git</developerConnection>
     <url>https://github.com/robcast/digilib</url>
   </scm>
   <issueManagement>
