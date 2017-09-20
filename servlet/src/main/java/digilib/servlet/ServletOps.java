@@ -517,11 +517,11 @@ public class ServletOps {
                 		+ "\"mirroring\", \"rotationArbitrary\", \"sizeAboveFull\", \"regionSquare\""
                 		+ "]");
                 writer.println("  }]");
-                // add sizes of prescaled images
+                // add size of original and prescaled images
                 int numImgs = imageSet.size();
-                if (numImgs > 1) {
+                if (numImgs > 0) {
                     writer.println(", \"sizes\" : [");
-                    for (int i = numImgs - 1; i > 0; --i) {
+                    for (int i = numImgs - 1; i >= 0; --i) {
                         ImageInput ii = imageSet.get(i);
                         ImageSize is = ii.getSize();
                         writer.println("  {\"width\" : "+is.getWidth()+", \"height\" : "+is.getHeight()+"}"
