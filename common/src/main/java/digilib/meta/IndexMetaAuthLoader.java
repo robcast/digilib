@@ -1,20 +1,5 @@
 package digilib.meta;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
-import org.apache.log4j.Logger;
-
 /*
  * #%L
  * IndexMetaAuthLoader -- Load XML format metadata into MetadataMaps
@@ -40,6 +25,21 @@ import org.apache.log4j.Logger;
  * #L%
  * Author: Robert Casties (robcast@users.sourceforge.net)
  */
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
+import org.apache.log4j.Logger;
 
 /**
  * Class loading index.meta files extracting image file related information.
@@ -85,12 +85,13 @@ public class IndexMetaAuthLoader {
 
     protected String metaTag = "meta";
     protected String fileTag = "file";
-    protected String[] fileNameTag = {"file", "name"};
-    protected String[] filePathTag = {"file", "path"};
-    protected String[] fileMetaTag = {"file", "meta"};
+    protected String[] fileNamePath = {"file", "name"};
+    protected String[] filePathPath = {"file", "path"};
+    protected String[] fileMetaPath = {"file", "meta"};
     protected String imgTag = "img";
-    protected String[] accessTag = {"access-conditions", "access"};
-    protected String[] accessNameTag = {"access", "name"};
+    protected String accessTag = "access";
+    protected String[] accessPath = {"access-conditions", "access"};
+    protected String[] accessNamePath = {"access", "name"};
 
     private XMLStreamReader reader;
     private LinkedList<String> tags;
@@ -137,7 +138,7 @@ public class IndexMetaAuthLoader {
                     /*
                      * meta tag - read contents in new meta map
                      */
-                    if (tagsMatchPath(fileMetaTag)) {
+                    if (tagsMatchPath(fileMetaPath)) {
                         fileMeta = readMetaTag(new MetadataMap());
                     } else {
                         otherMeta = readMetaTag(new MetadataMap());
@@ -171,12 +172,12 @@ public class IndexMetaAuthLoader {
                         // save meta in file list
                         files.put(fn, fileMeta);
                     }                    
-                } else if (tagsMatchPath(fileNameTag)) {
+                } else if (tagsMatchPath(fileNamePath)) {
                     /*
                      * file/name tag - record name
                      */
                     filename = text.toString();
-                } else if (tagsMatchPath(filePathTag)) {
+                } else if (tagsMatchPath(filePathPath)) {
                     /*
                      * file/path tag - record path
                      */
@@ -239,7 +240,7 @@ public class IndexMetaAuthLoader {
         StringBuffer text = new StringBuffer();
         String accType = null;
         String accName = null;
-        if (tagsMatchPath(accessTag)) {
+        if (tagsMatchPath(accessPath)) {
             // read attribute from current access tag
             accType = reader.getAttributeValue(null, "type");
         }
@@ -258,12 +259,12 @@ public class IndexMetaAuthLoader {
             } else if (event == XMLStreamConstants.CHARACTERS) {
                 text.append(reader.getText());
             } else if (event == XMLStreamConstants.END_ELEMENT) {
-                if (tagsMatchPath(accessNameTag)) {
+                if (tagsMatchPath(accessNamePath)) {
                     /*
                      * access/name tag
                      */
                     accName = text.toString();
-                } else if (tagsMatchPath(accessTag)) {
+                } else if (tagsMatchPath(accessPath)) {
                     /*
                      * access tag - we're done
                      */
@@ -305,7 +306,7 @@ public class IndexMetaAuthLoader {
                      * img tag
                      */
                     map = readTagToMap(map);
-                } else if (tagsMatchPath(accessTag)) {
+                } else if (tagsMatchPath(accessPath)) {
                     /*
                      * access tag
                      */
