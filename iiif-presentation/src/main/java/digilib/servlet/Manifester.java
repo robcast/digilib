@@ -376,6 +376,7 @@ public class Manifester extends HttpServlet {
 			ImageFileSet imgFs = (ImageFileSet) imgFile;
 			ImageInput img = imgFs.getBiggest();
 			ImageSize imgSize = img.getSize();
+			if (imgSize == null) continue;
 			/*
 			 * canvas
 			 */
