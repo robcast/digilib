@@ -11,7 +11,7 @@
 	<artifactId>digilib-iiif-presentation</artifactId>
 	<name>digilib-iiif-presentation</name>
 	<description>The Digital Image Library - IIIF presentation API manifest serving servlet</description>
-	<url>http://digilib.sourceforge.net</url>
+	<url>https://github.com/robcast/digilib</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>

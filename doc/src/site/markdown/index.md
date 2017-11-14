@@ -28,7 +28,7 @@
 `digilib` source code, binaries and documentation can be found on the 
 [digilib project pages](https://github.com/robcast/digilib)
 on [GitHub](https://github.com) 
-or [SourceForge](https://sourceforge.net/):
+or [SourceForge](https://sourceforge.net/projects/digilib/):
 
 * [Source code](https://github.com/robcast/digilib)
 * Daily built [WAR files](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/)

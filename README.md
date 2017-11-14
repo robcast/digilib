@@ -28,11 +28,11 @@ A versatile image viewing environment for the internet.
 
 ## Where can I get digilib?
 
-`digilib` source code, binaries and documentation can be found on the 
-[digilib project pages](https://sourceforge.net/projects/digilib/)
-on [SourceForge](https://sourceforge.net/):
+`digilib` documentation can be found on the 
+[digilib documentation pages](https://robcast.github.io/digilib/) on GitHub
+or on [SourceForge](https://sourceforge.net/projects/digilib/)
 
-* [Source code](https://sourceforge.net/p/digilib/code/ci/default/tree/)
+* [Source code](https://github.com/robcast/digilib)
 * Daily built [WAR files](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/)
 * Daily built [Javadoc](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/javadoc/)
 * [Maven repository](http://it-dev.mpiwg-berlin.mpg.de/maven-repo/)

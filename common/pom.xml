@@ -12,7 +12,7 @@
 	<artifactId>digilib-common</artifactId>
 	<name>digilib-common</name>
 	<description>The Digital Image Library - common library</description>
-	<url>http://digilib.sourceforge.net</url>
+	<url>https://github.com/robcast/digilib</url>
 	<packaging>jar</packaging>
 	
 	<profiles>
