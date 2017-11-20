@@ -192,6 +192,12 @@
                     </execution> -->
 				</executions>
 			</plugin>
+			<plugin>
+			    <!-- Jetty plugin for "mvn jetty:run" -->
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>9.2.22.v20170606</version>
+            </plugin>
 		</plugins>
 	</build>
 	<profiles>
@@ -386,13 +392,13 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlet</artifactId>
-            <version>9.2.13.v20150730</version>
+            <version>9.2.22.v20170606</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-http</artifactId>
-			<version>9.2.13.v20150730</version>
+			<version>9.2.22.v20170606</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

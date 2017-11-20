@@ -33,6 +33,31 @@ A versatile image viewing environment for the internet.
 or on [SourceForge](https://sourceforge.net/projects/digilib/)
 
 * [Source code](https://github.com/robcast/digilib)
+* [Issue tracker](https://github.com/robcast/digilib/issues)
 * Daily built [WAR files](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/)
 * Daily built [Javadoc](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/javadoc/)
 * [Maven repository](http://it-dev.mpiwg-berlin.mpg.de/maven-repo/)
+
+## How do I run digilib?
+
+Requirements:
+* [git](https://git-scm.com/)
+* [Java JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
+* [Maven](https://maven.apache.org/)
+
+Build:
+1. Clone the digilib repository
+
+   `git clone https://github.com/robcast/digilib.git`
+
+2. Change to the repository
+
+   `cd digilib`
+   
+3. build and run the webapp in the embedded Jetty runtime for development
+ 
+   `mvn jetty:run --projects webapp`
+   
+   and watch digilib at http://localhost:8080/digilib.html
+
+or follow the production build instructions in the on https://robcast.github.io/digilib/
