@@ -28,22 +28,22 @@ A versatile image viewing environment for the internet.
 
 ## Where can I get digilib?
 
-`digilib` documentation can be found on the 
-[digilib documentation pages](https://robcast.github.io/digilib/) on GitHub
-or on [SourceForge](https://sourceforge.net/projects/digilib/)
-
 * [Source code](https://github.com/robcast/digilib)
 * [Issue tracker](https://github.com/robcast/digilib/issues)
 * Daily built [WAR files](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/)
 * Daily built [Javadoc](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/javadoc/)
 * [Maven repository](http://it-dev.mpiwg-berlin.mpg.de/maven-repo/)
 
+`digilib` documentation can be found on the 
+[digilib documentation pages](https://robcast.github.io/digilib/) on GitHub
+or on [SourceForge](http://digilib.sourceforge.net).
+
 ## How do I run digilib?
 
 Requirements:
 * [git](https://git-scm.com/)
-* [Java JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
-* [Maven](https://maven.apache.org/)
+* [Java JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html) version 7 or later
+* [Maven](https://maven.apache.org/) version 3 or later
 
 Build:
 1. Clone the digilib repository
@@ -56,8 +56,8 @@ Build:
    
 3. build and run the webapp in the embedded Jetty runtime for development
  
-   `mvn jetty:run --projects webapp`
+   `mvn jetty:run-exploded --projects webapp`
    
-   and watch digilib at http://localhost:8080/digilib.html
+   and watch digilib at http://localhost:8080/digilib/digilib.html
 
-or follow the production build instructions in the on https://robcast.github.io/digilib/
+or follow the build and install instructions on the [documentation pages](https://robcast.github.io/digilib/).

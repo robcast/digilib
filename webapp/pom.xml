@@ -197,6 +197,11 @@
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>9.2.22.v20170606</version>
+                <configuration>
+                    <webApp>
+                        <contextPath>/digilib</contextPath>
+                    </webApp>
+                </configuration>
             </plugin>
 		</plugins>
 	</build>

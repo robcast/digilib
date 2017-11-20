@@ -1,6 +1,8 @@
-# Deploying digilib
+# Server setups for digilib
 
-There are a variety of ways to deploy digilib on different server setups.
+There are a variety of ways to deploy digilib on different server configurations for production sites. 
+
+Here are some examples.
 
 ## nginx as proxy
 

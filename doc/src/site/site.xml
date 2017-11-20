@@ -29,8 +29,9 @@
       <item name="Ancient history" href="history.html"/>
     </menu>
     <menu name="Installation">
-      <item name="Installing digilib" href="install-digilib.html"/>
       <item name="Building digilib" href="build-maven.html"/>
+      <item name="Installing digilib" href="install-digilib.html"/>
+      <item name="Server setups" href="server-setups.html"/>
     </menu>
     <menu name="Configuration">
       <item name="Configuring digilib" href="digilib-config.html"/>
