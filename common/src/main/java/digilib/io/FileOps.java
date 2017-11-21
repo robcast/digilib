@@ -295,6 +295,23 @@ public class FileOps {
 		return pathname.substring(a, e + 1);
 	}
 
+	
+	/**
+	 * Returns if the filename is valid.
+	 * 
+	 * Currently only checks if filename starts with a dot.
+	 * 
+	 * @param filename
+	 * @return
+	 */
+	public static boolean isValidFilename(String filename) {
+	    // exclude filenames starting with a dot
+	    if (filename.startsWith(".")) {
+	        return false;
+	    }
+	    return true;
+	}
+	
 	/**
 	 * FileFilter for general files
 	 */
@@ -311,7 +328,11 @@ public class FileOps {
 	static class ImageFileFilter implements FileFilter {
 
 		public boolean accept(File f) {
-			return (classForFilename(f.getName()) == FileClass.IMAGE);
+			String fn = f.getName();
+			if (isValidFilename(fn)) {
+			    return (classForFilename(fn) == FileClass.IMAGE);
+			}
+			return false;
 		}
 	}
 
@@ -320,9 +341,13 @@ public class FileOps {
 	 */
 	static class TextFileFilter implements FileFilter {
 
-		public boolean accept(File f) {
-			return (classForFilename(f.getName()) == FileClass.TEXT);
-		}
+        public boolean accept(File f) {
+            String fn = f.getName();
+            if (isValidFilename(fn)) {
+                return (classForFilename(fn) == FileClass.TEXT);
+            }
+            return false;
+        }
 	}
 
 	/**
@@ -331,9 +356,13 @@ public class FileOps {
 	 */
 	static class SVGFileFilter implements FileFilter {
 
-		public boolean accept(File f) {
-			return (classForFilename(f.getName()) == FileClass.SVG);
-		}
+        public boolean accept(File f) {
+            String fn = f.getName();
+            if (isValidFilename(fn)) {
+                return (classForFilename(fn) == FileClass.SVG);
+            }
+            return false;
+        }
 	}
 
 	/**

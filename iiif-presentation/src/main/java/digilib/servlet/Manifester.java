@@ -125,7 +125,7 @@ public class Manifester extends HttpServlet {
 		// DocuDirCache instance
 		dirCache = (DocuDirCache) dlConfig.getValue(DigilibServletConfiguration.DIR_CACHE_KEY);
 		// Scaler path
-		scalerServletPath = dlConfig.getAsString("scaler-servlet-path");
+		scalerServletPath = dlConfig.getAsString("scaler-servlet-name");
 		// IIIF path separator
 		iiifPathSep = dlConfig.getAsString("iiif-slash-replacement");
 		// CORS for info requests
@@ -256,17 +256,27 @@ public class Manifester extends HttpServlet {
 			}
 
 			/*
-			 * get manifest base URL
+			 * configure base URLs for manifest
 			 */
-			String url = request.getRequestURL().toString();
-			// get base URL for Servlets
-			int srvPathLen = request.getServletPath().length() + request.getPathInfo().length();
-			String servletBaseUrl = url.substring(0, url.length() - srvPathLen);
-			// manifest base URL
-			String baseurl = servletBaseUrl + request.getServletPath() + "/" + dlConfig.getAsString("iiif-prefix") + "/" + identifier;
-			
-			params.manifestUrl = baseurl;
-			params.imgApiUrl = servletBaseUrl +"/" + this.scalerServletPath + "/" + dlConfig.getAsString("iiif-prefix");
+			params.imgApiUrl = dlConfig.getAsString("iiif-image-base-url");
+			String manifestBaseUrl = dlConfig.getAsString("iiif-manifest-base-url");
+			if ("".equals(params.imgApiUrl) || "".equals(manifestBaseUrl)) {
+				// try to figure out base URLs
+				String servletBaseUrl = dlConfig.getAsString("webapp-base-url");
+				if ("".equals(servletBaseUrl)) {
+					String url = request.getRequestURL().toString();
+					// get base URL for web application by last occurrence of Servlet path
+					int srvPathLen = url.lastIndexOf(request.getServletPath());
+					servletBaseUrl = url.substring(0, srvPathLen);
+				}
+				// manifest base URL
+				manifestBaseUrl = servletBaseUrl + request.getServletPath() + "/" + dlConfig.getAsString("iiif-prefix");
+				// Image API base URL
+				params.imgApiUrl = servletBaseUrl + "/" + this.scalerServletPath + "/"
+						+ dlConfig.getAsString("iiif-prefix");
+			}
+			// full manifest URL with identifier
+			params.manifestUrl = manifestBaseUrl + "/" + identifier;
 			params.identifier = identifier;
 			params.docuDir = dlDir;
 			
@@ -366,6 +376,7 @@ public class Manifester extends HttpServlet {
 			ImageFileSet imgFs = (ImageFileSet) imgFile;
 			ImageInput img = imgFs.getBiggest();
 			ImageSize imgSize = img.getSize();
+			if (imgSize == null) continue;
 			/*
 			 * canvas
 			 */

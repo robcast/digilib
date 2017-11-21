@@ -30,9 +30,11 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -68,6 +70,9 @@ public abstract class DocuImageImpl implements DocuImage {
 
     /** ImageInput that was read */
     protected ImageInput input;
+    
+    /** image specific hints */
+    protected Map<String, Object> hints = new HashMap<String, Object>();
 
     /** 
      * Returns the version.
@@ -226,6 +231,22 @@ public abstract class DocuImageImpl implements DocuImage {
     @Override
     public void setHacks(String hacks) {
         // doing nothing
+    }
+
+    /* (non-Javadoc)
+     * @see digilib.image.DocuImage#setHint(java.lang.String, java.lang.Object)
+     */
+    @Override
+    public void setHint(String key, Object value) {
+        hints.put(key, value);        
+    }
+
+    /* (non-Javadoc)
+     * @see digilib.image.DocuImage#getHint(java.lang.String)
+     */
+    @Override
+    public Object getHint(String key) {
+        return hints.get(key);
     }
 
 }

@@ -9,7 +9,7 @@
 	<artifactId>digilib-pdf</artifactId>
 	<name>digilib-pdf</name>
 	<description>The Digital Image Library - PDF generation servlet</description>
-	<url>http://digilib.sourceforge.net</url>
+	<url>https://github.com/robcast/digilib</url>
 	<repositories>
     <!-- <repository>
       <id>itextpdf.com</id>

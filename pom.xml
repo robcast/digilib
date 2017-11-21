@@ -13,12 +13,12 @@
 
   <name>digilib</name>
   <description>The Digital Image Library</description>
-  <url>http://digilib.sourceforge.net</url>
+  <url>https://robcast.github.io/digilib/</url>
   <inceptionYear>2001</inceptionYear>
 
   <organization>
     <name>digilib Community</name>
-    <url>http://digilib.sourceforge.net</url>
+    <url>https://robcast.github.io/digilib/</url>
   </organization>
 
   <developers>
@@ -76,13 +76,13 @@
     </license>
   </licenses>
   <scm>
-    <connection>scm:hg:http://hg.code.sf.net/p/digilib/code</connection>
-    <developerConnection>scm:hg:https://hg.code.sf.net/p/digilib/code</developerConnection>
-    <url>https://sourceforge.net/p/digilib/code/ci/default/tree</url>
+    <connection>scm:git:https://github.com/robcast/digilib.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/robcast/digilib.git</developerConnection>
+    <url>https://github.com/robcast/digilib</url>
   </scm>
   <issueManagement>
-    <system>Trac</system>
-    <url>https://it-dev.mpiwg-berlin.mpg.de/tracs/digilib</url>
+    <system>Github Issues</system>
+    <url>https://github.com/robcast/digilib/issues</url>
   </issueManagement>
   <mailingLists>
     <mailingList>

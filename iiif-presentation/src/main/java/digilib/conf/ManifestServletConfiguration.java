@@ -59,8 +59,14 @@ public class ManifestServletConfiguration extends DigilibServletConfiguration {
     public ManifestServletConfiguration() {
         super();
 
+        // base URL used in constructing IIIF manifests including servlet name and iiif-prefix (optional)
+        newParameter("iiif-manifest-base-url", null, null, 'f');
+        // base URL used in constructing IIIF manifests including servlet name and iiif-prefix (optional)
+        newParameter("iiif-image-base-url", null, null, 'f');
+        // web-application base URL used in constructing API paths (optional)
+        newParameter("webapp-base-url", null, null, 'f');
         // Scaler servlet name used in constructing IIIF image API paths
-        newParameter("scaler-servlet-path", "Scaler", null, 'f');
+        newParameter("scaler-servlet-name", "Scaler", null, 'f');
     }
 
     /*

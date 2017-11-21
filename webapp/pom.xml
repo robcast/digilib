@@ -11,7 +11,7 @@
 	<artifactId>digilib-webapp</artifactId>
 	<name>digilib-webapp</name>
 	<description>The Digital Image Library - web application server and HTML and JS clients.</description>
-	<url>http://digilib.sourceforge.net</url>
+	<url>https://github.com/robcast/digilib</url>
 	<packaging>war</packaging>
 	
 	<properties>
@@ -192,6 +192,17 @@
                     </execution> -->
 				</executions>
 			</plugin>
+			<plugin>
+			    <!-- Jetty plugin for "mvn jetty:run" -->
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>9.2.22.v20170606</version>
+                <configuration>
+                    <webApp>
+                        <contextPath>/digilib</contextPath>
+                    </webApp>
+                </configuration>
+            </plugin>
 		</plugins>
 	</build>
 	<profiles>
@@ -386,13 +397,13 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlet</artifactId>
-            <version>9.2.13.v20150730</version>
+            <version>9.2.22.v20170606</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-http</artifactId>
-			<version>9.2.13.v20150730</version>
+			<version>9.2.22.v20170606</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

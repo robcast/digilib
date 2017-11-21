@@ -1,34 +1,30 @@
 # Building digilib with Maven
 
-The easiest way to get the latest and greatest digilib is the [Maven](http://maven.apache.org/) build tool. 
-It will download, compile, and install the latest digilib version and all required libraries.
+The best way to get the latest and greatest digilib is using the [git](https://git-scm.com/) version control and the [Maven](http://maven.apache.org/) build tool. 
+Git will download the digilib code and Maven will compile, and install the latest digilib version and all required libraries.
 
 ## What you need
 
-* [Java](http://www.java.com/) (1.5 or higher)
+* [git](https://git-scm.com/)
+* [Java JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html) (7 or higher)
 * [Maven](http://maven.apache.org/)
-* [Mercurial](http://mercurial.selenic.com/)
-* A Servlet container like [Tomcat](http://tomcat.apache.org/) 
-or [Jetty](http://www.eclipse.org/jetty/) to run the web application.
 
-## Quick build
+## Quick developer build and run
 
-The fastest way to build the digilib web application is to download the digilib 
-project file [pom.xml](https://sourceforge.net/p/digilib/code/ci/default/tree/pom.xml?format=raw)
-(download and save it) and run
-	
-	mvn scm:bootstrap -N
+1. Clone the digilib repository into a directory `digilib`
+   
+        git clone https://github.com/robcast/digilib.git
+   
+2. Change to the directory
+   
+        cd digilib
+   
+3. build and run the webapp in the embedded Jetty runtime for development
+   
+        mvn jetty:run-exploded --projects webapp
+   
+   and watch your digilib at http://localhost:8080/digilib.html
 
-in the same directory as the `pom.xml` file.
-
-This will create a web application directory `digilib-webapp-2.2-SNAPSHOT` 
-and a WAR file `digilib-webapp-2.2-SNAPSHOT-srv3.war` (or similar) 
-in the subdirectory `target/checkout/webapp/target/`
-
-Digilib uses the Asynchronous Servlet API (3.0) by default. You will need Java version 6 
-and Tomcat version 7 or Jetty version 8 or later to use it.
-If you want to use the old non-Asynchronous Servlet API (2.3) add `-Pservlet2`
-to the Maven command line above.
 
 ## Developer build
 
@@ -38,31 +34,27 @@ before you deploy.
 
 To check out the latest source code into the directory `digilib` run
 	
-	hg clone http://hg.code.sf.net/p/digilib/code digilib
+    git clone https://github.com/robcast/digilib.git
+    
+and change into the repository directory
 
-The digilib configuration files are now in `digilib/webapp/src/main/webapp/WEB-INF/`
+    cd digilib
 
 If you want to update your copy of digilib to the latest version at some time in the future 
 just run
 
-	hg pull
-	hg up
-	
-in the `digilib` directory.
+	git pull
 
-To build the resulting source code, change into the `digilib`
-directory you checked out above and run
+The digilib configuration files are in the sub-directory `webapp/src/main/webapp/WEB-INF/` (see below).
+
+To build the resulting source code run
 
 	mvn package
 
-This will create a web application directory `digilib-webapp-2.2-SNAPSHOT`
-and a WAR file `digilib-webapp-2.2-SNAPSHOT-srv3.war` (or similar) in
+This will create a web application directory `digilib-webapp-2.5-SNAPSHOT`
+and a WAR file `digilib-webapp-2.5-SNAPSHOT-srv3.war` (or similar) in
 the subdirectory `webapp/target/` .
 
-Digilib uses the Asynchronous Servlet API (3.0) by default. You will need Java version 6 
-and Tomcat version 7 or Jetty version 8 or later to use it.
-If you want to use the old non-Asynchronous Servlet API (2.3) add `-Pservlet2`
-to the Maven command line above.
 
 ## Deploying the web application by hand
 
@@ -72,20 +64,32 @@ directory of the Servlet container.
 Since the URL of your digilib server starts with the name of the web application
 and the name of the web application is derived from the name of the web
 application directory or the WAR file **please rename the web application directory or WAR file 
-to `digitallibrary` before you start**
+to `digilib` before you start**
 
-Then you should see your digilib running at the URL 
-[http://localhost:8080/digitallibrary/jquery/digilib.html](http://localhost:8080/digitallibrary/jquery/digilib.html)
+Then you should see digilib running at the URL 
+http://localhost:8080/digilib/digilib.html
 
 If you use the unmodified default configuration you should see the digilib logo
 and other sample images from the `sample-images` directory of the web application.
 
+For more detailed documentation see the [deployment instructions](install-digilib.html).
+
 ## Configuring digilib
 
-To change the configuration of digilib just edit the file `digilib-config.xml`
-in the web application directory (`digitallibrary/WEB-INF/digilib-config.xml`).
-Documentation of the configuration options is [here](digilib-config.html).
+To change the configuration of digilib just create and edit the file `digilib-config.xml`
+in the web application WEB-INF directory (`webapp/src/main/webapp/WEB-INF/digilib-config.xml`).
+You can copy and rename the sample file `digilib-config.xml.template` to get some default options to start with.
+Please check the [documentation of the configuration options](digilib-config.html).
 
 You can see a summary of your running digilib configuration at the URL 
-[http://localhost:8080/digitallibrary/server/dlConfig.jsp](http://localhost:8080/digitallibrary/server/dlConfig.jsp)
+http://localhost:8080/digilib/server/dlConfig.jsp
+
+## Additional Maven build options
+
+### servlet2
+
+Digilib uses the Asynchronous Servlet API (3.0) by default. You will need Java version 6 or later 
+and Tomcat version 7 or Jetty version 8 or later to use it.
+If you want to use the old non-Asynchronous Servlet API (2.3) add `-Pservlet2`
+to the Maven command line above.
 
