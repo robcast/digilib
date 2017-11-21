@@ -168,13 +168,15 @@ The IIIF API version for the generated `info.json` information response.
 <parameter name="iiif-info-cors" value="true" />
 ```
 
-Enables the `Cross-Origin Resource Sharing` header in IIIF info requests.
+Enables the [Cross-Origin Resource Sharing](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
+header in IIIF info requests (`Access-Control-Allow-Origin: *`).
 
 ```xml
 <parameter name="iiif-image-cors" value="true" />
 ```
 
-Enables the `Cross-Origin Resource Sharing` header in IIIF image requests.
+Enables the [Cross-Origin Resource Sharing](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
+header in IIIF image requests (`Access-Control-Allow-Origin: *`).
 
 ```xml
 <parameter name="iiif-prefix" value="IIIF" />
