@@ -86,10 +86,66 @@ http://localhost:8080/digilib/server/dlConfig.jsp
 
 ## Additional Maven build options
 
+Some build options have to be activated as Maven profiles with the `-P` command line option
+when building digilib. For example, to build digilib with the Manifester servlet ("iiif-presentation") 
+use:
+
+    mvn -Piiif-presentation package
+
+You can add multiple profiles at the same time if necessary.
+
+
 ### servlet2
 
 Digilib uses the Asynchronous Servlet API (3.0) by default. You will need Java version 6 or later 
 and Tomcat version 7 or Jetty version 8 or later to use it.
-If you want to use the old non-Asynchronous Servlet API (2.3) add `-Pservlet2`
-to the Maven command line above.
+
+`-Pservlet2` builds a servlet with the the old non-Asynchronous Servlet API (2.3).
+
+This creates a WAR file with the postfix "-srv2".
+The build process uses the file `webapp/src/main/webapp/WEB-INF/web-2.4.xml` as `web.xml` file.
+
+### servlet3
+
+`-Pservlet3` builds digillib with the Asynchronous Servlet API (3.0). This is the default profile, it will be used
+if you do not specify any profile.
+
+This creates a WAR file with the postfix "-srv3".
+The build process uses the file `webapp/src/main/webapp/WEB-INF/web-3.0.xml` as `web.xml` file. 
+
+### iiif-presentation
+
+`-Piiif-presentation` builds digilib with the "Manifester" servlet for IIIF Presentation API support 
+(see [digilib IIIF support documentation](iiif-api.html)). 
+
+This creates a WAR file with the postfix "-srv3p".
+The build process uses the file `webapp/src/main/webapp/WEB-INF/web-iiif-pres.xml` as `web.xml` file.
+
+### text
+
+`-Ptext` builds digilib with the "Texter" servlet to download plain text or XML files 
+(see [the source](https://github.com/robcast/digilib/tree/master/text)). You have
+to add `-Pservlet3` or `-Pservlet2` as well.
+
+You also have to copy the mapping for the "Texter" servlet from `web-additional.xml` into the `web.xml` file
+used by the selected servlet API like `web-3.0.xml`.
+
+### pdf
+
+`-Ppdf` builds digilib with the "PDFCache" servlet to generate and download PDF files from images. 
+(see [the source](https://github.com/robcast/digilib/tree/master/pdf)).
+
+You also have to copy the mapping for the "PDFCache" servlet from `web-additional.xml` into the `web.xml` file
+used by the selected servlet API like `web-3.0.xml`.
+
+## create-sprites
+
+`-Pcreate-sprites` re-creates the image sprite file (`webapp/src/main/webapp/jquery/img/dl-buttons-full-32-sprite.png`) 
+from the separate icon image files. This option only needs to be used if you are a developer and you want to 
+change the icon images.
+
+## running tests
+
+`-DskipTests=false` enables some functional tests. The tests are run as part of the normal build process.
+You can also run just the tests with `mvn -DskipTests=false test`.
 
