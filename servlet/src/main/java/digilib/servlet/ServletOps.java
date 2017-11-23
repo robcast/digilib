@@ -495,9 +495,6 @@ public class ServletOps {
                     response.setContentType("application/ld+json");
                 } else {
                     response.setContentType("application/json");
-                    response.setHeader("Link", "<http://iiif.io/api/image/2/context.json>"
-                            +"; rel=\"http://www.w3.org/ns/json-ld#context\""
-                            +"; type=\"application/ld+json\"");
                 }
                 // write info.json
                 ServletOutputStream out = response.getOutputStream();
