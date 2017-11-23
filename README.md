@@ -36,7 +36,7 @@ A versatile image viewing environment for the internet.
 
 `digilib` documentation can be found on the 
 [digilib documentation pages](https://robcast.github.io/digilib/) on GitHub
-or on [SourceForge](http://digilib.sourceforge.net).
+or on [SourceForge](https://sourceforge.net/projects/digilib/).
 
 ## How do I run digilib?
 

@@ -34,8 +34,11 @@ import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 
+import javax.json.Json;
+import javax.json.stream.JsonGenerator;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -482,7 +485,6 @@ public class ServletOps {
                 }
             }
             
-            PrintWriter writer;
             if (dlConfig.getAsString("iiif-api-version").startsWith("2.")) {
                 /*
                  * IIIF Image API version 2 image information
@@ -493,59 +495,99 @@ public class ServletOps {
                     response.setContentType("application/ld+json");
                 } else {
                     response.setContentType("application/json");
-                    response.setHeader("Link", "<http://iiif.io/api/image/2/context.json>"
-                            +"; rel=\"http://www.w3.org/ns/json-ld#context\""
-                            +"; type=\"application/ld+json\"");
                 }
                 // write info.json
-                writer = response.getWriter();
-                writer.println("{");
-                writer.println("\"@context\" : \"http://iiif.io/api/image/2/context.json\",");
-                writer.println("\"@id\" : \"" + url + "\",");
-                writer.println("\"protocol\" : \"http://iiif.io/api/image\",");
-                writer.println("\"width\" : " + size.width + ",");
-                writer.println("\"height\" : " + size.height + ",");
-                writer.println("\"profile\" : [");
-                writer.println("  \"http://iiif.io/api/image/2/level2.json\",");
-                writer.println("  {");
-                writer.println("    \"formats\" : [\"jpg\", \"png\"],");
-                writer.println("    \"qualities\" : [\"color\", \"gray\"],");
+                ServletOutputStream out = response.getOutputStream();
+                JsonGenerator info = Json.createGenerator(out);
+                // top level object
+                info.writeStartObject()
+                .write("@context", "http://iiif.io/api/image/2/context.json")
+                .write("@id", url)
+                .write("protocol", "http://iiif.io/api/image")
+                .write("width", size.width)
+                .write("height", size.height);
+                // profile[ array
+                info.writeStartArray("profile")
+                // profile[ level
+                .write("http://iiif.io/api/image/2/level2.json");
+                // profile[{ object
+                info.writeStartObject();
+                // profile[{formats[
+                info.writeStartArray("formats")
+                .write("jpg")
+                .write("png")
+                .writeEnd();
+                // profile[{qualities[
+                info.writeStartArray("qualities")
+                .write("color")
+                .write("gray")
+                .writeEnd();
+                // profile[{maxArea
                 if (dlConfig.getAsInt("max-image-size") > 0) {
-                	writer.println("    \"maxArea\" : " + dlConfig.getAsInt("max-image-size") + ",");
+                    info.write("maxArea", dlConfig.getAsInt("max-image-size"));
                 }
-                writer.println("    \"supports\" : ["
-                		+ "\"mirroring\", \"rotationArbitrary\", \"sizeAboveFull\", \"regionSquare\""
-                		+ "]");
-                writer.println("  }]");
+                // profile[{supports[
+                info.writeStartArray("supports")
+                .write("mirroring")
+                .write("rotationArbitrary")
+                .write("sizeAboveFull")
+                .write("regionSquare")
+                .writeEnd();
+                // profile[{}
+                info.writeEnd();
+                // profile[]
+                info.writeEnd();
                 // add size of original and prescaled images
                 int numImgs = imageSet.size();
                 if (numImgs > 0) {
-                    writer.println(", \"sizes\" : [");
+                    // sizes[
+                    info.writeStartArray("sizes");
                     for (int i = numImgs - 1; i >= 0; --i) {
                         ImageInput ii = imageSet.get(i);
                         ImageSize is = ii.getSize();
-                        writer.println("  {\"width\" : "+is.getWidth()+", \"height\" : "+is.getHeight()+"}"
-                                +((i > 1)?",":""));
+                        // sizes[{
+                        info.writeStartObject()
+                        .write("width", is.getWidth())
+                        .write("height", is.getHeight())
+                        .writeEnd();
                     }
-                    writer.println("]");
+                    // sizes[]
+                    info.writeEnd();
                 }
-                writer.println("}");
-                
+                // end info.json
+                info.writeEnd();
+                info.close();
+
             } else {
                 /*
                  * IIIF Image API version 1 image information
                  */
                 response.setContentType("application/json,application/ld+json");
-                writer = response.getWriter();
-                writer.println("{");
-                writer.println("\"@context\" : \"http://library.stanford.edu/iiif/image-api/1.1/context.json\",");
-                writer.println("\"@id\" : \"" + url + "\",");
-                writer.println("\"width\" : " + size.width + ",");
-                writer.println("\"height\" : " + size.height + ",");
-                writer.println("\"formats\" : [\"jpg\", \"png\"],");
-                writer.println("\"qualities\" : [\"native\", \"color\", \"grey\"],");
-                writer.println("\"profile\" : \"http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2\"");
-                writer.println("}");
+                // write info.json
+                ServletOutputStream out = response.getOutputStream();
+                JsonGenerator info = Json.createGenerator(out);
+                // top level object
+                info.writeStartObject()
+                .write("@context", "http://library.stanford.edu/iiif/image-api/1.1/context.json")
+                .write("@id", url)
+                .write("width", size.width)
+                .write("height", size.height);
+                // formats[
+                info.writeStartArray("formats")
+                .write("jpg")
+                .write("png")
+                .writeEnd();
+                // qualities[
+                info.writeStartArray("qualities")
+                .write("native")
+                .write("color")
+                .write("gray")
+                .writeEnd();
+                // profile
+                info.write("profile", "http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2");
+                // end info.json
+                info.writeEnd();
+                info.close();
             }
         } catch (IOException e) {
             throw new ServletException("Unable to write response!", e);

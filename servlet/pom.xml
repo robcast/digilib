@@ -27,9 +27,20 @@
   		<scope>provided</scope>
   	</dependency>
   	<dependency>
+  	    <!-- implementation of JWT JOSE specification -->
   		<groupId>org.bitbucket.b_c</groupId>
   		<artifactId>jose4j</artifactId>
   		<version>0.5.0</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>javax.json</groupId>
+  		<artifactId>javax.json-api</artifactId>
+  		<version>1.0</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.glassfish</groupId>
+  		<artifactId>javax.json</artifactId>
+  		<version>1.0.4</version>
   	</dependency>
   </dependencies>
 </project>

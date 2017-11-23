@@ -35,7 +35,7 @@ If relative paths are provided as file locations, these will be resolved with
 the web application's directory as base.
 
 You can inspect a summary of your running digilib configuration at the URL
-`<base_url>/server/dlConfig.jsp`.
+`<base_url>/server/dlConfig.jsp` e.g. <http://localhost:8080/digilib/server/dlConfig.jsp>.
 
 ### Image locations
 
@@ -44,7 +44,7 @@ You can inspect a summary of your running digilib configuration at the URL
 ```
 
 A list of directories where images are searched. See
-[this document](image-directories.html) for details.
+[this document](image-directories.html) for details (**required**).
 
 ```xml
 <parameter name="denied-image" value="img/digilib-denied.png" />
@@ -79,7 +79,7 @@ The location of the mapping file. Refer to
 [digilib-map.xml.template](https://github.com/robcast/digilib/blob/master/webapp/src/main/webapp/WEB-INF/digilib-map.xml.template)
 for an example. 
 
-The file contains `mapping` elements with a `link` attribute containing a 'virtual directory' name that is mapped to the 
+The file contains `mapping` elements with a `link` attribute containing a 'virtual directory' name that is redirected to the 
 directory given in the `dir` attribute.
 
 
@@ -122,6 +122,13 @@ Details are provided in the
 [documentation on authentication and authorization](auth.html).
 
 ```xml
+<parameter name="use-authorization" value="false" />
+```
+
+Enables or disables all authorization. If `use-authorization` is `true` you also have to configure
+`authnops-class`, `authzops-class` and the `auth-file` and its contents.
+
+```xml
 <parameter name="auth-file" value="digilib-auth.xml" />
 ```
 
@@ -146,13 +153,6 @@ The class to handle authentication.
 
 The class to handle authorization.
 
-```xml
-<parameter name="use-authorization" value="false" />
-```
-
-Enable or disable all authorization. If `use-authorization` is `true` it also needs to be configured
-using `authnops-class` and `authzops-class` and the `auth-file`.
-
 
 ### IIIF API options
 
@@ -168,13 +168,15 @@ The IIIF API version for the generated `info.json` information response.
 <parameter name="iiif-info-cors" value="true" />
 ```
 
-Enables the `Cross-Origin Resource Sharing` header in IIIF info requests.
+Enables the [Cross-Origin Resource Sharing](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
+header in IIIF info requests (`Access-Control-Allow-Origin: *`).
 
 ```xml
 <parameter name="iiif-image-cors" value="true" />
 ```
 
-Enables the `Cross-Origin Resource Sharing` header in IIIF image requests.
+Enables the [Cross-Origin Resource Sharing](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
+header in IIIF image requests (`Access-Control-Allow-Origin: *`).
 
 ```xml
 <parameter name="iiif-prefix" value="IIIF" />
@@ -195,7 +197,7 @@ The character that replaces a slash in the identifier of IIIF requests.
 <parameter name="max-waiting-threads" value="20" />
 ```
 
-The maximum number of requests waiting in the queue before sending "service unavailable".
+The maximum number of requests waiting in the queue before new requests get "service unavailable".
 
 ```xml
 <parameter name="worker-threads" value="2" />
@@ -210,7 +212,7 @@ The maximum number of concurrently working threads.
 Timeout for worker threads in milliseconds.
 
 
-### Assorted options
+### Other options
 
 ```xml
 <parameter name="default-errmsg-type" value="image" />
@@ -234,39 +236,45 @@ and lead to resource issues if digilib runs for a long time.
 <parameter name="log-config-file" value="log4j-config.xml" />
 ```
 
-Location of the logging configuration file. The current logger is 
+Location of the logging configuration file. The current logging library is 
 [Log4J 1.2](https://logging.apache.org/log4j/1.2/manual.html).
 
+### Options for developers
 
-### Unknown category
-
-**TODO** move items to appropriate sections
-
-```xml
-<parameter name="dirmeta-class" value="digilib.meta.IndexMetaDirMeta" />
-```
-
-Class for **TODO**.
-
-```xml
-<parameter name="docudirectory-class" value="digilib.io.BaseDirDocuDirectory" />
-```
-
-Class for **TODO**.
+Using these options you can replace default classes used by digilib with your own implementations
+to change the behaviour of digilib. 
 
 ```xml
 <parameter name="docuimage-class" value="digilib.image.ImageLoaderDocuImage" />
 ```
 
-Class for the `DocuImage` instance, **TODO** elaborate intended use
+
+Class of the `DocuImage` instance. You can replace the `digilib.image.DocuImage` implementation to use a different image
+toolkit than Java ImageIO. (There are deprecated alternative implementations in the `common-jai`,
+`common-imagej` and `common-bioformats` modules.) 
 
 ```xml
 <parameter name="docuimage-hacks" value="" />
 ```
 
-**TODO** elaborate
+Text string to selectively enable specific `Hacks` in the `DocuImage` implementation
+(see [the source](https://github.com/robcast/digilib/blob/master/common/src/main/java/digilib/image/ImageLoaderDocuImage.java))
 
 ```xml
 <parameter name="filemeta-class" value="digilib.meta.IndexMetaFileMeta" />
+<parameter name="dirmeta-class" value="digilib.meta.IndexMetaDirMeta" />
 ```
-Class for **TODO**.
+
+Classes of the `digilib.meta.FileMeta` and `digilib.meta.DirMeta` implementations. You can change these implementations
+to change the way digilib finds metadata about image files.
+
+`IndexMetaFileMeta` and `IndexMetaDirMeta` read metadata from `index.meta` and `*.meta` XML files according to
+the [index meta standard](http://intern.mpiwg-berlin.mpg.de/digitalhumanities/mpiwg-metadata-documentation/formate/indexmeta-standard).
+
+```xml
+<parameter name="docudirectory-class" value="digilib.io.BaseDirDocuDirectory" />
+```
+
+Class of the `digilib.io.DocuDirectory` implementation. You can change this implementation to change the way
+digilib finds image files (including different resolutions).
+
