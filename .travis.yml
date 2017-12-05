@@ -1,1 +1,4 @@
 language: java
+sudo: false
+# run real tests
+script: mvn -DskipTests=false test -B
