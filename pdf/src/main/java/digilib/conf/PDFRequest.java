@@ -37,7 +37,6 @@ import org.apache.log4j.Logger;
 import digilib.image.ImageJobDescription;
 import digilib.image.ImageOpException;
 import digilib.io.DocuDirectory;
-import digilib.io.FileOpException;
 import digilib.util.NumRange;
 import digilib.util.OptionsSet;
 import digilib.util.ParameterMap;
@@ -95,6 +94,8 @@ public class PDFRequest extends ParameterMap {
 		newParameter("dw", new Integer(0), null, 's');
 		// height of client in pixels
 		newParameter("dh", new Integer(500), null, 's');
+        // page number (used internally)
+        newParameter("pn", new Integer(1), null, 'i');
 	}
 	
 	/* (non-Javadoc)

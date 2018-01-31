@@ -111,9 +111,10 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 
 		for (int p : pgs) {
 			logger.debug("PDF: adding Image " + p + " to " + outstream);
+            // set page number
+            job_info.setValue("pn", p);
 			// create ImageJobInformation
 			ImageJobDescription iji = ImageJobDescription.getInstance(job_info, job_info.getDlConfig());
-			iji.setValue("pn", p);
 			addImage(doc, iji);
 			logger.debug("PDF: done adding Image " + p + " to " + outstream);
 		}
