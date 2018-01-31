@@ -88,9 +88,11 @@ public class PDFCache extends HttpServlet {
     private static String JSP_ERROR = "/pdf/error.jsp";
 
     /**
-     * document status. DONE: document exists in cache WIP: document is
-     * "work in progress" NONEXISTENT: document does not exist in cache and is
-     * not in progress ERROR: an error occurred while processing the request
+     * Document status. 
+     * DONE: document exists in cache 
+     * WIP: document is "work in progress" 
+     * NONEXISTENT: document does not exist in cache and is not in progress 
+     * ERROR: an error occurred while processing the request
      */
     public static enum PDFStatus {
         DONE, WIP, NONEXISTENT, ERROR

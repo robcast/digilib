@@ -112,7 +112,7 @@ public class PDFTitlePage {
 		Anchor title = new Anchor(new Paragraph(getTitle(),FontFactory.getFont(FontFactory.HELVETICA,16)));
 		String burl = job_info.getImageJobInformation().getAsString("base.url");
 		
-		title.setReference(burl+"digilib.jsp?fn="+job_info.getImageJobInformation().getAsString("fn"));
+		title.setReference(burl+"digilib.html?fn="+job_info.getImageJobInformation().getAsString("fn"));
 		content.add(title);		
 		content.add(Chunk.NEWLINE);
 
