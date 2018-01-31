@@ -274,7 +274,25 @@
 					<type>jar</type>
 					<scope>compile</scope>
 				</dependency>
+                <dependency>
+                    <groupId>digilib</groupId>
+                    <artifactId>digilib-servlet3</artifactId>
+                    <type>jar</type>
+                    <scope>compile</scope>
+                </dependency>
 			</dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <configuration>
+                            <webXml>${basedir}/src/main/webapp/WEB-INF/web-pdf.xml</webXml>
+                            <classifier>srv3pdf</classifier>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
 		</profile>
 		<profile>
 			<id>text</id>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app
+        xmlns="http://java.sun.com/xml/ns/javaee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+        version="3.0">
+        
+  <!-- General description of your web application -->
+  <display-name>
+        digilib
+  </display-name>
+  <description>
+        This is the web frontend of the Digital Document Library.
+  </description>
+  <!-- The Intialisation Listener (also configured by annotation) -->
+  <listener>
+        <listener-class>
+            digilib.conf.DigilibServlet3Configuration
+        </listener-class>
+  </listener>
+  <!-- The Scaler servlet (also configured by annotation) -->
+  <servlet>
+        <servlet-name>
+            Scaler
+        </servlet-name>
+        <servlet-class>
+            digilib.servlet.Scaler
+        </servlet-class>
+        <!-- Load this servlet at server startup time -->
+        <load-on-startup>
+            5
+        </load-on-startup>
+        <!-- yes we do use async, Jetty! -->
+        <async-supported>true</async-supported>
+  </servlet>
+  <!-- The mapping for the Scaler servlet -->
+  <servlet-mapping>
+        <servlet-name>
+            Scaler
+        </servlet-name>
+        <url-pattern>
+            /servlet/Scaler/*
+        </url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+        <servlet-name>
+            Scaler
+        </servlet-name>
+        <url-pattern>
+            /Scaler/*
+        </url-pattern>
+  </servlet-mapping>
+  
+    <!-- The PDFCache servlet -->
+    <servlet>
+        <servlet-name>PDFCache</servlet-name>
+        <servlet-class>digilib.servlet.PDFCache</servlet-class>
+    </servlet>
+    <!-- The Intialisation Listener -->
+    <listener>
+        <listener-class>
+            digilib.conf.PDFServletConfiguration
+        </listener-class>
+    </listener>
+    <!-- The mapping for the PDFCache servlet -->
+    <servlet-mapping>
+        <servlet-name>PDFCache</servlet-name>
+        <url-pattern>/PDFCache/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PDFCache</servlet-name>
+        <url-pattern>/servlet/PDFCache/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PDFCache</servlet-name>
+        <url-pattern>/authenticated/servlet/PDFCache/*</url-pattern>
+    </servlet-mapping>
+
+  
+</web-app>
