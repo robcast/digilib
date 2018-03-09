@@ -81,6 +81,9 @@ public class Texter extends HttpServlet {
 
 	/** use authentication */
     protected boolean useAuthorization = false;
+    
+    /** default text directory */
+    protected String defaultDir = "txt";
 
 	/*
 	 * (non-Javadoc)
@@ -111,7 +114,9 @@ public class Texter extends HttpServlet {
 		// DocuDirCache instance
 		dirCache = (DocuDirCache) dlConfig.getValue(TextServletConfiguration.TEXT_DIR_CACHE_KEY);
         // configure ServletOps
-        ServletOps.setDlConfig(dlConfig);        
+        ServletOps.setDlConfig(dlConfig);
+        // set default dir
+        defaultDir = dlConfig.getAsString("text-default-dir");
 	}
 
 	/*
@@ -153,11 +158,13 @@ public class Texter extends HttpServlet {
 			/*
 			 * find the file to load/send
 			 */
-			TextFile f = getTextFile(dlRequest, "/txt");
+			// try default directory
+			TextFile f = getTextFile(dlRequest, defaultDir);
 			if (f != null) {
 				ServletOps.sendFile(f.getFile(), null, null, response, logger);
 			} else {
-				f = getTextFile(dlRequest, "");
+				// try without default directory
+				f = getTextFile(dlRequest, null);
 				if (f != null) {
 					ServletOps.sendFile(f.getFile(), null, null, response, logger);
 				} else {
@@ -190,9 +197,11 @@ public class Texter extends HttpServlet {
 	 *            be found.
 	 * @return The wanted Textfile or null if there wasn't a file.
 	 */
-
 	protected TextFile getTextFile(DigilibServletRequest dlRequest, String subDirectory) {
-		String loadPathName = dlRequest.getFilePath() + subDirectory;
+		String loadPathName = dlRequest.getFilePath();
+		if (subDirectory != null) {
+			loadPathName = dlRequest.getFilePath() + "/" + subDirectory;
+		}
 		// find the file(set)
 		return (TextFile) dirCache.getFile(loadPathName, dlRequest.getAsInt("pn"));
 	}

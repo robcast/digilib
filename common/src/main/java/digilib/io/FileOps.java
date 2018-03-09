@@ -44,10 +44,11 @@ public class FileOps {
 			{ "jpeg", "image/jpeg" }, { "jp2", "image/jp2" },
 			{ "png", "image/png" }, { "gif", "image/gif" },
 			{ "tif", "image/tiff" }, { "tiff", "image/tiff" },
-                        { "fpx", "image/fpx" },
+            { "fpx", "image/fpx" }, { "svg", "image/svg+xml" },
 			{ "txt", "text/plain" }, { "html", "text/html" },
 			{ "htm", "text/html" }, { "xml", "text/xml" },
-			{ "svg", "image/svg+xml" }, { "meta", "text/xml" } };
+			{ "meta", "text/xml" }, { "json", "application/json" }
+			};
 
 	public static Map<String, String> fileTypes;
 
@@ -98,8 +99,10 @@ public class FileOps {
 		if (mt == null) {
 			return FileClass.NONE;
 		}
-		if (mt.startsWith("image/svg")) {
+		if (mt.equals("image/svg")) {
 			return FileClass.SVG;
+		} else if (mt.equals("application/json")) {
+			return FileClass.TEXT;
 		} else if (mt.startsWith("image")) {
 			return FileClass.IMAGE;
 		} else if (mt.startsWith("text")) {

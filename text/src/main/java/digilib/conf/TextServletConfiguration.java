@@ -51,7 +51,7 @@ public class TextServletConfiguration extends DigilibServletConfiguration {
     public static final String TEXT_DIR_CACHE_KEY = "text.servlet.dir.cache";    
     
     public static String getClassVersion() {
-        return "2.3.0 txt";
+    		return DigilibServletConfiguration.getClassVersion()+ " txt";
     }
 
     /** non-static getVersion for Java inheritance */
@@ -66,6 +66,9 @@ public class TextServletConfiguration extends DigilibServletConfiguration {
      */
     public TextServletConfiguration() {
         super();
+        // default text file subdirectory
+        newParameter("text-default-dir", null, null, 'f');
+        
         // text cache instance
         newParameter(TEXT_DIR_CACHE_KEY, null, null, 's');
     }
