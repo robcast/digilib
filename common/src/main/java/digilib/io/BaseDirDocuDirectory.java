@@ -77,77 +77,77 @@ public class BaseDirDocuDirectory extends DocuDirectory {
     }
 
     @Override
-    public synchronized boolean readDir() {
-    	// check directory first
-    	if (!isValid) {
-    		return false;
-    	}
-    	// re-check modification time because the thread may have slept
-    	if (dir.lastModified() <= dirMTime) {
-    		return true;
-    	}
-    	// read all filenames
-    	logger.debug("reading directory "+this+" = "+dir.getPath());
-    	File[] allFiles = null;
-    	/*
-    	 * using ReadableFileFilter is safer (we won't get directories with file
-    	 * extensions) but slower.
-    	 */
-    	// allFiles = dir.listFiles(new FileOps.ReadableFileFilter());
-    	allFiles = dir.listFiles();
-    	if (allFiles == null) {
-    		// not a directory
-    		return false;
-    	}
-    	// init parallel directories
-    	if (dirs == null) {
-    		// number of base dirs
-    		int nb = baseDirNames.length;
-    		// array of parallel dirs
-    		dirs = new Directory[nb];
-    		// first entry is this directory
-    		dirs[0] = this;
-    		// fill array with the remaining directories
-    		for (int j = 1; j < nb; j++) {
-    			// add dirName to baseDirName
-    			File d = new File(baseDirNames[j], dirName);
-    			if (d.isDirectory()) {
-    				dirs[j] = new Directory(d);
-    				logger.debug("  reading scaled directory " + d.getPath());
-    				dirs[j].readDir();
-    			}
-    		}
-    	}
-    
-    	File[] fileList = FileOps.listFiles(allFiles, FileOps.filterForClass(fileClass));
-    	// number of files in the directory
-    	int numFiles = fileList.length;
-    	if (numFiles > 0) {
-    		// create new list
-    		ArrayList<DocuDirent> dl = new ArrayList<DocuDirent>(numFiles);
-    		files = dl;
-    		for (File f : fileList) {
-    			DocuDirent df = FileOps.fileForClass(fileClass, f, dirs);
-    			df.setParent(this);
-    			// add the file to our list
-    			dl.add(df);
-    		}
-    		/*
-    		 * we sort the ArrayList (the list of files) for binarySearch to work 
-    		 * (DocuDirent's natural sort order is by filename)
-    		 */
-    		Collections.sort(dl);
-    	}
-    	// clear the scaled directories
-    	for (Directory d: dirs) {
-    		if (d != null) {
-    			d.clearFilenames();
-    		}
-    	}
-    	dirMTime = dir.lastModified();
-    	// read metadata as well
-    	readMeta();
-    	return isValid;
+	public synchronized boolean readDir() {
+		// check directory first
+		if (!isValid) {
+			return false;
+		}
+		// re-check modification time because the thread may have slept
+		if (dir.lastModified() <= dirMTime) {
+			return true;
+		}
+		// read all filenames
+		logger.debug("reading directory " + this + " = " + dir.getPath());
+		File[] allFiles = null;
+		/*
+		 * using ReadableFileFilter is safer (we won't get directories with file
+		 * extensions) but slower.
+		 */
+		// allFiles = dir.listFiles(new FileOps.ReadableFileFilter());
+		allFiles = dir.listFiles();
+		if (allFiles == null) {
+			// not a directory
+			return false;
+		}
+		// init parallel directories
+		if (dirs == null) {
+			// number of base dirs
+			int nb = baseDirNames.length;
+			// array of parallel dirs
+			dirs = new Directory[nb];
+			// first entry is this directory
+			dirs[0] = this;
+			// fill array with the remaining directories
+			for (int j = 1; j < nb; j++) {
+				// add dirName to baseDirName
+				File d = new File(baseDirNames[j], dirName);
+				if (d.isDirectory()) {
+					dirs[j] = new Directory(d);
+					logger.debug("  reading scaled directory " + d.getPath());
+					dirs[j].readDir();
+				}
+			}
+		}
+
+		File[] fileList = FileOps.listFiles(allFiles, FileOps.filterForClass(fileClass));
+		// number of files in the directory
+		int numFiles = fileList.length;
+		if (numFiles > 0) {
+			// create new list
+			ArrayList<DocuDirent> dl = new ArrayList<DocuDirent>(numFiles);
+			files = dl;
+			for (File f : fileList) {
+				DocuDirent df = FileOps.fileForClass(fileClass, f, dirs);
+				df.setParent(this);
+				// add the file to our list
+				dl.add(df);
+			}
+			/*
+			 * we sort the ArrayList (the list of files) for binarySearch to work
+			 * (DocuDirent's natural sort order is by filename)
+			 */
+			Collections.sort(dl);
+		}
+		// clear the scaled directories
+		for (Directory d : dirs) {
+			if (d != null) {
+				d.clearFilenames();
+			}
+		}
+		dirMTime = dir.lastModified();
+		// read metadata as well
+		readMeta();
+		return isValid;
     }
 
 }

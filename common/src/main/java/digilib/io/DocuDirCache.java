@@ -156,7 +156,7 @@ public class DocuDirCache {
     
     /**
 	 * Returns the DocuDirent with the pathname <code>fn</code> and the index
-	 * <code>in</code> and the class <code>fc</code>.
+	 * <code>in</code>.
 	 * 
 	 * If <code>fn</code> is a file then the corresponding DocuDirent is
 	 * returned and the index is ignored.
@@ -165,8 +165,6 @@ public class DocuDirCache {
 	 *            digilib pathname
 	 * @param in
 	 *            file index
-	 * @param fc
-	 *            file class
 	 * @return
 	 */
 	public DocuDirent getFile(String fn, int in) {
