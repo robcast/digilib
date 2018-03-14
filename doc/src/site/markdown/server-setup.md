@@ -1,8 +1,8 @@
-# Server setups for digilib
+# Server setup for digilib
 
 There are a variety of ways to deploy digilib on different server configurations for production sites. 
 
-Here are some examples.
+Here are some examples and tips.
 
 ## nginx as proxy
 
@@ -35,6 +35,65 @@ server {
 }
 ```
 
-## Resources
+### Resources
 
 - the [nginx documentation](nginx.org/en/docs/)
+
+## Apache as proxy and load-balancer
+
+This is an example configuration for [Apache](https://httpd.apache.org/) as a proxy and load balancer for two instances of 
+digilib (one running on localhost, port 8080 and another on otherserver, port 8080), using SSL and http/2:
+
+```
+<VirtualHost *:443>
+    # HTTP/2 protocol (Apache 2.4.29 and later)
+    Protocols h2 http/1.1
+    ServerName digilib.example.com
+    SSLCertificateFile /etc/ssl/private/digilib-cert.pem
+    SSLCertificateKeyFile /etc/ssl/private/digilib-key.pem
+    SSLEngine on
+
+    DocumentRoot /var/www
+    <Directory />
+        Options FollowSymLinks
+        AllowOverride None
+    </Directory>
+    <Directory /var/www/>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride None
+        Order allow,deny
+        allow from all
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/digilib-ssl-error.log
+    LogLevel warn
+    CustomLog ${APACHE_LOG_DIR}/digilib-ssl-access.log combined
+
+    # do not forward-proxy!
+    ProxyRequests off
+    # set proxy proto header
+    RequestHeader set X-Forwarded-Proto "https"
+    # digilib instances 
+    <Proxy balancer://digilibs>
+       BalancerMember http://127.0.0.1:8080
+       BalancerMember http://otherserver.example.com:8080
+    </Proxy>
+    # balance by busy-ness
+    ProxyPass /digitallibrary balancer://digilibs/digitallibrary lbmethod=bybusyness
+    ProxyPassReverse /digitallibrary balancer://digilibs/digitallibrary
+
+    # balancer-manager frontend (be careful!)
+    <Location /balancer-manager>
+        SetHandler balancer-manager
+        Require host localhost
+    </Location>
+</VirtualHost>
+```
+
+## Jetty behind a proxy
+
+When you are using [Jetty](https://www.eclipse.org/jetty/) as servlet container behind an Apache or nginx proxy
+then you should make sure that Jetty processes the `X-Forwarded-*` headers from the proxy server to derive the 
+correct request URL for the servlets.
+
+Please see [this information for Jetty 9.4](http://www.eclipse.org/jetty/documentation/9.4.x/configuring-connectors.html#_proxy_load_balancer_connection_configuration) or [this information for Jetty 8 and earlier versions](https://wiki.eclipse.org/Jetty/Tutorial/Apache#Configuring_mod_proxy_http).

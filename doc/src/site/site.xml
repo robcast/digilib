@@ -31,7 +31,7 @@
     <menu name="Installation">
       <item name="Building digilib" href="build-maven.html"/>
       <item name="Installing digilib" href="install-digilib.html"/>
-      <item name="Server setups" href="server-setups.html"/>
+      <item name="Server setup" href="server-setup.html"/>
     </menu>
     <menu name="Configuration">
       <item name="Configuring digilib" href="digilib-config.html"/>
