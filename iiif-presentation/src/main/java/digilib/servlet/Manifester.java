@@ -1,5 +1,7 @@
 package digilib.servlet;
 
+import java.io.File;
+
 /*
  * #%L
  * 
@@ -49,6 +51,7 @@ import digilib.conf.DigilibRequest.ParsingOption;
 import digilib.conf.DigilibServletConfiguration;
 import digilib.conf.DigilibServletRequest;
 import digilib.conf.ManifestServletConfiguration;
+import digilib.image.ImageOpException;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
 import digilib.io.DocuDirent;
@@ -153,6 +156,7 @@ public class Manifester extends HttpServlet {
 			dlRequest.setValueFromString("fn", dlRequest.decodeIiifIdentifier(identifier));
             DocuDirectory dd = dirCache.getDirectory(dlRequest.getFilePath());
             if (dd != null) {
+            	// return rounded modification date of directory
                 mtime = dd.getDirMTime() / 1000 * 1000;
             }
         } catch (Exception e) {
@@ -217,7 +221,10 @@ public class Manifester extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND);
 				return;
 			}
-            if (dlDir.size() == 0) {
+			// check for existing manifest file
+			File mfFile = new File(dlDir.getDir(), "manifest.json");
+			// check for image files
+            if ((dlDir.size() == 0) && !mfFile.canRead()) {
                 logger.debug("Directory has no files: " + dlFn);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;
@@ -253,6 +260,12 @@ public class Manifester extends HttpServlet {
 				response.setContentType("application/ld+json");
 			} else {
 				response.setContentType("application/json");
+			}
+
+			if (mfFile.canRead()) {
+				// send manifest file
+				ServletOps.sendFile(mfFile, "", "", response);
+				return;
 			}
 
 			/*
@@ -299,6 +312,8 @@ public class Manifester extends HttpServlet {
 			manifest.close();
 
 		} catch (IOException e) {
+			logger.error("ERROR sending manifest: ", e);
+		} catch (ImageOpException e) {
 			logger.error("ERROR sending manifest: ", e);
 		} catch (AuthOpException e) {
 			logger.debug("Permission denied.");

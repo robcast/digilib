@@ -72,6 +72,27 @@
         <url-pattern>/Manifester/*</url-pattern>
     </servlet-mapping>
 
+    <!-- The Texter servlet -
+    <servlet>
+        <servlet-name>Texter</servlet-name>
+        <servlet-class>digilib.servlet.Texter</servlet-class>
+    </servlet> -->
+    <!-- The Intialisation Listener -
+    <listener>
+        <listener-class>
+            digilib.conf.TextServletConfiguration
+        </listener-class>
+    </listener> -->
+    <!-- The mapping for the Texter servlet -
+    <servlet-mapping>
+        <servlet-name>Texter</servlet-name>
+        <url-pattern>/servlet/Texter/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Texter</servlet-name>
+        <url-pattern>/Texter/*</url-pattern>
+    </servlet-mapping>
+-->
 
   
 </web-app>

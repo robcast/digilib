@@ -285,26 +285,29 @@ public class ServletOps {
                 throw new ImageOpException("Unknown file type.");
             }
         }
-        response.setContentType(mt);
+        if (!mt.isEmpty()) {
+        	response.setContentType(mt);
+        }
         
         /*
-         * set content-disposition with filename.
-         * uses image filename.
+         * set content-disposition with filename unless name="".
          */
         if (name == null) {
             // no download name -- use filename
             name = f.getName();
         }
-        if (mt.startsWith("application")) {
-            response.addHeader("Content-Disposition", "attachment; filename=\"" + name + "\"");
-        } else {
-            response.addHeader("Content-Disposition", "inline; filename=\"" + name + "\"");
-        }
+		if (!name.isEmpty()) {
+			if (mt.startsWith("application")) {
+				response.addHeader("Content-Disposition", "attachment; filename=\"" + name + "\"");
+			} else {
+				response.addHeader("Content-Disposition", "inline; filename=\"" + name + "\"");
+			}
+		}
 
         /*
-         * set CORS header ACAO "*" for image response
+         * set CORS header ACAO "*" for image or info response
          */
-        if (corsForImageRequests) {
+        if (corsForImageRequests && !mt.isEmpty()) {
             // TODO: would be nice to check request for Origin header
             response.setHeader("Access-Control-Allow-Origin", "*");
         }

@@ -100,6 +100,8 @@ public class Directory {
 	}
 	
 	/**
+	 * Returns the directory File object.
+	 * 
 	 * @return
 	 */
 	public File getDir() {
@@ -107,6 +109,7 @@ public class Directory {
 	}
 
 	/**
+	 * Sets the directory File object.
 	 * @param dir
 	 */
 	public void setDir(File dir) {
@@ -114,6 +117,7 @@ public class Directory {
 	}
 	
 	/**
+	 * Returns the parent Directory object.
 	 * @return
 	 */
 	public Directory getParent() {
@@ -121,6 +125,7 @@ public class Directory {
 	}
 
 	/**
+	 * Sets the parent Directory object.
 	 * @param parent
 	 */
 	public void setParent(Directory parent) {
@@ -129,19 +134,24 @@ public class Directory {
 
 
 	/**
-	 * @return Returns the filenames.
+	 * Returns the filenames.
+	 * @return 
 	 */
 	public String[] getFilenames() {
 		return list;
 	}
 	
 	/**
-	 * @param filenames The filenames to set.
+	 * Sets the filenames.
+	 * @param filenames 
 	 */
 	public void setFilenames(String[] filenames) {
 		this.list = filenames;
 	}
 	
+	/**
+	 * Resets the filenames.
+	 */
 	public void clearFilenames() {
 		this.list = null;
 	}
