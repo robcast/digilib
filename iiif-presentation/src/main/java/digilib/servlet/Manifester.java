@@ -1,6 +1,8 @@
 package digilib.servlet;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 /*
  * #%L
@@ -32,8 +34,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map.Entry;
 
 import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
 import javax.json.stream.JsonGenerator;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -268,6 +276,12 @@ public class Manifester extends HttpServlet {
 				return;
 			}
 
+			// check for manifest-meta.json file with additional metadata
+			File mfMetaFile = new File(dlDir.getDir(), "manifest-meta.json");
+			if (mfMetaFile.canRead()) {
+				params.mfMetaFile = mfMetaFile;
+			}
+			
 			/*
 			 * configure base URLs for manifest
 			 */
@@ -331,14 +345,55 @@ public class Manifester extends HttpServlet {
      * @param params 
      */
     protected void writeManifestMeta(JsonGenerator manifest, String dlFn, ManifestParams params) {
+    	// write manifest header
         manifest.write("@context", "http://iiif.io/api/presentation/2/context.json")
-            .write("@type", "sc:Manifest")
-            .write("@id", params.manifestUrl + "/manifest")
-            .write("label", "[Scanned work " + dlFn + "]")
-            .write("description", "[Automatically generated manifest for scanned work " + dlFn + "]");
+        .write("@type", "sc:Manifest")
+        .write("@id", params.manifestUrl + "/manifest");
+
+        boolean hasLabel = false;
+		boolean hasDescription = false;
+        
+    	if (params.mfMetaFile != null) {
+    		// read manifest-meta.json
+    		try {
+				JsonReader reader = Json.createReader(new FileInputStream(params.mfMetaFile));
+				// manifest is top-level object
+				JsonObject jsonManif = reader.readObject();
+				for (String k : jsonManif.keySet()) {
+					if (k.equals("@context")) {
+						// we already have context
+						continue;
+					} else if (k.equals("@type")) {
+						// we already have type
+						continue;
+					} else if (k.equals("@id")) {
+						// we already have id
+						continue;
+					} else if (k.equals("label")) {
+						// copy label
+						hasLabel = true;
+					} else if (k.equals("description")) {
+						// copy description
+						hasDescription = true;
+					}
+					// copy the rest into the manifest
+					copyToManifest(k, jsonManif.get(k), manifest);
+				}
+			} catch (FileNotFoundException e) {
+				logger.error("Error reading manifest-meta.json file", e);
+			}
+    	}
+    	if (!hasLabel) {
+    		// supply synthetic label
+    		manifest.write("label", "[Scanned work " + dlFn + "]");
+    	}
+    	if (!hasDescription) {
+    		// supply synthetic description
+            manifest.write("description", "[Automatically generated manifest for scanned work " + dlFn + "]");
+    	}
     }
 
-    /**
+	/**
      * @param dlDir
      * @param url
      * @param manifest
@@ -540,8 +595,64 @@ public class Manifester extends HttpServlet {
 	 */
 	protected class ManifestParams {
 	    public DocuDirectory docuDir;
+	    File mfMetaFile;
         String manifestUrl;
 	    String imgApiUrl;
 	    String identifier;	    
 	}
+	
+    /**
+     * Write JSON object value recursively under key into JsonGenerator manifest.
+     * 
+     * @param key
+     * @param value
+     * @param manifest 
+     */
+    private void copyToManifest(String key, JsonValue value, JsonGenerator manifest) {
+    	ValueType vt = value.getValueType();
+    	
+		if (vt == ValueType.ARRAY) {
+			if (key != null) {
+				// start array as value under key
+				manifest.writeStartArray(key);
+			} else {
+				// start plain array
+				manifest.writeStartArray();
+			}
+			for (JsonValue val : (JsonArray) value) {
+				// copy array element
+				copyToManifest(null, val, manifest);
+			}
+			manifest.writeEnd();
+			
+		} else if (vt == ValueType.OBJECT) {
+			if (key != null) {
+				// start object as value under key
+				manifest.writeStartObject(key);
+			} else {
+				// start plain object
+				manifest.writeStartObject();
+			}
+			for (Entry<String, JsonValue> val : ((JsonObject) value).entrySet()) {
+				// copy object member
+				copyToManifest(val.getKey(), val.getValue(), manifest);
+			}
+			manifest.writeEnd();
+			
+		} else if ((vt == ValueType.STRING)||(vt == ValueType.NUMBER)||(vt == ValueType.FALSE)||
+				(vt == ValueType.TRUE)||(vt == ValueType.NULL)) {
+			if (key != null) {
+				// write scalar as value under key
+				manifest.write(key, value);
+			} else {
+				// write plain scalar
+				manifest.write(value);
+			}
+			
+		} else {
+			logger.error("Unknown JSON value: "+value);
+		}
+	}
+
+
 }
