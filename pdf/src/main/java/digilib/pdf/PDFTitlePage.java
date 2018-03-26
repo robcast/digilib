@@ -139,9 +139,9 @@ public class PDFTitlePage {
 			content.add(Chunk.NEWLINE);
 		}
 		Anchor address = new Anchor(
-				new Paragraph(burl+"digilib.jsp?fn="+job_info.getImageJobInformation().getAsString("fn"), FontFactory.getFont(FontFactory.COURIER, 9))
+				new Paragraph(burl+"digilib.html?fn="+job_info.getImageJobInformation().getAsString("fn"), FontFactory.getFont(FontFactory.COURIER, 9))
 									);
-		address.setReference(burl+"digilib.jsp?fn="+job_info.getImageJobInformation().getAsString("fn"));
+		address.setReference(burl+"digilib.html?fn="+job_info.getImageJobInformation().getAsString("fn"));
 		
 		content.add(address);
 
