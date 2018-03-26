@@ -67,6 +67,8 @@ public class ManifestServletConfiguration extends DigilibServletConfiguration {
         newParameter("webapp-base-url", null, null, 'f');
         // Scaler servlet name used in constructing IIIF image API paths
         newParameter("scaler-servlet-name", "Scaler", null, 'f');
+        // how to generate label for pages
+        newParameter("iiif-manifest-page-label", "filename", null, 'f');
     }
 
     /*
@@ -78,10 +80,8 @@ public class ManifestServletConfiguration extends DigilibServletConfiguration {
     @Override
     public void configure(ServletContext context) {
         super.configure(context);
-
         // set version
         setValue("servlet.version", getVersion());
-
     }
 
     /**

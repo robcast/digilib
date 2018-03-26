@@ -60,3 +60,25 @@ To try out a viewer on your manifest you can go to the website of the Universal 
 [http://universalviewer.io/](http://universalviewer.io/) and enter the URL of your manifest 
 in the "view a manifest" box on the page. This will work even with a local digilib 
 installation since the Javascript in your Browser reads and interprets the manifest.
+
+The minimal information in the manifest can be enhanced with additional metadata or the replaced 
+by a custom manifest. If the servlet finds a file with the name
+
+    manifest.json
+
+in a directory then the contents of that file are sent instead of an auto-generated manifest.
+This works also in directories with no images so you could put a file with 
+[collection](http://iiif.io/api/presentation/2.1/#collection) information in a higher-level directory.
+
+If the servlet finds a file with the name
+
+    manifest-meta.json
+    
+in a directory with images then the contents of that file are added to the top-level manifest
+(`@context`, `@type`, `@id`, `sequences` are ignored). You can use this to add real bibliographical
+information to the manifest.
+
+The configuration parameter `iiif-manifest-page-label` determines the format of the label of each image:
+`filename` uses the image file name (default, sans extension), `index` uses the index (counting from 1).
+
+

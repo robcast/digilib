@@ -1,9 +1,5 @@
 package digilib.servlet;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-
 /*
  * #%L
  * 
@@ -11,7 +7,7 @@ import java.io.FileNotFoundException;
  * 
  * Digital Image Library servlet components
  * %%
- * Copyright (C) 2003 - 2017 MPIWG Berlin
+ * Copyright (C) 2003 - 2018 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -30,6 +26,10 @@ import java.io.FileNotFoundException;
  * Author: Robert Casties (robcast@sourceforge.net)
  * Created on 24.5.2017
  */
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 import java.io.IOException;
 import java.util.EnumSet;
@@ -71,6 +71,9 @@ import digilib.util.ImageSize;
 /**
  * Servlet for creating IIIF Presentation API manifests.
  * 
+ * Reads file manifest.json to replace the automatically generated output.
+ * Reads file manifest-meta.json and merges the content into the top-level
+ * of the generated manifest.
  * 
  * @author casties
  * 
@@ -108,6 +111,9 @@ public class Manifester extends HttpServlet {
 
     /** set CORS header ACAO* for info requests */
     protected boolean corsForInfoRequests = true;
+    
+    /** how to create label for pages */
+    protected String pageLabelMode;
 
 	/*
 	 * (non-Javadoc)
@@ -141,6 +147,8 @@ public class Manifester extends HttpServlet {
 		iiifPathSep = dlConfig.getAsString("iiif-slash-replacement");
 		// CORS for info requests
 		corsForInfoRequests = dlConfig.getAsBoolean("iiif-info-cors");
+		// page label mode
+		pageLabelMode = dlConfig.getAsString("iiif-manifest-page-label");
 	}
 
     /**
@@ -369,6 +377,9 @@ public class Manifester extends HttpServlet {
 					} else if (k.equals("@id")) {
 						// we already have id
 						continue;
+                    } else if (k.equals("sequences")) {
+                        // we already have sequences
+                        continue;
 					} else if (k.equals("label")) {
 						// copy label
 						hasLabel = true;
@@ -469,9 +480,15 @@ public class Manifester extends HttpServlet {
         manifest.writeStartObject()
             .write("@type", "sc:Canvas")
             .write("@id", params.manifestUrl + "/canvas/p" + idx)
-            .write("label", "image " + FileOps.basename(imgFile.getName()))
             .write("height", imgSize.getHeight())
             .write("width", imgSize.getWidth());
+        
+        if (pageLabelMode.equals("filename")) {
+            manifest.write("label", FileOps.basename(imgFile.getName()));
+        } else {
+            manifest.write("label", Integer.toString(idx));
+        }
+            
         /*
          * images
          */
