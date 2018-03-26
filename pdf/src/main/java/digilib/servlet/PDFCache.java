@@ -4,7 +4,7 @@ package digilib.servlet;
  * #%L
  * A Servlet with a disk cache serving pdf documents made from digilib images.  
  * %%
- * Copyright (C) 2009 - 2013 MPIWG Berlin
+ * Copyright (C) 2009 - 2018 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -21,7 +21,7 @@ package digilib.servlet;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  * Authors: Christopher Mielack,
- *          Robert Casties (robcast@berlios.de)
+ *          Robert Casties (robcast@users.sf.net)
  */
 
 import java.io.File;
@@ -33,6 +33,7 @@ import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -53,12 +54,14 @@ import digilib.util.DigilibJobCenter;
  * If a document does not already exist, it will be enqueued for generation; if
  * it does exist, it is sent to the user.
  * 
- * @author cmielack
+ * @author cmielack, casties
  * 
  */
 
-@SuppressWarnings("serial")
+@WebServlet(name = "PDFCache", urlPatterns = { "/PDFCache/*", "/servlet/PDFCache/*" })
 public class PDFCache extends HttpServlet {
+
+    private static final long serialVersionUID = 351326880003758192L;
 
     public static String version = PDFServletConfiguration.getClassVersion();
 

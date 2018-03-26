@@ -54,7 +54,7 @@ import digilib.io.DocuDirectory;
 import digilib.io.ImageInput;
 import digilib.util.DigilibJobCenter;
 
-@WebServlet(name = "Scaler", urlPatterns = { "/Scaler", "/servlet/Scaler/*" }, asyncSupported = true)
+@WebServlet(name = "Scaler", urlPatterns = { "/Scaler/*", "/servlet/Scaler/*" }, asyncSupported = true)
 public class Scaler extends HttpServlet {
 
     private static final long serialVersionUID = 5289386646192471549L;

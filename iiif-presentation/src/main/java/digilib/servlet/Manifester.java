@@ -47,6 +47,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -78,6 +79,7 @@ import digilib.util.ImageSize;
  * @author casties
  * 
  */
+@WebServlet(name = "Manifester", urlPatterns = { "/Manifester/*", "/servlet/Manifester/*" })
 public class Manifester extends HttpServlet {
 
 	private static final long serialVersionUID = 6678666342141409868L;
@@ -100,7 +102,7 @@ public class Manifester extends HttpServlet {
 	/** DocuDirCache instance */
 	protected DocuDirCache dirCache;
 
-	/** use authentication */
+	/** use authentication and authorization */
 	protected boolean useAuthorization = false;
 	
 	/** scaler servlet path */

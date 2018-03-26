@@ -22,7 +22,6 @@
 		<profile>
 			<id>servlet2</id>
 			<activation>
-				<activeByDefault>true</activeByDefault>
 				<property>
 					<name>servletapi</name>
 					<value>2</value>
@@ -47,6 +46,7 @@
 		<profile>
 			<id>servlet3</id>
 			<activation>
+                <activeByDefault>true</activeByDefault>
 				<property>
 					<name>servletapi</name>
 					<value>3</value>
