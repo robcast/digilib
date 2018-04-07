@@ -400,11 +400,15 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             throw new FileOpException("Can't find Reader to load File!");
         }
         ImageReader reader = readers.next();
+        if (reader == null) {
+            throw new FileOpException("Error getting Reader to load File!");
+        }
         logger.debug("ImageIO: this reader: " + reader.getClass());
         /*
-         * while (readers.hasNext()) { logger.debug("ImageIO: next reader: " +
-         * readers.next().getClass()); }
-         */
+        while (readers.hasNext()) { 
+        	logger.debug("ImageIO: next reader: " + readers.next().getClass()); 
+        }
+        */
         reader.setInput(istream);
         return reader;
     }

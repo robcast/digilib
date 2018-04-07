@@ -187,8 +187,6 @@
       </modules>
     </profile>
   </profiles>
-  <repositories>
-  </repositories>
 
   <dependencyManagement>
     <dependencies>

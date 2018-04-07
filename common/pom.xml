@@ -67,6 +67,29 @@
 				</dependency>
 			</dependencies>
 		</profile>
+		<profile>
+			<id>imageio-jnr</id>
+            <!-- use BSBs ImageIO-JNR plugin from https://github.com/dbmdz/imageio-jnr -->
+			<activation>
+				<!-- <activeByDefault>true</activeByDefault> -->
+				<property>
+					<name>imageio</name>
+					<value>jnr</value>
+				</property>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>de.digitalcollections.imageio</groupId>
+					<artifactId>imageio-turbojpeg</artifactId>
+					<version>0.2.5</version>
+				</dependency>
+				<dependency>
+					<groupId>de.digitalcollections.imageio</groupId>
+					<artifactId>imageio-openjpeg</artifactId>
+					<version>0.2.5</version>
+				</dependency>
+			</dependencies>
+		</profile>
 	</profiles>
 
 	<dependencies>
