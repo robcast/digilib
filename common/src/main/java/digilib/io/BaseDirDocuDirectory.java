@@ -77,7 +77,7 @@ public class BaseDirDocuDirectory extends DocuDirectory {
     }
 
     @Override
-	public synchronized boolean readDir() {
+	public boolean readDir() {
 		// check directory first
 		if (!isValid) {
 			return false;

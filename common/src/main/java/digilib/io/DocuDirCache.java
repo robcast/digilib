@@ -167,7 +167,7 @@ public class DocuDirCache {
 	 *            file index
 	 * @return
 	 */
-	public DocuDirent getFile(String fn, int in) {
+	public synchronized DocuDirent getFile(String fn, int in) {
 		DocuDirectory dd;
 		// file number is 1-based, vector index is 0-based
 		int n = in - 1;
@@ -182,8 +182,9 @@ public class DocuDirCache {
 			dd = DocuDirectoryFactory.getDocuDirectoryInstance(fn, fileClass);
 			if (dd.isValid()) {
 			    // add to the cache
-			    dd.refresh();
 			    dd = putDir(dd);
+				// check/read contents
+			    dd.refresh();
 			} else {
 				/*
 				 * maybe it's a file
@@ -198,9 +199,9 @@ public class DocuDirCache {
 					dd = DocuDirectoryFactory.getDocuDirectoryInstance(d, fileClass);
 					if (dd.isValid()) {
 						// add to the cache
-                        // logger.debug(dd + " is valid");
-					    dd.refresh();
 						dd = putDir(dd);
+						// check/read contents
+					    dd.refresh();
 					} else {
 						// invalid path
 						return null;
@@ -236,7 +237,7 @@ public class DocuDirCache {
 	 *            digilib pathname
 	 * @return
 	 */
-	public DocuDirectory getDirectory(String fn) {
+	public synchronized DocuDirectory getDirectory(String fn) {
 		DocuDirectory dd;
 		// first, assume fn is a directory and look in the cache
 		dd = map.get(fn);
@@ -247,8 +248,8 @@ public class DocuDirCache {
 			dd = DocuDirectoryFactory.getDocuDirectoryInstance(fn, fileClass);
 			if (dd.isValid()) {
 			    // add to the cache
-                dd.refresh();
 			    dd = putDir(dd);
+                dd.refresh();
 			} else {
 				// try the parent directory in the cache
 				String pn = FileOps.parent(fn);
@@ -258,8 +259,8 @@ public class DocuDirCache {
 					dd = DocuDirectoryFactory.getDocuDirectoryInstance(pn, fileClass);
 					if (dd.isValid()) {
 						// add to the cache
-		                dd.refresh();
 						dd = putDir(dd);
+		                dd.refresh();
 					} else {
 						// invalid path
 						return null;

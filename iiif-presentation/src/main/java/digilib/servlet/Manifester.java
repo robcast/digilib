@@ -157,7 +157,7 @@ public class Manifester extends HttpServlet {
      * Returns modification time relevant to the request for caching.
      * 
      * @see javax.servlet.http.HttpServlet#getLastModified(javax.servlet.http.HttpServletRequest)
-     */
+     *
     public long getLastModified(HttpServletRequest request) {
         accountlog.debug("GetLastModified from " + request.getRemoteAddr() + " for " + request.getQueryString());
         long mtime = -1;
@@ -182,7 +182,7 @@ public class Manifester extends HttpServlet {
         }
         logger.debug("  returns " + mtime);
         return mtime;
-    }
+    } */
 
 	/*
 	 * (non-Javadoc)

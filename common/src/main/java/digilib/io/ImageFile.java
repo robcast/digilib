@@ -79,7 +79,7 @@ public class ImageFile extends ImageInput {
 	/** Checks the image and sets size and type.
 	 * 
 	 */
-	public void check() {
+	public synchronized void check() {
 	    if (pixelSize == null) {
 	        try {
 	            // use the configured toolkit to identify the image
