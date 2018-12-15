@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
+import javax.servlet.annotation.WebListener;
 
 import digilib.image.DocuImage;
 import digilib.io.FileOps;
@@ -46,6 +47,7 @@ import digilib.util.DigilibJobCenter;
  * @author casties
  * 
  */
+@WebListener
 public class PDFServletConfiguration extends DigilibServletConfiguration {
 
     public static final String PDF_SERVLET_CONFIG_KEY = "digilib.pdf.servlet.configuration";

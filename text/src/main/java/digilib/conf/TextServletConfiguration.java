@@ -30,6 +30,7 @@ package digilib.conf;
 import java.io.File;
 
 import javax.servlet.ServletContext;
+import javax.servlet.annotation.WebListener;
 
 import digilib.io.AliasingDocuDirCache;
 import digilib.io.DocuDirCache;
@@ -44,6 +45,7 @@ import digilib.servlet.ServletOps;
  * @author casties
  * 
  */
+@WebListener
 public class TextServletConfiguration extends DigilibServletConfiguration {
 
     public static final String TEXT_SERVLET_CONFIG_KEY = "digilib.text.servlet.configuration";
