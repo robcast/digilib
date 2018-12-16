@@ -125,7 +125,7 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
      * @param hints
      *  
      */
-    void fill(Directory[] dirs, File fl) {
+    protected synchronized void fill(Directory[] dirs, File fl) {
     	String fn = fl.getName();
     	String baseFn = FileOps.basename(fn);
     	// add the first ImageFile to the ImageSet
@@ -151,14 +151,12 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
     					&& (FileOps.basename(dirFiles[fileIdx]).equals(baseFn))) {
     				// idx ok
     			} else if ((fileIdx > 0)
-    					&& (FileOps.basename(dirFiles[fileIdx - 1])
-    							.equals(baseFn))) {
+						&& (FileOps.basename(dirFiles[fileIdx - 1]).equals(baseFn))) {
     				// idx-1 ok
     				fileIdx = fileIdx - 1;
     			} else if ((fileIdx+1 < dirFiles.length)
-    					&& (FileOps.basename(dirFiles[fileIdx + 1])
-    							.equals(baseFn))) {
-    				// idx+1 ok
+						&& (FileOps.basename(dirFiles[fileIdx + 1]).equals(baseFn))) {
+	   				// idx+1 ok
     				fileIdx = fileIdx + 1;
     			} else {
     				// basename doesn't match
@@ -211,10 +209,8 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
         if (fileMeta.containsKey("original-dpi-x")
                 && fileMeta.containsKey("original-dpi-y")) {
             try {
-                dpix = Float.parseFloat((String) fileMeta
-                        .get("original-dpi-x"));
-                dpiy = Float.parseFloat((String) fileMeta
-                        .get("original-dpi-y"));
+				dpix = Float.parseFloat((String) fileMeta.get("original-dpi-x"));
+				dpiy = Float.parseFloat((String) fileMeta.get("original-dpi-y"));
             } catch (NumberFormatException e) {
             }
             if ((dpix != 0) && (dpiy != 0)) {
@@ -229,14 +225,10 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
                 && fileMeta.containsKey("original-pixel-x")
                 && fileMeta.containsKey("original-pixel-y")) {
             try {
-                sizex = Float.parseFloat((String) fileMeta
-                        .get("original-size-x"));
-                sizey = Float.parseFloat((String) fileMeta
-                        .get("original-size-y"));
-                pixx = Float.parseFloat((String) fileMeta
-                        .get("original-pixel-x"));
-                pixy = Float.parseFloat((String) fileMeta
-                        .get("original-pixel-y"));
+				sizex = Float.parseFloat((String) fileMeta.get("original-size-x"));
+				sizey = Float.parseFloat((String) fileMeta.get("original-size-y"));
+				pixx = Float.parseFloat((String) fileMeta.get("original-pixel-x"));
+				pixy = Float.parseFloat((String) fileMeta.get("original-pixel-y"));
             } catch (NumberFormatException e) {
             }
             if ((sizex != 0) && (sizey != 0) && (pixx != 0) && (pixy != 0)) {

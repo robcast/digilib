@@ -76,8 +76,11 @@ public class BaseDirDocuDirectory extends DocuDirectory {
         meta = MetaFactory.getDirMetaInstance();
     }
 
+    /* (non-Javadoc)
+     * @see digilib.io.DocuDirectory#readDir()
+     */
     @Override
-	public boolean readDir() {
+	public synchronized boolean readDir() {
 		// check directory first
 		if (!isValid) {
 			return false;
@@ -134,7 +137,7 @@ public class BaseDirDocuDirectory extends DocuDirectory {
 			}
 			/*
 			 * we sort the ArrayList (the list of files) for binarySearch to work
-			 * (DocuDirent's natural sort order is by filename)
+			 * (DocuDirents sort by filename)
 			 */
 			Collections.sort(dl);
 		}

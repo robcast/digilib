@@ -366,7 +366,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     public ImageReader getReader(ImageInput input) throws IOException {
         logger.debug("get ImageReader for " + input);
         if (reuseReader && reader != null) {
-            logger.debug("reuseing ImageReader");
+            logger.debug("reusing ImageReader");
             return reader;
         }
         ImageInputStream istream = null;

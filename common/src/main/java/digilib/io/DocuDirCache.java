@@ -158,123 +158,107 @@ public class DocuDirCache {
 	 * Returns the DocuDirent with the pathname <code>fn</code> and the index
 	 * <code>in</code>.
 	 * 
-	 * If <code>fn</code> is a file then the corresponding DocuDirent is
-	 * returned and the index is ignored.
+	 * If <code>fn</code> represents a file then the corresponding DocuDirent is
+	 * returned and the number is ignored.
 	 * 
 	 * @param fn
 	 *            digilib pathname
-	 * @param in
-	 *            file index
+	 * @param pn
+	 *            file number
 	 * @return
 	 */
-	public synchronized DocuDirent getFile(String fn, int in) {
+	public DocuDirent getFile(String fn, int pn) {
 		DocuDirectory dd;
-		// file number is 1-based, vector index is 0-based
-		int n = in - 1;
-		// first, assume fn is a directory and look in the cache
-		dd = map.get(fn);
-		if (dd == null) {
-			// cache miss
-			misses.incrementAndGet();
-			/*
-			 * try fn as a directory
-			 */
-			dd = DocuDirectoryFactory.getDocuDirectoryInstance(fn, fileClass);
-			if (dd.isValid()) {
-			    // add to the cache
-			    dd = putDir(dd);
-				// check/read contents
-			    dd.refresh();
-			} else {
-				/*
-				 * maybe it's a file
-				 */
-				// get the parent directory string (like we store it in the cache)
-				String d = FileOps.parent(fn);
-				// try it in the cache
-                // logger.debug(fn + " is a file in dir " + d);
-				dd = map.get(d);
-				if (dd == null) {
-					// try to read from disk
-					dd = DocuDirectoryFactory.getDocuDirectoryInstance(d, fileClass);
-					if (dd.isValid()) {
-						// add to the cache
-						dd = putDir(dd);
-						// check/read contents
-					    dd.refresh();
-					} else {
-						// invalid path
-						return null;
-					}
-				} else {
-					// it was not a real cache miss
-					misses.decrementAndGet();
-				}
-				// get the file's index
+		// file number is 1-based, index is 0-based
+		int n = pn - 1;
+		// get the directory (or the file's parent directory)
+		dd = getDirectory(fn);
+		if (dd != null) {
+			dd.refresh();
+			if (!dd.getDirName().equals(fn)) {
+				// fn was not a directory name, try as a file name
 				n = dd.indexOf(FileOps.filename(fn));
 			}
-		} else {
-			// cache hit
-			hits.incrementAndGet();
-		}
-		dd.refresh();
-		if (dd.isValid()) {
-			try {
-				return dd.get(n);
-			} catch (IndexOutOfBoundsException e) {
-                // logger.debug(fn + " not found in directory");
+			if (dd.isValid()) {
+				try {
+					return dd.get(n);
+				} catch (IndexOutOfBoundsException e) {
+	                // logger.debug(fn + " not found in directory");
+				}
 			}
 		}
 		return null;
+		
 	}
-
+	
 	/**
 	 * Returns the DocuDirectory indicated by the pathname <code>fn</code>.
 	 * 
-	 * If <code>fn</code> is a file then its parent directory is returned.
+	 * If <code>fn</code> represents a file then its parent directory is returned.
 	 * 
 	 * @param fn
 	 *            digilib pathname
 	 * @return
 	 */
-	public synchronized DocuDirectory getDirectory(String fn) {
+	public DocuDirectory getDirectory(String fn) {
 		DocuDirectory dd;
 		// first, assume fn is a directory and look in the cache
 		dd = map.get(fn);
-		if (dd == null) {
-			// cache miss
-			misses.incrementAndGet();
-			// see if it's a directory
-			dd = DocuDirectoryFactory.getDocuDirectoryInstance(fn, fileClass);
-			if (dd.isValid()) {
-			    // add to the cache
-			    dd = putDir(dd);
-                dd.refresh();
-			} else {
-				// try the parent directory in the cache
-				String pn = FileOps.parent(fn);
-                dd = map.get(pn);
-				if (dd == null) {
-					// try to read from disk
-					dd = DocuDirectoryFactory.getDocuDirectoryInstance(pn, fileClass);
-					if (dd.isValid()) {
-						// add to the cache
-						dd = putDir(dd);
-		                dd.refresh();
-					} else {
-						// invalid path
-						return null;
-					}
-				} else {
-					// not a real cache miss then
-					misses.decrementAndGet();
-				}
-			}
-		} else {
+		if (dd != null) {
 			// cache hit
 			hits.incrementAndGet();
+			dd.refresh();
+			if (dd.isValid()) {
+				return dd;
+			} else {
+				return null;
+			}
+		} else {
+			// make sure that only one thread creates the new directory
+			synchronized (this) {
+				// look again because the thread may have slept
+				dd = map.get(fn);
+				if (dd != null) {
+					// cache hit
+					hits.incrementAndGet();
+					dd.refresh();
+					if (dd.isValid()) {
+						return dd;
+					} else {
+						return null;
+					}
+				}
+				// cache miss
+				misses.incrementAndGet();
+				// see if it's a directory
+				dd = DocuDirectoryFactory.getDocuDirectoryInstance(fn, fileClass);
+				if (dd.isValid()) {
+					// add to the cache
+					dd.refresh();
+					dd = putDir(dd);
+				} else {
+					// try the parent directory in the cache
+					String pn = FileOps.parent(fn);
+					dd = map.get(pn);
+					if (dd != null) {
+						// not a real cache miss then
+						misses.decrementAndGet();
+						dd.refresh();
+					} else {
+						// try to read from disk
+						dd = DocuDirectoryFactory.getDocuDirectoryInstance(pn, fileClass);
+						if (dd.isValid()) {
+							// add to the cache
+							dd.refresh();
+							dd = putDir(dd);
+						} else {
+							// invalid path
+							return null;
+						}
+					}
+				}
+			}
 		}
-		dd.refresh();
 		if (dd.isValid()) {
 			return dd;
 		}
