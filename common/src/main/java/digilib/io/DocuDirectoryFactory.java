@@ -52,7 +52,7 @@ public class DocuDirectoryFactory {
     public static DocuDirectory getInstance() {
         DocuDirectory dd = null;
         try {
-            dd = docuDirClass.newInstance();
+            dd = docuDirClass.getConstructor().newInstance();
         } catch (Exception e) {
             logger.error("Unable to create DocuDirectory instance!", e);
         }

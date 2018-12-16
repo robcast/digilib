@@ -60,11 +60,11 @@ public class FileOps {
 
 	public static enum FileClass {NONE, IMAGE, TEXT, SVG}
 
-	public static final Integer HINT_BASEDIRS = new Integer(1);
+	public static final Integer HINT_BASEDIRS = Integer.valueOf(1);
 
-	public static final Integer HINT_FILEEXT = new Integer(2);
+	public static final Integer HINT_FILEEXT = Integer.valueOf(2);
 
-	public static final Integer HINT_DIRS = new Integer(3);
+	public static final Integer HINT_DIRS = Integer.valueOf(3);
 
 	/**
 	 * static initializer for FileOps

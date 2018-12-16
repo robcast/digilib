@@ -90,13 +90,13 @@ public class PDFServletConfiguration extends DigilibServletConfiguration {
          */
 
         // number of pdf-generation threads
-        newParameter("pdf-worker-threads", new Integer(1), null, 'f');
+        newParameter("pdf-worker-threads", Integer.valueOf(1), null, 'f');
         // max number of waiting pdf-generation threads
-        newParameter("pdf-max-waiting-threads", new Integer(20), null, 'f');
+        newParameter("pdf-max-waiting-threads", Integer.valueOf(20), null, 'f');
         // number of pdf-image generation threads
-        newParameter("pdf-image-worker-threads", new Integer(1), null, 'f');
+        newParameter("pdf-image-worker-threads", Integer.valueOf(1), null, 'f');
         // max number of waiting pdf-image generation threads
-        newParameter("pdf-image-max-waiting-threads", new Integer(10), null, 'f');
+        newParameter("pdf-image-max-waiting-threads", Integer.valueOf(10), null, 'f');
         // PDF generation temp directory
         newParameter("pdf-temp-dir", "pdf_temp", null, 'f');
         // PDF generation cache directory

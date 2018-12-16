@@ -91,11 +91,11 @@ public class PDFRequest extends ParameterMap {
 		// url of the page/document (second part)
 		newParameter("fn", "", null, 's');
 		// width of client in pixels
-		newParameter("dw", new Integer(0), null, 's');
+		newParameter("dw", Integer.valueOf(0), null, 's');
 		// height of client in pixels
-		newParameter("dh", new Integer(500), null, 's');
+		newParameter("dh", Integer.valueOf(500), null, 's');
         // page number (used internally)
-        newParameter("pn", new Integer(1), null, 'i');
+        newParameter("pn", Integer.valueOf(1), null, 'i');
 	}
 	
 	/* (non-Javadoc)

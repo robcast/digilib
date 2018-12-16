@@ -129,18 +129,18 @@ public class Parameter {
 		}
 		// set Boolean if string == "true"
 		if (c == Boolean.class) {
-			this.value = new Boolean(val.compareToIgnoreCase("true") == 0);
+			this.value = Boolean.valueOf(val.compareToIgnoreCase("true") == 0);
 			return true;
 		}
 		try {
 			// set Integer
 			if (c == Integer.class) {
-				this.value = new Integer(Integer.parseInt(val));
+				this.value = Integer.valueOf(Integer.parseInt(val));
 				return true;
 			}
 			// set Float
 			if (c == Float.class) {
-				this.value = new Float(Float.parseFloat(val));
+				this.value = Float.valueOf(Float.parseFloat(val));
 				return true;
 			}
 		} catch (NumberFormatException e) {
@@ -287,7 +287,7 @@ public class Parameter {
 	 * @param value
 	 */
 	public void setValue(int value) {
-		this.value = new Integer(value);
+		this.value = Integer.valueOf(value);
 	}
 
 	/**
@@ -296,7 +296,7 @@ public class Parameter {
 	 * @param value
 	 */
 	public void setValue(float value) {
-		this.value = new Float(value);
+		this.value = Float.valueOf(value);
 	}
 
 	/**

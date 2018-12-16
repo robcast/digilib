@@ -85,11 +85,11 @@ public class DigilibConfiguration extends ParameterMap {
         // image hacks for DocuImage implementation
         newParameter("docuimage-hacks", "", null, 'f');
         // degree of subsampling on image load
-        newParameter("subsample-minimum", new Float(2f), null, 'f');
+        newParameter("subsample-minimum", Float.valueOf(2f), null, 'f');
         // default scaling quality
-        newParameter("default-quality", new Integer(2), null, 'f');
+        newParameter("default-quality", Integer.valueOf(2), null, 'f');
         // maximum destination image size (0 means no limit)
-        newParameter("max-image-size", new Integer(0), null, 'f');
+        newParameter("max-image-size", Integer.valueOf(0), null, 'f');
         // allow image toolkit to use disk cache
         newParameter("img-diskcache-allowed", Boolean.FALSE, null, 'f');
         // default type of error message (image, text, code)
@@ -178,9 +178,9 @@ public class DigilibConfiguration extends ParameterMap {
             logger.debug("DocuImage ("+docuImageClass+") "+di.getVersion());
             // set hacks on instance
             try {
-                docuImageClass.newInstance().setHacks(config.getAsString("docuimage-hacks"));
-            } catch (InstantiationException | IllegalAccessException e) {
-                logger.error("Error creating instance of DocuImage class!");
+                docuImageClass.getDeclaredConstructor().newInstance().setHacks(config.getAsString("docuimage-hacks"));
+            } catch (Exception e) {
+                logger.error("Error creating instance of DocuImage class!", e);
             }
             // log supported formats
             StringBuilder fmts = new StringBuilder();

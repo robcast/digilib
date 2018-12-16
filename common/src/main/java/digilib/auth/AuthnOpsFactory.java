@@ -42,7 +42,7 @@ public class AuthnOpsFactory {
     public static AuthnOps getAuthnOpsInstance() {
         AuthnOps ao = null;
         try {
-            ao = authOpsClass.newInstance();
+            ao = authOpsClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             logger.error("Unable to create AuthnOps instance!", e);
         }

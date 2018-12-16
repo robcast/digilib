@@ -42,7 +42,7 @@ public class AuthzOpsFactory {
     public static AuthzOps getAuthzOpsInstance() {
         AuthzOps ao = null;
         try {
-            ao = authOpsClass.newInstance();
+            ao = authOpsClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             logger.error("Unable to create AuthzOps instance!", e);
         }

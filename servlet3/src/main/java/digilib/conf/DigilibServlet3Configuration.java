@@ -58,7 +58,7 @@ public class DigilibServlet3Configuration extends DigilibServletConfiguration {
         super();
         
         // timeout for worker threads (ms)
-        newParameter("worker-timeout", new Integer(60000), null, 'f');
+        newParameter("worker-timeout", Integer.valueOf(60000), null, 'f');
     }
 
     /* (non-Javadoc)

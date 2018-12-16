@@ -52,7 +52,7 @@ public class MetaFactory {
         }
         FileMeta mo = null;
         try {
-            mo = fileMetaClass.newInstance();
+            mo = fileMetaClass.getConstructor().newInstance();
         } catch (Exception e) {
             logger.error("Unable to create FileMeta instance!", e);
         }
@@ -66,7 +66,7 @@ public class MetaFactory {
         }
         DirMeta mo = null;
         try {
-            mo = dirMetaClass.newInstance();
+            mo = dirMetaClass.getConstructor().newInstance();
         } catch (Exception e) {
             logger.error("Unable to create DirMeta instance!", e);
         }

@@ -156,9 +156,9 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         // log4j config file location
         newParameter("log-config-file", new File("log4j-config.xml"), null, 'f');
         // number of working threads
-        newParameter("worker-threads", new Integer(2), null, 'f');
+        newParameter("worker-threads", Integer.valueOf(2), null, 'f');
         // max number of waiting threads
-        newParameter("max-waiting-threads", new Integer(20), null, 'f');
+        newParameter("max-waiting-threads", Integer.valueOf(20), null, 'f');
         // FileMeta implementation
         newParameter("filemeta-class", "digilib.meta.IndexMetaFileMeta", null, 'f');
         // DirMeta implementation

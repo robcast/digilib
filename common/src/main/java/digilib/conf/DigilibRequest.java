@@ -123,41 +123,41 @@ public class DigilibRequest extends ParameterMap {
         // url of the page/document (second part)
         newParameter("fn", "", null, 's');
         // page number
-        newParameter("pn", new Integer(1), null, 's');
+        newParameter("pn", Integer.valueOf(1), null, 's');
         // width of client in pixels
-        newParameter("dw", new Integer(0), null, 's');
+        newParameter("dw", Integer.valueOf(0), null, 's');
         // height of client in pixels
-        newParameter("dh", new Integer(0), null, 's');
+        newParameter("dh", Integer.valueOf(0), null, 's');
         // left edge of image (float from 0 to 1)
-        newParameter("wx", new Float(0), null, 's');
+        newParameter("wx", Float.valueOf(0), null, 's');
         // top edge in image (float from 0 to 1)
-        newParameter("wy", new Float(0), null, 's');
+        newParameter("wy", Float.valueOf(0), null, 's');
         // width of image (float from 0 to 1)
-        newParameter("ww", new Float(1), null, 's');
+        newParameter("ww", Float.valueOf(1), null, 's');
         // height of image (float from 0 to 1)
-        newParameter("wh", new Float(1), null, 's');
+        newParameter("wh", Float.valueOf(1), null, 's');
         // scale factor
-        newParameter("ws", new Float(1), null, 's');
+        newParameter("ws", Float.valueOf(1), null, 's');
         // special options like 'fit' for gifs
         newParameter("mo", this.options, null, 's');
         // rotation angle (degree)
-        newParameter("rot", new Float(0), null, 's');
+        newParameter("rot", Float.valueOf(0), null, 's');
         // contrast enhancement factor
-        newParameter("cont", new Float(0), null, 's');
+        newParameter("cont", Float.valueOf(0), null, 's');
         // brightness enhancement factor
-        newParameter("brgt", new Float(0), null, 's');
+        newParameter("brgt", Float.valueOf(0), null, 's');
         // color multiplicative factors
         newParameter("rgbm", "0/0/0", null, 's');
         // color additive factors
         newParameter("rgba", "0/0/0", null, 's');
         // display dpi resolution (total)
-        newParameter("ddpi", new Float(0), null, 's');
+        newParameter("ddpi", Float.valueOf(0), null, 's');
         // display dpi X resolution
-        newParameter("ddpix", new Float(0), null, 's');
+        newParameter("ddpix", Float.valueOf(0), null, 's');
         // display dpi Y resolution
-        newParameter("ddpiy", new Float(0), null, 's');
+        newParameter("ddpiy", Float.valueOf(0), null, 's');
         // scale factor for mo=ascale
-        newParameter("scale", new Float(1), null, 's');
+        newParameter("scale", Float.valueOf(1), null, 's');
         // color conversion operation
         newParameter("colop", "", null, 's');
 
@@ -180,13 +180,13 @@ public class DigilibRequest extends ParameterMap {
         // "real" filename
         newParameter("img.fn", "", null, 'c');
         // image dpi x
-        newParameter("img.dpix", new Integer(0), null, 'c');
+        newParameter("img.dpix", Integer.valueOf(0), null, 'c');
         // image dpi y
-        newParameter("img.dpiy", new Integer(0), null, 'c');
+        newParameter("img.dpiy", Integer.valueOf(0), null, 'c');
         // hires image size x
-        newParameter("img.pix_x", new Integer(0), null, 'c');
+        newParameter("img.pix_x", Integer.valueOf(0), null, 'c');
         // hires image size y
-        newParameter("img.pix_y", new Integer(0), null, 'c');
+        newParameter("img.pix_y", Integer.valueOf(0), null, 'c');
 
         /*
          * set local variables from config

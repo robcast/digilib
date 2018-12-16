@@ -49,7 +49,7 @@ public class DocuImageFactory {
     public static DocuImage getInstance() {
         DocuImage di = null;
         try {
-            di = docuImageClass.newInstance();
+            di = docuImageClass.getConstructor().newInstance();
         } catch (Exception e) {
             logger.error("Unable to create DocuImage instance!", e);
         }
