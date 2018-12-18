@@ -35,9 +35,7 @@ server {
 }
 ```
 
-### Resources
-
-- the [nginx documentation](nginx.org/en/docs/)
+Please check the [nginx documentation](nginx.org/en/docs/).
 
 ## Apache as proxy and load-balancer
 
@@ -107,7 +105,9 @@ you should make sure that Tomcat processes the `X-Forwarded-*` headers from the 
 correct request URL for the servlets.
 
 Please see the Tomcat documentation about the [Remote IP Valve](https://tomcat.apache.org/tomcat-9.0-doc/config/valve.html#Remote_IP_Valve).
-You basically need to add the following XML tag with your proxy's IP numbers to the `Host` tag of your `server.xml` file:
+You basically need to add the following XML tag with your proxy's IP numbers to the `Host` tag of your `server.xml` file
+and make sure `ProxyPreserveHost` is set to `on`:
+
 ```
   <Valve className="org.apache.catalina.valves.RemoteIpValve"
     internalProxies="127\.0\.0\.1|123\.45\.67\.89"
@@ -115,4 +115,5 @@ You basically need to add the following XML tag with your proxy's IP numbers to 
     proxiesHeader="x-forwarded-by" 
     protocolHeader="x-forwarded-proto" />
 ```
-and make sure `ProxyPreserveHost` is set to `on`.
+
+
