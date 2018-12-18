@@ -71,7 +71,8 @@ digilib (one running on localhost, port 8080 and another on otherserver, port 80
 
     # do not forward-proxy!
     ProxyRequests off
-    # set proxy proto header
+    # set proxy headers
+    ProxyPreserveHost On
     RequestHeader set X-Forwarded-Proto "https"
     # digilib instances 
     <Proxy balancer://digilibs>
@@ -96,4 +97,22 @@ When you are using [Jetty](https://www.eclipse.org/jetty/) as servlet container 
 then you should make sure that Jetty processes the `X-Forwarded-*` headers from the proxy server to derive the 
 correct request URL for the servlets.
 
-Please see [this information for Jetty 9.4](http://www.eclipse.org/jetty/documentation/9.4.x/configuring-connectors.html#_proxy_load_balancer_connection_configuration) or [this information for Jetty 8 and earlier versions](https://wiki.eclipse.org/Jetty/Tutorial/Apache#Configuring_mod_proxy_http).
+Please see [this information for Jetty 9.4](http://www.eclipse.org/jetty/documentation/9.4.x/configuring-connectors.html#_proxy_load_balancer_connection_configuration)
+or [this information for Jetty 8 and earlier versions](https://wiki.eclipse.org/Jetty/Tutorial/Apache#Configuring_mod_proxy_http).
+
+## Tomcat behind a proxy
+
+When you are using [Tomcat](https://tomcat.apache.org) as a servlet container behind an Apache or nginx proxy then 
+you should make sure that Tomcat processes the `X-Forwarded-*` headers from the proxy server to derive the 
+correct request URL for the servlets.
+
+Please see the Tomcat documentation about the [Remote IP Valve](https://tomcat.apache.org/tomcat-9.0-doc/config/valve.html#Remote_IP_Valve).
+You basically need to add the following XML tag with your proxy's IP numbers to the `Host` tag of your `server.xml` file:
+```
+  <Valve className="org.apache.catalina.valves.RemoteIpValve"
+    internalProxies="127\.0\.0\.1|123\.45\.67\.89"
+    remoteIpHeader="x-forwarded-for" 
+    proxiesHeader="x-forwarded-by" 
+    protocolHeader="x-forwarded-proto" />
+```
+and make sure `ProxyPreserveHost` is set to `on`.
