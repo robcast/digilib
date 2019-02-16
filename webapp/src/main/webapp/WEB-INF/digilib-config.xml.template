@@ -55,7 +55,7 @@
   <parameter name="use-authorization" value="false" />
 
   <!-- Java class to use for authentication -->
-  <parameter name="authzops-class" value="digilib.auth.IpAuthnOps" />
+  <parameter name="authnops-class" value="digilib.auth.IpAuthnOps" />
 
   <!-- Java class to use for authorization -->
   <parameter name="authzops-class" value="digilib.auth.PathAuthzOps" />
