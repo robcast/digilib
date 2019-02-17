@@ -1,0 +1,3 @@
+# ignore files for docker build stage
+.*
+**/target/
