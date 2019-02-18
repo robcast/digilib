@@ -12,4 +12,4 @@ deploy:
   file: webapp/target/digilib-webapp-*.war
   skip_cleanup: true
   on:
-    tags: false
+    tags: true
