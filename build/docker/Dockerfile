@@ -2,13 +2,20 @@
 FROM maven:3-jdk-11 AS buildstage
 WORKDIR /usr/src/digilib
 COPY . /usr/src/digilib/
-RUN mvn package
+ARG MVN_ARGS
+# build digilib using maven
+RUN mvn $MVN_ARGS package
 # remove the war file so we don't copy it in the next stage
 RUN rm /usr/src/digilib/webapp/target/digilib-webapp-*.war
 
 # runnable container stage
 FROM tomcat:9-jre11 AS runstage
-# remove tomcat default webapps
-RUN rm -r /usr/local/tomcat/webapps/*
+# copy entry script
+COPY build/docker/entrypoint.sh /entrypoint.sh
+# remove tomcat default webapps and set entrypoint
+RUN rm -r /usr/local/tomcat/webapps/* \
+	&& chmod 755 /entrypoint.sh
 # copy digilib from build image
 COPY --from=buildstage /usr/src/digilib/webapp/target/digilib-webapp-* /usr/local/tomcat/webapps/digilib/
+
+ENTRYPOINT ["/entrypoint.sh"]

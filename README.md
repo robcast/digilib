@@ -30,6 +30,7 @@ A versatile image viewing environment for the internet.
 
 * [Source code](https://github.com/robcast/digilib)
 * [Issue tracker](https://github.com/robcast/digilib/issues)
+* [Docker images](https://hub.docker.com/r/robcast/digilib)
 * Daily built [WAR files](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/)
 * Daily built [Javadoc](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/javadoc/)
 * [Maven repository](http://it-dev.mpiwg-berlin.mpg.de/maven-repo/)
@@ -58,6 +59,6 @@ Build:
  
    `mvn jetty:run-exploded --projects webapp`
    
-   and watch digilib at http://localhost:8080/digilib/digilib.html
+   and open http://localhost:8080/digilib/digilib.html in your browser.
 
 or follow the build and install instructions on the [documentation pages](https://robcast.github.io/digilib/).
