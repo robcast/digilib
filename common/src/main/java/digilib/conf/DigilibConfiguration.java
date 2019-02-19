@@ -55,7 +55,9 @@ public class DigilibConfiguration extends ParameterMap {
     
     protected static String propertiesFileName = "digilib.properties";
 
-    /** digilib version */
+    /** digilib version 
+     * @return
+     */
     public static String getClassVersion() {
         return "2.6.0a";
     }

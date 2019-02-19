@@ -671,7 +671,7 @@ public class DigilibRequest extends ParameterMap {
      *            Option string to be tested.
      * @return boolean
      * 
-     * @deprecated use {@llink #hasOption(String opt)} for "mo"-options.
+     * @deprecated use {@link #hasOption(DigilibOption)} for "mo"-options.
      */
     public boolean hasOption(String param, String opt) {
         String s = getAsString(param);

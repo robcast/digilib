@@ -56,9 +56,6 @@ public class ImageSet {
 
 	/**
 	 * Creator for empty fileset.
-	 * 
-	 * 
-	 * @param initialCapacity
 	 */
 	public ImageSet() {
 		list = new ArrayList<ImageInput>();
@@ -100,7 +97,6 @@ public class ImageSet {
 	 * equal the given size. Returns null if there isn't any smaller image.
 	 * 
 	 * @param size
-	 * @param info
 	 * @return
 	 */
 	public ImageInput getNextSmaller(ImageSize size) {
@@ -120,7 +116,6 @@ public class ImageSet {
 	 * equal the given size. Returns null if there isn't any bigger image.
 	 * 
 	 * @param size
-	 * @param info
 	 * @return
 	 */
 	public ImageInput getNextBigger(ImageSize size) {
@@ -197,7 +192,7 @@ public class ImageSet {
 	 * Sets the aspect ratio from an ImageSize.
 	 * 
 	 * 
-	 * @param f
+	 * @param s
 	 */
 	public void setAspect(ImageSize s) {
 		aspect = s.getAspect();
@@ -206,7 +201,7 @@ public class ImageSet {
 	/**
 	 * Returns the aspect ratio.
 	 * 
-	 * Aspect ratio is (width/height). So it's <1 for portrait and >1 for
+	 * Aspect ratio is (width/height). So it's &lt;1 for portrait and &gt;1 for
 	 * landscape.
 	 * 
 	 * 

@@ -30,13 +30,11 @@ import java.util.List;
 
 /**
  * Class that parses String with intervals into Iterable sequence of integers.
- * <p/>
  * 
  * Intervals are separated by comma ','.
  * An interval is a range represented by two numbers and a hyphen
  * e.g. "3-6". If the second number is omitted the interval goes to maxnum.
  * An interval can also consist of a single number e.g. "7".
- * <p/>
  * 
  * Valid NumRanges: "1-10,13-20", "3,5,9", "1-".
  * 

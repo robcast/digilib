@@ -294,7 +294,7 @@ public class DocuDirCache {
 	}
 
 	/**
-	 * @param fileClasses
+	 * @param fileClass
 	 */
 	public void setFileClass(FileClass fileClass) {
 		this.fileClass = fileClass;

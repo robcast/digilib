@@ -122,7 +122,6 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
      *            list of base directories
      * @param fl
      *            file (from first base dir)
-     * @param hints
      *  
      */
     protected synchronized void fill(Directory[] dirs, File fl) {

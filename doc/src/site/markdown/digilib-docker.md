@@ -18,7 +18,7 @@ To use your own images in the directory `/your/image/path` on your host system:
 
 ```
 docker run --rm \
-	-p 8080:8080 \
+    -p 8080:8080 \
     --name digilib \
     -e BASEDIR_LIST="/var/lib/images" \
     -v /your/image/path:/var/lib/images \

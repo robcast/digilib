@@ -57,9 +57,9 @@ public class BaseDirDocuDirectory extends DocuDirectory {
      * 
      * @param path
      *            digilib directory path name
-     * @param cache
-     *            parent DocuDirCache
-     * @return 
+     * @param fileClass
+     * @param dlConfig
+     *            
      */
     @Override
     public void configure(String path, FileClass fileClass, DigilibConfiguration dlConfig) {

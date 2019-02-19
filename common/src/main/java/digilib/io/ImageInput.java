@@ -74,7 +74,7 @@ public abstract class ImageInput {
 
 	/**
 	 * Sets the mimetype.
-	 * @param mimetype The mimetype to set
+	 * @param filetype The mimetype to set
 	 */
 	public void setMimetype(String filetype) {
 		this.mimetype = filetype;

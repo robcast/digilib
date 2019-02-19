@@ -44,7 +44,8 @@ public class AliasingDocuDirCache extends DocuDirCache {
 
 	/**
 	 * @param fc
-	 * @param confFileName
+	 * @param confFile
+	 * @param dlConfig
 	 * @throws FileOpException
 	 */
 	public AliasingDocuDirCache(FileClass fc,

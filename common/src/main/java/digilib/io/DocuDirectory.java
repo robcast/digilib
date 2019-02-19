@@ -85,7 +85,6 @@ public abstract class DocuDirectory extends Directory implements Iterable<DocuDi
 	 *            type of files in this DocuDirectory
 	 * @param dlConfig
 	 *            digilib config
-	 * @return 
 	 */
 	public void configure(String path, FileClass fileClass, DigilibConfiguration dlConfig) {
 		this.dirName = path;
@@ -137,7 +136,7 @@ public abstract class DocuDirectory extends Directory implements Iterable<DocuDi
 	 * @param fc
 	 *            fileClass
 	 * @return
-     * @deprecated Use {@link #get()} instead.
+     * @deprecated Use {@link #get(int)} instead.
 	 */
 	public DocuDirent get(int index, FileClass fc) {
 	    return get(index);
@@ -227,8 +226,6 @@ public abstract class DocuDirectory extends Directory implements Iterable<DocuDi
      * 
      * @param fn
      *            filename
-     * @param fc
-     *            file class
      * @return int index of file <code>fn</code>
      */
 	public int indexOf(String fn) {

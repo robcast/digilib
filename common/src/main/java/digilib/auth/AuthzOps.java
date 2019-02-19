@@ -60,7 +60,7 @@ public interface AuthzOps {
     /**
      * Configure this AuthzOps instance.
      * 
-     * @param confFile
+     * @param dlConfig
      * @throws AuthOpException
      */
     public void init(DigilibConfiguration dlConfig) throws AuthOpException;

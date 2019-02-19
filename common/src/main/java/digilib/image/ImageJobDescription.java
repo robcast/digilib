@@ -234,7 +234,6 @@ public class ImageJobDescription extends ParameterMap {
      * Uses image size and user parameters.
      * Sets scaleX, scaleY, imgArea.
      * 
-     * @return
      * @throws IOException
      * @throws ImageOpException
      */

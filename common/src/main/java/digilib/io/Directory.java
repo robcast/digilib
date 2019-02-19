@@ -75,7 +75,7 @@ public class Directory {
 
 	/** Constructor taking a directory name.
 	 * 
-	 * @param d
+	 * @param dn
 	 */
 	public Directory(String dn) {
 		dir = new File(dn);

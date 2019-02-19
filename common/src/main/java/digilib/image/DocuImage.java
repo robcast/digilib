@@ -145,8 +145,8 @@ public interface DocuImage {
      * Replaces the current image with an image scaled by the factor
      * <code>scale</code>.
      * 
-     * @param scale
-     *            scaling factor
+     * @param scaleX
+     * @param scaleY
      * @throws ImageOpException
      */
     public void scale(double scaleX, double scaleY) throws ImageOpException;

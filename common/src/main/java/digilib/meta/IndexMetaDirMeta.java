@@ -112,12 +112,10 @@ public class IndexMetaDirMeta implements DirMeta {
      * 
      * Takes a Map with meta-information, adding the relative path before the
      * lookup.
-     * @param dir 
      * 
+     * @param dir
      * @param fileMeta
      * @param relPath
-     * @param fc
-     *            fileClass
      */
     protected void readFileMeta(DocuDirectory dir, Map<String,MetadataMap> fileMeta, String relPath) {
         String path = (relPath != null) ? (relPath + "/") : "";

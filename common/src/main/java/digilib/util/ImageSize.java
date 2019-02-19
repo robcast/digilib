@@ -214,7 +214,7 @@ public class ImageSize {
 	/**
 	 * Returns the aspect ratio.
 	 * 
-	 * Aspect ratio is (width/height). So it's <1 for portrait and  >1 for
+	 * Aspect ratio is (width/height). So it's &lt;1 for portrait and  &gt;1 for
 	 * landscape.
 	 * 
 	 * @return

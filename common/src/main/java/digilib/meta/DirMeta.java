@@ -45,7 +45,7 @@ public interface DirMeta {
     /**
      * check and process metadata for this directory.
      * 
-     * @param docuDirectory
+     * @param dir
      */
     public void checkMeta(DocuDirectory dir);
 
