@@ -23,14 +23,15 @@
   the [Bibliotheca Hertziana](http://www.biblhertz.it), 
   the [University of Bern](http://philoscience.unibe.ch) and others.
 
-## Where can I get digilib?
+## How can I use digilib?
 
 `digilib` source code, binaries and documentation can be found on the 
 [digilib project pages](https://github.com/robcast/digilib)
-on [GitHub](https://github.com) 
-or [SourceForge](https://sourceforge.net/projects/digilib/):
+on [GitHub](https://github.com).
 
 * [Source code](https://github.com/robcast/digilib)
+* [Release WAR files](https://github.com/robcast/digilib/releases)
+* [Docker image](https://hub.docker.com/r/robcast/digilib)
 * Daily built [WAR files](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/)
 * Daily built [Javadoc](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/javadoc/)
 * [Maven repository](http://it-dev.mpiwg-berlin.mpg.de/maven-repo/)

@@ -32,6 +32,7 @@
       <item name="Building digilib" href="build-maven.html"/>
       <item name="Installing digilib" href="install-digilib.html"/>
       <item name="Server setup" href="server-setup.html"/>
+      <item name="digilib in Docker" href="digilib-docker.html"/>
     </menu>
     <menu name="Configuration">
       <item name="Configuring digilib" href="digilib-config.html"/>

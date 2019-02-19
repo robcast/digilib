@@ -1,7 +1,56 @@
+![digilib-logo](https://robcast.github.io/digilib/images/digilib-logo-big.png)
+
 digilib - The Digital Image Library
 ===================================
 
-A versatile image viewing environment for the internet.
+digilib is a flexible image server and image viewing environment for the internet:
+
+* scaling image server that supports big images and deep zoom image clients
+* works with any image format supported by Java: TIFF, JPEG, PNG,...
+* [IIIF API](http://iiif.io) compatible
+* multi-platform Java server for easy deployment
+
+Check out all the details in the [documentation](https://robcast.github.io/digilib/).
+
+## How to run digilib (using Docker)
+
+Requirements: 
+* [Docker](https://www.docker.com/)
+
+```
+docker run --rm -p 8080:8080 robcast/digilib
+```
+Then open https://localhost:8080/digilib/digilib.html in your browser.
+
+Please see the [documentation on using the digilib Docker image](https://robcast.github.io/digilib/digilib-docker.html).
+
+## How to build and run digilib (using Java)
+
+Requirements:
+* [git](https://git-scm.com/)
+* [Java JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html) version 7 or later
+* [Maven](https://maven.apache.org/) version 3 or later
+
+```
+git clone https://github.com/robcast/digilib.git
+cd digilib
+mvn jetty:run-exploded --projects webapp
+```
+Then open http://localhost:8080/digilib/digilib.html in your browser.
+
+Please see the full [build and install documentation](https://robcast.github.io/digilib/build-maven.html).
+
+## Where to get digilib
+
+* [Source code](https://github.com/robcast/digilib)
+* [Issue tracker](https://github.com/robcast/digilib/issues)
+* [Docker images](https://hub.docker.com/r/robcast/digilib)
+* Daily built [WAR files](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/)
+* Daily built [Javadoc](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/javadoc/)
+* [Maven repository](http://it-dev.mpiwg-berlin.mpg.de/maven-repo/)
+
+digilib documentation can be found on the 
+[digilib documentation pages](https://robcast.github.io/digilib/) on GitHub.
 
 ## What is digilib?
 
@@ -26,39 +75,3 @@ A versatile image viewing environment for the internet.
   the [Bibliotheca Hertziana](http://www.biblhertz.it), 
   the [University of Bern](http://philoscience.unibe.ch) and others.
 
-## Where can I get digilib?
-
-* [Source code](https://github.com/robcast/digilib)
-* [Issue tracker](https://github.com/robcast/digilib/issues)
-* [Docker images](https://hub.docker.com/r/robcast/digilib)
-* Daily built [WAR files](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/)
-* Daily built [Javadoc](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/javadoc/)
-* [Maven repository](http://it-dev.mpiwg-berlin.mpg.de/maven-repo/)
-
-`digilib` documentation can be found on the 
-[digilib documentation pages](https://robcast.github.io/digilib/) on GitHub
-or on [SourceForge](https://sourceforge.net/projects/digilib/).
-
-## How do I run digilib?
-
-Requirements:
-* [git](https://git-scm.com/)
-* [Java JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html) version 7 or later
-* [Maven](https://maven.apache.org/) version 3 or later
-
-Build:
-1. Clone the digilib repository
-
-   `git clone https://github.com/robcast/digilib.git`
-
-2. Change to the repository
-
-   `cd digilib`
-   
-3. build and run the webapp in the embedded Jetty runtime for development
- 
-   `mvn jetty:run-exploded --projects webapp`
-   
-   and open http://localhost:8080/digilib/digilib.html in your browser.
-
-or follow the build and install instructions on the [documentation pages](https://robcast.github.io/digilib/).

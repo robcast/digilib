@@ -1,22 +1,8 @@
-# digilib
+# The robcast/digilib docker image
 
-![digilib-logo](https://robcast.github.io/digilib/images/digilib-logo-big.png)
-
-A Docker container for the [digilib image server](https://robcast.github.io/digilib/).
-
-digilib is a [IIIF API](https://iiif.io) compliant image server written in Java:
-  * Documentation: https://robcast.github.io/digilib/
-  * Issues: https://github.com/robcast/digilib/issues
-  * Source code: https://github.com/robcast/digilib
-
-## Supported tags
-
-  * **release-x.y.z**: Tagged release builds.
-  * **snapshot**: unstable daily builds from the `master` branch.
-
-## Dependencies
-
-The digilib runtime image builds on the [tomcat:9-jre11](https://hub.docker.com/_/tomcat) image.
+[robcast/digilib](https://hub.docker.com/r/robcast/digilib) is a public Docker image 
+on the central Docker Hub server that you can use to run digilib without installing
+Java or Tomcat yourself - all you need is to install [Docker](https://www.docker.com/).
 
 ## How to use this image
 
@@ -35,6 +21,15 @@ docker run --rm \
     -v /your/image/path:/var/lib/images \
     robcast/digilib
 ```
+
+## Supported tags
+
+  * **release-x.y.z**: Tagged release builds.
+  * **snapshot**: unstable daily builds from the `master` branch.
+
+## Dependencies
+
+The digilib runtime image builds on the [tomcat:9-jre11](https://hub.docker.com/_/tomcat) image.
 
 ## Available parameters for the container
 
