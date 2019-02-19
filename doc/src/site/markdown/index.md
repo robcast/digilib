@@ -35,3 +35,35 @@ on [GitHub](https://github.com).
 * Daily built [WAR files](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/)
 * Daily built [Javadoc](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/javadoc/)
 * [Maven repository](http://it-dev.mpiwg-berlin.mpg.de/maven-repo/)
+
+## First steps 
+
+### using Docker
+
+Requirements: 
+
+* [Docker](https://www.docker.com/)
+
+```
+docker run --rm -p 8080:8080 robcast/digilib
+```
+Then open https://localhost:8080/digilib/digilib.html in your browser.
+
+Please see the [documentation on using the digilib Docker image](digilib-docker.html).
+
+### using Java
+
+Requirements:
+
+* [git](https://git-scm.com/)
+* [Java JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html) version 7 or later
+* [Maven](https://maven.apache.org/) version 3 or later
+
+```
+git clone https://github.com/robcast/digilib.git
+cd digilib
+mvn jetty:run-exploded --projects webapp
+```
+Then open http://localhost:8080/digilib/digilib.html in your browser.
+
+Please see the full [build and install documentation](build-maven.html).

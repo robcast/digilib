@@ -40,7 +40,7 @@ Then open http://localhost:8080/digilib/digilib.html in your browser.
 
 Please see the full [build and install documentation](https://robcast.github.io/digilib/build-maven.html).
 
-## Where to get digilib
+## digilib resources
 
 * [Source code](https://github.com/robcast/digilib)
 * [Issue tracker](https://github.com/robcast/digilib/issues)
