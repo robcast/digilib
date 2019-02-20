@@ -23,22 +23,21 @@
   the [Bibliotheca Hertziana](http://www.biblhertz.it), 
   the [University of Bern](http://philoscience.unibe.ch) and others.
 
-## How can I use digilib?
+## digilib resources
 
 `digilib` source code, binaries and documentation can be found on the 
 [digilib project pages](https://github.com/robcast/digilib)
 on [GitHub](https://github.com).
 
 * [Source code](https://github.com/robcast/digilib)
-* [Release WAR files](https://github.com/robcast/digilib/releases)
-* [Docker image](https://hub.docker.com/r/robcast/digilib)
-* Daily built [WAR files](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/)
-* Daily built [Javadoc](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/javadoc/)
-* [Maven repository](http://it-dev.mpiwg-berlin.mpg.de/maven-repo/)
+* [Issue tracker](https://github.com/robcast/digilib/issues)
+* [Docker images](https://hub.docker.com/r/robcast/digilib)
+* [Javadoc](https://robcast.github.io/digilib-repo/apidocs/)
+* [Maven repository](https://robcast.github.io/digilib-repo/maven-repo/)
 
-## First steps 
+## First steps
 
-### using Docker
+### Using Docker
 
 Requirements: 
 
@@ -51,7 +50,7 @@ Then open https://localhost:8080/digilib/digilib.html in your browser.
 
 Please see the [documentation on using the digilib Docker image](digilib-docker.html).
 
-### using Java
+### Using Java
 
 Requirements:
 

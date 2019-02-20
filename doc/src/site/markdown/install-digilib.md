@@ -35,9 +35,8 @@ or web application directory any time you need.
 Also you get the chance to always use the latest digilib version by updating the source code. 
 
 You can also download a digilib WAR file with a default configuration from the
-[GitHub release page](https://github.com/robcast/digilib/releases)
-or the latest digilib build from the 
-[daily build page](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/). 
+[GitHub release page](https://github.com/robcast/digilib/releases).
+ 
 The default configuration will only show a set of sample images. If you want to show your own images
 you will need to change the [digilib configuration](digilib-config.html) to point to your image directories. 
 

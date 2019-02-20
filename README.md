@@ -45,12 +45,11 @@ Please see the full [build and install documentation](https://robcast.github.io/
 * [Source code](https://github.com/robcast/digilib)
 * [Issue tracker](https://github.com/robcast/digilib/issues)
 * [Docker images](https://hub.docker.com/r/robcast/digilib)
-* Daily built [WAR files](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/)
-* Daily built [Javadoc](https://it-dev.mpiwg-berlin.mpg.de/downloads/digilib/daily-build/javadoc/)
-* [Maven repository](http://it-dev.mpiwg-berlin.mpg.de/maven-repo/)
+* [Javadoc](https://robcast.github.io/digilib-repo/apidocs/)
+* [Maven repository](https://robcast.github.io/digilib-repo/maven-repo/)
 
-digilib documentation can be found on the 
-[digilib documentation pages](https://robcast.github.io/digilib/) on GitHub.
+Full documentation can be found on the 
+[digilib documentation pages](https://robcast.github.io/digilib/).
 
 ## What is digilib?
 
