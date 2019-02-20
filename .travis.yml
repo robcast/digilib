@@ -9,7 +9,7 @@ script:
   - mkdir -p target/site/maven-repo
   - cp -rp digilib-repo/maven-repo/* target/site/maven-repo/
   # build digilib using maven
-  - mvn -DskipTests=false javadoc:aggregate deploy -DaltDeploymentRepository=repo::default::file:target/site/maven-repo -B
+  - mvn -DskipTests=false deploy -DaltDeploymentRepository=repo::default::file:target/site/maven-repo -B
 deploy:
   # deploy WAR from tagged commits as github release
   - provider: releases
