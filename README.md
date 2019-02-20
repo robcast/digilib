@@ -2,7 +2,7 @@
 
 digilib - The Digital Image Library
 [![Build status](https://travis-ci.org/robcast/digilib.svg?branch=master)](http://travis-ci.org/robcast/digilib)
-[![Docker build](https://img.shields.io/docker/automated/robcast/digilib.svg)](https://hub.docker.com/r/robcast/digilib)
+![GitHub](https://img.shields.io/github/license/robcast/digilib.svg)
 ===================================
 
 digilib is a flexible image server and image viewing environment for the internet:
