@@ -136,6 +136,15 @@
           <show>package</show>
           <nohelp>true</nohelp>
         </configuration>
+        <executions>
+          <execution>
+            <id>aggregate</id>
+            <goals>
+              <goal>aggregate</goal>
+            </goals>
+            <phase>site</phase>
+          </execution>
+		</executions>
       </plugin>
     </plugins>
   </build>
