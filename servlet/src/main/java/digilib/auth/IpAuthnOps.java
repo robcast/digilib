@@ -44,7 +44,7 @@ import digilib.util.XMLMapLoader;
  * Implements AuthnOps using IP adresses defined in an XML config file.
  * 
  * The name of the configuration file is read from the digilib config parameter "auth-file".
- * <p/>
+ * 
  * The tag "digilib-adresses" is read from the configuration file:
  * <pre>  
  * {@code

@@ -37,7 +37,7 @@ import digilib.conf.DigilibServletRequest;
  * Implements AuthnOps using IP adresses defined in an XML config file and Servlet API isUserInRole().
  * 
  * The name of the configuration file is read from the digilib config parameter "auth-file".
- * <p/>
+ * 
  * The tag "digilib-adresses" is read from the configuration file:
  * <pre>  
  * {@code

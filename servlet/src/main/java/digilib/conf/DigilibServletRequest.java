@@ -155,7 +155,6 @@ public class DigilibServletRequest extends DigilibRequest {
      * Recognizes digilib API (old and new) and IIIF API style requests. 
      * 
      * @param request
-     * @throws ImageOpException 
      */
     public void setWithRequest(HttpServletRequest request) {
         servletRequest = request;

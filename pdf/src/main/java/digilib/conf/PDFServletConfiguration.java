@@ -113,9 +113,7 @@ public class PDFServletConfiguration extends DigilibServletConfiguration {
     }
 
     /**
-     * @param config 
      * @param context 
-     * 
      */
     protected void configurePdfServlet(ServletContext context) {
         PDFServletConfiguration config = this;

@@ -35,7 +35,7 @@ import digilib.conf.DigilibRequest;
  * Implements AuthnOps using IP adresses defined in an XML config file and an OpenId Connect ID token.
  * 
  * The name of the configuration file is read from the digilib config parameter "auth-file".
- * <p/>
+ * 
  * The tags "digilib-adresses" and "digilib-oauth" are read from the configuration file:
  * <pre>  
  * {@code

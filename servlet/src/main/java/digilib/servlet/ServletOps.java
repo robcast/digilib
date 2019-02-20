@@ -107,7 +107,7 @@ public class ServletOps {
      * If the File is not absolute the path is appended to the base directory of
      * the web-app.
      * 
-     * @param file
+     * @param f
      * @param sc
      * @return
      */
@@ -151,7 +151,7 @@ public class ServletOps {
      * If the File is not absolute the path is appended to the WEB-INF directory
      * of the web-app.
      * 
-     * @param file
+     * @param f
      * @param sc
      * @return
      */
@@ -233,11 +233,9 @@ public class ServletOps {
      *            mime-type of the file.
      * @param name
      *            name of the download file (for application/x)
-     * @param res
+     * @param response
      *            ServletResponse where the image file will be sent.
      * @throws ImageOpException
-     * @throws ServletException
-     *             Exception on sending data.
      * @throws IOException
      */
     public static void sendFile(File f, String mt, String name,
@@ -259,12 +257,11 @@ public class ServletOps {
      *            mime-type of the file.
      * @param name 
      *            name of the download file (for application/x)
-     * @param res
+     * @param response
      *            ServletResponse where the image file will be sent.
      * @param logger
      *            Logger to use
      * @throws ImageOpException
-     * @throws ServletException Exception on sending data.
      * @throws IOException 
      */
     public static void sendFile(File f, String mt, String name, HttpServletResponse response, Logger logger)
@@ -427,14 +424,14 @@ public class ServletOps {
     }
 
     /**
-     * Returns IIIF compatible image information as application/json response.
+     * Sends IIIF compatible image information as application/json response.
+     * 
+     * @see <a href="https://iiif.io/api/image/2.1/#image-information">IIIF Image Information Request</a>
      * 
      * @param dlReq
      * @param response
      * @param logger
-     * @throws FileOpException 
      * @throws ServletException
-     * @see <a href="http://www-sul.stanford.edu/iiif/image-api/1.1/#info">IIIF Image Information Request</a>
      */
 	public static void sendIiifInfo(DigilibServletRequest dlReq, HttpServletResponse response, Logger logger)
 			throws ServletException {

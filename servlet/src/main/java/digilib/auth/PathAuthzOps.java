@@ -40,7 +40,7 @@ import digilib.util.XMLMapLoader;
  * Implements AuthzOps using paths defined in an XML config file. 
  * 
  * The name of the configuration file is read from the digilib config parameter "auth-file".
- * <p/>
+ * 
  * The tag "digilib-paths" is read from the configuration file:
  * <pre>
  * {@code
@@ -51,7 +51,6 @@ import digilib.util.XMLMapLoader;
  * </pre>
  * A user must supply one of the roles under "role" to access the directory "name".
  * Roles under "role" must be separated by comma only (no spaces).
- * <pre>  
  * 
  */
 public class PathAuthzOps extends AuthzOpsImpl {

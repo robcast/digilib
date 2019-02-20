@@ -49,7 +49,7 @@ import digilib.util.XMLMapLoader;
  * Requires FileMeta implementation providing "access", e.g. digilib.meta.IndexMetaFileMeta. 
  * 
  * The name of the configuration file is read from the digilib config parameter "auth-file".
- * <p/>
+ * 
  * The tag "digilib-access" is read from the auth-file configuration file:
  * <pre>
  * {@code
@@ -119,7 +119,7 @@ public class MetaAccessAuthzOps extends AuthzOpsImpl {
      * 
      * The location information of the request is also considered.
      * 
-     * @param request
+     * @param dlRequest
      *            ServletRequest with address information.
      * @throws AuthOpException
      *             Exception thrown on error.

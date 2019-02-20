@@ -79,6 +79,10 @@ import digilib.util.ImageSize;
  * @author casties
  * 
  */
+/**
+ * @author casties
+ *
+ */
 @WebServlet(name = "Manifester", urlPatterns = { "/Manifester/*", "/servlet/Manifester/*" })
 public class Manifester extends HttpServlet {
 
@@ -157,7 +161,7 @@ public class Manifester extends HttpServlet {
      * Returns modification time relevant to the request for caching.
      * 
      * @see javax.servlet.http.HttpServlet#getLastModified(javax.servlet.http.HttpServletRequest)
-     *
+     */
     public long getLastModified(HttpServletRequest request) {
         accountlog.debug("GetLastModified from " + request.getRemoteAddr() + " for " + request.getQueryString());
         long mtime = -1;
@@ -182,7 +186,7 @@ public class Manifester extends HttpServlet {
         }
         logger.debug("  returns " + mtime);
         return mtime;
-    } */
+    }
 
 	/*
 	 * (non-Javadoc)
@@ -406,11 +410,9 @@ public class Manifester extends HttpServlet {
     	}
     }
 
-	/**
-     * @param dlDir
-     * @param url
+    /**
      * @param manifest
-     * @param servletBaseUrl 
+     * @param params
      */
     protected void writeSequences(JsonGenerator manifest, ManifestParams params) {
         manifest.writeStartArray("sequences");
@@ -423,10 +425,8 @@ public class Manifester extends HttpServlet {
     }
 
 	/**
-	 * @param dlDir
-	 * @param url
 	 * @param manifest
-	 * @param servletUrl 
+	 * @param params
 	 */
 	protected void writeSequence(JsonGenerator manifest, ManifestParams params) {
 		manifest.writeStartObject()
@@ -442,10 +442,8 @@ public class Manifester extends HttpServlet {
 	}
 
 	/**
-	 * @param dlDir
-	 * @param url
 	 * @param manifest
-	 * @param servletUrl 
+	 * @param params
 	 */
 	protected void writeCanvases(JsonGenerator manifest, ManifestParams params) {
 		/*
@@ -469,14 +467,13 @@ public class Manifester extends HttpServlet {
 		manifest.writeEnd(); // canvases
 	}
 
-	/**
-	 * @param url
-	 * @param manifest
-	 * @param idx
-	 * @param imgFile
-	 * @param imgSize
-	 * @param servletUrl 
-	 */
+    /**
+     * @param manifest
+     * @param idx
+     * @param imgFile
+     * @param imgSize
+     * @param params
+     */
     protected void writeCanvas(JsonGenerator manifest, int idx, DocuDirent imgFile, ImageSize imgSize,
             ManifestParams params) {
         manifest.writeStartObject()
@@ -499,14 +496,13 @@ public class Manifester extends HttpServlet {
         manifest.writeEnd(); // canvas
     }
 
-	/**
-	 * @param url
-	 * @param manifest
-	 * @param idx
-	 * @param imgFile
-	 * @param imgSize
-	 * @param servletUrl 
-	 */
+    /**
+     * @param manifest
+     * @param idx
+     * @param imgFile
+     * @param imgSize
+     * @param params
+     */
     protected void writeImages(JsonGenerator manifest, int idx, DocuDirent imgFile, ImageSize imgSize,
             ManifestParams params) {
         /*
@@ -521,14 +517,13 @@ public class Manifester extends HttpServlet {
         manifest.writeEnd(); // images
     }
 
-	/**
-	 * @param url
-	 * @param manifest
-	 * @param idx
-	 * @param imgFile
-	 * @param imgSize
-	 * @param servletUrl 
-	 */
+    /**
+     * @param manifest
+     * @param idx
+     * @param imgFile
+     * @param imgSize
+     * @param params
+     */
     protected void writeImage(JsonGenerator manifest, int idx, DocuDirent imgFile, ImageSize imgSize,
             ManifestParams params) {
         /*
@@ -547,13 +542,12 @@ public class Manifester extends HttpServlet {
             .writeEnd(); // image
     }
 
-	/**
-	 * @param url
-	 * @param manifest
-	 * @param imgFile
-	 * @param imgSize
-	 * @param servletUrl 
-	 */
+    /**
+     * @param manifest
+     * @param imgFile
+     * @param imgSize
+     * @param params
+     */
     protected void writeResource(JsonGenerator manifest, DocuDirent imgFile, ImageSize imgSize,
             ManifestParams params) {
         // base URL for image using IIIF image API
@@ -577,12 +571,12 @@ public class Manifester extends HttpServlet {
         manifest.writeEnd(); // resource
 	}
 
-	/**
-	 * @param manifest
-	 * @param iiifImgBaseUrl 
-	 * @param imgSize 
-	 * @param servletUrl 
-	 */
+    /**
+     * @param manifest
+     * @param iiifImgBaseUrl
+     * @param imgSize
+     * @param params
+     */
     protected void writeService(JsonGenerator manifest, String iiifImgBaseUrl, ImageSize imgSize,
             ManifestParams params) {
 	    /*

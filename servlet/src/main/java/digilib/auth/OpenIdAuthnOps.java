@@ -53,7 +53,7 @@ import digilib.util.XMLMapListLoader;
  * Implements AuthnOps using an OpenId Connect ID token.
  * 
  * The name of the configuration file is read from the digilib config parameter "auth-file".
- * <p/>
+ *
  * The tag "digilib-oauth" is read from the configuration file:
  * <pre>  
  * {@code

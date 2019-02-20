@@ -2,7 +2,7 @@
 language: java
 sudo: false
 # run real tests
-script: mvn -DskipTests=false package -B
+script: mvn -DskipTests=false javadoc:javadoc package -B
 # deploy WAR from tagged commits as github release
 deploy:
   - provider: releases
@@ -13,9 +13,9 @@ deploy:
     skip_cleanup: true
     on:
       tags: true
-#  - provider: pages
-#    repo: robcast/digilib-repo
-#    api_key:
-#      secure: dT2smtPnJ7eB1HHYY/xYEiKDjILEyrARQy7TEWuBp+4SQeQ5ni+FtmzEctXzxC3cnViVlOsnWiR7lvrvzqVNBMbypAHB5+HPTJ/JBzlqik7GmLhTkkBas+qqA0ldBxZ5EkFyWb8v8il1sNiqHCCO1xewPN6cziGIi+89czH0a+vARcd6szwxuYazi2DLEKsWjPbUetxje9Wfei28huWj3UCbRbtkjscpmzY/6K3hEnyz8QFS7IsTd06B9djWlomEUyZevQtKjD8rwRD4JYqyKLvThNZYdOYHN++wH/LqPSIq71m7JfbBd9NLvrMtKKEsTW0IHOllTGhqgOsBY3b2+KeGUhKSfV+vieqlHZDWIG2oucqzKBD2dtSilWQ/gNuoOIx+LYfwBBzxGgYdPRVZ5eR8qyNA6+0RQlTyhgoP3UwFyZHeJdUHuHb5xM/GItKcSX/N16T4jczRb8V4VKRFvFEWez2BXYKncHf7iNCGODe+4k3bNdCXDCSFl6etGB/iPs25TBct7MXcRTUvZOOwowbrWJIQ8ekmr6CIWkzZ0jwZmd48pPRH73FT6JQu/j/17vTkNbJdbYDRdulLJXOpt9pszEWn2aWOmEPqR6HuyN0pmhyNyRmB+oiAdgQrriouCpoKVs3PF/OIO1QITu6EsoYp2B78heE3Yr6FRMIZO64=
-#    local-dir: common/target/site/apidocs
-#    skip_cleanup: true
+  - provider: pages
+    repo: robcast/digilib-repo
+    api_key:
+      secure: dT2smtPnJ7eB1HHYY/xYEiKDjILEyrARQy7TEWuBp+4SQeQ5ni+FtmzEctXzxC3cnViVlOsnWiR7lvrvzqVNBMbypAHB5+HPTJ/JBzlqik7GmLhTkkBas+qqA0ldBxZ5EkFyWb8v8il1sNiqHCCO1xewPN6cziGIi+89czH0a+vARcd6szwxuYazi2DLEKsWjPbUetxje9Wfei28huWj3UCbRbtkjscpmzY/6K3hEnyz8QFS7IsTd06B9djWlomEUyZevQtKjD8rwRD4JYqyKLvThNZYdOYHN++wH/LqPSIq71m7JfbBd9NLvrMtKKEsTW0IHOllTGhqgOsBY3b2+KeGUhKSfV+vieqlHZDWIG2oucqzKBD2dtSilWQ/gNuoOIx+LYfwBBzxGgYdPRVZ5eR8qyNA6+0RQlTyhgoP3UwFyZHeJdUHuHb5xM/GItKcSX/N16T4jczRb8V4VKRFvFEWez2BXYKncHf7iNCGODe+4k3bNdCXDCSFl6etGB/iPs25TBct7MXcRTUvZOOwowbrWJIQ8ekmr6CIWkzZ0jwZmd48pPRH73FT6JQu/j/17vTkNbJdbYDRdulLJXOpt9pszEWn2aWOmEPqR6HuyN0pmhyNyRmB+oiAdgQrriouCpoKVs3PF/OIO1QITu6EsoYp2B78heE3Yr6FRMIZO64=
+    local-dir: common/target/site/apidocs
+    skip_cleanup: true
