@@ -2,7 +2,7 @@
 language: java
 sudo: false
 # run real tests
-script: mvn -DskipTests=false javadoc:javadoc package -B
+script: mvn -DskipTests=false javadoc:aggregate package -B
 # deploy WAR from tagged commits as github release
 deploy:
   - provider: releases
