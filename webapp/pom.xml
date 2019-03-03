@@ -305,7 +305,10 @@
 		</profile>
         <profile>
             <id>iiif-presentation</id>
-            <!-- IIIF presentation servlet uses servlet3 and has a web.xml -->
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+            <!-- IIIF presentation servlet uses servlet3 -->
             <dependencies>
                 <dependency>
                     <groupId>digilib</groupId>

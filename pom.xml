@@ -167,6 +167,9 @@
     </profile>
     <profile>
       <id>iiif-presentation</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
       <modules>
         <module>iiif-presentation</module>
       </modules>
