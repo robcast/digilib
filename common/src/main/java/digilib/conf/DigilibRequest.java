@@ -651,6 +651,7 @@ public class DigilibRequest extends ParameterMap {
 	 * @throws UnsupportedEncodingException
 	 */
 	public String decodeIiifIdentifier(String identifier) throws UnsupportedEncodingException {
+		if (identifier == null) return "";
 		if (identifier.contains("%")) {
 		    // still escape chars -- decode again
 		    identifier = URLDecoder.decode(identifier, "UTF-8");

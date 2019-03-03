@@ -201,18 +201,13 @@ public class Manifester extends HttpServlet {
 		processRequest(request, response);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.
-	 * HttpServletRequest, javax.servlet.http.HttpServletResponse)
-	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		accountlog.info("POST from " + request.getRemoteAddr());
-		// do the processing
-		processRequest(request, response);
-	}
+    /* (non-Javadoc)
+     * @see javax.servlet.http.HttpServlet#doOptions(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+     */
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        logger.debug("OPTIONS from " + req.getRemoteAddr());
+        super.doOptions(req, resp);
+    }
 
 	protected void processRequest(HttpServletRequest request, HttpServletResponse response) {
 		try {
@@ -229,7 +224,7 @@ public class Manifester extends HttpServlet {
 			}
 			// get identifier (first parameter)
 			String identifier = ""; // allow empty identifier for image root dir
-			if (iiifParams.size() > 0) {			
+			if (iiifParams.size() > 0 && iiifParams.get(0) != null) {			
 				identifier = iiifParams.get(0);
 			}
 			// decode identifier to file path
@@ -284,6 +279,9 @@ public class Manifester extends HttpServlet {
 				response.setContentType("application/json");
 			}
 
+			/*
+			 * check prepared manifest files
+			 */
 			if (mfFile.canRead()) {
 				// send manifest file
 				ServletOps.sendFile(mfFile, "", "", response);
