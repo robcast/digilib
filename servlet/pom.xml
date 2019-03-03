@@ -5,7 +5,7 @@
   <parent>
     <groupId>digilib</groupId>
     <artifactId>digilib</artifactId>
-    <version>2.6-SNAPSHOT</version>
+    <version>2.6.0</version>
   </parent>
   <artifactId>digilib-servlet</artifactId>
   <name>digilib-servlet</name>
