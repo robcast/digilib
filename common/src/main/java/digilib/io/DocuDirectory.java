@@ -1,33 +1,5 @@
 package digilib.io;
 
-/*
- * #%L
- * DocuDirectory -- Directory of DocuFilesets.
- * 
- * Digital Image Library servlet components
- * 
- * %%
- * Copyright (C) 2003 - 2014 MPIWG Berlin
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 3 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-3.0.html>.
- * #L%
- * Author: Robert Casties (robcast@berlios.de)
- * Created on 25.02.2003
- */
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -92,9 +64,6 @@ public abstract class DocuDirectory extends Directory implements Iterable<DocuDi
 		// clear directory list
 		files = new ArrayList<DocuDirent>();
 		dirMTime = 0;
-		// the first directory has to exist
-		dir = new File(path);
-		isValid = dir.isDirectory();
 		meta = MetaFactory.getDirMetaInstance();
 	}
 
@@ -296,6 +265,7 @@ public abstract class DocuDirectory extends Directory implements Iterable<DocuDi
 	 * @param fn
 	 *            filename
 	 * @return DocuDirent
+	 * @deprecated Use {@link #find(String fn)} instead.
 	 */
 	public DocuDirent find(String fn, FileClass fc) {
 		return find(fn);

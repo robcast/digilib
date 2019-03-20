@@ -29,10 +29,16 @@ import java.io.File;
 
 import digilib.meta.FileMeta;
 
+/**
+ * Interface for an object that represents the content of a DocuDirectory.
+ *  
+ * @author casties
+ *
+ */
 public interface DocuDirent extends Comparable<Object> {
 
     /**
-     * gets the (default) File
+     * Gets the (default) File
      * 
      * @return
      */
@@ -82,16 +88,17 @@ public interface DocuDirent extends Comparable<Object> {
     public abstract FileMeta getMeta();
 
     /**
-     * Sets the meta-data for this file(set) .
+     * Sets the meta-data for this file(set).
      * 
      * @param fileMeta
      *            The fileMeta to set
      */
     public abstract void setMeta(FileMeta fileMeta);
 
-    /** Comparator using the file name.
+    /** 
+     * Comparator using the file name.
      * Compares to a String (for binarySearch)
-     * or to another DocuDirent (for sort)
+     * or to another DocuDirent (for sort).
      * 
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */

@@ -368,6 +368,17 @@
 				</dependency>
 			</dependencies>
 		</profile>
+		<profile>
+			<id>storage-cdstar</id>
+			<dependencies>
+				<dependency>
+					<groupId>digilib</groupId>
+					<artifactId>digilib-common-cdstar</artifactId>
+					<type>jar</type>
+					<scope>compile</scope>
+				</dependency>
+			</dependencies>
+		</profile>
         <profile>
             <id>cors-filter</id>
             <!--  external servlet filter to add CORS headers. enable in web.xml -->

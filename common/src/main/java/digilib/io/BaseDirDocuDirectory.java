@@ -31,7 +31,6 @@ import java.util.Collections;
 
 import digilib.conf.DigilibConfiguration;
 import digilib.io.FileOps.FileClass;
-import digilib.meta.MetaFactory;
 
 /**
  * DocuDirectory implementation that looks for scaled images in parallel paths
@@ -63,17 +62,12 @@ public class BaseDirDocuDirectory extends DocuDirectory {
      */
     @Override
     public void configure(String path, FileClass fileClass, DigilibConfiguration dlConfig) {
-        this.dirName = path;
-        this.fileClass = fileClass;
+    	super.configure(path, fileClass, dlConfig);
         this.baseDirNames = (String[]) dlConfig.getValue("basedir-list");
         String baseDirName = baseDirNames[0];
-        // clear directory list
-        files = new ArrayList<DocuDirent>();
-        dirMTime = 0;
         // the first directory has to exist
         dir = new File(baseDirName, path);
         isValid = dir.isDirectory();
-        meta = MetaFactory.getDirMetaInstance();
     }
 
     /* (non-Javadoc)
