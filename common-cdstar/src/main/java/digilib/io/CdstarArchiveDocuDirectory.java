@@ -107,5 +107,17 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 		return readDir();
 	}
 
+	@Override
+	public String findParentName(String fn) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String findFilename(String fn) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 
 }

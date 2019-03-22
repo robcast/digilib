@@ -177,7 +177,7 @@ public class DocuDirCache {
 			dd.refresh();
 			if (!dd.getDirName().equals(fn)) {
 				// fn was not a directory name, try as a file name
-				n = dd.indexOf(FileOps.filename(fn));
+				n = dd.indexOf(dd.findFilename(fn));
 			}
 			if (dd.isValid()) {
 				try {
@@ -238,7 +238,7 @@ public class DocuDirCache {
 					dd = putDir(dd);
 				} else {
 					// try the parent directory in the cache
-					String pn = FileOps.parent(fn);
+					String pn = dd.findParentName(fn);
 					dd = map.get(pn);
 					if (dd != null) {
 						// not a real cache miss then

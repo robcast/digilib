@@ -147,4 +147,14 @@ public class BaseDirDocuDirectory extends DocuDirectory {
 		return isValid;
     }
 
+	@Override
+	public String findParentName(String fn) {
+		return FileOps.parent(fn);
+	}
+
+	@Override
+	public String findFilename(String fn) {
+		return FileOps.filename(fn);
+	}
+
 }

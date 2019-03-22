@@ -237,6 +237,12 @@ public abstract class DocuDirectory extends Directory implements Iterable<DocuDi
 		return -1;
 	}
 
+    private boolean isBasenameInList(List<DocuDirent> fileList, int idx, String fn) {
+    	String dfn = FileOps.basename((fileList.get(idx)).getName());
+    	return (dfn.equals(fn) || dfn.equals(FileOps.basename(fn))); 
+    }
+
+
 	/**
 	 * Finds the DocuDirent with the name <code>fn</code>.
 	 * 
@@ -325,9 +331,19 @@ public abstract class DocuDirectory extends Directory implements Iterable<DocuDi
     	return files.iterator();
     }
 
-    private boolean isBasenameInList(List<DocuDirent> fileList, int idx, String fn) {
-    	String dfn = FileOps.basename((fileList.get(idx)).getName());
-    	return (dfn.equals(fn) || dfn.equals(FileOps.basename(fn))); 
-    }
+	/**
+	 * Returns a possible parent directory name for path fn.
+	 * 
+	 * @param fn
+	 * @return
+	 */
+	public abstract String findParentName(String fn);
+
+	/**
+	 * Returns a possible file name for path fn.
+	 * @param fn
+	 * @return
+	 */
+	public abstract String findFilename(String fn);
 
 }
