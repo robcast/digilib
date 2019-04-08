@@ -59,7 +59,7 @@ public interface DocuDirent extends Comparable<Object> {
      * 
      * @return DocuDirectory
      */
-    public abstract Directory getParent();
+    public abstract DocuDirectory getParent();
 
     /**
      * Sets the parent Directory.
@@ -67,7 +67,7 @@ public interface DocuDirent extends Comparable<Object> {
      * @param parent
      *            The parent to set
      */
-    public abstract void setParent(Directory parent);
+    public abstract void setParent(DocuDirectory parent);
 
     /**
      * Reads meta-data for this Fileset if there is any.

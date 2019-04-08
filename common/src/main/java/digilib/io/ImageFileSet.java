@@ -33,6 +33,8 @@ import digilib.meta.MetaFactory;
 import digilib.meta.MetadataMap;
 
 /**
+ * ImageSet using ImageFiles filled from an array of scaled Directories.
+ * 
  * @author casties
  *
  */
@@ -44,12 +46,12 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
     protected File file = null;
     /** the file name */
     protected String name = null;
-    /** the FileMeta intance */
+    /** the FileMeta instance */
     protected FileMeta meta = null;
 	/** is our metadata valid */
 	protected boolean metaChecked = false;
-	/** the parent directory */
-	protected Directory parentDir = null;
+	/** the parent DocuDirectory */
+	protected DocuDirectory parent = null;
     
     /**
      * Constructor with a File and Directories.
@@ -60,8 +62,6 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
     public ImageFileSet(File file, Directory[] scaleDirs) {
         int nb = scaleDirs.length;
         list = new ArrayList<ImageInput>(nb);
-        // first dir is our parent
-        parentDir = scaleDirs[0];
         this.file = file;
         name = file.getName();
         meta = MetaFactory.getFileMetaInstance();
@@ -78,15 +78,15 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
     /* (non-Javadoc)
      * @see digilib.io.DocuDirent#getParent()
      */
-    public Directory getParent() {
-    	return this.parentDir;
+    public DocuDirectory getParent() {
+    	return this.parent;
     }
 
     /* (non-Javadoc)
      * @see digilib.io.DocuDirent#setParent(digilib.io.Directory)
      */
-    public void setParent(Directory parent) {
-    	this.parentDir = parent;
+    public void setParent(DocuDirectory parent) {
+    	this.parent = parent;
     }
 
     /* (non-Javadoc)
@@ -115,23 +115,23 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
     }
 
     /**
-     * Fill the ImageSet with files from different base directories.
+     * Fill the ImageSet with files from an array of base directories.
      * 
      * 
-     * @param dirs
-     *            list of base directories
+     * @param scaleDirs
+     *            array of base directories
      * @param fl
      *            file (from first base dir)
      *  
      */
-    protected synchronized void fill(Directory[] dirs, File fl) {
+    protected synchronized void fill(Directory[] scaleDirs, File fl) {
     	String fn = fl.getName();
     	String baseFn = FileOps.basename(fn);
     	// add the first ImageFile to the ImageSet
-    	add(new ImageFile(fl, this, parentDir));
+    	add(new ImageFile(fl, this, scaleDirs[0]));
     	// iterate the remaining base directories
-    	for (int i = 1; i < dirs.length; ++i) {
-    	    Directory dir = dirs[i];
+    	for (int i = 1; i < scaleDirs.length; ++i) {
+    	    Directory dir = scaleDirs[i];
     		if (dir == null) {
     			continue;
     		}

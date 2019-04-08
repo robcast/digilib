@@ -5,6 +5,7 @@ package digilib.io;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -28,7 +29,6 @@ import digilib.io.FileOps.FileClass;
 /**
  * @author casties
  *
- * TODO: DocuDirectory should not inherit from Directory.
  */
 public class CdstarArchiveDocuDirectory extends DocuDirectory {
 
@@ -41,6 +41,11 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 	 */
 	@Override
 	public void configure(String path, FileClass fileClass, DigilibConfiguration dlConfig) {
+		if (path.split("/").length != 2) {
+			// archive path should contain one slash
+			this.isValid = false;
+			return;
+		}
 		super.configure(path, fileClass, dlConfig);
 		archiveUrl = dlConfig.getAsString(STORAGE_URL_KEY) + "/" + path;
 		this.isValid = true; // TODO: this is not nice
@@ -52,6 +57,7 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 	@Override
 	public boolean readDir() {
 		this.files = new ArrayList<DocuDirent>();
+		// TODO: handle authentication
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(
                 new AuthScope("localhost", 8080),
@@ -64,10 +70,18 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 		try {
 			CloseableHttpResponse response = httpclient.execute(httpget);
 			int status = response.getStatusLine().getStatusCode();
-
+			if (status != 200) {
+				logger.error("ReadDir content status not OK: "+status);
+				return false;
+			}
 			try {
 				HttpEntity entity = response.getEntity();
 				if (entity != null) {
+					String ct = entity.getContentType().getValue();
+					if (!ct.startsWith("application/json")) {
+						logger.error("ReadDir content is not JSON: "+ct);
+						return false;
+					}
 					InputStream instream = entity.getContent();
 					JsonReader reader = Json.createReader(instream);
 					try {
@@ -84,6 +98,8 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 							ImageUrlSet imgUrl = new ImageUrlSet(name, archiveUrl + "/" + name);
 							this.files.add(imgUrl);
 						}
+						// TODO: can we get a better modification time?
+						this.dirMTime = System.currentTimeMillis();
 					} finally {
 						instream.close();
 					}
@@ -109,13 +125,19 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 
 	@Override
 	public String findParentName(String fn) {
-		// TODO Auto-generated method stub
+		String[] parts = fn.split("/");
+		if (parts.length > 1) {
+			return parts[0] + "/" + parts[1];
+		}
 		return null;
 	}
 
 	@Override
 	public String findFilename(String fn) {
-		// TODO Auto-generated method stub
+		String[] parts = fn.split("/");
+		if (parts.length > 1) {
+			return String.join("/", Arrays.copyOfRange(parts, 2, parts.length));
+		}
 		return null;
 	}
 

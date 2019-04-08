@@ -45,7 +45,7 @@ public class ImageUrlSet extends ImageSet implements DocuDirent {
 	 * @see digilib.io.DocuDirent#getParent()
 	 */
 	@Override
-	public Directory getParent() {
+	public DocuDirectory getParent() {
 		// no parents
 		return null;
 	}
@@ -54,7 +54,7 @@ public class ImageUrlSet extends ImageSet implements DocuDirent {
 	 * @see digilib.io.DocuDirent#setParent(digilib.io.Directory)
 	 */
 	@Override
-	public void setParent(Directory parent) {
+	public void setParent(DocuDirectory parent) {
 		// no parents
 	}
 

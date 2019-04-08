@@ -25,6 +25,7 @@
           digilib.conf.DigilibServletRequest,
           digilib.conf.DigilibOption,
           digilib.io.DocuDirectory,
+          digilib.io.FsDocuDirectory,
           digilib.io.DocuDirent,
           digilib.io.FileOps,
           java.io.File"%><%!
@@ -52,8 +53,11 @@ int dirSize = docBean.getNumPages();
 <dir><% if (dir != null) { %>
   <size><%= dirSize %></size>
   <name><%= dir.getDirName() %></name>
-  <fsname><%= dir.getDir().getPath() %></fsname> 
-<%
+<% 
+    if (dir instanceof FsDocuDirectory) {
+    	FsDocuDirectory fsdir = (FsDocuDirectory) dir;
+%>  <fsname><%= fsdir.getDir().getPath() %></fsname> 
+<%  }
     if (docBean.isUseAuthorization()) {
 %>  <auth-required><%= ! docBean.isAuthorized() %></auth-required>
 <%

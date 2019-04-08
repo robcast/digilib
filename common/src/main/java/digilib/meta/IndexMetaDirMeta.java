@@ -29,9 +29,9 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import digilib.io.Directory;
 import digilib.io.DocuDirectory;
 import digilib.io.DocuDirent;
+import digilib.io.FsDocuDirectory;
 
 /**
  * DirMeta implementation reading index.meta files.
@@ -59,7 +59,7 @@ public class IndexMetaDirMeta implements DirMeta {
     @Override
     public void readMeta(DocuDirectory dir) {
         // read directory metadata
-        File mf = new File(dir.getDir(), "index.meta");
+        File mf = new File(((FsDocuDirectory)dir).getDir(), "index.meta");
         if (mf.canRead()) {
             IndexMetaAuthLoader ml = new IndexMetaAuthLoader();
             try {
@@ -80,7 +80,7 @@ public class IndexMetaDirMeta implements DirMeta {
                 logger.warn("error reading index.meta", e);
             }
         }
-        readParentMeta(dir);
+        readParentMeta((FsDocuDirectory)dir);
         metaChecked = true;
     }
 
@@ -89,12 +89,12 @@ public class IndexMetaDirMeta implements DirMeta {
      * @param dir 
      *  
      */
-    public void readParentMeta(DocuDirectory dir) {
+    public void readParentMeta(FsDocuDirectory dir) {
         // check the parent directories for additional file meta
-        Directory pd = dir.getParent();
+        FsDocuDirectory pd = (FsDocuDirectory) dir.getParent();
         String path = dir.getDir().getName();
         while (pd != null) {
-            DocuDirectory dd = (DocuDirectory) pd;
+            DocuDirectory dd = pd;
             dd.checkMeta();
             IndexMetaDirMeta dm = (IndexMetaDirMeta) dd.getMeta();
             if (dm.hasUnresolvedFileMeta()) {
@@ -103,7 +103,7 @@ public class IndexMetaDirMeta implements DirMeta {
             // prepend parent dir path
             path = pd.getDir().getName() + "/" + path;
             // become next parent
-            pd = pd.getParent();
+            pd = (FsDocuDirectory) pd.getParent();
         }
     }
 
