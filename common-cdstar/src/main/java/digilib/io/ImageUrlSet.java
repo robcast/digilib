@@ -14,15 +14,13 @@ import digilib.meta.FileMeta;
 public class ImageUrlSet extends ImageSet implements DocuDirent {
 
 	protected String name;
-	protected String url;
 	
 	/**
 	 * 
 	 */
-	public ImageUrlSet(String name, String url) {
+	public ImageUrlSet(String name) {
 		super();
 		this.name = name;
-		this.url = url;
 	}
 
 	/* (non-Javadoc)

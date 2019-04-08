@@ -4,6 +4,7 @@
 package digilib.io;
 
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -48,7 +49,7 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 		}
 		super.configure(path, fileClass, dlConfig);
 		archiveUrl = dlConfig.getAsString(STORAGE_URL_KEY) + "/" + path;
-		this.isValid = true; // TODO: this is not nice
+		this.isValid = true; // TODO: when is an URL invalid?
 	}
 
 	/* (non-Javadoc)
@@ -56,7 +57,6 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 	 */
 	@Override
 	public boolean readDir() {
-		this.files = new ArrayList<DocuDirent>();
 		// TODO: handle authentication
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(
@@ -66,12 +66,14 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
                 .setDefaultCredentialsProvider(credsProvider)
                 .build();
 		//CloseableHttpClient httpclient = HttpClients.createDefault();
-		HttpGet httpget = new HttpGet(archiveUrl + "?files");
+		HttpGet httpget = new HttpGet(archiveUrl + "?with=files");
 		try {
+		    logger.debug("Reading CDSTAR archive listing for "+archiveUrl);
 			CloseableHttpResponse response = httpclient.execute(httpget);
 			int status = response.getStatusLine().getStatusCode();
 			if (status != 200) {
-				logger.error("ReadDir content status not OK: "+status);
+				logger.error("CDSTAR archive listing status not OK: "+status);
+		        this.files = new ArrayList<DocuDirent>();
 				return false;
 			}
 			try {
@@ -79,27 +81,45 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 				if (entity != null) {
 					String ct = entity.getContentType().getValue();
 					if (!ct.startsWith("application/json")) {
-						logger.error("ReadDir content is not JSON: "+ct);
+						logger.error("CDSTAR archive listing is not JSON: "+ct);
+				        this.files = new ArrayList<DocuDirent>();
 						return false;
 					}
 					InputStream instream = entity.getContent();
 					JsonReader reader = Json.createReader(instream);
 					try {
 						JsonObject archive = reader.readObject();
-						int count = archive.getInt("count");
-						int total = archive.getInt("total");
+						int count = archive.getInt("file_count");
+                        // get archive's modification time
+						String modtime = archive.getString("modified");
+						// make Java Instance conformant
+						modtime = modtime.replaceAll("\\+(.*)$", "Z");
+                        long mtime = Instant.parse(modtime).toEpochMilli();
+                        if (mtime == this.dirMTime) {
+                            // modification time did not change
+                            logger.debug("CDSTAR archive unmodified.");
+                            return true;
+                        }
+                        // reset all files
+                        this.files = new ArrayList<DocuDirent>();
 						JsonArray cdfiles = archive.getJsonArray("files");
-						if (count != total) {
+						if (count != cdfiles.size()) {
+				            logger.warn("CDSTAR archive listing ("+count+") needs more requests! Only got "+cdfiles.size());
 							// paged result, needs more requests
 						}
 						for (JsonValue cdfile : cdfiles) {
+						    // parse file JSON
 							JsonObject cdf = cdfile.asJsonObject();
 							String name = cdf.getString("name");
-							ImageUrlSet imgUrl = new ImageUrlSet(name, archiveUrl + "/" + name);
-							this.files.add(imgUrl);
+							String mt = cdf.getString("type");
+							ImageUrlSet imgSet = new ImageUrlSet(name);
+                            ImageUrl imgUrl = new ImageUrl(name, archiveUrl + "/" + name);
+                            imgUrl.setMimetype(mt);
+                            imgSet.add(imgUrl);
+							this.files.add(imgSet);
 						}
-						// TODO: can we get a better modification time?
-						this.dirMTime = System.currentTimeMillis();
+                        this.dirMTime = mtime;
+						return true;
 					} finally {
 						instream.close();
 					}
@@ -108,7 +128,7 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 				response.close();
 			}
 		} catch (Exception e) {
-			
+			logger.error("ERROR getting CDSTAR archive listing.", e);
 		}
 
 		return false;
@@ -119,26 +139,34 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 	 */
 	@Override
 	public boolean refresh() {
-		// TODO Auto-generated method stub
-		return readDir();
+        if (isValid) {
+            if (System.currentTimeMillis() > objectATime + 10*1000) {
+                // last readDir is at least 10s ago
+                readDir();
+                touch();
+            }
+        }
+        return isValid;
 	}
 
 	@Override
 	public String findParentName(String fn) {
 		String[] parts = fn.split("/");
+		// our parent is vault-id/archive-id
 		if (parts.length > 1) {
 			return parts[0] + "/" + parts[1];
 		}
-		return null;
+		return "";
 	}
 
 	@Override
 	public String findFilename(String fn) {
 		String[] parts = fn.split("/");
+        // our filename is whats comes after vault-id/archive-id
 		if (parts.length > 1) {
 			return String.join("/", Arrays.copyOfRange(parts, 2, parts.length));
 		}
-		return null;
+		return fn;
 	}
 
 

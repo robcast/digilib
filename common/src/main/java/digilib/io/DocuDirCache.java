@@ -119,7 +119,7 @@ public class DocuDirCache {
 		DocuDirectory dd = put(newDir);
 		if (dd.getParent() == null) {
 			// no parent link yet
-			String parent = FileOps.parent(newDir.getDirName());
+			String parent = dd.findParentName(newDir.getDirName());
 			if (parent != "") {
 				// check the parent in the cache
 				DocuDirectory pd = map.get(parent);
@@ -239,6 +239,9 @@ public class DocuDirCache {
 				} else {
 					// try the parent directory in the cache
 					String pn = dd.findParentName(fn);
+					if (pn == null) {
+					    return null;
+					}
 					dd = map.get(pn);
 					if (dd != null) {
 						// not a real cache miss then
