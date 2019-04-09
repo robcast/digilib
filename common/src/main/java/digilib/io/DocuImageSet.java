@@ -1,34 +1,30 @@
-/**
- * 
- */
 package digilib.io;
-
-import java.io.File;
 
 import digilib.meta.FileMeta;
 
 /**
+ * ImageSet that is also a DocuDirent that can be put in a DocuDirectory.
+ * 
  * @author casties
  *
  */
-public class ImageUrlSet extends ImageSet implements DocuDirent {
+public class DocuImageSet extends ImageSet implements DocuDirent {
 
+    /** the "file" name */
 	protected String name;
+    /** the FileMeta instance */
+    protected FileMeta meta = null;
+    /** is our metadata valid */
+    protected boolean metaChecked = false;
+    /** the parent DocuDirectory */
+    protected DocuDirectory parent = null;
 	
 	/**
 	 * 
 	 */
-	public ImageUrlSet(String name) {
+	public DocuImageSet(String name) {
 		super();
 		this.name = name;
-	}
-
-	/* (non-Javadoc)
-	 * @see digilib.io.DocuDirent#getFile()
-	 */
-	@Override
-	public File getFile() {
-		return null;
 	}
 
 	/* (non-Javadoc)
@@ -44,8 +40,7 @@ public class ImageUrlSet extends ImageSet implements DocuDirent {
 	 */
 	@Override
 	public DocuDirectory getParent() {
-		// no parents
-		return null;
+		return parent;
 	}
 
 	/* (non-Javadoc)
@@ -53,16 +48,7 @@ public class ImageUrlSet extends ImageSet implements DocuDirent {
 	 */
 	@Override
 	public void setParent(DocuDirectory parent) {
-		// no parents
-	}
-
-	/* (non-Javadoc)
-	 * @see digilib.io.DocuDirent#readMeta()
-	 */
-	@Override
-	public void readMeta() {
-		// TODO Auto-generated method stub
-
+		this.parent = parent;
 	}
 
 	/* (non-Javadoc)
@@ -70,8 +56,7 @@ public class ImageUrlSet extends ImageSet implements DocuDirent {
 	 */
 	@Override
 	public FileMeta getMeta() {
-		// TODO Auto-generated method stub
-		return null;
+		return meta;
 	}
 
 	/* (non-Javadoc)
@@ -79,9 +64,16 @@ public class ImageUrlSet extends ImageSet implements DocuDirent {
 	 */
 	@Override
 	public void setMeta(FileMeta fileMeta) {
-		// TODO Auto-generated method stub
-
+	    this.meta = fileMeta;	
 	}
+
+    /* (non-Javadoc)
+     * @see digilib.io.DocuDirent#readMeta()
+     */
+    @Override
+    public void readMeta() {
+        meta.readMeta(this);
+    }
 
 	/* (non-Javadoc)
 	 * @see digilib.io.DocuDirent#compareTo(java.lang.Object)

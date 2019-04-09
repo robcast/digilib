@@ -112,7 +112,7 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 							JsonObject cdf = cdfile.asJsonObject();
 							String name = cdf.getString("name");
 							String mt = cdf.getString("type");
-							ImageUrlSet imgSet = new ImageUrlSet(name);
+							DocuImageSet imgSet = new DocuImageSet(name);
                             ImageUrl imgUrl = new ImageUrl(name, archiveUrl + "/" + name);
                             imgUrl.setMimetype(mt);
                             imgSet.add(imgUrl);

@@ -107,8 +107,8 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
 		}
     }
 
-    /* (non-Javadoc)
-     * @see digilib.io.DocuDirent#getFile()
+    /**
+     * Get the default File.
      */
     public File getFile() {
         return file;

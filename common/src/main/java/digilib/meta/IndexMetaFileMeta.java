@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 
 import digilib.io.DocuDirectory;
 import digilib.io.DocuDirent;
+import digilib.io.ImageFileSet;
 
 /**
  * FileMeta implementation reading index.meta files.
@@ -57,7 +58,7 @@ public class IndexMetaFileMeta implements FileMeta {
     @Override
     public void readMeta(DocuDirent dirent) {
         // read file metadata
-        File f = dirent.getFile();
+        File f = ((ImageFileSet) dirent).getFile();
         if (fileMeta != null || f == null) {
             // meta exists or file doesn't
             return;
