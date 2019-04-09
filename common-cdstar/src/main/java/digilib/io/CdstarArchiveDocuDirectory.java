@@ -26,6 +26,10 @@ import org.apache.http.impl.client.HttpClients;
 
 import digilib.conf.DigilibConfiguration;
 import digilib.io.FileOps.FileClass;
+import digilib.meta.CdstarArchiveMeta;
+import digilib.meta.CdstarFileMeta;
+import digilib.meta.MetadataMap;
+import digilib.util.ImageSize;
 
 /**
  * @author casties
@@ -88,6 +92,9 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 					InputStream instream = entity.getContent();
 					JsonReader reader = Json.createReader(instream);
 					try {
+					    /*
+					     * parse archive JSON
+					     */
 						JsonObject archive = reader.readObject();
 						int count = archive.getInt("file_count");
                         // get archive's modification time
@@ -97,10 +104,20 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
                         long mtime = Instant.parse(modtime).toEpochMilli();
                         if (mtime == this.dirMTime) {
                             // modification time did not change
-                            logger.debug("CDSTAR archive unmodified.");
+                            logger.debug("CDSTAR archive is unmodified.");
                             return true;
                         }
-                        // reset all files
+                        // read metadata
+                        if (archive.containsKey("meta")) {
+                            JsonObject metaJson = archive.getJsonObject("meta");
+                            MetadataMap archiveMeta = new MetadataMap();
+                            for (String key : metaJson.keySet()) {
+                                // copy metadata as-is
+                                archiveMeta.put(key, metaJson.getString(key));
+                            }
+                            this.meta = new CdstarArchiveMeta(archiveMeta);    
+                        }
+                        // reset file list
                         this.files = new ArrayList<DocuDirent>();
 						JsonArray cdfiles = archive.getJsonArray("files");
 						if (count != cdfiles.size()) {
@@ -108,7 +125,9 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 							// paged result, needs more requests
 						}
 						for (JsonValue cdfile : cdfiles) {
-						    // parse file JSON
+						    /*
+						     * parse file JSON
+						     */
 							JsonObject cdf = cdfile.asJsonObject();
 							String name = cdf.getString("name");
 							String mt = cdf.getString("type");
@@ -116,6 +135,37 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
                             ImageUrl imgUrl = new ImageUrl(name, archiveUrl + "/" + name);
                             imgUrl.setMimetype(mt);
                             imgSet.add(imgUrl);
+                            // read metadata
+                            if (cdf.containsKey("meta")) {
+                                JsonObject metaJson = cdf.getJsonObject("meta");
+                                MetadataMap fileMeta = new MetadataMap();
+                                int imgWidth = 0;
+                                int imgHeight = 0;
+                                for (String key : metaJson.keySet()) {
+                                    // copy metadata as-is
+                                    fileMeta.put(key, metaJson.getString(key));
+                                    // try to extract image size
+                                    if (key.equals("exif:Image.ImageWidth")) {
+                                        try {
+                                            imgWidth = Integer.parseInt(metaJson.getString(key));
+                                        } catch (NumberFormatException e) {
+                                            logger.error("Got invalid image width", e);
+                                        }
+                                    } else if (key.equals("exif:Image.ImageHeight")) {
+                                        try {
+                                            imgHeight = Integer.parseInt(metaJson.getString(key));
+                                        } catch (NumberFormatException e) {
+                                            logger.error("Got invalid image height", e);
+                                        }
+                                    }
+                                }
+                                // set metadata
+                                imgSet.setMeta(new CdstarFileMeta(fileMeta));
+                                // set image size
+                                if (imgWidth > 0 && imgHeight > 0) {
+                                    imgUrl.setSize(new ImageSize(imgWidth, imgHeight));
+                                }
+                            }
 							this.files.add(imgSet);
 						}
                         this.dirMTime = mtime;
