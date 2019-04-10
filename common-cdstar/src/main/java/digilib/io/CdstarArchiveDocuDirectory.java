@@ -37,7 +37,14 @@ import digilib.util.ImageSize;
  */
 public class CdstarArchiveDocuDirectory extends DocuDirectory {
 
-	public static final String STORAGE_URL_KEY = "storage-base-url";
+    /** key for image height in CDSTAR metadata */
+    protected static final String META_IMAGE_HEIGHT_KEY = "exif:Image_ImageHeight";
+    /** key for image width in CDSTAR metadata */
+    protected static final String META_IMAGE_WIDTH_KEY = "exif:Image_ImageWidth";
+    /** time in ms to delay the next HTTP call and reuse existing information */
+	protected static final int REFRESH_DELAY = 10*1000;
+	/** digilib-config key for the CDSTAR base URL */
+    public static final String STORAGE_URL_KEY = "storage-base-url";
 	
 	protected String archiveUrl;
 	
@@ -70,7 +77,7 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
                 .setDefaultCredentialsProvider(credsProvider)
                 .build();
 		//CloseableHttpClient httpclient = HttpClients.createDefault();
-		HttpGet httpget = new HttpGet(archiveUrl + "?with=files");
+		HttpGet httpget = new HttpGet(archiveUrl + "?with=files,meta");
 		try {
 		    logger.debug("Reading CDSTAR archive listing for "+archiveUrl);
 			CloseableHttpResponse response = httpclient.execute(httpget);
@@ -122,7 +129,7 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 						JsonArray cdfiles = archive.getJsonArray("files");
 						if (count != cdfiles.size()) {
 				            logger.warn("CDSTAR archive listing ("+count+") needs more requests! Only got "+cdfiles.size());
-							// paged result, needs more requests
+							// TODO: paged result, needs more requests
 						}
 						for (JsonValue cdfile : cdfiles) {
 						    /*
@@ -143,18 +150,20 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
                                 int imgHeight = 0;
                                 for (String key : metaJson.keySet()) {
                                     // copy metadata as-is
-                                    fileMeta.put(key, metaJson.getString(key));
-                                    // try to extract image size
-                                    if (key.equals("exif:Image.ImageWidth")) {
+                                    fileMeta.put(key, metaJson.get(key).toString());
+                                    // try to extract image size assuming the value is an array
+                                    if (key.equals(META_IMAGE_WIDTH_KEY)) {
                                         try {
-                                            imgWidth = Integer.parseInt(metaJson.getString(key));
-                                        } catch (NumberFormatException e) {
+                                            JsonArray val = metaJson.getJsonArray(key);
+                                            imgWidth = Integer.parseInt(val.getString(0));
+                                        } catch (Exception e) {
                                             logger.error("Got invalid image width", e);
                                         }
-                                    } else if (key.equals("exif:Image.ImageHeight")) {
+                                    } else if (key.equals(META_IMAGE_HEIGHT_KEY)) {
                                         try {
-                                            imgHeight = Integer.parseInt(metaJson.getString(key));
-                                        } catch (NumberFormatException e) {
+                                            JsonArray val = metaJson.getJsonArray(key);
+                                            imgHeight = Integer.parseInt(val.getString(0));
+                                        } catch (Exception e) {
                                             logger.error("Got invalid image height", e);
                                         }
                                     }
@@ -190,7 +199,7 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 	@Override
 	public boolean refresh() {
         if (isValid) {
-            if (System.currentTimeMillis() > objectATime + 10*1000) {
+            if (System.currentTimeMillis() > objectATime + REFRESH_DELAY) {
                 // last readDir is at least 10s ago
                 readDir();
                 touch();
