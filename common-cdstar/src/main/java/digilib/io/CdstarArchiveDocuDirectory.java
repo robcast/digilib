@@ -1,9 +1,7 @@
-/**
- * 
- */
 package digilib.io;
 
 import java.io.InputStream;
+import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +18,7 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -32,17 +31,28 @@ import digilib.meta.MetadataMap;
 import digilib.util.ImageSize;
 
 /**
+ * DocuDirectory backed by a CDSTAR archive.
+ * 
+ * Initialized with the CDSTAR archive URL.
+ * Reads and caches all file entries in the archive on first access.
+ * Treats all file entries in the archive as files in this DocuDirectory
+ * (even if their file names contain slashes).
+ * Reads image sizes from "exif:Image.ImageHeight" and "exif:Image.ImageWidth"
+ * attributes in CDSTAR file metadata. 
+ * 
  * @author casties
  *
  */
 public class CdstarArchiveDocuDirectory extends DocuDirectory {
 
     /** key for image height in CDSTAR metadata */
-    protected static final String META_IMAGE_HEIGHT_KEY = "exif:Image_ImageHeight";
+    protected static final String META_IMAGE_HEIGHT_KEY = "exif:Image.ImageHeight";
     /** key for image width in CDSTAR metadata */
-    protected static final String META_IMAGE_WIDTH_KEY = "exif:Image_ImageWidth";
+    protected static final String META_IMAGE_WIDTH_KEY = "exif:Image.ImageWidth";
     /** time in ms to delay the next HTTP call and reuse existing information */
 	protected static final int REFRESH_DELAY = 10*1000;
+	/** number of files to read in one request */
+	protected static final int FILES_BATCH_SIZE = 100;
 	/** digilib-config key for the CDSTAR base URL */
     public static final String STORAGE_URL_KEY = "storage-base-url";
 	
@@ -60,7 +70,7 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 		}
 		super.configure(path, fileClass, dlConfig);
 		archiveUrl = dlConfig.getAsString(STORAGE_URL_KEY) + "/" + path;
-		this.isValid = true; // TODO: when is an URL invalid?
+		this.isValid = true; // assume this is a valid archive until we know it isn't
 	}
 
 	/* (non-Javadoc)
@@ -76,15 +86,23 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
         CloseableHttpClient httpclient = HttpClients.custom()
                 .setDefaultCredentialsProvider(credsProvider)
                 .build();
-		//CloseableHttpClient httpclient = HttpClients.createDefault();
-		HttpGet httpget = new HttpGet(archiveUrl + "?with=files,meta");
-		try {
+        try {
+            URI httpUri = new URIBuilder(archiveUrl)
+                    .setParameter("with", "files,meta")
+                    .setParameter("limit", Integer.toString(FILES_BATCH_SIZE))
+                    .build();
+            HttpGet httpget = new HttpGet(httpUri);
 		    logger.debug("Reading CDSTAR archive listing for "+archiveUrl);
 			CloseableHttpResponse response = httpclient.execute(httpget);
 			int status = response.getStatusLine().getStatusCode();
 			if (status != 200) {
-				logger.error("CDSTAR archive listing status not OK: "+status);
-		        this.files = new ArrayList<DocuDirent>();
+			    if (status == 404) {
+			        logger.error("CDSTAR archive does not exist.");
+			        isValid = false;
+			    } else {
+			        logger.error("CDSTAR archive listing status not OK: "+status);
+			        this.files = new ArrayList<DocuDirent>();
+			    }
 				return false;
 			}
 			try {
@@ -127,7 +145,7 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
                         // reset file list
                         this.files = new ArrayList<DocuDirent>();
 						JsonArray cdfiles = archive.getJsonArray("files");
-						if (count != cdfiles.size()) {
+						if (count > cdfiles.size()) {
 				            logger.warn("CDSTAR archive listing ("+count+") needs more requests! Only got "+cdfiles.size());
 							// TODO: paged result, needs more requests
 						}
