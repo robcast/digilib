@@ -76,6 +76,15 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 	@Override
 	public boolean readDir() {
 		CloseableHttpClient httpclient = UrlClient.getHttpClient();
+        readFiles(httpclient);
+
+		return false;
+	}
+
+    /**
+     * @param httpclient
+     */
+    protected void readFiles(CloseableHttpClient httpclient) {
         try {
             URI httpUri = new URIBuilder(archiveUrl)
                     .setParameter("with", "files,meta")
@@ -89,11 +98,12 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 			    if (status == 404) {
 			        logger.error("CDSTAR archive does not exist.");
 			        isValid = false;
+			        throw new FileOpException("CDSTAR archive does not exist.");
 			    } else {
 			        logger.error("CDSTAR archive listing status not OK: "+status);
 			        this.files = new ArrayList<DocuDirent>();
+			        throw new FileOpException("CDSTAR archive listing status not OK!");
 			    }
-				return false;
 			}
 			try {
 				HttpEntity entity = response.getEntity();
@@ -102,91 +112,11 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 					if (!ct.startsWith("application/json")) {
 						logger.error("CDSTAR archive listing is not JSON: "+ct);
 				        this.files = new ArrayList<DocuDirent>();
-						return false;
+				        throw new FileOpException("CDSTAR archive listing is not JSON!");
 					}
 					InputStream instream = entity.getContent();
-					JsonReader reader = Json.createReader(instream);
 					try {
-					    /*
-					     * parse archive JSON
-					     */
-						JsonObject archive = reader.readObject();
-						int count = archive.getInt("file_count");
-                        // get archive's modification time
-						String modtime = archive.getString("modified");
-						// make Java Instance conformant
-						modtime = modtime.replaceAll("\\+(.*)$", "Z");
-                        long mtime = Instant.parse(modtime).toEpochMilli();
-                        if (mtime == this.dirMTime) {
-                            // modification time did not change
-                            logger.debug("CDSTAR archive is unmodified.");
-                            return true;
-                        }
-                        // read metadata
-                        if (archive.containsKey("meta")) {
-                            JsonObject metaJson = archive.getJsonObject("meta");
-                            MetadataMap archiveMeta = new MetadataMap();
-                            for (String key : metaJson.keySet()) {
-                                // copy metadata as-is
-                                archiveMeta.put(key, metaJson.getString(key));
-                            }
-                            this.meta = new CdstarArchiveMeta(archiveMeta);    
-                        }
-                        // reset file list
-                        this.files = new ArrayList<DocuDirent>();
-						JsonArray cdfiles = archive.getJsonArray("files");
-						if (count > cdfiles.size()) {
-				            logger.warn("CDSTAR archive listing ("+count+") needs more requests! Only got "+cdfiles.size());
-							// TODO: paged result, needs more requests
-						}
-						for (JsonValue cdfile : cdfiles) {
-						    /*
-						     * parse file JSON
-						     */
-							JsonObject cdf = cdfile.asJsonObject();
-							String name = cdf.getString("name");
-							String mt = cdf.getString("type");
-							DocuImageSet imgSet = new DocuImageSet(name);
-                            ImageUrl imgUrl = new ImageUrl(name, archiveUrl + "/" + name);
-                            imgUrl.setMimetype(mt);
-                            imgSet.add(imgUrl);
-                            // read metadata
-                            if (cdf.containsKey("meta")) {
-                                JsonObject metaJson = cdf.getJsonObject("meta");
-                                MetadataMap fileMeta = new MetadataMap();
-                                int imgWidth = 0;
-                                int imgHeight = 0;
-                                for (String key : metaJson.keySet()) {
-                                    // copy metadata as-is
-                                    fileMeta.put(key, metaJson.get(key).toString());
-                                    // try to extract image size assuming the value is an array
-                                    if (key.equals(META_IMAGE_WIDTH_KEY)) {
-                                        try {
-                                            JsonArray val = metaJson.getJsonArray(key);
-                                            imgWidth = Integer.parseInt(val.getString(0));
-                                        } catch (Exception e) {
-                                            logger.error("Got invalid image width", e);
-                                        }
-                                    } else if (key.equals(META_IMAGE_HEIGHT_KEY)) {
-                                        try {
-                                            JsonArray val = metaJson.getJsonArray(key);
-                                            imgHeight = Integer.parseInt(val.getString(0));
-                                        } catch (Exception e) {
-                                            logger.error("Got invalid image height", e);
-                                        }
-                                    }
-                                }
-                                // set metadata
-                                imgSet.setMeta(new CdstarFileMeta(fileMeta));
-                                // set image size
-                                if (imgWidth > 0 && imgHeight > 0) {
-                                    imgUrl.setSize(new ImageSize(imgWidth, imgHeight));
-                                }
-                            }
-							this.files.add(imgSet);
-						}
-                        this.dirMTime = mtime;
-						return true;
+					    readFilesJson(instream);
 					} finally {
 						instream.close();
 					}
@@ -197,9 +127,93 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 		} catch (Exception e) {
 			logger.error("ERROR getting CDSTAR archive listing.", e);
 		}
+    }
 
-		return false;
-	}
+    /**
+     * @param instream
+     */
+    protected void readFilesJson(InputStream instream) {
+        JsonReader reader = Json.createReader(instream);
+        /*
+         * parse archive JSON
+         */
+        JsonObject archive = reader.readObject();
+        int count = archive.getInt("file_count");
+        // get archive's modification time
+        String modtime = archive.getString("modified");
+        // make Java Instance conformant
+        modtime = modtime.replaceAll("\\+(.*)$", "Z");
+        long mtime = Instant.parse(modtime).toEpochMilli();
+        if (mtime == this.dirMTime) {
+            // modification time did not change
+            logger.debug("CDSTAR archive is unmodified.");
+            return;
+        }
+        // read metadata
+        if (archive.containsKey("meta")) {
+            JsonObject metaJson = archive.getJsonObject("meta");
+            MetadataMap archiveMeta = new MetadataMap();
+            for (String key : metaJson.keySet()) {
+                // copy metadata as-is
+                archiveMeta.put(key, metaJson.getString(key));
+            }
+            this.meta = new CdstarArchiveMeta(archiveMeta);    
+        }
+        // reset file list
+        this.files = new ArrayList<DocuDirent>();
+        JsonArray cdfiles = archive.getJsonArray("files");
+        if (count > cdfiles.size()) {
+            logger.warn("CDSTAR archive listing ("+count+") needs more requests! Only got "+cdfiles.size());
+        	// TODO: paged result, needs more requests
+        }
+        for (JsonValue cdfile : cdfiles) {
+            /*
+             * parse file JSON
+             */
+        	JsonObject cdf = cdfile.asJsonObject();
+        	String name = cdf.getString("name");
+        	String mt = cdf.getString("type");
+        	DocuImageSet imgSet = new DocuImageSet(name);
+            ImageUrl imgUrl = new ImageUrl(name, archiveUrl + "/" + name);
+            imgUrl.setMimetype(mt);
+            imgSet.add(imgUrl);
+            // read metadata
+            if (cdf.containsKey("meta")) {
+                JsonObject metaJson = cdf.getJsonObject("meta");
+                MetadataMap fileMeta = new MetadataMap();
+                int imgWidth = 0;
+                int imgHeight = 0;
+                for (String key : metaJson.keySet()) {
+                    // copy metadata as-is
+                    fileMeta.put(key, metaJson.get(key).toString());
+                    // try to extract image size assuming the value is an array
+                    if (key.equals(META_IMAGE_WIDTH_KEY)) {
+                        try {
+                            JsonArray val = metaJson.getJsonArray(key);
+                            imgWidth = Integer.parseInt(val.getString(0));
+                        } catch (Exception e) {
+                            logger.error("Got invalid image width", e);
+                        }
+                    } else if (key.equals(META_IMAGE_HEIGHT_KEY)) {
+                        try {
+                            JsonArray val = metaJson.getJsonArray(key);
+                            imgHeight = Integer.parseInt(val.getString(0));
+                        } catch (Exception e) {
+                            logger.error("Got invalid image height", e);
+                        }
+                    }
+                }
+                // set metadata
+                imgSet.setMeta(new CdstarFileMeta(fileMeta));
+                // set image size
+                if (imgWidth > 0 && imgHeight > 0) {
+                    imgUrl.setSize(new ImageSize(imgWidth, imgHeight));
+                }
+            }
+        	this.files.add(imgSet);
+        }
+        this.dirMTime = mtime;
+    }
 
 
 	/* (non-Javadoc)

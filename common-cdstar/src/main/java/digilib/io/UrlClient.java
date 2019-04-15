@@ -20,23 +20,36 @@ import digilib.conf.DigilibConfiguration;
  *
  */
 public class UrlClient {
-	public static String STORAGE_USERNAME = null;
+	public static final String STORAGE_BASE_URL_KEY = "storage-base-url";
+    public static final String STORAGE_PASSWORD_KEY = "storage-auth-password";
+    public static final String STORAGE_USERNAME_KEY = "storage-auth-username";
+    public static String STORAGE_USERNAME = null;
 	public static String STORAGE_PASSWORD = null;
 	public static String STORAGE_SCOPE_HOST = null;
 	public static int STORAGE_SCOPE_PORT = 0;
 	
 
+	/**
+	 * Configures this static UrlClient class.
+	 * 
+	 * @param dlConfig
+	 */
 	public static void configure(DigilibConfiguration dlConfig) {
-		STORAGE_USERNAME = dlConfig.getAsString("storage-auth-username");
-		STORAGE_PASSWORD = dlConfig.getAsString("storage-auth-password");
+		STORAGE_USERNAME = dlConfig.getAsString(STORAGE_USERNAME_KEY);
+		STORAGE_PASSWORD = dlConfig.getAsString(STORAGE_PASSWORD_KEY);
 		try {
-			URIBuilder uri = new URIBuilder(dlConfig.getAsString("storage-base-url"));
+			URIBuilder uri = new URIBuilder(dlConfig.getAsString(STORAGE_BASE_URL_KEY));
 			STORAGE_SCOPE_HOST = uri.getHost();
 			STORAGE_SCOPE_PORT = uri.getPort();
 		} catch (URISyntaxException e) {
 		}
 	}
 	
+	/**
+	 * Returns a new HttpClient with Credentials.
+	 * 
+	 * @return
+	 */
 	public static CloseableHttpClient getHttpClient() {
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(

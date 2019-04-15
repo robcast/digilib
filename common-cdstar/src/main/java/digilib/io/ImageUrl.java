@@ -65,6 +65,7 @@ public class ImageUrl extends ImageInput {
                 return ImageIO.createImageInputStream(instream);
             }
         } catch (Exception e) {
+            logger.error("Error getting input stream from URL "+url, e);
             try {
                 if (response != null) {
                     response.close();
@@ -85,6 +86,7 @@ public class ImageUrl extends ImageInput {
                 DocuImage di = DocuImageFactory.getInstance();
                 di.identify(this);
             } catch (IOException e) {
+                logger.error("Error checking image from URL "+url, e);
                 // nothing much to do...
             }
         }
