@@ -13,15 +13,10 @@ import javax.json.JsonReader;
 import javax.json.JsonValue;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 
 import digilib.conf.DigilibConfiguration;
 import digilib.io.FileOps.FileClass;
@@ -63,6 +58,8 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 	 */
 	@Override
 	public void configure(String path, FileClass fileClass, DigilibConfiguration dlConfig) {
+		// configure static client object TODO: do this only once?
+		UrlClient.configure(dlConfig);
 		if (path.split("/").length != 2) {
 			// archive path should contain one slash
 			this.isValid = false;
@@ -78,14 +75,7 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 	 */
 	@Override
 	public boolean readDir() {
-		// TODO: handle authentication
-        CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        credsProvider.setCredentials(
-                new AuthScope("localhost", 8080),
-                new UsernamePasswordCredentials("test", "test"));
-        CloseableHttpClient httpclient = HttpClients.custom()
-                .setDefaultCredentialsProvider(credsProvider)
-                .build();
+		CloseableHttpClient httpclient = UrlClient.getHttpClient();
         try {
             URI httpUri = new URIBuilder(archiveUrl)
                     .setParameter("with", "files,meta")
@@ -210,6 +200,7 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 
 		return false;
 	}
+
 
 	/* (non-Javadoc)
 	 * @see digilib.io.DocuDirectory#refresh()

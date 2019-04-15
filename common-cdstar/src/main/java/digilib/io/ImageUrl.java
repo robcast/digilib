@@ -10,14 +10,9 @@ import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.log4j.Logger;
 
 import digilib.image.DocuImage;
@@ -51,15 +46,7 @@ public class ImageUrl extends ImageInput {
 
     @Override
     public ImageInputStream getImageInputStream() {
-        // TODO: handle authentication
-        CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        credsProvider.setCredentials(
-                new AuthScope("localhost", 8080), 
-                new UsernamePasswordCredentials("test", "test"));
-        CloseableHttpClient httpclient = HttpClients.custom()
-                .setDefaultCredentialsProvider(credsProvider)
-                .build();
-        // CloseableHttpClient httpclient = HttpClients.createDefault();
+        CloseableHttpClient httpclient = UrlClient.getHttpClient();
         HttpGet httpget = new HttpGet(url);
         CloseableHttpResponse response = null;
         try {
