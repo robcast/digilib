@@ -27,11 +27,13 @@
   JPG, PNG, GIF, JPEG2000, and more depending on Java ImageIO support).
   
 * **IIIF image API**: the digilib server provides [IIIF](http://iiif.io)
-  image API (V2.0) compliant access to your images besides the digilib native server API.
+  image API (V2.1) compliant access to your images besides the digilib native server API.
   
 * **OpenId Connect authentication**: the digilib server can use authentication
   information from an [OpenId Connect](http://openid.net/) identity server.
   See the [authorization](auth.html) documentation.
+  
+* **CDSTAR storage backend**: the digilib server can access files on a [CDSTAR](https://cdstar.gwdg.de/) storage server.
   
 * **plugins**: there are several Digilib plugins written in Javascript to add functionality to the client side, making use of jQuery features. See the [plugins](plugins.html) documentation.
 

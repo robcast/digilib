@@ -211,6 +211,30 @@ The maximum number of concurrently working threads.
 
 Timeout for worker threads in milliseconds.
 
+### Storage backends
+
+The default configuration of digilib uses the filesystem of the server it runs on to find images (including mounted remote filesystems like NFS or CIFS).
+
+This is implemented in the default DocuDirectory class that uses the `basedir-list` of image directories:
+
+```xml
+<parameter name="docudirectory-class" value="digilib.io.BaseDirDocuDirectory" />
+```
+
+But you can also use the new [CDSTAR](https://cdstar.gwdg.de/) storage backend to directly access files stored in a CDSTAR server.
+
+To use the CDSTAR backend you need to build digilib using the `-Pcdstar,servlet3` profile in Maven and add the following to your digilib configuration:
+
+```xml
+<parameter name="docudirectory-class" value="digilib.io.CdstarArchiveDocuDirectory" />
+<parameter name="storage-base-url" value="http://localhost:8080/v3" />
+<parameter name="storage-auth-username" value="someuser" />
+<parameter name="storage-auth-password" value="somepassword" />
+```
+
+`storage-base-url` is the base URL of your CDSTAR server. `storage-auth-username` is the username and `storage-auth-pqssword` is the password for basic authentication with the CDSTAR server.
+
+digilib tries to read the size of each image from the `exif:Image.ImageHeight` and `exif:Image.ImageWidth` keys in the file metadata to reduce the number of HTTP reqests to the CDSTAR server.
 
 ### Other options
 
