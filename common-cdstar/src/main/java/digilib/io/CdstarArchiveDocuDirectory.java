@@ -271,7 +271,7 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 	}
 
 	@Override
-	public String findParentName(String fn) {
+	public String createParentName(String fn) {
 		String[] parts = fn.split("/");
 		// our parent is vault-id/archive-id
 		if (parts.length > 1) {
@@ -281,7 +281,7 @@ public class CdstarArchiveDocuDirectory extends DocuDirectory {
 	}
 
 	@Override
-	public String findFilename(String fn) {
+	public String createFilename(String fn) {
 		String[] parts = fn.split("/");
         // our filename is whats comes after vault-id/archive-id
 		if (parts.length > 1) {

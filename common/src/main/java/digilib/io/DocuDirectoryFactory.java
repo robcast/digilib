@@ -86,10 +86,10 @@ public class DocuDirectoryFactory {
     }
     
     /**
-     * @param dirMetaClass the dirMetaClass to set
+     * @param dirClass the DocuDirectory class to set
      */
-    public static void setDocuDirectoryClass(Class<DocuDirectory> dirMetaClass) {
-        DocuDirectoryFactory.docuDirClass = dirMetaClass;
+    public static void setDocuDirectoryClass(Class<DocuDirectory> dirClass) {
+        DocuDirectoryFactory.docuDirClass = dirClass;
     }
 
     /**

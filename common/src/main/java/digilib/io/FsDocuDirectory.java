@@ -48,12 +48,12 @@ public abstract class FsDocuDirectory extends DocuDirectory {
 	}
 
 	@Override
-	public String findParentName(String fn) {
+	public String createParentName(String fn) {
 		return FileOps.parent(fn);
 	}
 
 	@Override
-	public String findFilename(String fn) {
+	public String createFilename(String fn) {
 		return FileOps.filename(fn);
 	}
 

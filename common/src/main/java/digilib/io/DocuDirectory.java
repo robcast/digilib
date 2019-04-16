@@ -273,14 +273,14 @@ public abstract class DocuDirectory implements Iterable<DocuDirent> {
 	 * @param fn
 	 * @return
 	 */
-	public abstract String findParentName(String fn);
+	public abstract String createParentName(String fn);
 
 	/**
 	 * Returns a possible file name for path fn.
 	 * @param fn
 	 * @return
 	 */
-	public abstract String findFilename(String fn);
+	public abstract String createFilename(String fn);
 
 	/**
 	 * Returns the parent DocuDirectory.

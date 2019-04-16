@@ -119,7 +119,7 @@ public class DocuDirCache {
 		DocuDirectory dd = put(newDir);
 		if (dd.getParent() == null) {
 			// no parent link yet
-			String parent = dd.findParentName(newDir.getDirName());
+			String parent = dd.createParentName(newDir.getDirName());
 			if (parent != "") {
 				// check the parent in the cache
 				DocuDirectory pd = map.get(parent);
@@ -177,7 +177,7 @@ public class DocuDirCache {
 			dd.refresh();
 			if (!dd.getDirName().equals(fn)) {
 				// fn was not a directory name, try as a file name
-				n = dd.indexOf(dd.findFilename(fn));
+				n = dd.indexOf(dd.createFilename(fn));
 			}
 			if (dd.isValid()) {
 				try {
@@ -238,7 +238,7 @@ public class DocuDirCache {
 					dd = putDir(dd);
 				} else {
 					// try the parent directory in the cache
-					String pn = dd.findParentName(fn);
+					String pn = dd.createParentName(fn);
 					if (pn == null) {
 					    return null;
 					}
