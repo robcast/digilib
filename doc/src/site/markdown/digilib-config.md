@@ -223,7 +223,7 @@ This is implemented in the default DocuDirectory class that uses the `basedir-li
 
 But you can also use the new [CDSTAR](https://cdstar.gwdg.de/) storage backend to directly access files stored in a CDSTAR server.
 
-To use the CDSTAR backend you need to build digilib using the `-Pcdstar,servlet3` profile in Maven and add the following to your digilib configuration:
+To use the CDSTAR backend you need to build digilib using the `storage-cdstar` profile in Maven e.g. with `-Pstorage-cdstar,servlet3,iiif-presentation` and add the following to your digilib configuration:
 
 ```xml
 <parameter name="docudirectory-class" value="digilib.io.CdstarArchiveDocuDirectory" />
