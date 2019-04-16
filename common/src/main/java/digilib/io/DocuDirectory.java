@@ -1,37 +1,11 @@
 package digilib.io;
 
-/*
- * #%L
- * DocuDirectory -- Directory of DocuFilesets.
- * 
- * Digital Image Library servlet components
- * 
- * %%
- * Copyright (C) 2003 - 2014 MPIWG Berlin
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 3 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-3.0.html>.
- * #L%
- * Author: Robert Casties (robcast@berlios.de)
- * Created on 25.02.2003
- */
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+
+import org.apache.log4j.Logger;
 
 import digilib.conf.DigilibConfiguration;
 import digilib.io.FileOps.FileClass;
@@ -48,10 +22,15 @@ import digilib.meta.MetaFactory;
  * 
  * @author casties
  */
-public abstract class DocuDirectory extends Directory implements Iterable<DocuDirent> {
+public abstract class DocuDirectory implements Iterable<DocuDirent> {
 
-    /** type of files in this DocuDirectory */
+	protected Logger logger = Logger.getLogger(this.getClass());
+
+	/** type of files in this DocuDirectory */
     protected FileClass fileClass = FileClass.IMAGE;
+    
+    /** parent DocuDirectory */
+    protected DocuDirectory parent = null;
     
 	/** list of files (DocuDirent) */
 	protected List<DocuDirent> files = null;
@@ -92,9 +71,6 @@ public abstract class DocuDirectory extends Directory implements Iterable<DocuDi
 		// clear directory list
 		files = new ArrayList<DocuDirent>();
 		dirMTime = 0;
-		// the first directory has to exist
-		dir = new File(path);
-		isValid = dir.isDirectory();
 		meta = MetaFactory.getDirMetaInstance();
 	}
 
@@ -103,17 +79,6 @@ public abstract class DocuDirectory extends Directory implements Iterable<DocuDi
 	 */
 	public int size() {
 		return (files != null) ? files.size() : 0;
-	}
-
-	/**
-	 * number of files of this class in this directory.
-	 * 
-	 * @param fc
-	 *            fileClass
-     * @deprecated Use {@link #size()} instead.
-	 */
-	public int size(FileClass fc) {
-		return size();
 	}
 
 	/**
@@ -130,20 +95,6 @@ public abstract class DocuDirectory extends Directory implements Iterable<DocuDi
 	}
 
 	/**
-	 * Returns the file of the class at the index.
-	 * 
-	 * @param index
-	 * @param fc
-	 *            fileClass
-	 * @return
-     * @deprecated Use {@link #get(int)} instead.
-	 */
-	public DocuDirent get(int index, FileClass fc) {
-	    return get(index);
-	}
-
-
-	/**
 	 * Read the filesystem directory and fill this object.
 	 * 
 	 * Clears the List and (re)reads all files.
@@ -158,16 +109,7 @@ public abstract class DocuDirectory extends Directory implements Iterable<DocuDi
 	 * 
 	 * @return boolean the directory is valid
 	 */
-    public boolean refresh() {
-        if (isValid) {
-            if (dir.lastModified() > dirMTime) {
-                // on-disk modification time is more recent
-                readDir();
-            }
-            touch();
-        }
-        return isValid;
-    }
+    public abstract boolean refresh();
 
 
 	/**
@@ -204,21 +146,6 @@ public abstract class DocuDirectory extends Directory implements Iterable<DocuDi
 	}
 
     /**
-     * Searches for the file with the name <code>fn</code> and class fc.
-     * 
-     * Searches the directory for the file with the name <code>fn</code> and
-     * returns its index. Returns -1 if the file cannot be found.
-     * 
-     * @param fn
-     *            filename
-     * @return int index of file <code>fn</code>
-     * @deprecated Use {@link #indexOf(String fn)} instead.
-     */
-	public int indexOf(String fn, FileClass fc) {
-		return indexOf(fn);
-	}
-
-    /**
      * Searches for the file with the name <code>fn</code>.
      * 
      * Searches the directory for the file with the name <code>fn</code> and
@@ -235,38 +162,38 @@ public abstract class DocuDirectory extends Directory implements Iterable<DocuDi
 				return -1;
 			}
 		}
-		List<DocuDirent> fileList = files;
 		// empty directory?
-		if (fileList == null) {
+		if (files == null) {
 			return -1;
 		}
         
 		// search for exact match (DocuDirent does compareTo<String>)
         // OBS: fileList needs to be sorted first (see )! <hertzhaft>
-		int idx = Collections.binarySearch(fileList, fn);
+		int idx = Collections.binarySearch(files, fn);
 		if (idx >= 0) {
 			return idx;
 		} else {
-            logger.debug(fn + " not found by binarysearch");
 			// try closest matches without extension
 			idx = -idx - 1;
-			if ((idx < fileList.size())
-					&& isBasenameInList(fileList, idx, fn)) {
+			if ((idx < files.size()) && isBasenameInList(files, idx, fn)) {
 				// idx matches
 				return idx;
-			} else if ((idx > 0)
-					&& isBasenameInList(fileList, idx-1, fn)) {
+			} else if ((idx > 0) && isBasenameInList(files, idx - 1, fn)) {
 				// idx-1 matches
 				return idx - 1;
-			} else if ((idx + 1 < fileList.size())
-					&& isBasenameInList(fileList, idx+1, fn)) {
+			} else if ((idx + 1 < files.size()) && isBasenameInList(files, idx + 1, fn)) {
 				// idx+1 matches
 				return idx + 1;
 			}
-
 		}
 		return -1;
 	}
+
+    protected boolean isBasenameInList(List<DocuDirent> fileList, int idx, String fn) {
+    	String dfn = FileOps.basename((fileList.get(idx)).getName());
+    	return (dfn.equals(fn) || dfn.equals(FileOps.basename(fn))); 
+    }
+
 
 	/**
 	 * Finds the DocuDirent with the name <code>fn</code>.
@@ -284,21 +211,6 @@ public abstract class DocuDirectory extends Directory implements Iterable<DocuDi
 			return files.get(i);
 		}
 		return null;
-	}
-
-	/**
-	 * Finds the DocuDirent with the name <code>fn</code> and class
-	 * <code>fc</code>.
-	 * 
-	 * Searches the directory for the DocuDirent with the name <code>fn</code>
-	 * and returns it. Returns null if the file cannot be found.
-	 * 
-	 * @param fn
-	 *            filename
-	 * @return DocuDirent
-	 */
-	public DocuDirent find(String fn, FileClass fc) {
-		return find(fn);
 	}
 
 	/**
@@ -355,9 +267,36 @@ public abstract class DocuDirectory extends Directory implements Iterable<DocuDi
     	return files.iterator();
     }
 
-    private boolean isBasenameInList(List<DocuDirent> fileList, int idx, String fn) {
-    	String dfn = FileOps.basename((fileList.get(idx)).getName());
-    	return (dfn.equals(fn) || dfn.equals(FileOps.basename(fn))); 
-    }
+	/**
+	 * Returns a possible parent directory name for path fn.
+	 * 
+	 * @param fn
+	 * @return
+	 */
+	public abstract String createParentName(String fn);
+
+	/**
+	 * Returns a possible file name for path fn.
+	 * @param fn
+	 * @return
+	 */
+	public abstract String createFilename(String fn);
+
+	/**
+	 * Returns the parent DocuDirectory.
+	 * 
+	 * @return
+	 */
+	public DocuDirectory getParent() {
+		return parent;
+	}
+
+	/**
+	 * Sets the parent DocuDirectory.
+	 * @param pd
+	 */
+	public void setParent(DocuDirectory pd) {
+		parent = pd;
+	}
 
 }

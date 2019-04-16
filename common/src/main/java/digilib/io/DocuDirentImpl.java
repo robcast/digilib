@@ -43,7 +43,7 @@ public abstract class DocuDirentImpl implements DocuDirent {
 	/** metadata for this file */
 	protected FileMeta meta;
 	/** the parent directory */
-	protected Directory parent = null;
+	protected DocuDirectory parent = null;
 
     /* (non-Javadoc)
      * @see digilib.io.DocuDirent#getInput()
@@ -90,14 +90,14 @@ public abstract class DocuDirentImpl implements DocuDirent {
 	/* (non-Javadoc)
      * @see digilib.io.DocuDirent#getParent()
      */
-	public Directory getParent() {
+	public DocuDirectory getParent() {
 		return parent;
 	}
 	
 	/* (non-Javadoc)
      * @see digilib.io.DocuDirent#setParent(digilib.io.Directory)
      */
-	public void setParent(Directory parent) {
+	public void setParent(DocuDirectory parent) {
 		this.parent = parent;
 	} 
 	

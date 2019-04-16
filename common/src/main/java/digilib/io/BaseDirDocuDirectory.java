@@ -31,7 +31,6 @@ import java.util.Collections;
 
 import digilib.conf.DigilibConfiguration;
 import digilib.io.FileOps.FileClass;
-import digilib.meta.MetaFactory;
 
 /**
  * DocuDirectory implementation that looks for scaled images in parallel paths
@@ -40,14 +39,15 @@ import digilib.meta.MetaFactory;
  * @author casties
  * 
  */
-public class BaseDirDocuDirectory extends DocuDirectory {
+public class BaseDirDocuDirectory extends FsDocuDirectory {
 
-    /** array of parallel dirs for scaled images */
+	/** array of parallel dirs for scaled images */
     protected Directory[] dirs = null;
+    
     /** list of base directories */
     protected String[] baseDirNames = null;
 
-    /**
+	/**
      * Configure object with digilib directory path and a parent DocuDirCache.
      * 
      * Directory names at the given path are appended to the base directories
@@ -63,22 +63,14 @@ public class BaseDirDocuDirectory extends DocuDirectory {
      */
     @Override
     public void configure(String path, FileClass fileClass, DigilibConfiguration dlConfig) {
-        this.dirName = path;
-        this.fileClass = fileClass;
+    	super.configure(path, fileClass, dlConfig);
         this.baseDirNames = (String[]) dlConfig.getValue("basedir-list");
         String baseDirName = baseDirNames[0];
-        // clear directory list
-        files = new ArrayList<DocuDirent>();
-        dirMTime = 0;
         // the first directory has to exist
-        dir = new File(baseDirName, path);
-        isValid = dir.isDirectory();
-        meta = MetaFactory.getDirMetaInstance();
+        dir.dir = new File(baseDirName, path);
+        isValid = dir.dir.isDirectory();
     }
 
-    /* (non-Javadoc)
-     * @see digilib.io.DocuDirectory#readDir()
-     */
     @Override
 	public synchronized boolean readDir() {
 		// check directory first
@@ -86,18 +78,18 @@ public class BaseDirDocuDirectory extends DocuDirectory {
 			return false;
 		}
 		// re-check modification time because the thread may have slept
-		if (dir.lastModified() <= dirMTime) {
+		if (dir.dir.lastModified() <= dirMTime) {
 			return true;
 		}
 		// read all filenames
-		logger.debug("reading directory " + this + " = " + dir.getPath());
+		logger.debug("reading directory " + this + " = " + dir.dir.getPath());
 		File[] allFiles = null;
 		/*
 		 * using ReadableFileFilter is safer (we won't get directories with file
 		 * extensions) but slower.
 		 */
 		// allFiles = dir.listFiles(new FileOps.ReadableFileFilter());
-		allFiles = dir.listFiles();
+		allFiles = dir.dir.listFiles();
 		if (allFiles == null) {
 			// not a directory
 			return false;
@@ -109,7 +101,7 @@ public class BaseDirDocuDirectory extends DocuDirectory {
 			// array of parallel dirs
 			dirs = new Directory[nb];
 			// first entry is this directory
-			dirs[0] = this;
+			dirs[0] = dir;
 			// fill array with the remaining directories
 			for (int j = 1; j < nb; j++) {
 				// add dirName to baseDirName
@@ -147,10 +139,22 @@ public class BaseDirDocuDirectory extends DocuDirectory {
 				d.clearFilenames();
 			}
 		}
-		dirMTime = dir.lastModified();
+		dirMTime = dir.dir.lastModified();
 		// read metadata as well
 		readMeta();
 		return isValid;
+    }
+
+    @Override
+    public boolean refresh() {
+        if (isValid) {
+            if (dir.dir.lastModified() > dirMTime) {
+                // on-disk modification time is more recent
+                readDir();
+            }
+            touch();
+        }
+        return isValid;
     }
 
 }

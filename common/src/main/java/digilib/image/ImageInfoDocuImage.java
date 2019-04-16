@@ -35,8 +35,10 @@ import org.devlib.schmidt.imageinfo.ImageInfo;
 import digilib.io.ImageInput;
 import digilib.util.ImageSize;
 
-/** Simple abstract implementation of the <code>DocuImage</code> interface.
+/** 
+ * Simple abstract implementation of the <code>DocuImage</code> interface.
  * Implements only the identify method using the ImageInfo class.
+ * 
  * @author casties
  *
  */
@@ -45,6 +47,12 @@ public abstract class ImageInfoDocuImage extends DocuImageImpl {
     /* Check image size and type and store in ImageFile f */
     public ImageInput identify(ImageInput ii) throws IOException {
         logger.debug("identifying (ImageInfo) " + ii);
+        if (ii.hasMimetype()) {
+            if (ii.getMimetype().equals("image/tiff")) {
+                logger.debug("ImageInfo unable to identify TIFF.");
+                return null;
+            }
+        }
         RandomAccessFile raf = null;
         try {
             // set up ImageInfo object
@@ -73,7 +81,7 @@ public abstract class ImageInfoDocuImage extends DocuImageImpl {
                 return ii;
             }
         } catch (Exception e) {
-            logger.debug("ImageInfoDocuimage unable to identify.", e);
+            logger.debug("ImageInfo unable to identify.", e);
         } finally {
             // close file, don't close stream(?)
             if (raf != null) {

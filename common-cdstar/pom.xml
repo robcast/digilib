@@ -1,31 +1,33 @@
 <?xml version="1.0"?>
 <project
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>digilib</groupId>
 		<artifactId>digilib</artifactId>
+		<groupId>digilib</groupId>
 		<version>2.7-SNAPSHOT</version>
 	</parent>
-	<artifactId>digilib-iiif-presentation</artifactId>
-	<name>digilib-iiif-presentation</name>
-	<description>The Digital Image Library - IIIF presentation API manifest serving servlet</description>
+
+	<artifactId>digilib-common-cdstar</artifactId>
+	<name>digilib-common</name>
+	<description>The Digital Image Library - CDSTAR storage support</description>
 	<url>https://github.com/robcast/digilib</url>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
+	<packaging>jar</packaging>
+
+	<profiles>
+	</profiles>
+
 	<dependencies>
 		<dependency>
 			<groupId>digilib</groupId>
-			<artifactId>digilib-servlet</artifactId>
+			<artifactId>digilib-common</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.mortbay.jetty</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>3.0.20100224</version>
-			<type>jar</type>
-			<scope>provided</scope>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.7</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.json</groupId>

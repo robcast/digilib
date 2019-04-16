@@ -314,6 +314,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             // set size
             ImageSize d = new ImageSize(reader.getWidth(0), reader.getHeight(0));
             input.setSize(d);
+            logger.debug("image size: " + d);
             // set mime type
             if (input.getMimetype() == null) {
                 if (input.hasFile()) {

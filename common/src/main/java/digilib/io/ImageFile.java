@@ -54,13 +54,13 @@ public class ImageFile extends ImageInput {
 	 * 
 	 * @param f
 	 * @param parent
-	 * @param dir
+	 * @param parentDir
 	 */
-	public ImageFile(File f, ImageSet parent, Directory dir) {
+	public ImageFile(File f, ImageSet parent, Directory parentDir) {
 		this.file = f;
 		this.name = f.getName();
 		this.parent = parent;
-		this.dir = dir;
+		this.dir = parentDir;
 	}
 	
 	/** Constructor with filename (without path).

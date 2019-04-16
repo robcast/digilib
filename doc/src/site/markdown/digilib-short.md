@@ -88,6 +88,6 @@ An example for a Scaler URL is:
 such a URL can be used as src attribute to an img element in the
 frontend HTML.
 
-[1]: https://sourceforge.net/p/digilib/code/ci/default/tree/webapp/src/main/webapp
+[1]: https://github.com/robcast/digilib/tree/master/webapp/src/main/webapp
 
 [2]: http://itgroup.mpiwg-berlin.mpg.de/cgi-bin/cvsweb.cgi/zogiLib/

@@ -7,9 +7,9 @@ The Scaler servlet takes parameters in the HTTP query string format:
 Unknown parameters will be silently ignored.
 
 Recognised parameters (as of Version 2.5.0, for the most up to date information use the source for
-[parameters](https://sourceforge.net/p/digilib/code/ci/default/tree/servlet/src/main/java/digilib/conf/DigilibServletRequest.java)
+[parameters](https://github.com/robcast/digilib/tree/master/common/src/main/java/digilib/conf/DigilibServletRequest.java)
 and
-[mode options](https://sourceforge.net/p/digilib/code/ci/default/tree/common/src/main/java/digilib/conf/DigilibOption.java)
+[mode options](https://github.com/robcast/digilib/tree/master/common/src/main/java/digilib/conf/DigilibOption.java)
 ):
 
 - `request_path`: (optional) path to file or directory.

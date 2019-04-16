@@ -50,8 +50,6 @@ public void jspInit() {
 DigilibServletConfiguration dlConfig = docBean.getDlConfig();
 // parsing the query
 DigilibServletRequest dlRequest = new DigilibServletRequest(request);
-// add number of pages
-dlRequest.setValue("pt", docBean.getNumPages(dlRequest));
 // dir cache
 DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 // image JobCenter

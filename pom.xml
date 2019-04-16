@@ -8,7 +8,7 @@
 
   <groupId>digilib</groupId>
   <artifactId>digilib</artifactId>
-  <version>2.6-SNAPSHOT</version>
+  <version>2.7-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>digilib</name>
@@ -101,8 +101,8 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.8.0</version>
             <configuration>
-                <source>1.7</source>
-                <target>1.7</target>
+                <source>1.8</source>
+                <target>1.8</target>
             </configuration>
         </plugin>
       </plugins>
@@ -198,6 +198,12 @@
         <module>common-bioformats</module>
       </modules>
     </profile>
+    <profile>
+      <id>storage-cdstar</id>
+      <modules>
+        <module>common-cdstar</module>
+      </modules>
+    </profile>
   </profiles>
 
   <dependencyManagement>
@@ -211,62 +217,67 @@
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-common</artifactId>
-        <version>2.6-SNAPSHOT</version>
+        <version>2.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-common-jai</artifactId>
-        <version>2.6-SNAPSHOT</version>
+        <version>2.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-common-imagej</artifactId>
-        <version>2.6-SNAPSHOT</version>
+        <version>2.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-common-bioformats</artifactId>
-        <version>2.6-SNAPSHOT</version>
+        <version>2.7-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>digilib</groupId>
+        <artifactId>digilib-common-cdstar</artifactId>
+        <version>2.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-doc</artifactId>
-        <version>2.6-SNAPSHOT</version>
+        <version>2.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-pdf</artifactId>
-        <version>2.6-SNAPSHOT</version>
+        <version>2.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-text</artifactId>
-        <version>2.6-SNAPSHOT</version>
+        <version>2.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-iiif-presentation</artifactId>
-        <version>2.6-SNAPSHOT</version>
+        <version>2.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-servlet</artifactId>
-        <version>2.6-SNAPSHOT</version>
+        <version>2.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-servlet2</artifactId>
-        <version>2.6-SNAPSHOT</version>
+        <version>2.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-servlet3</artifactId>
-        <version>2.6-SNAPSHOT</version>
+        <version>2.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-webapp</artifactId>
-        <version>2.6-SNAPSHOT</version>
+        <version>2.7-SNAPSHOT</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

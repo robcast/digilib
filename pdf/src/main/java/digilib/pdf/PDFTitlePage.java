@@ -42,6 +42,7 @@ import com.itextpdf.text.Paragraph;
 import digilib.conf.PDFRequest;
 import digilib.image.ImageOpException;
 import digilib.io.FileOpException;
+import digilib.io.FsDocuDirectory;
 import digilib.servlet.PDFCache;
 
 /** A class for the generation of title pages for the generated pdf documents.
@@ -73,7 +74,7 @@ public class PDFTitlePage {
     protected DigilibInfoReader getInfoXmlReader(PDFRequest pdfji) {
         try {
             // try to load ../presentation/info.xml
-            File imgDir = pdfji.getImageJobInformation().getFileDirectory().getDir();
+            File imgDir = ((FsDocuDirectory) pdfji.getImageJobInformation().getFileDirectory()).getDir();
             File docDir = imgDir.getParentFile();
             File infoFn = new File(new File(docDir, "presentation"), "info.xml");
             return new DigilibInfoReader(infoFn.getAbsolutePath());

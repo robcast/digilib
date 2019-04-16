@@ -63,6 +63,7 @@ import digilib.conf.ManifestServletConfiguration;
 import digilib.image.ImageOpException;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
+import digilib.io.FsDocuDirectory;
 import digilib.io.DocuDirent;
 import digilib.io.FileOps;
 import digilib.io.ImageFileSet;
@@ -239,7 +240,8 @@ public class Manifester extends HttpServlet {
 				return;
 			}
 			// check for existing manifest file
-			File mfFile = new File(dlDir.getDir(), "manifest.json");
+			// TODO: make filesystem access optional
+			File mfFile = new File(((FsDocuDirectory) dlDir).getDir(), "manifest.json");
 			// check for image files
             if ((dlDir.size() == 0) && !mfFile.canRead()) {
                 logger.debug("Directory has no files: " + dlFn);
@@ -289,7 +291,8 @@ public class Manifester extends HttpServlet {
 			}
 
 			// check for manifest-meta.json file with additional metadata
-			File mfMetaFile = new File(dlDir.getDir(), "manifest-meta.json");
+			// TODO: make filesystem access optional
+			File mfMetaFile = new File(((FsDocuDirectory) dlDir).getDir(), "manifest-meta.json");
 			if (mfMetaFile.canRead()) {
 				params.mfMetaFile = mfMetaFile;
 			}
