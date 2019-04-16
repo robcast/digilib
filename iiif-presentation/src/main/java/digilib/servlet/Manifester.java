@@ -30,7 +30,6 @@ package digilib.servlet;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
@@ -63,11 +62,12 @@ import digilib.conf.ManifestServletConfiguration;
 import digilib.image.ImageOpException;
 import digilib.io.DocuDirCache;
 import digilib.io.DocuDirectory;
-import digilib.io.FsDocuDirectory;
+import digilib.io.DocuDirectoryFactory;
 import digilib.io.DocuDirent;
 import digilib.io.FileOps;
-import digilib.io.ImageFileSet;
+import digilib.io.FsDocuDirectory;
 import digilib.io.ImageInput;
+import digilib.io.ImageSet;
 import digilib.util.ImageSize;
 
 /**
@@ -121,6 +121,9 @@ public class Manifester extends HttpServlet {
     
     /** how to create label for pages */
     protected String pageLabelMode;
+    
+    /** use filesystem-access to read additional json files */
+    protected boolean useFilesystem = true;
 
 	/*
 	 * (non-Javadoc)
@@ -156,6 +159,12 @@ public class Manifester extends HttpServlet {
 		corsForInfoRequests = dlConfig.getAsBoolean("iiif-info-cors");
 		// page label mode
 		pageLabelMode = dlConfig.getAsString("iiif-manifest-page-label");
+		// find out if we have filesystem access
+		if (DocuDirectoryFactory.getInstance() instanceof FsDocuDirectory) {
+		    useFilesystem = true;
+		} else {
+		    useFilesystem = false;
+		}
 	}
 
     /**
@@ -239,16 +248,17 @@ public class Manifester extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND);
 				return;
 			}
-			// check for existing manifest file
-			// TODO: make filesystem access optional
-			File mfFile = new File(((FsDocuDirectory) dlDir).getDir(), "manifest.json");
-			// check for image files
-            if ((dlDir.size() == 0) && !mfFile.canRead()) {
+			File mfFile = null;
+            if (useFilesystem) {
+                // check for existing manifest file
+                mfFile = new File(((FsDocuDirectory) dlDir).getDir(), "manifest.json");
+            }
+            // check for image files
+            if ((dlDir.size() == 0) && (mfFile != null && !mfFile.canRead())) {
                 logger.debug("Directory has no files: " + dlFn);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
-
             ManifestParams params = new ManifestParams();
 
             /*
@@ -284,18 +294,20 @@ public class Manifester extends HttpServlet {
 			/*
 			 * check prepared manifest files
 			 */
-			if (mfFile.canRead()) {
+			if (mfFile != null && mfFile.canRead()) {
 				// send manifest file
 				ServletOps.sendFile(mfFile, "", "", response);
 				return;
 			}
 
 			// check for manifest-meta.json file with additional metadata
-			// TODO: make filesystem access optional
-			File mfMetaFile = new File(((FsDocuDirectory) dlDir).getDir(), "manifest-meta.json");
-			if (mfMetaFile.canRead()) {
-				params.mfMetaFile = mfMetaFile;
-			}
+			File mfMetaFile = null;
+            if (useFilesystem) {
+                mfMetaFile = new File(((FsDocuDirectory) dlDir).getDir(), "manifest-meta.json");
+                if (mfMetaFile.canRead()) {
+                    params.mfMetaFile = mfMetaFile;
+                }
+            }
 			
 			/*
 			 * configure base URLs for manifest
@@ -455,7 +467,7 @@ public class Manifester extends HttpServlet {
 		int idx = 0;
 		for (DocuDirent imgFile : params.docuDir) {
 			idx += 1;
-			ImageFileSet imgFs = (ImageFileSet) imgFile;
+			ImageSet imgFs = (ImageSet) imgFile;
 			ImageInput img = imgFs.getBiggest();
 			ImageSize imgSize = img.getSize();
 			if (imgSize == null) continue;
@@ -552,7 +564,12 @@ public class Manifester extends HttpServlet {
     protected void writeResource(JsonGenerator manifest, DocuDirent imgFile, ImageSize imgSize,
             ManifestParams params) {
         // base URL for image using IIIF image API
-        String iiifImgBaseUrl = params.imgApiUrl + "/" + params.identifier + this.iiifPathSep + FileOps.basename(imgFile.getName());
+        String filename = FileOps.basename(imgFile.getName());
+        if (filename.contains("/")) {
+            // make sure there are no slashes left
+            filename = filename.replace("/", this.iiifPathSep);
+        }
+        String iiifImgBaseUrl = params.imgApiUrl + "/" + params.identifier + this.iiifPathSep + filename;
         // IIIF image parameters
         String imgUrl = iiifImgBaseUrl + "/full/full/0/default.jpg";
         /*
