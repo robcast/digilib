@@ -80,10 +80,6 @@ import digilib.util.ImageSize;
  * @author casties
  * 
  */
-/**
- * @author casties
- *
- */
 @WebServlet(name = "Manifester", urlPatterns = { "/Manifester/*", "/servlet/Manifester/*" })
 public class Manifester extends HttpServlet {
 
