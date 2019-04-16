@@ -31,7 +31,7 @@ public class ImageUrl extends ImageInput {
     protected String url;
 
     /**
-     * 
+     * Create ImageUrl with local name and URL.
      */
     public ImageUrl(String name, String url) {
         super();
@@ -46,7 +46,8 @@ public class ImageUrl extends ImageInput {
 
     @Override
     public ImageInputStream getImageInputStream() {
-        CloseableHttpClient httpclient = UrlClient.getHttpClient();
+        // we assume the UrlClientFactory is already configured
+        CloseableHttpClient httpclient = UrlClientFactory.getHttpClientInstance();
         HttpGet httpget = new HttpGet(url);
         CloseableHttpResponse response = null;
         try {

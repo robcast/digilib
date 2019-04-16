@@ -19,9 +19,12 @@ import digilib.conf.DigilibConfiguration;
  * @author casties
  *
  */
-public class UrlClient {
+public class UrlClientFactory {
+    /** digilib-config key for the CDSTAR base URL */
 	public static final String STORAGE_BASE_URL_KEY = "storage-base-url";
+    /** digilib-config key for the CDSTAR auth password */
     public static final String STORAGE_PASSWORD_KEY = "storage-auth-password";
+    /** digilib-config key for the CDSTAR auth user */
     public static final String STORAGE_USERNAME_KEY = "storage-auth-username";
     public static String STORAGE_USERNAME = null;
 	public static String STORAGE_PASSWORD = null;
@@ -30,7 +33,7 @@ public class UrlClient {
 	
 
 	/**
-	 * Configures this static UrlClient class.
+	 * Configures this static UrlClientFactory.
 	 * 
 	 * @param dlConfig
 	 */
@@ -50,7 +53,7 @@ public class UrlClient {
 	 * 
 	 * @return
 	 */
-	public static CloseableHttpClient getHttpClient() {
+	public static CloseableHttpClient getHttpClientInstance() {
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(
                 new AuthScope(STORAGE_SCOPE_HOST, STORAGE_SCOPE_PORT),
