@@ -1,5 +1,7 @@
 # travis automated integration testing for digilib 
 language: java
+jdk:
+  - openjdk8
 sudo: false
 # run real tests
 script:
