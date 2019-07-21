@@ -40,22 +40,26 @@ You can set the values of the most important digilib configuration parameters as
 using the `-e` option of `docker run`. For more information check the 
 [digilib-config documentation](https://robcast.github.io/digilib/digilib-config.html).
 
-  * BASEDIR_LIST: The list of directories where images are searched.
+  * BASEDIR_LIST: list of directories where images are searched (required)
 
-  * DEFAULT_QUALITY: The default interpolation quality (0: do not use interpolation (worst),
+  * DEFAULT_QUALITY: default interpolation quality (0: do not use interpolation (worst),
   1: use linear interpolation,
   2: use bilinear interpolation and blur-before-scale (best, default))
 
-  * MAX_IMAGE_SIZE: The maximum size of delivered images as pixel area, 40000 means up to 200x200 or 100x400, 
-0 (default) means no limit.
+  * MAX_IMAGE_SIZE: maximum size of delivered images as number of pixels, 40000 means up to 200x200 or 100x400, 
+0 (default) means no limit
     
-  * SENDFILE_ALLOWED: Is sending whole image files with mo=file allowed (default: "true")?
+  * SENDFILE_ALLOWED: is sending whole image files with mo=file allowed (default: "true")?
 
-  * WORKER_THREADS: Number of parallel working threads (default: 2).
+  * WORKER_THREADS: number of parallel working threads (default: 2)
 
-  * MAX_WAITING_THREADS: Maximum number of waiting requests in queue (default: 20).
+  * MAX_WAITING_THREADS: maximum number of waiting requests in queue (default: 20)
 
-  * IIIF_PREFIX: The URL prefix (after Scaler) that leads to the IIIF API (default: "IIIF")
+  * IIIF_PREFIX: URL prefix (after Scaler) for the IIIF API (default: "IIIF")
+  
+  * IIIF_IMAGE_BASE_URL: base URL for the IIIF image API
+  
+  * IIIF_MANIFEST_BASE_URL: base URL for the IIIF presentation API
 
 ## Using your own digilib config file
 

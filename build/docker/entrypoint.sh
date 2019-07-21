@@ -27,6 +27,13 @@ cat <<EOF > $DL_CONFIG
 
     <!-- The prefix (after Scaler) that leads to the IIIF API.-->    
     <parameter name="iiif-prefix" value="${IIIF_PREFIX:-IIIF}" />
+
+    <!-- base URL for IIIF image API -->
+    <parameter name="iiif-image-base-url" value="${IIIF_IMAGE_BASE_URL}" />
+    
+    <!-- base URL for IIIF presentation API -->
+    <parameter name="iiif-manifest-base-url" value="${IIIF_MANIFEST_BASE_URL}" />
+
 </digilib-config>
 EOF
 fi

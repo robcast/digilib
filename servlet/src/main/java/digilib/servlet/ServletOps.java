@@ -462,7 +462,15 @@ public class ServletOps {
         /*
          * get resource URL
          */
-        String url = dlReq.getServletRequest().getRequestURL().toString();
+        String url = dlConfig.getAsString("iiif-image-base-url");
+        if (!url.isEmpty()) {
+        	// create url from base-url config and PATH_INFO
+        	url = url.substring(0, url.lastIndexOf(dlConfig.getAsString("iiif-prefix")) - 1);
+        	url += dlReq.getServletRequest().getPathInfo();
+        } else {
+        	// create url from request
+        	url = dlReq.getServletRequest().getRequestURL().toString();
+        }
         if (url.endsWith("/info.json")) {
             url = url.substring(0, url.lastIndexOf("/info.json"));
         } else if (url.endsWith("/")) {

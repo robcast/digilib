@@ -175,6 +175,8 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         newParameter("iiif-info-cors", Boolean.TRUE, null, 'f');        
         // set CORS header on IIIF Image API image request
         newParameter("iiif-image-cors", Boolean.TRUE, null, 'f');        
+        // base URL used in constructing IIIF information resources includes servlet name and iiif-prefix (optional)
+        newParameter("iiif-image-base-url", null, null, 'f');
     }
 
     /**
