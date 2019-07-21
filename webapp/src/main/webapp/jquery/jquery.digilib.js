@@ -104,6 +104,8 @@ function($) {
         'scalerInsets' : { 'x' : 26, 'y': 20 },
         // how transparent does the background image get while changing the zoom area?
         'scalerFadedOpacity' : 0.6,
+        // speed of background fade (null means immediately)
+        'scalerFadeSpeed' : 'fast',
         // show a little window with file size and zoom information
         'showZoomInfo' : false,
         // number of decimal places, for cropping parameters wx,wy,wh,ww
@@ -1662,24 +1664,38 @@ function($) {
         var $scaler = data.$scaler;
         if (show == null || show === 'hide') {
           $scaler.css('opacity', data.settings.scalerFadedOpacity);
-          $img.fadeOut(function(){
-            // console.debug("* img hide", $img.css('display'));
-            });
-        } else if (show === 'fadeOut') {
-          $scaler.fadeTo('fast', data.settings.scalerFadedOpacity, function() {
-            // console.debug("* scaler fadeOut", $img.css('display'), $img.css('opacity'));
+          if (data.settings.scalerFadeSpeed) {
             $img.fadeOut(function(){
-              console.debug("* img fadeOut", $img.css('display'));
-              });
+              // console.debug("* img hide", $img.css('display'));
             });
+          } else {
+              $img.hide();
+          }
+        } else if (show === 'fadeOut') {
+          if (data.settings.scalerFadeSpeed) {
+              $scaler.fadeTo(data.settings.scalerFadeSpeed, data.settings.scalerFadedOpacity, function() {
+                  // console.debug("* scaler fadeOut", $img.css('display'), $img.css('opacity'));
+                  $img.fadeOut(function() {
+                      //console.debug("* img fadeOut", $img.css('display'));
+                  });
+              });
+          } else {
+              $scaler.css('opacity', data.settings.scalerFadedOpacity);
+              $img.hide();
+          }
         } else {
           data.hasPreviewBg = false;
-          $img.fadeIn(function(){
-            // console.debug("* img fadeIn", $img.css('display'));
-            });
-          $scaler.fadeTo('slow', 1, function() {
-            // console.debug("* scaler fadeIn", $img.css('display'), $img.css('opacity'));
-            });
+          if (data.settings.scalerFadeSpeed) {
+              $img.fadeIn(function(){
+                  // console.debug("* img fadeIn", $img.css('display'));
+              });
+              $scaler.fadeTo(data.settings.scalerFadeSpeed, 1, function() {
+                  // console.debug("* scaler fadeIn", $img.css('display'), $img.css('opacity'));
+              });
+          } else {
+              $img.show();
+              $scaler.css('opacity', 1);              
+          }
         }
     };
 
