@@ -36,7 +36,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
 import digilib.image.DocuImage;
-import digilib.image.ImageOpException;
 import digilib.util.OptionsSet;
 import digilib.util.Parameter;
 
