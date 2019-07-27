@@ -31,7 +31,6 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
@@ -165,58 +164,6 @@ public class DigilibBean {
 		logger.debug("isAuthorized");
 		return useAuthorization ? authzOp.isAuthorized(request) : true;
 	}
-
-	/**
-	 * check for authenticated access and redirect if necessary
-	 * @param response the HttpServletResponse
-	 * @return true
-	 * @throws Exception on error
-	 */
-	public boolean doAuthentication(HttpServletResponse response) throws Exception {
-        logger.debug("doAuthentication-Method");
-		return doAuthentication(dlRequest, response);
-	}
-
-	/**
-	 * check for authenticated access and redirect if necessary
-	 * @param request the DigilibServletRequest
-	 * @param response the HttpServletResponse
-	 * @return true
-	 * @throws Exception on error
-	 */
-	public boolean doAuthentication(DigilibServletRequest request, HttpServletResponse response) 
-	        throws Exception {
-		logger.debug("doAuthentication");
-		if (!useAuthorization) {
-			// shortcut if no authorization
-			return true;
-		}
-		/* quick fix: add auth-url-path to base.url
-        if (isAuthRequired(request)) {
-            String baseUrl = request.getAsString("base.url");
-            if (!baseUrl.endsWith(authURLPath)) {
-                request.setValue("base.url", baseUrl + "/" + authURLPath);
-            }
-        }
-		// check if we are already authenticated
-		if (((HttpServletRequest) request.getServletRequest()).getRemoteUser() == null) {
-			logger.debug("unauthenticated so far");
-			// if not maybe we must?
-			if (isAuthRequired(request)) {
-				logger.debug("auth required, redirect");
-				// we are not yet authenticated -> redirect
-				response.sendRedirect(request.getAsString("base.url")
-						+ ((HttpServletRequest) request.getServletRequest())
-								.getServletPath()
-						+ "?"
-						+ ((HttpServletRequest) request.getServletRequest())
-								.getQueryString());
-			}
-		}
-		*/
-		return true;
-	}
-
 
    /**
      * Sets the current DigilibRequest using a HttpServletRequest. 

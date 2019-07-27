@@ -21,7 +21,7 @@
   Author: Robert Casties (robcast@berlios.de)
   --%><%@page language="java" 
   import="digilib.util.DigilibJobCenter,
-          digilib.servlet.DocumentBean,
+          digilib.servlet.DigilibBean,
           digilib.conf.DigilibServletConfiguration,
           digilib.conf.DigilibServletRequest,
           digilib.io.DocuDirCache,
@@ -32,7 +32,7 @@
 // authentication stuff - robert
 // -----------------------------
 // create DocumentBean instance for all JSP requests
-DocumentBean docBean = new DocumentBean();
+DigilibBean docBean = new DigilibBean();
 
 // initialize DocumentBean instance in JSP init
 public void jspInit() {

@@ -24,7 +24,7 @@
 	// -- JSP init -------------
 	
 	// create DocumentBean instance for all JSP requests
-	digilib.servlet.DocumentBean docBean = new digilib.servlet.DocumentBean();
+	digilib.servlet.DigilibBean docBean = new digilib.servlet.DigilibBean();
 	
 	// initialize DocumentBean instance in JSP init
 	public void jspInit() {
@@ -43,12 +43,10 @@
 	// -----------------
 	digilib.conf.DigilibServletRequest dlRequest = new digilib.conf.DigilibServletRequest(request);
 	docBean.setRequest(dlRequest);
-	// check if authentication is needed and redirect if necessary
-	docBean.doAuthentication(response);
 	// add number of pages
 	dlRequest.setValue("pt", docBean.getNumPages());
 	// store objects for jsp:include
-	pageContext.setAttribute("docBean", docBean, PageContext.REQUEST_SCOPE);
+	pageContext.setAttribute("docBean", docBean, pageContext.REQUEST_SCOPE);
 
 %><html xmlns="http://www.w3.org/1999/xhtml">
 <head>

@@ -147,8 +147,6 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         newParameter("use-authorization", Boolean.FALSE, null, 'f');
         // authentication configuration file
         newParameter("auth-file", new File("digilib-auth.xml"), null, 'f');
-        // part of URL used to indicate authorized access
-        newParameter("auth-url-path", "authenticated/", null, 'f');
         // use mapping file to translate paths
         newParameter("use-mapping", Boolean.FALSE, null, 'f');
         // mapping file location

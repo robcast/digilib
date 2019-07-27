@@ -63,9 +63,6 @@
   <!-- URL location of XML file with authorization requirements. -->
   <parameter name="auth-file" value="digilib-auth.xml" />
 
-  <!-- Part of URL to indicate authenticated access to Tomcat. -->
-  <parameter name="auth-url-path" value="authenticated" />
-  
   <!-- use mapping of "virtual directories" to real directories on the server -->
   <parameter name="use-mapping" value="false"/>
   

@@ -20,10 +20,10 @@
   #L%
   Author: Robert Casties (robcast@berlios.de)
   --%><%@ page language="java"     
-  import="digilib.servlet.DocumentBean,
+  import="digilib.servlet.DigilibBean,
           digilib.conf.DigilibServletRequest"%><%!
 // create DocumentBean instance for all JSP requests
-DocumentBean docBean = new DocumentBean();
+DigilibBean docBean = new DigilibBean();
 
 // initialize DocumentBean instance in JSP init
 public void jspInit() {
