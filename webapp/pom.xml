@@ -25,12 +25,12 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
-					<version>2.6</version>
+					<version>3.2.3</version>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>license-maven-plugin</artifactId>
-					<version>1.4</version>
+					<version>2.0.0</version>
 					<configuration>
 						<includes>
 							<include>**/*digilib*.js</include>
@@ -41,7 +41,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>2.19</version>
+					<version>2.22.2</version>
 					<configuration>
 						<skip>${skipTests}</skip>
 					</configuration>
