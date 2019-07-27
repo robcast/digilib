@@ -57,7 +57,7 @@ public class DocuImageFactory {
     }
 
     /** set the DocuImage implementation class.
-     * @param clazz
+     * @param clazz the implementation class
      */
     public static void setDocuImageClass(Class<DocuImage> clazz) {
         DocuImageFactory.docuImageClass = clazz;

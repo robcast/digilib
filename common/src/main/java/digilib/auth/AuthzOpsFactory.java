@@ -50,7 +50,7 @@ public class AuthzOpsFactory {
     }
 
     /** set the AuthzOps implementation class.
-     * @param clazz
+     * @param clazz implementation class
      */
     public static void setAuthzOpsClass(Class<AuthzOps> clazz) {
         AuthzOpsFactory.authOpsClass = clazz;

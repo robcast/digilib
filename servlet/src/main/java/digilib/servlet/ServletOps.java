@@ -85,6 +85,9 @@ public class ServletOps {
 	/**
      * convert a string with a list of pathnames into an array of strings using
      * the system's path separator string
+     * 
+     * @param paths the paths string
+     * @return the paths
      */
     public static String[] getPathArray(String paths) {
         // split list into directories
@@ -107,9 +110,9 @@ public class ServletOps {
      * If the File is not absolute the path is appended to the base directory of
      * the web-app.
      * 
-     * @param f
-     * @param sc
-     * @return
+     * @param f the File
+     * @param sc the ServletContext
+     * @return the File
      */
     public static File getFile(File f, ServletContext sc) {
         // is the filename absolute?
@@ -131,9 +134,9 @@ public class ServletOps {
      * If filename starts with "/" its treated as absolute else the path is
      * appended to the base directory of the web-app.
      * 
-     * @param filename
-     * @param sc
-     * @return
+     * @param filename the filename
+     * @param sc the ServletContext
+     * @return the filename
      */
     public static String getFile(String filename, ServletContext sc) {
         File f = new File(filename);
@@ -151,9 +154,9 @@ public class ServletOps {
      * If the File is not absolute the path is appended to the WEB-INF directory
      * of the web-app.
      * 
-     * @param f
-     * @param sc
-     * @return
+     * @param f the File
+     * @param sc the ServletContext
+     * @return the File
      */
     public static File getConfigFile(File f, ServletContext sc) {
         String fn = f.getPath();
@@ -184,9 +187,9 @@ public class ServletOps {
      * If filename starts with "/" its treated as absolute else the path is
      * appended to the WEB-INF directory of the web-app.
      * 
-     * @param filename
-     * @param sc
-     * @return
+     * @param filename the filename
+     * @param sc the ServletContext
+     * @return the filename
      */
     public static String getConfigFileName(String filename, ServletContext sc) {
         File f = new File(filename);
@@ -200,6 +203,9 @@ public class ServletOps {
 
     /**
      * print a servlet response
+     * @param msg the msg
+     * @param response the HttpServletResponse
+     * @throws IOException on error
      */
     public static void htmlMessage(String msg, HttpServletResponse response)
             throws IOException {
@@ -208,6 +214,11 @@ public class ServletOps {
 
     /**
      * print a servlet response
+     * 
+     * @param title the title
+     * @param msg the msg
+     * @param response the HttpServletResponse
+     * @throws IOException on error
      */
     public static void htmlMessage(String title, String msg,
             HttpServletResponse response) throws IOException {
@@ -235,8 +246,8 @@ public class ServletOps {
      *            name of the download file (for application/x)
      * @param response
      *            ServletResponse where the image file will be sent.
-     * @throws ImageOpException
-     * @throws IOException
+     * @throws ImageOpException on error
+     * @throws IOException on error
      */
     public static void sendFile(File f, String mt, String name,
             HttpServletResponse response) throws ImageOpException, IOException {
@@ -261,8 +272,8 @@ public class ServletOps {
      *            ServletResponse where the image file will be sent.
      * @param logger
      *            Logger to use
-     * @throws ImageOpException
-     * @throws IOException 
+     * @throws ImageOpException on error
+     * @throws IOException on error
      */
     public static void sendFile(File f, String mt, String name, HttpServletResponse response, Logger logger)
             throws ImageOpException, IOException {
@@ -342,10 +353,10 @@ public class ServletOps {
     /**
      * Write image img to ServletResponse response.
      * 
-     * @param img
-     * @param mimeType
-     * @param response
-     * @throws ImageOpException
+     * @param img the DocuImage
+     * @param mimeType the mime-type
+     * @param response the HttpServletResponse
+     * @throws ImageOpException on error
      * @throws ServletException Exception on sending data.
      */
     public static void sendImage(DocuImage img, String mimeType,
@@ -359,11 +370,11 @@ public class ServletOps {
      * 
      * If mimeType is null, use heuristics for type.
      * 
-     * @param img
-     * @param mimeType
-     * @param response
-     * @param logger
-     * @throws ImageOpException
+     * @param img the DocuImage
+     * @param mimeType the mime-type
+     * @param response the HttpServletResponse
+     * @param logger the Logger
+     * @throws ImageOpException on error
      * @throws ServletException Exception on sending data.
      */
     public static void sendImage(DocuImage img, String mimeType, HttpServletResponse response, Logger logger)
@@ -428,10 +439,10 @@ public class ServletOps {
      * 
      * @see <a href="https://iiif.io/api/image/2.1/#image-information">IIIF Image Information Request</a>
      * 
-     * @param dlReq
-     * @param response
-     * @param logger
-     * @throws ServletException
+     * @param dlReq the DigilibServletRequest
+     * @param response the HttpServletResponse
+     * @param logger the Logger
+     * @throws ServletException on error
      */
 	public static void sendIiifInfo(DigilibServletRequest dlReq, HttpServletResponse response, Logger logger)
 			throws ServletException {
@@ -603,8 +614,8 @@ public class ServletOps {
     }
 
     /** Returns text representation of headers for debuggging purposes.
-     * @param req
-     * @return
+     * @param req the HttpServletRequest
+     * @return the headers string
      */
     public static String headersToString(HttpServletRequest req) {
         String s = "";

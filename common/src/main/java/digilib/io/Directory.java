@@ -57,7 +57,7 @@ public class Directory {
 	
 	/** Constructor taking a File object.
 	 * 
-	 * @param d
+	 * @param d the File
 	 */
 	public Directory(File d) {
 		dir = d;
@@ -65,8 +65,8 @@ public class Directory {
 
 	/** Constructor taking a File object and a parent.
 	 * 
-	 * @param dir
-	 * @param parent
+	 * @param dir the File
+	 * @param parent the Directory
 	 */
 	public Directory(File dir, Directory parent) {
 		this.dir = dir;
@@ -75,7 +75,7 @@ public class Directory {
 
 	/** Constructor taking a directory name.
 	 * 
-	 * @param dn
+	 * @param dn the name
 	 */
 	public Directory(String dn) {
 		dir = new File(dn);
@@ -85,7 +85,7 @@ public class Directory {
 	/** Reads the names of the files in the directory.
 	 * Fills the filenames array. Returns if the operation was successful.
 	 * 
-	 * @return
+	 * @return if the operation was successful
 	 */
 	public boolean readDir() {
 		if (dir != null) {
@@ -102,7 +102,7 @@ public class Directory {
 	/**
 	 * Returns the directory File object.
 	 * 
-	 * @return
+	 * @return the File
 	 */
 	public File getDir() {
 		return dir;
@@ -110,7 +110,7 @@ public class Directory {
 
 	/**
 	 * Sets the directory File object.
-	 * @param dir
+	 * @param dir the File
 	 */
 	public void setDir(File dir) {
 		this.dir = dir;
@@ -118,7 +118,7 @@ public class Directory {
 	
 	/**
 	 * Returns the parent Directory object.
-	 * @return
+	 * @return the Directory
 	 */
 	public Directory getParent() {
 		return parent;
@@ -126,7 +126,7 @@ public class Directory {
 
 	/**
 	 * Sets the parent Directory object.
-	 * @param parent
+	 * @param parent the Directory
 	 */
 	public void setParent(Directory parent) {
 		this.parent = parent;
@@ -135,7 +135,7 @@ public class Directory {
 
 	/**
 	 * Returns the filenames.
-	 * @return 
+	 * @return the filenames
 	 */
 	public String[] getFilenames() {
 		return list;
@@ -143,7 +143,7 @@ public class Directory {
 	
 	/**
 	 * Sets the filenames.
-	 * @param filenames 
+	 * @param filenames the filenames
 	 */
 	public void setFilenames(String[] filenames) {
 		this.list = filenames;

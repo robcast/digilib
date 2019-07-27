@@ -62,8 +62,8 @@ public class DocuDirCache {
 	/**
 	 * Constructor with digilib configuration and file class.
 	 * 
-     * @param fc
-     * @param dlConfig
+     * @param fc the FileClass
+     * @param dlConfig the DigilibConfiguration
 	 */
 	public DocuDirCache(FileClass fc,
 			DigilibConfiguration dlConfig) {
@@ -81,7 +81,7 @@ public class DocuDirCache {
 	/**
 	 * The number of directories in the cache.
 	 * 
-	 * @return
+	 * @return the size
 	 */
 	public int size() {
 		return (map != null) ? map.size() : 0;
@@ -92,8 +92,8 @@ public class DocuDirCache {
 	 * Always returns the correct Object from the cache, 
 	 * either newdir one or another one.
 	 * 
-	 * @param newdir
-	 * @return dir
+	 * @param newdir the DocuDirectory
+	 * @return dir the DocuDirectory
 	 */
 	public DocuDirectory put(DocuDirectory newdir) {
 		String s = newdir.getDirName();
@@ -112,8 +112,8 @@ public class DocuDirCache {
 	 * Always returns the correct Object from the cache, 
 	 * either newDir or the cached one.
 	 *
-	 * @param newDir
-	 * @return dir
+	 * @param newDir the DocuDirectory
+	 * @return the DocuDirectory
 	 */
 	public DocuDirectory putDir(DocuDirectory newDir) {
 		DocuDirectory dd = put(newDir);
@@ -147,7 +147,7 @@ public class DocuDirCache {
      *            file index
      * @param fc
      *            file class
-     * @return
+     * @return the DocuDirent
      * @deprecated Use {@link #getFile(String fn, int in)} instead.
      */
     public DocuDirent getFile(String fn, int in, FileClass fc) {
@@ -165,7 +165,7 @@ public class DocuDirCache {
 	 *            digilib pathname
 	 * @param pn
 	 *            file number
-	 * @return
+	 * @return the DocuDirent
 	 */
 	public DocuDirent getFile(String fn, int pn) {
 		DocuDirectory dd;
@@ -198,7 +198,7 @@ public class DocuDirCache {
 	 * 
 	 * @param fn
 	 *            digilib pathname
-	 * @return
+	 * @return the DocuDirectory
 	 */
 	public DocuDirectory getDirectory(String fn) {
 		DocuDirectory dd;
@@ -269,35 +269,35 @@ public class DocuDirCache {
 	}
 
     /**
-     * @return long
+     * @return long the num files
      */
     public int getNumFiles() {
         return numFiles.get();
     }
 
 	/**
-	 * @return long
+	 * @return long the hits
 	 */
 	public int getHits() {
 		return hits.get();
 	}
 
 	/**
-	 * @return long
+	 * @return long the misses
 	 */
 	public int getMisses() {
 		return misses.get();
 	}
 
 	/**
-	 * @return
+	 * @return the FileClass
 	 */
 	public FileClass getFileClass() {
 		return fileClass;
 	}
 
 	/**
-	 * @param fileClass
+	 * @param fileClass the FileClass
 	 */
 	public void setFileClass(FileClass fileClass) {
 		this.fileClass = fileClass;

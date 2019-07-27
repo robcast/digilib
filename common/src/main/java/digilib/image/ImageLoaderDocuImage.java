@@ -362,7 +362,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     /**
      * Get an ImageReader for the image file.
      * 
-     * @return
+     * @param input the ImageInput
+     * @return the IamgeReader
+     * @throws IOException on error
      */
     public ImageReader getReader(ImageInput input) throws IOException {
         logger.debug("get ImageReader for " + input);
@@ -628,8 +630,8 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     /**
      * Blur the image with a convolution using the given radius.
      * 
-     * @param radius
-     * @throws ImageOpException
+     * @param radius the radius
+     * @throws ImageOpException on error
      */
     public void blur(int radius) throws ImageOpException {
         logger.debug("blur: " + radius);

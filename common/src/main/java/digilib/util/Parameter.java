@@ -61,8 +61,9 @@ public class Parameter {
 	/**
 	 * Constructor with name, default, and value.
 	 * 
-	 * @param value
-	 * @param defval
+	 * @param value the value
+	 * @param defval the default
+	 * @param name the name
 	 */
 	public Parameter(String name, Object defval, Object value) {
 		this.name = name;
@@ -73,8 +74,10 @@ public class Parameter {
 	/**
 	 * Constructor with name, default, value, and type.
 	 * 
-	 * @param value
-	 * @param defval
+	 * @param name the name
+	 * @param defval the default
+	 * @param value the value
+	 * @param type the type
 	 */
 	public Parameter(String name, Object defval, Object value, int type) {
 		this.name = name;
@@ -84,9 +87,9 @@ public class Parameter {
 	}
 
 	/**
-	 * Is the value valid.
+	 * Is the value set.
 	 * 
-	 * @return
+	 * @return if the value is set
 	 */
 	public boolean hasValue() {
 		return (value != null);
@@ -99,8 +102,8 @@ public class Parameter {
 	 * the value anyway if the default is null. Returns if the value could be
 	 * set.
 	 * 
-	 * @param val
-	 * @return
+	 * @param val the value
+	 * @return if the value was set
 	 */
 	public boolean setValueFromString(String val) {
 		if (val == null) {
@@ -152,7 +155,7 @@ public class Parameter {
 	/**
 	 * Get the default as Object.
 	 * 
-	 * @return
+	 * @return the default
 	 */
 	public Object getDefault() {
 		return defval;
@@ -161,7 +164,7 @@ public class Parameter {
 	/**
 	 * Set the default.
 	 * 
-	 * @param defval
+	 * @param defval the default
 	 */
 	public void setDefault(Object defval) {
 		this.defval = defval;
@@ -172,7 +175,7 @@ public class Parameter {
 	 * 
 	 * Returns the default if the value is not set.
 	 * 
-	 * @return
+	 * @return the value
 	 */
 	public Object getValue() {
 		return (value != null) ? value : defval;
@@ -183,7 +186,7 @@ public class Parameter {
      * 
      * Returns the default if the value is not set.
      * 
-     * @return
+     * @return the value
      */
 	public int getAsInt() {
 		Integer i = (Integer) getValue();
@@ -195,7 +198,7 @@ public class Parameter {
      * 
      * Returns the default if the value is not set.
      * 
-     * @return
+     * @return the value
      */
 	public float getAsFloat() {
 		Float f = (Float) getValue();
@@ -207,7 +210,7 @@ public class Parameter {
      * 
      * Returns the default if the value is not set.
      * 
-     * @return
+     * @return the value
      */
 	public String getAsString() {
 		Object s = getValue();
@@ -230,7 +233,7 @@ public class Parameter {
      * 
      * Returns the default if the value is not set.
      * 
-     * @return
+     * @return the value
      */
 	public boolean getAsBoolean() {
 		Boolean b = (Boolean) getValue();
@@ -242,19 +245,31 @@ public class Parameter {
      * 
      * Returns the default if the value is not set.
      * 
-     * @return
+     * @return the value
      */
     public File getAsFile() {
         File f = (File) getValue();
         return f;
     }
 
+	/**
+	 * Get the value as Strings split using the separator.
+	 * 
+	 * @param separator the separator
+	 * @return the strings
+	 */
 	public String[] parseAsArray(String separator) {
 		String s = getAsString();
 		String[] sa = s.split(separator);
 		return sa;
 	}
 
+	/**
+	 * Get the value as floats split using the separator.
+	 * 
+	 * @param separator the separator
+	 * @return the floats
+	 */
 	public float[] parseAsFloatArray(String separator) {
 		String s = getAsString();
 		String[] sa = s.split(separator);
@@ -275,7 +290,7 @@ public class Parameter {
 	/**
 	 * Set the value.
 	 * 
-	 * @param value
+	 * @param value the value
 	 */
 	public void setValue(Object value) {
 		this.value = value;
@@ -284,7 +299,7 @@ public class Parameter {
 	/**
 	 * Set the value.
 	 * 
-	 * @param value
+	 * @param value the value
 	 */
 	public void setValue(int value) {
 		this.value = Integer.valueOf(value);
@@ -293,35 +308,35 @@ public class Parameter {
 	/**
 	 * Set the value.
 	 * 
-	 * @param value
+	 * @param value the value
 	 */
 	public void setValue(float value) {
 		this.value = Float.valueOf(value);
 	}
 
 	/**
-	 * @return
+	 * @return the name
 	 */
 	public String getName() {
 		return name;
 	}
 
 	/**
-	 * @param name
+	 * @param name the name
 	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 
 	/**
-	 * @return
+	 * @return the type
 	 */
 	public int getType() {
 		return type;
 	}
 
 	/**
-	 * @param type
+	 * @param type the type
 	 */
 	public void setType(int type) {
 		this.type = type;

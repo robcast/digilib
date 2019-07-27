@@ -56,8 +56,8 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
     /**
      * Constructor with a File and Directories.
      * 
-     * @param file
-     * @param scaleDirs
+     * @param file the File
+     * @param scaleDirs the Directories
      */
     public ImageFileSet(File file, Directory[] scaleDirs) {
         int nb = scaleDirs.length;
@@ -109,6 +109,7 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
 
     /**
      * Get the default File.
+     * @return the File
      */
     public File getFile() {
         return file;

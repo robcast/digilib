@@ -70,10 +70,10 @@ public class XMLMapLoader {
      * <code>entry_tag</code> with two attributes: the <code>key_att</code>
      * key and the <code>value_att</code> value.
      * 
-     * @param list_tag
-     * @param entry_tag
-     * @param key_att
-     * @param value_att
+     * @param list_tag the list tag
+     * @param entry_tag the entry tag
+     * @param key_att the key attribute
+     * @param value_att the value attribute
      */
     public XMLMapLoader(String list_tag, String entry_tag, String key_att, String value_att) {
         logger.debug("XMLMapLoader(" + list_tag + "," + entry_tag + "," + key_att + "," + value_att + ")");
@@ -164,6 +164,10 @@ public class XMLMapLoader {
      *  load and parse a file (as URL)
      *    returns HashMap with list data
      * @deprecated Use {@link #loadUri(URI)} instead
+     * @param uri the URI
+     * @return the Map
+     * @throws SAXException on error
+     * @throws IOException on error
      */
     public Map<String, String> loadURL(String uri) throws SAXException, IOException {
         try {
@@ -177,6 +181,10 @@ public class XMLMapLoader {
     /**
 	 *  load and parse a file (as URL)
 	 *    returns HashMap with list data
+	 * @param uri the URI
+	 * @return the Map
+	 * @throws SAXException on error
+	 * @throws IOException on error
 	 */
 	public Map<String, String> loadUri(URI uri) throws SAXException, IOException {
 		//System.out.println("loadurl ("+path+")");

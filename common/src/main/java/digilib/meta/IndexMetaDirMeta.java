@@ -86,7 +86,7 @@ public class IndexMetaDirMeta implements DirMeta {
 
     /**
      * Read metadata from all known parent directories.
-     * @param dir 
+     * @param dir the FsDocuDirectory
      *  
      */
     public void readParentMeta(FsDocuDirectory dir) {
@@ -113,9 +113,9 @@ public class IndexMetaDirMeta implements DirMeta {
      * Takes a Map with meta-information, adding the relative path before the
      * lookup.
      * 
-     * @param dir
-     * @param fileMeta
-     * @param relPath
+     * @param dir the DocuDirectory
+     * @param fileMeta the FileMeta
+     * @param relPath the relPath
      */
     protected void readFileMeta(DocuDirectory dir, Map<String,MetadataMap> fileMeta, String relPath) {
         String path = (relPath != null) ? (relPath + "/") : "";
@@ -164,14 +164,14 @@ public class IndexMetaDirMeta implements DirMeta {
     }
 
     /**
-     * @return
+     * @return has unresolved file meta
      */
     protected boolean hasUnresolvedFileMeta() {
         return (this.unresolvedFileMeta != null);
     }
 
     /**
-     * @return
+     * @return the unresolved file meta
      */
     protected Map<String, MetadataMap> getUnresolvedFileMeta() {
         return this.unresolvedFileMeta;

@@ -26,7 +26,7 @@ public abstract class FsDocuDirectory extends DocuDirectory {
 	/**
 	 * Returns the parent filesystem Directory.
 	 * 
-	 * @return
+	 * @return the Directory
 	 */
 	public Directory getParentDirectory() {
 		return dir.getParent();
@@ -34,14 +34,14 @@ public abstract class FsDocuDirectory extends DocuDirectory {
 
 	/**
 	 * Returns the filesystem File for this directory.
-	 * @return
+	 * @return the File
 	 */
 	public File getDir() {
 		return dir.dir;
 	}
 
 	/**
-	 * @return
+	 * @return the filenames
 	 */
 	public String[] getFilenames() {
 		return dir.getFilenames();

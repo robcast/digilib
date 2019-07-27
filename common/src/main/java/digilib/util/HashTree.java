@@ -58,9 +58,9 @@ public class HashTree {
      * Creates a HashTree wrapper around a given HashMap, using the given twig
      * separator and leaf separator.
      * 
-     * @param t
-     * @param twig_separator
-     * @param leaf_separator
+     * @param t the Map
+     * @param twig_separator the twig separator
+     * @param leaf_separator the leaf separator
      */
     public HashTree(Map<String, String> t, String twig_separator, String leaf_separator) {
         table = t;
@@ -79,8 +79,8 @@ public class HashTree {
      * Branches in the tree match if they are substrings starting at the same
      * root.
      * 
-     * @param branch
-     * @return
+     * @param branch the branch
+     * @return list of leaves
      */
     public List<String> match(String branch) {
         String b = "";

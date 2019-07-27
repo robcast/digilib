@@ -52,9 +52,9 @@ public class ImageFile extends ImageInput {
 
 	/** Constructor with File.
 	 * 
-	 * @param f
-	 * @param parent
-	 * @param parentDir
+	 * @param f the File
+	 * @param parent the ImageSet
+	 * @param parentDir the Directory
 	 */
 	public ImageFile(File f, ImageSet parent, Directory parentDir) {
 		this.file = f;
@@ -64,9 +64,9 @@ public class ImageFile extends ImageInput {
 	}
 	
 	/** Constructor with filename (without path).
-	 * @param fn
-	 * @param parent
-	 * @param dir
+	 * @param fn the fn
+	 * @param parent the ImageSet
+	 * @param dir the Directory
 	 */
 	public ImageFile(String fn, ImageSet parent, Directory dir) {
 		this.name = fn;
@@ -120,7 +120,7 @@ public class ImageFile extends ImageInput {
 
     /** Returns the file name (without path).
 	 * 
-	 * @return
+	 * @return the name
 	 */
 	public String getName() {
 		return name;
@@ -160,6 +160,7 @@ public class ImageFile extends ImageInput {
     /* (non-Javadoc)
 	 * @see digilib.io.ImageInput#getFile()
 	 */
+    @Override
 	public File getFile() {
 		return file;
 	}
@@ -167,6 +168,7 @@ public class ImageFile extends ImageInput {
 	/* (non-Javadoc)
 	 * @see digilib.io.ImageInput#setSize(digilib.image.ImageSize)
 	 */
+    @Override
 	public void setSize(ImageSize imageSize) {
 		this.pixelSize = imageSize;
 		// pass on to parent

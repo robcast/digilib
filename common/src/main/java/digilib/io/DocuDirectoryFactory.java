@@ -47,7 +47,7 @@ public class DocuDirectoryFactory {
 
     /**
      * Returns a unconfigured DocuDirectory instance.
-     * @return
+     * @return the DocuDirectory
      */
     public static DocuDirectory getInstance() {
         DocuDirectory dd = null;
@@ -62,9 +62,9 @@ public class DocuDirectoryFactory {
     /**
      * Returns a DocuDirectory instance with the given path and FileClass.
      *  
-     * @param path
-     * @param fileClass
-     * @return
+     * @param path the path
+     * @param fileClass the FileClass
+     * @return the DocuDirectory
      */
     public static DocuDirectory getDocuDirectoryInstance(String path, FileClass fileClass) {
         DocuDirectory dd = getInstance();
@@ -75,9 +75,9 @@ public class DocuDirectoryFactory {
     /**
      * Returns a DocuDirectory instance with the given path and DocuDirCache.
      *  
-     * @param path
-     * @param cache
-     * @return
+     * @param path the path
+     * @param cache the DocuDirCache
+     * @return the DocuDirectory
      */
     public static DocuDirectory getDocuDirectoryInstance(String path, DocuDirCache cache) {
         DocuDirectory dd = getInstance();
@@ -93,7 +93,7 @@ public class DocuDirectoryFactory {
     }
 
     /**
-     * @param dlConfig
+     * @param dlConfig the DigilibConfiguration
      */
     public static void setDigilibConfig(DigilibConfiguration dlConfig) {
         DocuDirectoryFactory.dlConfig = dlConfig;

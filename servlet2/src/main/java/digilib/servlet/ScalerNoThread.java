@@ -101,10 +101,10 @@ public class ScalerNoThread extends HttpServlet {
     /** AuthOps instance */
     protected AuthzOps authzOp;
 
-    /**
+    /*
      * Initialisation on first run.
      * 
-     * @throws ServletException
+     * @throws ServletException on error
      * 
      * @see javax.servlet.Servlet#init(javax.servlet.ServletConfig)
      */
@@ -139,7 +139,7 @@ public class ScalerNoThread extends HttpServlet {
         sendFileAllowed = dlConfig.getAsBoolean("sendfile-allowed");
     }
 
-    /**
+    /*
      * Returns modification time relevant to the request for caching.
      * 
      * @see javax.servlet.http.HttpServlet#getLastModified(javax.servlet.http.HttpServletRequest)
@@ -194,9 +194,9 @@ public class ScalerNoThread extends HttpServlet {
     /**
      * Service this request using the response.
      * 
-     * @param request
-     * @param response
-     * @throws ServletException
+     * @param request the HttpServletRequest
+     * @param response the HttpServletResponse
+     * @throws ServletException on error
      */
     public void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException {
 
@@ -289,10 +289,10 @@ public class ScalerNoThread extends HttpServlet {
     /**
      * Sends an error to the client as text or image.
      * 
-     * @param type
-     * @param error
-     * @param msg
-     * @param response
+     * @param type the ErrMsg
+     * @param error the Error
+     * @param msg the msg
+     * @param response the HttpServletResponse
      */
     public static void digilibError(ErrMsg type, Error error, String msg, HttpServletResponse response) {
         try {
@@ -336,6 +336,9 @@ public class ScalerNoThread extends HttpServlet {
 
     }
 
+    /**
+     * @return the version
+     */
     public static String getVersion() {
         return version;
     }

@@ -56,7 +56,7 @@ public class ParameterMap {
 
 	/** Constructor with initial size.
      * Does not call initParams().
-	 * @param size
+	 * @param size the size
 	 */
 	public ParameterMap(int size) {
 		params = new HashMap<String, Parameter>(size);
@@ -65,7 +65,9 @@ public class ParameterMap {
 
 	/** Shallow copy constructor.
 	 * Be warned that the maps are only cloned i.e. keys and values are shared!
-	 * @param pm
+	 * 
+	 * @param pm other ParameterMap
+	 * @return new ParameterMap
 	 */
 	@SuppressWarnings("unchecked")
 	public static ParameterMap cloneInstance(ParameterMap pm) {
@@ -79,8 +81,9 @@ public class ParameterMap {
 
 	
 	/** Creates new ParameterMap by merging Parameters from another ParameterMap.
-	 * @param pm
-	 * @return
+	 * 
+	 * @param pm other ParameterMap
+	 * @return new ParameterMap
 	 */
 	public static ParameterMap getInstance(ParameterMap pm) {
 		ParameterMap newPm = new ParameterMap();
@@ -109,79 +112,79 @@ public class ParameterMap {
 	 * 
 	 * Returns null if no element is associated with key.
 	 * 
-	 * @param key
-	 * @return
+	 * @param key the key
+	 * @return the Parameter
 	 */
 	public Parameter get(String key) {
 		return params.get(key);
 	}
 
-	/** Get the Parameter with the corresponding key.
+	/** Get the value with the corresponding key.
 	 * 
 	 * Returns null if no element is associated with key.
 	 * 
-	 * @param key
-	 * @return
+	 * @param key the key
+	 * @return the value
 	 */
 	public Object getValue(String key) {
 		Parameter p = params.get(key);
 		return (p != null) ? p.getValue() : null;
 	}
 	
-	/** Get the Parameter with the corresponding key.
+	/** Get the value with the corresponding key.
 	 * 
 	 * Returns empty string if no element is associated with key.
 	 * 
-	 * @param key
-	 * @return
+	 * @param key the key
+	 * @return the value
 	 */
 	public String getAsString(String key) {
 		Parameter p = params.get(key);
 		return (p != null) ? p.getAsString() : "";
 	}
 
-	/** Get the Parameter with the corresponding key.
+	/** Get the value with the corresponding key.
 	 * 
 	 * Returns 0 if no element is associated with key.
 	 * 
-	 * @param key
-	 * @return
+	 * @param key the key
+	 * @return the value
 	 */
 	public int getAsInt(String key) {
 		Parameter p = params.get(key);
 		return (p != null) ? p.getAsInt() : 0;
 	}
 
-	/** Get the Parameter with the corresponding key.
+	/** Get the value with the corresponding key.
 	 * 
 	 * Returns 0 if no element is associated with key.
 	 * 
-	 * @param key
-	 * @return
+	 * @param key the key
+	 * @return the value
 	 */
 	public float getAsFloat(String key) {
 		Parameter p = params.get(key);
 		return (p != null) ? p.getAsFloat() : 0f;
 	}
 
-	/** Get the Parameter with the corresponding key.
+	/** Get the value with the corresponding key.
 	 * 
 	 * Returns false if no element is associated with key.
 	 * 
-	 * @param key
-	 * @return
+	 * @param key the key
+	 * @return the value
 	 */
 	public boolean getAsBoolean(String key) {
 		Parameter p = params.get(key);
 		return (p != null) ? p.getAsBoolean() : false;
 	}
 
-    /** Get the Parameter with the corresponding key.
+    /** Get the value with the corresponding key.
      * 
      * Returns null if no element is associated with key.
      * 
-     * @param key
-     * @return
+     * @param key the key
+     * @return the value
      */
     public File getAsFile(String key) {
         Parameter p = params.get(key);
@@ -190,8 +193,8 @@ public class ParameterMap {
 
 	/** Returns if the Parameter's value has been set.
 	 * 
-	 * @param key
-	 * @return
+	 * @param key the key
+	 * @return if the value has been set
 	 */
 	public boolean hasValue(String key) {
 		Parameter p = params.get(key);
@@ -202,9 +205,9 @@ public class ParameterMap {
 	 * 
 	 * Returns the value that was previously associated with key. 
 	 * 
-	 * @param key
-	 * @param val
-	 * @return
+	 * @param key the key
+	 * @param val the value
+	 * @return last Parameter
 	 */
 	public Parameter put(String key, Parameter val) {
 		return params.put(key, val);
@@ -214,8 +217,8 @@ public class ParameterMap {
 	 * 
 	 * Returns the value that was previously associated with val's name. 
 	 * 
-	 * @param val
-	 * @return
+	 * @param val the value
+	 * @return last Parameter
 	 */
 	public Parameter put(Parameter val) {
 		return params.put(val.getName(), val);
@@ -225,10 +228,10 @@ public class ParameterMap {
 	 * 
 	 * Returns the key that was previously associated with name. 
 	 * 
-	 * @param name
-	 * @param def
-	 * @param val
-	 * @return
+	 * @param name the name
+	 * @param def the default
+	 * @param val the value
+	 * @return last Parameter
 	 */
 	public Parameter newParameter(String name, Object def, Object val) {
 		Parameter p = new Parameter(name, def, val);
@@ -239,11 +242,11 @@ public class ParameterMap {
 	 * 
 	 * Returns the key that was previously associated with name. 
 	 * 
-	 * @param name
-	 * @param def
-	 * @param val
-	 * @param type
-	 * @return
+	 * @param name the name
+	 * @param def the default
+	 * @param val the value
+	 * @param type the type
+	 * @return last Parameter
 	 */
 	public Parameter newParameter(String name, Object def, Object val, int type) {
 		Parameter p = new Parameter(name, def, val, type);
@@ -254,9 +257,9 @@ public class ParameterMap {
 	 * 
 	 * Sets the value and returns true if the parameter exists.
 	 * 
-	 * @param key
-	 * @param val
-	 * @return
+	 * @param key the key
+	 * @param val the value
+	 * @return true if the parameter exists.
 	 */
 	public boolean setValue(String key, Object val) {
 		Parameter p = params.get(key);
@@ -271,9 +274,9 @@ public class ParameterMap {
 	 * 
 	 * Sets the value and returns true if the parameter exists.
 	 * 
-	 * @param key
-	 * @param val
-	 * @return
+	 * @param key the key
+	 * @param val the value
+	 * @return true if the parameter exists.
 	 */
 	public boolean setValue(String key, int val) {
 		Parameter p = params.get(key);
@@ -288,9 +291,9 @@ public class ParameterMap {
 	 * 
 	 * Sets the value and returns true if the parameter exists.
 	 * 
-	 * @param key
-	 * @param val
-	 * @return
+	 * @param key the key
+	 * @param val the value
+	 * @return true if the parameter exists.
 	 */
 	public boolean setValue(String key, float val) {
 		Parameter p = params.get(key);
@@ -305,9 +308,9 @@ public class ParameterMap {
 	 * 
 	 * Sets the value and returns true if the parameter exists.
 	 * 
-	 * @param key
-	 * @param val
-	 * @return
+	 * @param key the key
+	 * @param val the value
+	 * @return true if the parameter exists.
 	 */
 	public boolean setValueFromString(String key, String val) {
 		Parameter p = params.get(key);
@@ -320,8 +323,8 @@ public class ParameterMap {
 	
 	/** 
 	 * Returns if the option has been set.
-	 * @param opt
-	 * @return
+	 * @param opt the option
+	 * @return true if the option has been set.
 	 */
 	public boolean hasOption(DigilibOption opt) {
 		return options.hasOption(opt);
@@ -329,8 +332,8 @@ public class ParameterMap {
 
 	/**
 	 * Returns a map with all Parameters of a type.
-	 * @param type
-	 * @return
+	 * @param type the type
+	 * @return map with all Parameters of a type
 	 */
 	public HashMap<String, Parameter> getParameters(int type) {
 	    HashMap<String, Parameter> map = new HashMap<String, Parameter>();
@@ -345,7 +348,7 @@ public class ParameterMap {
 	
 	/**
 	 * Returns the parameter Map.
-	 * @return
+	 * @return the parameter Map 
 	 */
 	public HashMap<String, Parameter> getParams() {
 		return params;
@@ -353,7 +356,7 @@ public class ParameterMap {
 
     /**
      * Sets the parameter Map.
-	 * @param params
+	 * @param params the parameter Map
 	 */
 	public void setParams(HashMap<String, Parameter> params) {
 		this.params = params;
@@ -361,7 +364,7 @@ public class ParameterMap {
 
 	/**
 	 * Returns the options Set.
-	 * @return
+	 * @return the options Set
 	 */
 	public OptionsSet getOptions() {
 		return options;
@@ -369,7 +372,7 @@ public class ParameterMap {
 
 	/**
 	 * Sets the options Set.
-	 * @param options
+	 * @param options the options Set
 	 */
 	public void setOptions(OptionsSet options) {
 		this.options = options;

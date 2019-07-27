@@ -38,28 +38,28 @@ public interface DirMeta {
 
     /**
      * read and store metadata for this directory.
-     * @param dir
+     * @param dir the DocuDirectory
      */
     public void readMeta(DocuDirectory dir);
 
     /**
      * check and process metadata for this directory.
      * 
-     * @param dir
+     * @param dir the DocuDirectory
      */
     public void checkMeta(DocuDirectory dir);
 
     /**
      * returns metadata for this directory
      * 
-     * @return
+     * @return the MetadataMap
      */
     public MetadataMap getDirMeta();
 
     /**
      * sets the metadata for this directory.
      * 
-     * @param dirMeta
+     * @param dirMeta the MetadataMap
      */
     public void setDirMeta(MetadataMap dirMeta);
 

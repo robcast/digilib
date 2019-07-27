@@ -53,10 +53,10 @@ public class DigilibJobCenter<V> {
     /** Create a DigilibJobcenter with the given number of threads and queue length.
      * If prestart=true it starts the threads in the thread pool.
      * 
-     * @param maxThreads
-     * @param maxQueueLen
-     * @param prestart
-     * @param label
+     * @param maxThreads the max threads
+     * @param maxQueueLen the max queue length
+     * @param prestart the prestart
+     * @param label the label
      */
     public DigilibJobCenter(int maxThreads, int maxQueueLen, boolean prestart, String label) {
         super();
@@ -73,7 +73,7 @@ public class DigilibJobCenter<V> {
     
     /** Submit Callable job that returns a Value to execute.
      * 
-     * @param job
+     * @param job the Callable
      * @return Future to control the job
      */
     public Future<V> submit(Callable<V> job) {
@@ -82,7 +82,7 @@ public class DigilibJobCenter<V> {
 
     /** Submit Runnable job to execute.
      * 
-     * @param job
+     * @param job the Runnable
      * @return Future to control the job
      */
     public Future<?> submit(Runnable job) {
@@ -91,7 +91,7 @@ public class DigilibJobCenter<V> {
 
     /** Returns if the service is overloaded.
      *  
-     * @return
+     * @return true if busy
      */
     public boolean isBusy() {
         int jql = getWaitingJobs();
@@ -101,14 +101,14 @@ public class DigilibJobCenter<V> {
     }
     
     /** Returns the number of currently running jobs.
-     * @return
+     * @return the number of running jobs
      */
     public int getRunningJobs() {
         return ((ThreadPoolExecutor)executor).getActiveCount();
     }
     
     /** Returns the number of currently waiting jobs.
-     * @return
+     * @return the number of waiting jobs
      */
     public int getWaitingJobs() {
         BlockingQueue<Runnable> jq = ((ThreadPoolExecutor)executor).getQueue();
@@ -116,18 +116,30 @@ public class DigilibJobCenter<V> {
         return jql;
     }
 
+    /**
+     * @param maxThreads the max threads
+     */
     public void setMaxThreads(int maxThreads) {
         this.maxThreads = maxThreads;
     }
 
+    /**
+     * @return the max threads
+     */
     public int getMaxThreads() {
         return maxThreads;
     }
 
+    /**
+     * @param maxQueueLen the max queue length
+     */
     public void setMaxQueueLen(int maxQueueLen) {
         this.maxQueueLen = maxQueueLen;
     }
 
+    /**
+     * @return the max queue length
+     */
     public int getMaxQueueLen() {
         return maxQueueLen;
     }
@@ -135,7 +147,7 @@ public class DigilibJobCenter<V> {
     /** Shuts down the Executor. 
      * Tries to stop running threads and returns a list of waiting threads.
      * 
-     * @return
+     * @return list of waiting tasks
      */
     public List<Runnable> shutdownNow() {
         return executor.shutdownNow();

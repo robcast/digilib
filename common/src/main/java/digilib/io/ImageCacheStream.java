@@ -39,9 +39,9 @@ public class ImageCacheStream extends ImageStream {
     
     /** Create ImageCacheStream from InputStream and mime-type.
      * 
-     * @param stream
-     * @param mimeType
-     * @throws IOException 
+     * @param stream the InputStream
+     * @param mimeType the mime-type
+     * @throws IOException on error
      */
     public ImageCacheStream(InputStream stream, String mimeType) throws IOException {
         super(stream, mimeType);

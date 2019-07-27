@@ -83,7 +83,7 @@ public abstract class ImageInput {
 	/** returns if this image has been checked 
 	 * (i.e. has size and mimetype)
 	 * TODO: deprecated
-	 * @return boolean
+	 * @return is checked
 	 */
 	public boolean isChecked() {
 		return (pixelSize != null);
@@ -91,7 +91,7 @@ public abstract class ImageInput {
 	
 	/** Returns the aspect ratio of the image (width/height).
 	 * 
-	 * @return
+	 * @return the aspect ratio
 	 */
 	public float getAspect() {
 		return (pixelSize != null) ? pixelSize.getAspect() : 0f;
@@ -114,7 +114,7 @@ public abstract class ImageInput {
 
     /** Returns if the input can be returned as ImageInputStream.
 	 * 
-	 * @return
+	 * @return has ImageInputStream
 	 */
 	public boolean hasImageInputStream() {
 		return false;
@@ -122,7 +122,7 @@ public abstract class ImageInput {
 	
 	/** Returns the input as ImageInputStream (if available)
 	 * 
-	 * @return
+	 * @return the ImageInputStream
 	 */
 	public ImageInputStream getImageInputStream() {
 		return null;
@@ -130,7 +130,7 @@ public abstract class ImageInput {
 	
     /** Returns if the input can be returned as InputStream.
      * 
-     * @return
+     * @return has InputStream
      */
     public boolean hasInputStream() {
         return false;
@@ -138,7 +138,7 @@ public abstract class ImageInput {
     
     /** Returns the input as InputStream (if available)
      * 
-     * @return
+     * @return the InputStream
      */
     public InputStream getInputStream() {
         return null;
@@ -146,7 +146,7 @@ public abstract class ImageInput {
     
 	/** Returns if the input can be returned as File.
 	 * 
-	 * @return
+	 * @return has File
 	 */
 	public boolean hasFile() {
 		return false;
@@ -154,7 +154,7 @@ public abstract class ImageInput {
 	
 	/** Returns the input as File (if available)
 	 * 
-	 * @return
+	 * @return the File
 	 */
 	public File getFile() {
 		return null;

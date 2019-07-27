@@ -50,7 +50,7 @@ public class OptionsSet {
 	}
 
 	/** Constructor with String of options.
-	 * @param s
+	 * @param s the options string
 	 */
 	public OptionsSet(String s) {
 		options = EnumSet.noneOf(DigilibOption.class);
@@ -58,7 +58,7 @@ public class OptionsSet {
 	}
 
 	/** Adds all options from String to Set.
-	 * @param s
+	 * @param s the options string
 	 */
 	public void parseString(String s) {
 		if (s != null) {
@@ -78,8 +78,8 @@ public class OptionsSet {
 	/**
 	 * Set the option opt.
 	 * 
-	 * @param opt
-	 * @return
+	 * @param opt the DigilibOption
+	 * @return if changed
 	 */
 	public boolean setOption(DigilibOption opt) {
 	    return options.add(opt);
@@ -88,8 +88,8 @@ public class OptionsSet {
 	/**
 	 * Return if the option opt is set.
 	 * 
-	 * @param opt
-	 * @return
+	 * @param opt the DigilibOption
+	 * @return if option is set
 	 */
 	public boolean hasOption(DigilibOption opt) {
 		return options.contains(opt);
@@ -124,10 +124,16 @@ public class OptionsSet {
 		this.options = options;
 	}
 
+	/**
+	 * @return the option separator
+	 */
 	public String getOptionSep() {
 		return optionSep;
 	}
 
+	/**
+	 * @param optionSep the option separator
+	 */
 	public void setOptionSep(String optionSep) {
 		this.optionSep = optionSep;
 	}

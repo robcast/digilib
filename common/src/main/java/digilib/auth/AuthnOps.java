@@ -48,7 +48,7 @@ public interface AuthnOps {
     /**
      * Return if the implementation supports getUserRoles().
      * 
-     * @return
+     * @return true if the implementation supports getUserRoles().
      */
     public boolean hasUserRoles();
     
@@ -58,17 +58,17 @@ public interface AuthnOps {
      * Returns null if a list of roles is not available. Users of this API should
      * check hasUserRoles().
      * 
-     * @param request
-     * @return
-     * @throws AuthOpException
+     * @param request current DigilibRequest
+     * @return list of user's roles 
+     * @throws AuthOpException Exception thrown on error.
      */
     public List<String> getUserRoles(DigilibRequest request) throws AuthOpException;
 
     /**
      * Configure this AuthnOps instance.
      * 
-     * @param dlConfig
-     * @throws AuthOpException
+     * @param dlConfig current DigilibConfiguration
+     * @throws AuthOpException Exception thrown on error.
      */
     public void init(DigilibConfiguration dlConfig) throws AuthOpException;
 }

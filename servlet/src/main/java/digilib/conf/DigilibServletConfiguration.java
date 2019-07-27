@@ -183,8 +183,9 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
      * read parameter list from the file WEB-INF/digilib-config.xml 
      * or digilib.properties in class path.
      * 
-     * @throws IOException 
-     * @throws SAXException 
+     * @param c the ServletContext
+     * @throws IOException on error
+     * @throws SAXException on error
      */
     public void readConfig(ServletContext c) throws SAXException, IOException  {
 
@@ -246,8 +247,8 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
     }
 
     /**
-     * @param ctx
-     * @param conf
+     * @param ctx the ServletContext
+     * @param conf the config
      */
     public void readConfigEntries(ServletContext ctx, Map<String, String> conf) {
         /*
@@ -388,7 +389,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         }
     }
 
-    /**
+    /*
      * Initialisation on first run.
      */
     public void contextInitialized(ServletContextEvent cte) {
@@ -410,9 +411,8 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         }
     }
 
-    /**
+    /*
      * Clean up local resources
-     * 
      */
     public void contextDestroyed(ServletContextEvent cte) {
         logger.info("DigilibServletConfiguration shutting down.");
@@ -434,7 +434,8 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
 
     /**
      * Sets the current DigilibConfiguration in the context. 
-     * @param context
+     * 
+     * @param context the ServletContext
      */
     protected void setContextConfig(ServletContext context) {
         context.setAttribute(DigilibServletConfiguration.SERVLET_CONFIG_KEY, this);
@@ -443,8 +444,8 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
     /**
      * Returns the current DigilibConfiguration from the context.
      * 
-     * @param context
-     * @return
+     * @param context the ServletContext
+     * @return the DigilibConfiguration
      */
     public static DigilibServletConfiguration getCurrentConfig(ServletContext context) {
         DigilibServletConfiguration config = (DigilibServletConfiguration) context
@@ -456,8 +457,8 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
      * Returns the current DigilibConfiguration from the context.
      * (non-static method, for Java inheritance)
      * 
-     * @param context
-     * @return
+     * @param context the ServletContext
+     * @return the DigilibConfiguration
      */
     protected DigilibServletConfiguration getContextConfig(ServletContext context) {
         return getCurrentConfig(context);

@@ -120,7 +120,7 @@ public class DigilibBean {
 	/**
 	 * Returns if authorization is configured.
 	 * 
-	 * @return
+	 * @return use authorization
 	 */
 	public boolean isUseAuthorization() {
 	    return this.useAuthorization;
@@ -128,6 +128,8 @@ public class DigilibBean {
 	
     /**
      * check if the request must be authorized to access filepath
+     * @return is auth required
+     * @throws AuthOpException on error
      */
     public boolean isAuthRequired() throws AuthOpException {
         return isAuthRequired(dlRequest);
@@ -135,6 +137,9 @@ public class DigilibBean {
 
     /**
 	 * check if the request must be authorized to access filepath
+	 * @param request the DigilibServletRequest
+	 * @return is auth required
+	 * @throws AuthOpException on error
 	 */
 	public boolean isAuthRequired(DigilibServletRequest request) throws AuthOpException {
 		logger.debug("isAuthRequired");
@@ -143,6 +148,8 @@ public class DigilibBean {
 
     /**
      * check if the request is allowed to access filepath
+     * @return is authorized
+     * @throws AuthOpException on error
      */
     public boolean isAuthorized() throws AuthOpException {
         return isAuthorized(dlRequest);
@@ -150,6 +157,9 @@ public class DigilibBean {
     
 	/**
 	 * check if the request is allowed to access filepath
+	 * @param request the DigilibServletRequest
+	 * @return is authorized
+	 * @throws AuthOpException on error
 	 */
 	public boolean isAuthorized(DigilibServletRequest request) throws AuthOpException {
 		logger.debug("isAuthorized");
@@ -158,6 +168,9 @@ public class DigilibBean {
 
 	/**
 	 * check for authenticated access and redirect if necessary
+	 * @param response the HttpServletResponse
+	 * @return true
+	 * @throws Exception on error
 	 */
 	public boolean doAuthentication(HttpServletResponse response) throws Exception {
         logger.debug("doAuthentication-Method");
@@ -166,6 +179,10 @@ public class DigilibBean {
 
 	/**
 	 * check for authenticated access and redirect if necessary
+	 * @param request the DigilibServletRequest
+	 * @param response the HttpServletResponse
+	 * @return true
+	 * @throws Exception on error
 	 */
 	public boolean doAuthentication(DigilibServletRequest request, HttpServletResponse response) 
 	        throws Exception {
@@ -204,7 +221,8 @@ public class DigilibBean {
    /**
      * Sets the current DigilibRequest using a HttpServletRequest. 
      * 
-     * @param request
+     * @param request the HttpServletRequest
+     * @throws Exception on error
      */
     public void setRequest(HttpServletRequest request) throws Exception {
         // create dlRequest
@@ -218,6 +236,7 @@ public class DigilibBean {
 	 * 
 	 * @param dlRequest
 	 *            The dlRequest to set.
+	 * @throws Exception on error
 	 */
 	public void setRequest(DigilibServletRequest dlRequest) throws Exception {
 		this.dlRequest = dlRequest;
@@ -239,6 +258,8 @@ public class DigilibBean {
 
 	/**
 	 * get the number of pages/files in the directory
+	 * @return the num pages
+	 * @throws Exception on error
 	 */
 	public int getNumPages() throws Exception {
         logger.debug("getNumPages");
@@ -250,6 +271,9 @@ public class DigilibBean {
 
     /**
      * get the number of image pages/files in the directory
+     * @param request the DigilibServletRequest
+     * @return the num pages
+     * @throws Exception on error
      */
     public int getNumPages(DigilibServletRequest request) throws Exception {
         setRequest(request);
@@ -259,7 +283,7 @@ public class DigilibBean {
     /**
      * Returns the current DocuDirectory.
      * 
-     * @return
+     * @return the DocuDirectory
      */
     public DocuDirectory getDirectory() {
         return dlDir;
@@ -268,7 +292,7 @@ public class DigilibBean {
     /**
      * Returns the current ImageSet.
      * 
-     * @return
+     * @return the ImageSet
      */
     public ImageSet getImageSet() {
         return dlImgset;
@@ -277,7 +301,7 @@ public class DigilibBean {
     /**
      * Returns the current filepath (fn).
      * 
-     * @return
+     * @return the fn
      */
     public String getFilepath() {
         return dlFn;
@@ -287,7 +311,7 @@ public class DigilibBean {
 	/**
 	 * Returns the dlConfig.
 	 * 
-	 * @return DigilibConfiguration
+	 * @return the DigilibConfiguration
 	 */
 	public DigilibServletConfiguration getDlConfig() {
 		return dlConfig;
@@ -296,7 +320,7 @@ public class DigilibBean {
     /**
      * Returns the dlRequest.
      * 
-     * @return 
+     * @return the DigilibServletRequest
      */
     public DigilibServletRequest getRequest() {
         return dlRequest;

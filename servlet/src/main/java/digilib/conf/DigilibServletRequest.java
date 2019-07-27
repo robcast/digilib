@@ -73,7 +73,7 @@ public class DigilibServletRequest extends DigilibRequest {
      * Creates a new instance of DigilibRequest with parameters from a
      * ServletRequest. All undefined parameters are set to default values.
      * 
-     * @param request
+     * @param request the HttpServletRequest
      */
     public DigilibServletRequest(HttpServletRequest request) {
         super();
@@ -85,8 +85,8 @@ public class DigilibServletRequest extends DigilibRequest {
      * Creates a new instance of DigilibRequest with parameters from a
      * ServletRequest. All undefined parameters are set to default values.
      * 
-     * @param request
-     * @param config
+     * @param request  the HttpServletRequest
+     * @param config the DigilibConfiguration
      */
     public DigilibServletRequest(HttpServletRequest request, DigilibConfiguration config) {
         super(config);
@@ -98,9 +98,9 @@ public class DigilibServletRequest extends DigilibRequest {
      * Creates a new instance of DigilibRequest with parameters from a
      * ServletRequest. All undefined parameters are set to default values.
      * 
-     * @param request
-     * @param config
-     * @param parsingOptions
+     * @param request the HttpServletRequest
+     * @param config the DigilibConfiguration
+     * @param parsingOptions the ParsingOptions
      */
 	public DigilibServletRequest(HttpServletRequest request, DigilibConfiguration config,
 			EnumSet<ParsingOption> parsingOptions) {
@@ -153,7 +153,7 @@ public class DigilibServletRequest extends DigilibRequest {
      * 
      * Recognizes digilib API (old and new) and IIIF API style requests. 
      * 
-     * @param request
+     * @param request the HttpServletRequest
      */
     public void setWithRequest(HttpServletRequest request) {
         servletRequest = request;
@@ -454,7 +454,9 @@ public class DigilibServletRequest extends DigilibRequest {
     }
 
     /**
-     * @return
+     * Returns the ServletRequest.
+     * 
+     * @return the HttpServletRequest
      */
     public HttpServletRequest getServletRequest() {
         return servletRequest;

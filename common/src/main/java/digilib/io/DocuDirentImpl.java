@@ -102,7 +102,7 @@ public abstract class DocuDirentImpl implements DocuDirent {
 	} 
 	
 	/**
-	 * @return
+	 * @return the FileClass
 	 */
 	public static FileClass getFileClass() {
 		return fileClass;

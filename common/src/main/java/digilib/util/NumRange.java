@@ -49,8 +49,8 @@ public class NumRange implements Iterable<Integer> {
     private Integer maxnum = null;
 
     /**
-     * @param start
-     * @param end
+     * @param start the start
+     * @param end the end
      */
     public NumRange(Integer start, Integer end) {
         this.start = start;
@@ -58,14 +58,15 @@ public class NumRange implements Iterable<Integer> {
     }
 
     /**
-     * @param range
+     * @param range the range
      */
     public NumRange(String range) {
         parseString(range);
     }
 
     /**
-     * @param range
+     * @param range the range
+     * @param max the maximum
      */
     public NumRange(String range, Integer max) {
         this.maxnum = max;
@@ -73,6 +74,9 @@ public class NumRange implements Iterable<Integer> {
     }
 
 
+    /**
+     * @param pages the pages
+     */
     public void parseString(String pages) {
 
         ArrayList<Integer> pgs = new ArrayList<Integer>();
@@ -114,6 +118,9 @@ public class NumRange implements Iterable<Integer> {
         list = pgs;
     }
 
+    /**
+     * @return the start
+     */
     public int getStart() {
         if (list == null) {
             return start;
@@ -122,6 +129,9 @@ public class NumRange implements Iterable<Integer> {
         }
     }
 
+    /**
+     * @return the end
+     */
     public int getEnd() {
         Integer last;
         if (list == null) {
@@ -196,6 +206,9 @@ public class NumRange implements Iterable<Integer> {
         }
     }
 
+    /**
+     * @param maxnum the max num
+     */
     public void setMaxnum(Integer maxnum) {
         this.maxnum = maxnum;
     }

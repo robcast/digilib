@@ -73,7 +73,7 @@ public class ImageSet {
 
 	/**
 	 * Gets the default Input.
-	 *  
+	 * @return the ImageInput
 	 */
 	public ImageInput get() {
 		return (list != null) ? list.get(0) : null;
@@ -83,8 +83,8 @@ public class ImageSet {
 	 * Get the ImageFile at the index.
 	 * 
 	 * 
-	 * @param index
-	 * @return
+	 * @param index the index
+	 * @return the ImageInput
 	 */
 	public ImageInput get(int index) {
 		return list.get(index);
@@ -96,8 +96,8 @@ public class ImageSet {
 	 * Returns the ImageFile from the set that has a width and height smaller or
 	 * equal the given size. Returns null if there isn't any smaller image.
 	 * 
-	 * @param size
-	 * @return
+	 * @param size the size
+	 * @return the ImageInput
 	 */
 	public ImageInput getNextSmaller(ImageSize size) {
         for (ImageInput i : list) {
@@ -115,8 +115,8 @@ public class ImageSet {
 	 * Returns the ImageFile from the set that has a width or height bigger or
 	 * equal the given size. Returns null if there isn't any bigger image.
 	 * 
-	 * @param size
-	 * @return
+	 * @param size the size
+	 * @return the ImageInput
 	 */
 	public ImageInput getNextBigger(ImageSize size) {
 		for (ListIterator<ImageInput> i = getLoresIterator(); i.hasPrevious();) {
@@ -133,7 +133,7 @@ public class ImageSet {
 	 * Returns the biggest ImageFile in the set.
 	 * 
 	 * 
-	 * @return
+	 * @return the ImageInput
 	 */
 	public ImageInput getBiggest() {
 		return this.get(0);
@@ -143,7 +143,7 @@ public class ImageSet {
 	 * Returns the biggest ImageFile in the set.
 	 * 
 	 * 
-	 * @return
+	 * @return the ImageInput
 	 */
 	public ImageInput getSmallest() {
 		return this.get(this.size() - 1);
@@ -154,7 +154,7 @@ public class ImageSet {
 	 * images.
 	 * 
 	 * 
-	 * @return
+	 * @return the Iterator
 	 */
 	public ListIterator<ImageInput> getHiresIterator() {
 		return list.listIterator();
@@ -168,21 +168,21 @@ public class ImageSet {
 	 * with hasPrevious() and previous().
 	 * 
 	 * 
-	 * @return
+	 * @return the Iterator
 	 */
 	public ListIterator<ImageInput> getLoresIterator() {
 		return list.listIterator(list.size());
 	}
 
 	/**
-	 * @return
+	 * @return the resX
 	 */
 	public float getResX() {
 		return resX;
 	}
 
 	/**
-	 * @return
+	 * @return the resY
 	 */
 	public float getResY() {
 		return resY;
@@ -192,7 +192,7 @@ public class ImageSet {
 	 * Sets the aspect ratio from an ImageSize.
 	 * 
 	 * 
-	 * @param s
+	 * @param s the ImageSize
 	 */
 	public void setAspect(ImageSize s) {
 		aspect = s.getAspect();
@@ -205,7 +205,7 @@ public class ImageSet {
 	 * landscape.
 	 * 
 	 * 
-	 * @return
+	 * @return the aspect ratio
 	 */
 	public float getAspect() {
 		return aspect;
@@ -238,7 +238,7 @@ public class ImageSet {
      * 
      * Changes the parents of the ImageInputs to this ImageSet.
      *  
-     * @param imgs
+     * @param imgs the ImageSet
      */
     public void append(ImageSet imgs) {
         // append list

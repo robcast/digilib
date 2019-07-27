@@ -70,8 +70,11 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
     protected static long timeout = 60000l;
 
     /**
-     * @param dlConfig
-     * @param jobinfo
+     * @param dlConfig the DigilibConfiguration
+     * @param jobinfo the ImageJobDescription
+     * @param asyncContext the AsyncContext
+     * @param errMsgType the Errmsg
+     * @param startTime the start time
      */
     public AsyncServletWorker(DigilibConfiguration dlConfig,
             ImageJobDescription jobinfo, AsyncContext asyncContext,

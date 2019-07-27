@@ -82,7 +82,7 @@ public class ManifestServletConfiguration extends DigilibServletConfiguration {
         setValue("servlet.version", getVersion());
     }
 
-    /**
+    /*
      * Sets the current DigilibConfiguration in the context. 
      * @param context
      */
@@ -92,10 +92,10 @@ public class ManifestServletConfiguration extends DigilibServletConfiguration {
     }
     
     /**
-     * Returns the current TextServletConfiguration from the context.
+     * Returns the current ManifestServletConfiguration from the context.
      * 
-     * @param context
-     * @return
+     * @param context the ServletContext
+     * @return the DigilibServletConfiguration
      */
     public static DigilibServletConfiguration getCurrentConfig(ServletContext context) {
         DigilibServletConfiguration config = (DigilibServletConfiguration) context
@@ -107,8 +107,8 @@ public class ManifestServletConfiguration extends DigilibServletConfiguration {
      * Returns the current DigilibConfiguration from the context.
      * (non-static method, for Java inheritance)
      * 
-     * @param context
-     * @return
+     * @param context the ServletContext
+     * @return the DigilibServletConfiguration
      */
     @Override
     protected DigilibServletConfiguration getContextConfig(ServletContext context) {

@@ -43,10 +43,10 @@ import digilib.util.XMLMapLoader;
 public class AliasingDocuDirCache extends DocuDirCache {
 
 	/**
-	 * @param fc
-	 * @param confFile
-	 * @param dlConfig
-	 * @throws FileOpException
+	 * @param fc the FileClass
+	 * @param confFile the conf File
+	 * @param dlConfig the DigilibConfiguration
+	 * @throws FileOpException on error
 	 */
 	public AliasingDocuDirCache(FileClass fc,
 			File confFile, DigilibConfiguration dlConfig)
@@ -90,8 +90,8 @@ public class AliasingDocuDirCache extends DocuDirCache {
 	/**
 	 * Adds a DocuDirectory under another name to the cache.
 	 * 
-	 * @param name
-	 * @param newdir
+	 * @param name the name
+	 * @param newdir the DocuDirectory
 	 */
     public void putName(String name, DocuDirectory newdir) {
         if (map.containsKey(name)) {

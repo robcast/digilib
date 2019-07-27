@@ -58,17 +58,17 @@ public interface DocuImage {
     /**
      * This DocuImage supports the loadSubImage operation.
      * 
-     * @return boolean
+     * @return if loadSubImage is supported
      */
     public boolean isSubimageSupported();
 
     /**
      * Load only a subsampled region of the image file.
      * 
-     * @param ii
-     * @param region
-     * @param subsample
-     * @throws FileOpException
+     * @param ii the ImageInput
+     * @param region the region
+     * @param subsample the subsample
+     * @throws FileOpException on error
      */
     public void loadSubimage(ImageInput ii, Rectangle region, int subsample) throws FileOpException;
 
@@ -108,7 +108,7 @@ public interface DocuImage {
     /**
      * The size of the current image in pixel.
      * 
-     * @return
+     * @return the ImageSize
      */
     public ImageSize getSize();
 
@@ -135,7 +135,7 @@ public interface DocuImage {
      *            width of crop region
      * @param height
      *            height of crop region
-     * @throws ImageOpException
+     * @throws ImageOpException on error
      */
     public void crop(int xoff, int yoff, int width, int height) throws ImageOpException;
 
@@ -145,9 +145,9 @@ public interface DocuImage {
      * Replaces the current image with an image scaled by the factor
      * <code>scale</code>.
      * 
-     * @param scaleX
-     * @param scaleY
-     * @throws ImageOpException
+     * @param scaleX the scaleX
+     * @param scaleY the scaleY
+     * @throws ImageOpException on error
      */
     public void scale(double scaleX, double scaleY) throws ImageOpException;
 
@@ -185,6 +185,7 @@ public interface DocuImage {
      * 
      * @param angle
      *            rotation angle in degree
+     * @throws ImageOpException on error
      */
     public void rotate(double angle) throws ImageOpException;
 
@@ -198,7 +199,7 @@ public interface DocuImage {
      * 
      * @param angle
      *            angle of mirror axis
-     * @throws ImageOpException
+     * @throws ImageOpException on error
      */
     public void mirror(double angle) throws ImageOpException;
 
@@ -214,7 +215,7 @@ public interface DocuImage {
      *            multiplicative constant for contrast enhancement
      * @param add
      *            additive constant for brightness enhancement
-     * @throws ImageOpException
+     * @throws ImageOpException  on error
      */
     public void enhance(float mult, float add) throws ImageOpException;
 
@@ -230,7 +231,7 @@ public interface DocuImage {
      *            multiplicative constants for red, green, blue
      * @param rgba
      *            additive constant for red, green, blue
-     * @throws ImageOpException
+     * @throws ImageOpException  on error
      */
     public void enhanceRGB(float[] rgbm, float[] rgba) throws ImageOpException;
 
@@ -258,14 +259,15 @@ public interface DocuImage {
      * separately) MAP_GRAY_BGR: false color image from grayscale (0: blue, 128:
      * green, 255: red)
      * 
-     * @throws ImageOpException
+     * @param op the ColorOp
+     * @throws ImageOpException on error
      */
     public void colorOp(ColorOp op) throws ImageOpException;
 
     /**
      * Returns the interpolation quality.
      * 
-     * @return int
+     * @return int the quality
      */
     public int getQuality();
 
@@ -287,24 +289,30 @@ public interface DocuImage {
 
     /**
      * Check image size and type and store in ImageInput ii
+     * 
+     * @param ii the ImageInput
+     * @return the ImageInput
+     * @throws IOException on error
      */
     public ImageInput identify(ImageInput ii) throws IOException;
 
     /**
-     * Returns a list of supported image formats
+     * Returns the list of supported image formats.
+     * 
+     * @return the list of supported image formats
      */
     public Iterator<String> getSupportedFormats();
 
     /**
      * returns the underlying image as java.awt.Image (if possible, or null)
      * 
-     * @return
+     * @return the Image
      */
     public java.awt.Image getAwtImage();
     
     /**
      * returns the version of the DocuImage implementation.
-     * @return
+     * @return the version
      */
     public String getVersion();
 
@@ -315,23 +323,23 @@ public interface DocuImage {
      * 
      * Format: comma separated key=value pairs (no spaces!).
      * 
-     * @param hackString
+     * @param hackString the hackString
      */
     public void setHacks(String hackString);
     
     /**
      * Set optional image specific hints with additional information.
      * 
-     * @param key
-     * @param value
+     * @param key the key
+     * @param value the value
      */
     public void setHint(String key, Object value);
     
     /**
      * Returns the image specific hint with the given key.
      * 
-     * @param key
-     * @return
+     * @param key the key
+     * @return the hint
      */
     public Object getHint(String key);
 }

@@ -39,27 +39,27 @@ public interface FileMeta {
     /**
      * read and store metadata for this file.
      * 
-     * @param file
+     * @param file the DocuDirent
      */
     public void readMeta(DocuDirent file);
 
     /**
      * check and process metadata for this file.
      * 
-     * @param file
+     * @param file the DocuDirent
      */
     public void checkMeta(DocuDirent file);
 
     /**
      * returns a MetadataMap with metadata for this File.
      * 
-     * @return
+     * @return the MetadataMap
      */
     public MetadataMap getFileMeta();
 
     /**
      * set metadata for this file.
-     * @param fileMeta
+     * @param fileMeta the MetadataMap
      */
     public void setFileMeta(MetadataMap fileMeta);
 

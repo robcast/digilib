@@ -93,7 +93,7 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * create empty ImageJobDescription.
      * 
-     * @param dlcfg
+     * @param dlcfg the DigilibConfiguration
      */
     public ImageJobDescription(DigilibConfiguration dlcfg) {
         super(30);
@@ -102,7 +102,7 @@ public class ImageJobDescription extends ParameterMap {
         dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
     }
 
-    /**
+    /*
      * set up Parameters
      * 
      * @see digilib.util.ParameterMap#initParams()
@@ -166,11 +166,11 @@ public class ImageJobDescription extends ParameterMap {
      * Creates new ImageJobDescription by merging Parameters from a
      * DigilibRequest.
      * 
-     * @param dlReq
-     * @param dlcfg
-     * @return
-     * @throws ImageOpException 
-     * @throws IOException 
+     * @param dlReq the DigilibRequest
+     * @param dlcfg the DigilibConfiguration
+     * @return the ImageJobDescription
+     * @throws ImageOpException on error
+     * @throws IOException  on error
      */
     public static ImageJobDescription getInstance(DigilibRequest dlReq, DigilibConfiguration dlcfg) throws IOException, ImageOpException {
         ImageJobDescription newMap = new ImageJobDescription(dlcfg);
@@ -187,12 +187,12 @@ public class ImageJobDescription extends ParameterMap {
      * Creates new ImageJobDescription by merging Parameters from a
      * DigilibRequest and adding an ImageSet.
      * 
-     * @param dlReq
-     * @param imgs
-     * @param dlcfg
-     * @return
-     * @throws ImageOpException 
-     * @throws IOException 
+     * @param dlReq the DigilibRequest
+     * @param imgs the ImageSet
+     * @param dlcfg the DigilibConfiguration
+     * @return the ImageJobDescription
+     * @throws ImageOpException   on error
+     * @throws IOException  on error
      */
     public static ImageJobDescription getInstanceWithImgs(DigilibRequest dlReq, ImageSet imgs, DigilibConfiguration dlcfg) 
             throws IOException, ImageOpException {
@@ -211,11 +211,11 @@ public class ImageJobDescription extends ParameterMap {
      * Creates new ImageJobDescription by merging Parameters from another
      * ParameterMap.
      * 
-     * @param pm
-     * @param dlcfg
-     * @return
-     * @throws ImageOpException 
-     * @throws IOException 
+     * @param pm the ParameterMap
+     * @param dlcfg the DigilibConfiguration
+     * @return the ImageJobDescription
+     * @throws ImageOpException on error
+     * @throws IOException on error
      */
     public static ImageJobDescription getInstance(ParameterMap pm, DigilibConfiguration dlcfg) throws IOException, ImageOpException {
         ImageJobDescription newMap = new ImageJobDescription(dlcfg);
@@ -234,8 +234,8 @@ public class ImageJobDescription extends ParameterMap {
      * Uses image size and user parameters.
      * Sets scaleX, scaleY, imgArea.
      * 
-     * @throws IOException
-     * @throws ImageOpException
+     * @throws IOException on error
+     * @throws ImageOpException on error
      */
     public void prepareScaleParams() throws IOException, ImageOpException {
         // logger.debug("get_scaleXY()");
@@ -282,6 +282,9 @@ public class ImageJobDescription extends ParameterMap {
      * Uses a uniform scale factor for x and y.
      * 
      * Sets ScaleX and ScaleY.
+     * 
+     * @return the Rectangle2D
+     * @throws IOException on error
      */
     protected Rectangle2D prepareScaleToFit() throws IOException {
         /*
@@ -388,6 +391,8 @@ public class ImageJobDescription extends ParameterMap {
      * Uses separate scale factors for x and y to fill destination size changing aspect ratio.
      * 
      * Sets ScaleX and ScaleY.
+     * @return the Rectangle2D
+     * @throws IOException on error
      */
     protected Rectangle2D prepareSqueezeToFit() throws IOException {
         /*
@@ -432,7 +437,9 @@ public class ImageJobDescription extends ParameterMap {
      * 
      * Sets ScaleX and ScaleY.
      * 
-     * @throws ImageOpException 
+     * @return the Rectangle2D
+     * @throws IOException on error
+     * @throws ImageOpException on error
      */
     protected Rectangle2D prepareAbsoluteScale() throws IOException, ImageOpException {
         /*
@@ -517,6 +524,8 @@ public class ImageJobDescription extends ParameterMap {
      * Clip to fit: don't scale.
      * 
      * Sets ScaleX and ScaleY to 1.0.
+     * @return the Rectangle2D
+     * @throws IOException on error
      */
     protected Rectangle2D prepareClipToFit() throws IOException {
         /*
@@ -551,8 +560,8 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Return the mime-type of the input.
      * 
-     * @return
-     * @throws IOException
+     * @return the mimetype
+     * @throws IOException on error
      */
     public String getInputMimeType() throws IOException {
         if (mimeType == null) {
@@ -566,7 +575,7 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Return the mime-type of the output.
      * 
-     * @return
+     * @return the mimetype
      */
     public String getOutputMimeType() {
         // forced destination image type
@@ -609,8 +618,8 @@ public class ImageJobDescription extends ParameterMap {
      * 
      * Note: uses getMinSourceSize().
      * 
-     * @return
-     * @throws IOException
+     * @return the ImageInput
+     * @throws IOException on error
      */
     public ImageInput getInput() throws IOException {
         if (input == null) {
@@ -646,8 +655,8 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Return the DocuDirectory for the input (file).
      * 
-     * @return
-     * @throws FileOpException
+     * @return the DocuDirectory
+     * @throws FileOpException on error
      */
     public DocuDirectory getFileDirectory() throws FileOpException {
         if (fileDir == null) {
@@ -663,8 +672,8 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Return the ImageSet to load.
      * 
-     * @return
-     * @throws FileOpException
+     * @return the ImageSet
+     * @throws FileOpException on error
      */
     public ImageSet getImageSet() throws FileOpException {
         if (imageSet == null) {
@@ -682,7 +691,7 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Set the current ImageSet.
      * 
-     * @param imageSet
+     * @param imageSet the ImageSet
      */
     public void setImageSet(ImageSet imageSet) {
         this.imageSet = imageSet;
@@ -692,7 +701,7 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Return the file path name from the request.
      * 
-     * @return
+     * @return the filepath
      */
     public String getFilePath() {
         if (filePath == null) {
@@ -706,7 +715,7 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Only use the highest resolution image.
      * 
-     * @return
+     * @return is Hires Only
      */
     public boolean isHiresOnly() {
         return hasOption(DigilibOption.clip) || hasOption(DigilibOption.hires);
@@ -715,7 +724,7 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Prefer a prescaled lower resolution image.
      * 
-     * @return
+     * @return is lores only
      */
     public boolean isLoresOnly() {
         return hasOption(DigilibOption.lores);
@@ -724,7 +733,7 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Scale according to zoom area and destination size preserving aspect ratio.
      * 
-     * @return
+     * @return is scale to fit
      */
     public boolean isScaleToFit() {
         return hasOption(DigilibOption.fit) || 
@@ -735,7 +744,7 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Do not scale, just crop original resolution.
      * 
-     * @return
+     * @return is crop to fit
      */
     public boolean isCropToFit() {
         return hasOption(DigilibOption.clip);
@@ -744,7 +753,7 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Scale according to zoom area and destination size violating aspect ratio.
      * 
-     * @return
+     * @return is squeeze to fit
      */
     public boolean isSqueezeToFit() {
         return hasOption(DigilibOption.squeeze);
@@ -753,7 +762,7 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Scale according to fixed factor independent of destination size.
      * 
-     * @return
+     * @return is absolute scale
      */
     public boolean isAbsoluteScale() {
         return hasOption(DigilibOption.osize) || hasOption(DigilibOption.ascale);
@@ -764,8 +773,8 @@ public class ImageJobDescription extends ParameterMap {
      * 
      * Note: this function is called by getInput(). It must not assume a selected input image!
      * 
-     * @return
-     * @throws IOException
+     * @return the ImageSize
+     * @throws IOException on error
      */
     public ImageSize getMinSourceSize() throws IOException {
         //logger.debug("getMinSourceSize()");
@@ -783,8 +792,8 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Return the size of the highest resolution image.
      * 
-     * @return
-     * @throws IOException
+     * @return the ImageSize
+     * @throws IOException on error
      */
     public ImageSize getHiresSize() throws IOException {
         //logger.debug("get_hiresSize()");
@@ -804,8 +813,8 @@ public class ImageJobDescription extends ParameterMap {
      * 
      * Note: may use getMinSourceSize().
      * 
-     * @return
-     * @throws IOException
+     * @return the ImageSize
+     * @throws IOException on error
      */
     public ImageSize getImgSize() throws IOException {
         //logger.debug("get_hiresSize()");
@@ -818,7 +827,7 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Set the image size.
      * 
-     * @param size
+     * @param size the ImageSize
      */
     public void setImgSize(ImageSize size) {
         this.imgSize = size;
@@ -827,9 +836,9 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Return the X scale factor.
      * 
-     * @return
-     * @throws IOException
-     * @throws ImageOpException
+     * @return the factor
+     * @throws IOException on error
+     * @throws ImageOpException on error
      */
     public double getScaleX() throws IOException, ImageOpException {
     	if (scaleX == null) {
@@ -841,9 +850,9 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Return the Y scale factor.
      * 
-     * @return
-     * @throws IOException
-     * @throws ImageOpException
+     * @return the factor
+     * @throws IOException on error
+     * @throws ImageOpException on error
      */
     public double getScaleY() throws IOException, ImageOpException {
     	if (scaleY == null) {
@@ -856,7 +865,7 @@ public class ImageJobDescription extends ParameterMap {
      * Return the width of the destination image.
      * Uses dw parameter.
      * 
-     * @return
+     * @return the dw
      */
     public int getDw() {
         //logger.debug("get_paramDW()");
@@ -870,7 +879,7 @@ public class ImageJobDescription extends ParameterMap {
      * Return the height of the destination image.
      * Uses dh parameter.
      * 
-     * @return
+     * @return the dh
      */
     public int getDh() {
         //logger.debug("get_paramDH()");
@@ -885,8 +894,8 @@ public class ImageJobDescription extends ParameterMap {
      * Uses ww parameter.
      * Converts ww in pixels to relative. 
      * 
-     * @return
-     * @throws IOException
+     * @return the ww
+     * @throws IOException on error
      */
     public Float getWw() throws IOException {
         //logger.debug("get_paramWW()");
@@ -917,8 +926,8 @@ public class ImageJobDescription extends ParameterMap {
      * Uses wh parameter.
      * Converts wh in pixels to relative. 
      * 
-     * @return
-     * @throws IOException
+     * @return the wh
+     * @throws IOException on error
      */
     public Float getWh() throws IOException {
         //logger.debug("get_paramWH()");
@@ -949,8 +958,8 @@ public class ImageJobDescription extends ParameterMap {
      * Uses wx parameter.
      * Converts wx in pixels to relative. 
      * 
-     * @return
-     * @throws IOException
+     * @return the wx
+     * @throws IOException on error
      */
     public Float getWx() throws IOException {
         //logger.debug("get_paramWX()");
@@ -981,8 +990,8 @@ public class ImageJobDescription extends ParameterMap {
      * Uses wy parameter.
      * Converts wy in pixels to relative. 
      * 
-     * @return
-     * @throws IOException
+     * @return the wy
+     * @throws IOException on error
      */
     public Float getWy() throws IOException {
         //logger.debug("get_paramWY()");
@@ -1011,7 +1020,7 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Return image quality as an integer.
      * 
-     * @return
+     * @return the scale quality
      */
     public int getScaleQual() {
         //logger.debug("get_scaleQual()");
@@ -1028,7 +1037,7 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Return the color operation as a ColorOp.
      * 
-     * @return
+     * @return the ColorOp
      */
     public ColorOp getColOp() {
         String op = getAsString("colop");
@@ -1050,9 +1059,9 @@ public class ImageJobDescription extends ParameterMap {
      * imgArea when rotating by oblique angles but is not yet implemented.
      * Currently returns imgArea.
      * 
-     * @return
-     * @throws IOException
-     * @throws ImageOpException
+     * @return the Rectangle2D
+     * @throws IOException on error
+     * @throws ImageOpException on error
      */
     public Rectangle2D getOuterImgArea() throws IOException, ImageOpException {
         if (outerImgArea == null) {
@@ -1084,7 +1093,7 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Get the RGBM parameter set.
      * 
-     * @return
+     * @return the rgbm
      */
     public float[] getRGBM() {
         if (paramRGBM == null) {
@@ -1099,7 +1108,7 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Get the RGBA parameter set.
      * 
-     * @return
+     * @return the rgba
      */
     public float[] getRGBA() {
         if (paramRGBA == null) {
@@ -1114,7 +1123,7 @@ public class ImageJobDescription extends ParameterMap {
     /**
      * Has send-as-file been requested?
      * 
-     * @return
+     * @return is send as file
      */
     public boolean getSendAsFile() {
         return hasOption(DigilibOption.file) || hasOption(DigilibOption.rawfile);
@@ -1125,8 +1134,8 @@ public class ImageJobDescription extends ParameterMap {
      * additional image operations into account. Does not check requested size
      * transformation.
      * 
-     * @return
-     * @throws IOException
+     * @return is image sendable
+     * @throws IOException on error
      */
     public boolean isImageSendable() throws IOException {
         if (imageSendable == null) {
@@ -1153,8 +1162,8 @@ public class ImageJobDescription extends ParameterMap {
      * Returns if any transformation of the source image (image manipulation or
      * format conversion) is required.
      * 
-     * @return
-     * @throws IOException
+     * @return is transform required
+     * @throws IOException on error
      */
     public boolean isTransformRequired() throws IOException {
         ImageSize is = getInput().getSize();

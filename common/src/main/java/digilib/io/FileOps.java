@@ -92,8 +92,8 @@ public class FileOps {
 	/**
 	 * returns the file class for a mime-type
 	 * 
-	 * @param mt
-	 * @return
+	 * @param mt the mime type
+	 * @return the FileClass
 	 */
 	public static FileClass classForMimetype(String mt) {
 		if (mt == null) {
@@ -113,6 +113,8 @@ public class FileOps {
 
 	/**
 	 * get the mime type for a file format (by extension)
+	 * @param f the File
+	 * @return the mime type
 	 */
 	public static String mimeForFile(File f) {
 	    if (f == null) {
@@ -124,34 +126,52 @@ public class FileOps {
 	/**
 	 * get the file class for the filename (by extension)
 	 * 
-	 * @param fn
-	 * @return
+	 * @param fn the fn
+	 * @return the FileClass
 	 */
 	public static FileClass classForFilename(String fn) {
 		String mt = (String) fileTypes.get(extname(fn).toLowerCase());
 		return classForMimetype(mt);
 	}
 
+	/**
+	 * @return the Iterator
+	 */
 	public static Iterator<String> getImageExtensionIterator() {
 		return imageExtensions.iterator();
 	}
 
+    /**
+     * @return the image extensions
+     */
     public static List<String> getImageExtensions() {
         return imageExtensions;
     }
 
+    /**
+     * @return the Iterator
+     */
     public static Iterator<String> getTextExtensionIterator() {
 		return textExtensions.iterator();
 	}
 
+    /**
+     * @return the extensions
+     */
 	public static List<String> getTextExtensions() {
         return textExtensions;
     }
 
+    /**
+     * @return the extensions
+     */
     public static Iterator<String> getSVGExtensionIterator() {
 		return svgExtensions.iterator();
 	}
 
+    /**
+     * @return the extensions
+     */
     public static List<String> getSvgExtensions() {
         return svgExtensions;
     }
@@ -160,6 +180,8 @@ public class FileOps {
 	/**
 	 * convert a string with a list of pathnames into an array of strings using
 	 * the system's path separator string
+	 * @param paths the paths string
+	 * @return the paths
 	 */
 	public static String[] pathToArray(String paths) {
 		// split list into directories
@@ -189,8 +211,8 @@ public class FileOps {
 	 * behind the last dot in the filename. If the filename has no dot the full
 	 * file name is returned.
 	 * 
-	 * @param fn
-	 * @return
+	 * @param fn the fn
+	 * @return the base name
 	 */
 	public static String basename(String fn) {
 		if (fn == null) {
@@ -210,8 +232,8 @@ public class FileOps {
 	 * the last dot in the filename. If the filename has no dot the empty string
 	 * is returned.
 	 * 
-	 * @param fn
-	 * @return
+	 * @param fn the fn
+	 * @return the extension
 	 */
 	public static String extname(String fn) {
 		if (fn == null) {
@@ -231,8 +253,8 @@ public class FileOps {
 	 * before the last slash in the path name. If the path name has no slash the
 	 * empty string is returned.
 	 * 
-	 * @param fn
-	 * @return
+	 * @param fn the fn
+	 * @return the parent
 	 */
 	public static String parent(String fn) {
 		if (fn == null) {
@@ -252,8 +274,8 @@ public class FileOps {
      * after the last slash in the path name. If the path name has no slash the
      * original string is returned.
      * 
-     * @param fn
-     * @return
+     * @param fn the fn
+     * @return the file name
      */
     public static String filename(String fn) {
         if (fn == null) {
@@ -272,8 +294,8 @@ public class FileOps {
 	 * Removes leading and trailing slashes. Returns null if there is other
 	 * unwanted stuff in the path name.
 	 * 
-	 * @param pathname
-	 * @return
+	 * @param pathname the pathname
+	 * @return the pathname
 	 */
 	public static String normalName(String pathname) {
 		if (pathname == null) {
@@ -304,8 +326,8 @@ public class FileOps {
 	 * 
 	 * Currently only checks if filename starts with a dot.
 	 * 
-	 * @param filename
-	 * @return
+	 * @param filename the filename
+	 * @return is valid
 	 */
 	public static boolean isValidFilename(String filename) {
 	    // exclude filenames starting with a dot
@@ -371,8 +393,8 @@ public class FileOps {
 	/**
 	 * Factory for FileFilters (image or text).
 	 * 
-	 * @param fileClass
-	 * @return
+	 * @param fileClass the FileClass
+	 * @return the FileFilter
 	 */
 	public static FileFilter filterForClass(FileClass fileClass) {
 		if (fileClass == FileClass.IMAGE) {
@@ -393,11 +415,11 @@ public class FileOps {
 	 * Returns an ImageSet, TextFile or SVGFile. scaleDirs are
 	 * only for ImageFilesets.
 	 * 
-	 * @param fileClass
-	 * @param file
+	 * @param fileClass the FileClass
+	 * @param file the File
 	 * @param scaleDirs
 	 *            optional additional parameters
-	 * @return
+	 * @return the DocuDirent
 	 */
 	public static DocuDirent fileForClass(FileClass fileClass, File file, Directory[] scaleDirs) {
 		// what class of file do we have?
@@ -417,9 +439,9 @@ public class FileOps {
 	/**
 	 * Filters a list of Files through a FileFilter.
 	 * 
-	 * @param files
-	 * @param filter
-	 * @return
+	 * @param files the Files
+	 * @param filter the FileFilter
+	 * @return the Files
 	 */
 	public static File[] listFiles(File[] files, FileFilter filter) {
 		if (files == null) {
@@ -441,9 +463,9 @@ public class FileOps {
 	/**
 	 * Creates a new hints Map with the given first element.
 	 * 
-	 * @param type
-	 * @param value
-	 * @return
+	 * @param type the type
+	 * @param value the value
+	 * @return the Map
 	 */
 	public static Map<Integer, Object> newHints(Integer type, Object value) {
 		Map<Integer, Object> m = new HashMap<Integer, Object>();
@@ -455,6 +477,7 @@ public class FileOps {
 
     /**
      * clean up any broken and unfinished files from the temporary directory.
+     * @param dir the File
      */
     public static void emptyDirectory(File dir) {
         File[] temp_files = dir.listFiles();

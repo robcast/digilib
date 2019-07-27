@@ -100,9 +100,9 @@ public class IndexMetaAuthLoader {
 
     /**
      * Returns if the tag names in path match the current stack of tag names in tags.
-     * @param path
+     * @param path the path
      *   
-     * @return
+     * @return tags match path
      */
     protected boolean tagsMatchPath(String[] path) {
         try {
@@ -119,6 +119,12 @@ public class IndexMetaAuthLoader {
         return false;
     }
 
+    /**
+     * Read the whole stream.
+     * 
+     * @return false
+     * @throws XMLStreamException on error
+     */
     protected boolean readAll() throws XMLStreamException {
         StringBuffer text = new StringBuffer();
         MetadataMap fileMeta = new MetadataMap();
@@ -196,9 +202,9 @@ public class IndexMetaAuthLoader {
     /**
      * Reads contents of current tag into map with the tag name as key and the content as value.
      *   
-     * @param map
-     * @return
-     * @throws XMLStreamException
+     * @param map the MetadataMap
+     * @return the MetadataMap
+     * @throws XMLStreamException on error
      */
     protected MetadataMap readTagToMap(MetadataMap map) throws XMLStreamException {
         String outerTag = tags.peek();
@@ -232,9 +238,9 @@ public class IndexMetaAuthLoader {
     /**
      * Reads access tag into map.
      * 
-     * @param map
-     * @return
-     * @throws XMLStreamException
+     * @param map the MetadataMap
+     * @return the MetadataMap
+     * @throws XMLStreamException on error
      */
     protected MetadataMap readAccessToMap(MetadataMap map) throws XMLStreamException {
         StringBuffer text = new StringBuffer();
@@ -293,6 +299,13 @@ public class IndexMetaAuthLoader {
         return map;
     }
 
+    /**
+     * Read meta tag into map.
+     * 
+     * @param map the MetadataMap
+     * @return the MetadataMap
+     * @throws XMLStreamException on error
+     */
     protected MetadataMap readMetaTag(MetadataMap map) throws XMLStreamException {
         String thisTag = null;
         for (int event = reader.next(); event != XMLStreamConstants.END_DOCUMENT; event = reader.next()) {
@@ -330,7 +343,9 @@ public class IndexMetaAuthLoader {
      * Load and parse a file (as URI).
      * returns HashMap with list data
      * 
-     * @throws IOException
+     * @param uri the URI
+     * @return the metadata
+     * @throws IOException on error
      */
     public Map<String, MetadataMap> loadUri(URI uri) throws IOException {
         files = new HashMap<String, MetadataMap>();

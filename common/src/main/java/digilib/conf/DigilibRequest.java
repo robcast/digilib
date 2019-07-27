@@ -103,7 +103,7 @@ public class DigilibRequest extends ParameterMap {
     /**
      * Create DigilibRequest with DigilibConfiguration.
      * 
-     * @param config
+     * @param config the DigilibConfiguration
      */
     public DigilibRequest(DigilibConfiguration config) {
         super(30);
@@ -222,6 +222,7 @@ public class DigilibRequest extends ParameterMap {
      * parameter form 'fn=/icons&amp;pn=1'. Empty (undefined) fields are not
      * included.
      * 
+     * @param type the type
      * @return String of request parameters in parameter form.
      */
     public String getAsString(int type) {
@@ -302,7 +303,7 @@ public class DigilibRequest extends ParameterMap {
      * 
      * @param path
      *            String with IIIF Image API path.
-     * 
+     * @return true of successful
      * @see <a href="http://iiif.io/api/image/2.0/">IIIF Image API</a>
      */
     public boolean setWithIiifPath(String path) {
@@ -433,13 +434,13 @@ public class DigilibRequest extends ParameterMap {
 	 *
 	 * @see <a href="http://iiif.io/api/image/2.0/">IIIF Image API</a>
 	 * 
-	 * @param identifier
-	 * @param region
-	 * @param size
-	 * @param rotation
-	 * @param quality
-	 * @param format
-	 * @return
+	 * @param identifier the identifier
+	 * @param region the region
+	 * @param size the size
+	 * @param rotation the rotation
+	 * @param quality the quality
+	 * @param format the format
+	 * @return true if successful
 	 */
 	public boolean setWithIiifImageParams(String identifier, String region, String size, 
 			String rotation, String quality, String format) {
@@ -646,9 +647,11 @@ public class DigilibRequest extends ParameterMap {
 	}
 
 	/**
-	 * @param identifier
-	 * @return
-	 * @throws UnsupportedEncodingException
+	 * Decodes the IIIF identifier part into a digilib path.
+	 * 
+	 * @param identifier the identifier
+	 * @return the path
+	 * @throws UnsupportedEncodingException on error
 	 */
 	public String decodeIiifIdentifier(String identifier) throws UnsupportedEncodingException {
 		if (identifier == null) return "";
@@ -668,9 +671,10 @@ public class DigilibRequest extends ParameterMap {
      * Test if option string <code>opt</code> is set. Checks if the substring
      * <code>opt</code> is contained in the options string <code>param</code>.
      * 
+     * @param param the param
      * @param opt
      *            Option string to be tested.
-     * @return boolean
+     * @return if option is set
      * 
      * @deprecated use {@link #hasOption(DigilibOption)} for "mo"-options.
      */
@@ -693,7 +697,7 @@ public class DigilibRequest extends ParameterMap {
      * The image file path is assembled from the servlets RequestPath and
      * Parameter fn and normalized.
      * 
-     * @return String the effective filepath.
+     * @return the effective filepath.
      */
     public String getFilePath() {
         String s = getAsString("request.path");

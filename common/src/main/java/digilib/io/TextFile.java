@@ -44,7 +44,7 @@ public class TextFile extends DocuDirentImpl {
 	
 	/** Constructor taking a file.
 	 * 
-	 * @param f
+	 * @param f the File
 	 */
 	public TextFile(File f) {
 		this.file = f;

@@ -35,8 +35,8 @@ public class ImageStream extends ImageInput {
 
     /** Create ImageStream from InputStream and String.
      * 
-     * @param stream
-     * @param mimeType mime-type
+     * @param stream the InputStream
+     * @param mimeType the mime-type
      */
     public ImageStream(InputStream stream, String mimeType) {
         this.stream = stream;

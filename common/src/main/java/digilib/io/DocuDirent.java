@@ -16,14 +16,14 @@ public interface DocuDirent extends Comparable<Object> {
      * If this is a Fileset, the method returns the name of the default file
      * (for image filesets the highest resolution file).
      * 
-     * @return
+     * @return the name
      */
     public abstract String getName();
 
     /**
      * Returns the parent Directory.
      * 
-     * @return DocuDirectory
+     * @return the DocuDirectory
      */
     public abstract DocuDirectory getParent();
 
@@ -49,7 +49,7 @@ public interface DocuDirent extends Comparable<Object> {
 
     /**
      * Returns the meta-data for this file(set).
-     * @return
+     * @return the FileMeta
      */
     public abstract FileMeta getMeta();
 
@@ -66,6 +66,7 @@ public interface DocuDirent extends Comparable<Object> {
      * Compares to a String (for binarySearch)
      * or to another DocuDirent (for sort).
      * 
+     * @param arg0 the other Object
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
     public abstract int compareTo(Object arg0);

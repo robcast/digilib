@@ -80,7 +80,7 @@ public abstract class AuthzOpsImpl implements AuthzOps {
      * @param request
      *            ServletRequest with address information.
      * @return true if the user information in the request authorizes one of the roles.
-     * @throws AuthOpException 
+     * @throws AuthOpException Exception thrown on error.
      */
     public boolean isRoleAuthorized(List<String> rolesRequired, DigilibServletRequest request) throws AuthOpException {
         if (rolesRequired == null) return true;

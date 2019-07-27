@@ -20,7 +20,7 @@ public class DocuImageSet extends ImageSet implements DocuDirent {
     protected DocuDirectory parent = null;
 	
 	/**
-	 * 
+	 * @param name the name
 	 */
 	public DocuImageSet(String name) {
 		super();

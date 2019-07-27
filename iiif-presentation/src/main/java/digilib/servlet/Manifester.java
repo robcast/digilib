@@ -363,9 +363,9 @@ public class Manifester extends HttpServlet {
 	}
 
     /**
-     * @param manifest
-     * @param dlFn
-     * @param params 
+     * @param manifest the JsonGenerator
+     * @param dlFn the fn
+     * @param params the  ManifestParams
      */
     protected void writeManifestMeta(JsonGenerator manifest, String dlFn, ManifestParams params) {
     	// write manifest header
@@ -420,8 +420,8 @@ public class Manifester extends HttpServlet {
     }
 
     /**
-     * @param manifest
-     * @param params
+     * @param manifest the JsonGenerator
+     * @param params the  ManifestParams
      */
     protected void writeSequences(JsonGenerator manifest, ManifestParams params) {
         manifest.writeStartArray("sequences");
@@ -434,8 +434,8 @@ public class Manifester extends HttpServlet {
     }
 
 	/**
-	 * @param manifest
-	 * @param params
+     * @param manifest the JsonGenerator
+     * @param params the  ManifestParams
 	 */
 	protected void writeSequence(JsonGenerator manifest, ManifestParams params) {
 		manifest.writeStartObject()
@@ -451,8 +451,8 @@ public class Manifester extends HttpServlet {
 	}
 
 	/**
-	 * @param manifest
-	 * @param params
+     * @param manifest the JsonGenerator
+     * @param params the  ManifestParams
 	 */
 	protected void writeCanvases(JsonGenerator manifest, ManifestParams params) {
 		/*
@@ -477,11 +477,11 @@ public class Manifester extends HttpServlet {
 	}
 
     /**
-     * @param manifest
-     * @param idx
-     * @param imgFile
-     * @param imgSize
-     * @param params
+     * @param manifest the JsonGenerator
+     * @param idx the idx
+     * @param imgFile the DocuDirent
+     * @param imgSize the ImageSize
+     * @param params the  ManifestParams
      */
     protected void writeCanvas(JsonGenerator manifest, int idx, DocuDirent imgFile, ImageSize imgSize,
             ManifestParams params) {
@@ -506,11 +506,11 @@ public class Manifester extends HttpServlet {
     }
 
     /**
-     * @param manifest
-     * @param idx
-     * @param imgFile
-     * @param imgSize
-     * @param params
+     * @param manifest the JsonGenerator
+     * @param idx the idx
+     * @param imgFile the DocuDirent
+     * @param imgSize the ImageSize
+     * @param params the  ManifestParams
      */
     protected void writeImages(JsonGenerator manifest, int idx, DocuDirent imgFile, ImageSize imgSize,
             ManifestParams params) {
@@ -527,11 +527,11 @@ public class Manifester extends HttpServlet {
     }
 
     /**
-     * @param manifest
-     * @param idx
-     * @param imgFile
-     * @param imgSize
-     * @param params
+     * @param manifest the JsonGenerator
+     * @param idx the idx
+     * @param imgFile the DocuDirent
+     * @param imgSize the ImageSize
+     * @param params the  ManifestParams
      */
     protected void writeImage(JsonGenerator manifest, int idx, DocuDirent imgFile, ImageSize imgSize,
             ManifestParams params) {
@@ -552,10 +552,10 @@ public class Manifester extends HttpServlet {
     }
 
     /**
-     * @param manifest
-     * @param imgFile
-     * @param imgSize
-     * @param params
+     * @param manifest the JsonGenerator
+     * @param imgFile the DocuDirent
+     * @param imgSize the ImageSize
+     * @param params the  ManifestParams
      */
     protected void writeResource(JsonGenerator manifest, DocuDirent imgFile, ImageSize imgSize,
             ManifestParams params) {
@@ -586,10 +586,10 @@ public class Manifester extends HttpServlet {
 	}
 
     /**
-     * @param manifest
-     * @param iiifImgBaseUrl
-     * @param imgSize
-     * @param params
+     * @param manifest the JsonGenerator
+     * @param iiifImgBaseUrl the iiifImgBaseUrl
+     * @param imgSize the ImageSize
+     * @param params the  ManifestParams
      */
     protected void writeService(JsonGenerator manifest, String iiifImgBaseUrl, ImageSize imgSize,
             ManifestParams params) {
@@ -631,9 +631,9 @@ public class Manifester extends HttpServlet {
     /**
      * Write JSON object value recursively under key into JsonGenerator manifest.
      * 
-     * @param key
-     * @param value
-     * @param manifest 
+     * @param key the key
+     * @param value the JsonValue
+     * @param manifest the JsonGenerator
      */
     private void copyToManifest(String key, JsonValue value, JsonGenerator manifest) {
     	ValueType vt = value.getValueType();

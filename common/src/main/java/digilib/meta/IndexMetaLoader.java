@@ -293,6 +293,10 @@ public class IndexMetaLoader {
      *  load and parse a file (as URL)
      *    returns HashMap with list data
      * @deprecated Use {@link #loadUri(URI)} instead
+     * @param path the path
+     * @return the metadata
+     * @throws SAXException on error
+     * @throws IOException on error
      */
     public Map<String, MetadataMap> loadURL(String path) throws SAXException, IOException {
         try {
@@ -306,6 +310,10 @@ public class IndexMetaLoader {
     /**
 	 *  Load and parse a file (as URI).
 	 *    returns HashMap with list data
+	 * @param uri the URI
+	 * @return the metadata
+	 * @throws SAXException on error
+	 * @throws IOException on error
 	 */
 	public Map<String, MetadataMap> loadUri(URI uri) throws SAXException, IOException {
 		logger.debug("loading meta: "+uri);

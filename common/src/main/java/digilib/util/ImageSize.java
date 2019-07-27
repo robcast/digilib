@@ -63,8 +63,8 @@ public class ImageSize {
 	 * 
 	 * 
 	 * 
-	 * @param is
-	 * @return
+	 * @param is the ImageSize
+	 * @return is totally smaller
 	 */
 	public boolean isTotallySmallerThan(ImageSize is) {
 		if ((this.width == 0)||(is.width == 0)) {
@@ -82,8 +82,8 @@ public class ImageSize {
 	 * Returns if the size of this image is smaller in at least one dimension
 	 * than the other image.
 	 * 
-	 * @param is
-	 * @return
+	 * @param is the ImageSize
+	 * @return is smaller than
 	 */
 	public boolean isSmallerThan(ImageSize is) {
 		if ((this.width == 0)||(is.width == 0)) {
@@ -103,8 +103,8 @@ public class ImageSize {
 	 * 
 	 * 
 	 * 
-	 * @param is
-	 * @return
+	 * @param is the ImageSize
+	 * @return is totally bigger than
 	 */
 	public boolean isTotallyBiggerThan(ImageSize is) {
 		if ((this.width == 0)||(is.width == 0)) {
@@ -124,8 +124,8 @@ public class ImageSize {
 	 * 
 	 * 
 	 * 
-	 * @param is
-	 * @return
+	 * @param is the ImageSize
+	 * @return is bigger than
 	 */
 	public boolean isBiggerThan(ImageSize is) {
 		if ((this.width == 0)||(is.width == 0)) {
@@ -144,8 +144,8 @@ public class ImageSize {
 	 * 
 	 * 
 	 * 
-	 * @param is
-	 * @return
+	 * @param is the ImageSize
+	 * @return fits in
 	 */
 	public boolean fitsIn(ImageSize is) {
 		if ((this.width == 0)||(is.width == 0)) {
@@ -168,8 +168,8 @@ public class ImageSize {
 	 * 
 	 * 
 	 * 
-	 * @param is
-	 * @return
+	 * @param is the ImageSize
+	 * @return equals
 	 */
 	public boolean equals(ImageSize is) {
 		if ((this.width == 0)||(is.width == 0)) {
@@ -184,28 +184,28 @@ public class ImageSize {
 	}
 
 	/**
-	 * @return
+	 * @return the height
 	 */
 	public int getHeight() {
 		return height;
 	}
 
 	/**
-	 * @param height
+	 * @param height the height
 	 */
 	public void setHeight(int height) {
 		this.height = height;
 	}
 
 	/**
-	 * @return
+	 * @return the width
 	 */
 	public int getWidth() {
 		return width;
 	}
 
 	/**
-	 * @param width
+	 * @param width the width
 	 */
 	public void setWidth(int width) {
 		this.width = width;
@@ -217,7 +217,7 @@ public class ImageSize {
 	 * Aspect ratio is (width/height). So it's &lt;1 for portrait and  &gt;1 for
 	 * landscape.
 	 * 
-	 * @return
+	 * @return the aspect ratio
 	 */
 	public float getAspect() {
 		return (height > 0) ? ((float) width / (float) height) : 0;
@@ -226,8 +226,8 @@ public class ImageSize {
 	/**
 	 * Returns a scaled copy of this image size. 
 	 * 
-	 * @param scale
-	 * @return
+	 * @param scale the scale
+	 * @return the ImageSize
 	 */
 	public ImageSize getScaled(float scale) {
 		return new ImageSize((int) (width * scale), (int) (height * scale));

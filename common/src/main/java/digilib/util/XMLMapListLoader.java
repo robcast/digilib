@@ -71,8 +71,8 @@ public class XMLMapListLoader {
      * Creates an XMLMapListLoader with an outer <code>list_tag</code>. Every
      * entry is an <code>entry_tag</code>. All attributes are stored in a Map.
      * 
-     * @param list_tag
-     * @param entry_tag
+     * @param list_tag the list tag
+     * @param entry_tag the entry tag
      */
     public XMLMapListLoader(String list_tag, String entry_tag) {
         logger.debug("XMLMapListLoader(" + list_tag + "," + entry_tag + ")");
@@ -159,6 +159,10 @@ public class XMLMapListLoader {
      * Load and parse a file (as URL).
      * 
      * returns List of Maps with data.
+     * @param uri the URI
+     * @return the Map
+     * @throws SAXException on error
+     * @throws IOException on error
      */
     public List<Map<String,String>> loadUri(URI uri) throws SAXException, IOException {
         // System.out.println("loadurl ("+path+")");

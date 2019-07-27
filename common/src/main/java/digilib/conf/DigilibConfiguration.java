@@ -56,7 +56,7 @@ public class DigilibConfiguration extends ParameterMap {
     protected static String propertiesFileName = "digilib.properties";
 
     /** digilib version 
-     * @return
+     * @return the version
      */
     public static String getClassVersion() {
         return "2.8-SNAPSHOT";
@@ -148,9 +148,9 @@ public class DigilibConfiguration extends ParameterMap {
     /**
      * Set non-standard value in Parameter param. Returns true if successful.
      * 
-     * @param param
-     * @param value
-     * @return
+     * @param param the Parameter
+     * @param value the value
+     * @return  true if successful
      */
     protected boolean setSpecialValueFromString(Parameter param, String value) {
         // should be overridden

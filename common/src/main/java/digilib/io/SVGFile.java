@@ -44,7 +44,7 @@ public class SVGFile extends DocuDirentImpl {
 	
 	/** Constructor taking a file.
 	 * 
-	 * @param f
+	 * @param f the File
 	 */
 	public SVGFile(File f) {
 		this.file = f;

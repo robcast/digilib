@@ -76,6 +76,7 @@ public abstract class DocuDirectory implements Iterable<DocuDirent> {
 
 	/**
 	 * number of DocuFiles in this directory. 
+	 * @return the size
 	 */
 	public int size() {
 		return (files != null) ? files.size() : 0;
@@ -84,8 +85,8 @@ public abstract class DocuDirectory implements Iterable<DocuDirent> {
 	/**
 	 * Returns the ImageFileSet at the index.
 	 * 
-	 * @param index
-	 * @return
+	 * @param index the index
+	 * @return the DocuDirent
 	 */
 	public DocuDirent get(int index) {
 		if ((files == null) || (index >= files.size())) {
@@ -137,7 +138,7 @@ public abstract class DocuDirectory implements Iterable<DocuDirent> {
 	/**
 	 * Update access time.
 	 * 
-	 * @return long time of last access.
+	 * @return time of last access.
 	 */
 	public long touch() {
 		long t = objectATime;
@@ -203,7 +204,7 @@ public abstract class DocuDirectory implements Iterable<DocuDirent> {
 	 * 
 	 * @param fn
 	 *            filename
-	 * @return DocuDirent
+	 * @return the DocuDirent
 	 */
 	public DocuDirent find(String fn) {
 		int i = indexOf(fn);
@@ -216,7 +217,7 @@ public abstract class DocuDirectory implements Iterable<DocuDirent> {
 	/**
 	 * Returns the digilib canonical name.
 	 * 
-	 * @return
+	 * @return the name
 	 */
 	public String getDirName() {
 		return dirName;
@@ -225,7 +226,7 @@ public abstract class DocuDirectory implements Iterable<DocuDirent> {
 	/**
 	 * The directory is valid (exists on disk).
 	 * 
-	 * @return boolean
+	 * @return is valid
 	 */
 	public boolean isValid() {
 		return isValid;
@@ -234,26 +235,29 @@ public abstract class DocuDirectory implements Iterable<DocuDirent> {
 	/**
 	 * The directory has been read from disk.
 	 * 
-	 * @return
+	 * @return is read
 	 */
 	public boolean isRead() {
 		return (dirMTime != 0);
 	}
 
 	/**
-	 * @return long
+	 * @return access time
 	 */
 	public long getAccessTime() {
 		return objectATime;
 	}
 
 	/**
-	 * @return long
+	 * @return the mtime
 	 */
 	public long getDirMTime() {
 		return dirMTime;
 	}
 
+    /**
+     * @return the DirMeta
+     */
     public DirMeta getMeta() {
         return meta;
     }
@@ -261,7 +265,7 @@ public abstract class DocuDirectory implements Iterable<DocuDirent> {
     /**
      * Returns an Iterator over all DocuDirents in this DocuDirectory in default order.
      * 
-     * @return
+     * @return the Iterator
      */
     public Iterator<DocuDirent> iterator() {
     	return files.iterator();
@@ -270,22 +274,22 @@ public abstract class DocuDirectory implements Iterable<DocuDirent> {
 	/**
 	 * Returns a possible parent directory name for path fn.
 	 * 
-	 * @param fn
-	 * @return
+	 * @param fn the fn
+	 * @return the parent name
 	 */
 	public abstract String createParentName(String fn);
 
 	/**
 	 * Returns a possible file name for path fn.
-	 * @param fn
-	 * @return
+	 * @param fn the fn
+	 * @return the name
 	 */
 	public abstract String createFilename(String fn);
 
 	/**
 	 * Returns the parent DocuDirectory.
 	 * 
-	 * @return
+	 * @return the DocuDirectory
 	 */
 	public DocuDirectory getParent() {
 		return parent;
@@ -293,7 +297,7 @@ public abstract class DocuDirectory implements Iterable<DocuDirent> {
 
 	/**
 	 * Sets the parent DocuDirectory.
-	 * @param pd
+	 * @param pd the DocuDirectory
 	 */
 	public void setParent(DocuDirectory pd) {
 		parent = pd;

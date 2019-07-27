@@ -57,8 +57,8 @@ public class BaseDirDocuDirectory extends FsDocuDirectory {
      * 
      * @param path
      *            digilib directory path name
-     * @param fileClass
-     * @param dlConfig
+     * @param fileClass the FileClass
+     * @param dlConfig the DigilibConfiguration
      *            
      */
     @Override
