@@ -31,6 +31,7 @@ package digilib.conf;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -451,14 +452,8 @@ public class DigilibRequest extends ParameterMap {
          * parameter identifier (encoded)
          */
         if (identifier != null) {
-            try {
-                identifier = decodeIiifIdentifier(identifier);
-                setValueFromString("fn", identifier);
-            } catch (UnsupportedEncodingException e) {
-                errorMessage = "Error decoding identifier in IIIF path!";
-                logger.error(errorMessage);
-                return false;
-            }
+            identifier = decodeIiifIdentifier(identifier);
+            setValueFromString("fn", identifier);
         } else {
             errorMessage = "Missing identifier in IIIF path!";
             logger.error(errorMessage);
@@ -653,11 +648,16 @@ public class DigilibRequest extends ParameterMap {
 	 * @return the path
 	 * @throws UnsupportedEncodingException on error
 	 */
-	public String decodeIiifIdentifier(String identifier) throws UnsupportedEncodingException {
+	public String decodeIiifIdentifier(String identifier) {
 		if (identifier == null) return "";
 		if (identifier.contains("%")) {
 		    // still escape chars -- decode again
-		    identifier = URLDecoder.decode(identifier, "UTF-8");
+		    try {
+				identifier = URLDecoder.decode(identifier, "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				// this shouldn't happen
+				logger.error(e);
+			}
 		}
 		if (iiifSlashReplacement != null && identifier.contains(iiifSlashReplacement)) {
 		    // change replacement back to slash
@@ -666,7 +666,30 @@ public class DigilibRequest extends ParameterMap {
 		return identifier;
 	}
 
-	
+
+	/**
+	 * Encodes a digilib path into an IIIF identifier part
+	 * 
+	 * @param path the path
+	 * @return the identifier
+	 * @throws UnsupportedEncodingException on error
+	 */
+	public String encodeIiifIdentifier(String path) {
+		if (path == null) return "";
+		if (iiifSlashReplacement != null && path.contains("/")) {
+		    // change slash to replacement
+		    path = path.replace("/", iiifSlashReplacement);
+		}
+		try {
+			path = URLEncoder.encode(path, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			// this shouldn't happen
+			logger.error(e);
+		}
+		return path;
+	}
+
+
     /**
      * Test if option string <code>opt</code> is set. Checks if the substring
      * <code>opt</code> is contained in the options string <code>param</code>.

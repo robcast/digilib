@@ -326,9 +326,10 @@ public class Manifester extends HttpServlet {
 						+ dlConfig.getAsString("iiif-prefix");
 			}
 			// full manifest URL with identifier
-			params.manifestUrl = manifestBaseUrl + "/" + identifier;
+			params.manifestUrl = manifestBaseUrl + "/" + dlRequest.encodeIiifIdentifier(identifier);
 			params.identifier = identifier;
 			params.docuDir = dlDir;
+			params.dlRequest = dlRequest;
 			
 			/*
 			 * start json representation
@@ -565,7 +566,9 @@ public class Manifester extends HttpServlet {
             // make sure there are no slashes left
             filename = filename.replace("/", this.iiifPathSep);
         }
-        String iiifImgBaseUrl = params.imgApiUrl + "/" + params.identifier + this.iiifPathSep + filename;
+        // encode identifier for file 
+        String fileId = params.dlRequest.encodeIiifIdentifier(params.identifier + this.iiifPathSep + filename);
+		String iiifImgBaseUrl = params.imgApiUrl + "/" + fileId;
         // IIIF image parameters
         String imgUrl = iiifImgBaseUrl + "/full/full/0/default.jpg";
         /*
@@ -622,10 +625,11 @@ public class Manifester extends HttpServlet {
 	 */
 	protected class ManifestParams {
 	    public DocuDirectory docuDir;
-	    File mfMetaFile;
-        String manifestUrl;
-	    String imgApiUrl;
-	    String identifier;	    
+	    public DigilibServletRequest dlRequest;
+	    public File mfMetaFile;
+	    public String manifestUrl;
+	    public String imgApiUrl;
+	    public String identifier;	    
 	}
 	
     /**
