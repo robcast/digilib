@@ -47,7 +47,7 @@ Please see the full [build and install documentation](https://robcast.github.io/
 * [Issue tracker](https://github.com/robcast/digilib/issues)
 * [Docker images](https://hub.docker.com/r/robcast/digilib)
 * [Javadoc](https://robcast.github.io/digilib-repo/apidocs/)
-* [Maven repository](https://robcast.github.io/digilib-repo/maven-repo/)
+* [Maven repository](https://github.com/robcast/digilib-repo/tree/gh-pages/maven-repo/digilib/) (`https://robcast.github.io/digilib-repo/maven-repo/`)
 
 Full documentation can be found on the 
 [digilib documentation pages](https://robcast.github.io/digilib/).
