@@ -475,9 +475,12 @@ public class ServletOps {
          */
         String url = dlConfig.getAsString("iiif-image-base-url");
         if (!url.isEmpty()) {
-        	// create url from base-url config and PATH_INFO
+        	// create url from base-url config and undecoded PATH_INFO
         	url = url.substring(0, url.lastIndexOf(dlConfig.getAsString("iiif-prefix")) - 1);
-        	url += dlReq.getServletRequest().getPathInfo();
+
+          // we can't just take pathInfo because it decodes encoded symbols in the path
+          String uri = dlReq.getServletRequest().getRequestURI();
+          url += uri.substring(uri.lastIndexOf(dlConfig.getAsString("iiif-prefix")) - 1, uri.length());
         } else {
         	// create url from request
         	url = dlReq.getServletRequest().getRequestURL().toString();
