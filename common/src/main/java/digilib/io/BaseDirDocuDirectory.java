@@ -28,6 +28,7 @@ package digilib.io;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 
 import digilib.conf.DigilibConfiguration;
 import digilib.io.FileOps.FileClass;
@@ -83,6 +84,13 @@ public class BaseDirDocuDirectory extends FsDocuDirectory {
 		}
 		// read all filenames
 		logger.debug("reading directory " + this + " = " + dir.dir.getPath());
+		// set our read time to the end of the previous second so that we will not miss
+		// changes occurred at the same time than our reading due to the accuracy of the filesystem timestamp
+		dirMTime = (new Date().getTime()  / 1000) * 1000 - 1;
+
+		// read metadata as well
+		readMeta();
+
 		File[] allFiles = null;
 		/*
 		 * using ReadableFileFilter is safer (we won't get directories with file
@@ -139,9 +147,6 @@ public class BaseDirDocuDirectory extends FsDocuDirectory {
 				d.clearFilenames();
 			}
 		}
-		dirMTime = dir.dir.lastModified();
-		// read metadata as well
-		readMeta();
 		return isValid;
     }
 
