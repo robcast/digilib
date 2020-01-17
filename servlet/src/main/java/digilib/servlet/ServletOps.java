@@ -591,7 +591,7 @@ public class ServletOps {
         				// scaled images should have same tile size!
             			if (sts.getHeight() == ts.getHeight()) {
             				// scale factor is integer divider of original size
-            				Integer sf = is.getWidth() / imageSet.get(i).getSize().getWidth();
+            				Integer sf = Math.round((float) is.getWidth() / (float) imageSet.get(i).getSize().getWidth());
             				tileFactors.add(sf);
             			} else {
             				logger.warn("IIIF-info: scaled image "+i+" has different tile size! Ignoring.");                				

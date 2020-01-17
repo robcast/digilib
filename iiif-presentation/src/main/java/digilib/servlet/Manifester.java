@@ -570,7 +570,7 @@ public class Manifester extends HttpServlet {
         String fileId = params.dlRequest.encodeIiifIdentifier(params.identifier + this.iiifPathSep + filename);
 		String iiifImgBaseUrl = params.imgApiUrl + "/" + fileId;
         // IIIF image parameters
-        String imgUrl = iiifImgBaseUrl + "/full/full/0/default.jpg";
+        String imgUrl = iiifImgBaseUrl + "/full/,1000/0/default.jpg";
         /*
          * resource
          */
