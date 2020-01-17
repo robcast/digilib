@@ -36,10 +36,13 @@ import digilib.util.ImageSize;
 
 public abstract class ImageInput {
 
-	// mime file type
+	/** mime file type */
 	protected String mimetype = null;
-	// image size in pixels
+	/** image size in pixels */
 	protected ImageSize pixelSize = null;
+	/** image tile size (null if untiled) */
+	protected ImageSize tileSize = null;
+	/** parent ImageSet */
     protected ImageSet parent = null;
 
 	/**
@@ -57,7 +60,21 @@ public abstract class ImageInput {
 		this.pixelSize = imageSize;
 	}
 
-    /** returns if mimetype has been set.
+    /**
+	 * @return the tileSize
+	 */
+	public ImageSize getTileSize() {
+		return tileSize;
+	}
+
+	/**
+	 * @param tileSize the tileSize to set
+	 */
+	public void setTileSize(ImageSize tileSize) {
+		this.tileSize = tileSize;
+	}
+
+	/** returns if mimetype has been set.
      * 
      * @return String
      */

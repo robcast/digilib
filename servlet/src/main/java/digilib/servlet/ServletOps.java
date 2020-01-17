@@ -31,7 +31,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.json.Json;
@@ -575,6 +577,44 @@ public class ServletOps {
                     }
                     // sizes[]
                     info.writeEnd();
+                }
+                // add tile information (currently only one size of tiles)
+                ImageInput ii = imageSet.get(0);
+                ImageSize is = ii.getSize();
+                List<Integer> tileFactors = new ArrayList<Integer>();
+                ImageSize ts = null;
+            	for (int i = 0; i < numImgs; ++i) {
+            		ImageSize sts = imageSet.get(i).getTileSize();
+            		if (sts != null) {
+            			// initialize default tile size
+            			if (ts == null) ts = sts;
+        				// scaled images should have same tile size!
+            			if (sts.getHeight() == ts.getHeight()) {
+            				// scale factor is integer divider of original size
+            				Integer sf = is.getWidth() / imageSet.get(i).getSize().getWidth();
+            				tileFactors.add(sf);
+            			} else {
+            				logger.warn("IIIF-info: scaled image "+i+" has different tile size! Ignoring.");                				
+            			}
+            		}
+            	}
+                if (!tileFactors.isEmpty()) {
+                	// tiles[{
+                	info.writeStartArray("tiles");
+                	info.writeStartObject();
+                	info.write("width", ts.getWidth());
+                	info.write("height", ts.getHeight());
+                	// scalefactors[
+                	info.writeStartArray("scaleFactors");
+                	for (Integer sf : tileFactors) {
+                		info.write(sf);
+                	}
+                	// scalefactors[]
+                	info.writeEnd();
+                	// tiles[{}
+                	info.writeEnd();
+                	// tiles[]
+                	info.writeEnd();
                 }
                 // end info.json
                 info.writeEnd();
