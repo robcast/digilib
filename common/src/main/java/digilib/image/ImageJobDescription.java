@@ -294,10 +294,9 @@ public class ImageJobDescription extends ParameterMap {
          * 
          * Note: dw or dh can be empty (=0) 
          */
-        float scale = (1 / Math.min(getWw(), getWh()));
         minSourceSize = new ImageSize(
-                Math.round(getAsInt("dw") * scale), 
-                Math.round(getAsInt("dh") * scale));
+        		Math.round(getAsInt("dw") / getWw()), 
+                Math.round(getAsInt("dh") / getWh()));
         
         /*
          * get image region of interest
