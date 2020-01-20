@@ -112,8 +112,15 @@ Defines whether requests with `mo=file` or `mo=rawfile` as parameter are allowed
 <parameter name="subsample-minimum" value="2.0" />
 ```
 
-Degree of subsampling on image load. This is the minimum factor that is scaled by interpolation and not by 
+Specifies the degree of subsampling on image load. This is the minimum factor that is scaled by interpolation and not by 
 subsampling, i.e. by skipping pixels.
+
+```xml
+<parameter name="image-reader-classes" value="image/jpeg=com.sun.imageio.plugins.jpeg.JPEGImageReader"/>
+<parameter name="image-writer-classes" value="image/jpeg=com.sun.imageio.plugins.jpeg.JPEGImageWriter"/>
+```
+Parameters to explicitly specify the Java classes to use as ImageReader and ImageWriter for a given mime-type 
+(separate multiple type-class pairs with commas). Only for special situations. Do not use this unless you have to!
 
 
 ### Authentication and authorization
