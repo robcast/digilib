@@ -101,4 +101,10 @@ public class ImageUrl extends ImageInput {
         check();
         return pixelSize;
     }
+
+    @Override
+    public ImageSize getTileSize() {
+        check();
+        return tileSize;
+    }
 }

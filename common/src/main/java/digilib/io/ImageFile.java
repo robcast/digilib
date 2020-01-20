@@ -100,7 +100,13 @@ public class ImageFile extends ImageInput {
         return pixelSize;
     }
 
-    /* (non-Javadoc)
+    @Override
+	public ImageSize getTileSize() {
+		check();
+		return tileSize;
+	}
+
+	/* (non-Javadoc)
      * @see digilib.io.ImageInput#getMimetype()
      */
     @Override
