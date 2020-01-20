@@ -27,6 +27,7 @@ package digilib.conf;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -86,6 +87,10 @@ public class DigilibConfiguration extends ParameterMap {
         newParameter("docuimage-class", "digilib.image.ImageLoaderDocuImage", null, 'f');
         // image hacks for DocuImage implementation
         newParameter("docuimage-hacks", "", null, 'f');
+        // preferred image reader classes ("mime-type1=class1,mime-type2=class2,...")
+        newParameter("image-reader-classes", "", null, 'f');
+        // preferred image writer classes ("mime-type1=class1,mime-type2=class2,...")
+        newParameter("image-writer-classes", "", null, 'f');
         // degree of subsampling on image load
         newParameter("subsample-minimum", Float.valueOf(2f), null, 'f');
         // default scaling quality
@@ -183,6 +188,36 @@ public class DigilibConfiguration extends ParameterMap {
                 docuImageClass.getDeclaredConstructor().newInstance().setHacks(config.getAsString("docuimage-hacks"));
             } catch (Exception e) {
                 logger.error("Error creating instance of DocuImage class!", e);
+            }
+            // set preferred image readers on instance
+            if (config.hasValue("image-reader-classes")) {
+                try {
+                	HashMap<String, String> readerMap = new HashMap<String, String>();
+                    for (String tcs : config.getAsString("image-reader-classes").split(",")) {
+                        String[] tc = tcs.split("=");
+                        String mimetype = tc[0];
+                        String clazz = tc[1];
+                        readerMap.put(mimetype, clazz);
+                    }
+	                docuImageClass.getDeclaredConstructor().newInstance().setReaderClasses(readerMap);
+                } catch (Exception e) {
+                    logger.error("Error setting image-reader-classes!", e);
+                }
+            }
+            // set preferred image writers on instance
+            if (config.hasValue("image-writer-classes")) {
+                try {
+                	HashMap<String, String> writerMap = new HashMap<String, String>();
+                    for (String tcs : config.getAsString("image-writer-classes").split(",")) {
+                        String[] tc = tcs.split("=");
+                        String mimetype = tc[0];
+                        String clazz = tc[1];
+                        writerMap.put(mimetype, clazz);
+                    }
+	                docuImageClass.getDeclaredConstructor().newInstance().setWriterClasses(writerMap);
+                } catch (Exception e) {
+                    logger.error("Error setting image-writer-classes!", e);
+                }
             }
             // log supported formats
             StringBuilder fmts = new StringBuilder();

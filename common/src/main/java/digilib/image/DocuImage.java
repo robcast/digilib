@@ -30,6 +30,7 @@ import java.awt.Rectangle;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.Map;
 
 import digilib.io.FileOpException;
 import digilib.io.ImageInput;
@@ -342,4 +343,25 @@ public interface DocuImage {
      * @return the hint
      */
     public Object getHint(String key);
+
+    /**
+     * Set preferred image reader classes. 
+     * Configured with a Map containing content-type and class-name.
+     * 
+     * Sets static class members. Needs to be called only once per class.  
+     * 
+     * @param typeClassMap
+     */
+    public void setReaderClasses(Map<String, String> typeClassMap);
+    
+    /**
+     * Set preferred image writer classes. 
+     * Configured with a Map containing content-type and class-name.
+     * 
+     * Sets static class members. Needs to be called only once per class.  
+     * 
+     * @param typeClassMap
+     */
+    public void setWriterClasses(Map<String, String> typeClassMap);
+    
 }

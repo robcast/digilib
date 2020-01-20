@@ -30,7 +30,7 @@
 				<dependency>
 					<groupId>com.github.jai-imageio</groupId>
 					<artifactId>jai-imageio-core</artifactId>
-					<version>1.3.0</version>
+					<version>1.4.0</version>
                     <type>jar</type>
                     <scope>compile</scope>
 				</dependency>
@@ -54,14 +54,14 @@
 				<dependency>
 					<groupId>com.twelvemonkeys.imageio</groupId>
 					<artifactId>imageio-jpeg</artifactId>
-					<version>3.1.2</version>
+					<version>3.4.3</version>
                     <type>jar</type>
                     <scope>compile</scope>
 				</dependency>
 				<dependency>
 					<groupId>com.twelvemonkeys.imageio</groupId>
 					<artifactId>imageio-tiff</artifactId>
-					<version>3.1.2</version>
+					<version>3.4.3</version>
                     <type>jar</type>
                     <scope>compile</scope>
 				</dependency>
@@ -81,12 +81,12 @@
 				<dependency>
 					<groupId>de.digitalcollections.imageio</groupId>
 					<artifactId>imageio-turbojpeg</artifactId>
-					<version>0.2.5</version>
+					<version>0.4.3</version>
 				</dependency>
 				<dependency>
 					<groupId>de.digitalcollections.imageio</groupId>
 					<artifactId>imageio-openjpeg</artifactId>
-					<version>0.2.5</version>
+					<version>0.4.3</version>
 				</dependency>
 			</dependencies>
 		</profile>
