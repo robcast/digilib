@@ -54,7 +54,7 @@ import digilib.util.ImageSize;
 public abstract class DocuImageImpl implements DocuImage {
 
     /** DocuImage version */
-    public static final String version = "DocuImageImpl 2.1";
+    public static final String version = "DocuImageImpl 2.2";
     
     /** logger */
     protected static final Logger logger = Logger.getLogger(DocuImage.class);
@@ -73,7 +73,7 @@ public abstract class DocuImageImpl implements DocuImage {
     
     /** image specific hints */
     protected Map<String, Object> hints = new HashMap<String, Object>();
-
+    
     /** 
      * Returns the version.
      * @return the version
@@ -248,5 +248,15 @@ public abstract class DocuImageImpl implements DocuImage {
     public Object getHint(String key) {
         return hints.get(key);
     }
+
+	@Override
+	public void setReaderClasses(Map<String, String> typeClassMap) {
+        // doing nothing
+	}
+
+	@Override
+	public void setWriterClasses(Map<String, String> typeClassMap) {
+        // doing nothing
+	}
 
 }

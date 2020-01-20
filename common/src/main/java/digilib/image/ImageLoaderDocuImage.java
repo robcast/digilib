@@ -49,7 +49,9 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.imageio.IIOImage;
@@ -125,6 +127,12 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     /** active hacks */
     protected static EnumMap<Hacks, Boolean> imageHacks = new EnumMap<Hacks, Boolean>(Hacks.class);
     
+    /** preferred image reader classes */
+    protected static Map<String, String> preferredReaders = new HashMap<String, String>();
+
+    /** preferred image writer classes */
+    protected static Map<String, String> preferredWriters = new HashMap<String, String>();
+
     static {
         // init imageHacks
         for (Hacks h : Hacks.values()) {
@@ -222,7 +230,17 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         }
         logger.debug(msg);
     }
-    
+
+	@Override
+	public void setReaderClasses(Map<String, String> typeClassMap) {
+		preferredReaders = typeClassMap;		
+	}
+
+	@Override
+	public void setWriterClasses(Map<String, String> typeClassMap) {
+		preferredWriters = typeClassMap;		
+	}
+
     /* (non-Javadoc)
      * @see digilib.image.DocuImageImpl#getVersion()
      */
@@ -389,7 +407,6 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         } else {
             throw new FileOpException("Unable to get data from ImageInput");
         }
-        Iterator<ImageReader> readers;
         String mt = null;
         if (input.hasMimetype()) {
             // check hasMimetype first or we might get into a loop
@@ -398,26 +415,39 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             // try file extension
             mt = FileOps.mimeForFile(input.getFile());
         }
-        if (mt == null) {
+        ImageReader reader = null;
+		if (mt == null) {
             logger.debug("No mime-type. Trying automagic.");
-            readers = ImageIO.getImageReaders(istream);
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(istream);
+            if (readers.hasNext()) {
+                reader = readers.next();
+            } else {
+                throw new FileOpException("Can't find Reader to load File without mime-type!");
+            }
         } else {
             logger.debug("File type:" + mt);
-            readers = ImageIO.getImageReadersByMIMEType(mt);
+            if (preferredReaders.containsKey(mt)) {
+            	// use preferred Reader class
+            	try {
+					String clazz = preferredReaders.get(mt);
+					reader = (ImageReader) Class.forName(clazz).getConstructor().newInstance();
+				} catch (Exception e) {
+	                throw new FileOpException("Error creating preferred Reader for mime-type "+mt+"!");
+				}
+            } else {
+            	// let ImageIO choose Reader
+            	Iterator<ImageReader> readers = ImageIO.getImageReadersByMIMEType(mt);
+	            if (readers.hasNext()) {
+	                reader = readers.next();
+	            } else {
+	                throw new FileOpException("Can't find Reader to load File with mime-type "+mt+"!");
+	            }
+            }
         }
-        if (!readers.hasNext()) {
-            throw new FileOpException("Can't find Reader to load File!");
-        }
-        ImageReader reader = readers.next();
         if (reader == null) {
             throw new FileOpException("Error getting Reader to load File!");
         }
-        logger.debug("ImageIO: this reader: " + reader.getClass());
-        /*
-        while (readers.hasNext()) { 
-        	logger.debug("ImageIO: next reader: " + readers.next().getClass()); 
-        }
-        */
+        logger.debug("ImageIO: reader: " + reader.getClass());
         reader.setInput(istream);
         return reader;
     }
