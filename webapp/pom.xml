@@ -17,6 +17,7 @@
 	<properties>
         <skipTests>true</skipTests>
         <servletapi>3</servletapi>
+        <jetty.version>9.2.28.v20190418</jetty.version><!-- Jetty 9.3+ break our tests -->
     </properties>
 
 	<build>
@@ -196,7 +197,7 @@
 			    <!-- Jetty plugin for "mvn jetty:run" -->
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <version>9.2.22.v20170606</version>
+                <version>${jetty.version}</version>
                 <configuration>
                     <webApp>
                         <contextPath>/digilib</contextPath>
@@ -426,13 +427,13 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlet</artifactId>
-            <version>9.2.22.v20170606</version>
+            <version>${jetty.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-http</artifactId>
-			<version>9.2.22.v20170606</version>
+			<version>${jetty.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

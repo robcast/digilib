@@ -76,7 +76,7 @@ import digilib.util.ImageSize;
 public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
     /** DocuImage version */
-    public static final String version = "ImageLoaderDocuImage 2.2.0";
+    public static final String version = "ImageLoaderDocuImage 2.3.0";
 
     /** image object */
     protected BufferedImage img;
@@ -121,7 +121,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         /** set destination type for blur operation */
         setDestForBlur, 
         /** set destination type for scale operation */
-        setDestForScale
+        setDestForScale,
+        /** JPEG writer can't deal with RGBA */
+        needsJpegWriteRgb
     }
     
     /** active hacks */
@@ -193,6 +195,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         imageHacks.put(Hacks.setDestSrgb, true);
         imageHacks.put(Hacks.setDestForBlur, true);
         imageHacks.put(Hacks.setDestForScale, true);
+        imageHacks.put(Hacks.needsJpegWriteRgb, true);
         // print current hacks
         StringBuffer msg = new StringBuffer("Default DocuImage Hacks: ");
         for (Entry<Hacks, Boolean> kv : imageHacks.entrySet()) {
@@ -384,13 +387,13 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     }
 
     /**
-     * Get an ImageReader for the image file.
+     * Get an ImageReader for the image input.
      * 
      * @param input the ImageInput
      * @return the IamgeReader
      * @throws IOException on error
      */
-    public ImageReader getReader(ImageInput input) throws IOException {
+    protected ImageReader getReader(ImageInput input) throws IOException {
         logger.debug("get ImageReader for " + input);
         if (reuseReader && reader != null) {
             logger.debug("reusing ImageReader");
@@ -426,22 +429,23 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             }
         } else {
             logger.debug("File type:" + mt);
+        	// let ImageIO choose Reader
+        	Iterator<ImageReader> readers = ImageIO.getImageReadersByMIMEType(mt);
+            if (readers.hasNext()) {
+                reader = readers.next();
+            } else {
+                throw new FileOpException("Can't find Reader to load File with mime-type "+mt+"!");
+            }
             if (preferredReaders.containsKey(mt)) {
             	// use preferred Reader class
-            	try {
-					String clazz = preferredReaders.get(mt);
-					reader = (ImageReader) Class.forName(clazz).getConstructor().newInstance();
-				} catch (Exception e) {
-	                throw new FileOpException("Error creating preferred Reader for mime-type "+mt+"!");
-				}
-            } else {
-            	// let ImageIO choose Reader
-            	Iterator<ImageReader> readers = ImageIO.getImageReadersByMIMEType(mt);
-	            if (readers.hasNext()) {
-	                reader = readers.next();
-	            } else {
-	                throw new FileOpException("Can't find Reader to load File with mime-type "+mt+"!");
-	            }
+            	String preferredClass = preferredReaders.get(mt);
+            	while (!reader.getClass().getName().equals(preferredClass)) {
+            		if (readers.hasNext()) {
+            			reader = readers.next();
+            		} else {
+            			throw new FileOpException("Unable to find preferred Reader "+preferredClass+"!");
+            		}
+            	}
             }
         }
         if (reader == null) {
@@ -515,6 +519,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
                 lcImg.createGraphics().drawImage(img, null, 0, 0);
                 img = lcImg;
             }
+        } catch (FileOpException e) {
+        	// re-throw lower level exception
+            throw e;
         } catch (IOException e) {
             throw new FileOpException("Unable to load File!", e);
         } finally {
@@ -524,7 +531,37 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         }
     }
 
-    /* 
+    /**
+     * Get an ImageWriter for the mime-type.
+     * 
+     * @param mimetype
+     * @return
+     * @throws ImageOpException 
+     */
+    protected ImageWriter getWriter(String mimetype) throws ImageOpException {
+    	ImageWriter writer = null;
+    	// let ImageIO choose Writer
+    	Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType(mimetype);
+        if (writers.hasNext()) {
+            writer = writers.next();
+        } else {
+            throw new ImageOpException("Can't find Writer to write File with mime-type "+mimetype+"!");
+        }
+        if (preferredWriters.containsKey(mimetype)) {
+        	// use preferred Reader class
+        	String preferredClass = preferredWriters.get(mimetype);
+        	while (!writer.getClass().getName().equals(preferredClass)) {
+        		if (writers.hasNext()) {
+        			writer = writers.next();
+        		} else {
+        			throw new ImageOpException("Unable to find preferred Writer "+preferredClass+"!");
+        		}
+        	}
+        }
+        return writer;
+    }
+    
+	/* 
      * (non-Javadoc)
      * @see digilib.image.DocuImageImpl#writeImage(java.lang.String, java.io.OutputStream)
      */
@@ -536,20 +573,18 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         try {
             imgout = ImageIO.createImageOutputStream(ostream);
             if (mt == "image/jpeg") {
+                writer = getWriter(mt);
+                logger.debug("ImageIO: writer: "+writer.getClass());
                 /*
                  * JPEG doesn't do transparency so we have to convert any RGBA
                  * image to RGB or we the client will think its CMYK :-( *Java2D
                  * BUG*
                  */
-                if (img.getColorModel().hasAlpha()) {
-                    logger.debug("BARF: JPEG with transparency!!");
+                if (imageHacks.get(Hacks.needsJpegWriteRgb) && img.getColorModel().hasAlpha()) {
+                    logger.debug("Fixing JPEG with transparency!!");
                     BufferedImage rgbImg = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
                     rgbImg.createGraphics().drawImage(img, null, 0, 0);
                     img = rgbImg;
-                }
-                writer = ImageIO.getImageWritersByFormatName("jpeg").next();
-                if (writer == null) {
-                    throw new ImageOpException("Unable to get JPEG writer");
                 }
                 ImageWriteParam param = writer.getDefaultWriteParam();
                 if (quality > 1) {
@@ -563,16 +598,14 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
                 writer.write(null, new IIOImage(img, null, null), param);
             } else if (mt == "image/png") {
                 // render output
-                writer = ImageIO.getImageWritersByFormatName("png").next();
-                if (writer == null) {
-                    throw new ImageOpException("Unable to get PNG writer");
-                }
+                writer = getWriter(mt);
+                logger.debug("ImageIO: writer: "+writer.getClass());
                 writer.setOutput(imgout);
                 logger.debug("writing PNG");
                 writer.write(img);
             } else {
                 // unknown mime type
-                throw new ImageOpException("Unknown mime type: " + mt);
+                throw new ImageOpException("Unknown ouput mime type: " + mt);
             }
 
         } catch (IOException e) {
