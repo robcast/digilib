@@ -64,7 +64,9 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
     private long startTime;
     private ErrMsg errMsgType = ErrMsg.IMAGE;
     private ImageJobDescription jobinfo;
-    /** flag to indicate that the response is completed (on abort) */
+    /** flag to indicate that sending the response has started */
+    private boolean responseStarted = false;
+    /** flag to indicate that the context is completed (on abort) */
     private boolean completed = false;
     /** AsyncRequest timeout */
     protected static long timeout = 60000l;
@@ -117,7 +119,8 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
              *  send the image
              */
             HttpServletResponse response = (HttpServletResponse) asyncContext.getResponse();
-            ServletOps.sendImage(img, mt, response, logger);
+            responseStarted = true;
+            ServletOps.sendImage(img, mt, response, logger);            
             
             logger.debug("Job done in: "
                     + (System.currentTimeMillis() - startTime) + "ms");
@@ -133,6 +136,12 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
             logger.error("Servlet error: ", e);
         } catch (Exception e) {
             logger.error("Other error: ", e);
+        } catch (OutOfMemoryError e) {
+        	logger.error("Out of memory: ", e);
+        	if (!responseStarted) {
+        		Scaler.digilibError(errMsgType, Error.IMAGE, null,
+        				(HttpServletResponse) asyncContext.getResponse());
+        	}
         } finally {
             if (completed) {
                 logger.debug("AsyncServletWorker already completed (finally)!");
