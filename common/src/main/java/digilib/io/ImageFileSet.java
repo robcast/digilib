@@ -59,7 +59,7 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
      * @param file the File
      * @param scaleDirs the Directories
      */
-    public ImageFileSet(File file, Directory[] scaleDirs) {
+    public ImageFileSet(File file, FsDirectory[] scaleDirs) {
         int nb = scaleDirs.length;
         list = new ArrayList<ImageInput>(nb);
         this.file = file;
@@ -125,14 +125,14 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
      *            file (from first base dir)
      *  
      */
-    protected synchronized void fill(Directory[] scaleDirs, File fl) {
+    protected synchronized void fill(FsDirectory[] scaleDirs, File fl) {
     	String fn = fl.getName();
     	String baseFn = FileOps.basename(fn);
     	// add the first ImageFile to the ImageSet
     	add(new ImageFile(fl, this, scaleDirs[0]));
     	// iterate the remaining base directories
     	for (int i = 1; i < scaleDirs.length; ++i) {
-    	    Directory dir = scaleDirs[i];
+    	    FsDirectory dir = scaleDirs[i];
     		if (dir == null) {
     			continue;
     		}

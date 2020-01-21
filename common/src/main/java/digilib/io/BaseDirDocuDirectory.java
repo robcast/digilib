@@ -42,7 +42,7 @@ import digilib.io.FileOps.FileClass;
 public class BaseDirDocuDirectory extends FsDocuDirectory {
 
 	/** array of parallel dirs for scaled images */
-    protected Directory[] dirs = null;
+    protected FsDirectory[] dirs = null;
     
     /** list of base directories */
     protected String[] baseDirNames = null;
@@ -106,7 +106,7 @@ public class BaseDirDocuDirectory extends FsDocuDirectory {
 			// number of base dirs
 			int nb = baseDirNames.length;
 			// array of parallel dirs
-			dirs = new Directory[nb];
+			dirs = new FsDirectory[nb];
 			// first entry is this directory
 			dirs[0] = dir;
 			// fill array with the remaining directories
@@ -114,7 +114,7 @@ public class BaseDirDocuDirectory extends FsDocuDirectory {
 				// add dirName to baseDirName
 				File d = new File(baseDirNames[j], dirName);
 				if (d.isDirectory()) {
-					dirs[j] = new Directory(d);
+					dirs[j] = new FsDirectory(d);
 					logger.debug("  reading scaled directory " + d.getPath());
 					dirs[j].readDir();
 				}
@@ -141,7 +141,7 @@ public class BaseDirDocuDirectory extends FsDocuDirectory {
 			Collections.sort(dl);
 		}
 		// clear the scaled directories
-		for (Directory d : dirs) {
+		for (FsDirectory d : dirs) {
 			if (d != null) {
 				d.clearFilenames();
 			}

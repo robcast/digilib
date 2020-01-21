@@ -421,7 +421,7 @@ public class FileOps {
 	 *            optional additional parameters
 	 * @return the DocuDirent
 	 */
-	public static DocuDirent fileForClass(FileClass fileClass, File file, Directory[] scaleDirs) {
+	public static DocuDirent fileForClass(FileClass fileClass, File file, FsDirectory[] scaleDirs) {
 		// what class of file do we have?
 		if (fileClass == FileClass.IMAGE) {
 			// image file
