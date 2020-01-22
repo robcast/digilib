@@ -194,7 +194,7 @@ public class ImageJobDescription extends ParameterMap {
      * @throws ImageOpException   on error
      * @throws IOException  on error
      */
-    public static ImageJobDescription getInstanceWithImgs(DigilibRequest dlReq, ImageSet imgs, DigilibConfiguration dlcfg) 
+    public static ImageJobDescription getInstanceWithImageSet(DigilibRequest dlReq, ImageSet imgs, DigilibConfiguration dlcfg) 
             throws IOException, ImageOpException {
         ImageJobDescription newMap = new ImageJobDescription(dlcfg);
         // add all params to this map
