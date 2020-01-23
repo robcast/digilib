@@ -32,11 +32,11 @@ import java.io.File;
  */
 public abstract class FsDocuDirectory extends DocuDirectory {
 
-	protected Directory dir = null;
+	protected FsDirectory dir = null;
 
 	public FsDocuDirectory() {
 		super();
-		dir = new Directory();
+		dir = new FsDirectory();
 	}
 
     /* (non-Javadoc)
@@ -50,7 +50,7 @@ public abstract class FsDocuDirectory extends DocuDirectory {
 	 * 
 	 * @return the Directory
 	 */
-	public Directory getParentDirectory() {
+	public FsDirectory getParentDirectory() {
 		return dir.getParent();
 	}
 

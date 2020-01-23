@@ -40,10 +40,10 @@ public class MetaFactory {
     protected static Logger logger = Logger.getLogger(MetaFactory.class);
 
     /** DirMeta implementation class */
-    protected static Class<DirMeta> dirMetaClass;
+    protected static Class<? extends DirMeta> dirMetaClass = SimpleDirMeta.class;
 
     /** FileMeta implementation class */
-    protected static Class<FileMeta> fileMetaClass;
+    protected static Class<? extends FileMeta> fileMetaClass = SimpleFileMeta.class;
 
     public static FileMeta getFileMetaInstance() {
         if (fileMetaClass == null) {
@@ -76,14 +76,14 @@ public class MetaFactory {
     /**
      * @param dirMetaClass the dirMetaClass to set
      */
-    public static void setDirMetaClass(Class<DirMeta> dirMetaClass) {
+    public static void setDirMetaClass(Class<? extends DirMeta> dirMetaClass) {
         MetaFactory.dirMetaClass = dirMetaClass;
     }
 
     /**
      * @param fileMetaClass the fileMetaClass to set
      */
-    public static void setFileMetaClass(Class<FileMeta> fileMetaClass) {
+    public static void setFileMetaClass(Class<? extends FileMeta> fileMetaClass) {
         MetaFactory.fileMetaClass = fileMetaClass;
     }
     

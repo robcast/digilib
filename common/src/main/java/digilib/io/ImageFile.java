@@ -48,7 +48,7 @@ public class ImageFile extends ImageInput {
 	// file name
 	private String name = null;
 	// parent directory
-	private Directory dir = null;
+	private FsDirectory dir = null;
 
 	/** Constructor with File.
 	 * 
@@ -56,7 +56,7 @@ public class ImageFile extends ImageInput {
 	 * @param parent the ImageSet
 	 * @param parentDir the Directory
 	 */
-	public ImageFile(File f, ImageSet parent, Directory parentDir) {
+	public ImageFile(File f, ImageSet parent, FsDirectory parentDir) {
 		this.file = f;
 		this.name = f.getName();
 		this.parent = parent;
@@ -68,7 +68,7 @@ public class ImageFile extends ImageInput {
 	 * @param parent the ImageSet
 	 * @param dir the Directory
 	 */
-	public ImageFile(String fn, ImageSet parent, Directory dir) {
+	public ImageFile(String fn, ImageSet parent, FsDirectory dir) {
 		this.name = fn;
 		this.dir = dir;
 		this.file = new File(this.dir.getDir(), fn);

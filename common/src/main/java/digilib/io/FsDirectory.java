@@ -37,21 +37,21 @@ import org.apache.log4j.Logger;
  * @author casties
  *
  */
-public class Directory {
+public class FsDirectory {
 
 	protected Logger logger = Logger.getLogger(this.getClass());
 
 	/** File object pointing to the directory */
 	protected File dir = null;
 	/** parent directory */
-	protected Directory parent = null;
+	protected FsDirectory parent = null;
 	/** list of filenames in the directory */
 	protected String[] list = null;
 
 	/** Default constructor.
 	 * 
 	 */
-	public Directory() {
+	public FsDirectory() {
 		super();
 	}
 	
@@ -59,7 +59,7 @@ public class Directory {
 	 * 
 	 * @param d the File
 	 */
-	public Directory(File d) {
+	public FsDirectory(File d) {
 		dir = d;
 	}
 
@@ -68,7 +68,7 @@ public class Directory {
 	 * @param dir the File
 	 * @param parent the Directory
 	 */
-	public Directory(File dir, Directory parent) {
+	public FsDirectory(File dir, FsDirectory parent) {
 		this.dir = dir;
 		this.parent = parent;
 	}
@@ -77,7 +77,7 @@ public class Directory {
 	 * 
 	 * @param dn the name
 	 */
-	public Directory(String dn) {
+	public FsDirectory(String dn) {
 		dir = new File(dn);
 	}
 	
@@ -120,7 +120,7 @@ public class Directory {
 	 * Returns the parent Directory object.
 	 * @return the Directory
 	 */
-	public Directory getParent() {
+	public FsDirectory getParent() {
 		return parent;
 	}
 
@@ -128,7 +128,7 @@ public class Directory {
 	 * Sets the parent Directory object.
 	 * @param parent the Directory
 	 */
-	public void setParent(Directory parent) {
+	public void setParent(FsDirectory parent) {
 		this.parent = parent;
 	}
 
