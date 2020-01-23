@@ -30,7 +30,7 @@ Please see the [documentation on using the digilib Docker image](https://robcast
 
 Requirements:
 * [git](https://git-scm.com/)
-* [Java JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html) version 7 or later
+* [Java JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html) version 8 or later
 * [Maven](https://maven.apache.org/) version 3 or later
 
 ```
