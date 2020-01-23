@@ -129,7 +129,7 @@ public class BaseDirDocuDirectory extends FsDocuDirectory {
 			ArrayList<DocuDirent> dl = new ArrayList<DocuDirent>(numFiles);
 			files = dl;
 			for (File f : fileList) {
-				DocuDirent df = FileOps.fileForClass(fileClass, f, dirs);
+				DocuDirent df = DocuDirentFactory.getDocuDirentInstance(fileClass, f, dirs);
 				df.setParent(this);
 				// add the file to our list
 				dl.add(df);

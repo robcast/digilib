@@ -66,10 +66,6 @@ public class FileOps {
 
 	public static final Integer HINT_DIRS = Integer.valueOf(3);
 
-	public static Class<? extends DocuDirent> imageFileClass = ImageFileSet.class;
-	public static Class<? extends DocuDirent> textFileClass = TextFile.class;
-	public static Class<? extends DocuDirent> svgFileClass = SVGFile.class;
-	
 	/**
 	 * static initializer for FileOps
 	 */
@@ -426,20 +422,16 @@ public class FileOps {
 	 * @return the DocuDirent
 	 */
 	public static DocuDirent fileForClass(FileClass fileClass, File file, FsDirectory[] scaleDirs) {
-		try {
-			// what class of file do we have?
-			if (fileClass == FileClass.IMAGE) {
-				// image file (set)
-				return imageFileClass.getConstructor(File.class, FsDirectory[].class).newInstance(file, scaleDirs);
-			} else if (fileClass == FileClass.TEXT) {
-				// text file
-				return textFileClass.getConstructor(File.class).newInstance(file);
-			} else if (fileClass == FileClass.SVG) {
-				// text file
-				return svgFileClass.getConstructor(File.class).newInstance(file);
-			}
-		} catch (Exception e) {
-			// anything to be done?
+		// what class of file do we have?
+		if (fileClass == FileClass.IMAGE) {
+			// image file
+			return new ImageFileSet(file, scaleDirs);
+		} else if (fileClass == FileClass.TEXT) {
+			// text file
+			return new TextFile(file);
+		} else if (fileClass == FileClass.SVG) {
+			// text file
+			return new SVGFile(file);
 		}
 		return null;
 	}
