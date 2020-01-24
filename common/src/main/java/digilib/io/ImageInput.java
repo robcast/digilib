@@ -42,8 +42,6 @@ public abstract class ImageInput {
 	protected ImageSize pixelSize = null;
 	/** image tile size (null if untiled) */
 	protected ImageSize tileSize = null;
-	/** parent ImageSet */
-    protected ImageSet parent = null;
 
 	/**
 	 * @return ImageSize
@@ -114,21 +112,6 @@ public abstract class ImageInput {
 		return (pixelSize != null) ? pixelSize.getAspect() : 0f;
 	}
 	
-    /**
-     * @return ImageSet
-     */
-    public ImageSet getParent() {
-        return parent;
-    }
-
-    /**
-     * Sets the parent.
-     * @param parent The parent to set
-     */
-    public void setParent(ImageSet parent) {
-        this.parent = parent;
-    }
-
     /** Returns if the input can be returned as ImageInputStream.
 	 * 
 	 * @return has ImageInputStream

@@ -228,7 +228,6 @@ public class ImageSet {
      * @return true (always)
      */
     public boolean add(ImageInput f) {
-    	f.setParent(this);
     	return list.add(f);
     }
     
@@ -243,10 +242,6 @@ public class ImageSet {
     public void append(ImageSet imgs) {
         // append list
         list.addAll(imgs.list);
-        // change parents
-        for (ImageInput ii : imgs.list) {
-            ii.setParent(this);
-        }
     }
 
 }

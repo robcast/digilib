@@ -129,7 +129,7 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
     	String fn = fl.getName();
     	String baseFn = FileOps.basename(fn);
     	// add the first ImageFile to the ImageSet
-    	add(new ImageFile(fl, this, scaleDirs[0]));
+    	add(new ImageFile(fl, scaleDirs[0]));
     	// iterate the remaining base directories
     	for (int i = 1; i < scaleDirs.length; ++i) {
     	    FsDirectory dir = scaleDirs[i];
@@ -166,7 +166,7 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
     		if (FileOps.classForFilename(dirFiles[fileIdx]) == fileClass) {
     			/* logger.debug("adding file " + dirFiles[fileIdx]
     					+ " to Fileset " + this.getName()); */
-    			add(new ImageFile(dirFiles[fileIdx], this, dir));
+    			add(new ImageFile(dirFiles[fileIdx], dir));
     		}
     	}
     }

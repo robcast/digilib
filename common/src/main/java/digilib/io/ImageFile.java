@@ -53,26 +53,22 @@ public class ImageFile extends ImageInput {
 	/** Constructor with File.
 	 * 
 	 * @param f the File
-	 * @param parent the ImageSet
 	 * @param parentDir the Directory
 	 */
-	public ImageFile(File f, ImageSet parent, FsDirectory parentDir) {
+	public ImageFile(File f, FsDirectory parentDir) {
 		this.file = f;
 		this.name = f.getName();
-		this.parent = parent;
 		this.dir = parentDir;
 	}
 	
 	/** Constructor with filename (without path).
 	 * @param fn the fn
-	 * @param parent the ImageSet
 	 * @param dir the Directory
 	 */
-	public ImageFile(String fn, ImageSet parent, FsDirectory dir) {
+	public ImageFile(String fn, FsDirectory dir) {
 		this.name = fn;
 		this.dir = dir;
 		this.file = new File(this.dir.getDir(), fn);
-		this.parent = parent;
 	}
 	
 	
@@ -177,10 +173,6 @@ public class ImageFile extends ImageInput {
     @Override
 	public void setSize(ImageSize imageSize) {
 		this.pixelSize = imageSize;
-		// pass on to parent
-		if (this.parent != null) {
-			this.parent.setAspect(imageSize);
-		}
 	}
 
     /* (non-Javadoc)
