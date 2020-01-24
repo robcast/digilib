@@ -122,6 +122,8 @@ public class PDFRequest extends ParameterMap {
 		}
 		// process parameters
 		pages = new NumRange(getAsString("pgs"));
+		initOptions();
+		// get maxnum from directory
         ImageJobDescription ij = ImageJobDescription.getInstance(this, dlConfig);
         DocuDirectory dir = ij.getFileDirectory();
         int dirsize = dir.size();

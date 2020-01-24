@@ -300,7 +300,7 @@ public class Scaler extends HttpServlet {
              */
             if (sendFileAllowed && jobTicket.isSendAsFileRequested()) {
                 String mt = null;
-                if (jobTicket.hasOption(DigilibOption.rawfile)) {
+                if (jobTicket.getRequest().hasOption(DigilibOption.rawfile)) {
                 	// mo=rawfile sends as octet-stream
                     mt = "application/octet-stream";
                 }

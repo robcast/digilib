@@ -148,10 +148,10 @@ public class ImageWorker implements Callable<DocuImage> {
          * mirror image
          * operation mode: "hmir": mirror horizontally, "vmir": mirror vertically
          */
-        if (jobinfo.hasOption(DigilibOption.hmir)) {
+        if (jobinfo.getRequest().hasOption(DigilibOption.hmir)) {
             docuImage.mirror(0);
         }
-        if (jobinfo.hasOption(DigilibOption.vmir)) {
+        if (jobinfo.getRequest().hasOption(DigilibOption.vmir)) {
             docuImage.mirror(90);
         }
         if (stopNow) {
@@ -162,8 +162,8 @@ public class ImageWorker implements Callable<DocuImage> {
         /*
          * rotate image
          */
-        if (jobinfo.getAsFloat("rot") != 0d) {
-            docuImage.rotate(jobinfo.getAsFloat("rot"));
+        if (jobinfo.getRequest().getAsFloat("rot") != 0d) {
+            docuImage.rotate(jobinfo.getRequest().getAsFloat("rot"));
             /*
              * if (jobinfo.get_wholeRotArea()) { // crop to the inner bounding
              * box float xcrop = (float) (docuImage.getWidth() -
@@ -211,8 +211,8 @@ public class ImageWorker implements Callable<DocuImage> {
         /*
          * contrast and brightness enhancement
          */
-        float paramCONT = jobinfo.getAsFloat("cont");
-        float paramBRGT = jobinfo.getAsFloat("brgt");
+        float paramCONT = jobinfo.getRequest().getAsFloat("cont");
+        float paramBRGT = jobinfo.getRequest().getAsFloat("brgt");
         if ((paramCONT != 0f) || (paramBRGT != 0f)) {
             float mult = (float) Math.pow(2, paramCONT);
             docuImage.enhance(mult, paramBRGT);

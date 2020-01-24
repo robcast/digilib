@@ -289,9 +289,9 @@ public class DigilibRequest extends ParameterMap {
                 newParameter(name, null, val, 'r');
             } catch (UnsupportedEncodingException e) {
                 // this shouldn't happen anyway
-                e.printStackTrace();
             }
         }
+        initOptions();
     }
 
     /**

@@ -110,9 +110,9 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
              * set forced destination image type
              */
             String mt = null;
-            if (jobinfo.hasOption(DigilibOption.jpg)) {
+            if (jobinfo.getRequest().hasOption(DigilibOption.jpg)) {
                 mt = "image/jpeg";
-            } else if (jobinfo.hasOption(DigilibOption.png)) {
+            } else if (jobinfo.getRequest().hasOption(DigilibOption.png)) {
                 mt = "image/png";
             }
             /*

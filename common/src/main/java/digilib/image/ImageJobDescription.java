@@ -43,7 +43,6 @@ import digilib.io.FileOps;
 import digilib.io.ImageInput;
 import digilib.io.ImageSet;
 import digilib.util.ImageSize;
-import digilib.util.OptionsSet;
 import digilib.util.Parameter;
 import digilib.util.ParameterMap;
 
@@ -58,9 +57,12 @@ import digilib.util.ParameterMap;
  * 
  */
 
-public class ImageJobDescription extends ParameterMap {
+public class ImageJobDescription {
 
-    protected DigilibConfiguration dlConfig = null;
+    /** the global DigilibConfiguration */
+    protected DigilibConfiguration config = null;
+    /** the DigilibRequest for this job */
+    protected ParameterMap request = null;
     protected static Logger logger = Logger.getLogger("digilib.servlet");
 
     /* 
@@ -95,77 +97,17 @@ public class ImageJobDescription extends ParameterMap {
      * create empty ImageJobDescription.
      * 
      * @param dlcfg the DigilibConfiguration
+     * @param dlreq the DigilibRequest
      */
-    public ImageJobDescription(DigilibConfiguration dlcfg) {
-        super(30);
-        initParams();
-        dlConfig = dlcfg;
-        dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
-        preselectInputs = dlConfig.getAsBoolean("input-preselection-allowed");
-    }
-
-    /*
-     * set up Parameters
-     * 
-     * @see digilib.util.ParameterMap#initParams()
-     */
-    @Override
-    protected void initParams() {
-        // url of the page/document (second part)
-        newParameter("fn", "", null, 's');
-        // page number
-        newParameter("pn", Integer.valueOf(1), null, 's');
-        // width of client in pixels
-        newParameter("dw", Integer.valueOf(0), null, 's');
-        // height of client in pixels
-        newParameter("dh", Integer.valueOf(0), null, 's');
-        // left edge of image (float from 0 to 1)
-        newParameter("wx", Float.valueOf(0), null, 's');
-        // top edge in image (float from 0 to 1)
-        newParameter("wy", Float.valueOf(0), null, 's');
-        // width of image (float from 0 to 1)
-        newParameter("ww", Float.valueOf(1), null, 's');
-        // height of image (float from 0 to 1)
-        newParameter("wh", Float.valueOf(1), null, 's');
-        // scale factor
-        newParameter("ws", Float.valueOf(1), null, 's');
-        // special options like 'fit' for gifs
-        newParameter("mo", this.options, null, 's');
-        // rotation angle (degree)
-        newParameter("rot", Float.valueOf(0), null, 's');
-        // contrast enhancement factor
-        newParameter("cont", Float.valueOf(0), null, 's');
-        // brightness enhancement factor
-        newParameter("brgt", Float.valueOf(0), null, 's');
-        // color multiplicative factors
-        newParameter("rgbm", "0/0/0", null, 's');
-        // color additive factors
-        newParameter("rgba", "0/0/0", null, 's');
-        // display dpi resolution (total)
-        newParameter("ddpi", Float.valueOf(0), null, 's');
-        // display dpi X resolution
-        newParameter("ddpix", Float.valueOf(0), null, 's');
-        // display dpi Y resolution
-        newParameter("ddpiy", Float.valueOf(0), null, 's');
-        // scale factor for mo=ascale
-        newParameter("scale", Float.valueOf(1), null, 's');
-        // color conversion operation
-        newParameter("colop", "", null, 's');
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see digilib.servlet.ParameterMap#initOptions()
-     */
-    @Override
-    protected void initOptions() {
-        String s = this.getAsString("mo");
-        options = new OptionsSet(s);
+    public ImageJobDescription(DigilibConfiguration dlcfg, ParameterMap dlreq) {
+        config = dlcfg;
+        request = dlreq;
+        dirCache = (DocuDirCache) config.getValue("servlet.dir.cache");
+        preselectInputs = config.getAsBoolean("input-preselection-allowed");
     }
 
     /**
-     * Creates new ImageJobDescription by merging Parameters from a
+     * Creates new ImageJobDescription from a
      * DigilibRequest.
      * 
      * @param dlReq the DigilibRequest
@@ -175,10 +117,8 @@ public class ImageJobDescription extends ParameterMap {
      * @throws IOException  on error
      */
     public static ImageJobDescription getInstance(DigilibRequest dlReq, DigilibConfiguration dlcfg) throws IOException, ImageOpException {
-        ImageJobDescription newMap = new ImageJobDescription(dlcfg);
-        // add all params to this map
-        newMap.params.putAll(dlReq.getParams());
-        newMap.initOptions();
+        ImageJobDescription newMap = new ImageJobDescription(dlcfg, dlReq);
+        // set up parameters
         newMap.prepareScaleParams();
         // add ImageJobDescription back into DigilibRequest
         dlReq.setJobDescription(newMap);
@@ -186,7 +126,7 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     /**
-     * Creates new ImageJobDescription by merging Parameters from a
+     * Creates new ImageJobDescription from a
      * DigilibRequest and adding an ImageSet.
      * 
      * @param dlReq the DigilibRequest
@@ -198,10 +138,8 @@ public class ImageJobDescription extends ParameterMap {
      */
     public static ImageJobDescription getInstanceWithImageSet(DigilibRequest dlReq, ImageSet imgs, DigilibConfiguration dlcfg) 
             throws IOException, ImageOpException {
-        ImageJobDescription newMap = new ImageJobDescription(dlcfg);
-        // add all params to this map
-        newMap.params.putAll(dlReq.getParams());
-        newMap.initOptions();
+        ImageJobDescription newMap = new ImageJobDescription(dlcfg, dlReq);
+        // set up parameters
         newMap.setImageSet(imgs);
         newMap.prepareScaleParams();
         // add ImageJobDescription back into DigilibRequest
@@ -210,7 +148,7 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     /**
-     * Creates new ImageJobDescription by merging Parameters from another
+     * Creates new ImageJobDescription from another
      * ParameterMap.
      * 
      * @param pm the ParameterMap
@@ -220,10 +158,8 @@ public class ImageJobDescription extends ParameterMap {
      * @throws IOException on error
      */
     public static ImageJobDescription getInstance(ParameterMap pm, DigilibConfiguration dlcfg) throws IOException, ImageOpException {
-        ImageJobDescription newMap = new ImageJobDescription(dlcfg);
-        // add all params to this map
-        newMap.params.putAll(pm.getParams());
-        newMap.initOptions();
+        ImageJobDescription newMap = new ImageJobDescription(dlcfg, pm);
+        // set up parameters
         newMap.prepareScaleParams();
         return newMap;
     }
@@ -297,8 +233,8 @@ public class ImageJobDescription extends ParameterMap {
          * Note: dw or dh can be empty (=0) 
          */
         minSourceSize = new ImageSize(
-        		Math.round(getAsInt("dw") / getWw()), 
-                Math.round(getAsInt("dh") / getWh()));
+        		Math.round(request.getAsInt("dw") / getWw()), 
+                Math.round(request.getAsInt("dh") / getWh()));
         
         /*
          * get image region of interest
@@ -327,7 +263,7 @@ public class ImageJobDescription extends ParameterMap {
         } else if (scaleY == 0) {
             // dh undefined
             scaleY = scaleX;
-        } else if (hasOption(DigilibOption.crop)) {
+        } else if (request.hasOption(DigilibOption.crop)) {
             // use the bigger factor to get fill-the-box
             if (scaleX > scaleY) {
                 scaleY = scaleX;
@@ -356,7 +292,7 @@ public class ImageJobDescription extends ParameterMap {
             // use the smaller factor to get fit-in-box
             if (scaleX > scaleY) {
                 scaleX = scaleY;
-                if (hasOption(DigilibOption.fill)) {
+                if (request.hasOption(DigilibOption.fill)) {
                     // fill mode uses whole destination rect
                     long filledAreaWidth = Math.round(getDw() / scaleX);
                     if (filledAreaWidth > areaWidth) {
@@ -369,7 +305,7 @@ public class ImageJobDescription extends ParameterMap {
                 }
             } else {
                 scaleY = scaleX;
-                if (hasOption(DigilibOption.fill)) {
+                if (request.hasOption(DigilibOption.fill)) {
                     // fill mode uses whole destination rect
                     long filledAreaHeight = Math.round(getDh() / scaleY);
                     if (filledAreaHeight > areaHeight) {
@@ -402,8 +338,8 @@ public class ImageJobDescription extends ParameterMap {
          * w_min = dw * 1/ww
          */
         minSourceSize = new ImageSize(
-                Math.round(getAsInt("dw") / getWw()), 
-                Math.round(getAsInt("dh") / getWh()));
+                Math.round(request.getAsInt("dw") / getWw()), 
+                Math.round(request.getAsInt("dh") / getWh()));
         
         /*
          * get image region of interest
@@ -446,7 +382,7 @@ public class ImageJobDescription extends ParameterMap {
         /*
          * minimum source size -- apply scale to hires size
          */
-        minSourceSize = getHiresSize().getScaled(getAsFloat("scale"));
+        minSourceSize = getHiresSize().getScaled(request.getAsFloat("scale"));
         
         /*
          * get image region of interest
@@ -467,7 +403,7 @@ public class ImageJobDescription extends ParameterMap {
         /*
          * absolute scale factor -- either original size, based on dpi, or absolute 
          */
-        if (hasOption(DigilibOption.osize)) {
+        if (request.hasOption(DigilibOption.osize)) {
             /*
              * get original resolution from metadata
              */
@@ -477,10 +413,10 @@ public class ImageJobDescription extends ParameterMap {
             if ((origResX == 0) || (origResY == 0)) {
                 throw new ImageOpException("Missing image DPI information!");
             }
-            double ddpix = getAsFloat("ddpix");
-            double ddpiy = getAsFloat("ddpiy");
+            double ddpix = request.getAsFloat("ddpix");
+            double ddpiy = request.getAsFloat("ddpiy");
             if (ddpix == 0 || ddpiy == 0) {
-                double ddpi = getAsFloat("ddpi");
+                double ddpi = request.getAsFloat("ddpi");
                 if (ddpi == 0) {
                     throw new ImageOpException("Missing display DPI information!");
                 } else {
@@ -496,7 +432,7 @@ public class ImageJobDescription extends ParameterMap {
             /*
              * explicit absolute scale factor
              */
-            double scaleXY = (double) getAsFloat("scale");
+            double scaleXY = (double) request.getAsFloat("scale");
             scaleX = scaleXY;
             scaleY = scaleXY;
             // use original size if no destination size given
@@ -580,9 +516,9 @@ public class ImageJobDescription extends ParameterMap {
      */
     public String getOutputMimeType() {
         // forced destination image type
-        if (hasOption(DigilibOption.jpg)) {
+        if (request.hasOption(DigilibOption.jpg)) {
             return "image/jpeg";
-        } else if (hasOption(DigilibOption.png)) {
+        } else if (request.hasOption(DigilibOption.png)) {
             return "image/png";
         }
         // use input image type
@@ -705,9 +641,9 @@ public class ImageJobDescription extends ParameterMap {
             if (dirCache == null) {
                 throw new FileOpException("No DirCache configured!");
             }
-            imageSet = (ImageSet) dirCache.getFile(getFilePath(), getAsInt("pn"));
+            imageSet = (ImageSet) dirCache.getFile(getFilePath(), request.getAsInt("pn"));
             if (imageSet == null) {
-                throw new FileOpException("File " + getFilePath() + "(" + getAsInt("pn") + ") not found.");
+                throw new FileOpException("File " + getFilePath() + "(" + request.getAsInt("pn") + ") not found.");
             }
         }
         return imageSet;
@@ -730,8 +666,8 @@ public class ImageJobDescription extends ParameterMap {
      */
     public String getFilePath() {
         if (filePath == null) {
-            String s = this.getAsString("request.path");
-            s += this.getAsString("fn");
+            String s = request.getAsString("request.path");
+            s += request.getAsString("fn");
             filePath = FileOps.normalName(s);
         }
         return filePath;
@@ -743,7 +679,7 @@ public class ImageJobDescription extends ParameterMap {
      * @return is Hires Only
      */
     public boolean isHiresOnly() {
-        return hasOption(DigilibOption.clip) || hasOption(DigilibOption.hires);
+        return request.hasOption(DigilibOption.clip) || request.hasOption(DigilibOption.hires);
     }
 
     /**
@@ -752,7 +688,7 @@ public class ImageJobDescription extends ParameterMap {
      * @return is lores only
      */
     public boolean isLoresOnly() {
-        return hasOption(DigilibOption.lores);
+        return request.hasOption(DigilibOption.lores);
     }
 
     /**
@@ -761,9 +697,9 @@ public class ImageJobDescription extends ParameterMap {
      * @return is scale to fit
      */
     public boolean isScaleToFit() {
-        return hasOption(DigilibOption.fit) || 
-        		!(hasOption(DigilibOption.clip) || hasOption(DigilibOption.osize) 
-        				|| hasOption(DigilibOption.ascale) || hasOption(DigilibOption.squeeze));
+        return request.hasOption(DigilibOption.fit) || 
+        		!(request.hasOption(DigilibOption.clip) || request.hasOption(DigilibOption.osize) 
+        				|| request.hasOption(DigilibOption.ascale) || request.hasOption(DigilibOption.squeeze));
     }
 
     /**
@@ -772,7 +708,7 @@ public class ImageJobDescription extends ParameterMap {
      * @return is crop to fit
      */
     public boolean isCropToFit() {
-        return hasOption(DigilibOption.clip);
+        return request.hasOption(DigilibOption.clip);
     }
 
     /**
@@ -781,7 +717,7 @@ public class ImageJobDescription extends ParameterMap {
      * @return is squeeze to fit
      */
     public boolean isSqueezeToFit() {
-        return hasOption(DigilibOption.squeeze);
+        return request.hasOption(DigilibOption.squeeze);
     }
 
     /**
@@ -790,7 +726,7 @@ public class ImageJobDescription extends ParameterMap {
      * @return is absolute scale
      */
     public boolean isAbsoluteScale() {
-        return hasOption(DigilibOption.osize) || hasOption(DigilibOption.ascale);
+        return request.hasOption(DigilibOption.osize) || request.hasOption(DigilibOption.ascale);
     }
 
     /**
@@ -895,7 +831,7 @@ public class ImageJobDescription extends ParameterMap {
     public int getDw() {
         //logger.debug("get_paramDW()");
         if (paramDW == null) {
-            paramDW = getAsInt("dw");
+            paramDW = request.getAsInt("dw");
         }
         return paramDW;
     }
@@ -909,7 +845,7 @@ public class ImageJobDescription extends ParameterMap {
     public int getDh() {
         //logger.debug("get_paramDH()");
         if (paramDH == null) {
-            paramDH = getAsInt("dh");
+            paramDH = request.getAsInt("dh");
         }
         return paramDH;
     }
@@ -925,12 +861,12 @@ public class ImageJobDescription extends ParameterMap {
     public Float getWw() throws IOException {
         //logger.debug("get_paramWW()");
         if (paramWW == null) {
-        	paramWW = getAsFloat("ww");
-        	if (hasOption(DigilibOption.pxarea)) {
+        	paramWW = request.getAsFloat("ww");
+        	if (request.hasOption(DigilibOption.pxarea)) {
         		// area in absolute pixels - convert to relative
         		hiresSize = getHiresSize();
         		paramWW = paramWW / hiresSize.getWidth(); 
-        	} else if (hasOption(DigilibOption.sqarea)) {
+        	} else if (request.hasOption(DigilibOption.sqarea)) {
         		// square full size area
         		hiresSize = getHiresSize();
         		float aspect = hiresSize.getAspect();
@@ -957,12 +893,12 @@ public class ImageJobDescription extends ParameterMap {
     public Float getWh() throws IOException {
         //logger.debug("get_paramWH()");
         if (paramWH == null) {
-        	paramWH = getAsFloat("wh");
-        	if (hasOption(DigilibOption.pxarea)) {
+        	paramWH = request.getAsFloat("wh");
+        	if (request.hasOption(DigilibOption.pxarea)) {
         		// area in absolute pixels - convert to relative
         		hiresSize = getHiresSize();
         		paramWH = paramWH / hiresSize.getHeight(); 
-        	} else if (hasOption(DigilibOption.sqarea)) {
+        	} else if (request.hasOption(DigilibOption.sqarea)) {
         		// square full size area
         		hiresSize = getHiresSize();
         		float aspect = hiresSize.getAspect();
@@ -989,12 +925,12 @@ public class ImageJobDescription extends ParameterMap {
     public Float getWx() throws IOException {
         //logger.debug("get_paramWX()");
         if (paramWX == null) {
-        	paramWX = getAsFloat("wx");
-        	if (hasOption(DigilibOption.pxarea)) {
+        	paramWX = request.getAsFloat("wx");
+        	if (request.hasOption(DigilibOption.pxarea)) {
         		// area in absolute pixels - convert to relative
         		ImageSize imgSize = getHiresSize();
         		paramWX = paramWX / imgSize.getWidth(); 
-        	} else if (hasOption(DigilibOption.sqarea)) {
+        	} else if (request.hasOption(DigilibOption.sqarea)) {
         		// square full size area
         		hiresSize = getHiresSize();
         		float aspect = hiresSize.getAspect();
@@ -1021,12 +957,12 @@ public class ImageJobDescription extends ParameterMap {
     public Float getWy() throws IOException {
         //logger.debug("get_paramWY()");
         if (paramWY == null) {
-        	paramWY = getAsFloat("wy");
-        	if (hasOption(DigilibOption.pxarea)) {
+        	paramWY = request.getAsFloat("wy");
+        	if (request.hasOption(DigilibOption.pxarea)) {
         		// area in absolute pixels - convert to relative
         		ImageSize imgSize = getHiresSize();
         		paramWY = paramWY / imgSize.getHeight(); 
-        	} else if (hasOption(DigilibOption.sqarea)) {
+        	} else if (request.hasOption(DigilibOption.sqarea)) {
         		// square full size area
         		hiresSize = getHiresSize();
         		float aspect = hiresSize.getAspect();
@@ -1049,12 +985,12 @@ public class ImageJobDescription extends ParameterMap {
      */
     public int getScaleQual() {
         //logger.debug("get_scaleQual()");
-        int qual = dlConfig.getAsInt("default-quality");
-        if (hasOption(DigilibOption.q0))
+        int qual = config.getAsInt("default-quality");
+        if (request.hasOption(DigilibOption.q0))
             qual = 0;
-        else if (hasOption(DigilibOption.q1))
+        else if (request.hasOption(DigilibOption.q1))
             qual = 1;
-        else if (hasOption(DigilibOption.q2)) 
+        else if (request.hasOption(DigilibOption.q2)) 
             qual = 2;
         return qual;
     }
@@ -1065,7 +1001,7 @@ public class ImageJobDescription extends ParameterMap {
      * @return the ColorOp
      */
     public ColorOp getColOp() {
-        String op = getAsString("colop");
+        String op = request.getAsString("colop");
         if (op == null || op.length() == 0) {
             return null;
         }
@@ -1122,7 +1058,7 @@ public class ImageJobDescription extends ParameterMap {
      */
     public float[] getRGBM() {
         if (paramRGBM == null) {
-            Parameter p = params.get("rgbm");
+            Parameter p = request.get("rgbm");
             if (p.hasValue() && (!p.getAsString().equals("0/0/0"))) {
                 paramRGBM = p.parseAsFloatArray("/");
             }
@@ -1137,7 +1073,7 @@ public class ImageJobDescription extends ParameterMap {
      */
     public float[] getRGBA() {
         if (paramRGBA == null) {
-            Parameter p = params.get("rgba");
+            Parameter p = request.get("rgba");
             if (p.hasValue() && (!p.getAsString().equals("0/0/0"))) {
                 paramRGBA = p.parseAsFloatArray("/");
             }
@@ -1151,7 +1087,7 @@ public class ImageJobDescription extends ParameterMap {
      * @return is send as file
      */
     public boolean isSendAsFileRequested() {
-        return hasOption(DigilibOption.file) || hasOption(DigilibOption.rawfile);
+        return request.hasOption(DigilibOption.file) || request.hasOption(DigilibOption.rawfile);
     }
 
     /**
@@ -1178,19 +1114,19 @@ public class ImageJobDescription extends ParameterMap {
             		// input image is browser compatible
                     && input.hasTag(ImageInput.InputTag.SENDABLE)
                     // no forced type conversion
-                    && !(hasOption(DigilibOption.jpg) && !mimeType.equals("image/jpeg"))
-                    && !(hasOption(DigilibOption.png) && !mimeType.equals("image/png"))
+                    && !(request.hasOption(DigilibOption.jpg) && !mimeType.equals("image/jpeg"))
+                    && !(request.hasOption(DigilibOption.png) && !mimeType.equals("image/png"))
                     // no zooming
                     && !isZoomRequested()
                     // no other image operations
-                    && !(hasOption(DigilibOption.vmir) 
-                            || hasOption(DigilibOption.hmir)
-                            || (getAsFloat("rot") != 0.0)
+                    && !(request.hasOption(DigilibOption.vmir) 
+                            || request.hasOption(DigilibOption.hmir)
+                            || (request.getAsFloat("rot") != 0.0)
                             || (getRGBM() != null)
                             || (getRGBA() != null)
                             || (this.getColOp() != null) 
-                            || (getAsFloat("cont") != 0.0) 
-                            || (getAsFloat("brgt") != 0.0)));
+                            || (request.getAsFloat("cont") != 0.0) 
+                            || (request.getAsFloat("brgt") != 0.0)));
         }
         return imageSendable;
     }
@@ -1218,6 +1154,13 @@ public class ImageJobDescription extends ParameterMap {
         	}
         }
         return true;
+    }
+
+    /**
+     * @return the DigilibRequest
+     */
+    public ParameterMap getRequest() {
+        return request;
     }
 
     /**
