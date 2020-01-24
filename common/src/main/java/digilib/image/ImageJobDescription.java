@@ -1141,7 +1141,7 @@ public class ImageJobDescription extends ParameterMap {
             String mimeType = getInputMimeType();
             imageSendable = (mimeType != null
             		// input image is browser compatible
-                    && isMimeTypeSendable(mimeType)
+                    && FileOps.isMimeTypeSendable(mimeType)
                     // no forced type conversion
                     && !(hasOption(DigilibOption.jpg) && !mimeType.equals("image/jpeg"))
                     && !(hasOption(DigilibOption.png) && !mimeType.equals("image/png"))
@@ -1156,16 +1156,6 @@ public class ImageJobDescription extends ParameterMap {
                     || (getAsFloat("cont") != 0.0) || (getAsFloat("brgt") != 0.0)));
         }
         return imageSendable;
-    }
-
-    /**
-     * Returns if the mime-type is browser compatible.
-     * 
-     * @param mimeType
-     * @return
-     */
-    public boolean isMimeTypeSendable(String mimeType) {
-        return mimeType.equals("image/jpeg") || mimeType.equals("image/png") || mimeType.equals("image/gif");
     }
 
     /**

@@ -486,4 +486,17 @@ public class FileOps {
         }
     }
 
+    /**
+     * Returns if the mime-type is browser compatible.
+     * 
+     * @param mimeType
+     * @return
+     */
+    public static boolean isMimeTypeSendable(String mimeType) {
+        return (mimeType != null
+                && (mimeType.equals("image/jpeg") 
+                        || mimeType.equals("image/png") 
+                        || mimeType.equals("image/gif")));
+    }
+
 }

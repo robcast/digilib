@@ -29,6 +29,7 @@ package digilib.io;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.EnumSet;
 
 import javax.imageio.stream.ImageInputStream;
 
@@ -42,6 +43,12 @@ public abstract class ImageInput {
 	protected ImageSize pixelSize = null;
 	/** image tile size (null if untiled) */
 	protected ImageSize tileSize = null;
+	/** tags to characterise image type for processing */
+	public static enum InputTag {
+	    SENDABLE, TILED 
+	}
+	/** InputTags for this input */
+	protected EnumSet<InputTag> tags = null;
 
 	/**
 	 * @return ImageSize
@@ -95,7 +102,44 @@ public abstract class ImageInput {
 		this.mimetype = filetype;
 	}
 
-	/** returns if this image has been checked 
+	/**
+     * @return the tags
+     */
+    public EnumSet<InputTag> getTags() {
+        return tags;
+    }
+
+    /**
+     * @param tags the tags to set
+     */
+    public void setTags(EnumSet<InputTag> tags) {
+        this.tags = tags;
+    }
+    
+    /**
+     * Returns if the input has the given tag.
+     * 
+     * @param tag
+     * @return
+     */
+    public boolean hasTag(InputTag tag) {
+        return (tags != null && tags.contains(tag));
+    }
+
+    /**
+     * Sets the given tag on the input.
+     *  
+     * @param tag the tag to set
+     */
+    public void setTag(InputTag tag) {
+        if (tags == null) {
+            tags = EnumSet.of(tag);
+        } else {
+            tags.add(tag);
+        }
+    }
+    
+    /** returns if this image has been checked 
 	 * (i.e. has size and mimetype)
 	 * TODO: deprecated
 	 * @return is checked

@@ -32,6 +32,7 @@ import java.io.RandomAccessFile;
 
 import org.devlib.schmidt.imageinfo.ImageInfo;
 
+import digilib.io.FileOps;
 import digilib.io.ImageInput;
 import digilib.util.ImageSize;
 
@@ -77,6 +78,10 @@ public abstract class ImageInfoDocuImage extends DocuImageImpl {
                     mt = "image/jpeg";
                 }
                 ii.setMimetype(mt);
+                if (FileOps.isMimeTypeSendable(mt)) {
+                    // set sendable tag
+                    ii.setTag(ImageInput.InputTag.SENDABLE);
+                }
                 logger.debug("image size: " + ii.getSize());
                 return ii;
             }

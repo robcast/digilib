@@ -341,6 +341,8 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             	ImageSize ts = new ImageSize(reader.getTileWidth(0), reader.getTileHeight(0));
             	input.setTileSize(ts);
             	logger.debug("tile size: "+ts);
+            	// set tiled tag
+            	input.setTag(ImageInput.InputTag.TILED);
             }
             // set mime type
             if (input.getMimetype() == null) {
@@ -352,6 +354,10 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
                     String t = reader.getFormatName();
                     input.setMimetype(t);
                 }
+            }
+            // set sendable tag
+            if (FileOps.isMimeTypeSendable(input.getMimetype())) {
+                input.setTag(ImageInput.InputTag.SENDABLE);
             }
             return input;
         } catch (FileOpException e) {
