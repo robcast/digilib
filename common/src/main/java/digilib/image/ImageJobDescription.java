@@ -89,6 +89,7 @@ public class ImageJobDescription extends ParameterMap {
     protected DocuDirCache dirCache = null;
 	protected ImageSize hiresSize = null;
 	protected ImageSize imgSize = null;
+	protected boolean preselectInputs = true;
 
     /**
      * create empty ImageJobDescription.
@@ -100,6 +101,7 @@ public class ImageJobDescription extends ParameterMap {
         initParams();
         dlConfig = dlcfg;
         dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
+        preselectInputs = dlConfig.getAsBoolean("input-preselection-allowed");
     }
 
     /*
@@ -613,7 +615,7 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     /**
-     * Returns the ImageInput to use.
+     * Returns the best ImageInput to use.
      * 
      * Note: uses getMinSourceSize().
      * 
@@ -623,24 +625,48 @@ public class ImageJobDescription extends ParameterMap {
     public ImageInput getInput() throws IOException {
         if (input == null) {
             imageSet = getImageSet();
+            
+            // set type preference tag
+            ImageInput.InputTag preference = null;
+            if (preselectInputs) {
+                if (isZoomRequested()) {
+                    // tiled image is better for zoomed access
+                    preference = ImageInput.InputTag.TILED;
+                } else {
+                    // sendable image is better for whole image access
+                    preference = ImageInput.InputTag.SENDABLE;
+                }
+            }
 
             /* select a resolution */
             if (isHiresOnly()) {
-                // get first element (= highest resolution)
-                input = imageSet.getBiggest();
+                // get highest resolution
+                input = imageSet.getBiggestPreferred(preference);
             } else if (isLoresOnly()) {
                 // enforced lores uses next smaller resolution
-                input = imageSet.getNextSmaller(getMinSourceSize());
+                if (preselectInputs) {
+                    input = imageSet.getNextSmaller(getMinSourceSize(), preference);
+                }
                 if (input == null) {
-                    // this is the smallest we have
-                    input = imageSet.getSmallest();
+                    // try unpreferred
+                    input = imageSet.getNextSmaller(getMinSourceSize());
+                    if (input == null) {
+                        // this is the smallest we have
+                        input = imageSet.getSmallestPreferred(preference);
+                    }
                 }
             } else {
                 // autores: use next higher resolution
-                input = imageSet.getNextBigger(getMinSourceSize());
+                if (preselectInputs) {
+                    input = imageSet.getNextBigger(getMinSourceSize(), preference);
+                }
                 if (input == null) {
-                    // this is the highest we have
-                    input = imageSet.getBiggest();
+                    // try without preference
+                    input = imageSet.getNextBigger(getMinSourceSize());
+                    if (input == null) {
+                        // this is the highest we have
+                        input = imageSet.getBiggestPreferred(preference);
+                    }
                 }
             }
             if (input == null || input.getMimetype() == null) {
@@ -1120,12 +1146,21 @@ public class ImageJobDescription extends ParameterMap {
     }
 
     /**
-     * Has send-as-file been requested?
+     * Returns if send-as-file has been requested?
      * 
      * @return is send as file
      */
-    public boolean getSendAsFile() {
+    public boolean isSendAsFileRequested() {
         return hasOption(DigilibOption.file) || hasOption(DigilibOption.rawfile);
+    }
+
+    /**
+     * Returns if zoom has been requested.
+     * @return
+     * @throws IOException
+     */
+    public boolean isZoomRequested() throws IOException {
+        return getWx() > 0f || getWy() > 0f || getWw() < 1f || getWh() < 1f;
     }
 
     /**
@@ -1141,19 +1176,21 @@ public class ImageJobDescription extends ParameterMap {
             String mimeType = getInputMimeType();
             imageSendable = (mimeType != null
             		// input image is browser compatible
-                    && FileOps.isMimeTypeSendable(mimeType)
+                    && input.hasTag(ImageInput.InputTag.SENDABLE)
                     // no forced type conversion
                     && !(hasOption(DigilibOption.jpg) && !mimeType.equals("image/jpeg"))
                     && !(hasOption(DigilibOption.png) && !mimeType.equals("image/png"))
                     // no zooming
-                    && !(getWx() > 0f || getWy() > 0f || getWw() < 1f || getWh() < 1f
+                    && !isZoomRequested()
                     // no other image operations
-                    || hasOption(DigilibOption.vmir) || hasOption(DigilibOption.hmir)
-                    || (getAsFloat("rot") != 0.0)
-                    || (getRGBM() != null)
-                    || (getRGBA() != null)
-                    || (this.getColOp() != null) 
-                    || (getAsFloat("cont") != 0.0) || (getAsFloat("brgt") != 0.0)));
+                    && !(hasOption(DigilibOption.vmir) 
+                            || hasOption(DigilibOption.hmir)
+                            || (getAsFloat("rot") != 0.0)
+                            || (getRGBM() != null)
+                            || (getRGBA() != null)
+                            || (this.getColOp() != null) 
+                            || (getAsFloat("cont") != 0.0) 
+                            || (getAsFloat("brgt") != 0.0)));
         }
         return imageSendable;
     }

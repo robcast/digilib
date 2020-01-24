@@ -76,7 +76,7 @@ import digilib.util.ImageSize;
 public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 
     /** DocuImage version */
-    public static final String version = "ImageLoaderDocuImage 2.3.0";
+    public static final String version = "ImageLoaderDocuImage 2.3.1";
 
     /** image object */
     protected BufferedImage img;

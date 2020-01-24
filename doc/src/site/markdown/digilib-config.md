@@ -120,7 +120,14 @@ subsampling, i.e. by skipping pixels.
 <parameter name="image-writer-classes" value="image/jpeg=com.sun.imageio.plugins.jpeg.JPEGImageWriter"/>
 ```
 Parameters to explicitly specify the Java classes to use as ImageReader and ImageWriter for a given mime-type 
-(separate multiple type-class pairs with commas). Only for special situations. Do not use this unless you have to!
+(separate multiple type-class pairs with comma). Only for special situations. Do not use this unless you have to!
+
+```xml
+<parameter name="input-preselection-allowed" value="false" />
+```
+Parameter to enable the input preselection mode. This mode currently tries to use browser-usable (JPEG, PNG, GIF) images
+for full-image unzoomed requests and tiled images for zoom requests. Enable this if you have different types of prescaled
+images at the same sizes and you want to offer both optimized tiled access and whole-image access.
 
 
 ### Authentication and authorization

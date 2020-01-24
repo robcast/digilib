@@ -120,6 +120,12 @@ public class ImageFile extends ImageInput {
         return (pixelSize != null) ? pixelSize.getAspect() : 0f;
     }
 
+    @Override
+    public boolean hasTag(InputTag tag) {
+        if (tag != null) check();
+        return super.hasTag(tag);
+    }
+
     /** Returns the file name (without path).
 	 * 
 	 * @return the name
@@ -165,14 +171,6 @@ public class ImageFile extends ImageInput {
     @Override
 	public File getFile() {
 		return file;
-	}
-
-	/* (non-Javadoc)
-	 * @see digilib.io.ImageInput#setSize(digilib.image.ImageSize)
-	 */
-    @Override
-	public void setSize(ImageSize imageSize) {
-		this.pixelSize = imageSize;
 	}
 
     /* (non-Javadoc)

@@ -42,7 +42,7 @@ import digilib.util.ImageSize;
  */
 public class ImageSet {
 
-	/** list of files (ImageFile) */
+	/** list of files (ImageInput) */
 	protected List<ImageInput> list = null;
 
 	/** aspect ratio (width/height) */
@@ -80,7 +80,7 @@ public class ImageSet {
 	}
 
 	/**
-	 * Get the ImageFile at the index.
+	 * Get the ImageInput at the index.
 	 * 
 	 * 
 	 * @param index the index
@@ -90,29 +90,51 @@ public class ImageSet {
 		return list.get(index);
 	}
 
-	/**
-	 * Get the next smaller ImageFile than the given size.
-	 * 
-	 * Returns the ImageFile from the set that has a width and height smaller or
-	 * equal the given size. Returns null if there isn't any smaller image.
-	 * 
-	 * @param size the size
-	 * @return the ImageInput
-	 */
-	public ImageInput getNextSmaller(ImageSize size) {
+    /**
+     * Get the next smaller ImageInput than the given size.
+     * 
+     * Returns the ImageInput from the set that has a width and height smaller or
+     * equal the given size. Returns null if there isn't any smaller image.
+     * 
+     * @param size the size
+     * @return the ImageInput
+     */
+    public ImageInput getNextSmaller(ImageSize size) {
         for (ImageInput i : list) {
             ImageSize is = i.getSize();
             if (is != null && is.isTotallySmallerThan(size)) {
-				return i;
-			}
-		}
-		return null;
-	}
+                return i;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get the next smaller ImageInput with the given tag than the given size.
+     * 
+     * Returns the ImageInput from the set that has a width and height smaller or
+     * equal the given size. Returns null if there isn't any smaller image.
+     * 
+     * @param size the size
+     * @param tag the tag
+     * @return the ImageInput
+     */
+    public ImageInput getNextSmaller(ImageSize size, ImageInput.InputTag tag) {
+        for (ImageInput i : list) {
+            if (i.hasTag(tag)) {
+                ImageSize is = i.getSize();
+                if (is != null && is.isTotallySmallerThan(size)) {
+                    return i;
+                }
+            }
+        }
+        return null;
+    }
 
 	/**
-	 * Get the next bigger ImageFile than the given size.
+	 * Get the next bigger ImageInput than the given size.
 	 * 
-	 * Returns the ImageFile from the set that has a width or height bigger or
+	 * Returns the ImageInput from the set that has a width or height bigger or
 	 * equal the given size. Returns null if there isn't any bigger image.
 	 * 
 	 * @param size the size
@@ -129,9 +151,31 @@ public class ImageSet {
 		return null;
 	}
 
+    /**
+     * Get the next bigger ImageInput with the given tag than the given size.
+     * 
+     * Returns the ImageInput from the set that has a width or height bigger or
+     * equal the given size. Returns null if there isn't any bigger image.
+     * 
+     * @param size the size
+     * @param tag the tag
+     * @return the ImageInput
+     */
+    public ImageInput getNextBigger(ImageSize size, ImageInput.InputTag tag) {
+        for (ListIterator<ImageInput> i = getLoresIterator(); i.hasPrevious();) {
+            ImageInput f = i.previous();
+            if (f.hasTag(tag)) {
+                ImageSize is = f.getSize();
+                if (is != null && is.isBiggerThan(size)) {
+                    return f;
+                }
+            }
+        }
+        return null;
+    }
+
 	/**
-	 * Returns the biggest ImageFile in the set.
-	 * 
+	 * Returns the biggest ImageInput in the set.
 	 * 
 	 * @return the ImageInput
 	 */
@@ -139,9 +183,33 @@ public class ImageSet {
 		return this.get(0);
 	}
 
+    /**
+     * Returns the biggest ImageInput in the set. 
+     * Prefers inputs with given tag.
+     * 
+     * @return the ImageInput
+     */
+    public ImageInput getBiggestPreferred(ImageInput.InputTag tag) {
+        ImageInput target = getBiggest();
+        if (target == null) return null;
+        if (tag == null) return target;
+        ImageSize targetSize = target.getSize();
+        for (ImageInput i : list) {
+            ImageSize size = i.getSize();
+            if (size.equals(targetSize)) {
+                if (i.hasTag(tag)) {
+                    return i;
+                }
+            } else {
+                // assuming inputs ordered by size there won't be another matching one
+                break;
+            }
+        }
+        return target;
+    }
+
 	/**
-	 * Returns the biggest ImageFile in the set.
-	 * 
+	 * Returns the smallest ImageInput in the set.
 	 * 
 	 * @return the ImageInput
 	 */
@@ -149,10 +217,35 @@ public class ImageSet {
 		return this.get(this.size() - 1);
 	}
 
+    /**
+     * Returns the smallest ImageInput in the set.
+     * Prefers inputs with the given tag.
+     * 
+     * @return the ImageInput
+     */
+    public ImageInput getSmallestPreferred(ImageInput.InputTag tag) {
+        ImageInput target = getSmallest();
+        if (target == null) return null;
+        if (tag == null) return target;
+        ImageSize targetSize = target.getSize();
+        for (ListIterator<ImageInput> i = getLoresIterator(); i.hasPrevious();) {
+            ImageInput f = i.previous();
+            ImageSize size = f.getSize();
+            if (size.equals(targetSize)) {
+                if (f.hasTag(tag)) {
+                    return f;
+                }
+            } else {
+                // assuming inputs ordered by size there won't be another matching one
+                break;
+            }
+        }
+        return target;
+    }
+
 	/**
 	 * Get an Iterator for this Fileset starting at the highest resolution
-	 * images.
-	 * 
+	 * image.
 	 * 
 	 * @return the Iterator
 	 */
@@ -166,7 +259,6 @@ public class ImageSet {
 	 * 
 	 * The Iterator starts at the last element, so you have to use it backwards
 	 * with hasPrevious() and previous().
-	 * 
 	 * 
 	 * @return the Iterator
 	 */

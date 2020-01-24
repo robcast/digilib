@@ -34,6 +34,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.StringTokenizer;
 
 import javax.json.Json;
@@ -566,14 +567,19 @@ public class ServletOps {
                 if (numImgs > 0) {
                     // sizes[
                     info.writeStartArray("sizes");
-                    for (int i = numImgs - 1; i >= 0; --i) {
-                        ImageInput ii = imageSet.get(i);
+                    ImageSize ois = new ImageSize();
+                    for (ListIterator<ImageInput> i = imageSet.getLoresIterator(); i.hasPrevious();) {
+                        ImageInput ii = i.previous();
                         ImageSize is = ii.getSize();
-                        // sizes[{
-                        info.writeStartObject()
-                        .write("width", is.getWidth())
-                        .write("height", is.getHeight())
-                        .writeEnd();
+                        if (!ois.equals(is)) {
+                            // write size if different
+                            // sizes[{
+                            info.writeStartObject()
+                            .write("width", is.getWidth())
+                            .write("height", is.getHeight())
+                            .writeEnd();
+                            ois = is;
+                        }
                     }
                     // sizes[]
                     info.writeEnd();
@@ -583,16 +589,22 @@ public class ServletOps {
                 ImageSize is = ii.getSize();
                 List<Integer> tileFactors = new ArrayList<Integer>();
                 ImageSize ts = null;
-            	for (int i = 0; i < numImgs; ++i) {
-            		ImageSize sts = imageSet.get(i).getTileSize();
+            	for (ListIterator<ImageInput> i = imageSet.getHiresIterator(); i.hasNext(); ) {
+            	    ImageInput sii = i.next();
+            		ImageSize sts = sii.getTileSize();
+            		int osf = 0;
             		if (sts != null) {
             			// initialize default tile size
             			if (ts == null) ts = sts;
         				// scaled images should have same tile size!
             			if (sts.getHeight() == ts.getHeight()) {
             				// scale factor is integer divider of original size
-            				Integer sf = Math.round((float) is.getWidth() / (float) imageSet.get(i).getSize().getWidth());
-            				tileFactors.add(sf);
+            				int sf = Math.round((float) is.getWidth() / (float) sii.getSize().getWidth());
+            				// add factor if different
+            				if (sf != osf) {
+            				    tileFactors.add(sf);
+            				    osf = sf;
+            				}
             			} else {
             				logger.warn("IIIF-info: scaled image "+i+" has different tile size! Ignoring.");                				
             			}

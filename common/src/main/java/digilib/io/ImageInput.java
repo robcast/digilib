@@ -118,12 +118,13 @@ public abstract class ImageInput {
     
     /**
      * Returns if the input has the given tag.
+     * Always matches if tag==null.
      * 
      * @param tag
      * @return
      */
     public boolean hasTag(InputTag tag) {
-        return (tags != null && tags.contains(tag));
+        return (tag == null) || (tags != null && tags.contains(tag));
     }
 
     /**
@@ -132,6 +133,7 @@ public abstract class ImageInput {
      * @param tag the tag to set
      */
     public void setTag(InputTag tag) {
+        if (tag == null) return;
         if (tags == null) {
             tags = EnumSet.of(tag);
         } else {

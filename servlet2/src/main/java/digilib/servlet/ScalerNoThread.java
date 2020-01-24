@@ -238,7 +238,7 @@ public class ScalerNoThread extends HttpServlet {
             }
 
             // if requested, send image as a file
-            if (sendFileAllowed && jobTicket.getSendAsFile()) {
+            if (sendFileAllowed && jobTicket.isSendAsFileRequested()) {
                 String mt = null;
                 if (jobTicket.hasOption(DigilibOption.rawfile)) {
                     mt = "application/octet-stream";
