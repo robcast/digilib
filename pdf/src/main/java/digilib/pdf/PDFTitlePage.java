@@ -111,9 +111,9 @@ public class PDFTitlePage {
 
 		// add title
 		Anchor title = new Anchor(new Paragraph(getTitle(),FontFactory.getFont(FontFactory.HELVETICA,16)));
-		String burl = job_info.getImageJobInformation().getAsString("base.url");
+		String burl = job_info.getImageJobInformation().getRequest().getAsString("base.url");
 		
-		title.setReference(burl+"digilib.html?fn="+job_info.getImageJobInformation().getAsString("fn"));
+		title.setReference(burl+"digilib.html?fn="+job_info.getImageJobInformation().getRequest().getAsString("fn"));
 		content.add(title);		
 		content.add(Chunk.NEWLINE);
 
@@ -140,9 +140,9 @@ public class PDFTitlePage {
 			content.add(Chunk.NEWLINE);
 		}
 		Anchor address = new Anchor(
-				new Paragraph(burl+"digilib.html?fn="+job_info.getImageJobInformation().getAsString("fn"), FontFactory.getFont(FontFactory.COURIER, 9))
+				new Paragraph(burl+"digilib.html?fn="+job_info.getImageJobInformation().getRequest().getAsString("fn"), FontFactory.getFont(FontFactory.COURIER, 9))
 									);
-		address.setReference(burl+"digilib.html?fn="+job_info.getImageJobInformation().getAsString("fn"));
+		address.setReference(burl+"digilib.html?fn="+job_info.getImageJobInformation().getRequest().getAsString("fn"));
 		
 		content.add(address);
 
@@ -177,7 +177,7 @@ public class PDFTitlePage {
 		if(info_reader.hasInfo())
 			return info_reader.getAsString("title");
 		else
-			return job_info.getImageJobInformation().getAsString("fn");
+			return job_info.getImageJobInformation().getRequest().getAsString("fn");
 	}
 	
 	private String getAuthor(){

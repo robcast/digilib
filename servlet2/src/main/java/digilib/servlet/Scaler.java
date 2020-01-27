@@ -259,7 +259,7 @@ public class Scaler extends HttpServlet {
             // if requested, send image as a file
             if (sendFileAllowed && jobTicket.isSendAsFileRequested()) {
                 String mt = null;
-                if (jobTicket.hasOption(DigilibOption.rawfile)) {
+                if (jobTicket.getRequest().hasOption(DigilibOption.rawfile)) {
                     mt = "application/octet-stream";
                 }
                 logger.debug("Sending RAW File as is.");
@@ -291,9 +291,9 @@ public class Scaler extends HttpServlet {
             DocuImage img = jobResult.get();
             // forced destination image type
             String mt = null;
-            if (jobTicket.hasOption(DigilibOption.jpg)) {
+            if (jobTicket.getRequest().hasOption(DigilibOption.jpg)) {
                 mt = "image/jpeg";
-            } else if (jobTicket.hasOption(DigilibOption.png)) {
+            } else if (jobTicket.getRequest().hasOption(DigilibOption.png)) {
                 mt = "image/png";
             }
             // send image
