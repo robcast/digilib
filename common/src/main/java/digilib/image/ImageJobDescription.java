@@ -47,11 +47,8 @@ import digilib.util.Parameter;
 import digilib.util.ParameterMap;
 
 /**
- * A class for storing the set of parameters necessary for scaling images
+ * A class for storing and calculating the set of parameters necessary for scaling images
  * with an ImageWorker.
- * 
- * This contains the functionality formerly found in Scaler.processRequest(),
- * only factorized.
  * 
  * @author cmielack, casties
  * 
