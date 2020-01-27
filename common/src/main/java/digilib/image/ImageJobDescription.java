@@ -551,7 +551,7 @@ public class ImageJobDescription {
     }
 
     /**
-     * Returns the best ImageInput to use.
+     * Returns the ImageInput to use.
      * 
      * Note: uses getMinSourceSize().
      * 
@@ -560,57 +560,71 @@ public class ImageJobDescription {
      */
     public ImageInput getInput() throws IOException {
         if (input == null) {
-            imageSet = getImageSet();
-            
-            // set type preference tag
-            ImageInput.InputTag preference = null;
-            if (preselectInputs) {
-                if (isZoomRequested()) {
-                    // tiled image is better for zoomed access
-                    preference = ImageInput.InputTag.TILED;
-                } else {
-                    // sendable image is better for whole image access
-                    preference = ImageInput.InputTag.SENDABLE;
-                }
-            }
-
-            /* select a resolution */
-            if (isHiresOnly()) {
-                // get highest resolution
-                input = imageSet.getBiggestPreferred(preference);
-            } else if (isLoresOnly()) {
-                // enforced lores uses next smaller resolution
-                if (preselectInputs) {
-                    input = imageSet.getNextSmaller(getMinSourceSize(), preference);
-                }
-                if (input == null) {
-                    // try unpreferred
-                    input = imageSet.getNextSmaller(getMinSourceSize());
-                    if (input == null) {
-                        // this is the smallest we have
-                        input = imageSet.getSmallestPreferred(preference);
-                    }
-                }
-            } else {
-                // autores: use next higher resolution
-                if (preselectInputs) {
-                    input = imageSet.getNextBigger(getMinSourceSize(), preference);
-                }
-                if (input == null) {
-                    // try without preference
-                    input = imageSet.getNextBigger(getMinSourceSize());
-                    if (input == null) {
-                        // this is the highest we have
-                        input = imageSet.getBiggestPreferred(preference);
-                    }
-                }
-            }
+            input = selectInput();
             if (input == null || input.getMimetype() == null) {
                 throw new FileOpException("Unable to load " + input);
             }
             logger.info("Planning to load: " + input);
         }
         return input;
+    }
+
+    /**
+     * Returns the best ImageInput based on current request parameters. 
+     * 
+     * @throws FileOpException
+     * @throws IOException
+     */
+    protected ImageInput selectInput() throws FileOpException, IOException {
+        imageSet = getImageSet();
+        ImageInput ii = null;
+        
+        // get type preference tag
+        ImageInput.InputTag preference = null;
+        if (preselectInputs) {
+            if (isZoomRequested()) {
+                // tiled image is better for zoomed access
+                preference = ImageInput.InputTag.TILED;
+            } else {
+                // sendable image is better for whole image access
+                preference = ImageInput.InputTag.SENDABLE;
+            }
+        }
+
+        /* select a resolution */
+        if (isHiresOnly()) {
+            /*
+             * get highest resolution
+             */
+            ii = imageSet.getBiggestPreferred(preference);
+        } else if (isLoresOnly()) {
+            /*
+             * enforced lores uses next smaller resolution
+             */
+            if (preselectInputs) {
+                ii = imageSet.getNextSmallerPreferred(getMinSourceSize(), preference);
+            } else {
+                ii = imageSet.getNextSmaller(getMinSourceSize());
+            }
+            if (ii == null) {
+                // this is the smallest we have
+                ii = imageSet.getSmallestPreferred(preference);
+            }
+        } else {
+            /*
+             * autores: use next higher resolution
+             */
+            if (preselectInputs) {
+                ii = imageSet.getNextBiggerPreferred(getMinSourceSize(), preference);
+            } else {
+                ii = imageSet.getNextBigger(getMinSourceSize());
+            }
+            if (ii == null) {
+                // this is the highest we have
+                ii = imageSet.getBiggestPreferred(preference);
+            }
+        }
+        return ii;
     }
 
     /**

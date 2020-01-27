@@ -113,7 +113,8 @@ public class ImageSet {
      * Get the next smaller ImageInput with the given tag than the given size.
      * 
      * Returns the ImageInput from the set that has a width and height smaller or
-     * equal the given size. Returns null if there isn't any smaller image.
+     * equal the given size and has the given tag. 
+     * Returns null if there isn't any smaller image with the given tag.
      * 
      * @param size the size
      * @param tag the tag
@@ -125,6 +126,49 @@ public class ImageSet {
                 ImageSize is = i.getSize();
                 if (is != null && is.isTotallySmallerThan(size)) {
                     return i;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get the next smaller ImageInput than the given size preferring (same-size) 
+     * images with the given tag.
+     * 
+     * Returns the ImageInput from the set that has a width and height smaller or
+     * equal the given size. Prefers images with the given tag available at the same size. 
+     * Returns null if there isn't any smaller image.
+     * 
+     * @param size the size
+     * @param tag the tag
+     * @return the ImageInput
+     */
+    public ImageInput getNextSmallerPreferred(ImageSize size, ImageInput.InputTag tag) {
+        for (ListIterator<ImageInput> i = getHiresIterator(); i.hasNext(); ) {
+            ImageInput ii = i.next();
+            ImageSize is = ii.getSize();
+            if (is != null && is.isTotallySmallerThan(size)) {
+                // size matches
+                if (ii.hasTag(tag)) {
+                    // size and tag match
+                    return ii;
+                } else {
+                    // look for more same-size images
+                    while (i.hasNext()) {
+                        ImageInput nii = i.next();
+                        ImageSize nis = nii.getSize();
+                        if (nis.equals(is)) {
+                            // size still matches
+                            if (ii.hasTag(tag)) {
+                                // size and tag match
+                                return nii;
+                            }                          
+                        } else {
+                            // new size doesn't match - return old image
+                            return ii;
+                        }
+                    }
                 }
             }
         }
@@ -155,7 +199,8 @@ public class ImageSet {
      * Get the next bigger ImageInput with the given tag than the given size.
      * 
      * Returns the ImageInput from the set that has a width or height bigger or
-     * equal the given size. Returns null if there isn't any bigger image.
+     * equal the given size and has the given tag. 
+     * Returns null if there isn't any bigger image with the given tag.
      * 
      * @param size the size
      * @param tag the tag
@@ -168,6 +213,49 @@ public class ImageSet {
                 ImageSize is = f.getSize();
                 if (is != null && is.isBiggerThan(size)) {
                     return f;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get the next bigger ImageInput than the given size preferring (same-size) 
+     * images with the given tag.
+     * 
+     * Returns the ImageInput from the set that has a width and height bigger or
+     * equal the given size. Prefers images with the given tag available at the same size. 
+     * Returns null if there isn't any bigger image.
+     * 
+     * @param size the size
+     * @param tag the tag
+     * @return the ImageInput
+     */
+    public ImageInput getNextBiggerPreferred(ImageSize size, ImageInput.InputTag tag) {
+        for (ListIterator<ImageInput> i = getLoresIterator(); i.hasPrevious(); ) {
+            ImageInput ii = i.previous();
+            ImageSize is = ii.getSize();
+            if (is != null && is.isBiggerThan(size)) {
+                // size matches
+                if (ii.hasTag(tag)) {
+                    // size and tag match
+                    return ii;
+                } else {
+                    // look for more same-size images
+                    while (i.hasPrevious()) {
+                        ImageInput nii = i.previous();
+                        ImageSize nis = nii.getSize();
+                        if (nis.equals(is)) {
+                            // size still matches
+                            if (ii.hasTag(tag)) {
+                                // size and tag match
+                                return nii;
+                            }                          
+                        } else {
+                            // new size doesn't match - return old image
+                            return ii;
+                        }
+                    }
                 }
             }
         }

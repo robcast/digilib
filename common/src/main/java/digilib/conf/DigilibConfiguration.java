@@ -108,7 +108,7 @@ public class DigilibConfiguration extends ParameterMap {
         // character to use as slash-replacement in IIIF identifier part
         newParameter("iiif-slash-replacement", "!", null, 'f');
         // prefer some image types based on request
-        newParameter("input-preselection-allowed", Boolean.FALSE, null, 'f');
+        newParameter("input-preselection-allowed", Boolean.TRUE, null, 'f');
         
     }
 
