@@ -4,11 +4,12 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <digilib.version>2.9-SNAPSHOT</digilib.version>
   </properties>
 
   <groupId>digilib</groupId>
   <artifactId>digilib</artifactId>
-  <version>2.9-SNAPSHOT</version>
+  <version>${digilib.version}</version>
   <packaging>pom</packaging>
 
   <name>digilib</name>
@@ -210,52 +211,77 @@
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-common</artifactId>
-        <version>2.9-SNAPSHOT</version>
+        <version>${digilib.version}</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-common-cdstar</artifactId>
-        <version>2.9-SNAPSHOT</version>
+        <version>${digilib.version}</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-doc</artifactId>
-        <version>2.9-SNAPSHOT</version>
+        <version>${digilib.version}</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-pdf</artifactId>
-        <version>2.9-SNAPSHOT</version>
+        <version>${digilib.version}</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-text</artifactId>
-        <version>2.9-SNAPSHOT</version>
+        <version>${digilib.version}</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-iiif-presentation</artifactId>
-        <version>2.9-SNAPSHOT</version>
+        <version>${digilib.version}</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-servlet</artifactId>
-        <version>2.9-SNAPSHOT</version>
+        <version>${digilib.version}</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-servlet2</artifactId>
-        <version>2.9-SNAPSHOT</version>
+        <version>${digilib.version}</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-servlet3</artifactId>
-        <version>2.9-SNAPSHOT</version>
+        <version>${digilib.version}</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-webapp</artifactId>
-        <version>2.9-SNAPSHOT</version>
+        <version>${digilib.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>digilib</groupId>
+        <artifactId>digilib-webapp-jquery</artifactId>
+        <version>${digilib.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>digilib</groupId>
+        <artifactId>digilib-webapp-greyskin</artifactId>
+        <version>${digilib.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>digilib</groupId>
+        <artifactId>digilib-webapp-oldskin</artifactId>
+        <version>${digilib.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>digilib</groupId>
+        <artifactId>digilib-webapp-pdf</artifactId>
+        <version>${digilib.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>digilib</groupId>
+        <artifactId>digilib-webapp-srv2</artifactId>
+        <version>${digilib.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -264,11 +290,12 @@
   </dependencies>
   <!-- default modules -->
   <modules>
+    <module>doc</module>
     <module>common</module>
     <module>servlet</module>
     <module>servlet2</module>
     <module>servlet3</module>
     <module>webapp</module>
-    <module>doc</module>
+    <module>webapp-jquery</module>
   </modules>
 </project>

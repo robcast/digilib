@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="description" content="Image Viewer, Bibliotheca Hertziana">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Robert Casties (MPIWG Berlin)">
+    <meta name="author" content="Martin Raspe (Bibliotheca Hertziana, Rom)">
+    <meta name="copyright" content="2016 by MPI für Wissenschaftsgeschichte, Berlin/Bibliotheca Hertziana, Rom">
+    <meta name="robots" content="noindex,nofollow">
+
+    <title>Digilib</title>
+
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="jquery.cookie.js"></script>
+    <script type="text/javascript" src="jquery.digilib.js"></script>
+    <script type="text/javascript" src="jquery.digilib.geometry.js"></script>
+    <script type="text/javascript" src="jquery.range.js"></script>
+    <script type="text/javascript" src="jquery.digilib.buttons.js"></script>
+    <script type="text/javascript" src="jquery.digilib.dialogs.js"></script>
+    <script type="text/javascript" src="jquery.digilib.sliders.js"></script>
+    <script type="text/javascript" src="jquery.digilib.birdseye.js"></script>
+    <script type="text/javascript" src="jquery.digilib.marks.js"></script>
+    <script type="text/javascript" src="jquery.digilib.regions.js"></script>
+    <link rel="stylesheet" type="text/css" href="jquery.digilib-dark.css" />
+    <link rel="stylesheet" type="text/css" href="jquery.digilib.buttons-full-32-sprite.css" />
+
+    <script type="text/javascript">
+        $(document).ready(function(){
+            var $div = $('div#digilib');
+            var opts = {
+                interactionMode: 'fullscreen',
+                showPageButtons: false,
+                showRegionNumbers: true,
+                showZoomInfo: true,
+                previewImgWidth: 4096,
+                previewImgHeight: 2048,
+                maxBgSize: 100000
+                };
+            $div.digilib(opts);
+        });
+    </script>
+  </head>
+
+  <body>
+    <div id="digilib">
+      <p>digilib doesn't work! Please switch on Javascript or notify the server administrator!</p>
+      <img src="http://digilib.sourceforge.net/images/digilib-logo-big.png" />
+    </div>
+  </body>
+</html>
+

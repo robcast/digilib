@@ -1,0 +1,50 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Digilib jQuery Test: fullscreen</title>
+
+        <style type="text/css">
+            body {
+                 background: silver;
+            }
+
+            div.digilib {
+                /* padding for buttons and bird-div */
+                padding-right: 18px;
+                padding-bottom: 100px;
+                /* width: 220px; */
+            }
+
+        </style>
+
+        <script type="text/javascript" src="jquery.js"></script>
+        <script type="text/javascript" src="jquery.cookie.js"></script>
+        <script type="text/javascript" src="jquery.digilib.js"></script>
+        <script type="text/javascript" src="jquery.digilib.geometry.js"></script>
+        <script type="text/javascript" src="jquery.digilib.buttons.js"></script>
+        <script type="text/javascript" src="jquery.digilib.birdseye.js"></script>
+        <script type="text/javascript" src="jquery.digilib.regions.js"></script>
+        <link rel="stylesheet" type="text/css" href="jquery.digilib.css" />
+
+
+        <script type="text/javascript">
+            $(document).ready(function(){
+                var opts = {
+                    interactionMode : 'fullscreen',
+                    scalerBaseUrl : 'http://localhost:18080/digitallibrary/servlet/Scaler'
+                    };
+                 $('div.digilib').digilib(opts);
+            });
+
+        </script>
+    </head>
+
+    <body>
+
+        <div id="digilib-1" class="digilib">
+            <img src="http://digilib.biblhertz.it/digilib04/servlet/Scaler?dw=200&amp;dh=200&amp;fn=/digisprint/jquery/FransHals-WillemVanHeythuysen" />
+        </div>
+    </body>
+</html>
+

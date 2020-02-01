@@ -1,0 +1,87 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="initial-scale=1.0"/>
+        <title>Digilib jQuery: fullscreen</title>
+
+        <style type="text/css">
+            body {
+                 background: silver;
+            }
+        </style>
+
+        <script type="text/javascript" src="jquery.js"></script>
+        <script type="text/javascript" src="jquery.cookie.js"></script>
+        <script type="text/javascript" src="jquery.digilib.js"></script>
+        <script type="text/javascript" src="jquery.digilib.geometry.js"></script>
+        <script type="text/javascript" src="jquery.digilib.arrows.js"></script>
+        <script type="text/javascript" src="jquery.range.js"></script>
+        <link rel="stylesheet" type="text/css" href="jquery.range.css" />
+        <script type="text/javascript" src="jquery.digilib.buttons.js"></script>
+        <script type="text/javascript" src="jquery.digilib.dialogs.js"></script>
+        <script type="text/javascript" src="jquery.digilib.sliders.js"></script>
+        <script type="text/javascript" src="jquery.digilib.birdseye.js"></script>
+        <script type="text/javascript" src="jquery.digilib.marks.js"></script>
+        <script type="text/javascript" src="jquery.digilib.regions.js"></script>
+        <script type="text/javascript" src="jquery.digilib.vector.js"></script>
+        <link rel="stylesheet" type="text/css" href="jquery.digilib.css" />
+        <link rel="stylesheet" type="text/css" href="jquery.digilib.buttons-full-32-sprite.css" />
+
+        <script type="text/javascript">
+            $(document).ready(function(){
+                var opts = {
+                    interactionMode : 'fullscreen',
+                    showRegionNumbers : true
+                    };
+                var $div = $('div#digilib');
+                $div.digilib(opts);
+                $div.digilib("setShapes", [{
+                    'geometry' : {
+                        'type' : 'Line',
+                        'coordinates' : [[0.1, 0.1], [0.2, 0.2]]
+                    },
+                    'properties' : {
+                    	'editable' : true
+                    }
+                },{
+                    'geometry' : {
+                        'type' : 'Rectangle',
+                        'coordinates' : [[0.2, 0.2], [0.3, 0.3]]
+                    },
+                    'properties' : {
+                        'stroke' : 'green',
+                        'editable' : true
+                    },
+                    'id' : 'myBestRect'
+                },{
+                    'geometry' : {
+                        'type' : 'LineString',
+                        'coordinates' : [[0.5, 0.5], [0.7, 0.5], [0.6, 0.6]]
+                    },
+                    'properties' : {
+                        'stroke' : 'green',
+                        'editable' : true
+                    }
+                }]);
+                /* $('#test-squares')[0].addEventListener('load', function (evt) {
+                    var layer = {'projection': 'relative', 
+                            '$elem': $(this), 
+                            'svgElem': this.contentDocument.documentElement};
+                    $div.digilib("addVectorLayer", layer);
+                    return false;
+                }); */
+            });
+        </script>
+    </head>
+
+    <body onload="$('#digilib').digilib('addShape', {'geometry':{'type':'Polygon'},'properties':{'editable':true}})"> 
+    <!-- <body> -->
+        <div id="digilib">
+            <p>digilib doesn't work! Please switch on Javascript or notify the server administrator!</p>
+            <img src="../img/digilib-logo.png" />
+            <!-- <object class="dl-keep" id="test-squares" data="test-squares.svg" type="image/svg+xml"></object> -->
+        </div>
+    </body>
+</html>
+

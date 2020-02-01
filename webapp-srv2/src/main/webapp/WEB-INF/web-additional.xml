@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app>
+    <!--
+    Additional web.xml snippets for digilib.
+    Use at your own risk!
+    -->
+
+    <!-- The Manifest servlet -->
+    <servlet>
+        <servlet-name>Manifester</servlet-name>
+        <servlet-class>digilib.servlet.Manifester</servlet-class>
+    </servlet>
+    <!-- The Intialisation Listener -->
+    <listener>
+        <listener-class>
+            digilib.conf.ManifestServletConfiguration
+        </listener-class>
+    </listener>
+    <!-- The mapping for the Manifest servlet -->
+    <servlet-mapping>
+        <servlet-name>Manifester</servlet-name>
+        <url-pattern>/servlet/Manifester/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Manifester</servlet-name>
+        <url-pattern>/Manifester/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- The Texter servlet -->
+    <servlet>
+        <servlet-name>Texter</servlet-name>
+        <servlet-class>digilib.servlet.Texter</servlet-class>
+    </servlet>
+    <!-- The Intialisation Listener -->
+    <listener>
+        <listener-class>
+            digilib.conf.TextServletConfiguration
+        </listener-class>
+    </listener>
+    <!-- The mapping for the Texter servlet -->
+    <servlet-mapping>
+        <servlet-name>Texter</servlet-name>
+        <url-pattern>/servlet/Texter/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Texter</servlet-name>
+        <url-pattern>/authenticated/servlet/Texter/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- The PDFCache servlet -->
+    <servlet>
+        <servlet-name>PDFCache</servlet-name>
+        <servlet-class>digilib.servlet.PDFCache</servlet-class>
+    </servlet>
+    <!-- The Intialisation Listener -->
+    <listener>
+        <listener-class>
+            digilib.conf.PDFServletConfiguration
+        </listener-class>
+    </listener>
+    <!-- The mapping for the PDFCache servlet -->
+    <servlet-mapping>
+        <servlet-name>PDFCache</servlet-name>
+        <url-pattern>/PDFCache/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PDFCache</servlet-name>
+        <url-pattern>/servlet/PDFCache/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PDFCache</servlet-name>
+        <url-pattern>/authenticated/servlet/PDFCache/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- region for authenticated access -->
+    <servlet-mapping>
+        <servlet-name>Scaler</servlet-name>
+        <url-pattern>/authenticated/servlet/Scaler/*</url-pattern>
+    </servlet-mapping> -->
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Authenticated Digilib</web-resource-name>
+            <url-pattern>/authenticated/*</url-pattern>
+        </web-resource-collection>
+        <!-- we need a default user -->
+        <auth-constraint>
+            <role-name>user</role-name>
+        </auth-constraint>
+    </security-constraint>
+    <login-config>
+        <auth-method>BASIC</auth-method>
+        <realm-name>digilib</realm-name>
+        <form-login-config>
+            <form-login-page>/digilib-login.html</form-login-page>
+            <form-error-page>/digilib-fail.html</form-error-page>
+        </form-login-config>
+    </login-config>
+
+    <!-- add CORS headers -->
+    <filter>
+        <filter-name>CORS</filter-name>
+        <!-- use either Tomcat's or Jetty's filter class -->
+        <!-- <filter-class>org.apache.catalina.filters.CorsFilter</filter-class> -->
+        <filter-class>org.eclipse.jetty.servlets.CrossOriginFilter</filter-class>
+        <async-supported>true</async-supported>
+    </filter>
+    <filter-mapping>
+        <filter-name>CORS</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+</web-app>

@@ -1,0 +1,30 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>digilib</groupId>
+		<artifactId>digilib</artifactId>
+		<version>2.9-SNAPSHOT</version>
+	</parent>
+	<artifactId>digilib-webapp-greyskin</artifactId>
+	<packaging>war</packaging>
+	<name>digilib-webapp-jquery</name>
+	<url>https://github.com/robcast/digilib</url>
+	<description>The Digital Image Library - "greyskin" JS and JSP client.</description>
+	<dependencies>
+		<dependency>
+			<groupId>digilib</groupId>
+			<artifactId>digilib-webapp</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.0.1</version>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+	<profiles>
+	</profiles>
+</project>

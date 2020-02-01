@@ -1,0 +1,397 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=windows-1252" />
+        <meta name="viewport" content="initial-scale=1.0"/>
+        <title>DuPerac local: regions</title>
+        <!-- <base href="http://localhost:8080" target="_blank" /> -->
+
+        <script type="text/javascript" src="jquery.js"></script>
+        <script type="text/javascript" src="jquery.cookie.js"></script>
+        <script type="text/javascript" src="jquery.digilib.js"></script>
+        <script type="text/javascript" src="jquery.digilib.geometry.js"></script>
+        <script type="text/javascript" src="jquery.digilib.arrows.js"></script>
+        <script type="text/javascript" src="jquery.range.js"></script>
+        <link rel="stylesheet" type="text/css" href="jquery.range.css" />
+        <script type="text/javascript" src="jquery.digilib.buttons.js"></script>
+        <script type="text/javascript" src="jquery.digilib.sliders.js"></script>
+        <script type="text/javascript" src="jquery.digilib.birdseye.js"></script>
+        <script type="text/javascript" src="jquery.digilib.marks.js"></script>
+        <script type="text/javascript" src="jquery.digilib.regions.js"></script>
+        <link rel="stylesheet" type="text/css" href="jquery.digilib.css" />
+
+        <style type="text/css">
+            body {
+                 background: silver;
+            }
+            #digilib .nofm {
+                 background-color: navy;
+            }
+        </style>
+
+        <script type="text/javascript">
+            $(document).ready(function(){
+                var opts = {
+                    interactionMode : 'fullscreen',
+                    previewImgWidth : 1200,
+                    previewImgHeight : 800,
+                    maxBgSize : 30000,
+                    editRegions : true,
+                    processHtmlRegions : true,
+                    showRegionNumbers : true,
+
+                    fn : 'piantediroma/00030-1577_Duperac_Stefano_BL_Map_Room_Maps_23805',
+                    onNewRegion : 'showRegionCoords',
+                    regionSortString : function(s) {
+                        var a = s.match(/[A-Z]\w\w.*$/i);
+                        return a ? a[0] : '';
+                        }
+                    };
+//                    autoZoomOnClick : true,
+                var $div = $('div#digilib');
+                $div.digilib(opts);
+            });
+
+        </script>
+    </head>
+
+    <body>
+        <div id="digilib">
+            <p>If you see this, Digilib doesn't work. The reason could be: Javascript is not activated; there is a bug in the Javascript code; the image server does not respond.</p>
+            <img src="http://digilib.sourceforge.net/images/digilib-logo-big.png" />
+            <map class="dl-keep dl-regioncontent">
+<area id="building_1273" title="1 Templum Sancti Lorenz int [1273]" coords="0.5881,0.1673,0.0101,0.0121"/>
+<area id="building_5720" title="2 T. S. Blasij [5720]" coords="0.605,0.1715,0.0074,0.0135"/>
+<area id="building_1262" title="3 T. S. Euphemiae quae in Transtiberim [1262]" coords="0.5722,0.2087,0.0099,0.0161"/>
+<area id="building_5729" title="4 T. S. Ciriaci quae in Transtiberim [5729]" coords="0.5376,0.2032,0.008,0.0118"/>
+<area id="building_1235" title="5 T. S. Grisogoni [1235]" coords="0.54,0.2048,0.0126,0.0218"/>
+<area id="building_1198" title="6 T. S. Benedicti [1198]" coords="0.5274,0.2219,0.0062,0.0126"/>
+<area id="building_1193" title="7 Pons Bartholomei [1193]" coords="0.553,0.2532,0.0048,0.0061"/>
+<area id="building_1186" title="8 P. quatuor capitum in Insula [1186]" coords="0.565,0.2783,0.0034,0.0055"/>
+<area id="building_1187" title="9 T. S. Ioannis collauitae in Insula [1187]" coords="0.5618,0.2599,0.0067,0.011"/>
+<area id="building_1192" title="10 T. S. Bartholomae in Insula [1192]" coords="0.5477,0.2603,0.0091,0.0158"/>
+<area id="building_1369" title="11 T. S. Stephani [1369]" coords="0.9263,0.1066,0.0045,0.0083"/>
+<area id="building_1364" title="12 T. S. Stephani ungariorum [1364]" coords="0.9,0.123,0.0085,0.0085"/>
+<area id="building_1271" title="13 T. Pietatis in campo sancto [1271]" coords="0.8925,0.1328,0.0075,0.0093"/>
+<area id="building_1273" title="14 T. S. Aegidij [1273]" coords="0.9227,0.2172,0.0119,0.0121"/>
+<area id="building_6726" title="15 T. S. Catherinae in Burgo [6726]" coords="0.8875,0.2022,0.0068,0.0131"/>
+<area id="building_1384" title="16 T. S. Mariae in Burgo [1384]" coords="0.8659,0.2363,0.0062,0.0112"/>
+<area id="building_1395" title="17 T. S. Mariae transpontinae [1395]" coords="0.8404,0.2639,0.0089,0.0114"/>
+<area id="building_1402" title="18 T. S. Angeli [1402]" coords="0.8315,0.2923,0.0072,0.0118"/>
+<area id="building_671" title="19 T. S. Blasij [671]" coords="0.7315,0.2251,0.0088,0.0136"/>
+<area id="building_775" title="20 T. S. Nicolai [775]" coords="0.7156,0.2264,0.0065,0.004"/>
+<area id="building_800" title="21 T. S. Eligij Univers.tis aurificum [800]" coords="0.6956,0.2275,0.0065,0.0074"/>
+<area id="building_805" title="22 T. S. Catherinae de Senis [805]" coords="0.6935,0.2354,0.0072,0.0066"/>
+<area id="building_798" title="23 T. S. Mariae Monserrati [798]" coords="0.692,0.2399,0.0055,0.0102"/>
+<area id="building_812" title="24 T. S. Catherinae de morte [812]" coords="0.6889,0.2375,0.0041,0.008"/>
+<area id="building_811" title="25 T. S. Hieronymi [811]" coords="0.6897,0.2357,0.0033,0.0097"/>
+<area id="building_807" title="26 T. S. Thomae [807]" coords="0.6857,0.2473,0.0043,0.0132"/>
+<area id="building_809" title="27 T. S. Brigidae [809]" coords="0.6814,0.2511,0.0029,0.0096"/>
+<area id="building_835" title="28 T. S. Trinitatis ad pontem Sixtum [835]" coords="0.6432,0.2387,0.0043,0.0073"/>
+<area id="building_832" title="29 T. S. Martinelli [832]" coords="0.6388,0.2586,0.0054,0.0108"/>
+<area id="building_1115" title="30 T. S. Angeli in foro piscium [1115]" coords="0.5806,0.2939,0.0126,0.0183"/>
+<area class="nofm" title="T. S. Benedicti" coords="0.6345,0.2699,0.0058,0.0086"/>
+<area id="building_1316" title="32 T. S. Leonardi [1316]" coords="0.6138,0.2813,0.0085,0.0117"/>
+<area id="building_981" title="33 T. S. Nicolai [981]" coords="0.6269,0.2966,0.0054,0.0106"/>
+<area id="building_5727" title="34 T. S. Blasij de annulo [5727]" coords="0.6433,0.2841,0.0048,0.0077"/>
+<area id="building_742" title="35 T. S. Elisabeth [742]" coords="0.683,0.3056,0.0048,0.008"/>
+<area id="building_5724" title="36 T. S. Bastianelli [5724]" coords="0.6615,0.3065,0.0054,0.0118"/>
+<area id="building_735" title="37 T. S. Panthalei [735]" coords="0.683,0.3056,0.0048,0.008"/>
+<area id="building_756" title="38 T. S. Laurentij in Damaso [756]" coords="0.6948,0.2842,0.004,0.0123"/>
+<area id="building_807" title="39 T. S. Tomae Parionis [807]" coords="0.7154,0.2864,0.0048,0.011"/>
+<area id="building_1693" title="40 T. S. Angeli [1693]" coords="0.7384,0.3032,0.0055,0.0091"/>
+<area id="building_128" title="41 T. S. Mariae de pace [128]" coords="0.7333,0.3084,0.0071,0.0149"/>
+<area id="building_712" title="42 T. S. Mariae de anima [712]" coords="0.7288,0.3098,0.0047,0.0155"/>
+<area id="building_620" title="43 T. S. Trifonis [620]" coords="0.7466,0.3715,0.0066,0.0073"/>
+<area id="building_622" title="44 T. S. Luciae [622]" coords="0.7644,0.3685,0.0038,0.0089"/>
+<area id="building_618" title="45 T. S. Ivi [618]" coords="0.7548,0.3792,0.008,0.0072"/>
+<area id="building_609" title="46 T. S. Gregorij [609]" coords="0.7866,0.3902,0.0055,0.0091"/>
+<area id="building_573" title="47 T. S. Hieronymi Illyricorum [573]" coords="0.7911,0.4125,0.0076,0.0113"/>
+<area id="building_468" title="48 T. S. Rocchi [468]" coords="0.8006,0.4139,0.0066,0.0108"/>
+<area id="building_575" title="49 T. S. Ambrosij [575]" coords="0.7801,0.4414,0.0088,0.0119"/>
+<area id="building_470" title="50 T. S. Laurentij in Lucina [470]" coords="0.7523,0.4238,0.0081,0.0107"/>
+<area id="building_476" title="51 Monasterium Convertitarum [476]" coords="0.7308,0.4368,0.0084,0.0141"/>
+<area id="building_477" title="52 T. S. Silvestri [477]" coords="0.7314,0.4513,0.0101,0.0132"/>
+<area id="building_93" title="53 T. S. Andreae de Frata [93]" coords="0.7257,0.509,0.0108,0.0117"/>
+<area class="nofm" title="T. S. Nicolai Archimoniorum" coords="0.6643,0.5281,0.0105,0.0064"/>
+<area id="building_373" title="55 T. S. Anastasiae [373]" coords="0.6619,0.4685,0.0029,0.0066"/>
+<area id="building_370" title="56 T. S. Mariae Cruciferorum [370]" coords="0.6786,0.4493,0.0058,0.0081"/>
+<area id="building_382" title="57 T. S. Jacobi [382]" coords="0.6626,0.4339,0.0073,0.0141"/>
+<area id="building_367" title="58 T. S. Mariae in via [367]" coords="0.7042,0.4447,0.0109,0.0116"/>
+<area id="building_410" title="59 T. S. Marcelli [410]" coords="0.6445,0.4083,0.0051,0.0112"/>
+<area id="building_423" title="60 T. S: Nicolai Scapucinorum [423]" coords="0.6421,0.4701,0.0037,0.0094"/>
+<area id="building_453" title="61 T. S. Antonij [453]" coords="0.6507,0.3992,0.0117,0.01"/>
+<area id="building_949" title="62 T. S. Mariae de pietate in columna [949]" coords="0.6884,0.4127,0.0083,0.0081"/>
+<area id="building_959" title="63 T. S. Stefani [959]" coords="0.6635,0.3815,0.0048,0.0099"/>
+<area id="building_1458" title="64 Domus orphanorum [1458]" coords="0.6678,0.3911,0.0084,0.0124"/>
+<area id="building_446" title="65 T. S. Machuti [446]" coords="0.6637,0.381,0.0057,0.0105"/>
+<area class="nofm" title="T. S. Mariae Annuntiatae Jesuitarum (69)" coords="0.6516,0.382,0.0074,0.0106"/>
+<area id="building_453" title="67 T. S. Mariae in Capranica [453]" coords="0.6861,0.3835,0.0096,0.0145"/>
+<area id="building_1459" title="68 T. S. M. Magdalenae [1459]" coords="0.6949,0.3719,0.0067,0.0095"/>
+<area id="building_5628" title="69 Monasterium Montis Acitorij [5628]" coords="0.7226,0.393,0.0054,0.0102"/>
+<area class="nofm" title="T. S. Blasij" coords="0.7361,0.4025,0.0047,0.0082"/>
+<area id="building_929" title="71 T. S. Saluatoris de Cupellis [929]" coords="0.7252,0.3773,0.0076,0.0098"/>
+<area id="building_562" title="72 T. S. Nicolai [562]" coords="0.7548,0.4028,0.0052,0.0067"/>
+<area id="building_556" title="73 Monasterium Campi Martij [556]" coords="0.7371,0.3904,0.006,0.0108"/>
+<area id="building_906" title="74 T. S. Eustachij [906]" coords="0.6832,0.3462,0.0047,0.0082"/>
+<area id="building_4" title="75 T. S. Agnetis [4]" coords="0.7141,0.3111,0.0039,0.0105"/>
+<area id="building_959" title="76 T. S. Stefani [959]" coords="0.6381,0.3476,0.0048,0.0064"/>
+<area id="building_968" title="77 T. S. Joannis pineae [968]" coords="0.6387,0.3457,0.0045,0.0098"/>
+<area id="building_715" title="78 T. S. Nicolai [715]" coords="0.6264,0.3087,0.009,0.0126"/>
+<area id="building_1098" title="79 T. S. Catherinae de funarijs [1098]" coords="0.6075,0.3187,0.009,0.0121"/>
+<area id="building_1084" title="80 T. S. Mariae in Campitello [1084]" coords="0.596,0.3101,0.0088,0.0101"/>
+<area id="building_1116" title="81 T. S. Mariae in Vallicella a pozzo bianco [1116]" coords="0.6012,0.3014,0.0065,0.0074"/>
+<area id="building_1063" title="82 T. S. Mariae [1063]" coords="0.579,0.3278,0.0048,0.0071"/>
+<area id="building_238" title="83 T. S. Joannis [238]" coords="0.592,0.3598,0.0075,0.0104"/>
+<area id="building_1178" title="84 T. S. Annae [1178]" coords="0.621,0.2921,0.0055,0.012"/>
+<area id="building_246" title="85 T. S. Spiritus Sancti [246]" coords="0.5866,0.4189,0.0047,0.0086"/>
+<area id="building_229" title="86 T. S. Martinae [229]" coords="0.5484,0.4053,0.0057,0.0106"/>
+<area class="nofm" title="T. S. Saluatoris Corneliorum" coords="0.6032,0.51,0.0058,0.01"/>
+<area class="nofm" title="" coords=""/>
+<area id="building_1134" title="89 T. S. Mariae in porticu [1134]" coords="0.5241,0.2975,0.0048,0.0107"/>
+<area id="building_1132" title="90 T. S. Nicolai in carcere [1132]" coords="0.5294,0.2968,0.0059,0.0064"/>
+<area id="building_849" title="91 Piazza di branca [849]" coords="0.6228,0.2673,0.004,0.0062"/>
+<area id="building_63" title="92 T. S. Ceciliae [63]" coords="0.5023,0.1992,0.0156,0.0281"/>
+<area id="building_845" title="93 T. S. Saluatoris [845]" coords="0.5069,0.2529,0.0128,0.0139"/>
+<area id="building_1256" title="94 T. S. Mariae in Transtiberim [1256]" coords="0.5844,0.1753,0.0108,0.0224"/>
+<area class="nofm" title="" coords=""/>
+<area id="building_20" title="96 Palatium Summi Pontificis [20]" coords="0.9162,0.1608,0.0096,0.0278"/>
+<area id="building_1402" title="97 T. S. Michaelis Arcangeli [1402]" coords="0.847,0.1848,0.0064,0.014"/>
+<area id="building_1338" title="98 T. S. Jacobi Scossa cavallo [1338]" coords="0.8399,0.244,0.0071,0.0108"/>
+<area id="building_1184" title="99 T. S. Mariae Aegyptiachae [1184]" coords="0.4947,0.2864,0.0097,0.0123"/>
+<area id="building_1134" title="100 T. S. Joannes Decolati [1134]" coords="0.5477,0.2603,0.0091,0.0158"/>
+<area id="building_1141" title="101 T. S. Eligij Fabrorum [1141]" coords="0.5055,0.3372,0.0051,0.0118"/>
+<area id="building_226" title="102 T. S. Hadriani [226]" coords="0.542,0.4098,0.0063,0.0102"/>
+<area id="building_235" title="103 T. S. Urbani [235]" coords="0.5579,0.4456,0.0083,0.0171"/>
+<area id="building_247" title="104 T. S. Mariae Laurentanae [247]" coords="0.6021,0.4132,0.0065,0.0134"/>
+<area id="building_253" title="105 Spolia Christo [253]" coords="0.573,0.4419,0.009,0.007"/>
+<area id="building_952" title="106 T. S. Mariae in Via lata [952]" coords="0.635,0.3959,0.0082,0.0088"/>
+<area id="building_1076" title="107 Monasterium turris Speculorum [1076]" coords="0.5698,0.3116,0.0087,0.0113"/>
+<area id="building_999" title="108 T. Societatis Jesus [999]" coords="0.6085,0.3499,0.0115,0.0119"/>
+<area id="building_682" title="109 Palatium de Cesarinis [682]" coords="0.6336,0.3161,0.0044,0.0069"/>
+<area id="building_772" title="110 T. S. Luciae della Chiavica [772]" coords="0.7209,0.2443,0.0074,0.0125"/>
+<area id="building_666" title="111  T. S. Mariae Supra Minervam [sic!] [666]" coords="0.748,0.2574,0.0073,0.0107"/>
+<area id="building_688" title="112 T. SS. Celsi et Juliani [688]" coords="0.7646,0.2861,0.0095,0.0102"/>
+<area id="building_53" title="113 T. S. Salvatoris in Lauro [53]" coords="0.7506,0.3214,0.0083,0.0112"/>
+<area id="building_718" title="114 T. S. Jacobi Hispanorum [718]" coords="0.691,0.3199,0.0048,0.0103"/>
+<area id="building_735" title="115 T. S. Appollinaris [735]" coords="0.7402,0.349,0.0095,0.0136"/>
+<area id="building_920" title="116 T. S. Augustini [920]" coords="0.7328,0.3562,0.0129,0.0158"/>
+<area id="building_889" title="117 Piazza di Siena [889]" coords="0.658,0.3047,0.0039,0.0049"/>
+<area id="building_460" title="118 Mons Acitorius [460]" coords="0.733,0.4171,0.0046,0.0059"/>
+<area id="building_3502" title="119 Platea Catinariorum [3502]" coords="0.6406,0.2676,0.0045,0.0051"/>
+<area id="building_689" title="120 T. S. Juliani [689]" coords="0.7386,0.279,0.0068,0.01"/>
+<area id="building_586" title="121 Mausol. Augusti [586]" coords="0.7988,0.4265,0.0139,0.015"/>
+<area class="nofm" title="Templum Sancti Pauli" coords="0.0225,0.0501,0.0518,0.0349"/>
+<area class="nofm" title="Porta Sancti Pauli" coords="0.2496,0.2419,0.022,0.0246"/>
+<area id="building_1162" title="* Sepulchrum C. Cestij [1162]" coords="0.2603,0.2141,0.0276,0.0343"/>
+<area id="building_60" title="* T. S. Savi [60]" coords="0.2669,0.2932,0.0204,0.0226"/>
+<area id="building_833" title="* P. Iudea [833]" coords="0.7252,0.3773,0.0076,0.0098"/>
+<area class="nofm" title="T. S. Mariae 1443 (Capella del Monte di Pietà)" coords="0.6101,0.2763,0.0059,0.0124"/>
+<area id="building_1153" title="* T.S. Priscae [1153]" coords="0.3597,0.2831,0.0196,0.0292"/>
+<area id="building_1152" title="* Circus Maximus [1152]" coords="0.3842,0.318,0.0491,0.0467"/>
+<area id="building_1048" title="* Septiconium Severi [1048]" coords="0.3696,0.3724,0.0258,0.0213"/>
+<area id="building_1049" title="* T.S. Gregorij [1049]" coords="0.3511,0.3959,0.0249,0.0277"/>
+<area id="building_1053" title="* T.S. Johanni et Pauli [1053]" coords="0.3798,0.4306,0.0184,0.0317"/>
+<area id="building_164" title="* T.S. Clemente [164]" coords="0.3601,0.5455,0.029,0.0213"/>
+<area id="building_7" title="* Santa Vibiana [7]" coords="0.3959,0.787,0.0199,0.0178"/>
+<area id="building_171" title="* Aqueduti Aq. Iuliae [171]" coords="0.4036,0.723,0.0096,0.0318"/>
+<area id="building_691" title="* T.S. Iuliani [691]" coords="0.4036,0.723,0.0096,0.0318"/>
+<area id="building_171" title="* Trophea Marij [171]" coords="0.414,0.6687,0.0129,0.0181"/>
+<area class="nofm" title="Porta S. Laurentij nicht markiert bei Nolli" coords="0.4253,0.834,0.0222,0.029"/>
+<area id="building_172" title="* T.Sancti Eusebij [172]" coords="0.4278,0.6631,0.0244,0.0185"/>
+<area id="building_174" title="* T.S. Viti [174]" coords="0.4402,0.6398,0.0138,0.0185"/>
+<area id="building_167" title="* Sette Salae [167]" coords="0.4017,0.5753,0.0116,0.015"/>
+<area id="building_166" title="* Thermae Traianae [166]" coords="0.4148,0.5635,0.0106,0.0117"/>
+<area id="building_5001" title="* Ther. Titi [5001]" coords="0.4171,0.5424,0.0302,0.0199"/>
+<area id="building_1032" title="* T.S. Jacobi [1032]" coords="0.4262,0.5084,0.0177,0.0144"/>
+<area class="nofm" title="Palazzo Maggiore nicht eingezeichnet bei Nolli" coords="0.3975,0.352,0.0326,0.0315"/>
+<area id="building_1171" title="* T.S. Sabina [1171]" coords="0.4317,0.2505,0.0114,0.0165"/>
+<area id="building_1170" title="* T.S. Alexij [1170]" coords="0.4191,0.2283,0.0158,0.0173"/>
+<area id="building_1169" title="* T.S. Mariae [1169]" coords="0.4175,0.2099,0.0183,0.0133"/>
+<area id="building_1151" title="* campus Judeorum [1151]" coords="0.4654,0.1216,0.0178,0.0145"/>
+<area id="building_1226" title="* T.S. Sancti Francisci [1226]" coords="0.4791,0.155,0.0177,0.0303"/>
+<area id="building_1210" title="* T.S. Mariae [1210]" coords="0.4706,0.2401,0.0161,0.0197"/>
+<area id="building_1183" title="* T.S. Stephani [1183]" coords="0.4741,0.2757,0.0158,0.0154"/>
+<area class="nofm" title="Schola greca nicht eingezeichnet bei Nolli" coords="0.4539,0.2819,0.0172,0.0204"/>
+<area id="building_534" title="* Le carrozze [534]" coords="0.4545,0.3033,0.0178,0.0129"/>
+<area class="nofm" title="Fons S. Georgij nicht eingezeichnet bei Nolli" coords="0.4693,0.3191,0.0119,0.0149"/>
+<area id="building_1056" title="* T.S. Anastasiae [1056]" coords="0.442,0.3275,0.0193,0.0147"/>
+<area id="building_1029" title="* Meta S. [1029]" coords="0.4446,0.4581,0.0081,0.0107"/>
+<area id="building_1025" title="* Mons Palatinus [1025]" coords="0.4252,0.3996,0.0265,0.0238"/>
+<area id="building_192" title="* T.S. Martini [192]" coords="0.4498,0.5719,0.0133,0.0257"/>
+<area id="building_190" title="* T.S. Praxidis [190]" coords="0.4582,0.5987,0.0159,0.0241"/>
+<area id="building_183" title="* T.S. Mariae Maioris [183]" coords="0.4766,0.593,0.0223,0.0392"/>
+<area id="building_179" title="* T.S. Antonij [179]" coords="0.4679,0.6349,0.0189,0.0248"/>
+<area id="building_193" title="* T.S. Luciae [193]" coords="0.4709,0.5428,0.0091,0.015"/>
+<area id="building_218" title="* Tur. Comitum [218]" coords="0.5293,0.4456,0.0101,0.018"/>
+<area id="building_198" title="* T.S. Petri ad uincula [198]" coords="0.4675,0.5201,0.0194,0.0182"/>
+<area id="building_3" title="* T.S. Andreae [3]" coords="0.4782,0.4918,0.0096,0.0067"/>
+<area id="building_203" title="* T.S. Mariae B. Galliei (heute S.M.della Neve? [203]" coords="0.4776,0.4799,0.0156,0.0113"/>
+<area class="nofm" title="T. Solis et Lunae nicht eingezeichnet bei Nolli" coords="0.4702,0.4495,0.013,0.0177"/>
+<area id="building_47" title="* T.S. M. Nova [47]" coords="0.4755,0.4298,0.0206,0.0235"/>
+<area id="building_205" title="* A. Titi [205]" coords="0.4735,0.4204,0.0057,0.014"/>
+<area id="building_1025" title="* Horti Farnesiorum (Mons Palatinus) [1025]" coords="0.4725,0.3956,0.0206,0.027"/>
+<area id="building_1022" title="* Campo Vacina [1022]" coords="0.4859,0.4156,0.0181,0.0175"/>
+<area id="building_206" title="* Templum Pacis [206]" coords="0.4975,0.4274,0.0179,0.0252"/>
+<area class="nofm" title="Templum Jovis statoris nicht bei Nolli" coords="0.5025,0.3929,0.0085,0.0179"/>
+<area id="building_212" title="* T.S. Cosma et Damiano [212]" coords="0.5167,0.4253,0.0101,0.0196"/>
+<area class="nofm" title="Lasus curtius nicht bei Nolli" coords="0.516,0.3993,0.0181,0.0096"/>
+<area id="building_1149" title="* T.S. Georgij [1149]" coords="0.4873,0.3382,0.0101,0.027"/>
+<area id="building_1057" title="* T. S. Teodorij [1057]" coords="0.4951,0.3706,0.0074,0.0266"/>
+<area id="building_1061" title="* T.S. Mariae Consolationis [1061]" coords="0.5153,0.3637,0.0118,0.0135"/>
+<area class="nofm" title="T.Iani nicht bei Nolli" coords="0.482,0.317,0.0099,0.0186"/>
+<area id="building_1183" title="* P.S. Mariae [1183]" coords="0.5167,0.2675,0.0047,0.0143"/>
+<area id="building_64" title="* T.S. Mariae de horto [64]" coords="0.5086,0.1792,0.0132,0.0237"/>
+<area id="building_1228" title="* T.S. Cosmati [1228]" coords="0.5042,0.1422,0.0117,0.0197"/>
+<area id="building_1277" title="* T.S. Petri in Mauro [1277]" coords="0.5613,0.1011,0.023,0.0213"/>
+<area id="building_1255" title="* T.S. Calisti [1255]" coords="0.5572,0.1789,0.0105,0.0131"/>
+<area id="building_1296" title="* P. di Moron [1296]" coords="0.5757,0.1856,0.0056,0.0051"/>
+<area id="building_1117" title="* T. Marcelli [1117]" coords="0.5454,0.2808,0.0179,0.0261"/>
+<area class="nofm" title="Capitolum nicht bei Nolli" coords="0.5408,0.3457,0.0179,0.0222"/>
+<area id="building_1013" title="* T.S. Ara Coeli [1013]" coords="0.5633,0.3691,0.0135,0.0155"/>
+<area id="building_228" title="* Arc. Seueri [228]" coords="0.5388,0.3949,0.0088,0.0144"/>
+<area id="building_1016" title="* Car. S. Petri [1016]" coords="0.5498,0.3949,0.0075,0.0085"/>
+<area id="building_238" title="* T.S. Laurentij [238]" coords="0.5269,0.4161,0.0099,0.019"/>
+<area id="building_284" title="* T.S. Laurentij in fonte [284]" coords="0.4962,0.5836,0.0103,0.0121"/>
+<area id="building_247" title="* T.S. Euphemiae [247]" coords="0.509,0.608,0.0069,0.0174"/>
+<area id="building_229" title="* T.S. Lucae [229]" coords="0.5009,0.6239,0.0107,0.0194"/>
+<area id="building_173" title="* Turris Maecenatis [173]" coords="0.5002,0.7855,0.0254,0.0098"/>
+<area id="building_335" title="* T.S. Susannae [335]" coords="0.661,0.7307,0.0123,0.0197"/>
+<area class="nofm" title="Vi. di Carpi" coords="0.6608,0.648,0.0241,0.0293"/>
+<area class="nofm" title="Vin. del Patrias Grimano" coords="0.6795,0.6092,0.0111,0.0184"/>
+<area id="building_75" title="* Fontana Treui [75]" coords="0.668,0.4542,0.0075,0.0065"/>
+<area class="nofm" title="Platea Sciarra 424 (Palazzo)" coords="0.6608,0.4141,0.013,0.0053"/>
+<area id="building_940" title="* T.S. Mariae Rotundae [940]" coords="0.666,0.3452,0.0184,0.0175"/>
+<area id="building_1079" title="* P. Maximorum [1079]" coords="0.6696,0.3049,0.0105,0.0109"/>
+<area id="building_749" title="* Platea Campi floris [749]" coords="0.6667,0.2621,0.0117,0.0111"/>
+<area id="building_815" title="* Piazza del Duca [815]" coords="0.6696,0.2482,0.0122,0.0068"/>
+<area id="building_827" title="* P.C. Ferro [827]" coords="0.6703,0.2495,0.0099,0.0053"/>
+<area id="building_15" title="* P. Farnesior [15]" coords="0.6725,0.2265,0.0107,0.0083"/>
+<area id="building_840" title="* Ponte Sixsti [840]" coords="0.6452,0.2127,0.0038,0.0147"/>
+<area id="building_1298" title="* Porta Septimiana [1298]" coords="0.6543,0.1823,0.0102,0.0102"/>
+<area class="nofm" title="Pala. Audito. Camere" coords="0.6736,0.1764,0.0173,0.0141"/>
+<area id="building_810" title="* Odescalchi [810]" coords="0.6856,0.2262,0.0092,0.0097"/>
+<area id="building_758" title="* Cancellaria [758]" coords="0.688,0.2684,0.0148,0.0189"/>
+<area id="building_731" title="* Pasquino [731]" coords="0.6957,0.2971,0.0045,0.0077"/>
+<area id="building_717" title="* Platea Navona [717]" coords="0.6986,0.3148,0.0119,0.0135"/>
+<area id="building_454" title="* P. Capranica [454]" coords="0.6921,0.3804,0.0077,0.0065"/>
+<area id="building_460" title="* Columna Antonina [460]" coords="0.6978,0.4012,0.0097,0.0262"/>
+<area id="building_408" title="* Platea S.S.Apostolorum [408]" coords="0.6172,0.4235,0.0231,0.0084"/>
+<area class="nofm" title="Porta murata nicht bei Nolli verzeichnet" coords="0.5353,0.8859,0.0078,0.0138"/>
+<area id="building_318" title="* T.S. Pudentianae [318]" coords="0.5232,0.6145,0.0184,0.0234"/>
+<area id="building_295" title="* T.S. Laurentijum in Panisperna [295]" coords="0.5369,0.5787,0.0217,0.0193"/>
+<area id="building_221" title="* T.S. Quirici [221]" coords="0.5399,0.459,0.0138,0.0101"/>
+<area id="building_299" title="* T.S. Agathae [299]" coords="0.5509,0.5072,0.0199,0.0231"/>
+<area id="building_1069" title="* Piazza Montanara [1069]" coords="0.5352,0.3082,0.0082,0.0036"/>
+<area id="building_1118" title="* Pescharia [1118]" coords="0.5824,0.2952,0.0152,0.0081"/>
+<area id="building_860" title="* T.S. Mariae [860]" coords="0.6094,0.2772,0.007,0.0095"/>
+<area id="building_1089" title="* P Margana [1089]" coords="0.5972,0.3273,0.0065,0.0103"/>
+<area id="building_1099" title="* P Mattei [1099]" coords="0.615,0.3167,0.0066,0.0111"/>
+<area id="building_101" title="* T. Et palatium S. Marci [101]" coords="0.6082,0.3776,0.0124,0.0124"/>
+<area id="building_1093" title="* Macellum Coruorum [1093]" coords="0.5894,0.3906,0.0035,0.0196"/>
+<area id="building_245" title="* Colonna Traiana [245]" coords="0.5972,0.4103,0.0028,0.0256"/>
+<area id="building_3518" title="* Tur. Militiae [3518]" coords="0.5802,0.4544,0.0084,0.0174"/>
+<area class="nofm" title="P.M. Antonij Columna" coords="0.6098,0.4555,0.0047,0.0086"/>
+<area id="building_408" title="* Platea SS. Apostolorum [408]" coords="0.6172,0.4235,0.0231,0.0084"/>
+<area class="nofm" title="Arcus Camilians" coords="0.6386,0.3682,0.0069,0.0103"/>
+<area id="building_1318" title="* T.S. Honophrij [1318]" coords="0.7453,0.1215,0.0222,0.0218"/>
+<area id="building_1317" title="* P. de Salviatis [1317]" coords="0.7606,0.2046,0.0093,0.0069"/>
+<area class="nofm" title="S. Fiore" coords="0.7318,0.2549,0.0067,0.0194"/>
+<area class="nofm" title="P.M. Politiani" coords="0.7428,0.2319,0.0094,0.0113"/>
+<area class="nofm" title="Banchi" coords="0.754,0.2747,0.0066,0.0058"/>
+<area id="building_694" title="* P.M. Iordani [694]" coords="0.7276,0.2736,0.006,0.0079"/>
+<area id="building_662" title="* T.S. Io. fiorentinos [662]" coords="0.76,0.2297,0.0079,0.0162"/>
+<area id="building_690" title="* Strada di Panico [690]" coords="0.7597,0.2954,0.0057,0.0021"/>
+<area class="nofm" title="Turris noncae" coords="0.7645,0.3145,0.0043,0.0139"/>
+<area class="nofm" title="La scroffa" coords="0.7493,0.3796,0.0079,0.0053"/>
+<area id="building_615" title="* P Nicosiae [615]" coords="0.7684,0.3809,0.0044,0.0066"/>
+<area id="building_473" title="* Arc portugalli [473]" coords="0.7435,0.4355,0.0065,0.0098"/>
+<area id="building_167" title="* T.S. Septa [167]" coords="0.731,0.4691,0.0097,0.0111"/>
+<area class="nofm" title="Vini card. ursini" coords="0.737,0.7116,0.0204,0.022"/>
+<area id="building_4395" title="* Porta salaria [4395]" coords="0.7465,0.7954,0.0055,0.0087"/>
+<area id="building_100" title="* T.S. Stefani rotundi [100]" coords="0.3125,0.5051,0.0268,0.024"/>
+<area id="building_1037" title="* T.S. Mariae in Domnica [1037]" coords="0.3173,0.4862,0.012,0.0162"/>
+<area id="building_1036" title="* T.S. Tomae [1036]" coords="0.3347,0.4698,0.0118,0.0226"/>
+<area class="nofm" title="Vi di cechino del Nero" coords="0.7658,0.6664,0.0111,0.0242"/>
+<area id="building_510" title="* T.S. Trinitas [510]" coords="0.7657,0.5388,0.0219,0.0234"/>
+<area id="building_513" title="* Platea Trinitatis [513]" coords="0.7578,0.5155,0.0241,0.0075"/>
+<area id="building_1407" title="* Castri S. Angeli [1407]" coords="0.7969,0.3078,0.0236,0.0294"/>
+<area id="building_1406" title="* P.S. Angeli [1406]" coords="0.7861,0.2942,0.0158,0.0175"/>
+<area id="building_653" title="* P. Altoviti [653]" coords="0.7808,0.2766,0.0105,0.0144"/>
+<area id="building_654" title="* Pons triumphalis [654]" coords="0.7918,0.2554,0.0145,0.0085"/>
+<area id="building_1327" title="* Porta S(anto Spirito) [1327]" coords="0.803,0.2131,0.0142,0.0078"/>
+<area id="building_1332" title="* Hospitale et lunp. S. Spiritus [1332]" coords="0.8199,0.2297,0.0089,0.0317"/>
+<area class="nofm" title="Porta de caualli legieri nicht markiert" coords="0.8524,0.1371,0.0116,0.0131"/>
+<area class="nofm" title="Porta di Castello, bei Nolli nicht markiert" coords="0.8486,0.302,0.0056,0.0149"/>
+<area id="building_444" title="* T. et hospitale S. Jacobi incurabi [444]" coords="0.8358,0.4393,0.0279,0.02"/>
+<area class="nofm" title="Viridariu Cardi. M. Pollitiam" coords="0.8267,0.547,0.0156,0.0147"/>
+<area class="nofm" title="T. Fortunae" coords="0.8142,0.5923,0.0131,0.0323"/>
+<area class="nofm" title="Porta Pinciana bei Nolli nicht markiert" coords="0.8197,0.6855,0.0131,0.0182"/>
+<area id="building_519" title="* Muro torto [519]" coords="0.9366,0.5656,0.0211,0.0266"/>
+<area class="nofm" title="Porta Pia bei Nolli nicht markiert" coords="0.6851,0.8494,0.0108,0.021"/>
+<area class="nofm" title="P.S. Pancratij bei Nolli nicht markiert" coords="0.6064,0.0464,0.0126,0.016"/>
+<area class="nofm" title="P. de Caesis" coords="0.8651,0.1616,0.0151,0.0143"/>
+<area class="nofm" title="Sta. Inquisitii" coords="0.8865,0.1423,0.0078,0.0145"/>
+<area class="nofm" title="Platea Sancti Petri" coords="0.8881,0.1762,0.02,0.0277"/>
+<area id="building_1381" title="* T.S. Annae [1381]" coords="0.9162,0.2171,0.01,0.0165"/>
+<area class="nofm" title="Porta Angelica nicht bei Nolli markiert" coords="0.9267,0.2428,0.0147,0.0157"/>
+<area id="building_518" title="* Il borghetto [518]" coords="0.8752,0.4875,0.0089,0.0106"/>
+<area id="building_3488" title="* Platea Populi [3488]" coords="0.8794,0.4771,0.0098,0.0107"/>
+<area id="building_13" title="* T.S. Mariae de populo [13]" coords="0.9071,0.4903,0.0115,0.0265"/>
+<area id="building_2193" title="* Porta Populi [2193]" coords="0.919,0.4753,0.0137,0.0255"/>
+<area class="nofm" title="Sepulchru Neronis nicht eingezeichnet" coords="0.9258,0.551,0.0141,0.0171"/>
+<area class="nofm" title="La fonderia" coords="0.9384,0.2112,0.0098,0.0113"/>
+<area class="nofm" title="" coords=""/>
+<area class="nofm" title="Beluedere nicht eingezeichnet" coords="0.9636,0.1662,0.0141,0.0161"/>
+<area class="nofm" title="P. Pertusa" coords="0.9512,0.0484,0.0058,0.0195"/>
+<area class="nofm" title="T.S. Petri" coords="0.9089,0.1162,0.0344,0.0501"/>
+<area class="nofm" title="Otto canto" coords="0.7956,0.4449,0.003,0.0044"/>
+<area class="nofm" title="P. Condopulo" coords="0.778,0.423,0.0062,0.0082"/>
+<area class="nofm" title="P.S. Petri" coords="0.884,0.1003,0.007,0.0106"/>
+<area id="building_384" title="* T.S. Silvestri [384]" coords="0.6083,0.488,0.0068,0.0091"/>
+<area class="nofm" title="T. Alta semita" coords="0.6224,0.4665,0.0155,0.0241"/>
+<area id="building_378" title="* Monte cauallo [378]" coords="0.6111,0.5331,0.0144,0.0084"/>
+<area class="nofm" title="Palat. et uiridarium Card. Farrariae" coords="0.6182,0.5318,0.0297,0.0195"/>
+<area class="nofm" title="Ther. Constantini" coords="0.5777,0.5296,0.0192,0.0164"/>
+<area id="building_132" title="* T.S. Andrea [132]" coords="0.6102,0.5841,0.0127,0.0173"/>
+<area id="building_308" title="* T.S. Vitalis [308]" coords="0.5827,0.5933,0.0119,0.0197"/>
+<area class="nofm" title="Vinea Cardtridentiu" coords="0.6103,0.6292,0.0152,0.0165"/>
+<area class="nofm" title="Thermae Dioclitianae nicht markiert bei Nolli" coords="0.5869,0.755,0.0633,0.0156"/>
+<area id="building_332" title="* T.S. Mariae Angelorum [332]" coords="0.6103,0.7725,0.0156,0.0285"/>
+<area id="building_331" title="* Castrum Praetorium [331]" coords="0.5329,0.9249,0.0585,0.0072"/>
+<area class="nofm" title="Porta Portuensis" coords="0.4187,0.0899,0.0153,0.0182"/>
+<area id="building_1153" title="* T.S. Priscae [1153]" coords="0.3543,0.2812,0.0231,0.034"/>
+<area class="nofm" title="Porta Sti. Sebastiani" coords="0.0488,0.4785,0.0226,0.0226"/>
+<area class="nofm" title="Porta Latina" coords="0.0948,0.5397,0.0122,0.0256"/>
+<area id="building_160" title="* Aquaeductus Aquae Claudiae [160]" coords="0.1666,0.8942,0.0191,0.0258"/>
+<area class="nofm" title="Aqua crabra" coords="0.1414,0.7175,0.0166,0.0247"/>
+<area class="nofm" title="Cruxifixus" coords="0.1623,0.1737,0.0139,0.0182"/>
+<area class="nofm" title="Aquae Martiae" coords="0.1958,0.8851,0.0227,0.0207"/>
+<area id="building_156" title="* T.Santae Crucis in Hierusalem [156]" coords="0.1732,0.7735,0.0454,0.0323"/>
+<area id="building_1676" title="* Colosseum [1676]" coords="0.1741,0.7466,0.0318,0.0267"/>
+<area id="building_1030" title="* Arc. Constantini [1030]" coords="0.4261,0.4441,0.0169,0.0258"/>
+<area id="building_1158" title="* Ther. Antonianae [1158]" coords="0.1917,0.3773,0.0351,0.0488"/>
+<area class="nofm" title="Porta Sancti Jouanis nicht markiert" coords="0.2094,0.6719,0.027,0.0082"/>
+<area id="building_1500" title="* Scala Sancta [1500]" coords="0.2559,0.6354,0.0161,0.0127"/>
+<area id="building_90" title="* T.S. Io. Laterani [90]" coords="0.2369,0.6102,0.0306,0.0205"/>
+<area id="building_1044" title="* T.S. Sixti [1044]" coords="0.2215,0.4635,0.0311,0.0288"/>
+<area id="building_1155" title="* T.S. nigri [1155]" coords="0.2415,0.4378,0.0161,0.0218"/>
+<area class="nofm" title="Porta Maggiore bei Nolli nicht markiert" coords="0.2641,0.8223,0.0242,0.0374"/>
+<area class="nofm" title="T.S. Iuliani" coords="0.4061,0.6483,0.0232,0.0186"/>
+<area class="nofm" title="Vi di cechino del Nero" coords="0.7644,0.6656,0.0157,0.0249"/>
+<area class="nofm" title="Capo alle case" coords="0.6638,0.4941,0.004,0.0239"/>
+<area class="nofm" title="vin. Card. sormo" coords="0.6914,0.6673,0.0086,0.0438"/>
+<area class="nofm" title="P. Cardin. uersel." coords="0.5831,0.5429,0.0136,0.011"/>
+<area class="nofm" title="Via Arenula nicht bei Nolli erwähnt" coords="0.6115,0.2454,0.0232,0.0115"/>
+<area class="nofm" title="Mons Testaceus bei Nolli nicht markiert" coords="0.6115,0.2454,0.0232,0.0115"/>
+<area class="nofm" title="Via Praenestina" coords="0.2226,0.9128,0.0278,0.0709"/>
+<area class="nofm" title="Via Appia nicht bei Nolli erwähnt" coords="0.0143,0.4852,0.0222,0.0044"/>
+<area class="nofm" title="Coeliolus nicht markiert bei Nolli" coords="0.0143,0.4852,0.0222,0.0044"/>
+<area id="building_1041" title="* T. S. Iouanis [1041]" coords="0.1184,0.5405,0.0185,0.0182"/>
+<area class="nofm" title="Minerva Medica" coords="0.3222,0.7883,0.0256,0.0242"/>
+</map>
+        </div>
+    </body>
+</html>
+

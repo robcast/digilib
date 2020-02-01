@@ -1,0 +1,368 @@
+/** sprite: dl-buttons; sprite-image: url('img/dl-buttons-full-32-sprite.png'); sprite-layout: vertical */
+
+#dl-button-addregion-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/addregion.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-annotation-mark-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/annotation-mark.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-annotation-polygon-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/annotation-polygon.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-annotation-polyline-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/annotation-polyline.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-annotation-region-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/annotation-region.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-annotation-user-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/annotation-user.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-annotations-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/annotations.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-authenticate-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/authenticate.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-back-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/back.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-bg-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/bg.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-birds-eye-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/birds-eye.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-brightness-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/brightness.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-buttons-less-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/buttons-less.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-buttons-more-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/buttons-more.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-calibration-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/calibration.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-cat-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/cat.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-contrast-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/contrast.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-corona-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/corona.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-delallregions-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/delallregions.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-delmark-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/delmark.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-delregion-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/delregion.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-delregions-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/delregions.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-digilib-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/digilib.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-findcoords-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/findcoords.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-findregion-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/findregion.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-first-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/first.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-fwd-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/fwd.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-help-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/help.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-info-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/info.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-last-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/last.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-mark-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/mark.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-measure-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/measure.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-mirror-horizontal-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/mirror-horizontal.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-mirror-vertical-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/mirror-vertical.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-move-transparent-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/move-transparent.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-options-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/options.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-original-size-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/original-size.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-page-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/page.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-pagewidth-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/pagewidth.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-quality-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/quality.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-reference-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/reference.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-regioninfo-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/regioninfo.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-regions-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/regions.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-reset-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/reset.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-rgb-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/rgb.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-rotate-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/rotate.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-set-opacity-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/set-opacity.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-showregions-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/showregions.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-size-bigger-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/size-bigger.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-size-smaller-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/size-smaller.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-toggle-transparent-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/toggle-transparent.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-whitedisc-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/whitedisc.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-zoom-area-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/zoom-area.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-zoom-full-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/zoom-full.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-zoom-in-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/zoom-in.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-zoom-out-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/zoom-out.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-zoom-transparent-img {
+width: 32px; 
+height: 32px;
+background-image: url(img/fullscreen/32/zoom-transparent.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-up-img {
+width: 32px; 
+height: 16px;
+background-image: url(img/fullscreen/32/up.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-down-img {
+width: 32px; 
+height: 16px;
+background-image: url(img/fullscreen/32/down.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-left-img {
+width: 16px; 
+height: 32px;
+background-image: url(img/fullscreen/32/left.png); /** sprite-ref: dl-buttons; */
+}
+
+#dl-button-right-img {
+width: 16px; 
+height: 32px;
+background-image: url(img/fullscreen/32/right.png); /** sprite-ref: dl-buttons; */
+}
+
