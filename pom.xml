@@ -8,7 +8,7 @@
 
   <groupId>digilib</groupId>
   <artifactId>digilib</artifactId>
-  <version>2.8-SNAPSHOT</version>
+  <version>2.9-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>digilib</name>
@@ -210,52 +210,52 @@
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-common</artifactId>
-        <version>2.8-SNAPSHOT</version>
+        <version>2.9-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-common-cdstar</artifactId>
-        <version>2.8-SNAPSHOT</version>
+        <version>2.9-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-doc</artifactId>
-        <version>2.8-SNAPSHOT</version>
+        <version>2.9-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-pdf</artifactId>
-        <version>2.8-SNAPSHOT</version>
+        <version>2.9-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-text</artifactId>
-        <version>2.8-SNAPSHOT</version>
+        <version>2.9-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-iiif-presentation</artifactId>
-        <version>2.8-SNAPSHOT</version>
+        <version>2.9-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-servlet</artifactId>
-        <version>2.8-SNAPSHOT</version>
+        <version>2.9-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-servlet2</artifactId>
-        <version>2.8-SNAPSHOT</version>
+        <version>2.9-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-servlet3</artifactId>
-        <version>2.8-SNAPSHOT</version>
+        <version>2.9-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
         <artifactId>digilib-webapp</artifactId>
-        <version>2.8-SNAPSHOT</version>
+        <version>2.9-SNAPSHOT</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
