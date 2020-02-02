@@ -1,0 +1,44 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>digilib</groupId>
+		<artifactId>digilib</artifactId>
+		<version>2.9-SNAPSHOT</version>
+	</parent>
+	<artifactId>digilib-frontend-jquery-example</artifactId>
+	<packaging>war</packaging>
+	<name>digilib-frontend-jquery-example</name>
+	<url>https://github.com/robcast/digilib</url>
+	<description>The Digital Image Library - JS client using JQuery customized sample version.</description>
+	<properties>
+		<jetty.version>9.2.28.v20190418</jetty.version><!-- Jetty 9.3+ break our tests -->
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>digilib</groupId>
+			<artifactId>digilib-webapp-jquery</artifactId>
+            <version>${digilib.version}</version>
+			<type>war</type>
+			<scope>runtime</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<!-- Jetty plugin for "mvn jetty:run" -->
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<version>${jetty.version}</version>
+				<configuration>
+					<webApp>
+						<contextPath>/digilib</contextPath>
+					</webApp>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<profiles>
+	</profiles>
+</project>
