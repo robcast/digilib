@@ -15,16 +15,17 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <dependencies>
+    <dependency>
+        <groupId>digilib</groupId>
+        <artifactId>digilib-servlet</artifactId>
+        <version>${digilib.version}</version>
+    </dependency>
   	<dependency>
   		<groupId>javax.servlet</groupId>
   		<artifactId>servlet-api</artifactId>
   		<version>2.4</version>
   		<type>jar</type>
   		<scope>provided</scope>
-  	</dependency>
-  	<dependency>
-  		<groupId>digilib</groupId>
-  		<artifactId>digilib-servlet</artifactId>
   	</dependency>
   </dependencies>
 </project>

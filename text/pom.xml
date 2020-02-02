@@ -12,6 +12,7 @@
 		<dependency>
 			<groupId>digilib</groupId>
 			<artifactId>digilib-common</artifactId>
+            <version>${digilib.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
@@ -31,6 +32,7 @@
 				<dependency>
 					<groupId>digilib</groupId>
 					<artifactId>digilib-servlet2</artifactId>
+                    <version>${digilib.version}</version>
 					<type>jar</type>
 					<scope>provided</scope>
 				</dependency>
@@ -56,6 +58,7 @@
 				<dependency>
 					<groupId>digilib</groupId>
 					<artifactId>digilib-servlet3</artifactId>
+                    <version>${digilib.version}</version>
 					<type>jar</type>
 					<scope>provided</scope>
 				</dependency>

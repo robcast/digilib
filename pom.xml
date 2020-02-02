@@ -9,7 +9,7 @@
 
   <groupId>digilib</groupId>
   <artifactId>digilib</artifactId>
-  <version>${digilib.version}</version>
+  <version>2.9-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>digilib</name>
@@ -152,6 +152,9 @@
   <profiles>
     <profile>
       <id>servlet2</id>
+      <modules>
+          <module>servlet2</module>
+      </modules>
     </profile>
     <profile>
       <id>servlet3</id>
@@ -191,7 +194,7 @@
 
   <dependencyManagement>
     <dependencies>
-      <!-- common dependencies -->
+      <!-- common dependency versions -->
       <dependency>
         <groupId>log4j</groupId>
         <artifactId>log4j</artifactId>
@@ -200,88 +203,17 @@
       <dependency>
           <groupId>javax.json</groupId>
           <artifactId>javax.json-api</artifactId>
-          <version>1.0</version><!-- 1.1+ does not work with jetty 9.2 -->
+          <version>1.0</version><!-- 1.1+ does not work with jetty 9.2 needed for webapp-test -->
       </dependency>
       <dependency>
           <groupId>org.glassfish</groupId>
           <artifactId>javax.json</artifactId>
-          <version>1.0.4</version><!-- 1.1+ does not work with jetty 9.2 -->
-      </dependency>
-      <!-- digilib module versions -->
-      <dependency>
-        <groupId>digilib</groupId>
-        <artifactId>digilib-common</artifactId>
-        <version>${digilib.version}</version>
+          <version>1.0.4</version><!-- 1.1+ does not work with jetty 9.2 needed for webapp-test -->
       </dependency>
       <dependency>
-        <groupId>digilib</groupId>
-        <artifactId>digilib-common-cdstar</artifactId>
-        <version>${digilib.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>digilib</groupId>
-        <artifactId>digilib-doc</artifactId>
-        <version>${digilib.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>digilib</groupId>
-        <artifactId>digilib-pdf</artifactId>
-        <version>${digilib.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>digilib</groupId>
-        <artifactId>digilib-text</artifactId>
-        <version>${digilib.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>digilib</groupId>
-        <artifactId>digilib-iiif-presentation</artifactId>
-        <version>${digilib.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>digilib</groupId>
-        <artifactId>digilib-servlet</artifactId>
-        <version>${digilib.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>digilib</groupId>
-        <artifactId>digilib-servlet2</artifactId>
-        <version>${digilib.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>digilib</groupId>
-        <artifactId>digilib-servlet3</artifactId>
-        <version>${digilib.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>digilib</groupId>
-        <artifactId>digilib-webapp</artifactId>
-        <version>${digilib.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>digilib</groupId>
-        <artifactId>digilib-webapp-jquery</artifactId>
-        <version>${digilib.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>digilib</groupId>
-        <artifactId>digilib-frontend-greyskin</artifactId>
-        <version>${digilib.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>digilib</groupId>
-        <artifactId>digilib-frontend-oldskin</artifactId>
-        <version>${digilib.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>digilib</groupId>
-        <artifactId>digilib-frontend-pdf</artifactId>
-        <version>${digilib.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>digilib</groupId>
-        <artifactId>digilib-webapp-srv2</artifactId>
-        <version>${digilib.version}</version>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <version>4.12</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -293,7 +225,6 @@
     <module>doc</module>
     <module>common</module>
     <module>servlet</module>
-    <module>servlet2</module>
     <module>servlet3</module>
     <module>webapp</module>
     <module>frontend-jquery</module>

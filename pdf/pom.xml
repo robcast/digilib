@@ -21,6 +21,7 @@
 		<dependency>
 			<groupId>digilib</groupId>
 			<artifactId>digilib-common</artifactId>
+            <version>${digilib.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
@@ -50,6 +51,7 @@
 				<dependency>
 					<groupId>digilib</groupId>
 					<artifactId>digilib-servlet2</artifactId>
+                    <version>${digilib.version}</version>
 					<type>jar</type>
 					<scope>provided</scope>
 				</dependency>
@@ -75,13 +77,14 @@
 				<dependency>
 					<groupId>digilib</groupId>
 					<artifactId>digilib-servlet3</artifactId>
+                    <version>${digilib.version}</version>
 					<type>jar</type>
 					<scope>provided</scope>
 				</dependency>
 				<dependency>
-					<groupId>org.mortbay.jetty</groupId>
-					<artifactId>servlet-api</artifactId>
-					<version>3.0.20100224</version>
+					<groupId>javax.servlet</groupId>
+					<artifactId>javax.servlet-api</artifactId>
+					<version>3.0.1</version>
 					<type>jar</type>
 					<scope>provided</scope>
 				</dependency>

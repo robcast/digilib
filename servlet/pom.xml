@@ -18,6 +18,7 @@
   	<dependency>
   		<groupId>digilib</groupId>
   		<artifactId>digilib-common</artifactId>
+        <version>${digilib.version}</version>
   	</dependency>
   	<dependency>
   		<groupId>javax.servlet</groupId>

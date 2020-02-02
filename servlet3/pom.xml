@@ -9,16 +9,17 @@
   <name>digilib-servlet3</name>
 
   <dependencies>
+    <dependency>
+        <groupId>digilib</groupId>
+        <artifactId>digilib-servlet</artifactId>
+        <version>${digilib.version}</version>
+    </dependency>
   	<dependency>
-  		<groupId>org.mortbay.jetty</groupId>
-  		<artifactId>servlet-api</artifactId>
-  		<version>3.0.20100224</version>
+  		<groupId>javax.servlet</groupId>
+  		<artifactId>javax.servlet-api</artifactId>
+  		<version>3.0.1</version>
   		<type>jar</type>
   		<scope>provided</scope>
-  	</dependency>
-  	<dependency>
-  		<groupId>digilib</groupId>
-  		<artifactId>digilib-servlet</artifactId>
   	</dependency>
   </dependencies>
   <description>digilib servlet components using asynchronous servlet API.</description>

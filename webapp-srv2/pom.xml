@@ -72,12 +72,14 @@
 				<dependency>
 					<groupId>digilib</groupId>
 					<artifactId>digilib-pdf</artifactId>
+                    <version>${digilib.version}</version>
 					<type>jar</type>
 					<scope>compile</scope>
 				</dependency>
 				<dependency>
 					<groupId>digilib</groupId>
 					<artifactId>digilib-servlet2</artifactId>
+                    <version>${digilib.version}</version>
 					<type>jar</type>
 					<scope>compile</scope>
 				</dependency>
@@ -100,6 +102,7 @@
 				<dependency>
 					<groupId>digilib</groupId>
 					<artifactId>digilib-text</artifactId>
+                    <version>${digilib.version}</version>
 					<type>jar</type>
 					<scope>compile</scope>
 				</dependency>
@@ -111,6 +114,7 @@
 				<dependency>
 					<groupId>digilib</groupId>
 					<artifactId>digilib-common-cdstar</artifactId>
+                    <version>${digilib.version}</version>
 					<type>jar</type>
 					<scope>compile</scope>
 				</dependency>
@@ -132,7 +136,8 @@
 		<dependency>
 			<groupId>digilib</groupId>
 			<artifactId>digilib-servlet2</artifactId>
-			<type>jar</type>
+            <version>${digilib.version}</version>
+  			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -150,7 +155,6 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

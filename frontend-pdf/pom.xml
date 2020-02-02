@@ -16,11 +16,13 @@
 		<dependency>
 			<groupId>digilib</groupId>
 			<artifactId>digilib-pdf</artifactId>
+            <version>${digilib.version}</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>digilib</groupId>
 			<artifactId>digilib-webapp</artifactId>
+            <version>${digilib.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
