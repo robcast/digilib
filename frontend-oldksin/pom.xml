@@ -7,9 +7,9 @@
 		<artifactId>digilib</artifactId>
 		<version>2.9-SNAPSHOT</version>
 	</parent>
-	<artifactId>digilib-webapp-oldskin</artifactId>
+	<artifactId>digilib-frontend-oldskin</artifactId>
 	<packaging>war</packaging>
-	<name>digilib-webapp-jquery</name>
+	<name>digilib-frontend-oldskin</name>
 	<url>https://github.com/robcast/digilib</url>
 	<description>The Digital Image Library - "oldskin" JS and JSP client.</description>
 	<dependencies>

@@ -7,17 +7,12 @@
 		<artifactId>digilib</artifactId>
 		<version>2.9-SNAPSHOT</version>
 	</parent>
-	<artifactId>digilib-webapp-pdf</artifactId>
+	<artifactId>digilib-frontend-greyskin</artifactId>
 	<packaging>war</packaging>
-	<name>digilib-webapp-pdf</name>
+	<name>digilib-frontend-greyskin</name>
 	<url>https://github.com/robcast/digilib</url>
-	<description>The Digital Image Library - JSP frontend for PDF servlet.</description>
+	<description>The Digital Image Library - "greyskin" JS and JSP client.</description>
 	<dependencies>
-		<dependency>
-			<groupId>digilib</groupId>
-			<artifactId>digilib-pdf</artifactId>
-			<scope>compile</scope>
-		</dependency>
 		<dependency>
 			<groupId>digilib</groupId>
 			<artifactId>digilib-webapp</artifactId>

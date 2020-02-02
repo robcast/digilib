@@ -265,17 +265,17 @@
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
-        <artifactId>digilib-webapp-greyskin</artifactId>
+        <artifactId>digilib-frontend-greyskin</artifactId>
         <version>${digilib.version}</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
-        <artifactId>digilib-webapp-oldskin</artifactId>
+        <artifactId>digilib-frontend-oldskin</artifactId>
         <version>${digilib.version}</version>
       </dependency>
       <dependency>
         <groupId>digilib</groupId>
-        <artifactId>digilib-webapp-pdf</artifactId>
+        <artifactId>digilib-frontend-pdf</artifactId>
         <version>${digilib.version}</version>
       </dependency>
       <dependency>
@@ -296,6 +296,6 @@
     <module>servlet2</module>
     <module>servlet3</module>
     <module>webapp</module>
-    <module>webapp-jquery</module>
+    <module>frontend-jquery</module>
   </modules>
 </project>
