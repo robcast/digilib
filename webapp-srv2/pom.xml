@@ -10,7 +10,7 @@
 		<version>2.9-SNAPSHOT</version>
 	</parent>
 	<artifactId>digilib-webapp-srv2</artifactId>
-	<name>digilib-webapp</name>
+	<name>digilib-webapp-srv2</name>
 	<description>The Digital Image Library - web application server using Servlet API 2.</description>
 	<url>https://github.com/robcast/digilib</url>
 	<packaging>war</packaging>

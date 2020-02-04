@@ -23,7 +23,8 @@
 			<groupId>digilib</groupId>
 			<artifactId>digilib-webapp</artifactId>
             <version>${digilib.version}</version>
-			<scope>runtime</scope>
+            <type>war</type>
+            <scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>

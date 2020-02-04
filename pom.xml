@@ -102,6 +102,7 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.8.1</version>
             <configuration>
+                <!--  minimum Java 1.8 -->
                 <source>1.8</source>
                 <target>1.8</target>
             </configuration>
@@ -151,9 +152,11 @@
   </build>
   <profiles>
     <profile>
+      <!--  old Servlet API 2.x -->
       <id>servlet2</id>
       <modules>
           <module>servlet2</module>
+          <module>webapp-srv2</module>
       </modules>
     </profile>
     <profile>
@@ -182,12 +185,28 @@
       <id>pdf</id>
       <modules>
         <module>pdf</module>
+        <module>frontend-pdf</module>
       </modules>
     </profile>
     <profile>
       <id>storage-cdstar</id>
       <modules>
         <module>common-cdstar</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>build-all</id>
+      <!-- profile to build all dependencies -->
+      <modules>
+        <module>common-cdstar</module>
+        <module>text</module>
+        <module>pdf</module>
+        <module>iiif-presentation</module>
+        <module>servlet2</module>
+        <module>webapp-srv2</module>
+        <module>frontend-pdf</module>
+        <module>frontend-greyskin</module>
+        <module>frontend-oldskin</module>
       </modules>
     </profile>
   </profiles>

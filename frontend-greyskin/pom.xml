@@ -17,6 +17,7 @@
 			<groupId>digilib</groupId>
 			<artifactId>digilib-webapp</artifactId>
             <version>${digilib.version}</version>
+            <type>war</type>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>

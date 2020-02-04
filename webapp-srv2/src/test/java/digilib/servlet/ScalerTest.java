@@ -41,7 +41,7 @@ import org.eclipse.jetty.servlet.ServletTester;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import digilib.conf.DigilibServlet3Configuration;
+import digilib.conf.DigilibServletConfiguration;
 
 /**
  * ScalerTest -- tests for the digilib Scaler servlet
@@ -64,7 +64,7 @@ public class ScalerTest {
         ctx.setResourceBase("src/main/webapp");       
         ctx.setClassLoader(ServletTester.class.getClassLoader());
         // add digilib ContextListener
-        DigilibServlet3Configuration dlConfig = new DigilibServlet3Configuration();
+        DigilibServletConfiguration dlConfig = new DigilibServletConfiguration();
         ctx.addEventListener(dlConfig);
         tester.addServlet(Scaler.class, "/Scaler/*");
         // start the servlet
