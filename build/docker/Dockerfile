@@ -6,7 +6,7 @@ ARG MVN_ARGS
 # build digilib using maven
 RUN mvn $MVN_ARGS package
 # remove the war file so we don't copy it in the next stage
-RUN rm /usr/src/digilib/webapp/target/digilib-webapp-*.war
+RUN rm /usr/src/digilib/frontend-jquery/target/digilib-frontend-jquery-*.war
 
 # runnable container stage
 FROM tomcat:9-jre11 AS runstage
@@ -16,6 +16,6 @@ COPY build/docker/entrypoint.sh /entrypoint.sh
 RUN rm -r /usr/local/tomcat/webapps/* \
 	&& chmod 755 /entrypoint.sh
 # copy digilib from build image
-COPY --from=buildstage /usr/src/digilib/webapp/target/digilib-webapp-* /usr/local/tomcat/webapps/digilib/
+COPY --from=buildstage /usr/src/digilib/frontend-jquery/target/digilib-frontend-jquery-* /usr/local/tomcat/webapps/digilib/
 
 ENTRYPOINT ["/entrypoint.sh"]
