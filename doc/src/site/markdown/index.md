@@ -61,7 +61,7 @@ Requirements:
 ```
 git clone https://github.com/robcast/digilib.git
 cd digilib
-mvn jetty:run-exploded --projects webapp
+mvn jetty:run-exploded --projects frontend-jquery
 ```
 Then open http://localhost:8080/digilib/digilib.html in your browser.
 
