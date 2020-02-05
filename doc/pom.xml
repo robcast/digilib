@@ -15,13 +15,20 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
-        <version>3.4</version>
+        <version>3.8.2</version>
         <dependencies>
           <dependency>
             <groupId>org.apache.maven.doxia</groupId>
             <artifactId>doxia-module-markdown</artifactId>
-            <version>1.6</version>
+            <version>1.9</version>
           </dependency>
+          <dependency>
+             <!-- Docs Maven Skin 
+             <groupId>com.bernardomg.maven.skins</groupId>
+             <artifactId>docs-maven-skin</artifactId>
+             <version>1.4.4</version>
+             -->
+         </dependency>
         </dependencies>
       </plugin>
     </plugins>
