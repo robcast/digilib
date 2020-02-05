@@ -22,13 +22,11 @@
             <artifactId>doxia-module-markdown</artifactId>
             <version>1.9</version>
           </dependency>
-          <dependency>
-             <!-- Docs Maven Skin 
+          <!-- <dependency>
              <groupId>com.bernardomg.maven.skins</groupId>
              <artifactId>docs-maven-skin</artifactId>
              <version>1.4.4</version>
-             -->
-         </dependency>
+         </dependency> -->
         </dependencies>
       </plugin>
     </plugins>
