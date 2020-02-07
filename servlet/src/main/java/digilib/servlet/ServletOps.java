@@ -51,6 +51,7 @@ import digilib.conf.DigilibServletConfiguration;
 import digilib.conf.DigilibServletRequest;
 import digilib.image.DocuImage;
 import digilib.image.ImageOpException;
+import digilib.image.ImageOutputException;
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
 import digilib.io.ImageInput;
@@ -364,7 +365,7 @@ public class ServletOps {
      */
     public static void sendImage(DocuImage img, String mimeType,
             HttpServletResponse response) throws ImageOpException,
-            ServletException {
+            IOException {
         ServletOps.sendImage(img, mimeType, response, ServletOps.logger);
     }
 
@@ -381,7 +382,7 @@ public class ServletOps {
      * @throws ServletException Exception on sending data.
      */
     public static void sendImage(DocuImage img, String mimeType, HttpServletResponse response, Logger logger)
-            throws ImageOpException, ServletException {
+            throws ImageOpException, IOException {
         if (response == null) {
             logger.error("No response!");
             return;
@@ -431,7 +432,7 @@ public class ServletOps {
             img.writeImage(mimeType, outstream);
 
         } catch (IOException e) {
-            throw new ServletException("Error sending image:", e);
+            throw new ImageOutputException("Error sending image.", e);
         } finally {
             img.dispose();
         }

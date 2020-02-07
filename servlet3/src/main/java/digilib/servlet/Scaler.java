@@ -401,7 +401,7 @@ public class Scaler extends HttpServlet {
                 ServletOps.sendFile(img, null, null, response, logger);
             }
         } catch (Exception e) {
-            logger.error("Error sending error!", e);
+            logger.error("Error sending error!"+e.getMessage());
         }
 
     }
