@@ -248,4 +248,8 @@
     <module>webapp</module>
     <module>frontend-jquery</module>
   </modules>
+  <ciManagement>
+  	<system>Travis CI</system>
+  	<url>https://travis-ci.org/robcast/digilib</url>
+  </ciManagement>
 </project>

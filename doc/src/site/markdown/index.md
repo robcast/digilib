@@ -2,22 +2,22 @@
 
 ## What is digilib?
 
-* `digilib` is a web based client/server technology for images. The image
+* **digilib** is a web based client/server technology for images. The image
   content is processed on-the-fly by a Java Servlet on the server side so that
   only the visible portion of the image is sent to the web browser on the client
   side.
-* `digilib` supports a wide range of image formats and viewing options on
+* **digilib** supports a wide range of image formats and viewing options on
   the server side while only requiring an internet browser with Javascript and a
   low bandwidth internet connection on the client side.
-* `digilib` enables very detailed work on an image as required by
+* **digilib** enables very detailed work on an image as required by
   scholars with elaborate viewing features like an option to show images on the
   screen in their original size.
-* `digilib` facilitates cooperation of scholars over the internet and
+* **digilib** facilitates cooperation of scholars over the internet and
   novel uses of source material by image annotations and stable references that
   can be embedded in URLs.
-* `digilib` facilitates federation of image servers through a standards compliant
+* **digilib** facilitates federation of image servers through a standards compliant
   [IIIF](http://iiif.io) Image API.
-* `digilib` is Open Source Software under the Lesser General Public License,
+* **digilib** is Open Source Software under the Lesser General Public License,
   jointly developed by the
   [Max Planck Institute for the History of Science](http://www.mpiwg-berlin.mpg.de),
   the [Bibliotheca Hertziana](http://www.biblhertz.it), 
@@ -25,7 +25,7 @@
 
 ## digilib resources
 
-`digilib` source code, binaries and documentation can be found on the 
+<code>digilib</code>  source code, binaries and documentation can be found on the 
 [digilib project pages](https://github.com/robcast/digilib)
 on [GitHub](https://github.com).
 
@@ -33,7 +33,13 @@ on [GitHub](https://github.com).
 * [Issue tracker](https://github.com/robcast/digilib/issues)
 * [Docker images](https://hub.docker.com/r/robcast/digilib)
 * [Javadoc](https://robcast.github.io/digilib-repo/apidocs/)
-* [Maven repository](https://github.com/robcast/digilib-repo/tree/gh-pages/maven-repo/digilib/) (`https://robcast.github.io/digilib-repo/maven-repo/`)
+* [Maven repository](https://github.com/robcast/digilib-repo/tree/gh-pages/maven-repo/digilib/)
+    ```
+    <repository>
+      <id>digilib-github</id>
+      <url>https://robcast.github.io/digilib-repo/maven-repo</url>
+    </repository>
+    ```
 
 ## First steps
 

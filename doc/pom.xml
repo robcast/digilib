@@ -16,36 +16,35 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
         <version>3.8.2</version>
+        <configuration>
+          <saveProcessedContent>true</saveProcessedContent>
+        </configuration>
         <dependencies>
           <dependency>
             <groupId>org.apache.maven.doxia</groupId>
             <artifactId>doxia-module-markdown</artifactId>
             <version>1.9</version>
           </dependency>
-          <!-- <dependency>
-             <groupId>com.bernardomg.maven.skins</groupId>
-             <artifactId>docs-maven-skin</artifactId>
-             <version>1.4.4</version>
-         </dependency> -->
-        </dependencies>
+       </dependencies>
       </plugin>
     </plugins>
   </build>
+
   <reporting>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.8.1</version>
+        <version>3.0.0</version>
         <reportSets>
           <reportSet>
             <reports>
-              <report>project-team</report>
-              <report>mailing-list</report>
+              <report>team</report>
+              <report>mailing-lists</report>
               <report>scm</report>
-              <report>issue-tracking</report>
-              <!-- <report>cim</report> -->
-              <report>license</report>
+              <report>issue-management</report>
+              <report>ci-management</report>
+              <report>licenses</report>
             </reports>
           </reportSet>
         </reportSets>
