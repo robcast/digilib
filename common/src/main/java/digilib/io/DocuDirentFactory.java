@@ -74,6 +74,41 @@ public class DocuDirentFactory {
         return null;
     }
 
+    /**
+     * Factory for DocuDirents based on file class.
+     * 
+     * Returns an ImageFileSet, TextFile or SVGFile. scaleDirs are
+     * only used for ImageFilesets.
+     * 
+     * @param fc the FileClass
+     * @param file the File
+     * @param scaleDirs
+     *            optional additional parameters
+     * @return the DocuDirent
+     */
+    public static DocuDirent getInstance(FileClass fc, File file, FsDirectory[] scaleDirs) {
+        return getDocuDirentInstance(fc, file, scaleDirs);
+    }
+
+    /**
+     * Factory for DocuDirents based on file class.
+     * 
+     * Returns an ImageFileSet, TextFile or SVGFile. scaleDirs are
+     * only used for ImageFilesets.
+     * 
+     * @param fc the FileClass
+     * @param file the File
+     * @param parent the parent
+     * @param scaleDirs
+     *            optional additional parameters
+     * @return the DocuDirent
+     */
+    public static DocuDirent getInstance(FileClass fc, File file, DocuDirectory parent, FsDirectory[] scaleDirs) {
+        DocuDirent f = getDocuDirentInstance(fc, file, scaleDirs);
+        f.setParent(parent);
+        return f;
+    }
+
     public static void setDocuDirentClass(FileClass fc, Class<? extends DocuDirent> clazz) {
         // what class of file do we have?
         switch (fc) {
@@ -91,7 +126,7 @@ public class DocuDirentFactory {
             // text file
             svgFileClass = clazz;
             break;
-            
+
         default:
             break;
         }

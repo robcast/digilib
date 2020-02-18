@@ -26,8 +26,15 @@ package digilib.io;
  */
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import digilib.conf.DigilibConfiguration;
 import digilib.io.FileOps.FileClass;
@@ -84,49 +91,44 @@ public class BaseDirDocuDirectory extends FsDocuDirectory {
 		// changes occurred at the same time than our reading due to the accuracy of the filesystem timestamp
 		dirMTime = (System.currentTimeMillis()  / 1000) * 1000 - 1;
 
-		// read metadata as well
+		// read metadata for directory
 		readMeta();
 
-		File[] allFiles = dir.dir.listFiles();
-		if (allFiles == null) {
-			// not a directory
-			return false;
-		}
-        // init parallel directories
-        int nb = baseDirNames.length;
-        FsDirectory[] dirs = new FsDirectory[nb];
-        // first entry is this directory
-        dirs[0] = dir;
-        // fill array with the remaining directories
-        for (int j = 1; j < nb; j++) {
-            // add dirName to baseDirName
-            File d = new File(baseDirNames[j], dirName);
-            if (d.isDirectory()) {
-                dirs[j] = new FsDirectory(d);
-                logger.debug("  reading scaled directory " + d.getPath());
-                dirs[j].readDir();
-            }
-        }
+		// read all files as a stream
+		try (Stream<Path> pathStream = Files.list(dir.toPath())) {
+	        // setup parallel directories
+	        int nb = baseDirNames.length;
+	        FsDirectory[] dirs = new FsDirectory[nb];
+	        // first entry is this directory
+	        dirs[0] = dir;
+	        // fill array with the remaining directories
+	        for (int j = 1; j < nb; j++) {
+	            // add dirName to baseDirName
+	            File d = new File(baseDirNames[j], dirName);
+	            if (d.isDirectory()) {
+	                dirs[j] = new FsDirectory(d);
+	                logger.debug("  reading scaled directory " + d.getPath());
+	                dirs[j].readDir();
+	            }
+	        }
+            // filter files by fileClass
+	        Predicate<Path> fileFilter = FileOps.streamFilterForClass(fileClass);
+	        
+            // process the file stream by filtering
+            List<DocuDirent> dirents = pathStream.filter(fileFilter)
+                // create a DocuDirent for each file
+                .map(p -> DocuDirentFactory.getInstance(fileClass, p.toFile(), this, dirs))
+                // collect in ArrayList
+                .collect(Collectors.toCollection(ArrayList::new));
+	        
+	        // sort the List for binarySearch to work (DocuDirents sort by filename)
+            Collections.sort(dirents);
+            files = dirents;
 
-		File[] fileList = FileOps.filterFiles(allFiles, FileOps.filterForClass(fileClass));
-		// number of files in the directory
-		int numFiles = fileList.length;
-		if (numFiles > 0) {
-			// create new list
-			ArrayList<DocuDirent> dl = new ArrayList<DocuDirent>(numFiles);
-			files = dl;
-			for (File f : fileList) {
-				DocuDirent df = DocuDirentFactory.getDocuDirentInstance(fileClass, f, dirs);
-				df.setParent(this);
-				// add the file to our list
-				dl.add(df);
-			}
-			/*
-			 * we sort the ArrayList (the list of files) for binarySearch to work
-			 * (DocuDirents sort by filename)
-			 */
-			Collections.sort(dl);
-		}
+		} catch (IOException e) {
+            logger.error("Error reading directory!", e);
+        } 
+
 		return isValid;
     }
 
