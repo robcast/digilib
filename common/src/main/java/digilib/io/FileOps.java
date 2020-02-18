@@ -443,7 +443,7 @@ public class FileOps {
 	 * @param filter the FileFilter
 	 * @return the Files
 	 */
-	public static File[] listFiles(File[] files, FileFilter filter) {
+	public static File[] filterFiles(File[] files, FileFilter filter) {
 		if (files == null) {
 			return null;
 		}

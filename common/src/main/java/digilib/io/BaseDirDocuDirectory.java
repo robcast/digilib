@@ -41,9 +41,6 @@ import digilib.io.FileOps.FileClass;
  */
 public class BaseDirDocuDirectory extends FsDocuDirectory {
 
-	/** array of parallel dirs for scaled images */
-    protected FsDirectory[] dirs = null;
-    
     /** list of base directories */
     protected String[] baseDirNames = null;
 
@@ -90,38 +87,28 @@ public class BaseDirDocuDirectory extends FsDocuDirectory {
 		// read metadata as well
 		readMeta();
 
-		File[] allFiles = null;
-		/*
-		 * using ReadableFileFilter is safer (we won't get directories with file
-		 * extensions) but slower.
-		 */
-		// allFiles = dir.listFiles(new FileOps.ReadableFileFilter());
-		allFiles = dir.dir.listFiles();
+		File[] allFiles = dir.dir.listFiles();
 		if (allFiles == null) {
 			// not a directory
 			return false;
 		}
-		// init parallel directories
-		if (dirs == null) {
-			// number of base dirs
-			int nb = baseDirNames.length;
-			// array of parallel dirs
-			dirs = new FsDirectory[nb];
-			// first entry is this directory
-			dirs[0] = dir;
-			// fill array with the remaining directories
-			for (int j = 1; j < nb; j++) {
-				// add dirName to baseDirName
-				File d = new File(baseDirNames[j], dirName);
-				if (d.isDirectory()) {
-					dirs[j] = new FsDirectory(d);
-					logger.debug("  reading scaled directory " + d.getPath());
-					dirs[j].readDir();
-				}
-			}
-		}
+        // init parallel directories
+        int nb = baseDirNames.length;
+        FsDirectory[] dirs = new FsDirectory[nb];
+        // first entry is this directory
+        dirs[0] = dir;
+        // fill array with the remaining directories
+        for (int j = 1; j < nb; j++) {
+            // add dirName to baseDirName
+            File d = new File(baseDirNames[j], dirName);
+            if (d.isDirectory()) {
+                dirs[j] = new FsDirectory(d);
+                logger.debug("  reading scaled directory " + d.getPath());
+                dirs[j].readDir();
+            }
+        }
 
-		File[] fileList = FileOps.listFiles(allFiles, FileOps.filterForClass(fileClass));
+		File[] fileList = FileOps.filterFiles(allFiles, FileOps.filterForClass(fileClass));
 		// number of files in the directory
 		int numFiles = fileList.length;
 		if (numFiles > 0) {
@@ -139,12 +126,6 @@ public class BaseDirDocuDirectory extends FsDocuDirectory {
 			 * (DocuDirents sort by filename)
 			 */
 			Collections.sort(dl);
-		}
-		// clear the scaled directories
-		for (FsDirectory d : dirs) {
-			if (d != null) {
-				d.clearFilenames();
-			}
 		}
 		return isValid;
     }
