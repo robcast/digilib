@@ -174,8 +174,8 @@ digilib bird's eye view plugin
         $birdDiv.append($birdImg);
         // $birdZoom.css(data.settings.birdIndicatorStyle);
         var birdUrl = getBirdImgUrl(data);
-        $birdImg.load(birdImgLoadedHandler(data));
-        $birdImg.error(function () {console.error("error loading birdview image");});
+        $birdImg.on('load', birdImgLoadedHandler(data));
+        $birdImg.on('error', function () {console.error("error loading birdview image");});
         $birdImg.attr('src', birdUrl);
     };
 
