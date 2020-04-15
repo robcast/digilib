@@ -121,35 +121,16 @@ public class ServletOps {
     public static File getFile(File f, ServletContext sc) {
         // is the filename absolute?
         if (!f.isAbsolute()) {
-            // relative path -> use getRealPath to resolve in WEB-INF
             String fn = sc.getRealPath("/" + f.getPath());
-            if (fn == null) {
-                // TODO: use getResourceAsStream?
-                return null;
+            if (fn != null && new File(fn).exists()) {
+                // relative path -> use getRealPath to resolve in WEB-INF
+                f = new File(fn);
             }
-            f = new File(fn);
+            // but if relative path can't be resolved inside webapp we
+            // assume that it is relative to user working directory,
+            // so we return it as.
         }
         return f;
-    }
-
-    /**
-     * get a real file name for a web app file pathname.
-     * 
-     * If filename starts with "/" its treated as absolute else the path is
-     * appended to the base directory of the web-app.
-     * 
-     * @param filename the filename
-     * @param sc the ServletContext
-     * @return the filename
-     */
-    public static String getFile(String filename, ServletContext sc) {
-        File f = new File(filename);
-        // is the filename absolute?
-        if (!f.isAbsolute()) {
-            // relative path -> use getRealPath to resolve in WEB-INF
-            filename = sc.getRealPath("/" + filename);
-        }
-        return filename;
     }
 
     /**
@@ -183,26 +164,6 @@ public class ServletOps {
         }
         f = new File(newfn);
         return f;
-    }
-
-    /**
-     * get a real file name for a config file pathname.
-     * 
-     * If filename starts with "/" its treated as absolute else the path is
-     * appended to the WEB-INF directory of the web-app.
-     * 
-     * @param filename the filename
-     * @param sc the ServletContext
-     * @return the filename
-     */
-    public static String getConfigFileName(String filename, ServletContext sc) {
-        File f = new File(filename);
-        // is the filename absolute?
-        if (!f.isAbsolute()) {
-            // relative path -> use getRealPath to resolve in WEB-INF
-            filename = sc.getRealPath("/WEB-INF/" + filename);
-        }
-        return filename;
     }
 
     /**

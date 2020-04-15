@@ -198,10 +198,9 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         String fn = c.getInitParameter("config-file");
         if (fn == null) {
             logger.debug("readConfig: no param config-file");
-            fn = ServletOps.getConfigFileName("digilib-config.xml", c);
-            if (fn == null) fn = "";
+            fn = "./WEB-INF/digilib-config.xml";
         }
-        File f = new File(fn);
+        File f = ServletOps.getFile(new File(fn), c);
         if (f.canRead()) {
             // setup config file list reader
             XMLMapLoader lilo = new XMLMapLoader("digilib-config", "parameter", "name", "value");
@@ -235,10 +234,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
                 logger.warn("No digilib config file! Using defaults!");
                 // update basedir-list
                 String[] dirs = (String[]) this.getValue("basedir-list");
-                for (int j = 0; j < dirs.length; j++) {
-                    // make relative directory paths be inside the webapp
-                    dirs[j] = ServletOps.getFile(dirs[j], c);
-                }
+                this.expandBaseDirList(dirs, c);
             }
         }
 
@@ -269,10 +265,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
                     if (confEntry.getKey().equals("basedir-list")) {
                         // split list into directories
                         String[] dirs = FileOps.pathToArray(confEntry.getValue());
-                        for (int j = 0; j < dirs.length; j++) {
-                            // make relative directory paths be inside the webapp
-                            dirs[j] = ServletOps.getFile(dirs[j], ctx);
-                        }
+                        this.expandBaseDirList(dirs, ctx);
                         if (dirs != null) {
                             param.setValue(dirs);
                         }
@@ -460,6 +453,16 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
      */
     protected DigilibServletConfiguration getContextConfig(ServletContext context) {
         return getCurrentConfig(context);
+    }
+
+    /**
+     * Resolve all paths in the basedir-list.
+     * See {@link ServletOps#getFile(File, ServletContext)} for resolution logic.
+     */
+    private void expandBaseDirList(String[] dirs, ServletContext c) {
+        for (int j = 0; j < dirs.length; j++) {
+            dirs[j] =  ServletOps.getFile(new File(dirs[j]), c).getPath();
+        }
     }
 
 }
