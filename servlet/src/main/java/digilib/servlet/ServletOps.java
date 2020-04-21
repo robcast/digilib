@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.StringTokenizer;
 
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
@@ -86,33 +85,12 @@ public class ServletOps {
 		corsForImageRequests = dlConfig.getAsBoolean("iiif-image-cors");
 	}
 
-	/**
-     * convert a string with a list of pathnames into an array of strings using
-     * the system's path separator string
-     * 
-     * @param paths the paths string
-     * @return the paths
-     */
-    public static String[] getPathArray(String paths) {
-        // split list into directories
-		StringTokenizer dirs = new StringTokenizer(paths, java.io.File.pathSeparator);
-        int n = dirs.countTokens();
-        if (n < 1) {
-            return null;
-        }
-        // add directories into array
-        String[] pathArray = new String[n];
-        for (int i = 0; i < n; i++) {
-            pathArray[i] = dirs.nextToken();
-        }
-        return pathArray;
-    }
-
     /**
-     * get a real File for a web app File.
+     * Get a real File for a web app File.
      * 
      * If the File is not absolute the path is appended to the base directory of
-     * the web-app.
+     * the web-app. If the file does not exist in the web-app directory it is 
+     * considered relative to the Java working directory.
      * 
      * @param f the File
      * @param sc the ServletContext
@@ -121,12 +99,12 @@ public class ServletOps {
     public static File getFile(File f, ServletContext sc) {
         // is the filename absolute?
         if (!f.isAbsolute()) {
+            // relative path -> use getRealPath to resolve in web-app
             String fn = sc.getRealPath("/" + f.getPath());
             if (fn != null && new File(fn).exists()) {
-                // relative path -> use getRealPath to resolve in WEB-INF
                 f = new File(fn);
             }
-            // but if relative path can't be resolved inside webapp we
+            // if relative path can't be resolved inside webapp we
             // assume that it is relative to user working directory,
             // so we return it as.
         }
@@ -134,35 +112,31 @@ public class ServletOps {
     }
 
     /**
-     * get a real File for a config File.
+     * Get a real File for a config File.
      * 
      * If the File is not absolute the path is appended to the WEB-INF directory
-     * of the web-app.
+     * of the web-app. If the file does not exist in the WEB-INF directory it is 
+     * considered relative to the Java working directory.
      * 
      * @param f the File
      * @param sc the ServletContext
      * @return the File
      */
     public static File getConfigFile(File f, ServletContext sc) {
-        String fn = f.getPath();
         // is the filename absolute?
-        if (f.isAbsolute()) {
-            // does it exist?
-            if (f.canRead()) {
-                // fine
-                return f;
-            } else {
-                // try just the filename as relative
-                fn = f.getName();
+        if (!f.isAbsolute()) {
+            // relative path -> use getRealPath to resolve in WEB-INF
+            String fn = sc.getRealPath("/WEB-INF/" + f.getPath());
+            if (fn != null) {
+            	File wf = new File(fn);
+            	if (wf.exists()) {
+            		return wf;
+            	}
             }
+            // if relative path can't be resolved inside webapp we
+            // assume that it is relative to user working directory,
+            // so we return it as.
         }
-        // relative path -> use getRealPath to resolve in WEB-INF
-        String newfn = sc.getRealPath("/WEB-INF/" + fn);
-        if (newfn == null) {
-            // TODO: use getResourceAsStream?
-            return null;
-        }
-        f = new File(newfn);
         return f;
     }
 
