@@ -235,7 +235,7 @@ public class Scaler extends HttpServlet {
         //logger.debug("headers: " + ServletOps.headersToString(request));
         //logger.debug("processRequest response committed=" + response.isCommitted());
         if (response.isCommitted()) {
-        	logger.error("Crap: response committed before we got a chance!");
+            logger.error("Crap: response committed before we got a chance!");
         }
         final long startTime = System.currentTimeMillis();
 
@@ -262,12 +262,12 @@ public class Scaler extends HttpServlet {
                 return;
             }
             if (dlRequest.hasOption(DigilibOption.redirect_info)) {
-            	StringBuffer url = request.getRequestURL();
-            	if (url.toString().endsWith("/")) {
-            		url.append("info.json");
-            	} else {
-            		url.append("/info.json");
-            	}
+                StringBuffer url = request.getRequestURL(); //FIXME: needs better URL
+                if (url.toString().endsWith("/")) {
+                    url.append("info.json");
+                } else {
+                    url.append("/info.json");
+                }
                 // TODO: the redirect should have code 303
                 response.sendRedirect(url.toString());
                 return;
@@ -301,7 +301,7 @@ public class Scaler extends HttpServlet {
             if (sendFileAllowed && jobTicket.isSendAsFileRequested()) {
                 String mt = null;
                 if (jobTicket.getRequest().hasOption(DigilibOption.rawfile)) {
-                	// mo=rawfile sends as octet-stream
+                    // mo=rawfile sends as octet-stream
                     mt = "application/octet-stream";
                 }
                 logger.debug("Sending RAW File as is.");

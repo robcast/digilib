@@ -383,8 +383,8 @@ public class ServletOps {
      * @param logger the Logger
      * @throws ServletException on error
      */
-	public static void sendIiifInfo(DigilibServletRequest dlReq, HttpServletResponse response, Logger logger)
-			throws ServletException {
+    public static void sendIiifInfo(DigilibServletRequest dlReq, HttpServletResponse response, Logger logger)
+            throws ServletException {
         if (response == null) {
             logger.error("No response!");
             return;
@@ -414,15 +414,15 @@ public class ServletOps {
          */
         String url = dlConfig.getAsString("iiif-image-base-url");
         if (!url.isEmpty()) {
-        	// create url from base-url config and undecoded PATH_INFO
-        	url = url.substring(0, url.lastIndexOf(dlConfig.getAsString("iiif-prefix")) - 1);
+            // create url from base-url config and undecoded PATH_INFO
+            url = url.substring(0, url.lastIndexOf(dlConfig.getAsString("iiif-prefix")) - 1);
 
-          // we can't just take pathInfo because it decodes encoded symbols in the path
-          String uri = dlReq.getServletRequest().getRequestURI();
-          url += uri.substring(uri.lastIndexOf(dlConfig.getAsString("iiif-prefix")) - 1, uri.length());
+            // we can't just take pathInfo because it decodes encoded symbols in the path
+            String uri = dlReq.getServletRequest().getRequestURI();
+            url += uri.substring(uri.lastIndexOf(dlConfig.getAsString("iiif-prefix")) - 1, uri.length());
         } else {
-        	// create url from request
-        	url = dlReq.getServletRequest().getRequestURL().toString();
+            // create url from request
+            url = dlReq.getServletRequest().getRequestURL().toString();
         }
         if (url.endsWith("/info.json")) {
             url = url.substring(0, url.lastIndexOf("/info.json"));
@@ -525,44 +525,44 @@ public class ServletOps {
                 ImageSize is = ii.getSize();
                 List<Integer> tileFactors = new ArrayList<Integer>();
                 ImageSize ts = null;
-            	for (ListIterator<ImageInput> i = imageSet.getHiresIterator(); i.hasNext(); ) {
-            	    ImageInput sii = i.next();
-            		ImageSize sts = sii.getTileSize();
-            		int osf = 0;
-            		if (sts != null) {
-            			// initialize default tile size
-            			if (ts == null) ts = sts;
-        				// scaled images should have same tile size!
-            			if (sts.getHeight() == ts.getHeight()) {
-            				// scale factor is integer divider of original size
-            				int sf = Math.round((float) is.getWidth() / (float) sii.getSize().getWidth());
-            				// add factor if different
-            				if (sf != osf) {
-            				    tileFactors.add(sf);
-            				    osf = sf;
-            				}
-            			} else {
-            				logger.warn("IIIF-info: scaled image "+i+" has different tile size! Ignoring.");                				
-            			}
-            		}
-            	}
+                for (ListIterator<ImageInput> i = imageSet.getHiresIterator(); i.hasNext(); ) {
+                    ImageInput sii = i.next();
+                    ImageSize sts = sii.getTileSize();
+                    int osf = 0;
+                    if (sts != null) {
+                        // initialize default tile size
+                        if (ts == null) ts = sts;
+                        // scaled images should have same tile size!
+                        if (sts.getHeight() == ts.getHeight()) {
+                            // scale factor is integer divider of original size
+                            int sf = Math.round((float) is.getWidth() / (float) sii.getSize().getWidth());
+                            // add factor if different
+                            if (sf != osf) {
+                                tileFactors.add(sf);
+                                osf = sf;
+                            }
+                        } else {
+                            logger.warn("IIIF-info: scaled image "+i+" has different tile size! Ignoring.");                				
+                        }
+                    }
+                }
                 if (!tileFactors.isEmpty()) {
-                	// tiles[{
-                	info.writeStartArray("tiles");
-                	info.writeStartObject();
-                	info.write("width", ts.getWidth());
-                	info.write("height", ts.getHeight());
-                	// scalefactors[
-                	info.writeStartArray("scaleFactors");
-                	for (Integer sf : tileFactors) {
-                		info.write(sf);
-                	}
-                	// scalefactors[]
-                	info.writeEnd();
-                	// tiles[{}
-                	info.writeEnd();
-                	// tiles[]
-                	info.writeEnd();
+                    // tiles[{
+                    info.writeStartArray("tiles");
+                    info.writeStartObject();
+                    info.write("width", ts.getWidth());
+                    info.write("height", ts.getHeight());
+                    // scalefactors[
+                    info.writeStartArray("scaleFactors");
+                    for (Integer sf : tileFactors) {
+                        info.write(sf);
+                    }
+                    // scalefactors[]
+                    info.writeEnd();
+                    // tiles[{}
+                    info.writeEnd();
+                    // tiles[]
+                    info.writeEnd();
                 }
                 // end info.json
                 info.writeEnd();
