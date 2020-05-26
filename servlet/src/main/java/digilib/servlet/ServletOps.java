@@ -412,18 +412,7 @@ public class ServletOps {
         /*
          * get resource URL
          */
-        String url = dlConfig.getAsString("iiif-image-base-url");
-        if (!url.isEmpty()) {
-            // create url from base-url config and undecoded PATH_INFO
-            url = url.substring(0, url.lastIndexOf(dlConfig.getAsString("iiif-prefix")) - 1);
-
-            // we can't just take pathInfo because it decodes encoded symbols in the path
-            String uri = dlReq.getServletRequest().getRequestURI();
-            url += uri.substring(uri.lastIndexOf(dlConfig.getAsString("iiif-prefix")) - 1, uri.length());
-        } else {
-            // create url from request
-            url = dlReq.getServletRequest().getRequestURL().toString();
-        }
+        String url = getIiifImageUrl(dlReq);
         if (url.endsWith("/info.json")) {
             url = url.substring(0, url.lastIndexOf("/info.json"));
         } else if (url.endsWith("/")) {
@@ -602,6 +591,28 @@ public class ServletOps {
         } catch (IOException e) {
             throw new ServletException("Unable to write response!", e);
         }
+    }
+
+    /**
+     * Returns the IIIF URL for the requested image.
+     * 
+     * @param dlReq
+     * @return
+     */
+    public static String getIiifImageUrl(DigilibServletRequest dlReq) {
+        String url = dlConfig.getAsString("iiif-image-base-url");
+        if (!url.isEmpty()) {
+            // create url from base-url config and undecoded PATH_INFO
+            String iiifPrefix = dlConfig.getAsString("iiif-prefix");
+            url = url.substring(0, url.lastIndexOf(iiifPrefix) - 1);
+            // we can't just take pathInfo because it decodes encoded symbols in the path
+            String uri = dlReq.getServletRequest().getRequestURI();
+            url += uri.substring(uri.lastIndexOf(iiifPrefix) - 1, uri.length());
+        } else {
+            // create url from request
+            url = dlReq.getServletRequest().getRequestURL().toString();
+        }
+        return url;
     }
 
     /** Returns text representation of headers for debuggging purposes.

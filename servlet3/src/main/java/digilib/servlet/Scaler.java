@@ -262,14 +262,14 @@ public class Scaler extends HttpServlet {
                 return;
             }
             if (dlRequest.hasOption(DigilibOption.redirect_info)) {
-                StringBuffer url = request.getRequestURL(); //FIXME: needs better URL
-                if (url.toString().endsWith("/")) {
-                    url.append("info.json");
+                String url = ServletOps.getIiifImageUrl(dlRequest);
+                if (url.endsWith("/")) {
+                    url += "info.json";
                 } else {
-                    url.append("/info.json");
+                    url += "/info.json";
                 }
                 // TODO: the redirect should have code 303
-                response.sendRedirect(url.toString());
+                response.sendRedirect(url);
                 return;
             }
 
