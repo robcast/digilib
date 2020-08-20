@@ -38,16 +38,16 @@ import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.pdf.PdfWriter;
 
+import digilib.conf.DigilibConfiguration;
+import digilib.conf.DigilibRequest;
+import digilib.conf.PDFRequest;
 import digilib.image.DocuImage;
 import digilib.image.ImageJobDescription;
 import digilib.image.ImageOpException;
 import digilib.image.ImageWorker;
-import digilib.conf.DigilibConfiguration;
-import digilib.conf.PDFRequest;
 import digilib.util.DigilibJobCenter;
 import digilib.util.NumRange;
 import digilib.util.Parameter;
-import digilib.util.ParameterMap;
 
 public class PDFStreamWorker implements Callable<OutputStream> {
 
@@ -114,10 +114,11 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 		for (int p : pgs) {
 			logger.debug("PDF: adding Image " + p + " to " + outstream);
             // copy request and set page number (as new Parameter)
-			ParameterMap pageRequest = ParameterMap.cloneInstance(job_info);
+			DigilibRequest pageRequest = new DigilibRequest(dlConfig, job_info);
             pageRequest.put("pn", new Parameter("pn", p, p));
 			// create ImageJobInformation
-			ImageJobDescription iji = ImageJobDescription.getInstance(pageRequest, job_info.getDlConfig());
+			ImageJobDescription iji = ImageJobDescription.getRawInstance(pageRequest, job_info.getDlConfig());
+			iji.prepareScaleParams();
 			addImage(doc, iji);
 			logger.debug("PDF: done adding Image " + p + " to " + outstream);
 		}

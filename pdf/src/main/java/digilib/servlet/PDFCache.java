@@ -204,7 +204,7 @@ public class PDFCache extends HttpServlet {
             }
         } catch (Exception e) {
             // error in pdf creation
-            logger.error(e.getMessage());
+            logger.error("Error processing request!", e);
             notifyUser(PDFStatus.ERROR, docid, request, response);
             return;
         }

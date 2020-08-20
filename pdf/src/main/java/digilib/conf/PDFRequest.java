@@ -124,7 +124,7 @@ public class PDFRequest extends ParameterMap {
 		pages = new NumRange(getAsString("pgs"));
 		initOptions();
 		// get maxnum from directory
-        ImageJobDescription ij = ImageJobDescription.getInstance(this, dlConfig);
+        ImageJobDescription ij = ImageJobDescription.getRawInstance(this, dlConfig);
         DocuDirectory dir = ij.getFileDirectory();
         int dirsize = dir.size();
         pages.setMaxnum(dirsize);
@@ -154,7 +154,7 @@ public class PDFRequest extends ParameterMap {
 
 	
 	public ImageJobDescription getImageJobInformation() throws IOException, ImageOpException{
-		return ImageJobDescription.getInstance(this, dlConfig);
+		return ImageJobDescription.getRawInstance(this, dlConfig);
 	}
 	
 	
