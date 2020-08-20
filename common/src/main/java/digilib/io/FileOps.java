@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.function.Predicate;
 
 public class FileOps {
@@ -186,23 +185,9 @@ public class FileOps {
 	 * @return the paths
 	 */
 	public static String[] pathToArray(String paths) {
+		if (paths == null) return null;
 		// split list into directories
-		StringTokenizer dirs = new StringTokenizer(paths, File.pathSeparator);
-		int n = dirs.countTokens();
-		if (n < 1) {
-			return null;
-		}
-		// add directories into array
-		String[] pathArray = new String[n];
-		for (int i = 0; i < n; i++) {
-			String s = dirs.nextToken();
-			// make shure the dir name ends with a directory separator
-			if (s.endsWith(File.separator)) {
-				pathArray[i] = s;
-			} else {
-				pathArray[i] = s + File.separator;
-			}
-		}
+		String[] pathArray = paths.split(File.pathSeparator);
 		return pathArray;
 	}
 
@@ -210,7 +195,7 @@ public class FileOps {
 	 * Extract the base of a file name (sans extension).
 	 * 
 	 * Returns the filename without the extension. The extension is the part
-	 * behind the last dot in the filename. If the filename has no dot the full
+	 * behind the last dot in the filename. If the filename contains no dot the full
 	 * file name is returned.
 	 * 
 	 * @param fn the fn

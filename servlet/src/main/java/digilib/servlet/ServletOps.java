@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.StringTokenizer;
 
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
@@ -86,33 +85,12 @@ public class ServletOps {
 		corsForImageRequests = dlConfig.getAsBoolean("iiif-image-cors");
 	}
 
-	/**
-     * convert a string with a list of pathnames into an array of strings using
-     * the system's path separator string
-     * 
-     * @param paths the paths string
-     * @return the paths
-     */
-    public static String[] getPathArray(String paths) {
-        // split list into directories
-		StringTokenizer dirs = new StringTokenizer(paths, java.io.File.pathSeparator);
-        int n = dirs.countTokens();
-        if (n < 1) {
-            return null;
-        }
-        // add directories into array
-        String[] pathArray = new String[n];
-        for (int i = 0; i < n; i++) {
-            pathArray[i] = dirs.nextToken();
-        }
-        return pathArray;
-    }
-
     /**
-     * get a real File for a web app File.
+     * Get a real File for a web app File.
      * 
      * If the File is not absolute the path is appended to the base directory of
-     * the web-app.
+     * the web-app. If the file does not exist in the web-app directory it is 
+     * considered relative to the Java working directory.
      * 
      * @param f the File
      * @param sc the ServletContext
@@ -121,88 +99,45 @@ public class ServletOps {
     public static File getFile(File f, ServletContext sc) {
         // is the filename absolute?
         if (!f.isAbsolute()) {
-            // relative path -> use getRealPath to resolve in WEB-INF
+            // relative path -> use getRealPath to resolve in web-app
             String fn = sc.getRealPath("/" + f.getPath());
-            if (fn == null) {
-                // TODO: use getResourceAsStream?
-                return null;
+            if (fn != null && new File(fn).exists()) {
+                f = new File(fn);
             }
-            f = new File(fn);
+            // if relative path can't be resolved inside webapp we
+            // assume that it is relative to user working directory,
+            // so we return it as.
         }
         return f;
     }
 
     /**
-     * get a real file name for a web app file pathname.
-     * 
-     * If filename starts with "/" its treated as absolute else the path is
-     * appended to the base directory of the web-app.
-     * 
-     * @param filename the filename
-     * @param sc the ServletContext
-     * @return the filename
-     */
-    public static String getFile(String filename, ServletContext sc) {
-        File f = new File(filename);
-        // is the filename absolute?
-        if (!f.isAbsolute()) {
-            // relative path -> use getRealPath to resolve in WEB-INF
-            filename = sc.getRealPath("/" + filename);
-        }
-        return filename;
-    }
-
-    /**
-     * get a real File for a config File.
+     * Get a real File for a config File.
      * 
      * If the File is not absolute the path is appended to the WEB-INF directory
-     * of the web-app.
+     * of the web-app. If the file does not exist in the WEB-INF directory it is 
+     * considered relative to the Java working directory.
      * 
      * @param f the File
      * @param sc the ServletContext
      * @return the File
      */
     public static File getConfigFile(File f, ServletContext sc) {
-        String fn = f.getPath();
-        // is the filename absolute?
-        if (f.isAbsolute()) {
-            // does it exist?
-            if (f.canRead()) {
-                // fine
-                return f;
-            } else {
-                // try just the filename as relative
-                fn = f.getName();
-            }
-        }
-        // relative path -> use getRealPath to resolve in WEB-INF
-        String newfn = sc.getRealPath("/WEB-INF/" + fn);
-        if (newfn == null) {
-            // TODO: use getResourceAsStream?
-            return null;
-        }
-        f = new File(newfn);
-        return f;
-    }
-
-    /**
-     * get a real file name for a config file pathname.
-     * 
-     * If filename starts with "/" its treated as absolute else the path is
-     * appended to the WEB-INF directory of the web-app.
-     * 
-     * @param filename the filename
-     * @param sc the ServletContext
-     * @return the filename
-     */
-    public static String getConfigFileName(String filename, ServletContext sc) {
-        File f = new File(filename);
         // is the filename absolute?
         if (!f.isAbsolute()) {
             // relative path -> use getRealPath to resolve in WEB-INF
-            filename = sc.getRealPath("/WEB-INF/" + filename);
+            String fn = sc.getRealPath("/WEB-INF/" + f.getPath());
+            if (fn != null) {
+            	File wf = new File(fn);
+            	if (wf.exists()) {
+            		return wf;
+            	}
+            }
+            // if relative path can't be resolved inside webapp we
+            // assume that it is relative to user working directory,
+            // so we return it as.
         }
-        return filename;
+        return f;
     }
 
     /**
@@ -448,8 +383,8 @@ public class ServletOps {
      * @param logger the Logger
      * @throws ServletException on error
      */
-	public static void sendIiifInfo(DigilibServletRequest dlReq, HttpServletResponse response, Logger logger)
-			throws ServletException {
+    public static void sendIiifInfo(DigilibServletRequest dlReq, HttpServletResponse response, Logger logger)
+            throws ServletException {
         if (response == null) {
             logger.error("No response!");
             return;
@@ -477,18 +412,7 @@ public class ServletOps {
         /*
          * get resource URL
          */
-        String url = dlConfig.getAsString("iiif-image-base-url");
-        if (!url.isEmpty()) {
-        	// create url from base-url config and undecoded PATH_INFO
-        	url = url.substring(0, url.lastIndexOf(dlConfig.getAsString("iiif-prefix")) - 1);
-
-          // we can't just take pathInfo because it decodes encoded symbols in the path
-          String uri = dlReq.getServletRequest().getRequestURI();
-          url += uri.substring(uri.lastIndexOf(dlConfig.getAsString("iiif-prefix")) - 1, uri.length());
-        } else {
-        	// create url from request
-        	url = dlReq.getServletRequest().getRequestURL().toString();
-        }
+        String url = getIiifImageUrl(dlReq);
         if (url.endsWith("/info.json")) {
             url = url.substring(0, url.lastIndexOf("/info.json"));
         } else if (url.endsWith("/")) {
@@ -590,44 +514,44 @@ public class ServletOps {
                 ImageSize is = ii.getSize();
                 List<Integer> tileFactors = new ArrayList<Integer>();
                 ImageSize ts = null;
-            	for (ListIterator<ImageInput> i = imageSet.getHiresIterator(); i.hasNext(); ) {
-            	    ImageInput sii = i.next();
-            		ImageSize sts = sii.getTileSize();
-            		int osf = 0;
-            		if (sts != null) {
-            			// initialize default tile size
-            			if (ts == null) ts = sts;
-        				// scaled images should have same tile size!
-            			if (sts.getHeight() == ts.getHeight()) {
-            				// scale factor is integer divider of original size
-            				int sf = Math.round((float) is.getWidth() / (float) sii.getSize().getWidth());
-            				// add factor if different
-            				if (sf != osf) {
-            				    tileFactors.add(sf);
-            				    osf = sf;
-            				}
-            			} else {
-            				logger.warn("IIIF-info: scaled image "+i+" has different tile size! Ignoring.");                				
-            			}
-            		}
-            	}
+                for (ListIterator<ImageInput> i = imageSet.getHiresIterator(); i.hasNext(); ) {
+                    ImageInput sii = i.next();
+                    ImageSize sts = sii.getTileSize();
+                    int osf = 0;
+                    if (sts != null) {
+                        // initialize default tile size
+                        if (ts == null) ts = sts;
+                        // scaled images should have same tile size!
+                        if (sts.getHeight() == ts.getHeight()) {
+                            // scale factor is integer divider of original size
+                            int sf = Math.round((float) is.getWidth() / (float) sii.getSize().getWidth());
+                            // add factor if different
+                            if (sf != osf) {
+                                tileFactors.add(sf);
+                                osf = sf;
+                            }
+                        } else {
+                            logger.warn("IIIF-info: scaled image "+i+" has different tile size! Ignoring.");                				
+                        }
+                    }
+                }
                 if (!tileFactors.isEmpty()) {
-                	// tiles[{
-                	info.writeStartArray("tiles");
-                	info.writeStartObject();
-                	info.write("width", ts.getWidth());
-                	info.write("height", ts.getHeight());
-                	// scalefactors[
-                	info.writeStartArray("scaleFactors");
-                	for (Integer sf : tileFactors) {
-                		info.write(sf);
-                	}
-                	// scalefactors[]
-                	info.writeEnd();
-                	// tiles[{}
-                	info.writeEnd();
-                	// tiles[]
-                	info.writeEnd();
+                    // tiles[{
+                    info.writeStartArray("tiles");
+                    info.writeStartObject();
+                    info.write("width", ts.getWidth());
+                    info.write("height", ts.getHeight());
+                    // scalefactors[
+                    info.writeStartArray("scaleFactors");
+                    for (Integer sf : tileFactors) {
+                        info.write(sf);
+                    }
+                    // scalefactors[]
+                    info.writeEnd();
+                    // tiles[{}
+                    info.writeEnd();
+                    // tiles[]
+                    info.writeEnd();
                 }
                 // end info.json
                 info.writeEnd();
@@ -667,6 +591,28 @@ public class ServletOps {
         } catch (IOException e) {
             throw new ServletException("Unable to write response!", e);
         }
+    }
+
+    /**
+     * Returns the IIIF URL for the requested image.
+     * 
+     * @param dlReq
+     * @return
+     */
+    public static String getIiifImageUrl(DigilibServletRequest dlReq) {
+        String url = dlConfig.getAsString("iiif-image-base-url");
+        if (!url.isEmpty()) {
+            // create url from base-url config and undecoded PATH_INFO
+            String iiifPrefix = dlConfig.getAsString("iiif-prefix");
+            url = url.substring(0, url.lastIndexOf(iiifPrefix) - 1);
+            // we can't just take pathInfo because it decodes encoded symbols in the path
+            String uri = dlReq.getServletRequest().getRequestURI();
+            url += uri.substring(uri.lastIndexOf(iiifPrefix) - 1, uri.length());
+        } else {
+            // create url from request
+            url = dlReq.getServletRequest().getRequestURL().toString();
+        }
+        return url;
     }
 
     /** Returns text representation of headers for debuggging purposes.

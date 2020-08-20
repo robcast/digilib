@@ -192,26 +192,25 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
          * parameter, then in a fixed location in the webapp.
          */
         if (c == null) {
-            // no config no file...
+            // no context, no config...
             return;
         }
         String fn = c.getInitParameter("config-file");
         if (fn == null) {
-            logger.debug("readConfig: no param config-file");
-            fn = ServletOps.getConfigFileName("digilib-config.xml", c);
-            if (fn == null) fn = "";
+        	// use default config file name
+            fn = "digilib-config.xml";
         }
-        File f = new File(fn);
+        File f = ServletOps.getConfigFile(new File(fn), c);
         if (f.canRead()) {
             // setup config file list reader
             XMLMapLoader lilo = new XMLMapLoader("digilib-config", "parameter", "name", "value");
             // read config file into HashMap
             Map<String, String> map = lilo.loadUri(f.toURI());
-
             // set config file path parameter
             setValue("servlet.config.file", f.getCanonicalPath());
-
+            // process config from Map
             readConfigEntries(c, map);
+            
         } else {
             /*
              * try properties file digilib.properties
@@ -227,18 +226,18 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
                 for (Entry<Object, Object> e : props.entrySet()) {
                     map.put((String)e.getKey(), (String)e.getValue());
                 }
+                // process config from Map
                 readConfigEntries(c, map);
                 // set config file path parameter
                 setValue("servlet.config.file", Thread.currentThread().getContextClassLoader()
                         .getResource("digilib.properties").toString());
+                
             } else {
                 logger.warn("No digilib config file! Using defaults!");
                 // update basedir-list
                 String[] dirs = (String[]) this.getValue("basedir-list");
-                for (int j = 0; j < dirs.length; j++) {
-                    // make relative directory paths be inside the webapp
-                    dirs[j] = ServletOps.getFile(dirs[j], c);
-                }
+                dirs = expandBaseDirList(dirs, c);
+                setValue("basedir-list", dirs);
             }
         }
 
@@ -252,7 +251,6 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         /*
          * read parameters
          */
-
         for (Entry<String, String> confEntry : conf.entrySet()) {
             Parameter param = get(confEntry.getKey());
             if (param != null) {
@@ -264,17 +262,13 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
                     /*
                      * automatic conversion failed -- try special cases
                      */
-
+                	
                     // basedir-list
                     if (confEntry.getKey().equals("basedir-list")) {
                         // split list into directories
                         String[] dirs = FileOps.pathToArray(confEntry.getValue());
-                        for (int j = 0; j < dirs.length; j++) {
-                            // make relative directory paths be inside the webapp
-                            dirs[j] = ServletOps.getFile(dirs[j], ctx);
-                        }
                         if (dirs != null) {
-                            param.setValue(dirs);
+                            param.setValue(expandBaseDirList(dirs, ctx));
                         }
                     }
                 }
@@ -460,6 +454,17 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
      */
     protected DigilibServletConfiguration getContextConfig(ServletContext context) {
         return getCurrentConfig(context);
+    }
+
+    /**
+     * Resolve all paths in the basedir-list.
+     * See {@link ServletOps#getFile(File, ServletContext)} for resolution logic.
+     */
+    protected String[] expandBaseDirList(String[] dirs, ServletContext c) {
+        for (int j = 0; j < dirs.length; j++) {
+            dirs[j] = ServletOps.getFile(new File(dirs[j]), c).getPath();
+        }
+        return dirs;
     }
 
 }
