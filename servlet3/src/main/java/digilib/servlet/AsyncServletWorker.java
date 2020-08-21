@@ -32,7 +32,6 @@ import java.io.IOException;
 import javax.servlet.AsyncContext;
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
@@ -42,6 +41,7 @@ import digilib.conf.DigilibOption;
 import digilib.image.DocuImage;
 import digilib.image.ImageJobDescription;
 import digilib.image.ImageOpException;
+import digilib.image.ImageOutputException;
 import digilib.image.ImageWorker;
 import digilib.servlet.Scaler.ErrMsg;
 import digilib.servlet.Scaler.Error;
@@ -128,12 +128,13 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
             logger.error(e.getClass() + ": " + e.getMessage());
             Scaler.digilibError(errMsgType, Error.IMAGE, null,
                     (HttpServletResponse) asyncContext.getResponse());
+        } catch (ImageOutputException e) {
+            logger.error(e.getClass() + ": " + e.getMessage());
+            // no use in trying to send an error
         } catch (IOException e) {
             logger.error(e.getClass() + ": " + e.getMessage());
             Scaler.digilibError(errMsgType, Error.FILE, null,
                     (HttpServletResponse) asyncContext.getResponse());
-        } catch (ServletException e) {
-            logger.error("Servlet error: ", e);
         } catch (Exception e) {
             logger.error("Other error: ", e);
         } catch (OutOfMemoryError e) {
@@ -169,15 +170,19 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
 
     @Override
     public void onError(AsyncEvent event) throws IOException {
-        logger.error("AsyncServletWorker onError: " + event.toString());
+        Throwable exception = event.getThrowable();
+        logger.error("AsyncServletWorker onError: " + ((exception != null) ? exception.getMessage() : "???"));
         if (completed) {
-            logger.debug("AsyncServletWorker already completed (TimeOut)!");
+            logger.debug("AsyncServletWorker already completed (Error)!");
             return;
         }
         imageWorker.stopNow();
         completed = true;
-        Scaler.digilibError(errMsgType, Error.UNKNOWN, null,
-                (HttpServletResponse) asyncContext.getResponse());
+        // if it's an IOException the response will be dead 
+        if (!(exception instanceof IOException)) {
+            Scaler.digilibError(errMsgType, Error.UNKNOWN, null,
+                    (HttpServletResponse) asyncContext.getResponse());
+        }
         asyncContext.complete();
     }
 

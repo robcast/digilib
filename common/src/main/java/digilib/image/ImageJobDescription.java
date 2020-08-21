@@ -91,14 +91,15 @@ public class ImageJobDescription {
 	protected boolean preselectInputs = true;
 
     /**
-     * create empty ImageJobDescription.
+     * Creates ImageJobDescription with a given ParameterMap.
+     * (Does not prepare scale parameters.)
      * 
      * @param dlcfg the DigilibConfiguration
-     * @param dlreq the DigilibRequest
+     * @param params the ParameterMap
      */
-    public ImageJobDescription(DigilibConfiguration dlcfg, ParameterMap dlreq) {
+    public ImageJobDescription(DigilibConfiguration dlcfg, ParameterMap params) {
         config = dlcfg;
-        request = dlreq;
+        request = params;
         dirCache = (DocuDirCache) config.getValue("servlet.dir.cache");
         preselectInputs = config.getAsBoolean("input-preselection-allowed");
     }
@@ -145,8 +146,8 @@ public class ImageJobDescription {
     }
 
     /**
-     * Creates new ImageJobDescription from another
-     * ParameterMap.
+     * Creates new ImageJobDescription with a given ParameterMap.
+     * (Does not prepare scale parameters.)
      * 
      * @param pm the ParameterMap
      * @param dlcfg the DigilibConfiguration
@@ -154,10 +155,8 @@ public class ImageJobDescription {
      * @throws ImageOpException on error
      * @throws IOException on error
      */
-    public static ImageJobDescription getInstance(ParameterMap pm, DigilibConfiguration dlcfg) throws IOException, ImageOpException {
+    public static ImageJobDescription getRawInstance(ParameterMap pm, DigilibConfiguration dlcfg) throws IOException, ImageOpException {
         ImageJobDescription newMap = new ImageJobDescription(dlcfg, pm);
-        // set up parameters
-        newMap.prepareScaleParams();
         return newMap;
     }
 

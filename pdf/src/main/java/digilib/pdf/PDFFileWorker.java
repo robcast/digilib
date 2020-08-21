@@ -74,6 +74,7 @@ public class PDFFileWorker implements Callable<File> {
             outstream.close();
             // move temporary to final file
             tempFile.renameTo(finalFile);
+            // TODO: catch exceptions?
         } finally {
             if (outstream != null) {
                 outstream.close();

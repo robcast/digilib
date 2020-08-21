@@ -28,12 +28,13 @@ package digilib.io;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.function.Predicate;
 
 public class FileOps {
 
@@ -184,23 +185,9 @@ public class FileOps {
 	 * @return the paths
 	 */
 	public static String[] pathToArray(String paths) {
+		if (paths == null) return null;
 		// split list into directories
-		StringTokenizer dirs = new StringTokenizer(paths, File.pathSeparator);
-		int n = dirs.countTokens();
-		if (n < 1) {
-			return null;
-		}
-		// add directories into array
-		String[] pathArray = new String[n];
-		for (int i = 0; i < n; i++) {
-			String s = dirs.nextToken();
-			// make shure the dir name ends with a directory separator
-			if (s.endsWith(File.separator)) {
-				pathArray[i] = s;
-			} else {
-				pathArray[i] = s + File.separator;
-			}
-		}
+		String[] pathArray = paths.split(File.pathSeparator);
 		return pathArray;
 	}
 
@@ -208,7 +195,7 @@ public class FileOps {
 	 * Extract the base of a file name (sans extension).
 	 * 
 	 * Returns the filename without the extension. The extension is the part
-	 * behind the last dot in the filename. If the filename has no dot the full
+	 * behind the last dot in the filename. If the filename contains no dot the full
 	 * file name is returned.
 	 * 
 	 * @param fn the fn
@@ -350,7 +337,7 @@ public class FileOps {
 	/**
 	 * FileFilter for image types (helper class for getFile)
 	 */
-	static class ImageFileFilter implements FileFilter {
+	static class ImageFileFilter implements FileFilter, Predicate<Path> {
 
 		public boolean accept(File f) {
 			String fn = f.getName();
@@ -359,15 +346,33 @@ public class FileOps {
 			}
 			return false;
 		}
+
+        @Override
+        public boolean test(Path entry) {
+            String fn = entry.getFileName().toString();
+            if (isValidFilename(fn)) {
+                return (classForFilename(fn) == FileClass.IMAGE);
+            }
+            return false;
+        }
 	}
 
 	/**
 	 * FileFilter for text types (helper class for getFile)
 	 */
-	static class TextFileFilter implements FileFilter {
+	static class TextFileFilter implements FileFilter, Predicate<Path> {
 
         public boolean accept(File f) {
             String fn = f.getName();
+            if (isValidFilename(fn)) {
+                return (classForFilename(fn) == FileClass.TEXT);
+            }
+            return false;
+        }
+
+        @Override
+        public boolean test(Path entry) {
+            String fn = entry.getFileName().toString();
             if (isValidFilename(fn)) {
                 return (classForFilename(fn) == FileClass.TEXT);
             }
@@ -379,10 +384,19 @@ public class FileOps {
 	 * FileFilter for svg types (helper class for getFile).
 	 *  
 	 */
-	static class SVGFileFilter implements FileFilter {
+	static class SVGFileFilter implements FileFilter, Predicate<Path> {
 
         public boolean accept(File f) {
             String fn = f.getName();
+            if (isValidFilename(fn)) {
+                return (classForFilename(fn) == FileClass.SVG);
+            }
+            return false;
+        }
+
+        @Override
+        public boolean test(Path entry) {
+            String fn = entry.getFileName().toString();
             if (isValidFilename(fn)) {
                 return (classForFilename(fn) == FileClass.SVG);
             }
@@ -408,6 +422,25 @@ public class FileOps {
 		}
 		return null;
 	}
+
+    /**
+     * Factory for DirectoryStream.Filters (image or text).
+     * 
+     * @param fileClass the FileClass
+     * @return the FileFilter
+     */
+    public static Predicate<Path> streamFilterForClass(FileClass fileClass) {
+        if (fileClass == FileClass.IMAGE) {
+            return new ImageFileFilter();
+        }
+        if (fileClass == FileClass.TEXT) {
+            return new TextFileFilter();
+        }
+        if (fileClass == FileClass.SVG) {
+            return new SVGFileFilter();
+        }
+        return null;
+    }
 
 	/**
 	 * Factory for DocuDirents based on file class.
@@ -443,7 +476,7 @@ public class FileOps {
 	 * @param filter the FileFilter
 	 * @return the Files
 	 */
-	public static File[] listFiles(File[] files, FileFilter filter) {
+	public static File[] filterFiles(File[] files, FileFilter filter) {
 		if (files == null) {
 			return null;
 		}

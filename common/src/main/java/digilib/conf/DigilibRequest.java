@@ -113,6 +113,21 @@ public class DigilibRequest extends ParameterMap {
     }
 
     /**
+     * Create DigilibRequest with DigilibConfiguration with added ParameterMap.
+     * 
+     * @param config the DigilibConfiguration
+     * @param params ParameterMap to add
+     */
+    public DigilibRequest(DigilibConfiguration config, ParameterMap params) {
+        super(30);
+        this.config = config;
+        // initialise default params
+        initParams();
+        // add new params
+        this.params.putAll(params.getParams());
+    }
+
+    /**
      * Define and set up parameters with default values.
      */
     protected void initParams() {

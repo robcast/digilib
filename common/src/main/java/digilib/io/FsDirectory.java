@@ -29,6 +29,7 @@ package digilib.io;
  */
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Arrays;
 
 import org.apache.log4j.Logger;
@@ -108,6 +109,14 @@ public class FsDirectory {
 		return dir;
 	}
 
+	/**
+	 * Returns the directory as Path object.
+	 * @return
+	 */
+	public Path toPath() {
+	    return dir.toPath();
+	}
+	
 	/**
 	 * Sets the directory File object.
 	 * @param dir the File

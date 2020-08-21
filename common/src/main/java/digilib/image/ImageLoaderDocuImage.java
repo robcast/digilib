@@ -615,8 +615,8 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             }
 
         } catch (IOException e) {
-            logger.error("Error writing image:", e);
-            throw new FileOpException("Error writing image!", e);
+            logger.error("Error writing image: "+e.getMessage());
+            throw new ImageOutputException("Error writing image!", e);
         } finally {
         	if (writer != null) {
         		writer.dispose();
@@ -629,7 +629,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         		try {
 					imgout.close();
 				} catch (IOException e) {
-					logger.error("Error closing ImageOutputStream!", e);
+					logger.error("Error closing ImageOutputStream! "+e.getMessage());
 				}
         	}
         }

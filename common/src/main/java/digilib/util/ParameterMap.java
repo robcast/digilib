@@ -72,10 +72,11 @@ public class ParameterMap {
 	@SuppressWarnings("unchecked")
 	public static ParameterMap cloneInstance(ParameterMap pm) {
 		ParameterMap newPm = new ParameterMap();
-        // TODO: initParams?
 		// clone params to this map
 		newPm.params = (HashMap<String, Parameter>) pm.params.clone();
-		newPm.options.setOptions(pm.options.getOptions().clone());
+		if (pm.options != null) {
+		    newPm.options.setOptions(pm.options.getOptions().clone());
+		}
 		return newPm;
 	}
 

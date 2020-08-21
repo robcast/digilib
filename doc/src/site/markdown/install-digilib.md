@@ -2,7 +2,7 @@
 
 To run digilib you need:
 
-* [Java JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html) (7 or higher)
+* [Java JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html) (8 or higher)
 * a Servlet Container like [Tomcat](http://tomcat.apache.org/) (version 7 or 
 later) or [Jetty](http://www.eclipse.org/jetty/) (version 8 or later)
 * the digilib web application as a WAR file or application directory

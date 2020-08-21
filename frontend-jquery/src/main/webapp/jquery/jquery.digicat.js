@@ -40,7 +40,7 @@ function($) {
         // logo url
         'logoUrl' : 'img/digilib-logo-text1.png',
         // homepage url (behind logo)
-        'homeUrl' : 'http://digilib.sourceforge.net',
+        'homeUrl' : 'https://robcast.github.io/digilib/',
         // base URL to digilib webapp (e.g.
         // 'http://digilib.mpiwg-berlin.mpg.de/digitallibrary')
         'digilibBaseUrl' : null,
