@@ -45,12 +45,13 @@ Add a jQuery `ready` event handler for the Javascript `document` object. In the 
 
 ```html
         <script type="text/javascript">
-            $(document).ready(function(){
+            $(document).ready(function() {
                 var options = {
                     interactionMode : 'embedded',
                     digilibBaseUrl : '/digilib'
                     };
                 $('.mydiv').digilib(options);
+            });
         </script>
 ```
 
