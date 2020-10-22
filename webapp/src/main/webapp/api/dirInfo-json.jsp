@@ -46,29 +46,28 @@ docBean.setRequest(request);
 // get directory
 DocuDirectory dir = docBean.getDirectory();
 int dirSize = docBean.getNumPages();
-%>
-{<%  
+%>{
+<%  
 if (dir != null) {
-%>
-  "url_path" : "<%= dir.getDirName() %>",
+%>"url_path" : "<%= dir.getDirName() %>",
 <%
     if (docBean.isUseAuthorization()) {
-%>  "auth_required" : <%= ! docBean.isAuthorized() %>,
+%>"auth_required" : <%= ! docBean.isAuthorized() %>,
 <%
     }
-%>  "count" : "<%= dirSize %>",
-  "files" : [
+%>"count" : "<%= dirSize %>",
+"files" : [
 <%
     if (!docBean.getRequest().hasOption(DigilibOption.dir)) {
         // list all files
         for (int i = 0; i < dirSize; i++) {
             DocuDirent f = dir.get(i);
             String fn = (f != null) ? f.getName() : "null";
-%>{
+%>  {
   "index" : <%= i+1 %>,
   "fn" : "<%= FileOps.basename(fn) %>",
   "file" : "<%= fn %>"
-}<%
+  }<%
             if (i+1 < dirSize) {%>,
 <%          }
         } // for 

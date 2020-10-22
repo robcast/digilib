@@ -200,7 +200,7 @@ public class DigilibServletRequest extends DigilibRequest {
             setValue("request.path", path);
         }
         // set the baseURL
-        setBaseURL((HttpServletRequest) request);
+        setBaseURL(request);
     }
 
     /**

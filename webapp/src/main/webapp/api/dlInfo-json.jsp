@@ -38,21 +38,22 @@ public void jspInit() {
 // parsing the query
 DigilibServletRequest dlRequest = new DigilibServletRequest(request);
 docBean.setRequest(dlRequest);
-%>
-// JSON format metadata about request and image
-{
+%>{
 <%
     Object[] keys = dlRequest.getParams().keySet().toArray();
     java.util.Arrays.sort(keys);
     int l = keys.length;
     for (int i = 0; i < l; i++) {
-	String key = (String) keys[i];
+    String key = (String) keys[i];
 	String val = dlRequest.getAsString(key);
 	if (val.length() == 0) {
 	    val = "";
 	}
-	%>"<%= key %>" : "<%= val %>",
+	%>"<%= key %>" : "<%= val %>"<%
+	if (i < l-1) {
+		%>,
 <%
-       }
+	}
+    }
 %>
 }
