@@ -31,13 +31,12 @@ import java.net.URL;
 
 import org.apache.log4j.Logger;
 
-import com.itextpdf.text.Anchor;
-import com.itextpdf.text.BadElementException;
-import com.itextpdf.text.Chunk;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.FontFactory;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.Paragraph;
+import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.kernel.pdf.action.PdfAction;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Image;
+import com.itextpdf.layout.element.Link;
+import com.itextpdf.layout.element.Paragraph;
 
 import digilib.conf.PDFRequest;
 import digilib.image.ImageOpException;
@@ -95,58 +94,57 @@ public class PDFTitlePage {
 	 * @throws ImageOpException 
 	 * @throws IOException 
 	 */
-	public Element getPageContents() throws IOException, ImageOpException{
-		Paragraph content = new Paragraph();
-		content.setAlignment(Element.ALIGN_CENTER);
+	public Document createPage(Document content)  {
+		// header with logo
+		Paragraph logoBlock = new Paragraph();
+		logoBlock.add(getLogo());
+		content.add(logoBlock);
 
-		// add vertical whitespace
-		for(int i=0; i<8; i++){
-			content.add(Chunk.NEWLINE);
+		String reference = getReference();
+		if (reference != null) {
+			// add full reference
+			Paragraph refBlock = new Paragraph();
+			refBlock.add(reference);
+			content.add(refBlock);
+		} else {
+			// add author
+			String author = getAuthor();
+			if (author != null) {
+				Paragraph authorBlock = new Paragraph();
+				authorBlock.add(author);
+				content.add(authorBlock);
+			}
+			// add title
+			String title = getTitle();
+			if (title != null) {
+				Paragraph titleBlock = new Paragraph();
+				titleBlock.add(title);
+				content.add(titleBlock);
+			}
+			// add date
+			String date = getDate();
+			if (date != null) {
+				Paragraph dateBlock = new Paragraph();
+				dateBlock.add(date);
+				content.add(dateBlock);
+			}
 		}
-		
-		// add logo
-		content.add(getLogo());
-		content.add(Chunk.NEWLINE);
-		content.add(Chunk.NEWLINE);
 
-		// add title
-		Anchor title = new Anchor(new Paragraph(getTitle(),FontFactory.getFont(FontFactory.HELVETICA,16)));
-		String burl = job_info.getImageJobInformation().getRequest().getAsString("base.url");
-		
-		title.setReference(burl+"digilib.html?fn="+job_info.getImageJobInformation().getRequest().getAsString("fn"));
-		content.add(title);		
-		content.add(Chunk.NEWLINE);
-
-		// add author
-		if(getDate()!=" ")
-			content.add(new Paragraph(getAuthor()+" ("+getDate()+")",FontFactory.getFont(FontFactory.HELVETICA,14)));
-		else
-			content.add(new Paragraph(getAuthor(),FontFactory.getFont(FontFactory.HELVETICA,14)));
-		
-		content.add(Chunk.NEWLINE);
-		
 		// add page numbers
-		content.add(new Paragraph(getPages(), FontFactory.getFont(FontFactory.HELVETICA, 12)));
+		Paragraph pagesBlock = new Paragraph();
+		pagesBlock.add(getPages());
+		content.add(pagesBlock);
 
-
-		content.add(Chunk.NEWLINE);
-		content.add(Chunk.NEWLINE);
-		content.add(Chunk.NEWLINE);
-
+		// add URL
+		Paragraph urlBlock = new Paragraph();
+		urlBlock.add(new Link(getUrl(), PdfAction.createURI(getUrl())));
+		content.add(urlBlock);
+		
 		// add digilib version
-		content.add(new Paragraph(getDigilibVersion(),FontFactory.getFont(FontFactory.HELVETICA,10)));
+		Paragraph dlBlock = new Paragraph();
+		dlBlock.add(getDigilibVersion());
+		content.add(dlBlock);
 
-		for(int i=0; i<8; i++){
-			content.add(Chunk.NEWLINE);
-		}
-		Anchor address = new Anchor(
-				new Paragraph(burl+"digilib.html?fn="+job_info.getImageJobInformation().getRequest().getAsString("fn"), FontFactory.getFont(FontFactory.COURIER, 9))
-									);
-		address.setReference(burl+"digilib.html?fn="+job_info.getImageJobInformation().getRequest().getAsString("fn"));
-		
-		content.add(address);
-
-		
 		return content;
 	}
 	
@@ -159,47 +157,59 @@ public class PDFTitlePage {
 		try {
 			URL url = new URL(job_info.getDlConfig().getAsString("pdf-logo"));
 			if(url!=null && !url.equals("")){
-				Image logo = Image.getInstance(url);
-				logo.setAlignment(Element.ALIGN_CENTER);
+				Image logo = new Image(ImageDataFactory.create(url));
+				//logo.setAlignment(Element.ALIGN_CENTER);
 				return logo;
 			}
-		} catch (BadElementException e) {
-			logger.error(e.getMessage());
 		} catch (MalformedURLException e) {
-			logger.error(e.getMessage());
-		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
 		return null;
 	}
 	
-	private String getTitle() throws IOException, ImageOpException {
+	private String getReference(){
+		return null;
+	}
+	
+	private String getTitle() {
 		if(info_reader.hasInfo())
 			return info_reader.getAsString("title");
 		else
-			return job_info.getImageJobInformation().getRequest().getAsString("fn");
+			return "[" + job_info.getAsString("fn") + "]";
 	}
 	
 	private String getAuthor(){
 		if(info_reader.hasInfo())
 			return info_reader.getAsString("author");
 		else
-			return " ";
+			return null;
 	}
 	
 	private String getDate(){
 		if(info_reader.hasInfo())
 			return info_reader.getAsString("date");
 		else
-			return " ";
+			return null;
 	}
 	
 	private String getPages(){
-		return "Pages "+job_info.getAsString("pgs") + " (scan page numbers)";
+		return "Pages "+job_info.getAsString("pgs") + " (scan numbers)";
+	}
+	
+	private String getUrl() {
+		String url = null;
+		try {
+			String burl = job_info.getAsString("base.url");
+			url = burl+"/digilib.html?fn="+job_info.getAsString("fn");
+		} catch (Exception e) {
+			// this shouldn't happen
+			logger.error("Error getting link", e);
+		}
+		return url;
 	}
 
 	private String getDigilibVersion(){
-		return "Digilib PDFMaker v."+PDFCache.version;
+		return "PDF created by digilib PDFMaker v."+PDFCache.version;
 	}
 	
 }

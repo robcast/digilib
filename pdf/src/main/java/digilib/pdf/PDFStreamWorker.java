@@ -32,11 +32,14 @@ import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.PageSize;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.AreaBreak;
+//import com.itextpdf.layout.DocumentException;
+import com.itextpdf.layout.element.Image;
+import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
 
 import digilib.conf.DigilibConfiguration;
 import digilib.conf.DigilibRequest;
@@ -90,19 +93,16 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 	 * @throws IOException
 	 * @throws ImageOpException 
 	 */
-	protected OutputStream renderPDF() throws DocumentException, InterruptedException,
+	protected OutputStream renderPDF() throws InterruptedException,
 			ExecutionException, IOException, ImageOpException {
-		// create document object
-		doc = new Document(PageSize.A4, 0, 0, 0, 0);
-		PdfWriter docwriter = null;
-
 		long start_time = System.currentTimeMillis();
-
-		docwriter = PdfWriter.getInstance(doc, outstream);
+		
+		// create document object
+		PdfWriter writer = new PdfWriter(outstream);
+		PdfDocument pdfdoc = new PdfDocument(writer);
+		doc = new Document(pdfdoc, PageSize.A4);
 
 		setPDFProperties(doc);
-
-		doc.open();
 
 		addTitlePage(doc);
 
@@ -112,6 +112,8 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 		NumRange pgs = job_info.getPages();
 
 		for (int p : pgs) {
+			// start new page
+			doc.add(new AreaBreak());
 			logger.debug("PDF: adding Image " + p + " to " + outstream);
             // copy request and set page number (as new Parameter)
 			DigilibRequest pageRequest = new DigilibRequest(dlConfig, job_info);
@@ -128,8 +130,8 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 		doc.close();
 		logger.debug("PDF: " + outstream + " doc.close() ("
 				+ (System.currentTimeMillis() - start_time) + "ms)");
-		docwriter.flush();
-		docwriter.close();
+		writer.flush();
+		writer.close();
 		return outstream;
 	}
 
@@ -138,11 +140,13 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 	 */
 	public Document setPDFProperties(Document doc) {
 		// TODO get proper Information from dlConfig
+		/*
 		doc.addAuthor(this.getClass().getName());
 		doc.addCreationDate();
 		doc.addKeywords("digilib");
 		doc.addTitle("digilib PDF");
 		doc.addCreator(this.getClass().getName());
+		*/
 		return doc;
 	}
 
@@ -152,16 +156,9 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 	 * 
 	 * @throws DocumentException
 	 */
-	public Document addTitlePage(Document doc) throws DocumentException {
+	public Document addTitlePage(Document doc) {
 		PDFTitlePage titlepage = new PDFTitlePage(job_info);
-		try {
-            doc.add(titlepage.getPageContents());
-        } catch (IOException e) {
-            throw new DocumentException(e);
-        } catch (ImageOpException e) {
-            throw new DocumentException(e);
-        }
-		doc.newPage();
+		titlepage.createPage(doc);
 		return doc;
 	}
 
@@ -177,20 +174,16 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 	 * @throws DocumentException
 	 */
 	public Document addImage(Document doc, ImageJobDescription iji)
-			throws InterruptedException, ExecutionException, IOException,
-			DocumentException {
+			throws InterruptedException, ExecutionException, IOException {
 		// create image worker
 		ImageWorker job = new ImageWorker(dlConfig, iji);
 		// submit
 		Future<DocuImage> jobTicket = imageJobCenter.submit(job);
 		// wait for result
 		DocuImage img = jobTicket.get();
-		// scale the image
-		Image pdfimg = Image.getInstance(img.getAwtImage(), null);
-		float docW = PageSize.A4.getWidth() - 2 * PageSize.A4.getBorder();
-		float docH = PageSize.A4.getHeight() - 2 * PageSize.A4.getBorder();
+		Image pdfimg = new Image(ImageDataFactory.create(img.getAwtImage(), null));
 		// fit the image to the page
-		pdfimg.scaleToFit(docW, docH);
+		pdfimg.setAutoScale(true);
 		// add to PDF
 		doc.add(pdfimg);
 		return doc;

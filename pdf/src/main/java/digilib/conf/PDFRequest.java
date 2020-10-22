@@ -37,6 +37,7 @@ import org.apache.log4j.Logger;
 import digilib.image.ImageJobDescription;
 import digilib.image.ImageOpException;
 import digilib.io.DocuDirectory;
+import digilib.io.FileOps;
 import digilib.util.NumRange;
 import digilib.util.OptionsSet;
 import digilib.util.ParameterMap;
@@ -96,6 +97,8 @@ public class PDFRequest extends ParameterMap {
 		newParameter("dh", Integer.valueOf(500), null, 's');
         // page number (used internally)
         newParameter("pn", Integer.valueOf(1), null, 'i');
+        // base URL (from http:// to below /servlet)
+        newParameter("base.url", null, null, 'i');
 	}
 	
 	/* (non-Javadoc)
@@ -127,10 +130,40 @@ public class PDFRequest extends ParameterMap {
         ImageJobDescription ij = ImageJobDescription.getRawInstance(this, dlConfig);
         DocuDirectory dir = ij.getFileDirectory();
         int dirsize = dir.size();
+        String fn = getAsString("fn");
+        if (dirsize == 0 || !dir.getDirName().equals(FileOps.normalName(fn))) {
+        	// something went wrong
+        	throw new IOException("Invalid directory: "+fn);
+        }
         pages.setMaxnum(dirsize);
+        setBaseURL(request);
 	}
 	
-	
+
+    /**
+     * Set the requests base URL parameter from a
+     * javax.sevlet.http.HttpServletRequest.
+     * 
+     * @param request
+     *            HttpServletRequest to set the base URL.
+     */
+    public void setBaseURL(javax.servlet.http.HttpServletRequest request) {
+        String baseURL = null;
+        // calculate base URL string from request until webapp
+        String s = request.getRequestURL().toString();
+        // get name of webapp
+        String wn = request.getContextPath();
+        int eop = s.lastIndexOf(wn);
+        if (eop > 0) {
+            baseURL = s.substring(0, eop + wn.length());
+        } else {
+            // fall back
+            baseURL = "http://" + request.getServerName() + "/digilib";
+        }
+        setValue("base.url", baseURL);
+    }
+
+
 	/**
 	 * Generate a filename for the pdf to be created.
 	 * 
@@ -151,7 +184,6 @@ public class PDFRequest extends ParameterMap {
 		}
 		return id;
 	}
-
 	
 	public ImageJobDescription getImageJobInformation() throws IOException, ImageOpException{
 		return ImageJobDescription.getRawInstance(this, dlConfig);
