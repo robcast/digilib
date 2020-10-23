@@ -155,10 +155,9 @@ public class PDFTitlePage {
 	
 	private Image getLogo(){
 		try {
-			URL url = new URL(job_info.getDlConfig().getAsString("pdf-logo"));
-			if(url!=null && !url.equals("")){
-				Image logo = new Image(ImageDataFactory.create(url));
-				//logo.setAlignment(Element.ALIGN_CENTER);
+			String url = job_info.getAsString("pdf-logo");
+			if (!url.isEmpty()) {
+				Image logo = new Image(ImageDataFactory.create(new URL(url)));
 				return logo;
 			}
 		} catch (MalformedURLException e) {

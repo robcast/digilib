@@ -101,16 +101,15 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 		PdfWriter writer = new PdfWriter(outstream);
 		PdfDocument pdfdoc = new PdfDocument(writer);
 		doc = new Document(pdfdoc, PageSize.A4);
-
-		setPDFProperties(doc);
-
-		addTitlePage(doc);
-
 		logger.debug("PDF: " + outstream + " doc.open()ed ("
 				+ (System.currentTimeMillis() - start_time) + "ms)");
 
-		NumRange pgs = job_info.getPages();
+		// add title page
+		PDFTitlePage titlepage = new PDFTitlePage(job_info);
+		titlepage.createPage(doc);
 
+		// add pages
+		NumRange pgs = job_info.getPages();
 		for (int p : pgs) {
 			// start new page
 			doc.add(new AreaBreak());
@@ -133,33 +132,6 @@ public class PDFStreamWorker implements Callable<OutputStream> {
 		writer.flush();
 		writer.close();
 		return outstream;
-	}
-
-	/**
-	 * Set PDF-Meta-Attributes.
-	 */
-	public Document setPDFProperties(Document doc) {
-		// TODO get proper Information from dlConfig
-		/*
-		doc.addAuthor(this.getClass().getName());
-		doc.addCreationDate();
-		doc.addKeywords("digilib");
-		doc.addTitle("digilib PDF");
-		doc.addCreator(this.getClass().getName());
-		*/
-		return doc;
-	}
-
-	/**
-	 * Create a title page and append it to the document (should, of course, be
-	 * called first)
-	 * 
-	 * @throws DocumentException
-	 */
-	public Document addTitlePage(Document doc) {
-		PDFTitlePage titlepage = new PDFTitlePage(job_info);
-		titlepage.createPage(doc);
-		return doc;
 	}
 
 	/**
