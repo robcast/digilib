@@ -31,12 +31,19 @@ import java.net.URL;
 
 import org.apache.log4j.Logger;
 
+import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.pdf.action.PdfAction;
 import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Link;
 import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.property.HorizontalAlignment;
+import com.itextpdf.layout.property.TextAlignment;
+import com.itextpdf.layout.property.UnitValue;
 
 import digilib.conf.PDFRequest;
 import digilib.image.ImageOpException;
@@ -59,11 +66,11 @@ public class PDFTitlePage {
 	 * Initialize a TitlePage
 	 * @param pdfji
 	 */
-	public PDFTitlePage(PDFRequest pdfji){
+	public PDFTitlePage(PDFRequest pdfji) {
 		job_info = pdfji;
-
+		
 		// use MPIWG-style info.xml
-        info_reader = getInfoXmlReader(pdfji);
+		info_reader = getInfoXmlReader(pdfji);
 	}
 
     /**
@@ -95,55 +102,89 @@ public class PDFTitlePage {
 	 * @throws IOException 
 	 */
 	public Document createPage(Document content)  {
-		// header with logo
-		Paragraph logoBlock = new Paragraph();
-		logoBlock.add(getLogo());
-		content.add(logoBlock);
+		/*
+		 * header with logo
+		 */
+		Table headerBlock = new Table(UnitValue.createPercentArray(new float[]{10, 90}));
+		Image logo = getLogo();
+		if (logo != null) {
+			logo.setWidth(UnitValue.createPercentValue(100));
+			headerBlock.addCell(new Cell()
+					.add(logo)
+					.setBorderRight(null));
+		}
+		String headerText = getHeaderTitle();
+		if (headerText != null) {
+			Cell textCell = new Cell()
+					.setBorderLeft(null)
+					.setPaddingLeft(12)
+					.add(new Paragraph(headerText).setBold());
+			String headerSubtext = getHeaderSubtitle();
+			if (headerSubtext != null) {
+				textCell.add(new Paragraph(headerSubtext));
+			}
+			headerBlock.addCell(textCell);
+		}
+		content.add(headerBlock.setMarginBottom(24));
 
 		String reference = getReference();
 		if (reference != null) {
-			// add full reference
-			Paragraph refBlock = new Paragraph();
-			refBlock.add(reference);
-			content.add(refBlock);
+			/*
+			 * full reference
+			 */
+			content.add(new Paragraph(reference));
 		} else {
-			// add author
+			/*
+			 * author
+			 */
 			String author = getAuthor();
 			if (author != null) {
-				Paragraph authorBlock = new Paragraph();
-				authorBlock.add(author);
-				content.add(authorBlock);
+				content.add(new Paragraph(author)
+						.setTextAlignment(TextAlignment.CENTER));
 			}
-			// add title
+			/*
+			 * title
+			 */
 			String title = getTitle();
 			if (title != null) {
-				Paragraph titleBlock = new Paragraph();
-				titleBlock.add(title);
-				content.add(titleBlock);
+				content.add(new Paragraph(title)
+						.setTextAlignment(TextAlignment.CENTER));
 			}
-			// add date
+			/*
+			 * date
+			 */
 			String date = getDate();
 			if (date != null) {
-				Paragraph dateBlock = new Paragraph();
-				dateBlock.add(date);
-				content.add(dateBlock);
+				content.add(new Paragraph(date)
+						.setTextAlignment(TextAlignment.CENTER));
 			}
 		}
 
-		// add page numbers
-		Paragraph pagesBlock = new Paragraph();
-		pagesBlock.add(getPages());
-		content.add(pagesBlock);
+		/*
+		 * page numbers
+		 */
+		content.add(new Paragraph(getPages())
+				.setTextAlignment(TextAlignment.CENTER));
 
-		// add URL
-		Paragraph urlBlock = new Paragraph();
-		urlBlock.add(new Link(getUrl(), PdfAction.createURI(getUrl())));
-		content.add(urlBlock);
+		/*
+		 * URL
+		 */
+		try {
+			content.add(new Paragraph()
+					.setTextAlignment(TextAlignment.CENTER)
+					.setFont(PdfFontFactory.createFont(StandardFonts.COURIER))
+					.setFontSize(10)
+					.add(new Link(getUrl(), PdfAction.createURI(getUrl())))
+					.setFixedPosition(24, 24, UnitValue.createPercentValue(98)));
+		} catch (IOException e) {
+			logger.error(e);
+		}
 		
-		// add digilib version
-		Paragraph dlBlock = new Paragraph();
-		dlBlock.add(getDigilibVersion());
-		content.add(dlBlock);
+		/*
+		 * digilib version
+		 *
+		content.add(new Paragraph(getDigilibVersion()));
+		*/
 
 		return content;
 	}
@@ -155,13 +196,29 @@ public class PDFTitlePage {
 	
 	private Image getLogo(){
 		try {
-			String url = job_info.getAsString("pdf-logo");
+			String url = job_info.getDlConfig().getAsString("pdf-logo");
 			if (!url.isEmpty()) {
 				Image logo = new Image(ImageDataFactory.create(new URL(url)));
 				return logo;
 			}
 		} catch (MalformedURLException e) {
 			logger.error(e.getMessage());
+		}
+		return null;
+	}
+	
+	private String getHeaderTitle() {
+		String text = job_info.getDlConfig().getAsString("pdf-header-title");
+		if (!text.isEmpty()) {
+			return text;
+		}
+		return null;
+	}
+	
+	private String getHeaderSubtitle() {
+		String text = job_info.getDlConfig().getAsString("pdf-header-subtitle");
+		if (!text.isEmpty()) {
+			return text;
 		}
 		return null;
 	}
@@ -207,8 +264,10 @@ public class PDFTitlePage {
 		return url;
 	}
 
+	/*
 	private String getDigilibVersion(){
 		return "PDF created by digilib PDFMaker v."+PDFCache.version;
 	}
+	*/
 	
 }
