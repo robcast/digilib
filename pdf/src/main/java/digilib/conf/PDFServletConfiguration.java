@@ -103,7 +103,8 @@ public class PDFServletConfiguration extends DigilibServletConfiguration {
         newParameter("pdf-cache-dir", "pdf_cache", null, 'f');
         // logo for PDFs
         newParameter("pdf-logo", "https://robcast.github.io/digilib/images/digilib-logo-big.png", null, 'f');
-        newParameter("pdf-header-text", "digilib PDF", null, 'f');
+        newParameter("pdf-header-title", "digilib PDF", null, 'f');
+        newParameter("pdf-header-subtitle", "", null, 'f');
     }
 
     /* (non-Javadoc)

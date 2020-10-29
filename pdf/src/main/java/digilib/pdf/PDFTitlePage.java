@@ -41,7 +41,6 @@ import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Link;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
-import com.itextpdf.layout.property.HorizontalAlignment;
 import com.itextpdf.layout.property.TextAlignment;
 import com.itextpdf.layout.property.UnitValue;
 
@@ -49,7 +48,6 @@ import digilib.conf.PDFRequest;
 import digilib.image.ImageOpException;
 import digilib.io.FileOpException;
 import digilib.io.FsDocuDirectory;
-import digilib.servlet.PDFCache;
 
 /** A class for the generation of title pages for the generated pdf documents.
  * 
