@@ -195,8 +195,13 @@ public class PDFRequest extends ParameterMap {
 		String dh = getAsString("dh");
 		String dw = getAsString("dw");
 		String pgs = getAsString("pgs");
+		// create unique hash of cover page contents
+		String cover = getAsString("logo") + getAsString("header-title") + getAsString("header-subtitle")
+				+ getAsString("author") + getAsString("title") + getAsString("date") + getAsString("reference")
+				+ getAsString("online-url");
+		int coverId = cover.hashCode();
 			
-		String id = "fn=" + fn + "&dw=" + dw + "&dh=" + dh + "&pgs=" + pgs + ".pdf";
+		String id = "fn=" + fn + "&dw=" + dw + "&dh=" + dh + "&pgs=" + pgs + "-" + coverId + ".pdf";
 		// make safe to use as filename by urlencoding
 		try {
 			id = URLEncoder.encode(id, "UTF-8");
