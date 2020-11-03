@@ -201,7 +201,7 @@ public class PDFRequest extends ParameterMap {
 				+ getAsString("online-url");
 		int coverId = cover.hashCode();
 			
-		String id = "fn=" + fn + "&dw=" + dw + "&dh=" + dh + "&pgs=" + pgs + "-" + coverId + ".pdf";
+		String id = "fn=" + fn + "&dw=" + dw + "&dh=" + dh + "&pgs=" + pgs + "&id=" + coverId + ".pdf";
 		// make safe to use as filename by urlencoding
 		try {
 			id = URLEncoder.encode(id, "UTF-8");

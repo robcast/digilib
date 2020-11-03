@@ -27,6 +27,9 @@ package digilib.servlet;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.Base64;
 import java.util.concurrent.Future;
 
 import javax.servlet.RequestDispatcher;
@@ -136,12 +139,44 @@ public class PDFCache extends HttpServlet {
      * javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest
      * , javax.servlet.http.HttpServletResponse)
      */
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException {
-        accountlog.info("GET from " + request.getRemoteAddr());
-        this.processRequest(request, response);
-    }
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException {
+		accountlog.info("GET from " + request.getRemoteAddr());
 
-    /*
+		// GET must have docid from POST
+		String docid = request.getParameter("docid");
+		if (docid == null || docid.isEmpty()) {
+			notifyUser(PDFStatus.ERROR, "[missing docid]", request, response);
+			return;
+		}
+
+		docid = decodeDocid(docid);
+		PDFStatus status = getStatus(docid);
+		if (status == PDFStatus.NONEXISTENT) {
+			// no file -- should not have happened
+			logger.error("Nonexistent file for docid!");
+			notifyUser(PDFStatus.ERROR, docid, request, response);
+			return;
+
+		} else if (status == PDFStatus.DONE) {
+			// pdf created -- send it
+			try {
+				ServletOps.sendFile(getCacheFile(docid), "application/pdf", getDownloadFilename(docid), 
+						response, logger);
+				return;
+			} catch (Exception e) {
+				// sending didn't work
+				logger.error(e.getMessage());
+				return;
+			}
+
+		} else {
+			// should be work in progress
+			notifyUser(status, docid, request, response);
+			return;
+		}
+	}
+
+	/*
      * (non-Javadoc)
      * 
      * @see
@@ -150,10 +185,6 @@ public class PDFCache extends HttpServlet {
      */
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException {
         accountlog.info("POST from " + request.getRemoteAddr());
-        this.processRequest(request, response);
-    }
-
-    public void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException {
 
         if (dlConfig == null) {
             logger.error("ERROR: No Configuration!");
@@ -178,7 +209,11 @@ public class PDFCache extends HttpServlet {
                 // not there -- start creation
                 try {
                     createNewPdfDocument(pdfji, docid);
-                    notifyUser(status, docid, request, response);
+                    // redirect client with docid parameter
+                    String url = "";
+                    url += "?docid=" + encodeDocid(docid);
+                    logger.debug("redirecting to " + url);
+					response.sendRedirect(url);
                     return;
                 } catch (FileNotFoundException e) {
                     // error in pdf creation
@@ -226,8 +261,7 @@ public class PDFCache extends HttpServlet {
         String nextPage = null;
 
         if (status == PDFStatus.NONEXISTENT) {
-            // tell the user that the document has to be created before he/she
-            // can download it
+            // document has to be created before it can be downloaded
             logger.debug("PDFCache: " + documentid + " has STATUS_NONEXISTENT.");
             nextPage = dlConfig.getAsString(WIP_PAGE_KEY);
             
@@ -242,6 +276,7 @@ public class PDFCache extends HttpServlet {
             logger.debug("PDFCache: " + documentid + " has STATUS_DONE.");
             
         } else {
+        	// must be an error
             logger.debug("PDFCache: " + documentid + " has STATUS_ERROR.");
             nextPage = dlConfig.getAsString(ERROR_PAGE_KEY);
         }
@@ -309,6 +344,33 @@ public class PDFCache extends HttpServlet {
         return filename;
     }
 
+    /**
+     * generate the filename the user is going to receive the pdf as
+     * 
+     * @param docid
+     * @return
+     */
+    public String getDownloadFilename(String docid) {
+    	String filename = "digilib_";
+    	try {
+			String id = URLDecoder.decode(docid, "UTF-8");
+	    	for (String s : id.split("&")) {
+	    		String[] kv = s.split("=");
+	    		String k = kv[0];
+	    		String v = kv[1];
+	    		if (k.equals("fn")) {
+	    			filename += v;
+	    		} else if (k.equals("pgs")) {
+	    			filename += "_pgs" + v;
+	    		}
+	    	}
+		} catch (UnsupportedEncodingException e) {
+			// this should not happen
+		}
+    	filename += ".pdf";
+		return filename;
+	}
+
     public File getCacheDirectory() {
         return cacheDir;
     }
@@ -335,5 +397,13 @@ public class PDFCache extends HttpServlet {
      */
     public File getCacheFile(String filename) {
         return new File(cacheDir, filename);
+    }
+    
+    public String encodeDocid(String docid) {
+    	return Base64.getUrlEncoder().encodeToString(docid.getBytes());
+    }
+
+    public String decodeDocid(String encid) {
+    	return new String(Base64.getUrlDecoder().decode(encid));
     }
 }

@@ -41,18 +41,14 @@ public void jspInit() {
         System.out.println(e);
     }
 }
-%>
-
-<%
+%><%
 // get digilib config
 DigilibServletConfiguration dlConfig = docBean.getDlConfig();
 // dir cache
 DocuDirCache dirCache = (DocuDirCache) dlConfig.getValue("servlet.dir.cache");
 // image JobCenter
 DigilibJobCenter<DocuImage> imageProcessor =  (DigilibJobCenter<DocuImage>) dlConfig.getValue("servlet.worker.imageexecutor");
-%>
-
-<html>
+%><html>
 <head>
 <title>Digilib configuration page</title>
 </head>
