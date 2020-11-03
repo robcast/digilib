@@ -45,8 +45,7 @@ import digilib.util.ParameterMap;
 
 /** 
  * A container class for storing a set of instruction parameters 
- * used for content generator classes like MakePDF.  
- * 
+ * used for content generator classes.
  * 
  * @author cmielack, casties
  *
@@ -60,7 +59,7 @@ public class PDFRequest extends ParameterMap {
 
 	
 	/**
-	 * Initialize the PDFRequest
+	 * Create a PDFRequest
 	 * 
 	 * @param dlcfg	The DigilibConfiguration. 
 	 */
@@ -71,7 +70,7 @@ public class PDFRequest extends ParameterMap {
 	}
 
 	/**
-	 * Initialize the PDFRequest with a request.
+	 * Create a PDFRequest with a request and config.
 	 * 
 	 * @param dlcfg		The DigilibConfiguration. 		
 	 * @param request
@@ -89,15 +88,32 @@ public class PDFRequest extends ParameterMap {
 	protected void initParams() {
 		// page numbers
 		newParameter("pgs", "", null, 's');
-		// url of the page/document (second part)
+		// path of the page/document
 		newParameter("fn", "", null, 's');
 		// width of client in pixels
 		newParameter("dw", Integer.valueOf(0), null, 's');
 		// height of client in pixels
 		newParameter("dh", Integer.valueOf(500), null, 's');
-        // page number (used internally)
+		// cover page header logo url
+		newParameter("logo", "", null, 's');
+		// cover page header title
+		newParameter("header-title", "", null, 's');
+		// cover page header subtitle
+		newParameter("header-subtitle", "", null, 's');
+		// cover page title
+		newParameter("title", "", null, 's');
+		// cover page author
+		newParameter("author", "", null, 's');
+		// cover page date
+		newParameter("date", "", null, 's');
+		// cover page full reference
+		newParameter("reference", "", null, 's');
+		// cover page online url
+		newParameter("online-url", "", null, 's');
+
+		// page number (used internally)
         newParameter("pn", Integer.valueOf(1), null, 'i');
-        // base URL (from http:// to below /servlet)
+        // base URL (from http:// to below /servlet used internally)
         newParameter("base.url", null, null, 'i');
 	}
 	
@@ -110,7 +126,7 @@ public class PDFRequest extends ParameterMap {
     }
 
     /**
-	 * Read the request object.
+	 * Initialize with a request.
 	 * 
 	 * @param request
      * @throws ImageOpException 
@@ -119,12 +135,17 @@ public class PDFRequest extends ParameterMap {
 	public void setWithRequest(HttpServletRequest request) throws IOException, ImageOpException {
 	    // read matching request parameters for the parameters in this map 
 		for (String k : params.keySet()) {
-			if (request.getParameterMap().containsKey(k)) {
-				setValueFromString(k, request.getParameter(k));
+			String v = request.getParameter(k);
+			if (v != null) {
+				setValueFromString(k, v);
 			}
 		}
 		// process parameters
-		pages = new NumRange(getAsString("pgs"));
+		String pgs = getAsString("pgs");
+		if (pgs.isEmpty()) {
+			throw new ImageOpException("Missing pgs parameter!");
+		}
+		pages = new NumRange(pgs);
 		initOptions();
 		// get maxnum from directory
         ImageJobDescription ij = ImageJobDescription.getRawInstance(this, dlConfig);
@@ -201,15 +222,14 @@ public class PDFRequest extends ParameterMap {
 	 * 
 	 * @return
 	 */
-	public boolean isValid(){
-	    if (pages != null) {
-	        return true;
-	    }
-	    return false;
-	} 
-	
-	public DigilibConfiguration getDlConfig(){
-		return dlConfig;
+	public boolean isValid() {
+		if (pages != null) {
+			return true;
+		}
+		return false;
 	}
 	
+	public DigilibConfiguration getDlConfig() {
+		return dlConfig;
+	}
 }

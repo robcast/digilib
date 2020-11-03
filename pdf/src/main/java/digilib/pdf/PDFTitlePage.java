@@ -4,7 +4,7 @@ package digilib.pdf;
  * #%L
  * A class for the generation of title pages for the generated pdf documents.
  * %%
- * Copyright (C) 2009 - 2013 MPIWG Berlin
+ * Copyright (C) 2009 - 2020 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -20,8 +20,7 @@ package digilib.pdf;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
- * Authors: Christopher Mielack,
- *          Robert Casties (robcast@berlios.de)
+ * Authors: Christopher Mielack, Robert Casties
  */
 
 import java.io.File;
@@ -49,29 +48,29 @@ import digilib.image.ImageOpException;
 import digilib.io.FileOpException;
 import digilib.io.FsDocuDirectory;
 
-/** A class for the generation of title pages for the generated pdf documents.
- * 
- * 
+/** 
+ * A class for the generation of a title page for the generated pdf documents.
  */
 public class PDFTitlePage {
 	
-	private PDFRequest job_info = null;
-	private DigilibInfoReader info_reader= null;
+	protected PDFRequest request = null;
+	protected DigilibInfoReader infoReader= null;
 	protected static Logger logger = Logger.getLogger("digilib.servlet");
 
 	
 	/**
-	 * Initialize a TitlePage
+	 * Initialize the TitlePage
 	 * @param pdfji
 	 */
 	public PDFTitlePage(PDFRequest pdfji) {
-		job_info = pdfji;
-		
+		request = pdfji;
 		// use MPIWG-style info.xml
-		info_reader = getInfoXmlReader(pdfji);
+		infoReader = getInfoXmlReader(pdfji);
 	}
 
     /**
+     * Read the presentation info file ../presentation/info.xml.
+     * 
      * @param pdfji
      * @return 
      */
@@ -93,11 +92,9 @@ public class PDFTitlePage {
     }
 	
 	/**
-	 * generate iText-PDF-Contents for the title page
+	 * Add the the title page to the PDF Document.
 	 * 
 	 * @return
-	 * @throws ImageOpException 
-	 * @throws IOException 
 	 */
 	public Document createPage(Document content)  {
 		/*
@@ -112,7 +109,7 @@ public class PDFTitlePage {
 					.setBorderRight(null));
 		}
 		String headerText = getHeaderTitle();
-		if (headerText != null) {
+		if (!headerText.isEmpty()) {
 			Cell textCell = new Cell()
 					.setBorderLeft(null)
 					.setPaddingLeft(12)
@@ -126,17 +123,18 @@ public class PDFTitlePage {
 		content.add(headerBlock.setMarginBottom(24));
 
 		String reference = getReference();
-		if (reference != null) {
+		if (!reference.isEmpty()) {
 			/*
 			 * full reference
 			 */
 			content.add(new Paragraph(reference));
+			
 		} else {
 			/*
 			 * author
 			 */
 			String author = getAuthor();
-			if (author != null) {
+			if (!author.isEmpty()) {
 				content.add(new Paragraph(author)
 						.setTextAlignment(TextAlignment.CENTER));
 			}
@@ -144,7 +142,7 @@ public class PDFTitlePage {
 			 * title
 			 */
 			String title = getTitle();
-			if (title != null) {
+			if (!title.isEmpty()) {
 				content.add(new Paragraph(title)
 						.setTextAlignment(TextAlignment.CENTER));
 			}
@@ -152,7 +150,7 @@ public class PDFTitlePage {
 			 * date
 			 */
 			String date = getDate();
-			if (date != null) {
+			if (!date.isEmpty()) {
 				content.add(new Paragraph(date)
 						.setTextAlignment(TextAlignment.CENTER));
 			}
@@ -192,9 +190,12 @@ public class PDFTitlePage {
 	 * 
 	 */
 	
-	private Image getLogo(){
+	protected Image getLogo(){
+		String url = request.getAsString("logo");
+		if (url.isEmpty()) {
+			url = request.getDlConfig().getAsString("pdf-logo");
+		}
 		try {
-			String url = job_info.getDlConfig().getAsString("pdf-logo");
 			if (!url.isEmpty()) {
 				Image logo = new Image(ImageDataFactory.create(new URL(url)));
 				return logo;
@@ -205,65 +206,85 @@ public class PDFTitlePage {
 		return null;
 	}
 	
-	private String getHeaderTitle() {
-		String text = job_info.getDlConfig().getAsString("pdf-header-title");
-		if (!text.isEmpty()) {
-			return text;
+	protected String getHeaderTitle() {
+		String text = request.getAsString("header-title");
+		if (text.isEmpty()) {
+			text = request.getDlConfig().getAsString("pdf-header-title");
 		}
-		return null;
+		return text;
 	}
 	
-	private String getHeaderSubtitle() {
-		String text = job_info.getDlConfig().getAsString("pdf-header-subtitle");
-		if (!text.isEmpty()) {
-			return text;
+	protected String getHeaderSubtitle() {
+		String text = request.getAsString("header-subtitle");
+		if (text.isEmpty()) {
+			text = request.getDlConfig().getAsString("pdf-header-subtitle");
 		}
-		return null;
+		return text;
 	}
 	
-	private String getReference(){
-		return null;
+	protected String getReference(){
+		String reference = request.getAsString("reference");
+		return reference;
 	}
 	
-	private String getTitle() {
-		if(info_reader.hasInfo())
-			return info_reader.getAsString("title");
-		else
-			return "[" + job_info.getAsString("fn") + "]";
-	}
-	
-	private String getAuthor(){
-		if(info_reader.hasInfo())
-			return info_reader.getAsString("author");
-		else
-			return null;
-	}
-	
-	private String getDate(){
-		if(info_reader.hasInfo())
-			return info_reader.getAsString("date");
-		else
-			return null;
-	}
-	
-	private String getPages(){
-		return "Pages "+job_info.getAsString("pgs") + " (scan numbers)";
-	}
-	
-	private String getUrl() {
-		String url = null;
-		try {
-			String burl = job_info.getAsString("base.url");
-			url = burl+"/digilib.html?fn="+job_info.getAsString("fn");
-		} catch (Exception e) {
-			// this shouldn't happen
-			logger.error("Error getting link", e);
+	protected String getTitle() {
+		String title = request.getAsString("title");
+		if (!title.isEmpty()) {
+			return title;
 		}
+		if (infoReader.hasInfo()) {
+			title = infoReader.getAsString("title");
+			if (title != null) {
+				return title;
+			}
+		}
+		return "[" + request.getAsString("fn") + "]";
+	}
+
+	protected String getAuthor() {
+		String author = request.getAsString("author");
+		if (!author.isEmpty()) {
+			return author;
+		}
+		if (infoReader.hasInfo()) {
+			author = infoReader.getAsString("author");
+			if (author != null) {
+				return author;
+			}
+		} 
+		return "";
+	}
+
+	protected String getDate() {
+		String date = request.getAsString("date");
+		if (!date.isEmpty()) {
+			return date;
+		}
+		if (infoReader.hasInfo()) {
+			date = infoReader.getAsString("date");
+			if (date != null) {
+				return date;
+			}
+		} 
+		return "";
+	}
+
+	protected String getPages() {
+		return "Pages " + request.getAsString("pgs") + " (scan numbers)";
+	}
+	
+	protected String getUrl() {
+		String url = request.getAsString("online-url");
+		if (!url.isEmpty()) {
+			return url;
+		}
+		String burl = request.getAsString("base.url");
+		url = burl + "/digilib.html?fn=" + request.getAsString("fn");
 		return url;
 	}
 
 	/*
-	private String getDigilibVersion(){
+	protected String getDigilibVersion(){
 		return "PDF created by digilib PDFMaker v."+PDFCache.version;
 	}
 	*/

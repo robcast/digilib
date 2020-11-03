@@ -162,9 +162,8 @@ public class PDFCache extends HttpServlet {
 
         String docid = "";
         try {
-            // evaluate request ( make a PDFJobDeclaration , get the DocumentId)
+            // create PDF request
             PDFRequest pdfji = new PDFRequest(request, dlConfig);
-
             docid = pdfji.getDocumentId();
 
             // if some invalid data has been entered ...
