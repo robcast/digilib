@@ -19,15 +19,14 @@
   <http://www.gnu.org/licenses/lgpl-3.0.html>.
   #L%
   --%><%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
-<html>
+    pageEncoding="UTF-8"%><html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>PDF Generator</title>
 </head>
 <body>
 <h1>digilib PDF generator</h1>
-<form action="../PDFCache" method="post">
+<form action="../PDFGenerator" method="post">
 <div>
   <label for="fn">document path (fn): </label>
   <input type="text" name="fn" id="fn" required>

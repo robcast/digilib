@@ -10,7 +10,7 @@ import javax.servlet.annotation.WebListener;
 
 import digilib.image.DocuImage;
 import digilib.io.FileOps;
-import digilib.servlet.PDFCache;
+import digilib.servlet.PDFGenerator;
 import digilib.util.DigilibJobCenter;
 
 /*
@@ -103,9 +103,9 @@ public class PDFServletConfiguration extends DigilibServletConfiguration {
         // PDF generation cache directory
         newParameter("pdf-cache-dir", "pdf_cache", null, 'f');
         // work-in-progress page
-        newParameter(PDFCache.WIP_PAGE_KEY, "/pdf/wip.jsp", null, 'f');
+        newParameter(PDFGenerator.WIP_PAGE_KEY, "/pdf/wip.jsp", null, 'f');
         // error page
-        newParameter(PDFCache.ERROR_PAGE_KEY, "/pdf/error.jsp", null, 'f');
+        newParameter(PDFGenerator.ERROR_PAGE_KEY, "/pdf/error.jsp", null, 'f');
         // logo for PDFs
         newParameter("pdf-logo", "https://robcast.github.io/digilib/images/digilib-logo-big.png", null, 'f');
         newParameter("pdf-header-title", "digilib PDF", null, 'f');

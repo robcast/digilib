@@ -4,7 +4,7 @@ package digilib.servlet;
  * #%L
  * A Servlet with a disk cache serving pdf documents made from digilib images.  
  * %%
- * Copyright (C) 2009 - 2018 MPIWG Berlin
+ * Copyright (C) 2009 - 2020 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -20,8 +20,7 @@ package digilib.servlet;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
- * Authors: Christopher Mielack,
- *          Robert Casties (robcast@users.sf.net)
+ * Authors: Christopher Mielack, Robert Casties
  */
 
 import java.io.File;
@@ -60,9 +59,8 @@ import digilib.util.DigilibJobCenter;
  * @author cmielack, casties
  * 
  */
-
-@WebServlet(name = "PDFCache", urlPatterns = { "/PDFCache/*", "/servlet/PDFCache/*" })
-public class PDFCache extends HttpServlet {
+@WebServlet(name = "PDFGenerator", urlPatterns = { "/PDFGenerator/*", "/PDFCache/*", "/servlet/PDFCache/*" })
+public class PDFGenerator extends HttpServlet {
 
     private static final long serialVersionUID = 351326880003758192L;
 
@@ -72,14 +70,14 @@ public class PDFCache extends HttpServlet {
     protected static Logger accountlog = Logger.getLogger("account.pdf.request");
 
     /** gengeral logger for this class */
-    protected static Logger logger = Logger.getLogger("digilib.pdfcache");
+    protected static Logger logger = Logger.getLogger("digilib.pdfgenerator");
 
     /** logger for authentication related */
     protected static Logger authlog = Logger.getLogger("digilib.pdf.auth");
 
     private DigilibConfiguration dlConfig = null;
 
-    public static final String INSTANCE_KEY = "digilib.servlet.PDFCache";
+    public static final String INSTANCE_KEY = "digilib.servlet.PDFGenerator";
 
     public static final String WIP_PAGE_KEY = "pdf-wip-page";
 
@@ -108,9 +106,9 @@ public class PDFCache extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
 
-        System.out.println("***** Digital Image Library Image PDF-Cache Servlet (version " + version + ") *****");
+        System.out.println("***** Digital Image Library Image PDF-Generator Servlet (version " + version + ") *****");
         // say hello in the log file
-        logger.info("***** Digital Image Library Image PDF-Cache Servlet (version " + version + ") *****");
+        logger.info("***** Digital Image Library Image PDF-Generator Servlet (version " + version + ") *****");
 
         ServletContext context = getServletContext();
         dlConfig = PDFServletConfiguration.getCurrentConfig(context);
@@ -262,22 +260,22 @@ public class PDFCache extends HttpServlet {
 
         if (status == PDFStatus.NONEXISTENT) {
             // document has to be created before it can be downloaded
-            logger.debug("PDFCache: " + documentid + " has STATUS_NONEXISTENT.");
+            logger.debug("PDFGenerator: " + documentid + " has STATUS_NONEXISTENT.");
             nextPage = dlConfig.getAsString(WIP_PAGE_KEY);
             
         } else if (status == PDFStatus.WIP) {
-            logger.debug("PDFCache: " + documentid + " has STATUS_WIP.");
+            logger.debug("PDFGenerator: " + documentid + " has STATUS_WIP.");
             nextPage = dlConfig.getAsString(WIP_PAGE_KEY);
 
             // TODO: estimate remaining work time
             // TODO: tell the user he/she has to wait
             
         } else if (status == PDFStatus.DONE) {
-            logger.debug("PDFCache: " + documentid + " has STATUS_DONE.");
+            logger.debug("PDFGenerator: " + documentid + " has STATUS_DONE.");
             
         } else {
         	// must be an error
-            logger.debug("PDFCache: " + documentid + " has STATUS_ERROR.");
+            logger.debug("PDFGenerator: " + documentid + " has STATUS_ERROR.");
             nextPage = dlConfig.getAsString(ERROR_PAGE_KEY);
         }
 
