@@ -93,12 +93,19 @@ public class DigilibBean {
 		}
 	}
 
-	public void setConfig(ServletConfig conf) throws ServletException {
+	/**
+	 * Initializes the bean with the DigilibConfiguration from the context under the given key.
+	 * 
+	 * @param conf
+	 * @param dlconfKey
+	 * @throws ServletException
+	 */
+	public void setConfig(ServletConfig conf, String dlconfKey) throws ServletException {
 		logger.debug("setConfig");
 		// get our ServletContext
 		ServletContext context = conf.getServletContext();
 		// see if there is a Configuration instance
-		dlConfig = DigilibServletConfiguration.getCurrentConfig(context);
+		dlConfig = DigilibServletConfiguration.getContextConfig(context, dlconfKey);
 		if (dlConfig == null) {
 			// no config
 			throw new ServletException("ERROR: No digilib configuration for DigilibBean!");
@@ -116,6 +123,16 @@ public class DigilibBean {
 		}
 	}
 
+	/**
+	 * Initializes the bean with the default DigilibServletConfiguration from the context.
+	 * 
+	 * @param conf
+	 * @throws ServletException
+	 */
+	public void setConfig(ServletConfig conf) throws ServletException {
+		setConfig(conf, DigilibServletConfiguration.SERVLET_CONFIG_KEY);
+	}
+	
 	/**
 	 * Returns if authorization is configured.
 	 * 

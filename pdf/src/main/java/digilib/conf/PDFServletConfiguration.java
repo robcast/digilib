@@ -237,9 +237,7 @@ public class PDFServletConfiguration extends DigilibServletConfiguration {
      * @return
      */
     public static DigilibServletConfiguration getCurrentConfig(ServletContext context) {
-        DigilibServletConfiguration config = (DigilibServletConfiguration) context
-                .getAttribute(PDFServletConfiguration.PDF_SERVLET_CONFIG_KEY);
-        return config;
+        return DigilibServletConfiguration.getContextConfig(context, PDFServletConfiguration.PDF_SERVLET_CONFIG_KEY);
     }
 
 }

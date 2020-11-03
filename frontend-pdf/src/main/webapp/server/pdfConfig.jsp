@@ -2,7 +2,7 @@
   #%L
   digilib-webapp
   %%
-  Copyright (C) 2003 - 2013 MPIWG Berlin
+  Copyright (C) 2003 - 2020 MPIWG Berlin
   %%
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Lesser General Public License as 
@@ -22,14 +22,13 @@
   --%><%@page language="java" 
   import="digilib.util.DigilibJobCenter,
           digilib.servlet.DigilibBean,
+          digilib.conf.PDFServletConfiguration,
           digilib.conf.DigilibServletConfiguration,
           digilib.io.DocuDirCache,
           digilib.image.DocuImage,
           digilib.image.DocuImageFactory,
           java.io.File"%>
 <%!
-// authentication stuff - robert
-// -----------------------------
 // create DocumentBean instance for all JSP requests
 DigilibBean docBean = new DigilibBean();
 
@@ -37,7 +36,7 @@ DigilibBean docBean = new DigilibBean();
 public void jspInit() {
     try {
         // set servlet init-parameter
-        docBean.setConfig(getServletConfig());
+        docBean.setConfig(getServletConfig(), PDFServletConfiguration.PDF_SERVLET_CONFIG_KEY);
     } catch (javax.servlet.ServletException e) {
         System.out.println(e);
     }

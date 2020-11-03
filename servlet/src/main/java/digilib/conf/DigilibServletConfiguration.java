@@ -434,15 +434,25 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
     }
     
     /**
+     * Returns the DigilibConfiguration with the given key from the context.
+     * 
+     * @param context the ServletContext
+	 * @param dlconfigKey the context key for the configuration
+     * @return the DigilibConfiguration
+     */
+	public static DigilibServletConfiguration getContextConfig(ServletContext context, String dlconfigKey) {
+		DigilibServletConfiguration config = (DigilibServletConfiguration) context.getAttribute(dlconfigKey);
+		return config;
+    }
+
+    /**
      * Returns the current DigilibConfiguration from the context.
      * 
      * @param context the ServletContext
      * @return the DigilibConfiguration
      */
     public static DigilibServletConfiguration getCurrentConfig(ServletContext context) {
-        DigilibServletConfiguration config = (DigilibServletConfiguration) context
-                .getAttribute(DigilibServletConfiguration.SERVLET_CONFIG_KEY);
-        return config;
+        return DigilibServletConfiguration.getContextConfig(context, DigilibServletConfiguration.SERVLET_CONFIG_KEY);
     }
 
     /**
