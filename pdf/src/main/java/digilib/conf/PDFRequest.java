@@ -201,7 +201,7 @@ public class PDFRequest extends ParameterMap {
 	 * 
 	 * @return
 	 */
-	public boolean checkValidity(){
+	public boolean isValid(){
 	    if (pages != null) {
 	        return true;
 	    }

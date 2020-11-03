@@ -76,7 +76,11 @@ public class PDFCache extends HttpServlet {
 
     private DigilibConfiguration dlConfig = null;
 
-    public static String instanceKey = "digilib.servlet.PDFCache";
+    public static final String INSTANCE_KEY = "digilib.servlet.PDFCache";
+
+    public static final String WIP_PAGE_KEY = "pdf-wip-page";
+
+    public static final String ERROR_PAGE_KEY = "pdf-error-page";
 
     private DigilibJobCenter<File> pdfJobCenter = null;
 
@@ -85,10 +89,6 @@ public class PDFCache extends HttpServlet {
     private File cacheDir = new File("cache");
 
     private File workDir = new File("pdf_temp");
-
-    private static String JSP_WIP = "/pdf/wip.jsp";
-
-    private static String JSP_ERROR = "/pdf/error.jsp";
 
     /**
      * Document status. 
@@ -126,7 +126,7 @@ public class PDFCache extends HttpServlet {
         pdfJobCenter = (DigilibJobCenter<File>) dlConfig.getValue(PDFServletConfiguration.PDF_EXECUTOR_KEY);
         pdfImageJobCenter = (DigilibJobCenter<DocuImage>) dlConfig.getValue(PDFServletConfiguration.PDF_IMAGEEXECUTOR_KEY);
         // register this instance globally
-        context.setAttribute(instanceKey, this);
+        context.setAttribute(INSTANCE_KEY, this);
     }
 
     /*
@@ -168,7 +168,7 @@ public class PDFCache extends HttpServlet {
             docid = pdfji.getDocumentId();
 
             // if some invalid data has been entered ...
-            if (!pdfji.checkValidity()) {
+            if (!pdfji.isValid()) {
                 notifyUser(PDFStatus.ERROR, docid, request, response);
                 return;
             }
@@ -187,6 +187,7 @@ public class PDFCache extends HttpServlet {
                     notifyUser(PDFStatus.ERROR, docid, request, response);
                     return;
                 }
+                
             } else if (status == PDFStatus.DONE) {
                 // pdf created -- send it
                 try {
@@ -197,6 +198,7 @@ public class PDFCache extends HttpServlet {
                     logger.error(e.getMessage());
                     return;
                 }
+                
             } else {
                 // should be work in progress
                 notifyUser(status, docid, request, response);
@@ -219,39 +221,41 @@ public class PDFCache extends HttpServlet {
      * @param request
      * @param response
      */
-    public void notifyUser(PDFStatus status, String documentid, HttpServletRequest request, HttpServletResponse response) {
+	public void notifyUser(PDFStatus status, String documentid, HttpServletRequest request,
+			HttpServletResponse response) {
 
-        String jsp = null;
+        String nextPage = null;
 
         if (status == PDFStatus.NONEXISTENT) {
             // tell the user that the document has to be created before he/she
             // can download it
             logger.debug("PDFCache: " + documentid + " has STATUS_NONEXISTENT.");
-            jsp = JSP_WIP;
+            nextPage = dlConfig.getAsString(WIP_PAGE_KEY);
+            
         } else if (status == PDFStatus.WIP) {
             logger.debug("PDFCache: " + documentid + " has STATUS_WIP.");
-            jsp = JSP_WIP;
+            nextPage = dlConfig.getAsString(WIP_PAGE_KEY);
 
             // TODO: estimate remaining work time
             // TODO: tell the user he/she has to wait
+            
         } else if (status == PDFStatus.DONE) {
             logger.debug("PDFCache: " + documentid + " has STATUS_DONE.");
+            
         } else {
             logger.debug("PDFCache: " + documentid + " has STATUS_ERROR.");
-            jsp = JSP_ERROR;
+            nextPage = dlConfig.getAsString(ERROR_PAGE_KEY);
         }
 
         try {
             // forward to the relevant jsp
             ServletContext context = getServletContext();
-            RequestDispatcher dispatch = context.getRequestDispatcher(jsp);
+            RequestDispatcher dispatch = context.getRequestDispatcher(nextPage);
             dispatch.forward(request, response);
         } catch (ServletException e) {
             logger.debug(e.getMessage());
-            e.printStackTrace();
         } catch (IOException e) {
             logger.debug(e.getMessage());
-            e.printStackTrace();
         }
 
     }
