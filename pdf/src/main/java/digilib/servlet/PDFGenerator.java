@@ -46,6 +46,7 @@ import digilib.conf.DigilibConfiguration;
 import digilib.conf.PDFRequest;
 import digilib.conf.PDFServletConfiguration;
 import digilib.image.DocuImage;
+import digilib.image.ImageOpException;
 import digilib.pdf.PDFFileWorker;
 import digilib.util.DigilibJobCenter;
 
@@ -83,6 +84,8 @@ public class PDFGenerator extends HttpServlet {
 
     public static final String ERROR_PAGE_KEY = "pdf-error-page";
 
+    public static final String IOERROR_PAGE_KEY = "pdf-ioerror-page";
+
     private DigilibJobCenter<File> pdfJobCenter = null;
 
     private DigilibJobCenter<DocuImage> pdfImageJobCenter = null;
@@ -99,7 +102,7 @@ public class PDFGenerator extends HttpServlet {
      * ERROR: an error occurred while processing the request
      */
     public static enum PDFStatus {
-        DONE, WIP, NONEXISTENT, ERROR
+        DONE, WIP, NONEXISTENT, ERROR, IOERROR
     };
 
     @SuppressWarnings("unchecked")
@@ -140,14 +143,14 @@ public class PDFGenerator extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException {
 		accountlog.info("GET from " + request.getRemoteAddr());
 
-		// GET must have docid from POST
+		// GET must have (encoded) docid from POST
 		String docid = request.getParameter("docid");
 		if (docid == null || docid.isEmpty()) {
 			notifyUser(PDFStatus.ERROR, "[missing docid]", request, response);
 			return;
 		}
-
 		docid = decodeDocid(docid);
+
 		PDFStatus status = getStatus(docid);
 		if (status == PDFStatus.NONEXISTENT) {
 			// no file -- should not have happened
@@ -191,7 +194,7 @@ public class PDFGenerator extends HttpServlet {
 
         String docid = "";
         try {
-            // create PDF request
+            // create and check PDF request (may throw exception)
             PDFRequest pdfji = new PDFRequest(request, dlConfig);
             docid = pdfji.getDocumentId();
 
@@ -204,7 +207,7 @@ public class PDFGenerator extends HttpServlet {
             PDFStatus status = getStatus(docid);
 
             if (status == PDFStatus.NONEXISTENT) {
-                // not there -- start creation
+                // PDF not there -- start creation
                 try {
                     createNewPdfDocument(pdfji, docid);
                     // redirect client with docid parameter
@@ -221,7 +224,7 @@ public class PDFGenerator extends HttpServlet {
                 }
                 
             } else if (status == PDFStatus.DONE) {
-                // pdf created -- send it
+                // PDF created -- send it
                 try {
                     ServletOps.sendFile(getCacheFile(docid), "application/pdf", getDownloadFilename(pdfji), response, logger);
                     return;
@@ -232,16 +235,21 @@ public class PDFGenerator extends HttpServlet {
                 }
                 
             } else {
-                // should be work in progress
+                // should be PDF in progress
                 notifyUser(status, docid, request, response);
                 return;
             }
-        } catch (Exception e) {
-            // error in pdf creation
+        } catch (IOException e) {
+            // io error in pdf creation
+            logger.error("IO error for request: " + e.getMessage());
+            notifyUser(PDFStatus.IOERROR, docid, request, response);
+            return;
+        } catch (ImageOpException e) {
+            // other error in pdf creation
             logger.error("Error processing request!", e);
             notifyUser(PDFStatus.ERROR, docid, request, response);
             return;
-        }
+		}
     }
 
     /**
@@ -259,19 +267,21 @@ public class PDFGenerator extends HttpServlet {
         String nextPage = null;
 
         if (status == PDFStatus.NONEXISTENT) {
-            // document has to be created before it can be downloaded
+            // document has to be created (should be started)
             logger.debug("PDFGenerator: " + documentid + " has STATUS_NONEXISTENT.");
             nextPage = dlConfig.getAsString(WIP_PAGE_KEY);
             
         } else if (status == PDFStatus.WIP) {
             logger.debug("PDFGenerator: " + documentid + " has STATUS_WIP.");
             nextPage = dlConfig.getAsString(WIP_PAGE_KEY);
-
-            // TODO: estimate remaining work time
-            // TODO: tell the user he/she has to wait
+            // TODO: show progress
             
         } else if (status == PDFStatus.DONE) {
             logger.debug("PDFGenerator: " + documentid + " has STATUS_DONE.");
+            
+        } else if (status == PDFStatus.IOERROR) {
+            logger.debug("PDFGenerator: " + documentid + " has STATUS_IOERROR.");
+            nextPage = dlConfig.getAsString(IOERROR_PAGE_KEY);
             
         } else {
         	// must be an error

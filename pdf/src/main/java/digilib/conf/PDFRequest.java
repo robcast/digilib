@@ -83,7 +83,6 @@ public class PDFRequest extends ParameterMap {
 		initParams();
 		setWithRequest(request);
 	}
-
 	
 	protected void initParams() {
 		// page numbers
@@ -153,7 +152,7 @@ public class PDFRequest extends ParameterMap {
         int dirsize = dir.size();
         String fn = getAsString("fn");
         if (dirsize == 0 || !dir.getDirName().equals(FileOps.normalName(fn))) {
-        	// something went wrong
+        	// the directory is not the same as fn - maybe fn doesn't exist and we got the parent
         	throw new IOException("Invalid directory: "+fn);
         }
         pages.setMaxnum(dirsize);

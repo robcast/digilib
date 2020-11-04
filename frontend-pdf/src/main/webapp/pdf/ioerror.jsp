@@ -2,7 +2,7 @@
   #%L
   digilib-webapp
   %%
-  Copyright (C) 2009 - 2013 MPIWG Berlin
+  Copyright (C) 2009 - 2020 MPIWG Berlin
   %%
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Lesser General Public License as 
@@ -19,17 +19,16 @@
   <http://www.gnu.org/licenses/lgpl-3.0.html>.
   #L%
   --%><%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
-<html>
+    pageEncoding="UTF-8"%><html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Error</title>
+<title>IO Error</title>
 </head>
 <body>
-<h1>Error generating PDF</h1>
+<h1>File not found for PDF</h1>
 
-<p>There was an error while processing your request.</p>
-
-<p>Please check the parameters and try again.</p>
+<p>There was an error trying to access the specified files for your PDF document.</p>
+ 
+<p>Please check the <strong>fn</strong> parameter and try again.</p>
 </body>
 </html>

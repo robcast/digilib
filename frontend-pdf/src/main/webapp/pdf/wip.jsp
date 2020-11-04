@@ -24,10 +24,13 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta http-equiv="refresh" content="10">
-<title>Work in progress ...</title>
+<title>Work in progress</title>
 </head>
 <body>
-<h1>Please wait ...</h1>
-your request is being processed. The download starts automatically when the document is finished. 
+<h1>Please wait...</h1>
+
+<p>Your PDF document is being created. Keep this page open.</p>
+ 
+<p>The download starts automatically when the document is finished.</p> 
 </body>
 </html>

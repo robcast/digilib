@@ -106,6 +106,8 @@ public class PDFServletConfiguration extends DigilibServletConfiguration {
         newParameter(PDFGenerator.WIP_PAGE_KEY, "/pdf/wip.jsp", null, 'f');
         // error page
         newParameter(PDFGenerator.ERROR_PAGE_KEY, "/pdf/error.jsp", null, 'f');
+        // io error page
+        newParameter(PDFGenerator.IOERROR_PAGE_KEY, "/pdf/ioerror.jsp", null, 'f');
         // logo for PDFs
         newParameter("pdf-logo", "https://robcast.github.io/digilib/images/digilib-logo-big.png", null, 'f');
         newParameter("pdf-header-title", "digilib PDF", null, 'f');

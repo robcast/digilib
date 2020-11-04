@@ -27,57 +27,57 @@
 <body>
 <h1>digilib PDF generator</h1>
 <form action="../PDFGenerator" method="post">
-<div>
+<p>
   <label for="fn">document path (fn): </label>
   <input type="text" name="fn" id="fn" required>
-</div>
-<div>
+</p>
+<p>
   <label for="pgs">pages (pgs): </label>
   <input type="text" name="pgs" id="pgs" required>
-</div>
-<div>
+</p>
+<p>
   <label for="dw">pixel page width (dw): </label>
   <input type="text" name="dw" id="dw">
-</div>
-<div>
+</p>
+<p>
   <label for="dh">pixel page height (dh): </label>
   <input type="text" name="dh" id="dh">
-</div>
-<div>
+</p>
+<p>
   <label for="logo">header logo url (logo): </label>
   <input type="text" name="logo" id="logo">
-</div>
-<div>
+</p>
+<p>
   <label for="header-title">header title (header-title): </label>
   <input type="text" name="header-title" id="header-title">
-</div>
-<div>
+</p>
+<p>
   <label for="header-subtitle">header subtitle (header-subtitle): </label>
   <input type="text" name="header-subtitle" id="header-subtitle">
-</div>
-<div>
+</p>
+<p>
   <label for="reference">document reference (reference): </label>
   <input type="text" name="reference" id="reference">
-</div>
-<div>
+</p>
+<p>
   <label for="author">document author (author): </label>
   <input type="text" name="author" id="author">
-</div>
-<div>
+</p>
+<p>
   <label for="title">document title (title): </label>
   <input type="text" name="title" id="title">
-</div>
-<div>
+</p>
+<p>
   <label for="date">document date (date): </label>
   <input type="text" name="date" id="date">
-</div>
-<div>
+</p>
+<p>
   <label for="online-url">document online-url (online-url): </label>
   <input type="text" name="online-url" id="online-url">
-</div>
-<div>
+</p>
+<p>
   <input type="submit" value="Submit">
-</div>
+</p>
 </form>
 </body>
 </html>
