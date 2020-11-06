@@ -37,7 +37,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.auth.AuthzOps;
 import digilib.conf.DigilibServletConfiguration;
@@ -67,10 +68,10 @@ public class Texter extends HttpServlet {
 	protected DigilibServletConfiguration dlConfig = null;
 
 	/** general logger */
-	protected Logger logger = Logger.getLogger("digilib.texter");
+	protected Logger logger = LoggerFactory.getLogger("digilib.texter");
 
     /** logger for accounting requests */
-    protected static Logger accountlog = Logger.getLogger("account.texter.request");
+    protected static Logger accountlog = LoggerFactory.getLogger("account.texter.request");
 
 	/** FileOps instance */
     protected FileOps fileOp;

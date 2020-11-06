@@ -34,7 +34,6 @@ import java.util.Map;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.MalformedClaimException;
@@ -43,6 +42,8 @@ import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.jwt.consumer.JwtContext;
 import org.jose4j.lang.JoseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.conf.DigilibConfiguration;
 import digilib.conf.DigilibRequest;
@@ -72,7 +73,7 @@ import digilib.util.XMLMapListLoader;
 public class OpenIdAuthnOps implements AuthnOps {
 
     /** general logger for this class */
-    protected Logger logger = Logger.getLogger(this.getClass());
+    protected static final Logger logger = LoggerFactory.getLogger(OpenIdAuthnOps.class);
 
     protected File configFile;
 

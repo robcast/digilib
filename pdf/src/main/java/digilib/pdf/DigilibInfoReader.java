@@ -35,22 +35,21 @@ package digilib.pdf;
 import java.io.File;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
-
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DigilibInfoReader {
 
 	/** gengeral logger for this class */
-	protected static Logger logger = Logger.getLogger("digilib.servlet");
-	
+	protected static final Logger logger = LoggerFactory.getLogger("digilib.servlet");
+
 	private String filename = null;
-	//private static String base_element = "info";
-	
-	public DigilibInfoReader(String fn){
+	// private static String base_element = "info";
+
+	public DigilibInfoReader(String fn) {
 		filename = fn;
 	}
 
@@ -61,43 +60,41 @@ public class DigilibInfoReader {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked") // Element.getChildren() returns naked List
-    public String getAsString(String attr){
-		try{
+	public String getAsString(String attr) {
+		try {
 			SAXBuilder builder = new SAXBuilder();
 			Document doc = builder.build(new File(filename));
 			Element root = doc.getRootElement();
 			List<Element> mainElements = root.getChildren();
 			// logger.debug("XML mainElements:"+mainElements.toString());
 
-			for(int i=0; i<mainElements.size(); i++){
+			for (int i = 0; i < mainElements.size(); i++) {
 				Element elem = mainElements.get(i);
-				if(elem.getName()==attr){
+				if (elem.getName() == attr) {
 					// logger.debug(attr+" == "+(String)elem.getTextTrim());
-					return (String)elem.getTextTrim();
+					return (String) elem.getTextTrim();
 				}
 			}
 
-		}
-		catch(Exception e){
+		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
 		return null;
 	}
-	
-	
+
 	/**
 	 * Find out if the info.xml exists
+	 * 
 	 * @return
 	 */
-	public boolean hasInfo(){
+	public boolean hasInfo() {
 		try {
 			SAXBuilder builder = new SAXBuilder();
 			builder.build(new File(filename));
 			return true;
-		}
-		catch(Exception e){
+		} catch (Exception e) {
 			return false;
 		}
 	}
-	
+
 }

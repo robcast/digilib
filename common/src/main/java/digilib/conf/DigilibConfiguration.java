@@ -247,7 +247,7 @@ public class DigilibConfiguration extends ParameterMap {
             logger.debug("Logger already configured!");
         } else {
             // we start log4j with a default logger config
-            //FIXME: BasicConfigurator.configure();
+            BasicConfigurator.configure();
             DigilibConfiguration.isLoggerConfigured = true;
         }
     }

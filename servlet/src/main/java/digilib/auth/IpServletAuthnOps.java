@@ -30,6 +30,9 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import digilib.conf.DigilibRequest;
 import digilib.conf.DigilibServletRequest;
 
@@ -54,6 +57,8 @@ import digilib.conf.DigilibServletRequest;
  * Uses ServletRequest.isUserInRole() if roles provided by IP are not sufficient.
  */
 public class IpServletAuthnOps extends IpAuthnOps {
+
+    protected static final Logger logger = LoggerFactory.getLogger(IpServletAuthnOps.class);
 
     /* (non-Javadoc)
      * @see digilib.auth.IpAuthnOps#hasUserRoles()

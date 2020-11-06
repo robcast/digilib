@@ -34,7 +34,8 @@ import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.conf.DigilibConfiguration;
 import digilib.conf.DigilibOption;
@@ -60,7 +61,7 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
     /** the ImageWorker we use */
     private ImageWorker imageWorker = null;
 
-    protected static Logger logger = Logger.getLogger(AsyncServletWorker.class);
+    protected static final Logger logger = LoggerFactory.getLogger(AsyncServletWorker.class);
     private long startTime;
     private ErrMsg errMsgType = ErrMsg.IMAGE;
     private ImageJobDescription jobinfo;

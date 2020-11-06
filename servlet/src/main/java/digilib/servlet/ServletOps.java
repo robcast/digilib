@@ -44,7 +44,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.conf.DigilibServletConfiguration;
 import digilib.conf.DigilibServletRequest;
@@ -59,7 +60,7 @@ import digilib.util.ImageSize;
 
 public class ServletOps {
 
-    protected static Logger logger = Logger.getLogger("servlet.op");
+    protected static Logger logger = LoggerFactory.getLogger("servlet.op");
     
     protected static DigilibServletConfiguration dlConfig;
     
