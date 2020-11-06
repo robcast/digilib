@@ -23,8 +23,8 @@ package digilib.auth;
  * Author: Robert Casties (robcast@users.sourceforge.net)
  */
 
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Static factory for authentication AuthnOps.
@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
  */
 public class AuthnOpsFactory {
     /** Log4J logger */
-    protected static Logger logger = Logger.getLogger(AuthnOpsFactory.class);
+    protected static final Logger logger = LoggerFactory.getLogger(AuthnOpsFactory.class);
 
     /** AuthnOps implementation class */
     protected static Class<AuthnOps> authOpsClass;

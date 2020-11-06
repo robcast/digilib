@@ -37,7 +37,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.image.ImageJobDescription;
 import digilib.io.FileOps;
@@ -66,7 +67,7 @@ import digilib.util.ParameterMap;
  */
 public class DigilibRequest extends ParameterMap {
 
-    private static Logger logger = Logger.getLogger("digilib.request");
+    private static final Logger logger = LoggerFactory.getLogger("digilib.request");
     
     /**
      * special options for parsing the request. 
@@ -671,7 +672,7 @@ public class DigilibRequest extends ParameterMap {
 				identifier = URLDecoder.decode(identifier, "UTF-8");
 			} catch (UnsupportedEncodingException e) {
 				// this shouldn't happen
-				logger.error(e);
+				logger.error("Error decoding identifier", e);
 			}
 		}
 		if (iiifSlashReplacement != null && identifier.contains(iiifSlashReplacement)) {
@@ -699,7 +700,7 @@ public class DigilibRequest extends ParameterMap {
 			path = URLEncoder.encode(path, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			// this shouldn't happen
-			logger.error(e);
+			logger.error("Error encoding identifier", e);
 		}
 		return path;
 	}

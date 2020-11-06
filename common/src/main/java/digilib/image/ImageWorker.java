@@ -27,7 +27,8 @@ import java.awt.Rectangle;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.conf.DigilibConfiguration;
 import digilib.conf.DigilibOption;
@@ -41,7 +42,7 @@ import digilib.io.FileOpException;
  */
 public class ImageWorker implements Callable<DocuImage> {
 
-    protected static Logger logger = Logger.getLogger(ImageWorker.class);
+    protected static final Logger logger = LoggerFactory.getLogger(ImageWorker.class);
     private DigilibConfiguration dlConfig;
     private ImageJobDescription jobinfo;
 
@@ -95,7 +96,7 @@ public class ImageWorker implements Callable<DocuImage> {
         	 * use subimage loading with subsampling
         	 */
         	double scaleXY = scaleX + scaleY / 2d;
-            logger.debug("Subimage: scale " + scaleX + ", " + scaleY);
+            logger.debug("Subimage: scale {}, {}", scaleX, scaleY);
             double subf = 1d;
             double subsamp = 1d;
             if (scaleXY < 1) {
@@ -109,11 +110,11 @@ public class ImageWorker implements Callable<DocuImage> {
                 // correct scaling factor by subsampling factor
                 scaleX *= subsamp;
                 scaleY *= subsamp;
-                logger.debug("Using subsampling: " + subsamp + " rest " + scaleX + ", " + scaleY);
+                logger.debug("Using subsampling: {} rest {}, {}", subsamp, scaleX, scaleY);
             }
             // load region with subsampling
             docuImage.loadSubimage(jobinfo.getInput(), loadRect, (int) subsamp);
-            logger.debug("SUBSAMP: " + subsamp + ": " + jobinfo.getInput().getSize() + " -> " + docuImage.getSize());
+            logger.debug("SUBSAMP: {}: {} -> {}", subsamp, jobinfo.getInput().getSize(), docuImage.getSize());
             if (stopNow) {
                 logger.debug("ImageWorker stopping (after loading and cropping)");
                 return null;
@@ -230,7 +231,7 @@ public class ImageWorker implements Callable<DocuImage> {
             docuImage.colorOp(colop);
         }
 
-        logger.debug("rendered in " + (System.currentTimeMillis() - startTime) + "ms");
+        logger.debug("rendered in {}ms", System.currentTimeMillis() - startTime);
 
         return docuImage;
     }

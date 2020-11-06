@@ -31,7 +31,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Wrapper around ExecutionService.
  * 
@@ -40,7 +41,7 @@ import org.apache.log4j.Logger;
  */
 public class DigilibJobCenter<V> {
     /** general logger for this class */
-    private static Logger logger = Logger.getLogger("digilib.jobcenter");
+    protected static final Logger logger = LoggerFactory.getLogger("digilib.jobcenter");
     /** ExecutorService */
     private ExecutorService executor;
     /** max number of running threads */
@@ -67,7 +68,7 @@ public class DigilibJobCenter<V> {
         if (prestart) {
             // prestart threads so Tomcat's leak protection doesn't complain
             int st = ((ThreadPoolExecutor)executor).prestartAllCoreThreads();
-            logger.debug(label+" prestarting threads: "+st);
+            logger.debug("{} prestarting threads: {}", label, st);
         }
     }
     
@@ -96,7 +97,7 @@ public class DigilibJobCenter<V> {
     public boolean isBusy() {
         int jql = getWaitingJobs();
         int jrl = getRunningJobs();
-        logger.debug(label+" isBusy: waiting jobs="+jql+" running jobs="+jrl);
+        logger.debug("{} isBusy: waiting jobs={} running jobs={}", label, jql, jrl);
         return (jql > maxQueueLen);
     }
     

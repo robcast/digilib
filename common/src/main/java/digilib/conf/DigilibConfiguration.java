@@ -34,8 +34,8 @@ import java.util.Properties;
 
 import javax.imageio.ImageIO;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.image.DocuImage;
 import digilib.image.DocuImageFactory;
@@ -50,7 +50,7 @@ import digilib.util.ParameterMap;
 public class DigilibConfiguration extends ParameterMap {
 
     /** Log4J logger */
-    protected static Logger logger = Logger.getLogger(DigilibConfiguration.class);
+    protected static final Logger logger = LoggerFactory.getLogger(DigilibConfiguration.class);
     
     private static boolean isLoggerConfigured = false;
     
@@ -135,7 +135,7 @@ public class DigilibConfiguration extends ParameterMap {
                              * automatic conversion failed -- try special cases
                              */
                             if (!setSpecialValueFromString(param, (String) confEntry.getValue())) {
-                                logger.warn("Unable to parse config parameter: "+param.getName());
+                                logger.warn("Unable to parse config parameter: {}", param.getName());
                             }
                         }
                     } else {
@@ -185,7 +185,7 @@ public class DigilibConfiguration extends ParameterMap {
             DocuImage di = DocuImageFactory.getInstance();
             config.newParameter("servlet.docuimage.class", docuImageClass, null, 's');
             config.newParameter("servlet.docuimage.version", di.getVersion(), null, 's');
-            logger.debug("DocuImage ("+docuImageClass+") "+di.getVersion());
+            logger.debug("DocuImage ({}) {}", docuImageClass, di.getVersion());
             // set hacks on instance
             try {
                 docuImageClass.getDeclaredConstructor().newInstance().setHacks(config.getAsString("docuimage-hacks"));
@@ -229,7 +229,7 @@ public class DigilibConfiguration extends ParameterMap {
                 fmts.append(f);
                 fmts.append(", ");
             }
-            logger.info("DocuImage supported image formats: "+fmts);
+            logger.info("DocuImage supported image formats: {}", fmts);
         } catch (ClassNotFoundException e) {
             logger.error("Error setting DocuImage class!");
         }
@@ -247,7 +247,7 @@ public class DigilibConfiguration extends ParameterMap {
             logger.debug("Logger already configured!");
         } else {
             // we start log4j with a default logger config
-            BasicConfigurator.configure();
+            //FIXME: BasicConfigurator.configure();
             DigilibConfiguration.isLoggerConfigured = true;
         }
     }

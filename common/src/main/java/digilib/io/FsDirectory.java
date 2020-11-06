@@ -32,7 +32,8 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Class for filesystem directories
  * @author casties
@@ -40,7 +41,7 @@ import org.apache.log4j.Logger;
  */
 public class FsDirectory {
 
-	protected Logger logger = Logger.getLogger(this.getClass());
+	protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	/** File object pointing to the directory */
 	protected File dir = null;
@@ -90,7 +91,7 @@ public class FsDirectory {
 	 */
 	public boolean readDir() {
 		if (dir != null) {
-			//logger.debug("reading dir: "+dir.getPath());
+			//logger.debug("reading dir: {}", dir.getPath());
 			list = dir.list();
 			if (list != null) {
 				Arrays.sort(list);

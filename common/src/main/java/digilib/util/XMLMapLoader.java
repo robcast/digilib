@@ -37,7 +37,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -56,7 +57,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class XMLMapLoader {
 
-	private Logger logger = Logger.getLogger(this.getClass());
+	protected static final Logger logger = LoggerFactory.getLogger(XMLMapLoader.class);
 	private String listTag = "list";
 	private String entryTag = "entry";
 	private String keyAtt = "key";
@@ -76,7 +77,7 @@ public class XMLMapLoader {
      * @param value_att the value attribute
      */
     public XMLMapLoader(String list_tag, String entry_tag, String key_att, String value_att) {
-        logger.debug("XMLMapLoader(" + list_tag + "," + entry_tag + "," + key_att + "," + value_att + ")");
+        logger.debug("XMLMapLoader({}, {}, {}, {})", list_tag, entry_tag, key_att, value_att);
         listTag = list_tag;
         entryTag = entry_tag;
         keyAtt = key_att;

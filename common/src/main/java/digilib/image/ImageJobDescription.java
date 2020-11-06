@@ -30,7 +30,8 @@ package digilib.image;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.conf.DigilibConfiguration;
 import digilib.conf.DigilibOption;
@@ -60,7 +61,7 @@ public class ImageJobDescription {
     protected DigilibConfiguration config = null;
     /** the DigilibRequest for this job */
     protected ParameterMap request = null;
-    protected static Logger logger = Logger.getLogger("digilib.servlet");
+    protected static final Logger logger = LoggerFactory.getLogger("digilib.servlet");
 
     /* 
      * variables for caching values
@@ -560,7 +561,7 @@ public class ImageJobDescription {
             if (input == null || input.getMimetype() == null) {
                 throw new FileOpException("Unable to load " + input);
             }
-            logger.info("Planning to load: " + input);
+            logger.info("Planning to load: {}", input);
         }
         return input;
     }
@@ -1018,7 +1019,7 @@ public class ImageJobDescription {
         try {
             return ColorOp.valueOf(op.toUpperCase());
         } catch (Exception e) {
-            logger.error("Invalid color op: " + op);
+            logger.error("Invalid color op: {}", op);
         }
         return null;
     }
@@ -1054,7 +1055,7 @@ public class ImageJobDescription {
             if ((outerImgArea.getWidth() < 1) || (outerImgArea.getHeight() < 1)
                     || (scaleX * outerImgArea.getWidth() < 2) || (scaleY * outerImgArea.getHeight() < 2)) {
                 logger.error("ERROR: invalid scale parameter set!");
-            	logger.debug("scaleX="+scaleX+" scaleY="+scaleY+" outerImgArea="+outerImgArea);
+            	logger.debug("scaleX={} scaleY={} outerImgArea={}", scaleX, scaleY, outerImgArea);
                 throw new ImageOpException("Invalid scale parameter set!");
             }
         }

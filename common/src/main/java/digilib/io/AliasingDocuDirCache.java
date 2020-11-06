@@ -78,7 +78,7 @@ public class AliasingDocuDirCache extends DocuDirCache {
 			}
 			DocuDirectory destDir = DocuDirectoryFactory.getDocuDirectoryInstance(linkdir.getValue(), this);
 			if (destDir.isValid()) {
-				logger.debug("Aliasing dir: " + linkdir.getKey());
+				logger.debug("Aliasing dir: {}", linkdir.getKey());
 				// add the alias name
 				putName(FileOps.normalName(linkdir.getKey()), destDir);
 				// add the real dir

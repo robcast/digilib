@@ -44,7 +44,7 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.30</version>
 		</dependency>
-        <!-- info.xml reader uses JDOM -->
+		<!-- info.xml reader uses JDOM -->
 		<dependency>
 			<groupId>org.jdom</groupId>
 			<artifactId>jdom</artifactId>

@@ -26,7 +26,8 @@ package digilib.util;
 import java.util.EnumSet;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.conf.DigilibOption;
 
@@ -40,7 +41,7 @@ public class OptionsSet {
 	private EnumSet<DigilibOption> options;
 	
     /** logger */
-    protected static final Logger logger = Logger.getLogger(OptionsSet.class);
+    protected static final Logger logger = LoggerFactory.getLogger(OptionsSet.class);
 
 	/** String separating options in a String. */
 	protected String optionSep = ",";
@@ -69,7 +70,7 @@ public class OptionsSet {
 					DigilibOption dlOpt = DigilibOption.valueOf(opt);
 					options.add(dlOpt);
 				} catch (IllegalArgumentException e) {
-					logger.warn("Ignored unknown digilib option: "+opt); 
+					logger.warn("Ignored unknown digilib option: {}", opt); 
 				}
 			}
 		}

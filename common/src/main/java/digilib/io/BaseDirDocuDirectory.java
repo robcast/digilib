@@ -86,7 +86,7 @@ public class BaseDirDocuDirectory extends FsDocuDirectory {
 			return true;
 		}
 		// read all filenames
-		logger.debug("reading directory " + this + " = " + dir.dir.getPath());
+		logger.debug("reading directory {} = {}", this, dir.dir.getPath());
 		// set our read time to the end of the previous second so that we will not miss
 		// changes occurred at the same time than our reading due to the accuracy of the filesystem timestamp
 		dirMTime = (System.currentTimeMillis()  / 1000) * 1000 - 1;
@@ -107,7 +107,7 @@ public class BaseDirDocuDirectory extends FsDocuDirectory {
 	            File d = new File(baseDirNames[j], dirName);
 	            if (d.isDirectory()) {
 	                dirs[j] = new FsDirectory(d);
-	                logger.debug("  reading scaled directory " + d.getPath());
+	                logger.debug("  reading scaled directory {}", d.getPath());
 	                dirs[j].readDir();
 	            }
 	        }

@@ -164,8 +164,6 @@ public class ImageFileSet extends ImageSet implements DocuDirent {
     			}
     		}
     		if (FileOps.classForFilename(dirFiles[fileIdx]) == fileClass) {
-    			/* logger.debug("adding file " + dirFiles[fileIdx]
-    					+ " to Fileset " + this.getName()); */
     			add(new ImageFile(dirFiles[fileIdx], dir));
     		}
     	}

@@ -39,7 +39,8 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class loading index.meta files extracting image file related information.
@@ -81,7 +82,7 @@ import org.apache.log4j.Logger;
  */
 public class IndexMetaAuthLoader {
 
-    private Logger logger = Logger.getLogger(this.getClass());
+    protected static final Logger logger = LoggerFactory.getLogger(IndexMetaAuthLoader.class);
 
     protected String metaTag = "meta";
     protected String fileTag = "file";
@@ -285,7 +286,7 @@ public class IndexMetaAuthLoader {
                         access = accType + ":" + accName;
                     } else {
                         // type != free but no name
-                        logger.error("access type="+accType+" but no name!");
+                        logger.error("access type={} but no name!", accType);
                         tags.pop();
                         return map;
                     }

@@ -36,7 +36,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.io.FileOpException;
 import digilib.io.ImageInput;
@@ -57,7 +58,7 @@ public abstract class DocuImageImpl implements DocuImage {
     public static final String version = "DocuImageImpl 2.2";
     
     /** logger */
-    protected static final Logger logger = Logger.getLogger(DocuImage.class);
+    protected static final Logger logger = LoggerFactory.getLogger(DocuImage.class);
 
     /** Interpolation quality. */
     protected int quality = 0;

@@ -27,7 +27,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.conf.DigilibConfiguration;
 import digilib.io.FileOps.FileClass;
@@ -46,7 +47,7 @@ import digilib.meta.MetaFactory;
  */
 public abstract class DocuDirectory implements Iterable<DocuDirent> {
 
-	protected Logger logger = Logger.getLogger(this.getClass());
+	protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	/** type of files in this DocuDirectory */
     protected FileClass fileClass = FileClass.IMAGE;

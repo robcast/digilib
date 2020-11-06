@@ -1,24 +1,25 @@
 <?xml version="1.0"?>
 <project
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<artifactId>digilib</artifactId>
 		<groupId>digilib</groupId>
 		<version>2.9-SNAPSHOT</version>
 	</parent>
-	
+
 	<artifactId>digilib-common</artifactId>
 	<name>digilib-common</name>
 	<description>The Digital Image Library - common library</description>
 	<url>https://github.com/robcast/digilib</url>
 	<packaging>jar</packaging>
-	
+
 	<profiles>
 		<profile>
 			<id>imageio-jai</id>
-            <!--  use JAI-ImageIO plugin -->
+			<!-- use JAI-ImageIO plugin -->
 			<activation>
 				<activeByDefault>true</activeByDefault>
 				<property>
@@ -31,19 +32,19 @@
 					<groupId>com.github.jai-imageio</groupId>
 					<artifactId>jai-imageio-core</artifactId>
 					<version>1.4.0</version>
-                    <type>jar</type>
-                    <scope>compile</scope>
+					<type>jar</type>
+					<scope>compile</scope>
 				</dependency>
-				<dependency> 
-			         <groupId>com.github.jai-imageio</groupId> 
-			         <artifactId>jai-imageio-jpeg2000</artifactId> 
-				     <version>1.3.0</version> 
-				 </dependency> 
+				<dependency>
+					<groupId>com.github.jai-imageio</groupId>
+					<artifactId>jai-imageio-jpeg2000</artifactId>
+					<version>1.3.0</version>
+				</dependency>
 			</dependencies>
 		</profile>
 		<profile>
 			<id>imageio-12m</id>
-            <!-- use Twelvemonkeys ImageIO plugins -->
+			<!-- use Twelvemonkeys ImageIO plugins -->
 			<activation>
 				<property>
 					<name>imageio</name>
@@ -55,21 +56,21 @@
 					<groupId>com.twelvemonkeys.imageio</groupId>
 					<artifactId>imageio-jpeg</artifactId>
 					<version>3.4.3</version>
-                    <type>jar</type>
-                    <scope>compile</scope>
+					<type>jar</type>
+					<scope>compile</scope>
 				</dependency>
 				<dependency>
 					<groupId>com.twelvemonkeys.imageio</groupId>
 					<artifactId>imageio-tiff</artifactId>
 					<version>3.4.3</version>
-                    <type>jar</type>
-                    <scope>compile</scope>
+					<type>jar</type>
+					<scope>compile</scope>
 				</dependency>
 			</dependencies>
 		</profile>
 		<profile>
 			<id>imageio-jnr</id>
-            <!-- use BSBs ImageIO-JNR plugin from https://github.com/dbmdz/imageio-jnr -->
+			<!-- use BSBs ImageIO-JNR plugin from https://github.com/dbmdz/imageio-jnr -->
 			<activation>
 				<!-- <activeByDefault>true</activeByDefault> -->
 				<property>
@@ -101,10 +102,8 @@
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<type>jar</type>
-			<scope>compile</scope>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
 		</dependency>
 	</dependencies>
 </project>

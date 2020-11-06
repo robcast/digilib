@@ -178,7 +178,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         String ver = System.getProperty("java.version");
         String os = System.getProperty("os.name");
         String osver = System.getProperty("os.version");
-        logger.debug("os="+os+" ver="+osver+" java_version="+ver);
+        logger.debug("os={} ver={} java_version={}", os, osver, ver);
         if ((os.startsWith("Linux"))
             || (os.startsWith("Mac OS X") && osver.startsWith("10.7"))) {
             // GRAB(WTF?) works for Linux JDK1.6 with transparency
@@ -201,7 +201,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         for (Entry<Hacks, Boolean> kv : imageHacks.entrySet()) {
             msg.append(kv.getKey() + "=" + kv.getValue() + " ");
         }
-        logger.debug(msg);
+        logger.debug("{}", msg);
     }
 
     /** the size of the current image */
@@ -231,7 +231,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         for (Entry<Hacks, Boolean> kv : imageHacks.entrySet()) {
             msg.append(kv.getKey() + "=" + kv.getValue() + " ");
         }
-        logger.debug(msg);
+        logger.debug("{}", msg);
     }
 
 	@Override
@@ -326,7 +326,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
                 return ii;
             }
         }
-        logger.debug("identifying (ImageIO) " + input);
+        logger.debug("identifying (ImageIO) {}", input);
         try {
             /*
              * try ImageReader
@@ -335,12 +335,12 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             // set size
             ImageSize d = new ImageSize(reader.getWidth(0), reader.getHeight(0));
             input.setSize(d);
-            logger.debug("image size: " + d);
+            logger.debug("image size: {}", d);
             // set tile size
             if (reader.isImageTiled(0)) {
             	ImageSize ts = new ImageSize(reader.getTileWidth(0), reader.getTileHeight(0));
             	input.setTileSize(ts);
-            	logger.debug("tile size: "+ts);
+            	logger.debug("tile size: {}", ts);
             	// set tiled tag
             	input.setTag(ImageInput.InputTag.TILED);
             }
@@ -362,7 +362,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             return input;
         } catch (FileOpException e) {
             // maybe just our class doesn't know what to do
-            logger.error("ImageLoaderDocuimage unable to identify: "+e);
+            logger.error("ImageLoaderDocuimage unable to identify: {}", e);
             return null;
         } finally {
             if (!reuseReader && reader != null) {
@@ -376,7 +376,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
      * @see digilib.image.DocuImageImpl#loadImage(digilib.io.ImageInput)
      */
     public void loadImage(ImageInput ii) throws FileOpException {
-        logger.debug("loadImage: " + ii);
+        logger.debug("loadImage: {}", ii);
         this.input = ii;
         try {
             if (ii.hasImageInputStream()) {
@@ -400,7 +400,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
      * @throws IOException on error
      */
     protected ImageReader getReader(ImageInput input) throws IOException {
-        logger.debug("get ImageReader for " + input);
+        logger.debug("get ImageReader for {}", input);
         if (reuseReader && reader != null) {
             logger.debug("reusing ImageReader");
             return reader;
@@ -434,7 +434,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
                 throw new FileOpException("Can't find Reader to load File without mime-type!");
             }
         } else {
-            logger.debug("File type:" + mt);
+            logger.debug("File type: {}", mt);
         	// let ImageIO choose Reader
         	Iterator<ImageReader> readers = ImageIO.getImageReadersByMIMEType(mt);
             if (readers.hasNext()) {
@@ -457,7 +457,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         if (reader == null) {
             throw new FileOpException("Error getting Reader to load File!");
         }
-        logger.debug("ImageIO: reader: " + reader.getClass());
+        logger.debug("ImageIO: reader: {}", reader.getClass());
         reader.setInput(istream);
         return reader;
     }
@@ -489,14 +489,14 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 					ImageTypeSpecifier type = (ImageTypeSpecifier) i.next();
 					ColorModel cm = type.getColorModel();
 					ColorSpace cs = cm.getColorSpace();
-					logger.debug("loadSubimage: possible color model:" + cm + " color space:" + cs);
+					logger.debug("loadSubimage: possible color model: {} color space: {}", cm, cs);
 					if (cs.getNumComponents() < 3 && !imageHacks.get(Hacks.setDestSrgbForNonRgb)) {
 						// if the first type is not RGB do nothing
-						logger.debug("loadSubimage: image is not RGB " + type);
+						logger.debug("loadSubimage: image is not RGB {}", type);
 						break;
 					}
 					if (cs.isCS_sRGB()) {
-						logger.debug("loadSubimage: substituted sRGB destination type " + type);
+						logger.debug("loadSubimage: substituted sRGB destination type {}", type);
 						readParam.setDestinationType(type);
 						break;
 					}
@@ -508,7 +508,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
              */
             logger.debug("loadSubimage: loading..");
             img = reader.read(0, readParam);
-            logger.debug("loadSubimage: loaded "+img);
+            logger.debug("loadSubimage: loaded {}", img);
             // invalidate image size if it was set
             imageSize = null;
             
@@ -580,7 +580,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             imgout = ImageIO.createImageOutputStream(ostream);
             if (mt == "image/jpeg") {
                 writer = getWriter(mt);
-                logger.debug("ImageIO: writer: "+writer.getClass());
+                logger.debug("ImageIO: writer: {}", writer.getClass());
                 /*
                  * JPEG doesn't do transparency so we have to convert any RGBA
                  * image to RGB or we the client will think its CMYK :-( *Java2D
@@ -605,7 +605,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             } else if (mt == "image/png") {
                 // render output
                 writer = getWriter(mt);
-                logger.debug("ImageIO: writer: "+writer.getClass());
+                logger.debug("ImageIO: writer: {}", writer.getClass());
                 writer.setOutput(imgout);
                 logger.debug("writing PNG");
                 writer.write(img);
@@ -615,7 +615,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             }
 
         } catch (IOException e) {
-            logger.error("Error writing image: "+e.getMessage());
+            logger.error("Error writing image: {}", e.getMessage());
             throw new ImageOutputException("Error writing image!", e);
         } finally {
         	if (writer != null) {
@@ -629,7 +629,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         		try {
 					imgout.close();
 				} catch (IOException e) {
-					logger.error("Error closing ImageOutputStream! "+e.getMessage());
+					logger.error("Error closing ImageOutputStream! {}", e.getMessage());
 				}
         	}
         }
@@ -640,7 +640,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
      * @see digilib.image.DocuImageImpl#scale(double, double)
      */
     public void scale(double scaleX, double scaleY) throws ImageOpException {
-        logger.debug("scale: " + scaleX);
+        logger.debug("scale: {}", scaleX);
         /* 
          * for downscaling in high quality the image is blurred first ...
          */
@@ -681,7 +681,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             }
         }
         // scale with AffineTransformOp
-        logger.debug("scaled from " + imgW + "x" + imgH + " img=" + img);
+        logger.debug("scaled from {}x{} img={}", imgW, imgH, img);
         AffineTransformOp scaleOp = new AffineTransformOp(AffineTransform.getScaleInstance(scaleX, scaleY), renderHint);
         BufferedImage dest = null;
         if (imageHacks.get(Hacks.setDestForScale)) {
@@ -697,7 +697,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             }
         }
         img = scaleOp.filter(img, dest);
-        logger.debug("scaled to " + img.getWidth() + "x" + img.getHeight() + " img=" + img);
+        logger.debug("scaled to {}x{} img={}", img.getWidth(), img.getHeight(), img);
         // invalidate image size
         imageSize = null;
     }
@@ -709,7 +709,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
      * @throws ImageOpException on error
      */
     public void blur(int radius) throws ImageOpException {
-        logger.debug("blur: " + radius);
+        logger.debug("blur: {}", radius);
         // minimum radius is 2
         int klen = Math.max(radius, 2);
         Kernel blur = null;
@@ -740,7 +740,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             }
         }
         img = blurOp.filter(img, dest);
-        logger.debug("blurred: " + img);
+        logger.debug("blurred: {}", img);
     }
 
     /* 
@@ -750,7 +750,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     public void crop(int x_off, int y_off, int width, int height) throws ImageOpException {
         // setup Crop
         img = img.getSubimage(x_off, y_off, width, height);
-        logger.debug("CROP:" + img.getWidth() + "x" + img.getHeight());
+        logger.debug("CROP: {}x{}", img.getWidth(), img.getHeight());
         // invalidate image size
         imageSize = null;
     }
@@ -760,7 +760,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
      * @see digilib.image.DocuImageImpl#rotate(double)
      */
     public void rotate(double angle) throws ImageOpException {
-        logger.debug("rotate: " + angle);
+        logger.debug("rotate: {}", angle);
         // setup rotation
         double rangle = Math.toRadians(angle);
         // center of rotation is center of image
@@ -776,13 +776,13 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         double yoff = rotbounds.getY();
         if (Math.abs(xoff) > epsilon || Math.abs(yoff) > epsilon) {
             // move image back on screen
-            logger.debug("move rotation: xoff=" + xoff + " yoff=" + yoff);
+            logger.debug("move rotation: xoff={} yoff={}", xoff, yoff);
             trafo.preConcatenate(AffineTransform.getTranslateInstance(-xoff, -yoff));
             rotOp = new AffineTransformOp(trafo, renderHint);
         }
         // transform image
         img = rotOp.filter(img, null);
-        logger.debug("rotated: " + img);
+        logger.debug("rotated: {}", img);
         // invalidate image size
         imageSize = null;
     }
@@ -792,7 +792,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
      * @see digilib.image.DocuImageImpl#mirror(double)
      */
     public void mirror(double angle) throws ImageOpException {
-        logger.debug("mirror: " + angle);
+        logger.debug("mirror: {}", angle);
         // setup mirror
         double mx = 1;
         double my = 1;
@@ -814,7 +814,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             mx = -1;
             tx = img.getWidth();
         } else {
-            logger.error("invalid mirror angle " + angle);
+            logger.error("invalid mirror angle {}", angle);
             return;
         }
         AffineTransformOp mirOp = new AffineTransformOp(new AffineTransform(mx, 0, 0, my, tx, ty), renderHint);
@@ -829,7 +829,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
      */
     public void enhance(float mult, float add) throws ImageOpException {
         RescaleOp op = null;
-        logger.debug("enhance: img=" + img);
+        logger.debug("enhance: img={}", img);
         if (imageHacks.get(Hacks.needsRescaleRgba)) {
             /*
              * Only one constant should work regardless of the number of bands
@@ -864,14 +864,14 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
      * @see digilib.image.DocuImageImpl#enhanceRGB(float[], float[])
      */
     public void enhanceRGB(float[] rgbm, float[] rgba) throws ImageOpException {
-        logger.debug("enhanceRGB: rgbm=" + rgbm + " rgba=" + rgba);
+        logger.debug("enhanceRGB: rgbm={} rgba={}", rgbm, rgba);
         /*
          * The number of constants must match the number of bands in the image.
          * We do only 3 (RGB) bands.
          */
         int ncol = img.getColorModel().getNumColorComponents();
         if ((ncol != 3) || (rgbm.length != 3) || (rgba.length != 3)) {
-            logger.error("enhanceRGB: unknown number of color bands or coefficients (" + ncol + ")");
+            logger.error("enhanceRGB: unknown number of color bands or coefficients ({})", ncol);
             return;
         }
         if (img.getColorModel().hasAlpha()) {
@@ -910,7 +910,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
              * 0.5870*green + 0.1140*blue
              */
             logger.debug("Color op: NTSC gray");
-            logger.debug("img=" + img);
+            logger.debug("img={}", img);
             ColorModel cm = img.getColorModel();
             if (cm.getNumColorComponents() < 3 || cm instanceof IndexColorModel) {
                 // grayscale already or not possible
@@ -931,11 +931,11 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
              * (nothing clever is done)
              */
             logger.debug("Color op: bitonal");
-            logger.debug("img=" + img);
+            logger.debug("img={}", img);
             BufferedImage dest = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
             dest.createGraphics().drawImage(img, null, 0, 0);
             img = dest;
-            logger.debug("bitonal img=" + img);
+            logger.debug("bitonal img={}", img);
         } else if (colop == ColorOp.INVERT) {
             /*
              * invert colors i.e. invert every channel
@@ -956,7 +956,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
                 invtbl = invertSingleByteTable;
             }
             LookupOp op = new LookupOp(invtbl, renderHint);
-            logger.debug("colop: image=" + img);
+            logger.debug("colop: image={}", img);
             op.filter(img, img);
         } else if (colop == ColorOp.MAP_GRAY_BGR) {
             /*
@@ -977,11 +977,11 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             }
             BufferedImage dest = new BufferedImage(img.getWidth(), img.getHeight(), destType);
             img = grayOp.filter(img, dest);
-            logger.debug("map_gray: image=" + img);
+            logger.debug("map_gray: image={}", img);
             // convert to false color
             LookupOp mapOp = new LookupOp(mapBgrByteTable, renderHint);
             mapOp.filter(img, img);
-            logger.debug("mapped image=" + img);
+            logger.debug("mapped image={}", img);
         }
     }
 

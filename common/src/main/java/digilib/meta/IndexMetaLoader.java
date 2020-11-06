@@ -37,7 +37,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -57,7 +58,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class IndexMetaLoader {
 
-	private Logger logger = Logger.getLogger(this.getClass());
+	protected static final Logger logger = LoggerFactory.getLogger(IndexMetaLoader.class);
 	private String metaTag = "meta";
 	private String fileTag = "file";
 	private String fileNameTag = "name";
@@ -268,7 +269,6 @@ public class IndexMetaLoader {
 				collectedContent.append("</"+collectTag+">\n");
 				// store collected stuff
 				meta.put(collectTag, collectedContent.toString());
-				//logger.debug("collected: '"+collectedContent+"'");
 				content = null;
 				return;
 			}
@@ -279,7 +279,6 @@ public class IndexMetaLoader {
 				if ((content != null) && (content.length() > 0)) {
 					s = content.toString().trim();
 				}
-				//logger.debug("collect:"+name+" = "+s);
 				collectedContent.append(s);
 				collectedContent.append("</"+name+">\n");
 				content = null;
@@ -316,7 +315,7 @@ public class IndexMetaLoader {
 	 * @throws IOException on error
 	 */
 	public Map<String, MetadataMap> loadUri(URI uri) throws SAXException, IOException {
-		logger.debug("loading meta: "+uri);
+		logger.debug("loading meta: {}", uri);
 		// Create a JAXP SAXParserFactory and configure it
 		SAXParserFactory spf = SAXParserFactory.newInstance();
 		spf.setNamespaceAware(true);
