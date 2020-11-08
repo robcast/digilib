@@ -479,7 +479,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
     protected void setupLogging(ServletContext context) {
     	// check if we need to configure
     	if (DigilibConfiguration.isLoggingConfigured) return;
-        // set up a Log4J logger (should use log4j.properties otherwise)
+        // set up a Log4J logger
         File logConf = ServletOps.getConfigFile((File) getValue("log-config-file"), context);
         if (logConf != null && logConf.canRead()) {
             DOMConfigurator.configure(logConf.getAbsolutePath());
