@@ -49,12 +49,13 @@ import digilib.util.ParameterMap;
  */
 public class DigilibConfiguration extends ParameterMap {
 
-    /** Log4J logger */
+    /** SLF4J compatible logger */
     protected static final Logger logger = LoggerFactory.getLogger(DigilibConfiguration.class);
     
-    private static boolean isLoggerConfigured = false;
+    protected static boolean isLoggingConfigured = false;
     
-    protected static String propertiesFileName = "digilib.properties";
+    /** name of digilbi properties file */
+    public static String propertiesFileName = "digilib.properties";
 
     /** digilib version 
      * @return the version
@@ -174,7 +175,7 @@ public class DigilibConfiguration extends ParameterMap {
     @SuppressWarnings("unchecked")
     public void configure() {
         DigilibConfiguration config = this;
-        setupLogger();
+        setupLogging();
         /*
          * initialise static DocuImage class instance
          */
@@ -240,16 +241,12 @@ public class DigilibConfiguration extends ParameterMap {
     }
 
     /**
-     * Configure Log4J (using BasicConfigurator).
+     * Initialize the logging implementation.
+     * 
+     * @param context
      */
-    public static void setupLogger() {
-        if (DigilibConfiguration.isLoggerConfigured) {
-            logger.debug("Logger already configured!");
-        } else {
-            // we start log4j with a default logger config
-            BasicConfigurator.configure();
-            DigilibConfiguration.isLoggerConfigured = true;
-        }
+    protected void setupLogging() {
+        // set up a real logging implementation in a subclass
     }
 
 }

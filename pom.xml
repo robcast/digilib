@@ -5,6 +5,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <digilib.version>2.9-SNAPSHOT</digilib.version>
+    <slf4j.version>1.7.30</slf4j.version>
   </properties>
 
   <groupId>digilib</groupId>
@@ -214,15 +215,10 @@
   <dependencyManagement>
     <dependencies>
       <!-- common dependency versions -->
-      <dependency>
-        <groupId>log4j</groupId>
-        <artifactId>log4j</artifactId>
-        <version>1.2.14</version>
-      </dependency>
       <dependency> 
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>1.7.30</version>
+        <version>${slf4j.version}</version>
       </dependency>
       <dependency>
           <groupId>org.glassfish</groupId>
