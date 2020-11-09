@@ -28,6 +28,9 @@ package digilib.auth;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import digilib.conf.DigilibConfiguration;
 import digilib.conf.DigilibRequest;
 
@@ -60,6 +63,7 @@ import digilib.conf.DigilibRequest;
  */
 public class IpOpenIdAuthnOps extends IpAuthnOps {
 
+    protected static final Logger logger = LoggerFactory.getLogger(IpOpenIdAuthnOps.class);
     protected OpenIdAuthnOps openIdAuthnOps;
     
     /* (non-Javadoc)

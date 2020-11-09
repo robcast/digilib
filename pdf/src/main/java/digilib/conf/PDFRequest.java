@@ -32,7 +32,8 @@ import java.net.URLEncoder;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.image.ImageJobDescription;
 import digilib.image.ImageOpException;
@@ -55,7 +56,7 @@ public class PDFRequest extends ParameterMap {
 	DigilibConfiguration dlConfig = null;
 	NumRange pages = null;
 	/** general logger for this class */
-	protected static Logger logger = Logger.getLogger("digilib.servlet");
+	protected static final Logger logger = LoggerFactory.getLogger("digilib.servlet");
 
 	
 	/**

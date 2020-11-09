@@ -32,7 +32,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthzOps;
@@ -51,7 +52,7 @@ import digilib.io.ImageSet;
 public class DigilibBean {
 
 	// general logger
-	private static Logger logger = Logger.getLogger("digilib.digibean");
+	private static Logger logger = LoggerFactory.getLogger("digilib.digibean");
 
 	// AuthOps object to check authorization
 	private AuthzOps authzOp;
@@ -89,7 +90,7 @@ public class DigilibBean {
 		try {
 			setConfig(conf);
 		} catch (Exception e) {
-			logger.fatal("ERROR: Unable to set config: ", e);
+			logger.error("ERROR: Unable to set config: ", e);
 		}
 	}
 

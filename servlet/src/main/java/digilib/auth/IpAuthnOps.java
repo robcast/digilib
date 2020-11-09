@@ -32,7 +32,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.conf.DigilibConfiguration;
 import digilib.conf.DigilibRequest;
@@ -62,7 +63,7 @@ import digilib.util.XMLMapLoader;
 public class IpAuthnOps implements AuthnOps {
 
     /** general logger for this class */
-    protected Logger logger = Logger.getLogger(this.getClass());
+    protected static final Logger logger = LoggerFactory.getLogger(IpAuthnOps.class);
 
     protected File configFile;
     protected HashTree authIP4s;

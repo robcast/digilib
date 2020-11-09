@@ -43,7 +43,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.conf.DigilibConfiguration;
 import digilib.conf.PDFRequest;
@@ -71,13 +72,13 @@ public class PDFGenerator extends HttpServlet {
     public static String version = PDFServletConfiguration.getClassVersion();
 
     /** logger for accounting requests */
-    protected static Logger accountlog = Logger.getLogger("account.pdf.request");
+    protected static Logger accountlog = LoggerFactory.getLogger("account.pdf.request");
 
     /** gengeral logger for this class */
-    protected static Logger logger = Logger.getLogger("digilib.pdfgenerator");
+    protected static Logger logger = LoggerFactory.getLogger("digilib.pdfgenerator");
 
     /** logger for authentication related */
-    protected static Logger authlog = Logger.getLogger("digilib.pdf.auth");
+    protected static Logger authlog = LoggerFactory.getLogger("digilib.pdf.auth");
 
     private DigilibConfiguration dlConfig = null;
 
@@ -170,6 +171,7 @@ public class PDFGenerator extends HttpServlet {
 			} else {
 				// send file
 				try {
+					logger.debug("PDF docid={} DONE", docid);
 					ServletOps.sendFile(getCacheFile(docid), "application/pdf", getDownloadFilename(docid), 
 							response, logger);
 					return;
@@ -236,6 +238,7 @@ public class PDFGenerator extends HttpServlet {
             } else if (status == PDFStatus.DONE) {
                 // PDF created -- send it
                 try {
+					logger.debug("PDF docid={} already DONE", docid);
                     ServletOps.sendFile(getCacheFile(docid), "application/pdf", getDownloadFilename(pdfji), response, logger);
                     return;
                 } catch (Exception e) {

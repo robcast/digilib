@@ -39,7 +39,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
-import org.apache.log4j.xml.DOMConfigurator;
 import org.xml.sax.SAXException;
 
 import digilib.auth.AuthnOps;
@@ -151,8 +150,6 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         newParameter("use-mapping", Boolean.FALSE, null, 'f');
         // mapping file location
         newParameter("mapping-file", new File("digilib-map.xml"), null, 'f');
-        // log4j config file location
-        newParameter("log-config-file", new File("log4j-config.xml"), null, 'f');
         // number of working threads
         newParameter("worker-threads", Integer.valueOf(2), null, 'f');
         // max number of waiting threads
@@ -217,7 +214,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
              */
             Properties props = new Properties();
             InputStream s = Thread.currentThread().getContextClassLoader()
-                    .getResourceAsStream("digilib.properties");
+                    .getResourceAsStream(DigilibConfiguration.propertiesFileName);
             if (s != null) {
                 props.load(s);
                 s.close();
@@ -230,24 +227,23 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
                 readConfigEntries(c, map);
                 // set config file path parameter
                 setValue("servlet.config.file", Thread.currentThread().getContextClassLoader()
-                        .getResource("digilib.properties").toString());
+                        .getResource(DigilibConfiguration.propertiesFileName).toString());
                 
             } else {
-                logger.warn("No digilib config file! Using defaults!");
+                c.log("No digilib config file! Using defaults!");
                 // update basedir-list
                 String[] dirs = (String[]) this.getValue("basedir-list");
                 dirs = expandBaseDirList(dirs, c);
                 setValue("basedir-list", dirs);
             }
         }
-
     }
 
     /**
      * @param ctx the ServletContext
      * @param conf the config
      */
-    public void readConfigEntries(ServletContext ctx, Map<String, String> conf) {
+    protected void readConfigEntries(ServletContext ctx, Map<String, String> conf) {
         /*
          * read parameters
          */
@@ -288,6 +284,7 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
     public void configure(ServletContext context) {
         DigilibServletConfiguration config = this;
         super.configure();
+        setupLogging(context);
         /*
          * configure factories
          */
@@ -332,12 +329,6 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         /*
          * configure singletons
          */
-        // set up the logger
-        File logConf = ServletOps.getConfigFile((File) config.getValue("log-config-file"), context);
-        if (logConf != null && logConf.canRead()) {
-            DOMConfigurator.configure(logConf.getAbsolutePath());
-            config.setValue("log-config-file", logConf);
-        }
         // say hello in the log file
         logger.info("***** Digital Image Library Configuration (version " + getVersion() + ") *****");
         try {
@@ -477,4 +468,12 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         return dirs;
     }
 
+    /**
+     * Initialize the logging implementation.
+     * 
+     * @param context
+     */
+    protected void setupLogging(ServletContext context) {
+        // no configuration needed for Log4J2
+    }
 }

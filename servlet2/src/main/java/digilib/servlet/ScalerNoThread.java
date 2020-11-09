@@ -33,7 +33,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthzOps;
@@ -69,13 +70,13 @@ public class ScalerNoThread extends HttpServlet {
     };
 
     /** logger for accounting requests */
-    protected static Logger accountlog = Logger.getLogger("account.request");
+    protected static Logger accountlog = LoggerFactory.getLogger("account.request");
 
     /** gengeral logger for this class */
-    protected static Logger logger = Logger.getLogger("digilib.scaler");
+    protected static Logger logger = LoggerFactory.getLogger("digilib.scaler");
 
     /** logger for authentication related */
-    protected static Logger authlog = Logger.getLogger("digilib.auth");
+    protected static Logger authlog = LoggerFactory.getLogger("digilib.auth");
 
     /** DocuDirCache instance */
     protected DocuDirCache dirCache;

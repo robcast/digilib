@@ -34,8 +34,8 @@ import java.util.Properties;
 
 import javax.imageio.ImageIO;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.image.DocuImage;
 import digilib.image.DocuImageFactory;
@@ -49,18 +49,19 @@ import digilib.util.ParameterMap;
  */
 public class DigilibConfiguration extends ParameterMap {
 
-    /** Log4J logger */
-    protected static Logger logger = Logger.getLogger(DigilibConfiguration.class);
+    /** SLF4J compatible logger */
+    protected static final Logger logger = LoggerFactory.getLogger(DigilibConfiguration.class);
     
-    private static boolean isLoggerConfigured = false;
+    protected static boolean isLoggingConfigured = false;
     
-    protected static String propertiesFileName = "digilib.properties";
+    /** name of digilbi properties file */
+    public static String propertiesFileName = "digilib.properties";
 
     /** digilib version 
      * @return the version
      */
     public static String getClassVersion() {
-        return "2.9-SNAPSHOT";
+        return "2.10-SNAPSHOT";
     }
 
     /* non-static getVersion for Java inheritance */
@@ -135,7 +136,7 @@ public class DigilibConfiguration extends ParameterMap {
                              * automatic conversion failed -- try special cases
                              */
                             if (!setSpecialValueFromString(param, (String) confEntry.getValue())) {
-                                logger.warn("Unable to parse config parameter: "+param.getName());
+                                logger.warn("Unable to parse config parameter: {}", param.getName());
                             }
                         }
                     } else {
@@ -174,7 +175,7 @@ public class DigilibConfiguration extends ParameterMap {
     @SuppressWarnings("unchecked")
     public void configure() {
         DigilibConfiguration config = this;
-        setupLogger();
+        setupLogging();
         /*
          * initialise static DocuImage class instance
          */
@@ -185,7 +186,7 @@ public class DigilibConfiguration extends ParameterMap {
             DocuImage di = DocuImageFactory.getInstance();
             config.newParameter("servlet.docuimage.class", docuImageClass, null, 's');
             config.newParameter("servlet.docuimage.version", di.getVersion(), null, 's');
-            logger.debug("DocuImage ("+docuImageClass+") "+di.getVersion());
+            logger.debug("DocuImage ({}) {}", docuImageClass, di.getVersion());
             // set hacks on instance
             try {
                 docuImageClass.getDeclaredConstructor().newInstance().setHacks(config.getAsString("docuimage-hacks"));
@@ -229,7 +230,7 @@ public class DigilibConfiguration extends ParameterMap {
                 fmts.append(f);
                 fmts.append(", ");
             }
-            logger.info("DocuImage supported image formats: "+fmts);
+            logger.info("DocuImage supported image formats: {}", fmts);
         } catch (ClassNotFoundException e) {
             logger.error("Error setting DocuImage class!");
         }
@@ -240,16 +241,12 @@ public class DigilibConfiguration extends ParameterMap {
     }
 
     /**
-     * Configure Log4J (using BasicConfigurator).
+     * Initialize the logging implementation.
+     * 
+     * @param context
      */
-    public static void setupLogger() {
-        if (DigilibConfiguration.isLoggerConfigured) {
-            logger.debug("Logger already configured!");
-        } else {
-            // we start log4j with a default logger config
-            BasicConfigurator.configure();
-            DigilibConfiguration.isLoggerConfigured = true;
-        }
+    protected void setupLogging() {
+        // set up a real logging implementation in a subclass
     }
 
 }

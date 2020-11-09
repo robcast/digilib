@@ -28,7 +28,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.io.image.ImageDataFactory;
@@ -55,7 +56,7 @@ public class PDFTitlePage {
 	
 	protected PDFRequest request = null;
 	protected DigilibInfoReader infoReader= null;
-	protected static Logger logger = Logger.getLogger("digilib.servlet");
+	protected static Logger logger = LoggerFactory.getLogger("digilib.servlet");
 
 	
 	/**
@@ -173,7 +174,7 @@ public class PDFTitlePage {
 					.add(new Link(getUrl(), PdfAction.createURI(getUrl())))
 					.setFixedPosition(24, 24, UnitValue.createPercentValue(98)));
 		} catch (IOException e) {
-			logger.error(e);
+			logger.error("{}", e);
 		}
 		
 		/*

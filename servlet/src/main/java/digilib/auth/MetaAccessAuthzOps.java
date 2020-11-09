@@ -33,6 +33,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import digilib.conf.DigilibConfiguration;
 import digilib.conf.DigilibServletConfiguration;
 import digilib.conf.DigilibServletRequest;
@@ -66,6 +69,7 @@ import digilib.util.XMLMapLoader;
  */
 public class MetaAccessAuthzOps extends AuthzOpsImpl {
 
+    protected static final Logger logger = LoggerFactory.getLogger(MetaAccessAuthzOps.class);
     protected File configFile;
     protected Map<String, List<String>> rolesMap;
     protected List<String> defaultRoles = null;

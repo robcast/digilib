@@ -47,7 +47,7 @@ public abstract class ImageInfoDocuImage extends DocuImageImpl {
 
     /* Check image size and type and store in ImageFile f */
     public ImageInput identify(ImageInput ii) throws IOException {
-        logger.debug("identifying (ImageInfo) " + ii);
+        logger.debug("identifying (ImageInfo) {}", ii);
         if (ii.hasMimetype()) {
             if (ii.getMimetype().equals("image/tiff")) {
                 logger.debug("ImageInfo unable to identify TIFF.");
@@ -82,7 +82,7 @@ public abstract class ImageInfoDocuImage extends DocuImageImpl {
                     // set sendable tag
                     ii.setTag(ImageInput.InputTag.SENDABLE);
                 }
-                logger.debug("image size: " + ii.getSize());
+                logger.debug("image size: {}", ii.getSize());
                 return ii;
             }
         } catch (Exception e) {

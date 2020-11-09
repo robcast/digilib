@@ -35,7 +35,8 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.image.DocuImage;
 import digilib.image.DocuImageFactory;
@@ -47,7 +48,7 @@ import digilib.util.ImageSize;
  */
 public class ImageUrl extends ImageInput {
 
-    protected Logger logger = Logger.getLogger(this.getClass());
+    protected static final Logger logger = LoggerFactory.getLogger(ImageUrl.class);
     
     protected String name;
     protected String url;
@@ -73,11 +74,11 @@ public class ImageUrl extends ImageInput {
         HttpGet httpget = new HttpGet(url);
         CloseableHttpResponse response = null;
         try {
-            logger.debug("Getting image input stream from URL "+url);
+            logger.debug("Getting image input stream from URL {}", url);
             response = httpclient.execute(httpget);
             int status = response.getStatusLine().getStatusCode();
             if (status != 200) {
-                logger.error("Read image content status not OK: " + status);
+                logger.error("Read image content status not OK: {}", status);
                 return null;
             }
             HttpEntity entity = response.getEntity();
@@ -88,7 +89,7 @@ public class ImageUrl extends ImageInput {
                 return ImageIO.createImageInputStream(instream);
             }
         } catch (Exception e) {
-            logger.error("Error getting input stream from URL "+url, e);
+            logger.error("Error getting input stream from URL {}: {}", url, e);
             try {
                 if (response != null) {
                     response.close();
@@ -109,7 +110,7 @@ public class ImageUrl extends ImageInput {
                 DocuImage di = DocuImageFactory.getInstance();
                 di.identify(this);
             } catch (IOException e) {
-                logger.error("Error checking image from URL "+url, e);
+                logger.error("Error checking image from URL {}: {}", url, e);
                 // nothing much to do...
             }
         }

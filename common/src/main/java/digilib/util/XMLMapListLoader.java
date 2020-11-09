@@ -37,7 +37,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -59,7 +60,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class XMLMapListLoader {
 
-    private Logger logger = Logger.getLogger(this.getClass());
+    protected static final Logger logger = LoggerFactory.getLogger(XMLMapListLoader.class);
     private String listTag = "list";
     private String entryTag = "entry";
     public static String CONTENT_KEY = "_text"; 
@@ -75,7 +76,7 @@ public class XMLMapListLoader {
      * @param entry_tag the entry tag
      */
     public XMLMapListLoader(String list_tag, String entry_tag) {
-        logger.debug("XMLMapListLoader(" + list_tag + "," + entry_tag + ")");
+        logger.debug("XMLMapListLoader({}, {})",list_tag, entry_tag);
         listTag = list_tag;
         entryTag = entry_tag;
     }
@@ -111,7 +112,7 @@ public class XMLMapListLoader {
             if (qName.equals(entryTag)) {
                 // is it inside a list tag?
                 if ((listTag.length() > 0) && (!tagSpace.contains(listTag))) {
-                    logger.error("BOO: Entry " + entryTag + " not inside list " + listTag);
+                    logger.error("BOO: Entry {} not inside list {}", entryTag, listTag);
                     throw new SAXParseException("Entry " + entryTag + " not inside list " + listTag, null);
                 }
                 // get the attributes

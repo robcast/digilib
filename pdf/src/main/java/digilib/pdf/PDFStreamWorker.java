@@ -30,16 +30,17 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.AreaBreak;
-//import com.itextpdf.layout.DocumentException;
-import com.itextpdf.layout.element.Image;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.AreaBreak;
+//import com.itextpdf.layout.DocumentException;
+import com.itextpdf.layout.element.Image;
 
 import digilib.conf.DigilibConfiguration;
 import digilib.conf.DigilibRequest;
@@ -54,7 +55,7 @@ import digilib.util.Parameter;
 
 public class PDFStreamWorker implements Callable<OutputStream> {
 
-	protected static Logger logger = Logger.getLogger(PDFStreamWorker.class);
+	protected static Logger logger = LoggerFactory.getLogger(PDFStreamWorker.class);
 
 	protected DigilibConfiguration dlConfig = null;
 

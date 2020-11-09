@@ -38,7 +38,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthzOps;
@@ -76,13 +77,13 @@ public class Scaler extends HttpServlet {
     public static ErrMsg defaultErrMsgType = ErrMsg.IMAGE;
 
     /** logger for accounting requests */
-    protected static Logger accountlog = Logger.getLogger("account.request");
+    protected static final Logger accountlog = LoggerFactory.getLogger("account.request");
 
     /** gengeral logger for this class */
-    protected static Logger logger = Logger.getLogger("digilib.scaler");
+    protected static final Logger logger = LoggerFactory.getLogger("digilib.scaler");
 
     /** logger for authentication related */
-    protected static Logger authlog = Logger.getLogger("digilib.auth");
+    protected static final Logger authlog = LoggerFactory.getLogger("digilib.auth");
 
     /** DocuDirCache instance */
     protected DocuDirCache dirCache;

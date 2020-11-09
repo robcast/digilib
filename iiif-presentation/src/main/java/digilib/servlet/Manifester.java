@@ -51,7 +51,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.auth.AuthOpException;
 import digilib.auth.AuthzOps;
@@ -92,10 +93,10 @@ public class Manifester extends HttpServlet {
 	protected DigilibServletConfiguration dlConfig = null;
 
 	/** general logger */
-	protected Logger logger = Logger.getLogger("digilib.manifester");
+	protected Logger logger = LoggerFactory.getLogger("digilib.manifester");
 
 	/** logger for accounting requests */
-	protected static Logger accountlog = Logger.getLogger("account.manifester.request");
+	protected static Logger accountlog = LoggerFactory.getLogger("account.manifester.request");
 
 	/** AuthOps instance */
 	protected AuthzOps authzOp;
@@ -140,7 +141,7 @@ public class Manifester extends HttpServlet {
 			throw new ServletException("No Configuration!");
 		}
 		// say hello in the log file
-		logger.info("***** Digital Image Library IIIF Manifest Servlet (version " + mfVersion + ") *****");
+		logger.info("***** Digital Image Library IIIF Manifest Servlet (version {}) *****", mfVersion);
 
 		// set our AuthOps
 		useAuthorization = dlConfig.getAsBoolean("use-authorization");
@@ -169,7 +170,7 @@ public class Manifester extends HttpServlet {
      * @see javax.servlet.http.HttpServlet#getLastModified(javax.servlet.http.HttpServletRequest)
      */
     public long getLastModified(HttpServletRequest request) {
-        accountlog.debug("GetLastModified from " + request.getRemoteAddr() + " for " + request.getQueryString());
+        accountlog.debug("GetLastModified from {} for {}", request.getRemoteAddr(), request.getQueryString());
         long mtime = -1;
         try {
             // create new digilib request
@@ -188,9 +189,9 @@ public class Manifester extends HttpServlet {
                 mtime = dd.getDirMTime() / 1000 * 1000;
             }
         } catch (Exception e) {
-            logger.error("error in getLastModified: " + e.getMessage());
+            logger.error("error in getLastModified: {}", e.getMessage());
         }
-        logger.debug("  returns " + mtime);
+        logger.debug("  returns {}", mtime);
         return mtime;
     }
 
@@ -211,7 +212,7 @@ public class Manifester extends HttpServlet {
      * @see javax.servlet.http.HttpServlet#doOptions(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
     protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        logger.debug("OPTIONS from " + req.getRemoteAddr());
+        logger.debug("OPTIONS from {}", req.getRemoteAddr());
         super.doOptions(req, resp);
     }
 
@@ -240,7 +241,7 @@ public class Manifester extends HttpServlet {
 			// get information about the directory
 			DocuDirectory dlDir = dirCache.getDirectory(dlFn);
 			if (dlDir == null) {
-				logger.error("Directory for manifest not found: " + dlFn);
+				logger.error("Directory for manifest not found: {}", dlFn);
 				response.sendError(HttpServletResponse.SC_NOT_FOUND);
 				return;
 			}
@@ -251,7 +252,7 @@ public class Manifester extends HttpServlet {
             }
             // check for image files
             if ((dlDir.size() == 0) && (mfFile != null && !mfFile.canRead())) {
-                logger.debug("Directory has no files: " + dlFn);
+                logger.debug("Directory has no files: {}", dlFn);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
@@ -681,7 +682,7 @@ public class Manifester extends HttpServlet {
 			}
 			
 		} else {
-			logger.error("Unknown JSON value: "+value);
+			logger.error("Unknown JSON value: {}", value);
 		}
 	}
 

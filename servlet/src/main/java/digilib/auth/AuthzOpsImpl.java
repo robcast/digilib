@@ -28,7 +28,8 @@ package digilib.auth;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.conf.DigilibConfiguration;
 import digilib.conf.DigilibRequest;
@@ -43,7 +44,7 @@ import digilib.conf.DigilibServletRequest;
 public abstract class AuthzOpsImpl implements AuthzOps {
 
     /** general logger for this class */
-    protected Logger logger = Logger.getLogger(this.getClass());
+    protected static final Logger logger = LoggerFactory.getLogger(AuthzOpsImpl.class);
     
     /** authentication instance */
     protected AuthnOps authnOps;

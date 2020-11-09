@@ -27,7 +27,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.io.DocuDirectory;
 import digilib.io.DocuDirent;
@@ -44,8 +45,7 @@ import digilib.io.FsDocuDirectory;
  *
  */
 public class IndexMetaDirMeta implements DirMeta {
-    /** Log4J logger */
-    protected static Logger logger = Logger.getLogger(IndexMetaDirMeta.class);
+    protected static final Logger logger = LoggerFactory.getLogger(IndexMetaDirMeta.class);
 
     private MetadataMap dirMeta = null;
 

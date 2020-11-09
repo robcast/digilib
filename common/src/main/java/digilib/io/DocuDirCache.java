@@ -31,7 +31,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.conf.DigilibConfiguration;
 import digilib.io.FileOps.FileClass;
@@ -42,7 +43,7 @@ import digilib.io.FileOps.FileClass;
 public class DocuDirCache {
 
 	/** general logger for this class */
-	protected static Logger logger = Logger.getLogger(DocuDirCache.class);
+	protected static Logger logger = LoggerFactory.getLogger(DocuDirCache.class);
 
 	/** HashMap of directories */
 	protected ConcurrentMap<String, DocuDirectory> map = new ConcurrentHashMap<String, DocuDirectory>();
@@ -97,7 +98,7 @@ public class DocuDirCache {
 	 */
 	public DocuDirectory put(DocuDirectory newdir) {
 		String s = newdir.getDirName();
-		logger.debug("DocuDirCache.put for "+s+" in "+this);
+		logger.debug("DocuDirCache.put for {} in {}", s, this);
 		DocuDirectory olddir = map.putIfAbsent(s, newdir);
 		if (olddir != null) {
 			logger.warn("Duplicate key in DocuDirCache.put -- ignoring!");
@@ -183,7 +184,7 @@ public class DocuDirCache {
 				try {
 					return dd.get(n);
 				} catch (IndexOutOfBoundsException e) {
-	                // logger.debug(fn + " not found in directory");
+	                // logger.debug("{} not found in directory", fn);
 				}
 			}
 		}

@@ -29,7 +29,8 @@ package digilib.meta;
 import java.io.File;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import digilib.io.DocuDirectory;
 import digilib.io.DocuDirent;
@@ -42,8 +43,7 @@ import digilib.io.ImageFileSet;
  * 
  */
 public class IndexMetaFileMeta implements FileMeta {
-    /** Log4J logger */
-    protected static Logger logger = Logger.getLogger(IndexMetaFileMeta.class);
+    protected static final Logger logger = LoggerFactory.getLogger(IndexMetaFileMeta.class);
 
     protected MetadataMap fileMeta;
 
