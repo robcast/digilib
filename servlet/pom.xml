@@ -14,6 +14,7 @@
 	<url>https://github.com/robcast/digilib</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <log4j2.version>2.13.3</log4j2.version>
 	</properties>
 	<description>The Digital Image Library - common Servlet code</description>
 	<dependencies>
@@ -29,7 +30,7 @@
 			<type>jar</type>
 			<scope>provided</scope>
 		</dependency>
-        <!-- implementation of JWT JOSE specification -->
+		<!-- implementation of JWT JOSE specification -->
 		<dependency>
 			<groupId>org.bitbucket.b_c</groupId>
 			<artifactId>jose4j</artifactId>
@@ -40,16 +41,21 @@
 			<groupId>org.glassfish</groupId>
 			<artifactId>javax.json</artifactId>
 		</dependency>
-		<!-- SLF4J using Log4J 1.2 -->
+		<!-- SLF4J using Log4J 2 -->
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>${slf4j.version}</version>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>${log4j2.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.17</version>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>${log4j2.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>${log4j2.version}</version>
 		</dependency>
 	</dependencies>
 </project>

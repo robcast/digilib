@@ -39,7 +39,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
-import org.apache.log4j.xml.DOMConfigurator;
 import org.xml.sax.SAXException;
 
 import digilib.auth.AuthnOps;
@@ -151,8 +150,6 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
         newParameter("use-mapping", Boolean.FALSE, null, 'f');
         // mapping file location
         newParameter("mapping-file", new File("digilib-map.xml"), null, 'f');
-        // log4j config file location
-        newParameter("log-config-file", new File("log4j-config.xml"), null, 'f');
         // number of working threads
         newParameter("worker-threads", Integer.valueOf(2), null, 'f');
         // max number of waiting threads
@@ -477,14 +474,6 @@ public class DigilibServletConfiguration extends DigilibConfiguration implements
      * @param context
      */
     protected void setupLogging(ServletContext context) {
-    	// check if we need to configure
-    	if (DigilibConfiguration.isLoggingConfigured) return;
-        // set up a Log4J logger
-        File logConf = ServletOps.getConfigFile((File) getValue("log-config-file"), context);
-        if (logConf != null && logConf.canRead()) {
-            DOMConfigurator.configure(logConf.getAbsolutePath());
-            setValue("log-config-file", logConf);
-            DigilibConfiguration.isLoggingConfigured = true;
-        }
+        // no configuration needed for Log4J2
     }
 }

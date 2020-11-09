@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Configuration  strict="true">
+  <Appenders>
+    <Appender type="Console" name="cons">
+      <Layout type="PatternLayout" pattern="%r [%t] %-5p %c - %m%n" />
+      <!-- <Layout type="PatternLayout" pattern="%m MDC%X%n"/> -->
+    </Appender>
+    <Appender type="File" name="log" filename="digilib-log.txt">
+      <Layout type="PatternLayout" pattern="%d [%t] %p - %m%n" />
+    </Appender>
+    <Appender type="File" name="account" filename="dl-access-log.txt">
+      <Layout type="PatternLayout" pattern="%d [%t] %p - %m%n" />
+    </Appender>
+  </Appenders>
+
+  <Loggers>
+    <Logger name="account.request" level="debug" additivity="false">
+      <AppenderRef ref="account" />
+    </Logger>
+    <Logger name="org.apache.http" level="warn" additivity="false">
+      <!-- Print only messages of level warn or above in the package apache.http.* -->
+      <AppenderRef ref="cons" />
+    </Logger>
+    <Root level="debug">
+      <AppenderRef ref="cons" />
+      <AppenderRef ref="log" />
+    </Root>
+  </Loggers>
+</Configuration>

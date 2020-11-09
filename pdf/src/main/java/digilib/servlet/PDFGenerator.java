@@ -171,6 +171,7 @@ public class PDFGenerator extends HttpServlet {
 			} else {
 				// send file
 				try {
+					logger.debug("PDF docid={} DONE", docid);
 					ServletOps.sendFile(getCacheFile(docid), "application/pdf", getDownloadFilename(docid), 
 							response, logger);
 					return;
@@ -237,6 +238,7 @@ public class PDFGenerator extends HttpServlet {
             } else if (status == PDFStatus.DONE) {
                 // PDF created -- send it
                 try {
+					logger.debug("PDF docid={} already DONE", docid);
                     ServletOps.sendFile(getCacheFile(docid), "application/pdf", getDownloadFilename(pdfji), response, logger);
                     return;
                 } catch (Exception e) {
