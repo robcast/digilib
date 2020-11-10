@@ -1,61 +1,59 @@
 <?xml version="1.0"?>
-<project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>digilib</groupId>
-		<artifactId>digilib</artifactId>
-		<version>2.10-SNAPSHOT</version>
-	</parent>
-	<artifactId>digilib-servlet</artifactId>
-	<name>digilib-servlet</name>
-	<url>https://github.com/robcast/digilib</url>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <log4j2.version>2.13.3</log4j2.version>
-	</properties>
-	<description>The Digital Image Library - common Servlet code</description>
-	<dependencies>
-		<dependency>
-			<groupId>digilib</groupId>
-			<artifactId>digilib-common</artifactId>
-			<version>${digilib.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>2.4</version>
-			<type>jar</type>
-			<scope>provided</scope>
-		</dependency>
-		<!-- implementation of JWT JOSE specification -->
-		<dependency>
-			<groupId>org.bitbucket.b_c</groupId>
-			<artifactId>jose4j</artifactId>
-			<version>0.5.8</version>
-		</dependency>
-		<!-- JSON-API -->
-		<dependency>
-			<groupId>org.glassfish</groupId>
-			<artifactId>javax.json</artifactId>
-		</dependency>
-		<!-- SLF4J using Log4J 2 -->
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-api</artifactId>
-			<version>${log4j2.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
-			<version>${log4j2.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-slf4j-impl</artifactId>
-			<version>${log4j2.version}</version>
-		</dependency>
-	</dependencies>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+  xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>digilib</groupId>
+    <artifactId>digilib</artifactId>
+    <version>2.10-SNAPSHOT</version>
+  </parent>
+  <artifactId>digilib-servlet</artifactId>
+  <name>digilib-servlet</name>
+  <url>https://github.com/robcast/digilib</url>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <log4j2.version>2.13.3</log4j2.version>
+  </properties>
+  <description>The Digital Image Library - common Servlet code</description>
+  <dependencies>
+    <dependency>
+      <groupId>digilib</groupId>
+      <artifactId>digilib-common</artifactId>
+      <version>${digilib.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.4</version>
+      <type>jar</type>
+      <scope>provided</scope>
+    </dependency>
+    <!-- implementation of JWT JOSE specification -->
+    <dependency>
+      <groupId>org.bitbucket.b_c</groupId>
+      <artifactId>jose4j</artifactId>
+      <version>0.5.8</version>
+    </dependency>
+    <!-- JSON-API -->
+    <dependency>
+      <groupId>org.glassfish</groupId>
+      <artifactId>javax.json</artifactId>
+    </dependency>
+    <!-- SLF4J using Log4J 2 -->
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>${log4j2.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${log4j2.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>${log4j2.version}</version>
+    </dependency>
+  </dependencies>
 </project>

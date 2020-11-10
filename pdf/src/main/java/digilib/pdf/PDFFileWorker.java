@@ -4,7 +4,7 @@ package digilib.pdf;
  * #%L
  * PDF Worker that writes in a file.
  * %%
- * Copyright (C) 2009 - 2013 MPIWG Berlin
+ * Copyright (C) 2009 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -40,32 +40,32 @@ import digilib.util.DigilibJobCenter;
  *
  */
 public class PDFFileWorker implements Callable<File> {
-	/** the wrapped PDFStreamWorker */
+    /** the wrapped PDFStreamWorker */
     protected PDFStreamWorker streamWorker;
-    
+
     /** the temporary output file */
     protected File tempFile;
 
     /** the final output file */
     protected File finalFile;
 
-    /** Create new PDFFileWorker.
+    /**
+     * Create new PDFFileWorker.
+     * 
      * @param dlConfig
      * @param tempFile
      * @param job_info
      * @param imageJobCenter
      * @throws FileNotFoundException
      */
-    public PDFFileWorker(DigilibConfiguration dlConfig, 
-    		File tempFile, File finalFile,
-			PDFRequest job_info,
-			DigilibJobCenter<DocuImage> imageJobCenter) throws FileNotFoundException {
-        this.tempFile = tempFile; 
-    	OutputStream outstream = new FileOutputStream(tempFile);
-    	this.finalFile = finalFile;
-    	this.streamWorker = new PDFStreamWorker(dlConfig, outstream, job_info, imageJobCenter);
+    public PDFFileWorker(DigilibConfiguration dlConfig, File tempFile, File finalFile, PDFRequest job_info,
+            DigilibJobCenter<DocuImage> imageJobCenter) throws FileNotFoundException {
+        this.tempFile = tempFile;
+        OutputStream outstream = new FileOutputStream(tempFile);
+        this.finalFile = finalFile;
+        this.streamWorker = new PDFStreamWorker(dlConfig, outstream, job_info, imageJobCenter);
     }
-    
+
     public File call() throws Exception {
         OutputStream outstream = null;
         try {
@@ -82,6 +82,5 @@ public class PDFFileWorker implements Callable<File> {
         }
         return finalFile;
     }
-    
-    
+
 }

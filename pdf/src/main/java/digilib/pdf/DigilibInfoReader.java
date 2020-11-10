@@ -7,7 +7,7 @@ package digilib.pdf;
  * A class for reading the information from info.xml files used in digilib image directories.
  * 
  * %%
- * Copyright (C) 2009 - 2013 MPIWG Berlin
+ * Copyright (C) 2009 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -43,58 +43,58 @@ import org.slf4j.LoggerFactory;
 
 public class DigilibInfoReader {
 
-	/** gengeral logger for this class */
-	protected static final Logger logger = LoggerFactory.getLogger("digilib.servlet");
+    /** gengeral logger for this class */
+    protected static final Logger logger = LoggerFactory.getLogger("digilib.servlet");
 
-	private String filename = null;
-	// private static String base_element = "info";
+    private String filename = null;
+    // private static String base_element = "info";
 
-	public DigilibInfoReader(String fn) {
-		filename = fn;
-	}
+    public DigilibInfoReader(String fn) {
+        filename = fn;
+    }
 
-	/**
-	 * Returns the attribute defined by 'attr' as a String.
-	 * 
-	 * @param attr
-	 * @return
-	 */
-	@SuppressWarnings("unchecked") // Element.getChildren() returns naked List
-	public String getAsString(String attr) {
-		try {
-			SAXBuilder builder = new SAXBuilder();
-			Document doc = builder.build(new File(filename));
-			Element root = doc.getRootElement();
-			List<Element> mainElements = root.getChildren();
-			// logger.debug("XML mainElements:"+mainElements.toString());
+    /**
+     * Returns the attribute defined by 'attr' as a String.
+     * 
+     * @param attr
+     * @return
+     */
+    @SuppressWarnings("unchecked") // Element.getChildren() returns naked List
+    public String getAsString(String attr) {
+        try {
+            SAXBuilder builder = new SAXBuilder();
+            Document doc = builder.build(new File(filename));
+            Element root = doc.getRootElement();
+            List<Element> mainElements = root.getChildren();
+            // logger.debug("XML mainElements:"+mainElements.toString());
 
-			for (int i = 0; i < mainElements.size(); i++) {
-				Element elem = mainElements.get(i);
-				if (elem.getName() == attr) {
-					// logger.debug(attr+" == "+(String)elem.getTextTrim());
-					return (String) elem.getTextTrim();
-				}
-			}
+            for (int i = 0; i < mainElements.size(); i++) {
+                Element elem = mainElements.get(i);
+                if (elem.getName() == attr) {
+                    // logger.debug(attr+" == "+(String)elem.getTextTrim());
+                    return (String) elem.getTextTrim();
+                }
+            }
 
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-		}
-		return null;
-	}
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+        return null;
+    }
 
-	/**
-	 * Find out if the info.xml exists
-	 * 
-	 * @return
-	 */
-	public boolean hasInfo() {
-		try {
-			SAXBuilder builder = new SAXBuilder();
-			builder.build(new File(filename));
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
-	}
+    /**
+     * Find out if the info.xml exists
+     * 
+     * @return
+     */
+    public boolean hasInfo() {
+        try {
+            SAXBuilder builder = new SAXBuilder();
+            builder.build(new File(filename));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
 }

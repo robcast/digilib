@@ -20,7 +20,7 @@ import digilib.util.DigilibJobCenter;
  * Digital Image Library servlet components
  * 
  * %%
- * Copyright (C) 2001 - 2013 MPIWG Berlin
+ * Copyright (C) 2001 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -38,7 +38,6 @@ import digilib.util.DigilibJobCenter;
  * #L%
  * Author: Robert Casties (robcast@berlios.de)
  */
-
 
 /**
  * Class to hold the digilib servlet configuration parameters. The parameters
@@ -64,17 +63,18 @@ public class PDFServletConfiguration extends DigilibServletConfiguration {
     /* non-static getVersion for Java inheritance */
     @Override
     public String getVersion() {
-    	return getClassVersion();
+        return getClassVersion();
     }
-    
+
     /**
-     * Constructs PDFServletConfiguration and defines all parameters and their default values.
+     * Constructs PDFServletConfiguration and defines all parameters and their
+     * default values.
      */
     public PDFServletConfiguration() {
         super();
         /*
-         * Definition of additional parameters and default values. System parameters that
-         * are not read from config file have a type 's'.
+         * Definition of additional parameters and default values. System parameters
+         * that are not read from config file have a type 's'.
          */
 
         // Executor for PDF operations
@@ -114,8 +114,11 @@ public class PDFServletConfiguration extends DigilibServletConfiguration {
         newParameter("pdf-header-subtitle", "", null, 'f');
     }
 
-    /* (non-Javadoc)
-     * @see digilib.conf.DigilibServletConfiguration#configure(javax.servlet.ServletContext)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see digilib.conf.DigilibServletConfiguration#configure(javax.servlet.
+     * ServletContext)
      */
     @Override
     public void configure(ServletContext context) {
@@ -124,19 +127,21 @@ public class PDFServletConfiguration extends DigilibServletConfiguration {
     }
 
     /**
-     * @param context 
+     * @param context
      */
     protected void configurePdfServlet(ServletContext context) {
         PDFServletConfiguration config = this;
         // PDF worker threads
         int pnt = config.getAsInt("pdf-worker-threads");
         int pmt = config.getAsInt("pdf-max-waiting-threads");
-        DigilibJobCenter<OutputStream> pdfExecutor = new DigilibJobCenter<OutputStream>(pnt, pmt, false, "servlet.worker.pdfexecutor");
+        DigilibJobCenter<OutputStream> pdfExecutor = new DigilibJobCenter<OutputStream>(pnt, pmt, false,
+                "servlet.worker.pdfexecutor");
         config.setValue(PDF_EXECUTOR_KEY, pdfExecutor);
         // PDF image worker threads
         int pint = config.getAsInt("pdf-image-worker-threads");
         int pimt = config.getAsInt("pdf-image-max-waiting-threads");
-        DigilibJobCenter<DocuImage> pdfImageExecutor = new DigilibJobCenter<DocuImage>(pint, pimt, false, "servlet.worker.pdfimageexecutor");
+        DigilibJobCenter<DocuImage> pdfImageExecutor = new DigilibJobCenter<DocuImage>(pint, pimt, false,
+                "servlet.worker.pdfimageexecutor");
         config.setValue(PDF_IMAGEEXECUTOR_KEY, pdfImageExecutor);
         /*
          * set up temporary directories
@@ -183,7 +188,7 @@ public class PDFServletConfiguration extends DigilibServletConfiguration {
             } catch (Exception e) {
                 logger.error("Error reading digilib servlet configuration:", e);
             }
-        } else if (pdfConfig == null){
+        } else if (pdfConfig == null) {
             // merge the existing config
             logger.debug("PDFServletConfiguration re-using config!");
             try {
@@ -198,12 +203,15 @@ public class PDFServletConfiguration extends DigilibServletConfiguration {
                 logger.error("Error reading digilib servlet configuration:", e);
             }
         } else {
-            logger.warn("PDFServletConfiguration already configured!");            
+            logger.warn("PDFServletConfiguration already configured!");
         }
     }
 
-    /* (non-Javadoc)
-     * @see digilib.conf.DigilibServletConfiguration#contextDestroyed(javax.servlet.ServletContextEvent)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see digilib.conf.DigilibServletConfiguration#contextDestroyed(javax.servlet.
+     * ServletContextEvent)
      */
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
@@ -211,8 +219,8 @@ public class PDFServletConfiguration extends DigilibServletConfiguration {
         ServletContext context = sce.getServletContext();
         DigilibServletConfiguration config = PDFServletConfiguration.getCurrentConfig(context);
         @SuppressWarnings("unchecked")
-        DigilibJobCenter<DocuImage>  pdfExecutor = (DigilibJobCenter<DocuImage>) config.getValue(PDF_EXECUTOR_KEY);
-        if (pdfExecutor  != null) {
+        DigilibJobCenter<DocuImage> pdfExecutor = (DigilibJobCenter<DocuImage>) config.getValue(PDF_EXECUTOR_KEY);
+        if (pdfExecutor != null) {
             // shut down pdf thread pool
             List<Runnable> rj = pdfExecutor.shutdownNow();
             int nrj = rj.size();
@@ -221,7 +229,8 @@ public class PDFServletConfiguration extends DigilibServletConfiguration {
             }
         }
         @SuppressWarnings("unchecked")
-        DigilibJobCenter<DocuImage>  pdfImageExecutor = (DigilibJobCenter<DocuImage>) config.getValue(PDF_IMAGEEXECUTOR_KEY);
+        DigilibJobCenter<DocuImage> pdfImageExecutor = (DigilibJobCenter<DocuImage>) config
+                .getValue(PDF_IMAGEEXECUTOR_KEY);
         if (pdfImageExecutor != null) {
             // shut down pdf image thread pool
             List<Runnable> rj = pdfImageExecutor.shutdownNow();

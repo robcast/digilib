@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <properties>
@@ -102,11 +103,11 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.8.1</version>
-            <configuration>
-                <!--  minimum Java 1.8 -->
-                <source>1.8</source>
-                <target>1.8</target>
-            </configuration>
+          <configuration>
+            <!-- minimum Java 1.8 -->
+            <source>1.8</source>
+            <target>1.8</target>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -153,11 +154,11 @@
   </build>
   <profiles>
     <profile>
-      <!--  old Servlet API 2.x -->
+      <!-- old Servlet API 2.x -->
       <id>servlet2</id>
       <modules>
-          <module>servlet2</module>
-          <module>webapp-srv2</module>
+        <module>servlet2</module>
+        <module>webapp-srv2</module>
       </modules>
     </profile>
     <profile>
@@ -215,20 +216,20 @@
   <dependencyManagement>
     <dependencies>
       <!-- common dependency versions -->
-      <dependency> 
+      <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
         <version>${slf4j.version}</version>
       </dependency>
       <dependency>
-          <groupId>org.glassfish</groupId>
-          <artifactId>javax.json</artifactId>
-          <version>1.0.4</version><!-- 1.1+ does not work with jetty 9.2 needed for webapp-test -->
+        <groupId>org.glassfish</groupId>
+        <artifactId>javax.json</artifactId>
+        <version>1.0.4</version><!-- 1.1+ does not work with jetty 9.2 needed for webapp-test -->
       </dependency>
       <dependency>
-          <groupId>junit</groupId>
-          <artifactId>junit</artifactId>
-          <version>4.13.1</version>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13.1</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -245,7 +246,7 @@
     <module>frontend-jquery</module>
   </modules>
   <ciManagement>
-  	<system>Travis CI</system>
-  	<url>https://travis-ci.org/robcast/digilib</url>
+    <system>Travis CI</system>
+    <url>https://travis-ci.org/robcast/digilib</url>
   </ciManagement>
 </project>

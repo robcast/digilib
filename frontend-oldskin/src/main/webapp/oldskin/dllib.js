@@ -2,7 +2,7 @@
  * #%L
  * digilib library
  * %%
- * Copyright (C) 2003,2004 IT-Group MPIWG, WTWG Uni Bern and others
+ * Copyright (C) 2003 IT-Group MPIWG, WTWG Uni Bern and others
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 

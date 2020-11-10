@@ -44,6 +44,7 @@ import digilib.util.ParameterMap;
 
 /**
  * Class to hold the digilib servlet configuration parameters.
+ * 
  * @author casties
  * 
  */
@@ -51,13 +52,15 @@ public class DigilibConfiguration extends ParameterMap {
 
     /** SLF4J compatible logger */
     protected static final Logger logger = LoggerFactory.getLogger(DigilibConfiguration.class);
-    
+
     protected static boolean isLoggingConfigured = false;
-    
+
     /** name of digilbi properties file */
     public static String propertiesFileName = "digilib.properties";
 
-    /** digilib version 
+    /**
+     * digilib version
+     * 
      * @return the version
      */
     public static String getClassVersion() {
@@ -66,20 +69,20 @@ public class DigilibConfiguration extends ParameterMap {
 
     /* non-static getVersion for Java inheritance */
     public String getVersion() {
-    	return getClassVersion();
+        return getClassVersion();
     }
-    
+
     /**
      * Default constructor defines all parameters and their default values.
      */
     public DigilibConfiguration() {
         super(20);
-        
+
         /*
-         * Definition of parameters and default values. System parameters that
-         * are not read from config file have a type 's'.
+         * Definition of parameters and default values. System parameters that are not
+         * read from config file have a type 's'.
          */
-        
+
         // digilib version
         newParameter("digilib.version", getVersion(), null, 's');
         // sending image files as-is allowed
@@ -105,12 +108,12 @@ public class DigilibConfiguration extends ParameterMap {
         // prefix for IIIF image API paths (used by DigilibRequest)
         newParameter("iiif-prefix", "IIIF", null, 'f');
         // IIIF Image API version to support (mostly relevant for info.json)
-        newParameter("iiif-api-version", "2.1", null, 'f');        
+        newParameter("iiif-api-version", "2.1", null, 'f');
         // character to use as slash-replacement in IIIF identifier part
         newParameter("iiif-slash-replacement", "!", null, 'f');
         // prefer some image types based on request
         newParameter("input-preselection-allowed", Boolean.TRUE, null, 'f');
-        
+
     }
 
     /**
@@ -118,8 +121,7 @@ public class DigilibConfiguration extends ParameterMap {
      */
     public void readConfig() {
         Properties props = new Properties();
-        InputStream s = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream(propertiesFileName);
+        InputStream s = Thread.currentThread().getContextClassLoader().getResourceAsStream(propertiesFileName);
         if (s != null) {
             try {
                 props.load(s);
@@ -145,32 +147,31 @@ public class DigilibConfiguration extends ParameterMap {
                     }
                 }
                 // set config file path parameter
-                newParameter("digilib.config.file", Thread.currentThread().getContextClassLoader()
-                        .getResource("digilib.properties").toString(), null, 's');
+                newParameter("digilib.config.file",
+                        Thread.currentThread().getContextClassLoader().getResource("digilib.properties").toString(),
+                        null, 's');
             } catch (IOException e) {
                 logger.error("Error reading digilib properties file.", e);
             }
         }
     }
-    
-    
+
     /**
      * Set non-standard value in Parameter param. Returns true if successful.
      * 
      * @param param the Parameter
      * @param value the value
-     * @return  true if successful
+     * @return true if successful
      */
     protected boolean setSpecialValueFromString(Parameter param, String value) {
         // should be overridden
         return false;
     }
-    
-    
+
     /**
      * Configure digilib.
      * 
-     * Sets up Factories and Singletons using the configuration. 
+     * Sets up Factories and Singletons using the configuration.
      */
     @SuppressWarnings("unchecked")
     public void configure() {
@@ -196,14 +197,14 @@ public class DigilibConfiguration extends ParameterMap {
             // set preferred image readers on instance
             if (config.hasValue("image-reader-classes")) {
                 try {
-                	HashMap<String, String> readerMap = new HashMap<String, String>();
+                    HashMap<String, String> readerMap = new HashMap<String, String>();
                     for (String tcs : config.getAsString("image-reader-classes").split(",")) {
                         String[] tc = tcs.split("=");
                         String mimetype = tc[0];
                         String clazz = tc[1];
                         readerMap.put(mimetype, clazz);
                     }
-	                docuImageClass.getDeclaredConstructor().newInstance().setReaderClasses(readerMap);
+                    docuImageClass.getDeclaredConstructor().newInstance().setReaderClasses(readerMap);
                 } catch (Exception e) {
                     logger.error("Error setting image-reader-classes!", e);
                 }
@@ -211,14 +212,14 @@ public class DigilibConfiguration extends ParameterMap {
             // set preferred image writers on instance
             if (config.hasValue("image-writer-classes")) {
                 try {
-                	HashMap<String, String> writerMap = new HashMap<String, String>();
+                    HashMap<String, String> writerMap = new HashMap<String, String>();
                     for (String tcs : config.getAsString("image-writer-classes").split(",")) {
                         String[] tc = tcs.split("=");
                         String mimetype = tc[0];
                         String clazz = tc[1];
                         writerMap.put(mimetype, clazz);
                     }
-	                docuImageClass.getDeclaredConstructor().newInstance().setWriterClasses(writerMap);
+                    docuImageClass.getDeclaredConstructor().newInstance().setWriterClasses(writerMap);
                 } catch (Exception e) {
                     logger.error("Error setting image-writer-classes!", e);
                 }

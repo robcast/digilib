@@ -1,38 +1,37 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>digilib</groupId>
-		<artifactId>digilib</artifactId>
-		<version>2.10-SNAPSHOT</version>
-	</parent>
-	<artifactId>digilib-frontend-pdf</artifactId>
-	<packaging>war</packaging>
-	<name>digilib-frontend-pdf</name>
-	<url>https://github.com/robcast/digilib</url>
-	<description>The Digital Image Library - JSP frontend for PDF servlet.</description>
-	<dependencies>
-		<dependency>
-			<groupId>digilib</groupId>
-			<artifactId>digilib-pdf</artifactId>
-            <version>${digilib.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>digilib</groupId>
-			<artifactId>digilib-webapp</artifactId>
-            <version>${digilib.version}</version>
-            <type>war</type>
-            <scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>3.0.1</version>
-			<scope>provided</scope>
-		</dependency>
-	</dependencies>
-	<profiles>
-	</profiles>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>digilib</groupId>
+    <artifactId>digilib</artifactId>
+    <version>2.10-SNAPSHOT</version>
+  </parent>
+  <artifactId>digilib-frontend-pdf</artifactId>
+  <packaging>war</packaging>
+  <name>digilib-frontend-pdf</name>
+  <url>https://github.com/robcast/digilib</url>
+  <description>The Digital Image Library - JSP frontend for PDF servlet.</description>
+  <dependencies>
+    <dependency>
+      <groupId>digilib</groupId>
+      <artifactId>digilib-pdf</artifactId>
+      <version>${digilib.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>digilib</groupId>
+      <artifactId>digilib-webapp</artifactId>
+      <version>${digilib.version}</version>
+      <type>war</type>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.0.1</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+  <profiles>
+  </profiles>
 </project>
