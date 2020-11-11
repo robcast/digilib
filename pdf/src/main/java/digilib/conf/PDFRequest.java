@@ -55,7 +55,7 @@ public class PDFRequest extends ParameterMap {
     DigilibConfiguration dlConfig = null;
     NumRange pages = null;
     /** general logger for this class */
-    protected static final Logger logger = LoggerFactory.getLogger("digilib.servlet");
+    protected static final Logger logger = LoggerFactory.getLogger("digilib.pdfgenerator");
 
     /**
      * Create a PDFRequest
@@ -126,7 +126,7 @@ public class PDFRequest extends ParameterMap {
     }
 
     /**
-     * Initialize with a request.
+     * Initialize with a ServletRequest.
      * 
      * @param request
      * @throws ImageOpException
@@ -134,6 +134,7 @@ public class PDFRequest extends ParameterMap {
      */
     public void setWithRequest(HttpServletRequest request) throws IOException, ImageOpException {
         // read matching request parameters for the parameters in this map
+        request.setCharacterEncoding("UTF-8");
         for (String k : params.keySet()) {
             String v = request.getParameter(k);
             if (v != null) {

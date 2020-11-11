@@ -220,11 +220,12 @@ public class PDFGenerator extends HttpServlet {
             if (status == PDFStatus.NONEXISTENT) {
                 // PDF not there -- start creation
                 try {
+                    // start PDF creation thread
                     createNewPdfDocument(pdfji, docid);
                     // redirect client with docid parameter
                     String url = "";
                     url += "?docid=" + encodeDocid(docid);
-                    logger.debug("redirecting to " + url);
+                    logger.debug("redirecting to {}", url);
                     response.sendRedirect(url);
                     return;
                 } catch (FileNotFoundException e) {
@@ -254,12 +255,12 @@ public class PDFGenerator extends HttpServlet {
             }
         } catch (IOException e) {
             // io error in pdf creation
-            logger.error("IO error for request: " + e.getMessage());
+            logger.error("IO error for request: {}", e.getMessage());
             notifyUser(PDFStatus.IOERROR, docid, request, response);
             return;
         } catch (ImageOpException e) {
             // other error in pdf creation
-            logger.error("Error processing request!", e);
+            logger.error("Error processing request: {}", e.getMessage());
             notifyUser(PDFStatus.ERROR, docid, request, response);
             return;
         }
@@ -283,13 +284,13 @@ public class PDFGenerator extends HttpServlet {
 
         if (status == PDFStatus.NONEXISTENT) {
             // this status should not end up here
-            logger.debug("PDFGenerator: " + documentid + " has STATUS_NONEXISTENT.");
+            logger.debug("PDFGenerator: {} has STATUS_NONEXISTENT.", documentid);
             nextPage = dlConfig.getAsString(WIP_PAGE_KEY);
             message = "Document " + documentid + " is being generated";
             httpStatus = HttpServletResponse.SC_ACCEPTED;
 
         } else if (status == PDFStatus.WIP) {
-            logger.debug("PDFGenerator: " + documentid + " has STATUS_WIP.");
+            logger.debug("PDFGenerator: {} has STATUS_WIP.", documentid);
             nextPage = dlConfig.getAsString(WIP_PAGE_KEY);
             message = "Document " + documentid + " is being generated";
             httpStatus = HttpServletResponse.SC_ACCEPTED;
@@ -297,19 +298,19 @@ public class PDFGenerator extends HttpServlet {
 
         } else if (status == PDFStatus.DONE) {
             // this status should not end up here
-            logger.debug("PDFGenerator: " + documentid + " has STATUS_DONE.");
+            logger.debug("PDFGenerator: {} has STATUS_DONE.", documentid);
             message = "Document " + documentid + " has been generated";
             httpStatus = HttpServletResponse.SC_OK;
 
         } else if (status == PDFStatus.IOERROR) {
-            logger.debug("PDFGenerator: " + documentid + " has STATUS_IOERROR.");
+            logger.debug("PDFGenerator: {} has STATUS_IOERROR.", documentid);
             nextPage = dlConfig.getAsString(IOERROR_PAGE_KEY);
             message = "File not found error for document " + documentid;
             httpStatus = HttpServletResponse.SC_NOT_FOUND;
 
         } else {
             // must be an error
-            logger.debug("PDFGenerator: " + documentid + " has STATUS_ERROR.");
+            logger.debug("PDFGenerator: {} has STATUS_ERROR.", documentid);
             nextPage = dlConfig.getAsString(ERROR_PAGE_KEY);
             message = "Error in request for document " + documentid;
             httpStatus = HttpServletResponse.SC_BAD_REQUEST;
@@ -325,8 +326,11 @@ public class PDFGenerator extends HttpServlet {
                 response.setContentType("application/json");
                 ServletOutputStream out = response.getOutputStream();
                 JsonGenerator info = Json.createGenerator(out);
-                info.writeStartObject().write("docid", documentid).write("status", status.toString())
-                        .write("message", message).writeEnd();
+                info.writeStartObject()
+                    .write("docid", documentid)
+                    .write("status", status.toString())
+                    .write("message", message)
+                    .writeEnd();
                 info.close();
 
             } else {

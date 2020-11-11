@@ -53,6 +53,9 @@ import digilib.util.DigilibJobCenter;
 import digilib.util.NumRange;
 import digilib.util.Parameter;
 
+/**
+ * Worker that creates a PDF document in an OutputStream.
+ */
 public class PDFStreamWorker implements Callable<OutputStream> {
 
     protected static Logger logger = LoggerFactory.getLogger(PDFStreamWorker.class);
@@ -100,7 +103,7 @@ public class PDFStreamWorker implements Callable<OutputStream> {
         PdfWriter writer = new PdfWriter(outstream);
         PdfDocument pdfdoc = new PdfDocument(writer);
         doc = new Document(pdfdoc, PageSize.A4);
-        logger.debug("PDF: " + outstream + " doc.open()ed (" + (System.currentTimeMillis() - start_time) + "ms)");
+        logger.debug("PDF: {} doc.open()ed ({}ms)", outstream, (System.currentTimeMillis() - start_time));
 
         // add title page
         PDFTitlePage titlepage = new PDFTitlePage(job_info);
@@ -111,7 +114,7 @@ public class PDFStreamWorker implements Callable<OutputStream> {
         for (int p : pgs) {
             // start new page
             doc.add(new AreaBreak());
-            logger.debug("PDF: adding Image " + p + " to " + outstream);
+            logger.debug("PDF: adding Image {} to {}", p, outstream);
             // copy request and set page number (as new Parameter)
             DigilibRequest pageRequest = new DigilibRequest(dlConfig, job_info);
             pageRequest.put("pn", new Parameter("pn", p, p));
@@ -119,13 +122,13 @@ public class PDFStreamWorker implements Callable<OutputStream> {
             ImageJobDescription iji = ImageJobDescription.getRawInstance(pageRequest, job_info.getDlConfig());
             iji.prepareScaleParams();
             addImage(doc, iji);
-            logger.debug("PDF: done adding Image " + p + " to " + outstream);
+            logger.debug("PDF: done adding Image {} to {}", p, outstream);
         }
 
-        logger.debug("PDF: done adding all Images to " + outstream);
+        logger.debug("PDF: done adding all Images to {}", outstream);
 
         doc.close();
-        logger.debug("PDF: " + outstream + " doc.close() (" + (System.currentTimeMillis() - start_time) + "ms)");
+        logger.debug("PDF: {} doc.close() ({}ms)", outstream, (System.currentTimeMillis() - start_time));
         writer.flush();
         writer.close();
         return outstream;

@@ -174,14 +174,19 @@ public class NumRange implements Iterable<Integer> {
                 private int listend = list.size();
                 private int num = getStart();
                 private int end = getEnd();
+                private boolean numInList = false; 
 
                 public boolean hasNext() {
-                    return (num <= end);
+                    // fix for bug with "1-" and maxnum=1
+                    if (numInList && num == end) return false;
+                    return num <= end;
                 }
 
                 public Integer next() {
                     if (listidx < listend - 1) {
+                        // before last element
                         num = list.get(listidx++);
+                        numInList = true;
                         return num;
                     } else if (listidx == listend - 1) {
                         // last element in list
@@ -194,8 +199,13 @@ public class NumRange implements Iterable<Integer> {
                             num = n;
                             return num++;
                         }
-                    } else {
+                    } else if (listidx == listend) {
+                        // open end -- continue
+                        numInList = false;
                         return num++;
+                    } else {
+                        // this should not happen
+                        return null;
                     }
                 }
 

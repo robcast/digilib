@@ -30,16 +30,21 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.concurrent.Callable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import digilib.image.DocuImage;
 import digilib.conf.DigilibConfiguration;
 import digilib.conf.PDFRequest;
 import digilib.util.DigilibJobCenter;
 
 /**
- * @author casties
- *
+ * Worker that creates a PDF File. 
+ * PDF data is actually created by calling PDFStreamWorker.
  */
 public class PDFFileWorker implements Callable<File> {
+    protected static Logger logger = LoggerFactory.getLogger(PDFFileWorker.class);
+    
     /** the wrapped PDFStreamWorker */
     protected PDFStreamWorker streamWorker;
 
@@ -74,7 +79,10 @@ public class PDFFileWorker implements Callable<File> {
             outstream.close();
             // move temporary to final file
             tempFile.renameTo(finalFile);
-            // TODO: catch exceptions?
+        } catch (Exception e) {
+            // remove broken temp file TODO: better error handling?
+            logger.error("Error creating file: {}! Removing file.", e.toString());
+            tempFile.delete();
         } finally {
             if (outstream != null) {
                 outstream.close();
