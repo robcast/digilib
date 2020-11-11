@@ -101,7 +101,7 @@ public class PDFTitlePage {
         /*
          * header with logo
          */
-        Table headerBlock = new Table(UnitValue.createPercentArray(new float[] { 10, 90 }));
+        Table headerBlock = new Table(UnitValue.createPercentArray(new float[] { 20, 80 }));
         Image logo = getLogo();
         if (logo != null) {
             logo.setWidth(UnitValue.createPercentValue(100));
