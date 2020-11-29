@@ -146,8 +146,8 @@ to add `-Pservlet3` or `-Pservlet2` as well.
 
 ### pdf
 
-`-Ppdf` builds digilib with the "PDFCache" servlet to generate and download PDF files from images. 
-(see [the source](https://github.com/robcast/digilib/tree/master/pdf)).
+`-Ppdf` builds digilib with the "PDFGenerator" servlet to generate and download PDF files from images. 
+(see [the documentation](pdf-generator.html)).
 
 ## create-sprites
 

@@ -29,12 +29,15 @@
 * **IIIF image API**: the digilib server provides [IIIF](http://iiif.io)
   image API (V2.1) compliant access to your images besides the digilib native server API.
   
+* **PDF generation**: the [PDFGenerator](pdf-generation.html) servlet can create custom 
+  PDF documents from images on the server.
+  
 * **OpenId Connect authentication**: the digilib server can use authentication
   information from an [OpenId Connect](http://openid.net/) identity server.
   See the [authorization](auth.html) documentation.
   
 * **CDSTAR storage backend**: the digilib server can access files on a [CDSTAR](https://cdstar.gwdg.de/) storage server.
   
-* **plugins**: there are several Digilib plugins written in Javascript to add functionality to the client side, making use of jQuery features. See the [plugins](plugins.html) documentation.
+* **client plugins**: there are several Digilib plugins written in Javascript to add functionality to the client side, making use of jQuery features. See the [plugins](plugins.html) documentation.
 
 * **digilib client API**: modify the settings, write Javascript functions or provide your own Digilib plugins and event handlers.

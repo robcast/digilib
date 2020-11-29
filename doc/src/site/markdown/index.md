@@ -25,7 +25,7 @@
 
 ## digilib resources
 
-<code>digilib</code>  source code, binaries and documentation can be found on the 
+**digilib** source code, binaries and documentation can be found on the 
 [digilib project pages](https://github.com/robcast/digilib)
 on [GitHub](https://github.com).
 

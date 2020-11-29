@@ -44,6 +44,7 @@
       <item name="Directory layout" href="image-directories.html"/>
       <item name="Java settings and tuning" href="java-settings.html"/>
       <item name="Access control" href="auth.html"/>
+      <item name="PDF generation" href="pdf-generator.html"/>
     </menu>
     <menu name="Development">
       <item name="The digilib Scaler API" href="scaler-api.html"/>
