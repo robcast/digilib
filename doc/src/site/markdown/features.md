@@ -29,7 +29,7 @@
 * **IIIF image API**: the digilib server provides [IIIF](http://iiif.io)
   image API (V2.1) compliant access to your images besides the digilib native server API.
   
-* **PDF generation**: the [PDFGenerator](pdf-generation.html) servlet can create custom 
+* **PDF generation**: the [PDFGenerator](pdf-generator.html) servlet can create custom 
   PDF documents from images on the server.
   
 * **OpenId Connect authentication**: the digilib server can use authentication
