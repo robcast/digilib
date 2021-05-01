@@ -35,7 +35,9 @@ public void jspInit() {
     }
 }
 %><%@ page contentType="application/json" pageEncoding="UTF-8" %><%
-// parsing the query
+//set CORS header
+response.setHeader("Access-Control-Allow-Origin", "*");
+// parse the query
 DigilibServletRequest dlRequest = new DigilibServletRequest(request);
 docBean.setRequest(dlRequest);
 %>{

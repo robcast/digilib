@@ -43,6 +43,8 @@ public void jspInit() {
 }
 %><%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %><%@ page contentType="text/xml" pageEncoding="UTF-8"%><?xml version="1.0" encoding="UTF-8" ?>
 <%
+//set CORS header
+response.setHeader("Access-Control-Allow-Origin", "*");
 // process request
 docBean.setRequest(request);
 // get directory

@@ -41,6 +41,8 @@ public void jspInit() {
     }
 }
 %><%@ page contentType="application/json" pageEncoding="UTF-8" %><%
+//set CORS header
+response.setHeader("Access-Control-Allow-Origin", "*");
 // process request
 docBean.setRequest(request);
 // get directory

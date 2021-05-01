@@ -19,7 +19,7 @@
   <http://www.gnu.org/licenses/lgpl-3.0.html>.
   #L%
   Author: Robert Casties (robcast@berlios.de)
-  --%><%@page language="java" 
+  --%><%@ page language="java" 
   import="digilib.io.ImageSet, 
           digilib.io.ImageFile, 
           digilib.util.ImageSize,
@@ -38,7 +38,9 @@ public void jspInit() {
     }
 }
 %><%@ page contentType="application/json" pageEncoding="UTF-8" %><%
-// parsing the query
+// set CORS header
+response.setHeader("Access-Control-Allow-Origin", "*");
+// parse the query
 docBean.setRequest(request);
 // get file
 ImageSet imgFile = docBean.getImageSet();

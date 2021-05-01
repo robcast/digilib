@@ -40,7 +40,8 @@ public void jspInit() {
 }
 %><%@ page contentType="text/xml" pageEncoding="UTF-8"%><?xml version="1.0" encoding="UTF-8" ?>
 <%
-// process request
+//set CORS header
+response.setHeader("Access-Control-Allow-Origin", "*");
 // get digilib config
 DigilibServletConfiguration dlConfig = docBean.getDlConfig();
 // parsing the query
