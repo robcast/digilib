@@ -13,7 +13,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: test ref
-      run: echo "github.ref=${{ github.ref }}"
+      #run: echo "GIT_TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+      run: echo "GIT_TAG=${GITHUB_REF/refs\/heads\//}" >> $GITHUB_ENV
+    - run: echo "my git_tag=${{ env.GIT_TAG }}"
     - run: /bin/false
     - name: Log in to Docker Hub
       uses: docker/login-action@v1
