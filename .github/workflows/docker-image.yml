@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: test ref
+      run: echo "github.ref=${{ github.ref }}"
+    - run: /bin/false
     - name: Log in to Docker Hub
       uses: docker/login-action@v1
       with:
@@ -31,3 +34,4 @@ jobs:
         file: build/docker/Dockerfile
         push: true
         tags: robcast/digilib:${{ github.ref }}
+      
