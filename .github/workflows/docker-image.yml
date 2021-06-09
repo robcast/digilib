@@ -35,4 +35,6 @@ jobs:
       with:
         file: build/docker/Dockerfile
         push: true
-        tags: robcast/digilib:${{ env.GIT_TAG }}
+        tags: |
+          robcast/digilib:${{ env.GIT_TAG }}
+          robcast/digilib:latest
