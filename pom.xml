@@ -138,7 +138,7 @@
         <version>3.1.1</version>
         <configuration>
           <source>1.8</source>
-          <doclint>all,-missing</doclint>
+          <doclint>none</doclint>
           <show>package</show>
           <nohelp>true</nohelp>
         </configuration>
