@@ -1,4 +1,4 @@
-name: digilib Java CI with Maven
+name: Java Build
 
 on:
   push:

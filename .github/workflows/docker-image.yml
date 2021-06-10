@@ -1,4 +1,4 @@
-name: digilib Docker Image CI
+name: Docker image build
 
 on:
   push:

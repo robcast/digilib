@@ -1,9 +1,9 @@
 ![digilib-logo](https://robcast.github.io/digilib/images/digilib-logo-big.png)
 
-digilib - The Digital Image Library
-[![Build status](https://travis-ci.org/robcast/digilib.svg?branch=master)](http://travis-ci.org/robcast/digilib)
+# digilib - The Digital Image Library
+![Java build status](https://github.com/robcast/digilib/actions/workflows/maven.yml/badge.svg)
+![Docker image status](https://github.com/robcast/digilib/actions/workflows/docker-image.yml/badge.svg)
 [![Join chat](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/digilib-talk/community)
-===================================
 
 digilib is a flexible image server and image viewing environment for the internet:
 
