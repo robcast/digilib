@@ -61,9 +61,9 @@ import digilib.util.ImageSize;
 public class ServletOps {
 
     protected static Logger logger = LoggerFactory.getLogger("servlet.op");
-    
+
     protected static DigilibServletConfiguration dlConfig;
-    
+
     /** set CORS header ACAO* for info requests */
     protected static boolean corsForInfoRequests = true;
 
@@ -71,29 +71,29 @@ public class ServletOps {
     protected static boolean corsForImageRequests = true;
 
     /**
-	 * @return the dlConfig
-	 */
-	public static DigilibServletConfiguration getDlConfig() {
-		return dlConfig;
-	}
+     * @return the dlConfig
+     */
+    public static DigilibServletConfiguration getDlConfig() {
+        return dlConfig;
+    }
 
-	/**
-	 * @param dlConfig the dlConfig to set
-	 */
-	public static void setDlConfig(DigilibServletConfiguration dlConfig) {
-		ServletOps.dlConfig = dlConfig;
-		corsForInfoRequests = dlConfig.getAsBoolean("iiif-info-cors");
-		corsForImageRequests = dlConfig.getAsBoolean("iiif-image-cors");
-	}
+    /**
+     * @param dlConfig the dlConfig to set
+     */
+    public static void setDlConfig(DigilibServletConfiguration dlConfig) {
+        ServletOps.dlConfig = dlConfig;
+        corsForInfoRequests = dlConfig.getAsBoolean("iiif-info-cors");
+        corsForImageRequests = dlConfig.getAsBoolean("iiif-image-cors");
+    }
 
     /**
      * Get a real File for a web app File.
      * 
-     * If the File is not absolute the path is appended to the base directory of
-     * the web-app. If the file does not exist in the web-app directory it is 
-     * considered relative to the Java working directory.
+     * If the File is not absolute the path is appended to the base directory of the
+     * web-app. If the file does not exist in the web-app directory it is considered
+     * relative to the Java working directory.
      * 
-     * @param f the File
+     * @param f  the File
      * @param sc the ServletContext
      * @return the File
      */
@@ -115,11 +115,11 @@ public class ServletOps {
     /**
      * Get a real File for a config File.
      * 
-     * If the File is not absolute the path is appended to the WEB-INF directory
-     * of the web-app. If the file does not exist in the WEB-INF directory it is 
+     * If the File is not absolute the path is appended to the WEB-INF directory of
+     * the web-app. If the file does not exist in the WEB-INF directory it is
      * considered relative to the Java working directory.
      * 
-     * @param f the File
+     * @param f  the File
      * @param sc the ServletContext
      * @return the File
      */
@@ -129,10 +129,10 @@ public class ServletOps {
             // relative path -> use getRealPath to resolve in WEB-INF
             String fn = sc.getRealPath("/WEB-INF/" + f.getPath());
             if (fn != null) {
-            	File wf = new File(fn);
-            	if (wf.exists()) {
-            		return wf;
-            	}
+                File wf = new File(fn);
+                if (wf.exists()) {
+                    return wf;
+                }
             }
             // if relative path can't be resolved inside webapp we
             // assume that it is relative to user working directory,
@@ -143,25 +143,24 @@ public class ServletOps {
 
     /**
      * print a servlet response
-     * @param msg the msg
+     * 
+     * @param msg      the msg
      * @param response the HttpServletResponse
      * @throws IOException on error
      */
-    public static void htmlMessage(String msg, HttpServletResponse response)
-            throws IOException {
+    public static void htmlMessage(String msg, HttpServletResponse response) throws IOException {
         htmlMessage("Scaler", msg, response);
     }
 
     /**
      * print a servlet response
      * 
-     * @param title the title
-     * @param msg the msg
+     * @param title    the title
+     * @param msg      the msg
      * @param response the HttpServletResponse
      * @throws IOException on error
      */
-    public static void htmlMessage(String title, String msg,
-            HttpServletResponse response) throws IOException {
+    public static void htmlMessage(String title, String msg, HttpServletResponse response) throws IOException {
         response.setContentType("text/html; charset=iso-8859-1");
         PrintWriter out = response.getWriter();
         out.println("<html>");
@@ -178,19 +177,15 @@ public class ServletOps {
      * <code>ServletResponse</code>. If mt is null then the mime-type is
      * auto-detected with mimeForFile.
      * 
-     * @param f
-     *            Image file to be sent.
-     * @param mt
-     *            mime-type of the file.
-     * @param name
-     *            name of the download file (for application/x)
-     * @param response
-     *            ServletResponse where the image file will be sent.
+     * @param f        Image file to be sent.
+     * @param mt       mime-type of the file.
+     * @param name     name of the download file (for application/x)
+     * @param response ServletResponse where the image file will be sent.
      * @throws ImageOpException on error
-     * @throws IOException on error
+     * @throws IOException      on error
      */
-    public static void sendFile(File f, String mt, String name,
-            HttpServletResponse response) throws ImageOpException, IOException {
+    public static void sendFile(File f, String mt, String name, HttpServletResponse response)
+            throws ImageOpException, IOException {
         // use default logger
         ServletOps.sendFile(f, mt, name, response, ServletOps.logger);
     }
@@ -202,18 +197,13 @@ public class ServletOps {
      * <code>ServletResponse</code>. If mt is null then the mime-type is
      * auto-detected with mimeForFile.
      * 
-     * @param f
-     *            Image file to be sent.
-     * @param mt
-     *            mime-type of the file.
-     * @param name 
-     *            name of the download file (for application/x)
-     * @param response
-     *            ServletResponse where the image file will be sent.
-     * @param logger
-     *            Logger to use
+     * @param f        Image file to be sent.
+     * @param mt       mime-type of the file.
+     * @param name     name of the download file (for application/x)
+     * @param response ServletResponse where the image file will be sent.
+     * @param logger   Logger to use
      * @throws ImageOpException on error
-     * @throws IOException on error
+     * @throws IOException      on error
      */
     public static void sendFile(File f, String mt, String name, HttpServletResponse response, Logger logger)
             throws ImageOpException, IOException {
@@ -222,7 +212,7 @@ public class ServletOps {
             logger.error("No response!");
             return;
         }
-        
+
         /*
          * set content-type
          */
@@ -234,9 +224,9 @@ public class ServletOps {
             }
         }
         if (!mt.isEmpty()) {
-        	response.setContentType(mt);
+            response.setContentType(mt);
         }
-        
+
         /*
          * set content-disposition with filename unless name="".
          */
@@ -244,13 +234,13 @@ public class ServletOps {
             // no download name -- use filename
             name = f.getName();
         }
-		if (!name.isEmpty()) {
-			if (mt.startsWith("application")) {
-				response.addHeader("Content-Disposition", "attachment; filename=\"" + name + "\"");
-			} else {
-				response.addHeader("Content-Disposition", "inline; filename=\"" + name + "\"");
-			}
-		}
+        if (!name.isEmpty()) {
+            if (mt.startsWith("application")) {
+                response.addHeader("Content-Disposition", "attachment; filename=\"" + name + "\"");
+            } else {
+                response.addHeader("Content-Disposition", "inline; filename=\"" + name + "\"");
+            }
+        }
 
         /*
          * set CORS header ACAO "*" for image or info response
@@ -293,15 +283,14 @@ public class ServletOps {
     /**
      * Write image img to ServletResponse response.
      * 
-     * @param img the DocuImage
+     * @param img      the DocuImage
      * @param mimeType the mime-type
      * @param response the HttpServletResponse
      * @throws ImageOpException on error
      * @throws ServletException Exception on sending data.
      */
-    public static void sendImage(DocuImage img, String mimeType,
-            HttpServletResponse response) throws ImageOpException,
-            IOException {
+    public static void sendImage(DocuImage img, String mimeType, HttpServletResponse response)
+            throws ImageOpException, IOException {
         ServletOps.sendImage(img, mimeType, response, ServletOps.logger);
     }
 
@@ -310,10 +299,10 @@ public class ServletOps {
      * 
      * If mimeType is null, use heuristics for type.
      * 
-     * @param img the DocuImage
+     * @param img      the DocuImage
      * @param mimeType the mime-type
      * @param response the HttpServletResponse
-     * @param logger the Logger
+     * @param logger   the Logger
      * @throws ImageOpException on error
      * @throws ServletException Exception on sending data.
      */
@@ -345,14 +334,13 @@ public class ServletOps {
             response.setContentType(mimeType);
 
             /*
-             * set content-disposition with filename.
-             * uses filename provided in DocuImage.
+             * set content-disposition with filename. uses filename provided in DocuImage.
              */
             String name = (String) img.getHint("download-filename");
             if (name != null) {
                 response.addHeader("Content-Disposition", "inline; filename=\"" + name + "\"");
             }
-            
+
             /*
              * set CORS header ACAO "*" for image response
              */
@@ -377,11 +365,12 @@ public class ServletOps {
     /**
      * Sends IIIF compatible image information as application/json response.
      * 
-     * @see <a href="https://iiif.io/api/image/2.1/#image-information">IIIF Image Information Request</a>
+     * @see <a href="https://iiif.io/api/image/3.0/#image-information">IIIF Image
+     *      Information Request</a>
      * 
-     * @param dlReq the DigilibServletRequest
+     * @param dlReq    the DigilibServletRequest
      * @param response the HttpServletResponse
-     * @param logger the Logger
+     * @param logger   the Logger
      * @throws ServletException on error
      */
     public static void sendIiifInfo(DigilibServletRequest dlReq, HttpServletResponse response, Logger logger)
@@ -390,7 +379,7 @@ public class ServletOps {
             logger.error("No response!");
             return;
         }
-        
+
         /*
          * get image size
          */
@@ -409,7 +398,7 @@ public class ServletOps {
                 throw new ServletException("Unable to write error response!", e);
             }
         }
-        
+
         /*
          * get resource URL
          */
@@ -419,7 +408,7 @@ public class ServletOps {
         } else if (url.endsWith("/")) {
             url = url.substring(0, url.lastIndexOf("/"));
         }
-        
+
         /*
          * send response
          */
@@ -435,10 +424,27 @@ public class ServletOps {
                     response.setHeader("Access-Control-Allow-Origin", "*");
                 }
             }
-            
-            if (dlConfig.getAsString("iiif-api-version").startsWith("2.")) {
+
+            if (dlConfig.getAsString("iiif-api-version").startsWith("3.")) {
                 /*
-                 * IIIF Image API version 2 image information
+                 * IIIF Image API V2
+                 */
+                // use JSON-LD content type only when asked
+                String accept = dlReq.getServletRequest().getHeader("Accept");
+                if (accept != null && accept.contains("application/ld+json")) {
+                    response.setContentType("application/ld+json");
+                } else {
+                    response.setContentType("application/ld+json;profile=\"http://iiif.io/api/image/3/context.json\"");
+                }
+                // write info.json
+                ServletOutputStream out = response.getOutputStream();
+                JsonGenerator info = Json.createGenerator(out);
+                writeIiifV3Info(info, logger, size, imageSet, url);
+                info.close();
+
+            } else if (dlConfig.getAsString("iiif-api-version").startsWith("2.")) {
+                /*
+                 * IIIF Image API V2
                  */
                 // use JSON-LD content type only when asked
                 String accept = dlReq.getServletRequest().getHeader("Accept");
@@ -450,148 +456,278 @@ public class ServletOps {
                 // write info.json
                 ServletOutputStream out = response.getOutputStream();
                 JsonGenerator info = Json.createGenerator(out);
-                // top level object
-                info.writeStartObject()
-                .write("@context", "http://iiif.io/api/image/2/context.json")
-                .write("@id", url)
-                .write("protocol", "http://iiif.io/api/image")
-                .write("width", size.width)
-                .write("height", size.height);
-                // profile[ array
-                info.writeStartArray("profile")
-                // profile[ level
-                .write("http://iiif.io/api/image/2/level2.json");
-                // profile[{ object
-                info.writeStartObject();
-                // profile[{formats[
-                info.writeStartArray("formats")
-                .write("jpg")
-                .write("png")
-                .writeEnd();
-                // profile[{qualities[
-                info.writeStartArray("qualities")
-                .write("color")
-                .write("gray")
-                .writeEnd();
-                // profile[{maxArea
-                if (dlConfig.getAsInt("max-image-size") > 0) {
-                    info.write("maxArea", dlConfig.getAsInt("max-image-size"));
-                }
-                // profile[{supports[
-                info.writeStartArray("supports")
-                .write("mirroring")
-                .write("rotationArbitrary")
-                .write("sizeAboveFull")
-                .write("regionSquare")
-                .writeEnd();
-                // profile[{}
-                info.writeEnd();
-                // profile[]
-                info.writeEnd();
-                // add size of original and prescaled images
-                int numImgs = imageSet.size();
-                if (numImgs > 0) {
-                    // sizes[
-                    info.writeStartArray("sizes");
-                    ImageSize ois = new ImageSize();
-                    for (ListIterator<ImageInput> i = imageSet.getLoresIterator(); i.hasPrevious();) {
-                        ImageInput ii = i.previous();
-                        ImageSize is = ii.getSize();
-                        if (!ois.equals(is)) {
-                            // write size if different
-                            // sizes[{
-                            info.writeStartObject()
-                            .write("width", is.getWidth())
-                            .write("height", is.getHeight())
-                            .writeEnd();
-                            ois = is;
-                        }
-                    }
-                    // sizes[]
-                    info.writeEnd();
-                }
-                // add tile information (currently only one size of tiles)
-                ImageInput ii = imageSet.get(0);
-                ImageSize is = ii.getSize();
-                List<Integer> tileFactors = new ArrayList<Integer>();
-                ImageSize ts = null;
-                for (ListIterator<ImageInput> i = imageSet.getHiresIterator(); i.hasNext(); ) {
-                    ImageInput sii = i.next();
-                    ImageSize sts = sii.getTileSize();
-                    int osf = 0;
-                    if (sts != null) {
-                        // initialize default tile size
-                        if (ts == null) ts = sts;
-                        // scaled images should have same tile size!
-                        if (sts.getHeight() == ts.getHeight()) {
-                            // scale factor is integer divider of original size
-                            int sf = Math.round((float) is.getWidth() / (float) sii.getSize().getWidth());
-                            // add factor if different
-                            if (sf != osf) {
-                                tileFactors.add(sf);
-                                osf = sf;
-                            }
-                        } else {
-                            logger.warn("IIIF-info: scaled image "+i+" has different tile size! Ignoring.");                				
-                        }
-                    }
-                }
-                if (!tileFactors.isEmpty()) {
-                    // tiles[{
-                    info.writeStartArray("tiles");
-                    info.writeStartObject();
-                    info.write("width", ts.getWidth());
-                    info.write("height", ts.getHeight());
-                    // scalefactors[
-                    info.writeStartArray("scaleFactors");
-                    for (Integer sf : tileFactors) {
-                        info.write(sf);
-                    }
-                    // scalefactors[]
-                    info.writeEnd();
-                    // tiles[{}
-                    info.writeEnd();
-                    // tiles[]
-                    info.writeEnd();
-                }
-                // end info.json
-                info.writeEnd();
+                writeIiifV2Info(info, logger, size, imageSet, url);
                 info.close();
 
             } else {
                 /*
-                 * IIIF Image API version 1 image information
+                 * IIIF Image API V1
                  */
                 response.setContentType("application/json,application/ld+json");
                 // write info.json
                 ServletOutputStream out = response.getOutputStream();
                 JsonGenerator info = Json.createGenerator(out);
-                // top level object
-                info.writeStartObject()
-                .write("@context", "http://library.stanford.edu/iiif/image-api/1.1/context.json")
-                .write("@id", url)
-                .write("width", size.width)
-                .write("height", size.height);
-                // formats[
-                info.writeStartArray("formats")
-                .write("jpg")
-                .write("png")
-                .writeEnd();
-                // qualities[
-                info.writeStartArray("qualities")
-                .write("native")
-                .write("color")
-                .write("gray")
-                .writeEnd();
-                // profile
-                info.write("profile", "http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2");
-                // end info.json
-                info.writeEnd();
+                writeIiifV1Info(info, size, url);
                 info.close();
             }
         } catch (IOException e) {
             throw new ServletException("Unable to write response!", e);
         }
+    }
+
+    /**
+     * Write IIIF Image API version 1 image information to info.
+     * 
+     * @param info
+     * @param size
+     * @param url
+     * @throws IOException
+     */
+    protected static void writeIiifV1Info(JsonGenerator info, ImageSize size, String url) throws IOException {
+        // top level object
+        info.writeStartObject()
+            .write("@context", "http://library.stanford.edu/iiif/image-api/1.1/context.json")
+            .write("@id", url)
+            .write("width", size.width)
+            .write("height", size.height);
+        // formats[
+        info.writeStartArray("formats")
+            .write("jpg")
+            .write("png")
+            .writeEnd();
+        // qualities[
+        info.writeStartArray("qualities")
+            .write("native")
+            .write("color")
+            .write("gray")
+            .writeEnd();
+        // profile
+        info.write("profile", "http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2");
+        // end info.json
+        info.writeEnd();
+    }
+
+    /**
+     * Write IIIF Image API version 2 image information to info.
+     * 
+     * @param info
+     * @param logger
+     * @param size
+     * @param imageSet
+     * @param url
+     * @throws IOException
+     */
+    protected static void writeIiifV2Info(JsonGenerator info, Logger logger, ImageSize size, ImageSet imageSet,
+            String url) throws IOException {
+        // top level object
+        info.writeStartObject()
+            .write("@context", "http://iiif.io/api/image/2/context.json")
+            .write("@id", url)
+            .write("protocol", "http://iiif.io/api/image")
+            .write("width", size.width)
+            .write("height", size.height);
+        // profile[ array
+        info.writeStartArray("profile")
+        // profile[ level
+            .write("http://iiif.io/api/image/2/level2.json");
+        // profile[{ object
+        info.writeStartObject();
+        // profile[{formats[
+        info.writeStartArray("formats")
+            .write("jpg")
+            .write("png")
+            .writeEnd();
+        // profile[{qualities[
+        info.writeStartArray("qualities")
+            .write("color")
+            .write("gray")
+            .writeEnd();
+        // profile[{maxArea
+        if (dlConfig.getAsInt("max-image-size") > 0) {
+            info.write("maxArea", dlConfig.getAsInt("max-image-size"));
+        }
+        // profile[{supports[
+        info.writeStartArray("supports")
+            .write("mirroring")
+            .write("rotationArbitrary")
+            .write("sizeAboveFull")
+            .write("regionSquare")
+            .writeEnd();
+        // profile[{}
+        info.writeEnd();
+        // profile[]
+        info.writeEnd();
+        // add size of original and prescaled images
+        int numImgs = imageSet.size();
+        if (numImgs > 0) {
+            // sizes[
+            info.writeStartArray("sizes");
+            ImageSize ois = new ImageSize();
+            for (ListIterator<ImageInput> i = imageSet.getLoresIterator(); i.hasPrevious();) {
+                ImageInput ii = i.previous();
+                ImageSize is = ii.getSize();
+                if (!ois.equals(is)) {
+                    // write size if different
+                    // sizes[{
+                    info.writeStartObject().write("width", is.getWidth()).write("height", is.getHeight()).writeEnd();
+                    ois = is;
+                }
+            }
+            // sizes[]
+            info.writeEnd();
+        }
+        // add tile information (currently only one size of tiles)
+        ImageInput ii = imageSet.get(0);
+        ImageSize is = ii.getSize();
+        List<Integer> tileFactors = new ArrayList<Integer>();
+        ImageSize ts = null;
+        for (ListIterator<ImageInput> i = imageSet.getHiresIterator(); i.hasNext();) {
+            ImageInput sii = i.next();
+            ImageSize sts = sii.getTileSize();
+            int osf = 0;
+            if (sts != null) {
+                // initialize default tile size
+                if (ts == null)
+                    ts = sts;
+                // scaled images should have same tile size!
+                if (sts.getHeight() == ts.getHeight()) {
+                    // scale factor is integer divider of original size
+                    int sf = Math.round((float) is.getWidth() / (float) sii.getSize().getWidth());
+                    // add factor if different
+                    if (sf != osf) {
+                        tileFactors.add(sf);
+                        osf = sf;
+                    }
+                } else {
+                    logger.warn("IIIF-info: scaled image " + i + " has different tile size! Ignoring.");
+                }
+            }
+        }
+        if (!tileFactors.isEmpty()) {
+            // tiles[{
+            info.writeStartArray("tiles");
+            info.writeStartObject();
+            info.write("width", ts.getWidth());
+            info.write("height", ts.getHeight());
+            // scalefactors[
+            info.writeStartArray("scaleFactors");
+            for (Integer sf : tileFactors) {
+                info.write(sf);
+            }
+            // scalefactors[]
+            info.writeEnd();
+            // tiles[{}
+            info.writeEnd();
+            // tiles[]
+            info.writeEnd();
+        }
+        // end info.json
+        info.writeEnd();
+    }
+
+    /**
+     * Write IIIF Image API version 3 image information to info.
+     * 
+     * @param info
+     * @param logger
+     * @param size
+     * @param imageSet
+     * @param url
+     * @throws IOException
+     */
+    protected static void writeIiifV3Info(JsonGenerator info, Logger logger, ImageSize size, ImageSet imageSet,
+            String url) throws IOException {
+        // top level object
+        info.writeStartObject()
+            .write("@context", "http://iiif.io/api/image/3/context.json")
+            .write("id", url)
+            .write("type", "ImageService3")
+            .write("protocol", "http://iiif.io/api/image")
+            .write("profile", "level2")
+            .write("width", size.width)
+            .write("height", size.height);
+        if (dlConfig.getAsInt("max-image-size") > 0) {
+            info.write("maxArea", dlConfig.getAsInt("max-image-size"));
+        }
+        // extraFeatures[] additional to level 2
+        info.writeStartArray("extraFeatures")
+            .write("mirroring")
+            .write("rotationArbitrary")
+            // .write("sizeUpscaling") // TODO: implement v3 upscaling
+            .writeEnd();
+        // extraQualities[] additional to level 2
+        info.writeStartArray("extraQualities")
+            .write("bitonal")
+            .writeEnd();
+        // add size of original and prescaled images
+        int numImgs = imageSet.size();
+        if (numImgs > 0) {
+            // sizes[
+            info.writeStartArray("sizes");
+            ImageSize ois = new ImageSize();
+            for (ListIterator<ImageInput> i = imageSet.getLoresIterator(); i.hasPrevious();) {
+                ImageInput ii = i.previous();
+                ImageSize is = ii.getSize();
+                if (!ois.equals(is)) {
+                    // write size if different
+                    // sizes[{
+                    info.writeStartObject()
+                        .write("width", is.getWidth())
+                        .write("height", is.getHeight())
+                        .writeEnd();
+                    ois = is;
+                }
+            }
+            // sizes[]
+            info.writeEnd();
+        }
+        // add tile information (currently only one size of tiles)
+        ImageInput ii = imageSet.get(0);
+        ImageSize is = ii.getSize();
+        List<Integer> tileFactors = new ArrayList<Integer>();
+        ImageSize ts = null;
+        for (ListIterator<ImageInput> i = imageSet.getHiresIterator(); i.hasNext();) {
+            ImageInput sii = i.next();
+            ImageSize sts = sii.getTileSize();
+            int osf = 0;
+            if (sts != null) {
+                // initialize default tile size
+                if (ts == null)
+                    ts = sts;
+                // scaled images should have same tile size!
+                if (sts.getHeight() == ts.getHeight()) {
+                    // scale factor is integer divider of original size
+                    int sf = Math.round((float) is.getWidth() / (float) sii.getSize().getWidth());
+                    // add factor if different
+                    if (sf != osf) {
+                        tileFactors.add(sf);
+                        osf = sf;
+                    }
+                } else {
+                    logger.warn("IIIF-info: scaled image " + i + " has different tile size! Ignoring.");
+                }
+            }
+        }
+        if (!tileFactors.isEmpty()) {
+            // tiles[{
+            info.writeStartArray("tiles");
+            info.writeStartObject();
+            info.write("width", ts.getWidth());
+            info.write("height", ts.getHeight());
+            // scalefactors[
+            info.writeStartArray("scaleFactors");
+            for (Integer sf : tileFactors) {
+                info.write(sf);
+            }
+            // scalefactors[]
+            info.writeEnd();
+            // tiles[{}
+            info.writeEnd();
+            // tiles[]
+            info.writeEnd();
+        }
+        // end info.json
+        info.writeEnd();
     }
 
     /**
@@ -616,7 +752,9 @@ public class ServletOps {
         return url;
     }
 
-    /** Returns text representation of headers for debuggging purposes.
+    /**
+     * Returns text representation of headers for debuggging purposes.
+     * 
      * @param req the HttpServletRequest
      * @return the headers string
      */
@@ -630,6 +768,5 @@ public class ServletOps {
         }
         return s;
     }
-    
-    
+
 }
