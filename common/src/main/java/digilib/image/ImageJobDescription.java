@@ -208,7 +208,11 @@ public class ImageJobDescription {
         } else {
             throw new ImageOpException("Unknown scaling mode!");
         }
-    
+		if (request.hasOption(DigilibOption.deny_upscale)) {
+		    if (scaleX > 1.0 || scaleY > 1.0) {
+		        throw new ImageOpException("Invalid parameters! Upscaling not allowed!");
+		    }
+		}
     }
 
     /**
@@ -231,7 +235,8 @@ public class ImageJobDescription {
          */
         minSourceSize = new ImageSize(
         		Math.round(request.getAsInt("dw") / getWw()), 
-                Math.round(request.getAsInt("dh") / getWh()));
+                Math.round(request.getAsInt("dh") / getWh())
+                );
         
         /*
          * get image region of interest

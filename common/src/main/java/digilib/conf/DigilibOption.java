@@ -124,6 +124,7 @@ public enum DigilibOption {
 	/** send redirect to IIIF image info URI */
 	redirect_info,
 	/** dirInfo returns directory contents */
-	dir
-
+	dir,
+	/** disallow upscaling in IIIF V3 */
+	deny_upscale
 }

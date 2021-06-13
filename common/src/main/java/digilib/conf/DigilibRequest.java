@@ -85,6 +85,9 @@ public class DigilibRequest extends ParameterMap {
     /** IIIF slash replacement (taken from config) */
     protected String iiifSlashReplacement = null;
     
+    /** IIIF image API version (taken from config) */
+    protected String iiifApiVersion = "2.1";
+    
     /** parse IIIF path as IIIF image API */
     public boolean parseIiifImageApi = true;
     
@@ -211,6 +214,7 @@ public class DigilibRequest extends ParameterMap {
         if (config != null) {
             iiifPrefix = config.getAsString("iiif-prefix");
             iiifSlashReplacement = config.getAsString("iiif-slash-replacement");
+            iiifApiVersion = config.getAsString("iiif-api-version");
         }
     }
 
@@ -534,6 +538,25 @@ public class DigilibRequest extends ParameterMap {
          * parameter size
          */
         if (size != null) {
+            if (iiifApiVersion.startsWith("3")) {
+                /*
+                 * IIIF V3 allows upscaling only if size starts with "^"
+                 */
+                if (size.startsWith("^")) {
+                    size = size.substring(1);
+                } else {
+                    options.setOption(DigilibOption.deny_upscale);
+                }
+                /*
+                 * IIIF V3 disallows "full"
+                 */
+                if (size.equals("full")) {
+                    errorMessage = "Invalid size parameter in IIIF path! ";
+                    logger.error(errorMessage);
+                    return false;
+                }
+            }
+            
             if (size.equals("full")) {
                 /*
                  * full -- size of original

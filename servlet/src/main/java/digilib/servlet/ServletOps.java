@@ -653,7 +653,7 @@ public class ServletOps {
         info.writeStartArray("extraFeatures")
             .write("mirroring")
             .write("rotationArbitrary")
-            // .write("sizeUpscaling") // TODO: implement v3 upscaling
+            .write("sizeUpscaling")
             .writeEnd();
         // extraQualities[] additional to level 2
         info.writeStartArray("extraQualities")
