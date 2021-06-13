@@ -85,8 +85,8 @@ public class DigilibRequest extends ParameterMap {
     /** IIIF slash replacement (taken from config) */
     protected String iiifSlashReplacement = null;
     
-    /** IIIF image API version (taken from config) */
-    protected String iiifApiVersion = "2.1";
+    /** IIIF image API version */
+    public String iiifApiVersion = "2";
     
     /** parse IIIF path as IIIF image API */
     public boolean parseIiifImageApi = true;
@@ -325,7 +325,7 @@ public class DigilibRequest extends ParameterMap {
      * @param path
      *            String with IIIF Image API path.
      * @return true of successful
-     * @see <a href="http://iiif.io/api/image/2.0/">IIIF Image API</a>
+     * @see <a href="http://iiif.io/api/image/">IIIF Image API</a>
      */
     public boolean setWithIiifPath(String path) {
         if (path == null) {
@@ -372,6 +372,18 @@ public class DigilibRequest extends ParameterMap {
 
         if (parsingOptions.contains(ParsingOption.omitIiifImageApi)) {
         	return true;
+        }
+
+        /*
+         * API version as prefix parameter
+         */
+        if (params.size() > 0) {
+            String p = params.get(0);
+            if (p.equals("2") || p.equals("3")) {
+                iiifApiVersion = p;
+                // remove from params
+                params = params.subList(1, params.size());
+            }
         }
         
         /*

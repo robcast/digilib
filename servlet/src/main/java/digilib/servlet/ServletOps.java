@@ -425,9 +425,9 @@ public class ServletOps {
                 }
             }
 
-            if (dlConfig.getAsString("iiif-api-version").startsWith("3.")) {
+            if (dlReq.iiifApiVersion.startsWith("3")) {
                 /*
-                 * IIIF Image API V2
+                 * IIIF Image API V3
                  */
                 // use JSON-LD content type only when asked
                 String accept = dlReq.getServletRequest().getHeader("Accept");
@@ -442,7 +442,7 @@ public class ServletOps {
                 writeIiifV3Info(info, logger, size, imageSet, url);
                 info.close();
 
-            } else if (dlConfig.getAsString("iiif-api-version").startsWith("2.")) {
+            } else if (dlReq.iiifApiVersion.startsWith("2")) {
                 /*
                  * IIIF Image API V2
                  */
