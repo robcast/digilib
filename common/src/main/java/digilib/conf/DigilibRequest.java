@@ -379,7 +379,7 @@ public class DigilibRequest extends ParameterMap {
          */
         if (params.size() > 0) {
             String p = params.get(0);
-            if (p.equals("2") || p.equals("3")) {
+            if (p.equals("3") || p.equals("2") || p.equals("1")) {
                 iiifApiVersion = p;
                 // remove from params
                 params = params.subList(1, params.size());
