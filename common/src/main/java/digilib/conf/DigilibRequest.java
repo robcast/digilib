@@ -80,7 +80,7 @@ public class DigilibRequest extends ParameterMap {
     public EnumSet<ParsingOption> parsingOptions = EnumSet.noneOf(ParsingOption.class);
     
     /** IIIF path prefix (taken from config) */
-    protected String iiifPrefix = "IIIF";
+    public String iiifPrefix = "IIIF";
     
     /** IIIF slash replacement (taken from config) */
     protected String iiifSlashReplacement = null;
@@ -370,10 +370,6 @@ public class DigilibRequest extends ParameterMap {
             }
         }
 
-        if (parsingOptions.contains(ParsingOption.omitIiifImageApi)) {
-        	return true;
-        }
-
         /*
          * API version as prefix parameter
          */
@@ -383,9 +379,16 @@ public class DigilibRequest extends ParameterMap {
                 iiifApiVersion = p;
                 // remove from params
                 params = params.subList(1, params.size());
+                setValue("request.iiif.elements", params);
+                // add to prefix
+                iiifPrefix += "/" + p;
             }
         }
         
+        if (parsingOptions.contains(ParsingOption.omitIiifImageApi)) {
+            return true;
+        }
+
         /*
          * parse sequence of parameters as IIIF image API
          */

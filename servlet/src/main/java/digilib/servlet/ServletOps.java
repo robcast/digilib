@@ -740,7 +740,7 @@ public class ServletOps {
         String url = dlConfig.getAsString("iiif-image-base-url");
         if (!url.isEmpty()) {
             // create url from base-url config and undecoded PATH_INFO
-            String iiifPrefix = dlConfig.getAsString("iiif-prefix");
+            String iiifPrefix = dlReq.iiifPrefix;
             url = url.substring(0, url.lastIndexOf(iiifPrefix) - 1);
             // we can't just take pathInfo because it decodes encoded symbols in the path
             String uri = dlReq.getServletRequest().getRequestURI();
