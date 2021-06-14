@@ -5,9 +5,12 @@
 The Scaler servlet provides not only its native [Scaler API](scaler-api.html) but also an API 
 compliant to the standards of the International Image Interoperability Framework http://iiif.io.
 
-As of version 2.3.7 digilib supports the [IIIF Image API version 2](http://iiif.io/api/image/2.1/) 
-at [compliance level 2](http://iiif.io/api/image/2.0/compliance.html). You can switch between API 
-version 1.1 and 2.0 support with the `iiif-api-version` parameter in [digilib-config](digilib-config.html),  
+As of version 2.11 digilib supports the [IIIF Image API](https://iiif.io/api/image/) 
+up to [version 3](https://iiif.io/api/image/3.0/) 
+at [compliance level 2](https://iiif.io/api/image/3.0/compliance/). You can specify the
+API version by adding `/1/`, `/2/`, or `/3/` to the `iiif-prefix` or select the default API version 
+when it is not specified
+with the `iiif-api-version` parameter in [digilib-config](digilib-config.html) 
 
 IIIF Image API URLs for an image request have the form:
 
@@ -16,7 +19,8 @@ IIIF Image API URLs for an image request have the form:
 where `digilib-webapp` is the name of the digilib web application in the servlet container. 
 
 The value of `iiif-prefix` is defined by the `iiif-prefix` parameter in [digilib-config](digilib-config.html). 
-The default value is "IIIF".
+The default value is "IIIF". You can optionally specify the the IIIF API version by appending `/1/`, `/2/`, or `/3/`
+to the prefix.
 
 The `identifier` part of the URL must not contain slashes. Since the identifier is mapped to the digilib 
 fn-parameter, which is a filesystem path that likely contains slashes separating subdirectories, all 
@@ -29,32 +33,30 @@ see the [IIIF Image API docs](http://iiif.io/api/image/2.0/).
 
 A IIIF Image API image request URL could look like:
 
-    http://www.example.org/digilib/Scaler/IIIF/books!book1!page0002/full/!150,75/0/default.jpg
+    http://www.example.org/digilib/Scaler/IIIF/2/books!book1!page0002/full/!150,75/0/default.jpg
 
 An info request URL for the same image looks like: 
 
-    http://www.example.org/digilib/Scaler/IIIF/books!book1!page0002/info.json
+    http://www.example.org/digilib/Scaler/IIIF/2/books!book1!page0002/info.json
 
 ## IIIF Presentation API
 
-As of version 2.5.3 digilib provides the optional Manifester servlet that generates simple 
-[IIIF Presentation API version 2](http://iiif.io/api/presentation/2.1) manifests that can 
+As of version 2.11 digilib provides the additional Manifester servlet that generates simple 
+[IIIF Presentation API](http://iiif.io/api/presentation/) version 2 and version 3 manifests that can 
 be used with any [IIIF viewer](http://iiif.io/apps-demos/#image-viewing-clients) to navigate 
 a directory full of images with the functions of a book-reader or light-table.
-
-To build digilib with the Manifester servlet you need to add the `iiif-presentation` profile to your Maven build:
-
-    mvn -Piiif-presentation package
-
-(or use the digilib-webapp-X.X.X-srv3p.war file from the website)
 
 The Manifester servlet URLs have the form:
 
     http[s]://{server}/{digilib-webapp}/Manifester/{iiif-prefix}/{identifier}
 
-So you can get a manifest for all images in the directory `/books/book1` with a URL like:
+The value of `iiif-prefix` is defined by the `iiif-prefix` parameter in [digilib-config](digilib-config.html). 
+The default value is "IIIF". You can optionally specify the the IIIF API version by appending `/2/`, or `/3/`
+to the prefix.
 
-    http://www.example.org/digilib/Manifester/IIIF/books!book1
+So you can get a (version 3) manifest for all images in the directory `/books/book1` with a URL like:
+
+    http://www.example.org/digilib/Manifester/IIIF/3/books!book1
 
 To try out a viewer on your manifest you can go to the website of the Universal Viewer 
 [http://universalviewer.io/](http://universalviewer.io/) and enter the URL of your manifest 

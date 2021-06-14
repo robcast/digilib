@@ -27,7 +27,7 @@
   JPG, PNG, GIF, JPEG2000, and more depending on Java ImageIO support).
   
 * **IIIF image API**: the digilib server provides [IIIF](http://iiif.io)
-  image API (V2.1) compliant access to your images besides the digilib native server API.
+  image API (V1-V3) compliant access to your images besides the digilib native server API.
   
 * **PDF generation**: the [PDFGenerator](pdf-generator.html) servlet can create custom 
   PDF documents from images on the server.
