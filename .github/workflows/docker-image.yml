@@ -12,29 +12,44 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+
     - name: Log in to Docker Hub
       uses: docker/login-action@v1
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-        
-    - name: Push master branch snapshot to Docker Hub
+
+    - name: Log in to the Github registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push master branch snapshot
       if: ${{ github.ref == 'refs/heads/master' }}
       uses: docker/build-push-action@v2
       with:
         file: build/docker/Dockerfile
         push: true
-        tags: robcast/digilib:snapshot
-        
-    - name: extract git tag
+        tags: |
+          robcast/digilib:snapshot
+          ghcr.io/robcast/digilib:snapshot
+
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
       if: ${{ startsWith(github.ref, 'refs/tags/') }}
-      run: echo "GIT_TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
-    - name: Push tagged release to Docker Hub
+      uses: docker/metadata-action@v3
+      with:
+        images: |
+          robcast/digilib
+          ghcr.io/robcast/digilib
+
+    - name: Build and push tagged version
       if: ${{ startsWith(github.ref, 'refs/tags/') }}
       uses: docker/build-push-action@v2
       with:
         file: build/docker/Dockerfile
         push: true
-        tags: |
-          robcast/digilib:${{ env.GIT_TAG }}
-          robcast/digilib:latest
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
