@@ -55,7 +55,6 @@ import digilib.io.FsDocuDirectory;
 public class PDFTitlePage {
 
     protected PDFRequest request = null;
-    protected DigilibInfoReader infoReader = null;
     protected static Logger logger = LoggerFactory.getLogger("digilib.servlet");
 
     /**
@@ -65,31 +64,6 @@ public class PDFTitlePage {
      */
     public PDFTitlePage(PDFRequest pdfji) {
         request = pdfji;
-        // use MPIWG-style info.xml
-        infoReader = getInfoXmlReader(pdfji);
-    }
-
-    /**
-     * Read the presentation info file ../presentation/info.xml.
-     * 
-     * @param pdfji
-     * @return
-     */
-    protected DigilibInfoReader getInfoXmlReader(PDFRequest pdfji) {
-        try {
-            // try to load ../presentation/info.xml
-            File imgDir = ((FsDocuDirectory) pdfji.getImageJobInformation().getFileDirectory()).getDir();
-            File docDir = imgDir.getParentFile();
-            File infoFn = new File(new File(docDir, "presentation"), "info.xml");
-            return new DigilibInfoReader(infoFn.getAbsolutePath());
-        } catch (FileOpException e) {
-            logger.warn("info.xml not found");
-        } catch (IOException e) {
-            logger.warn("image directory for info.xml not found");
-        } catch (ImageOpException e) {
-            logger.warn("problem with parameters for info.xml");
-        }
-        return null;
     }
 
     /**
@@ -222,12 +196,6 @@ public class PDFTitlePage {
         if (!title.isEmpty()) {
             return title;
         }
-        if (infoReader.hasInfo()) {
-            title = infoReader.getAsString("title");
-            if (title != null) {
-                return title;
-            }
-        }
         return "[" + request.getAsString("fn") + "]";
     }
 
@@ -236,12 +204,6 @@ public class PDFTitlePage {
         if (!author.isEmpty()) {
             return author;
         }
-        if (infoReader.hasInfo()) {
-            author = infoReader.getAsString("author");
-            if (author != null) {
-                return author;
-            }
-        }
         return "";
     }
 
@@ -249,12 +211,6 @@ public class PDFTitlePage {
         String date = request.getAsString("date");
         if (!date.isEmpty()) {
             return date;
-        }
-        if (infoReader.hasInfo()) {
-            date = infoReader.getAsString("date");
-            if (date != null) {
-                return date;
-            }
         }
         return "";
     }
