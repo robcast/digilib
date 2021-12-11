@@ -6,7 +6,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <digilib.version>2.11-SNAPSHOT</digilib.version>
-    <slf4j.version>1.7.30</slf4j.version>
+    <slf4j.version>1.7.32</slf4j.version>
   </properties>
 
   <groupId>digilib</groupId>
@@ -222,6 +222,11 @@
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
         <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.json</groupId>
+        <artifactId>javax.json-api</artifactId>
+        <version>1.0</version><!-- 1.1+ does not work with jetty 9.2 needed for webapp-test -->
       </dependency>
       <dependency>
         <groupId>org.glassfish</groupId>

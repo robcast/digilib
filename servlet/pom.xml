@@ -12,7 +12,7 @@
   <url>https://github.com/robcast/digilib</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <log4j2.version>2.13.3</log4j2.version>
+    <log4j2.version>2.15.0</log4j2.version>
   </properties>
   <description>The Digital Image Library - common Servlet code</description>
   <dependencies>
@@ -32,9 +32,13 @@
     <dependency>
       <groupId>org.bitbucket.b_c</groupId>
       <artifactId>jose4j</artifactId>
-      <version>0.5.8</version>
+      <version>0.7.9</version>
     </dependency>
     <!-- JSON-API -->
+    <dependency>
+      <groupId>javax.json</groupId>
+      <artifactId>javax.json-api</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.glassfish</groupId>
       <artifactId>javax.json</artifactId>
