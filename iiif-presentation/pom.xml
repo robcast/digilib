@@ -1,36 +1,37 @@
 <?xml version="1.0"?>
 <project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>digilib</groupId>
-		<artifactId>digilib</artifactId>
-		<version>2.11-SNAPSHOT</version>
-	</parent>
-	<artifactId>digilib-iiif-presentation</artifactId>
-	<name>digilib-iiif-presentation</name>
-	<description>The Digital Image Library - IIIF presentation API manifest serving servlet</description>
-	<url>https://github.com/robcast/digilib</url>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
-	<dependencies>
-		<dependency>
-			<groupId>digilib</groupId>
-			<artifactId>digilib-servlet</artifactId>
-            <version>${digilib.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>3.0.1</version>
-			<type>jar</type>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish</groupId>
-			<artifactId>javax.json</artifactId>
-		</dependency>
-	</dependencies>
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>digilib</groupId>
+    <artifactId>digilib</artifactId>
+    <version>2.11-SNAPSHOT</version>
+  </parent>
+  <artifactId>digilib-iiif-presentation</artifactId>
+  <name>digilib-iiif-presentation</name>
+  <description>The Digital Image Library - IIIF presentation API manifest serving servlet</description>
+  <url>https://github.com/robcast/digilib</url>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>digilib</groupId>
+      <artifactId>digilib-servlet</artifactId>
+      <version>${digilib.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.0.1</version>
+      <type>jar</type>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.json</groupId>
+      <artifactId>javax.json-api</artifactId>
+    </dependency>
+  </dependencies>
 </project>
