@@ -64,7 +64,7 @@ public class DigilibConfiguration extends ParameterMap {
      * @return the version
      */
     public static String getClassVersion() {
-        return "2.11.0";
+        return "2.11.1";
     }
 
     /* non-static getVersion for Java inheritance */

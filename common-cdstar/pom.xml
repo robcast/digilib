@@ -1,39 +1,44 @@
 <?xml version="1.0"?>
 <project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<artifactId>digilib</artifactId>
-		<groupId>digilib</groupId>
-		<version>2.11.0</version>
-	</parent>
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>digilib</artifactId>
+    <groupId>digilib</groupId>
+    <version>2.11.1</version>
+  </parent>
 
-	<artifactId>digilib-common-cdstar</artifactId>
-	<name>digilib-common</name>
-	<description>The Digital Image Library - CDSTAR storage support</description>
-	<url>https://github.com/robcast/digilib</url>
-	<packaging>jar</packaging>
+  <artifactId>digilib-common-cdstar</artifactId>
+  <name>digilib-common</name>
+  <description>The Digital Image Library - CDSTAR storage support</description>
+  <url>https://github.com/robcast/digilib</url>
+  <packaging>jar</packaging>
 
-	<profiles>
-	</profiles>
+  <profiles>
+  </profiles>
 
-	<dependencies>
-		<dependency>
-			<groupId>digilib</groupId>
-			<artifactId>digilib-common</artifactId>
-			<version>${digilib.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.5.13</version>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish</groupId>
-			<artifactId>javax.json</artifactId>
-            <version>1.1.4</version><!-- use 1.1 instead of global 1.0 -->
-		</dependency>
-	</dependencies>
+  <dependencies>
+    <dependency>
+      <groupId>digilib</groupId>
+      <artifactId>digilib-common</artifactId>
+      <version>${digilib.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.5.13</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.json</groupId>
+      <artifactId>javax.json-api</artifactId>
+      <version>1.1</version><!--$NO-MVN-MAN-VER$--><!-- use 1.1 instead of global 1.0 -->
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish</groupId>
+      <artifactId>javax.json</artifactId>
+      <version>1.1.4</version><!-- use 1.1 instead of global 1.0 -->
+    </dependency>
+  </dependencies>
 </project>

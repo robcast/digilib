@@ -1,29 +1,5 @@
 package digilib.pdf;
 
-/*
- * #%L
- * A class for the generation of title pages for the generated pdf documents.
- * %%
- * Copyright (C) 2009 MPIWG Berlin
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 3 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-3.0.html>.
- * #L%
- * Authors: Christopher Mielack, Robert Casties
- */
-
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -45,9 +21,6 @@ import com.itextpdf.layout.property.TextAlignment;
 import com.itextpdf.layout.property.UnitValue;
 
 import digilib.conf.PDFRequest;
-import digilib.image.ImageOpException;
-import digilib.io.FileOpException;
-import digilib.io.FsDocuDirectory;
 
 /**
  * A class for the generation of a title page for the generated pdf documents.
@@ -55,7 +28,6 @@ import digilib.io.FsDocuDirectory;
 public class PDFTitlePage {
 
     protected PDFRequest request = null;
-    protected DigilibInfoReader infoReader = null;
     protected static Logger logger = LoggerFactory.getLogger("digilib.servlet");
 
     /**
@@ -65,31 +37,6 @@ public class PDFTitlePage {
      */
     public PDFTitlePage(PDFRequest pdfji) {
         request = pdfji;
-        // use MPIWG-style info.xml
-        infoReader = getInfoXmlReader(pdfji);
-    }
-
-    /**
-     * Read the presentation info file ../presentation/info.xml.
-     * 
-     * @param pdfji
-     * @return
-     */
-    protected DigilibInfoReader getInfoXmlReader(PDFRequest pdfji) {
-        try {
-            // try to load ../presentation/info.xml
-            File imgDir = ((FsDocuDirectory) pdfji.getImageJobInformation().getFileDirectory()).getDir();
-            File docDir = imgDir.getParentFile();
-            File infoFn = new File(new File(docDir, "presentation"), "info.xml");
-            return new DigilibInfoReader(infoFn.getAbsolutePath());
-        } catch (FileOpException e) {
-            logger.warn("info.xml not found");
-        } catch (IOException e) {
-            logger.warn("image directory for info.xml not found");
-        } catch (ImageOpException e) {
-            logger.warn("problem with parameters for info.xml");
-        }
-        return null;
     }
 
     /**
@@ -222,12 +169,6 @@ public class PDFTitlePage {
         if (!title.isEmpty()) {
             return title;
         }
-        if (infoReader.hasInfo()) {
-            title = infoReader.getAsString("title");
-            if (title != null) {
-                return title;
-            }
-        }
         return "[" + request.getAsString("fn") + "]";
     }
 
@@ -236,12 +177,6 @@ public class PDFTitlePage {
         if (!author.isEmpty()) {
             return author;
         }
-        if (infoReader.hasInfo()) {
-            author = infoReader.getAsString("author");
-            if (author != null) {
-                return author;
-            }
-        }
         return "";
     }
 
@@ -249,12 +184,6 @@ public class PDFTitlePage {
         String date = request.getAsString("date");
         if (!date.isEmpty()) {
             return date;
-        }
-        if (infoReader.hasInfo()) {
-            date = infoReader.getAsString("date");
-            if (date != null) {
-                return date;
-            }
         }
         return "";
     }
