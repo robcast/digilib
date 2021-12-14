@@ -19,7 +19,7 @@
     <skipTests>true</skipTests>
     <servletapi>2</servletapi>
     <jetty.version>9.2.28.v20190418</jetty.version><!-- Jetty 9.3+ breaks our tests -->
-    <log4j2.version>2.15.0</log4j2.version>
+    <log4j2.version>2.16.0</log4j2.version>
   </properties>
 
   <build>
