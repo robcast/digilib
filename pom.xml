@@ -248,7 +248,7 @@
     <module>frontend-jquery</module>
   </modules>
   <ciManagement>
-    <system>Travis CI</system>
-    <url>https://travis-ci.org/robcast/digilib</url>
+    <system>Github Actions</system>
+    <url>https://github.com/robcast/digilib/actions</url>
   </ciManagement>
 </project>
