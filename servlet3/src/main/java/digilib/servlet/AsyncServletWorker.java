@@ -123,8 +123,8 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
             responseStarted = true;
             ServletOps.sendImage(img, mt, response, logger);            
             
-            logger.debug("Job done in: "
-                    + (System.currentTimeMillis() - startTime) + "ms");
+            logger.info("Done in "
+                    + (System.currentTimeMillis() - startTime) + "ms (scaled)");
         } catch (ImageOpException e) {
             logger.error(e.getClass() + ": " + e.getMessage());
             Scaler.digilibError(errMsgType, Error.IMAGE, null,

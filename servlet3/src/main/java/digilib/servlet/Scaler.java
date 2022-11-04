@@ -307,7 +307,7 @@ public class Scaler extends HttpServlet {
                 }
                 logger.debug("Sending RAW File as is.");
                 ServletOps.sendFile(fileToLoad.getFile(), mt, null, response, logger);
-                logger.info("Done in " + (System.currentTimeMillis() - startTime) + "ms");
+                logger.info("Done in " + (System.currentTimeMillis() - startTime) + "ms (raw)");
                 return;
             }
 
@@ -317,7 +317,7 @@ public class Scaler extends HttpServlet {
             if (!jobTicket.isTransformRequired()) {
                 logger.debug("Sending File as is.");
                 ServletOps.sendFile(fileToLoad.getFile(), null, null, response, logger);
-                logger.info("Done in " + (System.currentTimeMillis() - startTime) + "ms");
+                logger.info("Done in " + (System.currentTimeMillis() - startTime) + "ms (as_is)");
                 return;
             }
 
