@@ -61,7 +61,7 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
     /** the ImageWorker we use */
     private ImageWorker imageWorker = null;
 
-    protected static final Logger logger = LoggerFactory.getLogger(AsyncServletWorker.class);
+    protected static final Logger logger = LoggerFactory.getLogger("digilib.scaler");
     private long startTime;
     private ErrMsg errMsgType = ErrMsg.IMAGE;
     private ImageJobDescription jobinfo;
