@@ -235,6 +235,15 @@ public abstract class DocuImageImpl implements DocuImage {
     }
 
     /* (non-Javadoc)
+     * @see digilib.image.DocuImage#SetHacksAsString()
+     */
+    @Override
+    public String getHacksAsString() {
+        // doing nothing
+    	return null;
+    }
+
+    /* (non-Javadoc)
      * @see digilib.image.DocuImage#setHint(java.lang.String, java.lang.Object)
      */
     @Override

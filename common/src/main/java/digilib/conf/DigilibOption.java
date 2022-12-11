@@ -81,12 +81,14 @@ public enum DigilibOption {
 	errimg,
 	/** send error response as HTTP status code. */
 	errcode,
-	/** quality of interpolation in scaling (q0: worst, q2 best). */
+	/** quality of interpolation in scaling (q0: worst, q3 best). */
 	q0,
-	/** quality of interpolation in scaling (q0: worst, q2 best). */
+	/** quality of interpolation in scaling (q0: worst, q3 best). */
 	q1,
-	/** quality of interpolation in scaling (q0: worst, q2 best). */
+	/** quality of interpolation in scaling (q0: worst, q3 best). */
 	q2,
+	/** quality of interpolation in scaling (q0: worst, q3 best). */
+	q3,
 	/** only use the highest resolution image. */
 	hires,
 	/**

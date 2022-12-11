@@ -329,6 +329,13 @@ public interface DocuImage {
     public void setHacks(String hackString);
     
     /**
+     * Return String representation of implementation specific image hacks.
+     * 
+     * @return the hackstring
+     */
+    public String getHacksAsString();
+    
+    /**
      * Set optional image specific hints with additional information.
      * 
      * @param key the key

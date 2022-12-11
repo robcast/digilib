@@ -1008,6 +1008,8 @@ public class ImageJobDescription {
             qual = 1;
         else if (request.hasOption(DigilibOption.q2)) 
             qual = 2;
+        else if (request.hasOption(DigilibOption.q3)) 
+            qual = 3;
         return qual;
     }
 

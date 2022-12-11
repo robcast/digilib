@@ -26,6 +26,10 @@
           digilib.io.DocuDirCache,
           digilib.image.DocuImage,
           digilib.image.DocuImageFactory,
+          javax.imageio.ImageIO,
+          javax.imageio.ImageReader,
+          javax.imageio.ImageWriter,
+          java.util.Iterator,
           java.io.File"%>
 <%!
 // authentication stuff - robert
@@ -63,6 +67,7 @@ DigilibJobCenter<DocuImage> imageProcessor =  (DigilibJobCenter<DocuImage>) dlCo
 
 <table>
 <%
+    // show all config parameters
     Object[] keys = dlConfig.getParams().keySet().toArray();
     java.util.Arrays.sort(keys);
     int l = keys.length;
@@ -71,6 +76,7 @@ DigilibJobCenter<DocuImage> imageProcessor =  (DigilibJobCenter<DocuImage>) dlCo
        	digilib.util.Parameter param = dlConfig.get(key);
         String val;
         if (key.equals("basedir-list")) {
+        	// special format for basedir-list
             String[] bd = (String[]) param.getValue();
             val = "";
             if (bd != null) {
@@ -79,6 +85,7 @@ DigilibJobCenter<DocuImage> imageProcessor =  (DigilibJobCenter<DocuImage>) dlCo
                 }
             }
         } else if (param.getValue() instanceof java.io.File) {
+        	// special format for file
             java.io.File f = (java.io.File) param.getValue();
             if (f == null) {
                 val = "[null]";
@@ -188,18 +195,43 @@ DigilibJobCenter<DocuImage> imageProcessor =  (DigilibJobCenter<DocuImage>) dlCo
 
 <h2>DocuImage configuration</h2>
 
-<p>Supported image types</p>
+<p>Supported image formats</p>
 <ul>
 <% 
-  java.util.Iterator<String> dlfs = DocuImageFactory.getInstance().getSupportedFormats();
-  for (String f = dlfs.next(); dlfs.hasNext(); f = dlfs.next()) {
+  for (Iterator<String> fmts = DocuImageFactory.getInstance().getSupportedFormats(); fmts.hasNext(); ) {
+	  String fmt = fmts.next();
 %>
-  <li><%= (String)f %></li>
+    <li><%= fmt %> <ul>
 <% 
+	  for (java.util.Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName(fmt); readers.hasNext(); ) {
+		  ImageReader reader = readers.next();
+%>
+      <li><%= reader.getClass().getName() %></li>
+<% 
+	  }
+      for (java.util.Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(fmt); writers.hasNext(); ) {
+          ImageWriter writer = writers.next();
+%>
+      <li><%= writer.getClass().getName() %></li>
+<% 
+      }
+%>
+    </ul></li>
+<%
   }
 %>
 </ul>
 
+<p>Image Hacks:
+<ul>
+<% 
+  for (String hack: DocuImageFactory.getInstance().getHacksAsString().split(",")) {
+%>   
+  <li><%= hack %></li>
+<%
+  }
+%>
+</ul>
 
 </body>
 </html>
