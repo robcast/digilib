@@ -1,5 +1,7 @@
 package digilib.image;
 
+import java.awt.Color;
+
 /*
  * #%L
  * ImageLoaderDocuImage -- Image class implementation using JDK 1.4 ImageLoader
@@ -75,7 +77,6 @@ import javax.imageio.stream.ImageOutputStream;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
@@ -137,7 +138,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         /** JPEG writer can't deal with RGBA */
         needsJpegWriteRgb,
         /** add ICC profile to PNG metadata manually */
-        needsPngAddProfile,
+        needsPngWriteProfile,
+        /** load ICC profile from PNG metadata manually */
+        needsPngReadProfile,
         /** downconvert bit depth to 8 bit */
         forceDepth8Bit
     }
@@ -212,7 +215,8 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         imageHacks.put(Hacks.forceDestForBlur, true);
         imageHacks.put(Hacks.forceDestForScale, true);
         imageHacks.put(Hacks.needsJpegWriteRgb, true);
-        imageHacks.put(Hacks.needsPngAddProfile, true);
+        imageHacks.put(Hacks.needsPngWriteProfile, true);
+        imageHacks.put(Hacks.needsPngReadProfile, true);
         // print current hacks
         StringBuffer msg = new StringBuffer();
         for (Entry<Hacks, Boolean> kv : imageHacks.entrySet()) {
@@ -299,7 +303,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         if (qual > 0) {
             logger.debug("quality q1+");
             renderHint.put(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-            renderHint.put(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
+            renderHint.put(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
         } else {
             logger.debug("quality q0");
             renderHint.put(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
@@ -524,15 +528,15 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             if (prescale > 1) {
                 readParam.setSourceSubsampling(prescale, prescale, 0, 0);
             }
-			if (quality < 3 || imageHacks.get(Hacks.forceLoadDestSrgb)) {
+			if (quality <= 2 || imageHacks.get(Hacks.forceLoadDestSrgb)) {
 				/*
-				 * try to set target color space to sRGB
+				 * try to set target color space to sRGB by selecting a reader destination type
 				 */
 				for (Iterator<ImageTypeSpecifier> i = reader.getImageTypes(0); i.hasNext();) {
 					ImageTypeSpecifier type = (ImageTypeSpecifier) i.next();
 					ColorModel cm = type.getColorModel();
 					ColorSpace cs = cm.getColorSpace();
-					logger.debug("loadSubimage: possible color model: {} color space: {}", cm, cs);
+					logger.debug("loadSubimage: possible destination color model: {} color space: {}", cm, cs);
 					if (cs.getNumComponents() < 3 && !imageHacks.get(Hacks.forceLoadDestSrgbForNonRgb)) {
 						// if the first type is not RGB do nothing
 						logger.debug("loadSubimage: image is not RGB {}", type);
@@ -555,37 +559,37 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             // invalidate image size if it was set
             imageSize = null;
             
-            IIOMetadata meta = reader.getImageMetadata(0);
-            IIOMetadataNode dom = (IIOMetadataNode) meta.getAsTree(meta.getNativeMetadataFormatName());
-            IIOMetadataNode iccpNode = (IIOMetadataNode) dom.getElementsByTagName("iCCP").item(0);
-            if (iccpNode != null) {
-        		NamedNodeMap atts = iccpNode.getAttributes();
-        		String name = atts.getNamedItem("profileName").getNodeValue();
-        		String compression = atts.getNamedItem("compressionMethod").getNodeValue();
-                byte[] iccpData = (byte[]) iccpNode.getUserObject();
-                logger.debug("iccp data: {}", iccpData);
-                if (compression.equals("deflate")) {
-    		        ByteArrayOutputStream inflated = new ByteArrayOutputStream();
-    		        InflaterOutputStream inflater = new InflaterOutputStream(inflated);
-    		        inflater.write(iccpData);
-    		        inflater.flush();
-    		        inflater.close();
-    		        byte[] data = inflated.toByteArray();
-    		        colorProfile = ICC_Profile.getInstance(data);
-                	logger.debug("saving ICC color profile from PNG {}", colorProfile);
-                }
-            }
-            
             /*
              * check color profile
              */
             ColorModel cm = img.getColorModel();
-            ColorSpace cs = cm.getColorSpace();
-        	// save color profile if not sRGB
-            if ((cs instanceof ICC_ColorSpace) && !cs.isCS_sRGB()) {
-            	colorProfile = ((ICC_ColorSpace)cs).getProfile();
-            	logger.debug("saving ICC color profile {}", colorProfile);
+            if (quality >= 3) {
+	        	// save color profile if not sRGB
+            	if (ii.getMimetype().equals("image/png") && imageHacks.get(Hacks.needsPngReadProfile)) {
+            		// PNG reader doesn't read the color profile automatically
+            		colorProfile = getPngColorProfile(reader);
+	            	logger.debug("loadSubimage: saving ICC color profile from PNG {}", colorProfile);
+	            	//Raster raster1 = reader.readRaster(0, readParam);
+	            	/* WritableRaster raster = img.getRaster();
+	            	ColorSpace newcs = new ICC_ColorSpace(colorProfile);
+	            	if (cm instanceof ComponentColorModel) {
+		            	ColorModel newcm = new ComponentColorModel(newcs,
+		            			cm.hasAlpha(), cm.isAlphaPremultiplied(), cm.getTransparency(), cm.getTransferType());
+		            	BufferedImage newimg = new BufferedImage(newcm, raster, newcm.isAlphaPremultiplied(), null);
+		            	//BufferedImage newimg = new BufferedImage(cm, raster, cm.isAlphaPremultiplied(), null);
+		            	logger.debug("loadSubimage: created new img with color profile {}", newimg);
+		            	img = newimg;
+	            	} */
+            	} else {
+	                ColorSpace cs = cm.getColorSpace();
+		            if ((cs instanceof ICC_ColorSpace) && !cs.isCS_sRGB()) {
+		            	colorProfile = ((ICC_ColorSpace)cs).getProfile();
+		            	logger.debug("loadSubimage: saving ICC color profile {}", colorProfile);
+		            }
+            	}
             }
+            
+            checkPixels(img);
             
             /*
              * downconvert highcolor images
@@ -611,6 +615,33 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             }
         }
     }
+
+	protected ICC_Profile getPngColorProfile(ImageReader reader) throws IOException {
+		ICC_Profile profile = null;
+		IIOMetadata meta = reader.getImageMetadata(0);
+		IIOMetadataNode dom = (IIOMetadataNode) meta.getAsTree(meta.getNativeMetadataFormatName());
+		IIOMetadataNode iccpNode = (IIOMetadataNode) dom.getElementsByTagName("iCCP").item(0);
+		if (iccpNode != null) {
+			NamedNodeMap atts = iccpNode.getAttributes();
+			//String name = atts.getNamedItem("profileName").getNodeValue();
+			String compression = atts.getNamedItem("compressionMethod").getNodeValue();
+		    byte[] iccpData = (byte[]) iccpNode.getUserObject();
+		    logger.debug("iccp data: {}", iccpData);
+		    if (compression.equals("deflate")) {
+		        ByteArrayOutputStream inflated = new ByteArrayOutputStream();
+		        InflaterOutputStream inflater = new InflaterOutputStream(inflated);
+		        inflater.write(iccpData);
+		        inflater.flush();
+		        inflater.close();
+		        byte[] data = inflated.toByteArray();
+		        profile = ICC_Profile.getInstance(data);
+		    } else {
+		    	// not sure if non-compressed is allowed in PNG
+		    	profile = ICC_Profile.getInstance(iccpData);
+		    }
+		}
+		return profile;
+	}
 
     /**
      * Get an ImageWriter for the mime-type.
@@ -648,6 +679,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
      */
     public void writeImage(String mt, OutputStream ostream) throws ImageOpException, FileOpException {
         logger.debug("writeImage");
+        checkPixels(img);
         // setup output
         ImageWriter writer = null;
         ImageOutputStream imgout = null;
@@ -699,8 +731,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 				BufferedImage ccImg = cco.filter(img, null);
                 logger.debug("converted to {}", ccImg);
 				img = ccImg;
+				checkPixels(img);
 			}
-			if (imageHacks.get(Hacks.needsPngAddProfile)){
+			if (imageHacks.get(Hacks.needsPngWriteProfile)){
 				/*
 				 * manually add ICC profile in iCCP 
 				 * (thanks to https://stackoverflow.com/a/20884108/4912 )
@@ -738,12 +771,15 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		 */
 		if (imageHacks.get(Hacks.needsJpegWriteRgb) && img.getColorModel().hasAlpha()) {
 		    logger.debug("flattening JPEG with alpha channel");
-		    BufferedImage rgbImg = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
+		    //BufferedImage rgbImg = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
+		    BufferedImage rgbImg = getBufferedImage(img.getWidth(), img.getHeight(), false, null);
 		    //rgbImg.createGraphics().drawImage(img, null, 0, 0);
 		    ColorConvertOp cco = new ColorConvertOp(renderHint);
-		    cco.filter(img, rgbImg);
+			//ColorConvertOp cco = new ColorConvertOp(new ICC_Profile[] {colorProfile}, renderHint);
+		    rgbImg = cco.filter(img, rgbImg);
             logger.debug("converted to {}", rgbImg);
 		    img = rgbImg;
+			checkPixels(img);
 		}
 		ImageWriteParam param = writer.getDefaultWriteParam();
 		if (quality > 1) {
@@ -761,6 +797,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 				BufferedImage ccImg = cco.filter(img, null);
 	            logger.debug("converted to {}", ccImg);
 				img = ccImg;
+				checkPixels(img);
 			}
 		}
 		// render output
@@ -834,6 +871,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         }
         img = scaleOp.filter(img, dest);
         logger.debug("scaled to {}x{} img={}", img.getWidth(), img.getHeight(), img);
+		checkPixels(img);
         // invalidate image size
         imageSize = null;
     }
@@ -879,6 +917,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         }
         img = blurOp.filter(img, dest);
         logger.debug("blurred: {}", img);
+		checkPixels(img);
     }
 
     /* 
@@ -1142,5 +1181,23 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     public Image getAwtImage() {
         return (Image) img;
     }
+
+    // debugging
+	private void checkPixels(BufferedImage img) {
+		// check pixel values
+		int x1 = 5;
+		int y1 = 5;
+		int pixel1 = img.getRGB(x1, y1);
+		logger.debug("pixel1 sRGB: {}", new Color(pixel1));
+		int[] pixel1r = img.getRaster().getPixel(x1, y1, new int[4]);
+		logger.debug("pixel1 raw: {}", pixel1r);
+		int x2 = img.getWidth() - 5;
+		int y2 = img.getHeight() - 5;
+		int pixel2 = img.getRGB(x2, y2);
+		logger.debug("pixel2 sRGB: {}", new Color(pixel2));
+		int[] pixel2r = img.getRaster().getPixel(x2, y2, new int[4]);
+		logger.debug("pixel2 raw: {}", pixel2r);
+	}
+
 
 }
