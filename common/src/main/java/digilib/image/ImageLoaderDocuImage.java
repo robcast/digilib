@@ -31,6 +31,7 @@ import java.awt.Color;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.color.ICC_ColorSpace;
 import java.awt.color.ICC_Profile;
@@ -143,7 +144,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         /** add ICC profile to PNG metadata manually */
         needsPngWriteProfile,
         /** load ICC profile from PNG metadata manually */
-        needsPngReadProfile,
+        needsPngFixProfile,
         /** downconvert bit depth to 8 bit */
         forceDepth8Bit
     }
@@ -219,7 +220,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         imageHacks.put(Hacks.forceDestForScale, true);
         imageHacks.put(Hacks.needsJpegWriteRgb, true);
         imageHacks.put(Hacks.needsPngWriteProfile, true);
-        imageHacks.put(Hacks.needsPngReadProfile, true);
+        imageHacks.put(Hacks.needsPngFixProfile, true);
         // print current hacks
         StringBuffer msg = new StringBuffer();
         for (Entry<Hacks, Boolean> kv : imageHacks.entrySet()) {
@@ -242,15 +243,15 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             return;
         }
         // read hack values from String
-        try {
-            for (String h : hackString.split(",")) {
-                String[] hs = h.split("=");
+        for (String h : hackString.split(",")) {
+            String[] hs = h.split("=");
+            try {
                 Hacks key = Hacks.valueOf(hs[0]);
                 Boolean val = hs[1].equals("true");
                 imageHacks.put(key, val);
+            } catch (Exception e) {
+                logger.error("Error setting DocuImage Hacks!", e);
             }
-        } catch (Exception e) {
-            logger.error("Error setting docuimage hacks!", e);
         }
         // print current hacks
         StringBuffer msg = new StringBuffer("DocuImage Hacks: ");
@@ -348,57 +349,120 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     }
 
     
-    protected BufferedImage getBufferedImage(int width, int height, boolean hasAlpha, ICC_Profile profile) {
-        BufferedImage bi = null;
-        if (profile != null) {
-            // ICC profile
-            int transferType;
-            if (imageHacks.get(Hacks.forceDepth8Bit)) {
-                // force destination image to 8 bit
-                transferType = DataBuffer.TYPE_BYTE;
-            } else {
-                transferType = DataBuffer.TYPE_USHORT; // FIXME
-            }
-            ColorSpace outCS;
-            outCS = new ICC_ColorSpace(profile);
-            ColorModel outCM = new ComponentColorModel(outCS, hasAlpha, false, ColorModel.OPAQUE, transferType);
-            WritableRaster outRaster = outCM.createCompatibleWritableRaster(width, height);
-            bi = new BufferedImage(outCM, outRaster, false, null);
-        } else {
-            // sRGB
-            int type = BufferedImage.TYPE_INT_RGB;
-            if (hasAlpha) {
-                type = BufferedImage.TYPE_INT_ARGB;
-            }
-            bi = new BufferedImage(width, height, type);
-        }
-        return bi;
-    }
+    /**
+     * Create an empty BufferedImage with a color profile and the given dimensions, alpha channel and DataBuffer.TransferType.
+     * 
+     * If profile==null a sRGB color space will be created.
+     * 
+     * @param width
+     * @param height
+     * @param hasAlpha
+     * @param transferType
+     * @param profile
+     * @return
+     */
+	protected BufferedImage createBufferedImage(int width, int height, boolean hasAlpha, int transferType,
+			ICC_Profile profile) {
+		ColorSpace outCS;
+		if (profile != null) {
+			// ICC profile
+			outCS = new ICC_ColorSpace(profile);
+		} else {
+			// no profile -> sRGB
+			outCS = ColorSpace.getInstance(ColorSpace.CS_sRGB);
+		}
+		ColorModel outCM = new ComponentColorModel(outCS, hasAlpha, false, ColorModel.OPAQUE, transferType);
+		WritableRaster outRaster = outCM.createCompatibleWritableRaster(width, height);
+		BufferedImage bi = new BufferedImage(outCM, outRaster, false, null);
+		return bi;
+	}
 
+    /**
+     * Change the color profile of a BufferedImage while keeping the same raw pixel values.
+     * 
+     * Returns a new BufferedImage with the given profile.
+     * 
+     * @param bi
+     * @param profile
+     * @return
+     */
     protected BufferedImage changeColorProfile(BufferedImage bi, ICC_Profile profile) {
         ColorModel cm = bi.getColorModel();
         boolean hasAlpha = cm.hasAlpha();
         boolean isAlphaPre = cm.isAlphaPremultiplied();
-        int transferType;
-        if (imageHacks.get(Hacks.forceDepth8Bit)) {
-            // force destination image to 8 bit
-            transferType = DataBuffer.TYPE_BYTE;
-        } else {
-            transferType = cm.getTransferType();
-        }
-        ColorSpace newCs;
-        if (profile != null) {
-            // ICC profile
-            newCs = new ICC_ColorSpace(profile);
-        } else {
-            // sRGB
-            newCs = ColorSpace.getInstance(ColorSpace.CS_sRGB);
-        }
-        ColorModel newCm = new ComponentColorModel(newCs, hasAlpha, isAlphaPre, ColorModel.OPAQUE, transferType);
+        int transferType = cm.getTransferType();
+        int transparency = cm.getTransparency();
+        ColorSpace newCs = new ICC_ColorSpace(profile);
+        ColorModel newCm = new ComponentColorModel(newCs, hasAlpha, isAlphaPre, transparency, transferType);
         WritableRaster newRaster = newCm.createCompatibleWritableRaster(bi.getWidth(), bi.getHeight());
         BufferedImage newBi = new BufferedImage(newCm, newRaster, isAlphaPre, null);
-        // copy image data
         newBi.setData(bi.getRaster());
+        return newBi;
+    }
+
+	/**
+	 * Change the pixels of a BufferedImage in-place from the give profile to the sRGB color space.
+	 * 
+	 * This is only useful if the BufferedImage has a sRGB color space but the pixel values are wrong.
+	 * 
+	 * @param img
+	 * @param realProfile
+	 */
+	protected void changeRasterToSrgb(BufferedImage img, ICC_Profile realProfile) {
+		ICC_Profile srgbProf = ICC_Profile.getInstance(ColorSpace.CS_sRGB);
+		ColorConvertOp cco = new ColorConvertOp(new ICC_Profile[] {realProfile, srgbProf}, null);
+		WritableRaster colorRaster;
+		if (img.getColorModel().hasAlpha()) {
+			// use child Raster with only color components (bands 0,1,2)
+			colorRaster = img.getRaster().createWritableChild(0, 0, img.getWidth(), img.getHeight(), 0, 0, new int[] {0, 1, 2});
+		} else {
+			// use full Raster
+			colorRaster = img.getRaster();
+		}
+		cco.filter(colorRaster, colorRaster);
+	}
+
+    /**
+     * Change the bit-depth of an image to 8 bit per channel.
+     * 
+     * Returns a new BufferedImage using the same ColorSpace.
+     * 
+     * @param bi
+     * @return
+     */
+    protected BufferedImage changeTo8BitDepth(BufferedImage bi) {
+        ColorModel cm = bi.getColorModel();
+        boolean hasAlpha = cm.hasAlpha();
+        boolean isAlphaPre = cm.isAlphaPremultiplied();
+        int transferType = DataBuffer.TYPE_BYTE;
+        int transparency = cm.getTransparency();
+        ColorSpace cs = cm.getColorSpace();
+        ColorModel newCm = new ComponentColorModel(cs, hasAlpha, isAlphaPre, transparency, transferType);
+        WritableRaster newRaster = newCm.createCompatibleWritableRaster(bi.getWidth(), bi.getHeight());
+        BufferedImage newBi = new BufferedImage(newCm, newRaster, isAlphaPre, null);
+        newBi.setData(bi.getRaster());
+        return newBi;
+    }
+
+    /**
+     * Change the bit-depth of an image to 8 bit and remove the alpha channel.
+     * 
+     * Removes the alpha channel by ignoring the alpha band.
+     * Returns a new BufferedImage using the same ColorSpace.
+     * 
+     * @param bi
+     * @return
+     */
+    protected BufferedImage changeTo8BitNonAlpha(BufferedImage bi) {
+        ColorModel cm = bi.getColorModel();
+        int transferType = DataBuffer.TYPE_BYTE;
+        ColorSpace newCs = cm.getColorSpace();
+        ColorModel newCm = new ComponentColorModel(newCs, false, false, Transparency.OPAQUE, transferType);
+        WritableRaster newRaster = newCm.createCompatibleWritableRaster(bi.getWidth(), bi.getHeight());
+		// use child Raster with only color components (bands 0,1,2)
+        WritableRaster colorRaster = img.getRaster().createWritableChild(0, 0, img.getWidth(), img.getHeight(), 0, 0, new int[] {0, 1, 2});
+        BufferedImage newBi = new BufferedImage(newCm, newRaster, false, null);
+        newBi.setData(colorRaster);
         return newBi;
     }
 
@@ -552,6 +616,13 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         return reader;
     }
 
+    /**
+     * Extracts the ICC color profile from the PNG iCCP element of the given ImageReader.
+     *  
+     * @param reader
+     * @return
+     * @throws IOException
+     */
     protected ICC_Profile getPngColorProfile(ImageReader reader) throws IOException {
         ICC_Profile profile = null;
         IIOMetadata meta = reader.getImageMetadata(0);
@@ -607,41 +678,55 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             // invalidate image size if it was set
             imageSize = null;
             
+            testPixels(img);
+
             /*
              * check color profile
              */
+            // fix PNG reader not processing color profiles
+        	if (ii.getMimetype().equals("image/png") && imageHacks.get(Hacks.needsPngFixProfile)) {
+        		// PNG reader doesn't read the color profile automatically
+        		ICC_Profile pngProfile = getPngColorProfile(reader);
+        		if (pngProfile != null) {
+        			logger.debug("loadSubimage: fixing PNG image with color profile {}", pngProfile);
+                    // change image to correct profile
+        			if (quality < 3) {
+        				// faster way to sRGB
+        				changeRasterToSrgb(img, pngProfile);
+        			} else {
+        				img = changeColorProfile(img, pngProfile);
+        			}
+        		}
+        	}
             ColorModel cm = img.getColorModel();
+            ColorSpace cs = cm.getColorSpace();
             if (quality >= 3) {
-	        	// save color profile if not sRGB
-            	if (ii.getMimetype().equals("image/png") && imageHacks.get(Hacks.needsPngReadProfile)) {
-            		// PNG reader doesn't read the color profile automatically
-            		ICC_Profile pngProfile = getPngColorProfile(reader);
-            		if (pngProfile != null) {
-                        logger.debug("loadSubimage: saving ICC color profile from PNG {}", pngProfile);
-                        colorProfile = pngProfile;
-                        // change image to correct profile
-                        img = changeColorProfile(img, colorProfile);
-            		}
-            	} else {
-	                ColorSpace cs = cm.getColorSpace();
-		            if ((cs instanceof ICC_ColorSpace) && !cs.isCS_sRGB()) {
-		            	colorProfile = ((ICC_ColorSpace)cs).getProfile();
-		            	logger.debug("loadSubimage: saving ICC color profile {}", colorProfile);
-		            }
-            	}
+	        	// q>=3: save color profile if not sRGB
+	            if ((cs instanceof ICC_ColorSpace) && !cs.isCS_sRGB()) {
+	            	colorProfile = ((ICC_ColorSpace)cs).getProfile();
+	            	logger.debug("loadSubimage: saving ICC color profile {}", colorProfile);
+	            }
             } else {
-                // FIXME: make sure we have sRGB colorspace
+            	// q<3: enforce sRGB color space
+                if (!cs.isCS_sRGB()) {
+                	logger.debug("loadSubimage: converting to sRGB");
+            		ColorConvertOp cco = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_sRGB), renderHint);
+            		// null destination also converts to 8bit depth
+            		img = cco.filter(img, null);
+                    logger.debug("loadSubimage: converted to {}", img);
+                    cm = img.getColorModel();
+                    cs = cm.getColorSpace();
+                }
             }
             
-            checkPixels(img);
+            testPixels(img);
             
             /*
-             * downconvert highcolor images
+             * downconvert highcolor images for q<3
              */
-            if (imageHacks.get(Hacks.forceDepth8Bit) && cm.getComponentSize(0) > 8) {
+            if (cm.getComponentSize(0) > 8 && (quality < 3 || imageHacks.get(Hacks.forceDepth8Bit))) {
                 logger.debug("loadSubimage: converting to 8bit");
-                // changeProfile checks Hacks.forceDepth8Bit
-                BufferedImage lcImg = changeColorProfile(img, colorProfile);
+                BufferedImage lcImg = changeTo8BitDepth(img);
                 logger.debug("loadSubimage: converted to {}", lcImg);
                 img = lcImg;
             }
@@ -693,7 +778,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
      */
     public void writeImage(String mt, OutputStream ostream) throws ImageOpException, FileOpException {
         logger.debug("writeImage");
-        checkPixels(img);
+        testPixels(img);
         // setup output
         ImageWriter writer = null;
         ImageOutputStream imgout = null;
@@ -734,83 +819,75 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         }
     }
 
-	protected void writePng(ImageWriter writer) throws IOException, IIOInvalidTreeException {
-		IIOMetadata meta = null;
-		if (colorProfile != null) {
-			// we have a target color profile
-			ColorSpace cs = img.getColorModel().getColorSpace();
-			if (!(cs instanceof ICC_ColorSpace) || (((ICC_ColorSpace)cs).getProfile() != colorProfile)) {
-				logger.debug("converting to color profile {}", colorProfile);
-				ColorConvertOp cco = new ColorConvertOp(new ICC_Profile[] {colorProfile}, renderHint);
-				BufferedImage ccImg = cco.filter(img, null);
-                logger.debug("converted to {}", ccImg);
-				img = ccImg;
-				checkPixels(img);
-			}
-			if (imageHacks.get(Hacks.needsPngWriteProfile)){
-				/*
-				 * manually add ICC profile in iCCP 
-				 * (thanks to https://stackoverflow.com/a/20884108/4912 )
-				 */
-				logger.debug("adding color profile to PNG {}", colorProfile);
-		        // deflate ICC profile data
-		        byte[] data = colorProfile.getData();
-		        ByteArrayOutputStream deflated = new ByteArrayOutputStream();
-		        DeflaterOutputStream deflater = new DeflaterOutputStream(deflated);
-		        deflater.write(data);
-		        deflater.flush();
-		        deflater.close();
-		        // create ICC profile atom
-		        IIOMetadataNode iccp = new IIOMetadataNode("iCCP");
-		        iccp.setUserObject(deflated.toByteArray());
-		        iccp.setAttribute("profileName", "ICC profile");
-		        iccp.setAttribute("compressionMethod", "deflate");
-		        // add to metadata for writer
-				meta = writer.getDefaultImageMetadata(ImageTypeSpecifier.createFromRenderedImage(img), 
-						writer.getDefaultWriteParam());
-		        Node dom = meta.getAsTree(meta.getNativeMetadataFormatName());
-		        dom.appendChild(iccp);
-		        meta.mergeTree(meta.getNativeMetadataFormatName(), dom);
-			}
-		}
-		// render output
-		logger.debug("writing PNG");
-		writer.write(new IIOImage(img, null, meta));
-	}
+	/**
+	 * Write the current image to the given ImageWriter as PNG with the correct color profile.
+	 * @param writer
+	 * @throws IOException
+	 * @throws IIOInvalidTreeException
+	 */
+    protected void writePng(ImageWriter writer) throws IOException, IIOInvalidTreeException {
+        IIOMetadata meta = null;
+        if (colorProfile != null) {
+            // we have a target color profile
+            ColorSpace cs = img.getColorModel().getColorSpace();
+            if (cs instanceof ICC_ColorSpace && ((ICC_ColorSpace) cs).getProfile() == colorProfile) {
+                // img matches colorProfile
+                if (imageHacks.get(Hacks.needsPngWriteProfile)) {
+                    /*
+                     * manually add ICC profile in iCCP (thanks to
+                     * https://stackoverflow.com/a/20884108/4912 )
+                     */
+                    logger.debug("adding color profile to PNG {}", colorProfile);
+                    // deflate ICC profile data
+                    byte[] data = colorProfile.getData();
+                    ByteArrayOutputStream deflated = new ByteArrayOutputStream();
+                    DeflaterOutputStream deflater = new DeflaterOutputStream(deflated);
+                    deflater.write(data);
+                    deflater.flush();
+                    deflater.close();
+                    // create ICC profile atom
+                    IIOMetadataNode iccp = new IIOMetadataNode("iCCP");
+                    iccp.setUserObject(deflated.toByteArray());
+                    iccp.setAttribute("profileName", "ICC profile");
+                    iccp.setAttribute("compressionMethod", "deflate");
+                    // add to metadata for writer
+                    meta = writer.getDefaultImageMetadata(ImageTypeSpecifier.createFromRenderedImage(img),
+                            writer.getDefaultWriteParam());
+                    Node dom = meta.getAsTree(meta.getNativeMetadataFormatName());
+                    dom.appendChild(iccp);
+                    meta.mergeTree(meta.getNativeMetadataFormatName(), dom);
+                }
+            } else {
+                logger.warn("writePng: image does not match destination color profile {}", colorProfile);
+            }
+        }
+        // render output
+        logger.debug("writing PNG");
+        writer.write(new IIOImage(img, null, meta));
+    }
 
+	/**
+     * Write the current image to the given ImageWriter as JPEG with the correct color profile.
+     * 
+	 * @param writer
+	 * @throws IOException
+	 */
 	protected void writeJpeg(ImageWriter writer) throws IOException {
 		/*
 		 * JPEG doesn't do transparency so we have to convert any RGBA
-		 * image to RGB or the client will think its CMYK :-( (Java2D BUG)
+		 * image to RGB or all clients will think its CMYK :-( (Java2D BUG)
 		 */
 		if (imageHacks.get(Hacks.needsJpegWriteRgb) && img.getColorModel().hasAlpha()) {
 		    logger.debug("flattening JPEG with alpha channel");
-		    BufferedImage rgbImg = getBufferedImage(img.getWidth(), img.getHeight(), false, colorProfile);
-		    rgbImg.createGraphics().drawImage(img, null, 0, 0);
-		    //ColorConvertOp cco = new ColorConvertOp(renderHint);
-			//ColorConvertOp cco = new ColorConvertOp(new ICC_Profile[] {colorProfile}, renderHint);
-		    //rgbImg = cco.filter(img, rgbImg);
-            logger.debug("converted to {}", rgbImg);
-		    img = rgbImg;
-			checkPixels(img);
+		    img = changeTo8BitNonAlpha(img);
+            logger.debug("converted to {}", img);
+			testPixels(img);
 		}
 		ImageWriteParam param = writer.getDefaultWriteParam();
 		if (quality > 1) {
 		    // change JPEG compression quality
 		    param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
 		    param.setCompressionQuality(0.9f);
-		}
-		if (colorProfile != null) {
-			// we have a target color profile
-			ColorSpace cs = img.getColorModel().getColorSpace();
-			if (!(cs instanceof ICC_ColorSpace) || (((ICC_ColorSpace)cs).getProfile() != colorProfile)) {
-				// current profile needs to be converted
-				logger.debug("converting to color profile {}", colorProfile);
-				BufferedImage ccImg = changeColorProfile(img, colorProfile);
-	            logger.debug("converted to {}", ccImg);
-				img = ccImg;
-				checkPixels(img);
-			}
 		}
 		// render output
 		logger.debug("writing JPEG");
@@ -867,17 +944,18 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         AffineTransformOp scaleOp = new AffineTransformOp(AffineTransform.getScaleInstance(scaleX, scaleY), renderHint);
         BufferedImage dest = null;
         if (imageHacks.get(Hacks.forceDestForScale)) {
-            // fix destination image */
+            // set destination image
             int dw = (int) Math.round(imgW * scaleX);
             int dh = (int) Math.round(imgH * scaleY);
+            ColorModel cm = img.getColorModel();
             // q2 with bilinear interpolation requires alpha channel
-            boolean hasAlpha = img.getColorModel().hasAlpha() || renderHint.containsValue(RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-            dest = getBufferedImage(dw, dh, hasAlpha, colorProfile);
+            boolean hasAlpha = cm.hasAlpha() || renderHint.containsValue(RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            dest = createBufferedImage(dw, dh, hasAlpha, cm.getTransferType(), colorProfile);
             logger.debug("scale: fixing destination image {}", dest);
         }
         img = scaleOp.filter(img, dest);
         logger.debug("scaled to {}x{} img={}", img.getWidth(), img.getHeight(), img);
-		checkPixels(img);
+		testPixels(img);
         // invalidate image size
         imageSize = null;
     }
@@ -911,12 +989,14 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         ConvolveOp blurOp = new ConvolveOp(blur, ConvolveOp.EDGE_NO_OP, renderHint);
         BufferedImage dest = null;
         if (imageHacks.get(Hacks.forceDestForBlur)) {
-        	dest = getBufferedImage(img.getWidth(), img.getHeight(), img.getColorModel().hasAlpha(), colorProfile);
+            // set destination image
+        	ColorModel cm = img.getColorModel();
+            dest = createBufferedImage(img.getWidth(), img.getHeight(), cm.hasAlpha(), cm.getTransferType(), colorProfile);
         	logger.debug("blur: fixing destination image {}", dest);
         }
         img = blurOp.filter(img, dest);
         logger.debug("blurred: {}", img);
-		checkPixels(img);
+		testPixels(img);
     }
 
     /* 
@@ -1182,7 +1262,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     }
 
     // debugging
-	private void checkPixels(BufferedImage img) {
+	private void testPixels(BufferedImage img) {
         ColorModel cm = img.getColorModel();
         ColorSpace cs = cm.getColorSpace();
         logger.debug("Check image colorspace: " + cs + " is sRGB=" + cs.isCS_sRGB() + " hasAlpha=" + cm.hasAlpha());
