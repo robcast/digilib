@@ -131,10 +131,6 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         needsRescaleRgba,
         /** destination image type for LookupOp(mapBgrByteTable) needs to be (A)BGR */ 
         needsMapBgr, 
-        /** set destination type to sRGB (if available) when loading  */
-        forceLoadDestSrgb, 
-        /** set destination type to sRGB (if available) when loading, even for non-RGB images */
-        forceLoadDestSrgbForNonRgb, 
         /** set destination type for blur operation */
         forceDestForBlur, 
         /** set destination type for scale operation */
@@ -144,9 +140,11 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         /** add ICC profile to PNG metadata manually */
         needsPngWriteProfile,
         /** load ICC profile from PNG metadata manually */
-        needsPngFixProfile,
-        /** downconvert bit depth to 8 bit */
-        forceDepth8Bit
+        needsPngLoadProfile,
+        /** always convert bit depth to 8 bit */
+        force8Bit,
+        /** convert images with 16 bit depth to sRGB (and 8 bit depth) */ 
+        force16BitToSrgb
     }
     
     /** active hacks */
@@ -215,12 +213,12 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         }
         // this hopefully works for all
         mapBgrByteTable = new ByteLookupTable(0, new byte[][] { mapR, mapG, mapB });
-        imageHacks.put(Hacks.forceDepth8Bit, true);
+        imageHacks.put(Hacks.force8Bit, true);
         imageHacks.put(Hacks.forceDestForBlur, true);
         imageHacks.put(Hacks.forceDestForScale, true);
         imageHacks.put(Hacks.needsJpegWriteRgb, true);
         imageHacks.put(Hacks.needsPngWriteProfile, true);
-        imageHacks.put(Hacks.needsPngFixProfile, true);
+        imageHacks.put(Hacks.needsPngLoadProfile, true);
         // print current hacks
         StringBuffer msg = new StringBuffer();
         for (Entry<Hacks, Boolean> kv : imageHacks.entrySet()) {
@@ -441,6 +439,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         WritableRaster newRaster = newCm.createCompatibleWritableRaster(bi.getWidth(), bi.getHeight());
         BufferedImage newBi = new BufferedImage(newCm, newRaster, isAlphaPre, null);
         newBi.setData(bi.getRaster());
+        //newBi.createGraphics().drawImage(img, null, 0, 0);
         return newBi;
     }
 
@@ -453,7 +452,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
      * @param bi
      * @return
      */
-    protected BufferedImage changeTo8BitNonAlpha(BufferedImage bi) {
+    protected BufferedImage changeTo8BitNoAlpha(BufferedImage bi) {
         ColorModel cm = bi.getColorModel();
         int transferType = DataBuffer.TYPE_BYTE;
         ColorSpace newCs = cm.getColorSpace();
@@ -629,11 +628,11 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         IIOMetadataNode dom = (IIOMetadataNode) meta.getAsTree(meta.getNativeMetadataFormatName());
         IIOMetadataNode iccpNode = (IIOMetadataNode) dom.getElementsByTagName("iCCP").item(0);
         if (iccpNode != null) {
+            logger.debug("extracting iCCP profile from PNG.");
             NamedNodeMap atts = iccpNode.getAttributes();
             //String name = atts.getNamedItem("profileName").getNodeValue();
             String compression = atts.getNamedItem("compressionMethod").getNodeValue();
             byte[] iccpData = (byte[]) iccpNode.getUserObject();
-            logger.debug("iccp data: {}", iccpData);
             if (compression.equals("deflate")) {
                 ByteArrayOutputStream inflated = new ByteArrayOutputStream();
                 InflaterOutputStream inflater = new InflaterOutputStream(inflated);
@@ -683,23 +682,25 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             /*
              * check color profile
              */
+            ColorModel cm = img.getColorModel();
+            ColorSpace cs = cm.getColorSpace();
             // fix PNG reader not processing color profiles
-        	if (ii.getMimetype().equals("image/png") && imageHacks.get(Hacks.needsPngFixProfile)) {
+        	if (ii.getMimetype().equals("image/png") && imageHacks.get(Hacks.needsPngLoadProfile)) {
         		// PNG reader doesn't read the color profile automatically
         		ICC_Profile pngProfile = getPngColorProfile(reader);
         		if (pngProfile != null) {
         			logger.debug("loadSubimage: fixing PNG image with color profile {}", pngProfile);
                     // change image to correct profile
-        			if (quality < 3) {
+        			if (quality < 3 && cm.getComponentSize(0) == 8) {
         				// faster way to sRGB
         				changeRasterToSrgb(img, pngProfile);
         			} else {
         				img = changeColorProfile(img, pngProfile);
+                        cm = img.getColorModel();
+                        cs = cm.getColorSpace();
         			}
         		}
         	}
-            ColorModel cm = img.getColorModel();
-            ColorSpace cs = cm.getColorSpace();
             if (quality >= 3) {
 	        	// q>=3: save color profile if not sRGB
 	            if ((cs instanceof ICC_ColorSpace) && !cs.isCS_sRGB()) {
@@ -724,12 +725,13 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             /*
              * downconvert highcolor images for q<3
              */
-            if (cm.getComponentSize(0) > 8 && (quality < 3 || imageHacks.get(Hacks.forceDepth8Bit))) {
+            if (cm.getComponentSize(0) > 8 && (quality < 3 || imageHacks.get(Hacks.force8Bit))) {
                 logger.debug("loadSubimage: converting to 8bit");
                 BufferedImage lcImg = changeTo8BitDepth(img);
                 logger.debug("loadSubimage: converted to {}", lcImg);
                 img = lcImg;
             }
+            testPixels(img);
         } catch (FileOpException e) {
         	// re-throw lower level exception
             throw e;
@@ -879,7 +881,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		 */
 		if (imageHacks.get(Hacks.needsJpegWriteRgb) && img.getColorModel().hasAlpha()) {
 		    logger.debug("flattening JPEG with alpha channel");
-		    img = changeTo8BitNonAlpha(img);
+		    img = changeTo8BitNoAlpha(img);
             logger.debug("converted to {}", img);
 			testPixels(img);
 		}
