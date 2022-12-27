@@ -141,8 +141,6 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         needsPngWriteProfile,
         /** load ICC profile from PNG metadata manually */
         needsPngLoadProfile,
-        /** always convert bit depth to 8 bit */
-        force8Bit,
         /** convert images with 16 bit depth to sRGB (and 8 bit depth) */ 
         force16BitToSrgb8
     }
@@ -213,9 +211,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         }
         // this hopefully works for all
         mapBgrByteTable = new ByteLookupTable(0, new byte[][] { mapR, mapG, mapB });
-        imageHacks.put(Hacks.force8Bit, true);
-        imageHacks.put(Hacks.forceDestForBlur, true);
-        imageHacks.put(Hacks.forceDestForScale, true);
+        imageHacks.put(Hacks.force16BitToSrgb8, true);
+        //imageHacks.put(Hacks.forceDestForBlur, true);
+        //imageHacks.put(Hacks.forceDestForScale, true);
         imageHacks.put(Hacks.needsJpegWriteRgb, true);
         imageHacks.put(Hacks.needsPngWriteProfile, true);
         imageHacks.put(Hacks.needsPngLoadProfile, true);
@@ -683,58 +681,57 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             testPixels(img);
 
             /*
-             * check color profile
+             * process color profile
+             * 
+             * convert image to sRGB color space for quality q<3
              */
+            boolean convertToSrgb = (quality < 3);
             ColorModel cm = img.getColorModel();
             ColorSpace cs = cm.getColorSpace();
+            if (cm.getComponentSize(0) > 8 && imageHacks.get(Hacks.force16BitToSrgb8)) {
+                // higher color depths lead to imaging errors, we have to force sRGB
+                logger.warn("Converting 16bit image to 8bit sRGB to avoid Java imaging issues.");
+                convertToSrgb = true;
+            }
+            if (!convertToSrgb && (cs instanceof ICC_ColorSpace) && !cs.isCS_sRGB()) {
+                // save ICC color profile
+                colorProfile = ((ICC_ColorSpace) cs).getProfile();
+                logger.debug("loadSubimage: saving ICC color profile {}", colorProfile);
+            }
+           
             // fix PNG reader not processing color profiles
         	if (ii.getMimetype().equals("image/png") && imageHacks.get(Hacks.needsPngLoadProfile)) {
-        		// PNG reader doesn't read the color profile automatically
+        		// extract real profile from PNG reader
         		ICC_Profile pngProfile = getPngColorProfile(reader);
         		if (pngProfile != null) {
         			logger.debug("loadSubimage: fixing PNG image with color profile {}", pngProfile);
                     // change image to correct profile
-        			if (quality < 3 && cm.getComponentSize(0) == 8) {
+        			if (cm.getComponentSize(0) == 8 && convertToSrgb) {
         				// faster way to sRGB
         				changeRasterToSrgb(img, pngProfile);
         			} else {
+        			    // change image to real profile
         				img = changeColorProfile(img, pngProfile);
                         cm = img.getColorModel();
                         cs = cm.getColorSpace();
+                        colorProfile = pngProfile;
         			}
         		}
         	}
-            if (quality >= 3) {
-	        	// q>=3: save color profile if not sRGB
-	            if ((cs instanceof ICC_ColorSpace) && !cs.isCS_sRGB()) {
-	            	colorProfile = ((ICC_ColorSpace)cs).getProfile();
-	            	logger.debug("loadSubimage: saving ICC color profile {}", colorProfile);
-	            }
-            } else {
-            	// q<3: enforce sRGB color space
-                if (!cs.isCS_sRGB()) {
-                	logger.debug("loadSubimage: converting to sRGB");
-            		ColorConvertOp cco = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_sRGB), renderHint);
-            		// null destination also converts to 8bit depth
-            		img = cco.filter(img, null);
-                    logger.debug("loadSubimage: converted to {}", img);
-                    cm = img.getColorModel();
-                    cs = cm.getColorSpace();
-                }
+        	
+        	// convert image to sRGB if necessary
+            if (convertToSrgb && !cs.isCS_sRGB()) {
+                logger.debug("loadSubimage: converting to sRGB");
+                ColorConvertOp cco = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_sRGB), renderHint);
+                // null destination also converts to 8bit depth
+                img = cco.filter(img, null);
+                logger.debug("loadSubimage: converted to {}", img);
+                cm = img.getColorModel();
+                cs = cm.getColorSpace();
             }
             
             testPixels(img);
             
-            /*
-             * downconvert highcolor images for q<3
-             */
-            if (cm.getComponentSize(0) > 8 && (quality < 3 || imageHacks.get(Hacks.force8Bit))) {
-                logger.debug("loadSubimage: converting to 8bit");
-                BufferedImage lcImg = changeTo8BitDepth(img);
-                logger.debug("loadSubimage: converted to {}", lcImg);
-                img = lcImg;
-            }
-            testPixels(img);
         } catch (FileOpException e) {
         	// re-throw lower level exception
             throw e;
