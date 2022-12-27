@@ -144,7 +144,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         /** always convert bit depth to 8 bit */
         force8Bit,
         /** convert images with 16 bit depth to sRGB (and 8 bit depth) */ 
-        force16BitToSrgb
+        force16BitToSrgb8
     }
     
     /** active hacks */
@@ -398,27 +398,30 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         return newBi;
     }
 
-	/**
-	 * Change the pixels of a BufferedImage in-place from the give profile to the sRGB color space.
-	 * 
-	 * This is only useful if the BufferedImage has a sRGB color space but the pixel values are wrong.
-	 * 
-	 * @param img
-	 * @param realProfile
-	 */
-	protected void changeRasterToSrgb(BufferedImage img, ICC_Profile realProfile) {
-		ICC_Profile srgbProf = ICC_Profile.getInstance(ColorSpace.CS_sRGB);
-		ColorConvertOp cco = new ColorConvertOp(new ICC_Profile[] {realProfile, srgbProf}, null);
-		WritableRaster colorRaster;
-		if (img.getColorModel().hasAlpha()) {
-			// use child Raster with only color components (bands 0,1,2)
-			colorRaster = img.getRaster().createWritableChild(0, 0, img.getWidth(), img.getHeight(), 0, 0, new int[] {0, 1, 2});
-		} else {
-			// use full Raster
-			colorRaster = img.getRaster();
-		}
-		cco.filter(colorRaster, colorRaster);
-	}
+    /**
+     * Change the pixels of a BufferedImage in-place from the given profile to the
+     * sRGB color space.
+     * 
+     * This is only useful if the BufferedImage has a sRGB ColorSpace but the pixel
+     * values are actually matching realProfile.
+     * 
+     * @param img
+     * @param realProfile
+     */
+    protected void changeRasterToSrgb(BufferedImage img, ICC_Profile realProfile) {
+        ICC_Profile srgbProf = ICC_Profile.getInstance(ColorSpace.CS_sRGB);
+        ColorConvertOp cco = new ColorConvertOp(new ICC_Profile[] { realProfile, srgbProf }, null);
+        WritableRaster colorRaster;
+        if (img.getColorModel().hasAlpha()) {
+            // use child Raster with only color components (bands 0,1,2)
+            colorRaster = img.getRaster().createWritableChild(0, 0, img.getWidth(), img.getHeight(), 
+                    0, 0, new int[] { 0, 1, 2 });
+        } else {
+            // use full Raster
+            colorRaster = img.getRaster();
+        }
+        cco.filter(colorRaster, colorRaster);
+    }
 
     /**
      * Change the bit-depth of an image to 8 bit per channel.
@@ -905,9 +908,17 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         /* 
          * for downscaling in high quality the image is blurred first ...
          */
-        if ((scaleX <= 0.5) && (quality > 1)) {
-            int bl = (int) Math.floor(1 / scaleX);
-            blur(bl);
+        RenderingHints scaleHint = null;
+        if (quality > 1) {
+            if (scaleX <= 0.5) {
+                // blur before scaling down a lot
+                int bl = (int) Math.floor(1 / scaleX);
+                blur(bl);
+            } else if (scaleX > 1) {
+                // use interpolation for scaling up
+                scaleHint = new RenderingHints(
+                        RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            }
         }
         /* 
          * ... then scaled.
@@ -943,7 +954,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         }
         // scale with AffineTransformOp
         logger.debug("scaled from {}x{} img={}", imgW, imgH, img);
-        AffineTransformOp scaleOp = new AffineTransformOp(AffineTransform.getScaleInstance(scaleX, scaleY), renderHint);
+        AffineTransformOp scaleOp = new AffineTransformOp(AffineTransform.getScaleInstance(scaleX, scaleY), scaleHint);
         BufferedImage dest = null;
         if (imageHacks.get(Hacks.forceDestForScale)) {
             // set destination image
@@ -951,7 +962,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             int dh = (int) Math.round(imgH * scaleY);
             ColorModel cm = img.getColorModel();
             // q2 with bilinear interpolation requires alpha channel
-            boolean hasAlpha = cm.hasAlpha() || renderHint.containsValue(RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            boolean hasAlpha = cm.hasAlpha() || scaleHint.containsValue(RenderingHints.VALUE_INTERPOLATION_BICUBIC);
             dest = createBufferedImage(dw, dh, hasAlpha, cm.getTransferType(), colorProfile);
             logger.debug("scale: fixing destination image {}", dest);
         }
