@@ -1,7 +1,5 @@
 package digilib.image;
 
-import java.awt.Color;
-
 /*
  * #%L
  * ImageLoaderDocuImage -- Image class implementation using JDK 1.4 ImageLoader
@@ -212,8 +210,6 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         // this hopefully works for all
         mapBgrByteTable = new ByteLookupTable(0, new byte[][] { mapR, mapG, mapB });
         imageHacks.put(Hacks.force16BitToSrgb8, true);
-        //imageHacks.put(Hacks.forceDestForBlur, true);
-        //imageHacks.put(Hacks.forceDestForScale, true);
         imageHacks.put(Hacks.needsJpegWriteRgb, true);
         imageHacks.put(Hacks.needsPngWriteProfile, true);
         imageHacks.put(Hacks.needsPngLoadProfile, true);
@@ -300,7 +296,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         // setup interpolation quality
         if (qual > 0) {
             logger.debug("quality q1+");
-            //renderHint.put(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            renderHint.put(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
             renderHint.put(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
         } else {
             logger.debug("quality q0");
@@ -400,7 +396,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
      * Change the pixels of a BufferedImage in-place from the given profile to the
      * sRGB color space.
      * 
-     * This is only useful if the BufferedImage has a sRGB ColorSpace but the pixel
+     * This is only useful if the BufferedImage has an sRGB ColorSpace but the pixel
      * values are actually matching realProfile.
      * 
      * @param img
@@ -678,7 +674,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             // invalidate image size if it was set
             imageSize = null;
             
-            testPixels(img);
+            //testPixels(img);
 
             /*
              * process color profile
@@ -706,7 +702,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         		if (pngProfile != null) {
         			logger.debug("loadSubimage: fixing PNG image with color profile {}", pngProfile);
                     // change image to correct profile
-        			if (cm.getComponentSize(0) == 8 && convertToSrgb) {
+        			if (convertToSrgb && cm.getComponentSize(0) == 8 && cm.getNumColorComponents() == 3) {
         				// faster way to sRGB
         				changeRasterToSrgb(img, pngProfile);
         			} else {
@@ -720,7 +716,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         	}
         	
         	// convert image to sRGB if necessary
-            if (convertToSrgb && !cs.isCS_sRGB()) {
+            if (convertToSrgb && !cs.isCS_sRGB() && (cm.getNumColorComponents() > 1)) {
                 logger.debug("loadSubimage: converting to sRGB");
                 ColorConvertOp cco = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_sRGB), renderHint);
                 // null destination also converts to 8bit depth
@@ -729,8 +725,6 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
                 cm = img.getColorModel();
                 cs = cm.getColorSpace();
             }
-            
-            testPixels(img);
             
         } catch (FileOpException e) {
         	// re-throw lower level exception
@@ -780,8 +774,8 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
      */
     public void writeImage(String mt, OutputStream ostream) throws ImageOpException, FileOpException {
         logger.debug("writeImage");
-        testPixels(img);
-        // setup output
+        //testPixels(img);
+        // set up output
         ImageWriter writer = null;
         ImageOutputStream imgout = null;
         try {
@@ -839,7 +833,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
                      * manually add ICC profile in iCCP (thanks to
                      * https://stackoverflow.com/a/20884108/4912 )
                      */
-                    logger.debug("adding color profile to PNG {}", colorProfile);
+                    logger.debug("adding color profile to PNG: {}", colorProfile);
                     // deflate ICC profile data
                     byte[] data = colorProfile.getData();
                     ByteArrayOutputStream deflated = new ByteArrayOutputStream();
@@ -883,7 +877,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		    logger.debug("flattening JPEG with alpha channel");
 		    img = changeTo8BitNoAlpha(img);
             logger.debug("converted to {}", img);
-			testPixels(img);
+			//testPixels(img);
 		}
 		ImageWriteParam param = writer.getDefaultWriteParam();
 		if (quality > 1) {
@@ -905,17 +899,10 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         /* 
          * for downscaling in high quality the image is blurred first ...
          */
-        RenderingHints scaleHint = null;
-        if (quality > 1) {
-            if (scaleX <= 0.5) {
-                // blur before scaling down a lot
-                int bl = (int) Math.floor(1 / scaleX);
-                blur(bl);
-            } else if (scaleX > 1) {
-                // use interpolation for scaling up
-                scaleHint = new RenderingHints(
-                        RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-            }
+        if (quality > 1 && scaleX <= 0.5) {
+            // blur before scaling down a lot
+            int bl = (int) Math.floor(1 / scaleX);
+            blur(bl);
         }
         /* 
          * ... then scaled.
@@ -951,7 +938,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         }
         // scale with AffineTransformOp
         logger.debug("scaled from {}x{} img={}", imgW, imgH, img);
-        AffineTransformOp scaleOp = new AffineTransformOp(AffineTransform.getScaleInstance(scaleX, scaleY), scaleHint);
+        AffineTransformOp scaleOp = new AffineTransformOp(AffineTransform.getScaleInstance(scaleX, scaleY), renderHint);
         BufferedImage dest = null;
         if (imageHacks.get(Hacks.forceDestForScale)) {
             // set destination image
@@ -959,13 +946,13 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             int dh = (int) Math.round(imgH * scaleY);
             ColorModel cm = img.getColorModel();
             // q2 with bilinear interpolation requires alpha channel
-            boolean hasAlpha = cm.hasAlpha() || scaleHint.containsValue(RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            boolean hasAlpha = cm.hasAlpha() || renderHint.containsValue(RenderingHints.VALUE_INTERPOLATION_BICUBIC);
             dest = createBufferedImage(dw, dh, hasAlpha, cm.getTransferType(), colorProfile);
             logger.debug("scale: fixing destination image {}", dest);
         }
         img = scaleOp.filter(img, dest);
         logger.debug("scaled to {}x{} img={}", img.getWidth(), img.getHeight(), img);
-		testPixels(img);
+		//testPixels(img);
         // invalidate image size
         imageSize = null;
     }
@@ -1006,7 +993,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         }
         img = blurOp.filter(img, dest);
         logger.debug("blurred: {}", img);
-		testPixels(img);
+		//testPixels(img);
     }
 
     /* 
@@ -1271,7 +1258,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         return (Image) img;
     }
 
-    // debugging
+    /* debugging
 	private void testPixels(BufferedImage img) {
         ColorModel cm = img.getColorModel();
         ColorSpace cs = cm.getColorSpace();
@@ -1289,7 +1276,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
 		logger.debug("pixel2 sRGB: {}", new Color(pixel2));
 		int[] pixel2r = img.getRaster().getPixel(x2, y2, new int[4]);
 		logger.debug("pixel2 raw: {}", pixel2r);
-	}
+	} */
 
 
 }
