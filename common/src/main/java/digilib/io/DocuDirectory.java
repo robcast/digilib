@@ -215,6 +215,9 @@ public abstract class DocuDirectory implements Iterable<DocuDirent> {
                 for (int i = idx + 2; i < numFiles; ++i) {
                     if (isBasenameAt(files, i, fn)) {
                         return i;
+                    } else if (!isPrefixBasenameAt(files, i, fn)) {
+                        // prefix does not match
+                        break;
                     }
                 }
             }
@@ -224,7 +227,7 @@ public abstract class DocuDirectory implements Iterable<DocuDirent> {
 
     /**
      * Checks if the basename of the DocuDirent in fileList at the position idx
-     * matches the basename of fn.
+     * matches fn.
      * 
      * @param fileList
      * @param idx
@@ -232,10 +235,23 @@ public abstract class DocuDirectory implements Iterable<DocuDirent> {
      * @return
      */
     protected boolean isBasenameAt(List<DocuDirent> fileList, int idx, String fn) {
-        String bfn = FileOps.basename((fileList.get(idx)).getName());
-        return (bfn.equals(fn) || bfn.equals(FileOps.basename(fn))); 
+        String bdn = FileOps.basename((fileList.get(idx)).getName());
+        return bdn.equals(fn); 
     }
 
+    /**
+     * Checks if fn is the prefix of the basename of the DocuDirent
+     * in fileList at the position idx.
+     * 
+     * @param fileList
+     * @param idx
+     * @param fn
+     * @return
+     */
+    protected boolean isPrefixBasenameAt(List<DocuDirent> fileList, int idx, String fn) {
+        String bdn = FileOps.basename((fileList.get(idx)).getName());
+        return bdn.startsWith(fn);
+    }
 
     /**
      * Finds the DocuDirent with the name <code>fn</code>.
