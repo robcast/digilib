@@ -47,104 +47,104 @@ import digilib.meta.MetaFactory;
  */
 public abstract class DocuDirectory implements Iterable<DocuDirent> {
 
-	protected Logger logger = LoggerFactory.getLogger(this.getClass());
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	/** type of files in this DocuDirectory */
+    /** type of files in this DocuDirectory */
     protected FileClass fileClass = FileClass.IMAGE;
-    
+
     /** parent DocuDirectory */
     protected DocuDirectory parent = null;
-    
-	/** list of files (DocuDirent) */
-	protected List<DocuDirent> files = null;
 
-	/** directory object is valid (exists on disk) */
-	protected boolean isValid = false;
+    /** list of files (DocuDirent) */
+    protected List<DocuDirent> files = null;
 
-	/** directory name (digilib canonical form) */
-	protected String dirName = null;
+    /** directory object is valid (exists on disk) */
+    protected boolean isValid = false;
 
-	/** directory metadata */
-	protected DirMeta meta = null;
+    /** directory name (digilib canonical form) */
+    protected String dirName = null;
 
-	/** time of last access of this object (not the filesystem) */
-	protected long objectATime = 0;
+    /** directory metadata */
+    protected DirMeta meta = null;
 
-	/** time directory was last modified on the file system */
-	protected long dirMTime = 0;
+    /** time of last access of this object (not the filesystem) */
+    protected long objectATime = 0;
 
-	/**
-	 * Configure object with digilib directory path and a parent DocuDirCache.
-	 * 
-	 * Directory names at the given path are appended to the base directories
-	 * from the cache. The directory is checked on disk and isValid is set.
-	 * 
-	 * @see readDir
-	 * 
-	 * @param path
-	 *            digilib directory path name
-	 * @param fileClass 
-	 *            type of files in this DocuDirectory
-	 * @param dlConfig
-	 *            digilib config
-	 */
-	public void configure(String path, FileClass fileClass, DigilibConfiguration dlConfig) {
-		this.dirName = path;
-		this.fileClass = fileClass;
-		// clear directory list
-		files = new ArrayList<DocuDirent>();
-		dirMTime = 0;
-		meta = MetaFactory.getDirMetaInstance();
-	}
+    /** time directory was last modified on the file system */
+    protected long dirMTime = 0;
 
-	/**
-	 * number of DocuFiles in this directory. 
-	 * @return the size
-	 */
-	public int size() {
-		return (files != null) ? files.size() : 0;
-	}
+    /**
+     * Configure object with digilib directory path and a parent DocuDirCache.
+     * 
+     * Directory names at the given path are appended to the base directories
+     * from the cache. The directory is checked on disk and isValid is set.
+     * 
+     * @see readDir
+     * 
+     * @param path
+     *            digilib directory path name
+     * @param fileClass 
+     *            type of files in this DocuDirectory
+     * @param dlConfig
+     *            digilib config
+     */
+    public void configure(String path, FileClass fileClass, DigilibConfiguration dlConfig) {
+        this.dirName = path;
+        this.fileClass = fileClass;
+        // clear directory list
+        files = new ArrayList<DocuDirent>();
+        dirMTime = 0;
+        meta = MetaFactory.getDirMetaInstance();
+    }
 
-	/**
-	 * Returns the ImageFileSet at the index.
-	 * 
-	 * @param index the index
-	 * @return the DocuDirent
-	 */
-	public DocuDirent get(int index) {
-		if ((files == null) || (index >= files.size())) {
-			return null;
-		}
-		return files.get(index);
-	}
+    /**
+     * number of DocuFiles in this directory. 
+     * @return the size
+     */
+    public int size() {
+        return (files != null) ? files.size() : 0;
+    }
 
-	/**
-	 * Read the filesystem directory and fill this object.
-	 * 
-	 * Clears the List and (re)reads all files.
-	 * 
-	 * @return boolean the directory exists
-	 */
-	public abstract boolean readDir();
+    /**
+     * Returns the ImageFileSet at the index.
+     * 
+     * @param index the index
+     * @return the DocuDirent
+     */
+    public DocuDirent get(int index) {
+        if ((files == null) || (index >= files.size())) {
+            return null;
+        }
+        return files.get(index);
+    }
+
+    /**
+     * Read the filesystem directory and fill this object.
+     * 
+     * Clears the List and (re)reads all files.
+     * 
+     * @return boolean the directory exists
+     */
+    public abstract boolean readDir();
 
 
-	/**
-	 * Check to see if the directory has been modified and reread if necessary.
-	 * 
-	 * @return boolean the directory is valid
-	 */
+    /**
+     * Check to see if the directory has been modified and reread if necessary.
+     * 
+     * @return boolean the directory is valid
+     */
     public abstract boolean refresh();
 
 
-	/**
-	 * Read directory metadata.
-	 *  
-	 */
-	public void readMeta() {
-	    if (meta != null) {
-	        meta.readMeta(this);
-	    }
-	}
+    /**
+     * Read directory metadata.
+     *  
+     */
+    public void readMeta() {
+        if (meta != null) {
+            meta.readMeta(this);
+        }
+    }
 
 
     /**
@@ -158,16 +158,16 @@ public abstract class DocuDirectory implements Iterable<DocuDirent> {
     }
 
 
-	/**
-	 * Update access time.
-	 * 
-	 * @return time of last access.
-	 */
-	public long touch() {
-		long t = objectATime;
-		objectATime = System.currentTimeMillis();
-		return t;
-	}
+    /**
+     * Update access time.
+     * 
+     * @return time of last access.
+     */
+    public long touch() {
+        long t = objectATime;
+        objectATime = System.currentTimeMillis();
+        return t;
+    }
 
     /**
      * Searches for the file with the name <code>fn</code>.
@@ -179,48 +179,48 @@ public abstract class DocuDirectory implements Iterable<DocuDirent> {
      *            filename
      * @return int index of file <code>fn</code>
      */
-	public int indexOf(String fn) {
-		if (!isRead()) {
-			// read directory now
-			if (!readDir()) {
-				return -1;
-			}
-		}
-		// empty directory?
-		if (files == null) {
-			return -1;
-		}
-        
-		// search for exact match (DocuDirent implements Comparable<String>)
+    public int indexOf(String fn) {
+        if (!isRead()) {
+            // read directory now
+            if (!readDir()) {
+                return -1;
+            }
+        }
+        // empty directory?
+        if (files == null) {
+            return -1;
+        }
+
+        // search for exact match (DocuDirent implements Comparable<String>)
         // OBS: fileList needs to be sorted first! (hertzhaft)
-		int idx = Collections.binarySearch(files, fn);
-		if (idx >= 0) {
-			return idx;
-		} else {
-			// try closest matches without extension
-			idx = -idx - 1;
-			final int numFiles = files.size();
+        int idx = Collections.binarySearch(files, fn);
+        if (idx >= 0) {
+            return idx;
+        } else {
+            // try closest matches without extension
+            idx = -idx - 1;
+            final int numFiles = files.size();
             if ((idx < numFiles) && isBasenameAt(files, idx, fn)) {
-				// idx matches
-				return idx;
-			} else if ((idx > 0) && isBasenameAt(files, idx - 1, fn)) {
-				// idx-1 matches
-				return idx - 1;
-			} else if ((idx + 1 < numFiles) && isBasenameAt(files, idx + 1, fn)) {
-				// idx+1 matches
-				return idx + 1;
-			} else if (idx + 2 < numFiles) {
-			    // check the rest of the list 
-			    // (may be neccesary because a-1.tif and a-2.tif sort before a.tif) 
-			    for (int i = idx + 2; i < numFiles; ++i) {
-			        if (isBasenameAt(files, i, fn)) {
-			            return i;
-			        }
-			    }
-			}
-		}
-		return -1;
-	}
+                // idx matches
+                return idx;
+            } else if ((idx > 0) && isBasenameAt(files, idx - 1, fn)) {
+                // idx-1 matches
+                return idx - 1;
+            } else if ((idx + 1 < numFiles) && isBasenameAt(files, idx + 1, fn)) {
+                // idx+1 matches
+                return idx + 1;
+            } else if (idx + 2 < numFiles) {
+                // check the rest of the list 
+                // (may be neccesary because a-1.tif and a-2.tif sort before a.tif) 
+                for (int i = idx + 2; i < numFiles; ++i) {
+                    if (isBasenameAt(files, i, fn)) {
+                        return i;
+                    }
+                }
+            }
+        }
+        return -1;
+    }
 
     /**
      * Checks if the basename of the DocuDirent in fileList at the position idx
@@ -232,69 +232,69 @@ public abstract class DocuDirectory implements Iterable<DocuDirent> {
      * @return
      */
     protected boolean isBasenameAt(List<DocuDirent> fileList, int idx, String fn) {
-    	String bfn = FileOps.basename((fileList.get(idx)).getName());
-    	return (bfn.equals(fn) || bfn.equals(FileOps.basename(fn))); 
+        String bfn = FileOps.basename((fileList.get(idx)).getName());
+        return (bfn.equals(fn) || bfn.equals(FileOps.basename(fn))); 
     }
 
 
-	/**
-	 * Finds the DocuDirent with the name <code>fn</code>.
-	 * 
-	 * Searches the directory for the DocuDirent with the name <code>fn</code>
-	 * and returns it. Returns null if the file cannot be found.
-	 * 
-	 * @param fn
-	 *            filename
-	 * @return the DocuDirent
-	 */
-	public DocuDirent find(String fn) {
-		int i = indexOf(fn);
-		if (i >= 0) {
-			return files.get(i);
-		}
-		return null;
-	}
+    /**
+     * Finds the DocuDirent with the name <code>fn</code>.
+     * 
+     * Searches the directory for the DocuDirent with the name <code>fn</code>
+     * and returns it. Returns null if the file cannot be found.
+     * 
+     * @param fn
+     *            filename
+     * @return the DocuDirent
+     */
+    public DocuDirent find(String fn) {
+        int i = indexOf(fn);
+        if (i >= 0) {
+            return files.get(i);
+        }
+        return null;
+    }
 
-	/**
-	 * Returns the digilib canonical name.
-	 * 
-	 * @return the name
-	 */
-	public String getDirName() {
-		return dirName;
-	}
+    /**
+     * Returns the digilib canonical name.
+     * 
+     * @return the name
+     */
+    public String getDirName() {
+        return dirName;
+    }
 
-	/**
-	 * The directory is valid (exists on disk).
-	 * 
-	 * @return is valid
-	 */
-	public boolean isValid() {
-		return isValid;
-	}
+    /**
+     * The directory is valid (exists on disk).
+     * 
+     * @return is valid
+     */
+    public boolean isValid() {
+        return isValid;
+    }
 
-	/**
-	 * The directory has been read from disk.
-	 * 
-	 * @return is read
-	 */
-	public boolean isRead() {
-		return (dirMTime != 0);
-	}
+    /**
+     * The directory has been read from disk.
+     * 
+     * @return is read
+     */
+    public boolean isRead() {
+        return (dirMTime != 0);
+    }
 
-	/**
-	 * @return access time
-	 */
-	public long getAccessTime() {
-		return objectATime;
-	}
+    /**
+     * @return access time
+     */
+    public long getAccessTime() {
+        return objectATime;
+    }
 
-	/**
-	 * @return the mtime
-	 */
-	public long getDirMTime() {
-		return dirMTime;
-	}
+    /**
+     * @return the mtime
+     */
+    public long getDirMTime() {
+        return dirMTime;
+    }
 
     /**
      * @return the DirMeta
@@ -302,46 +302,46 @@ public abstract class DocuDirectory implements Iterable<DocuDirent> {
     public DirMeta getMeta() {
         return meta;
     }
-    
+
     /**
      * Returns an Iterator over all DocuDirents in this DocuDirectory in default order.
      * 
      * @return the Iterator
      */
     public Iterator<DocuDirent> iterator() {
-    	return files.iterator();
+        return files.iterator();
     }
 
-	/**
-	 * Returns a possible parent directory name for path fn.
-	 * 
-	 * @param fn the fn
-	 * @return the parent name
-	 */
-	public abstract String createParentName(String fn);
+    /**
+     * Returns a possible parent directory name for path fn.
+     * 
+     * @param fn the fn
+     * @return the parent name
+     */
+    public abstract String createParentName(String fn);
 
-	/**
-	 * Returns a possible file name for path fn.
-	 * @param fn the fn
-	 * @return the name
-	 */
-	public abstract String createFilename(String fn);
+    /**
+     * Returns a possible file name for path fn.
+     * @param fn the fn
+     * @return the name
+     */
+    public abstract String createFilename(String fn);
 
-	/**
-	 * Returns the parent DocuDirectory.
-	 * 
-	 * @return the DocuDirectory
-	 */
-	public DocuDirectory getParent() {
-		return parent;
-	}
+    /**
+     * Returns the parent DocuDirectory.
+     * 
+     * @return the DocuDirectory
+     */
+    public DocuDirectory getParent() {
+        return parent;
+    }
 
-	/**
-	 * Sets the parent DocuDirectory.
-	 * @param pd the DocuDirectory
-	 */
-	public void setParent(DocuDirectory pd) {
-		parent = pd;
-	}
+    /**
+     * Sets the parent DocuDirectory.
+     * @param pd the DocuDirectory
+     */
+    public void setParent(DocuDirectory pd) {
+        parent = pd;
+    }
 
 }

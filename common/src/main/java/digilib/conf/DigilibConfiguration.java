@@ -55,7 +55,7 @@ public class DigilibConfiguration extends ParameterMap {
 
     protected static boolean isLoggingConfigured = false;
 
-    /** name of digilbi properties file */
+    /** name of digilib properties file */
     public static String propertiesFileName = "digilib.properties";
 
     /**
