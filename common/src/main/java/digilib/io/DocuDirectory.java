@@ -191,31 +191,49 @@ public abstract class DocuDirectory implements Iterable<DocuDirent> {
 			return -1;
 		}
         
-		// search for exact match (DocuDirent does compareTo<String>)
-        // OBS: fileList needs to be sorted first (see )! <hertzhaft>
+		// search for exact match (DocuDirent implements Comparable<String>)
+        // OBS: fileList needs to be sorted first! (hertzhaft)
 		int idx = Collections.binarySearch(files, fn);
 		if (idx >= 0) {
 			return idx;
 		} else {
 			// try closest matches without extension
 			idx = -idx - 1;
-			if ((idx < files.size()) && isBasenameInList(files, idx, fn)) {
+			final int numFiles = files.size();
+            if ((idx < numFiles) && isBasenameAt(files, idx, fn)) {
 				// idx matches
 				return idx;
-			} else if ((idx > 0) && isBasenameInList(files, idx - 1, fn)) {
+			} else if ((idx > 0) && isBasenameAt(files, idx - 1, fn)) {
 				// idx-1 matches
 				return idx - 1;
-			} else if ((idx + 1 < files.size()) && isBasenameInList(files, idx + 1, fn)) {
+			} else if ((idx + 1 < numFiles) && isBasenameAt(files, idx + 1, fn)) {
 				// idx+1 matches
 				return idx + 1;
+			} else if (idx + 2 < numFiles) {
+			    // check the rest of the list 
+			    // (may be neccesary because a-1.tif and a-2.tif sort before a.tif) 
+			    for (int i = idx + 2; i < numFiles; ++i) {
+			        if (isBasenameAt(files, i, fn)) {
+			            return i;
+			        }
+			    }
 			}
 		}
 		return -1;
 	}
 
-    protected boolean isBasenameInList(List<DocuDirent> fileList, int idx, String fn) {
-    	String dfn = FileOps.basename((fileList.get(idx)).getName());
-    	return (dfn.equals(fn) || dfn.equals(FileOps.basename(fn))); 
+    /**
+     * Checks if the basename of the DocuDirent in fileList at the position idx
+     * matches the basename of fn.
+     * 
+     * @param fileList
+     * @param idx
+     * @param fn
+     * @return
+     */
+    protected boolean isBasenameAt(List<DocuDirent> fileList, int idx, String fn) {
+    	String bfn = FileOps.basename((fileList.get(idx)).getName());
+    	return (bfn.equals(fn) || bfn.equals(FileOps.basename(fn))); 
     }
 
 
