@@ -48,6 +48,8 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.Kernel;
 import java.awt.image.LookupOp;
 import java.awt.image.LookupTable;
+import java.awt.image.PixelInterleavedSampleModel;
+import java.awt.image.Raster;
 import java.awt.image.RescaleOp;
 import java.awt.image.WritableRaster;
 import java.io.ByteArrayOutputStream;
@@ -129,15 +131,21 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         needsRescaleRgba,
         /** destination image type for LookupOp(mapBgrByteTable) needs to be (A)BGR */ 
         needsMapBgr, 
+        /** set destination type for blur operation */
+        forceDestForBlur, 
+        /** set destination type for scale operation */
+        forceDestForScale,
         /** JPEG writer can't deal with RGBA */
         needsJpegWriteRgb,
         /** add ICC profile to PNG metadata manually */
         needsPngWriteProfile,
         /** load ICC profile from PNG metadata manually */
         needsPngLoadProfile,
+        /** convert images with 16 bit depth to 8 bit depth */
+        force16BitTo8,
         /** convert images with 16 bit depth to sRGB (and 8 bit depth) */ 
         force16BitToSrgb8
-    }
+        }
 
     /** active hacks */
     protected static EnumMap<Hacks, Boolean> imageHacks = new EnumMap<Hacks, Boolean>(Hacks.class);
@@ -205,7 +213,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         }
         // this hopefully works for all
         mapBgrByteTable = new ByteLookupTable(0, new byte[][] { mapR, mapG, mapB });
-        imageHacks.put(Hacks.force16BitToSrgb8, true);
+        imageHacks.put(Hacks.force16BitTo8, true);
+        imageHacks.put(Hacks.forceDestForScale, true);
+        imageHacks.put(Hacks.forceDestForBlur, true);
         imageHacks.put(Hacks.needsJpegWriteRgb, true);
         imageHacks.put(Hacks.needsPngWriteProfile, true);
         imageHacks.put(Hacks.needsPngLoadProfile, true);
@@ -334,6 +344,22 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     }
 
     /**
+     * Create an empty BufferedImage that is compatible and uses the same ColorModel as oldImg.
+     * 
+     * @param width
+     * @param height
+     * @param oldImg
+     * @return
+     */
+	protected BufferedImage createCompatibleImage(int width, int height, BufferedImage oldImg) {
+		ColorModel oldCM = oldImg.getColorModel();
+		boolean isAlphaPre = oldCM.isAlphaPremultiplied();
+		WritableRaster newRaster = oldCM.createCompatibleWritableRaster(width, height);
+		BufferedImage bi = new BufferedImage(oldCM, newRaster, isAlphaPre, null);
+		return bi;
+	}
+
+    /**
      * Change the color profile of a BufferedImage while keeping the same raw pixel values.
      * 
      * Returns a new BufferedImage with the given profile.
@@ -379,6 +405,59 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             colorRaster = img.getRaster();
         }
         cco.filter(colorRaster, colorRaster);
+    }
+
+    /**
+     * Change the color depth of a BufferedImage to 8 bit.
+     * 
+     * @param bi
+     * @return
+     */
+    protected BufferedImage changeTo8BitDepth(BufferedImage bi) {
+        ColorModel cm = bi.getColorModel();
+        ColorSpace cs = cm.getColorSpace();
+        boolean hasAlpha = cm.hasAlpha();
+        boolean isAlphaPre = cm.isAlphaPremultiplied();
+        int transparency = cm.getTransparency();
+        int transferType = DataBuffer.TYPE_BYTE;
+        // build new ColorModel
+        ColorModel newCm = new ComponentColorModel(cs, hasAlpha, isAlphaPre, transparency, transferType);
+        WritableRaster newRaster = newCm.createCompatibleWritableRaster(bi.getWidth(), bi.getHeight());
+        BufferedImage newBi = new BufferedImage(newCm, newRaster, isAlphaPre, null);
+        // convert using setData
+        // newImage.setData(as8BitRaster(original.getRaster())); // Works
+        newRaster.setDataElements(0, 0, as8BitRaster(bi.getRaster())); // Faster, requires less conversion
+        return newBi;
+    }
+
+    /**
+     * A Raster that returns the upper 8 bit of each channel of the given raster.
+     *   
+     * @param raster
+     * @return
+     */
+    private Raster as8BitRaster(WritableRaster raster) {
+        // Assumption: Raster is TYPE_USHORT (16 bit) and has PixelInterleavedSampleModel
+        PixelInterleavedSampleModel sampleModel = (PixelInterleavedSampleModel) raster.getSampleModel();
+        // create a custom data buffer, that delegates to the original 16 bit buffer
+        final DataBuffer buffer = raster.getDataBuffer();
+        final DataBuffer convBuffer = new DataBuffer(DataBuffer.TYPE_BYTE, buffer.getSize()) {
+            @Override
+            public int getElem(int bank, int i) {
+                // return only the upper 8 bits of the 16 bit sample
+                return buffer.getElem(bank, i) >>> 8;
+            }
+
+            @Override
+            public void setElem(int bank, int i, int val) {
+                throw new UnsupportedOperationException("Raster is read only!");
+            }
+        };
+        final WritableRaster newRaster = Raster.createInterleavedRaster(convBuffer, 
+                raster.getWidth(), raster.getHeight(),
+                sampleModel.getScanlineStride(), sampleModel.getPixelStride(), sampleModel.getBandOffsets(),
+                null);
+        return newRaster;
     }
 
     /**
@@ -627,10 +706,25 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
             boolean convertToSrgb = (quality < 3);
             ColorModel cm = img.getColorModel();
             ColorSpace cs = cm.getColorSpace();
-            if (cm.getComponentSize(0) > 8 && imageHacks.get(Hacks.force16BitToSrgb8)) {
-                // higher color depths lead to imaging errors, we have to force sRGB
-                logger.warn("Converting 16bit image to 8bit sRGB to avoid Java imaging issues.");
-                convertToSrgb = true;
+            if (cm.getComponentSize(0) > 8) {
+                if (imageHacks.get(Hacks.force16BitToSrgb8)) {
+                    // higher color depths lead to imaging errors, we have to force sRGB
+                    logger.warn("Converting 16bit image to 8bit sRGB to avoid Java imaging issues.");
+                    convertToSrgb = true;
+                } else if (!convertToSrgb && imageHacks.get(Hacks.force16BitTo8)) {
+                    // convert higher color depths to 8 bit
+                    logger.debug("loadSubimage: converting to 8bit");
+                    try {
+                        // changeTo8BitDepth may fail for incompatible image types
+                        img = changeTo8BitDepth(img);
+                        logger.debug("loadSubimage: converted to {}", img);
+                        cm = img.getColorModel();
+                        cs = cm.getColorSpace();
+                    } catch (Exception e) {
+                        logger.warn("Converting image to 8bit failed! Trying to convert to sRGB: {}", e);
+                        convertToSrgb = true;
+                    }
+                }
             }
             if (!convertToSrgb && (cs instanceof ICC_ColorSpace) && !cs.isCS_sRGB()) {
                 // save ICC color profile
@@ -799,7 +893,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
                     meta.mergeTree(meta.getNativeMetadataFormatName(), dom);
                 }
             } else {
-                logger.warn("writePng: image does not match destination color profile {}", colorProfile);
+                logger.warn("writePng: image (sRGB={}) does not match destination color profile {}", cs.isCS_sRGB(), colorProfile);
             }
         }
         // render output
@@ -886,6 +980,13 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         logger.debug("scaled from {}x{} img={}", imgW, imgH, img);
         AffineTransformOp scaleOp = new AffineTransformOp(AffineTransform.getScaleInstance(scaleX, scaleY), renderHint);
         BufferedImage dest = null;
+        if (imageHacks.get(Hacks.forceDestForScale) && !(img.getColorModel() instanceof IndexColorModel)) {
+            // set destination image
+            int dw = (int) Math.round(imgW * scaleX);
+            int dh = (int) Math.round(imgH * scaleY);
+            dest = createCompatibleImage(dw, dh, img);
+            logger.debug("scale: setting destination image {}", dest);
+        }
         img = scaleOp.filter(img, dest);
         logger.debug("scaled to {}x{} img={}", img.getWidth(), img.getHeight(), img);
         //testPixels(img);
@@ -900,7 +1001,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
      * @throws ImageOpException on error
      */
     public void blur(int radius) throws ImageOpException {
-        logger.debug("blur: radius {}", radius);
+        logger.debug("blur: radius {} image {}", radius, img);
         // minimum radius is 2
         int klen = Math.max(radius, 2);
         Kernel blur = null;
@@ -921,6 +1022,10 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         // blur with convolve operation
         ConvolveOp blurOp = new ConvolveOp(blur, ConvolveOp.EDGE_NO_OP, renderHint);
         BufferedImage dest = null;
+        if (imageHacks.get(Hacks.forceDestForBlur) && !(img.getColorModel() instanceof IndexColorModel)) {
+            dest = createCompatibleImage(img.getWidth(), img.getHeight(), img);
+            logger.debug("blur: setting destination image {}", dest);
+        }
         img = blurOp.filter(img, dest);
         logger.debug("blurred: {}", img);
         //testPixels(img);

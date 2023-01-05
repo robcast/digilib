@@ -236,7 +236,7 @@ public abstract class DocuDirectory implements Iterable<DocuDirent> {
      */
     protected boolean isBasenameAt(List<DocuDirent> fileList, int idx, String fn) {
         String bdn = FileOps.basename((fileList.get(idx)).getName());
-        return bdn.equals(fn); 
+        return (bdn.equals(fn) || bdn.equals(FileOps.basename(fn))); 
     }
 
     /**
@@ -250,7 +250,7 @@ public abstract class DocuDirectory implements Iterable<DocuDirent> {
      */
     protected boolean isPrefixBasenameAt(List<DocuDirent> fileList, int idx, String fn) {
         String bdn = FileOps.basename((fileList.get(idx)).getName());
-        return bdn.startsWith(fn);
+        return (bdn.startsWith(fn) || bdn.startsWith(FileOps.basename(fn)));
     }
 
     /**
