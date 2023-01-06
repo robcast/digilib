@@ -44,6 +44,7 @@ import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.ConvolveOp;
 import java.awt.image.DataBuffer;
+import java.awt.image.DirectColorModel;
 import java.awt.image.IndexColorModel;
 import java.awt.image.Kernel;
 import java.awt.image.LookupOp;
@@ -134,7 +135,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         /** set destination type for blur operation */
         forceDestForBlur, 
         /** set destination type for scale operation */
-        forceDestForScale,
+        forceDestForScaleCustom,
         /** JPEG writer can't deal with RGBA */
         needsJpegWriteRgb,
         /** add ICC profile to PNG metadata manually */
@@ -214,8 +215,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         // this hopefully works for all
         mapBgrByteTable = new ByteLookupTable(0, new byte[][] { mapR, mapG, mapB });
         imageHacks.put(Hacks.force16BitTo8, true);
-        imageHacks.put(Hacks.forceDestForScale, true);
-        imageHacks.put(Hacks.forceDestForBlur, true);
+        imageHacks.put(Hacks.forceDestForScaleCustom, true);
         imageHacks.put(Hacks.needsJpegWriteRgb, true);
         imageHacks.put(Hacks.needsPngWriteProfile, true);
         imageHacks.put(Hacks.needsPngLoadProfile, true);
@@ -346,16 +346,33 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     /**
      * Create an empty BufferedImage that is compatible and uses the same ColorModel as oldImg.
      * 
-     * @param width
-     * @param height
-     * @param oldImg
-     * @return
-     */
-	protected BufferedImage createCompatibleImage(int width, int height, BufferedImage oldImg) {
+	 * @param width
+	 * @param height
+	 * @param hasAlpha
+	 * @param oldImg
+	 * @return
+	 */
+	protected BufferedImage createCompatibleImage(int width, int height, boolean hasAlpha, 
+	        BufferedImage oldImg) {
 		ColorModel oldCM = oldImg.getColorModel();
 		boolean isAlphaPre = oldCM.isAlphaPremultiplied();
-		WritableRaster newRaster = oldCM.createCompatibleWritableRaster(width, height);
-		BufferedImage bi = new BufferedImage(oldCM, newRaster, isAlphaPre, null);
+		int transferType = oldCM.getTransferType();
+		int transparency = oldCM.getTransparency();
+        ColorSpace newCS = oldCM.getColorSpace();
+		ColorModel newCM;
+		if (oldCM instanceof ComponentColorModel) {
+		    newCM = new ComponentColorModel(newCS, hasAlpha, isAlphaPre, transparency, transferType);
+		} else if (oldCM instanceof DirectColorModel) {
+            final DirectColorModel oldDCM = (DirectColorModel) oldCM;
+            newCM = new DirectColorModel(newCS, oldCM.getPixelSize(), 
+                    oldDCM.getRedMask(), oldDCM.getGreenMask(), oldDCM.getBlueMask(), oldDCM.getAlphaMask(),
+                    isAlphaPre, transferType);
+        } else {
+            logger.warn("Unknown ColorModel in createCompatibleImage! Returning null.");
+            return null;
+        }
+		WritableRaster outRaster = newCM.createCompatibleWritableRaster(width, height);
+		BufferedImage bi = new BufferedImage(newCM, outRaster, false, null);
 		return bi;
 	}
 
@@ -476,7 +493,9 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         ColorModel newCm = new ComponentColorModel(newCs, false, false, Transparency.OPAQUE, transferType);
         WritableRaster newRaster = newCm.createCompatibleWritableRaster(bi.getWidth(), bi.getHeight());
         // use child Raster with only color components (bands 0,1,2)
-        WritableRaster colorRaster = img.getRaster().createWritableChild(0, 0, img.getWidth(), img.getHeight(), 0, 0, new int[] {0, 1, 2});
+        final int[] colorBands = new int[] { 0, 1, 2 };
+        WritableRaster colorRaster = bi.getRaster().createWritableChild(0, 0, bi.getWidth(), bi.getHeight(), 0, 0,
+                colorBands);
         BufferedImage newBi = new BufferedImage(newCm, newRaster, false, null);
         newBi.setData(colorRaster);
         return newBi;
@@ -980,11 +999,13 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         logger.debug("scaled from {}x{} img={}", imgW, imgH, img);
         AffineTransformOp scaleOp = new AffineTransformOp(AffineTransform.getScaleInstance(scaleX, scaleY), renderHint);
         BufferedImage dest = null;
-        if (imageHacks.get(Hacks.forceDestForScale) && !(img.getColorModel() instanceof IndexColorModel)) {
+        final ColorModel cm = img.getColorModel();
+        if (imageHacks.get(Hacks.forceDestForScaleCustom) && img.getType() == BufferedImage.TYPE_CUSTOM) {
             // set destination image
             int dw = (int) Math.round(imgW * scaleX);
             int dh = (int) Math.round(imgH * scaleY);
-            dest = createCompatibleImage(dw, dh, img);
+            boolean hasAlpha = cm.hasAlpha();
+            dest = createCompatibleImage(dw, dh, hasAlpha, img);
             logger.debug("scale: setting destination image {}", dest);
         }
         img = scaleOp.filter(img, dest);
@@ -1022,10 +1043,6 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         // blur with convolve operation
         ConvolveOp blurOp = new ConvolveOp(blur, ConvolveOp.EDGE_NO_OP, renderHint);
         BufferedImage dest = null;
-        if (imageHacks.get(Hacks.forceDestForBlur) && !(img.getColorModel() instanceof IndexColorModel)) {
-            dest = createCompatibleImage(img.getWidth(), img.getHeight(), img);
-            logger.debug("blur: setting destination image {}", dest);
-        }
         img = blurOp.filter(img, dest);
         logger.debug("blurred: {}", img);
         //testPixels(img);
