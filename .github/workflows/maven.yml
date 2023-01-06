@@ -24,21 +24,28 @@ jobs:
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
         
-    - name: Checkout artifact repo
+    - name: Checkout artifact repo (for release)
+      if: startsWith(github.ref, 'refs/tags/')
       uses: actions/checkout@v2
       with:
         repository: robcast/digilib-repo
         ref: gh-pages
         path: digilib-repo
-    - name: Copy existing maven-repo
+    - name: Copy existing maven-repo (for release)
+      if: startsWith(github.ref, 'refs/tags/')
       run: |
         mkdir -p target/site/maven-repo
         cp -rp digilib-repo/maven-repo/* target/site/maven-repo/
         
-    - name: Build with tests and javadoc using Maven
-      run: mvn -Pbuild-all -DskipTests=false javadoc:aggregate deploy -DaltDeploymentRepository=repo::default::file:target/site/maven-repo -B
+    - name: Build tests using Maven
+      run: mvn -Pbuild-all -DskipTests=false test -B
 
-    - name: Deploy javadoc and maven-repo to digilib-repo
+    - name: Deploy javadoc and Maven artefacts (for release)
+      if: startsWith(github.ref, 'refs/tags/')
+      run: mvn -Pbuild-all javadoc:aggregate deploy -DaltDeploymentRepository=repo::default::file:target/site/maven-repo -B
+
+    - name: Deploy javadoc and maven-repo to digilib-repo (for release)
+      if: startsWith(github.ref, 'refs/tags/')
       uses: crazy-max/ghaction-github-pages@v2
       with:
         repo: robcast/digilib-repo
@@ -60,7 +67,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: add WAR to GH Release
+    - name: add WAR to GH Release (for release)
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
