@@ -132,8 +132,6 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         needsRescaleRgba,
         /** destination image type for LookupOp(mapBgrByteTable) needs to be (A)BGR */ 
         needsMapBgr, 
-        /** set destination type for blur operation */
-        forceDestForBlur, 
         /** set destination type for scale operation */
         forceDestForScaleCustom,
         /** JPEG writer can't deal with RGBA */
@@ -146,7 +144,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         force16BitTo8,
         /** convert images with 16 bit depth to sRGB (and 8 bit depth) */ 
         force16BitToSrgb8
-        }
+    }
 
     /** active hacks */
     protected static EnumMap<Hacks, Boolean> imageHacks = new EnumMap<Hacks, Boolean>(Hacks.class);
