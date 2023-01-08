@@ -82,6 +82,7 @@ import javax.imageio.stream.ImageOutputStream;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import digilib.io.FileOpException;
 import digilib.io.FileOps;
@@ -429,6 +430,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
      * @return
      */
     protected BufferedImage changeTo8BitDepth(BufferedImage bi) {
+        // method suggested by Harald K in https://stackoverflow.com/a/74995441/4912
         ColorModel cm = bi.getColorModel();
         ColorSpace cs = cm.getColorSpace();
         boolean hasAlpha = cm.hasAlpha();
@@ -485,17 +487,24 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
      * @return
      */
     protected BufferedImage changeTo8BitNoAlpha(BufferedImage bi) {
+        BufferedImage newBi;
         ColorModel cm = bi.getColorModel();
-        int transferType = DataBuffer.TYPE_BYTE;
-        ColorSpace newCs = cm.getColorSpace();
-        ColorModel newCm = new ComponentColorModel(newCs, false, false, Transparency.OPAQUE, transferType);
-        WritableRaster newRaster = newCm.createCompatibleWritableRaster(bi.getWidth(), bi.getHeight());
-        // use child Raster with only color components (bands 0,1,2)
-        final int[] colorBands = new int[] { 0, 1, 2 };
-        WritableRaster colorRaster = bi.getRaster().createWritableChild(0, 0, bi.getWidth(), bi.getHeight(), 0, 0,
-                colorBands);
-        BufferedImage newBi = new BufferedImage(newCm, newRaster, false, null);
-        newBi.setData(colorRaster);
+        if (cm instanceof ComponentColorModel || cm instanceof DirectColorModel) {
+            ColorSpace newCs = cm.getColorSpace();
+            ColorModel newCm = new ComponentColorModel(newCs, false, false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
+            WritableRaster newRaster = newCm.createCompatibleWritableRaster(bi.getWidth(), bi.getHeight());
+            // use child Raster with only color components (bands 0,1,2)
+            final int[] colorBands = new int[] { 0, 1, 2 };
+            WritableRaster colorRaster = bi.getRaster().createWritableChild(0, 0, bi.getWidth(), bi.getHeight(), 0, 0,
+                    colorBands);
+            newBi = new BufferedImage(newCm, newRaster, false, null);
+            newBi.setData(colorRaster);
+        } else {
+            logger.debug("changeTo8BitNonAlpha: converting to sRGB");
+            ColorConvertOp cco = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_sRGB), renderHint);
+            BufferedImage dest = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
+            newBi = cco.filter(bi, dest);
+        }
         return newBi;
     }
 
@@ -661,9 +670,10 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         ICC_Profile profile = null;
         IIOMetadata meta = reader.getImageMetadata(0);
         IIOMetadataNode dom = (IIOMetadataNode) meta.getAsTree(meta.getNativeMetadataFormatName());
-        IIOMetadataNode iccpNode = (IIOMetadataNode) dom.getElementsByTagName("iCCP").item(0);
-        if (iccpNode != null) {
+        NodeList iccpNodes = dom.getElementsByTagName("iCCP");
+        if (iccpNodes.getLength() > 0) {
             logger.debug("extracting iCCP profile from PNG.");
+            IIOMetadataNode iccpNode = (IIOMetadataNode) iccpNodes.item(0);
             NamedNodeMap atts = iccpNode.getAttributes();
             //String name = atts.getNamedItem("profileName").getNodeValue();
             String compression = atts.getNamedItem("compressionMethod").getNodeValue();
@@ -738,7 +748,7 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
                         cm = img.getColorModel();
                         cs = cm.getColorSpace();
                     } catch (Exception e) {
-                        logger.warn("Converting image to 8bit failed! Trying to convert to sRGB: {}", e);
+                        logger.warn("Converting image to 8bit failed! Trying to convert to sRGB: {}", e.toString());
                         convertToSrgb = true;
                     }
                 }
