@@ -70,7 +70,7 @@ public class ScalerTest {
         ctx.setContextPath("/");
         ctx.setResourceBase("src/main/webapp");       
         // add digilib ContextListener
-        DigilibServlet3Configuration dlConfig = new DigilibServletConfiguration();
+        DigilibServletConfiguration dlConfig = new DigilibServletConfiguration();
         ctx.addEventListener(dlConfig);
         // add digilib Scaler servlet
         ctx.addServlet(Scaler.class, "/Scaler/*");
