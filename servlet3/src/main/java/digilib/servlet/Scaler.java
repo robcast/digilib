@@ -295,6 +295,7 @@ public class Scaler extends HttpServlet {
              * get the input file
              */
             ImageInput fileToLoad = jobTicket.getInput();
+            logger.info("Planning to load: {}", fileToLoad);
 
             /*
              * if requested, send image as a file
