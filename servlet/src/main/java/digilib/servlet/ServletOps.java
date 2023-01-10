@@ -36,8 +36,8 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.ListIterator;
 
-import javax.json.Json;
-import javax.json.stream.JsonGenerator;
+import jakarta.json.Json;
+import jakarta.json.stream.JsonGenerator;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;

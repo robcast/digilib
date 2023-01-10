@@ -31,14 +31,12 @@
       <version>4.5.13</version>
     </dependency>
     <dependency>
-      <groupId>javax.json</groupId>
-      <artifactId>javax.json-api</artifactId>
-      <version>1.1</version><!--$NO-MVN-MAN-VER$--><!-- use 1.1 instead of global 1.0 -->
+      <groupId>jakarta.json</groupId>
+      <artifactId>jakarta.json-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.glassfish</groupId>
-      <artifactId>javax.json</artifactId>
-      <version>1.1.4</version><!-- use 1.1 instead of global 1.0 -->
+      <artifactId>jakarta.json</artifactId>
     </dependency>
   </dependencies>
 </project>

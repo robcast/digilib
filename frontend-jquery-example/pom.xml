@@ -12,9 +12,6 @@
 	<name>digilib-frontend-jquery-example</name>
 	<url>https://github.com/robcast/digilib</url>
 	<description>The Digital Image Library - JS client using JQuery customized sample version.</description>
-	<properties>
-		<jetty.version>9.2.28.v20190418</jetty.version><!-- Jetty 9.3+ break our tests -->
-	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>digilib</groupId>

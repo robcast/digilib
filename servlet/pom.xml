@@ -31,12 +31,12 @@
     <dependency>
       <groupId>org.bitbucket.b_c</groupId>
       <artifactId>jose4j</artifactId>
-      <version>0.7.9</version>
+      <version>0.9.2</version>
     </dependency>
     <!-- JSON-API -->
     <dependency>
-      <groupId>javax.json</groupId>
-      <artifactId>javax.json-api</artifactId>
+      <groupId>jakarta.json</groupId>
+      <artifactId>jakarta.json-api</artifactId>
     </dependency>
   </dependencies>
 </project>
