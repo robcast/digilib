@@ -1,2 +1,3 @@
 src/main/webapp/WEB-INF/digilib-config.xml
 src/main/webapp/WEB-INF/log4j-config.xml
+src/main/resources/log4j2.xml
