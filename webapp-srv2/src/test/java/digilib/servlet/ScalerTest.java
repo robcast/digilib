@@ -34,10 +34,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 
 import org.eclipse.jetty.http.HttpTester;
+import org.eclipse.jetty.server.LocalConnector;
+import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletTester;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -51,24 +53,29 @@ import digilib.conf.DigilibServletConfiguration;
  */
 public class ScalerTest {
 
-    private static ServletTester tester;
+    private static Server server;
+    private static LocalConnector connector;
     
     public static String testFileName = "xterm_color_chart";
 
+
     @BeforeClass
     public static void startServer() throws Exception {
-        tester = new ServletTester();
-        ServletContextHandler ctx = tester.getContext();
+        // create servlet container with local connector (replacement for Jetty ServletTester)
+        server = new Server();
+        connector = new LocalConnector(server);
+        server.addConnector(connector);
+        ServletContextHandler ctx = new ServletContextHandler(server, "/");
         // set up ServletContext
         ctx.setContextPath("/");
         ctx.setResourceBase("src/main/webapp");       
-        ctx.setClassLoader(ServletTester.class.getClassLoader());
         // add digilib ContextListener
         DigilibServletConfiguration dlConfig = new DigilibServletConfiguration();
         ctx.addEventListener(dlConfig);
-        tester.addServlet(Scaler.class, "/Scaler/*");
-        // start the servlet
-        tester.start();
+        // add digilib Scaler servlet
+        ctx.addServlet(Scaler.class, "/Scaler/*");
+        // start the server
+        server.start();
     }
 
     /**
@@ -91,19 +98,24 @@ public class ScalerTest {
         request.setContent("");
         ByteBuffer reqBuf = request.generate();
         // get response
-        ByteBuffer respBuf = tester.getResponses(reqBuf);
+        ByteBuffer respBuf = connector.getResponse(reqBuf);
         // parse response
         HttpTester.Response response = HttpTester.parseResponse(respBuf);
         // should be 200 - OK
         assertEquals("status code", 200, response.getStatus());
-        // check content-type
+        // test response content-type
         if (contentType != null) {
-            String ct = response.getStringField("content-type");
+            String ct = response.get("content-type");
             assertEquals("content-type", contentType, ct);
+        } else {
+            // use png by default for the response reader
+            contentType = "image/png";
         }
         // load response as image
         ByteArrayInputStream bis = new ByteArrayInputStream(response.getContentBytes());
-        BufferedImage img = ImageIO.read(bis);
+        ImageReader reader = ImageIO.getImageReadersByMIMEType(contentType).next();
+        reader.setInput(ImageIO.createImageInputStream(bis));
+        BufferedImage img = reader.read(0);
         return img;
     }
 

@@ -31,8 +31,8 @@ import java.net.URLDecoder;
 import java.util.Base64;
 import java.util.concurrent.Future;
 
-import javax.json.Json;
-import javax.json.stream.JsonGenerator;
+import jakarta.json.Json;
+import jakarta.json.stream.JsonGenerator;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;

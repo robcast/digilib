@@ -566,7 +566,7 @@ public class ImageJobDescription {
             if (input == null || input.getMimetype() == null) {
                 throw new FileOpException("Unable to load " + input);
             }
-            logger.info("Planning to load: {}", input);
+            logger.debug("Image input: {}", input);
         }
         return input;
     }

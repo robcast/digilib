@@ -247,6 +247,7 @@ public class Scaler extends HttpServlet {
              * check if we can fast-track without scaling
              */
             ImageInput fileToLoad = jobTicket.getInput();
+            logger.info("Planning to load: {}", fileToLoad);
 
             // check permissions
             if (useAuthorization) {

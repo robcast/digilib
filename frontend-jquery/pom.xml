@@ -5,16 +5,13 @@
   <parent>
     <groupId>digilib</groupId>
     <artifactId>digilib</artifactId>
-    <version>2.12.1</version>
+    <version>2.12.2</version>
   </parent>
   <artifactId>digilib-frontend-jquery</artifactId>
   <packaging>war</packaging>
   <name>digilib-frontend-jquery</name>
   <url>https://github.com/robcast/digilib</url>
   <description>The Digital Image Library - JS client using JQuery.</description>
-  <properties>
-    <jetty.version>9.2.28.v20190418</jetty.version><!-- Jetty 9.3+ breaks our tests -->
-  </properties>
   <dependencies>
     <dependency>
       <groupId>digilib</groupId>
