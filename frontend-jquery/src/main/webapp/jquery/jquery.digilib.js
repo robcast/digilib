@@ -2,7 +2,7 @@
  * #%L
  * digilib-webapp
  * %%
- * Copyright (C) 2011 - 2017 MPIWG Berlin, Bibliotheca Hertziana
+ * Copyright (C) 2011 - 2023 MPIWG Berlin, Bibliotheca Hertziana
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -94,8 +94,8 @@ function($) {
         // save digilib state in cookie for embedded mode
         'saveStateInCookie' : true,
         // default size of preview image for drag-scroll (preferrably same as Bird's Eye View image)
-        'previewImgWidth' : 200,
-        'previewImgHeight' : 200,
+        'previewImgWidth' : 400,
+        'previewImgHeight' : 400,
         // maximum width or height of preview background image for drag-scroll
         'maxBgSize' : 10000,
         // parameters used by background image
@@ -202,14 +202,7 @@ function($) {
                 unpackParams(data);
                 // list of current insets (dynamic for buttons etc.)
                 data.currentInsets = {'static' : elemSettings.scalerInsets};
-                // check if browser knows *background-size
-                for (var bs in {'':1, '-moz-':1, '-webkit-':1, '-o-':1}) {
-                    if ($elem.css(bs+'background-size')) {
-                        data.hasBgSize = true;
-                        data.bgSizeName = bs+'background-size';
-                        break;
-                    }
-                }
+                // background as preview using background-size
                 data.hasPreviewBg = false;
                 // check if browser supports AJAX-like URL-replace without reload
                 data.hasAsyncReload = (typeof history.replaceState === 'function');
@@ -1492,6 +1485,12 @@ function($) {
      */
     var setPreviewBg = function(data, newZoomArea) {
         var $scaler = data.$scaler;
+        if (data.settings.rot % 90 != 0) {
+            // remove background for oblique angle rotations
+            $scaler.css({'background-image': 'none'});
+            data.hasPreviewBg = false;
+            return;
+        }
         var imgTrafo = data.imgTrafo;
         var scalerPos = geom.position($scaler);
         var bgRect = null;
@@ -1524,26 +1523,23 @@ function($) {
             // position background
             scalerCss['background-position'] = Math.round(bgRect.x) + 'px '+ Math.round(bgRect.y) + 'px';
         }
-        if (data.hasBgSize) {
-            // scale background using CSS3-background-size
-            if (bgRect != null && (bgRect.height < data.settings.maxBgSize && bgRect.width < data.settings.maxBgSize)) {
-                scalerCss[data.bgSizeName] = Math.round(bgRect.width) + 'px ' + Math.round(bgRect.height) + 'px';
-            } else {
-                scalerCss[data.bgSizeName] = 'auto';
-            }
-            // additional full-size background using CSS3
-            fullRect = imgTrafo.transform(FULL_AREA);
-            if (fullRect.height < data.settings.maxBgSize && fullRect.width < data.settings.maxBgSize) {
-                // correct offset because background is relative
-                fullRect.addPosition(scalerPos.neg());
-                var url = getPreviewImgUrl(data);
-                // add second background url, size and position
-                scalerCss['background-image'] += ', url(' + url + ')';
-                scalerCss[data.bgSizeName] += ', ' + Math.round(fullRect.width) + 'px ' + Math.round(fullRect.height) + 'px';
-                scalerCss['background-position'] += ', ' + Math.round(fullRect.x) + 'px '+ Math.round(fullRect.y) + 'px';
-            }
+        // scale background using CSS3-background-size
+        if (bgRect != null && (bgRect.height < data.settings.maxBgSize && bgRect.width < data.settings.maxBgSize)) {
+            scalerCss['background-size'] = Math.round(bgRect.width) + 'px ' + Math.round(bgRect.height) + 'px';
+        } else {
+            scalerCss['background-size'] = 'auto';
         }
-        // console.debug('* setPreviewBg', scalerCss[data.bgSizeName], 'pos', scalerCss['background-position']);
+        // additional full-size background using CSS3
+        fullRect = imgTrafo.transform(FULL_AREA);
+        if (fullRect.height < data.settings.maxBgSize && fullRect.width < data.settings.maxBgSize) {
+            // correct offset because background is relative
+            fullRect.addPosition(scalerPos.neg());
+            var url = getPreviewImgUrl(data);
+            // add second background url, size and position
+            scalerCss['background-image'] += ', url(' + url + ')';
+            scalerCss['background-size'] += ', ' + Math.round(fullRect.width) + 'px ' + Math.round(fullRect.height) + 'px';
+            scalerCss['background-position'] += ', ' + Math.round(fullRect.x) + 'px '+ Math.round(fullRect.y) + 'px';
+        }
         $scaler.css(scalerCss);
         data.hasPreviewBg = true;
     };
