@@ -737,19 +737,26 @@ public class ServletOps {
      * @return
      */
     public static String getIiifImageUrl(DigilibServletRequest dlReq) {
-        String url = dlConfig.getAsString("iiif-image-base-url");
-        if (!url.isEmpty()) {
-            // create url from base-url config and undecoded PATH_INFO
-            String iiifPrefix = dlReq.iiifPrefix;
+        if (dlConfig.hasValue("iiif-image-base-url")) {
+            /*
+             * base-url is set - we're behind a proxy and can't use getRequestURL directly.
+             * We need to re-create the outside url from iiif-image-base-url config and undecoded
+             * getRequestURI (getPathInfo decodes encoded symbols in the path).
+             */
+            String url = dlConfig.getAsString("iiif-image-base-url");
+            // get configured iiif-prefix (not prefix+version in dlReq)
+            String iiifPrefix = dlConfig.getAsString("iiif-prefix");
             url = url.substring(0, url.lastIndexOf(iiifPrefix) - 1);
-            // we can't just take pathInfo because it decodes encoded symbols in the path
+            // get undecoded internal uri
             String uri = dlReq.getServletRequest().getRequestURI();
+            // add end of internal uri to external base url
             url += uri.substring(uri.lastIndexOf(iiifPrefix) - 1, uri.length());
+            return url;
         } else {
             // create url from request
-            url = dlReq.getServletRequest().getRequestURL().toString();
+            String url = dlReq.getServletRequest().getRequestURL().toString();
+            return url;            
         }
-        return url;
     }
 
     /**
