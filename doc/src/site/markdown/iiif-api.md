@@ -85,7 +85,7 @@ the value `filename` uses the image file name (default, sans extension), `index`
 
 Additional configuration parameters can optionally be used to fix the generation of URLs in the IIIF presentation
 API output when running behind a proxy that changes URL paths:
-  * `iiif-manifest-base-url`: base URL used in constructing IIIF manifests including servlet name and iiif-prefix
-  * `webapp-base-url`: web-application base URL used in constructing API paths
-  * `scaler-servlet-name`: Scaler servlet name used in constructing IIIF image API paths
+* `iiif-manifest-base-url`: base URL used in constructing IIIF manifests including servlet name and iiif-prefix
+* `webapp-base-url`: web-application base URL used in constructing API paths
+* `scaler-servlet-name`: Scaler servlet name used in constructing IIIF image API paths
 
