@@ -81,6 +81,11 @@ in a directory with images then the contents of that file are added to the top-l
 information to the manifest.
 
 The configuration parameter `iiif-manifest-page-label` determines the format of the label of each image:
-`filename` uses the image file name (default, sans extension), `index` uses the index (counting from 1).
+the value `filename` uses the image file name (default, sans extension), `index` uses the index (counting from 1).
 
+Additional configuration parameters can optionally be used to fix the generation of URLs in the IIIF presentation
+API output when running behind a proxy that changes URL paths:
+  * `iiif-manifest-base-url`: base URL used in constructing IIIF manifests including servlet name and iiif-prefix
+  * `webapp-base-url`: web-application base URL used in constructing API paths
+  * `scaler-servlet-name`: Scaler servlet name used in constructing IIIF image API paths
 
