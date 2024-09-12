@@ -2,7 +2,7 @@
  * #%L
  * digilib-webapp
  * %%
- * Copyright (C) 2011 - 2023 MPIWG Berlin, Bibliotheca Hertziana
+ * Copyright (C) 2011 - 2024 MPIWG Berlin, Bibliotheca Hertziana
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -109,7 +109,9 @@ function($) {
         // show a little window with file size and zoom information
         'showZoomInfo' : false,
         // number of decimal places, for cropping parameters wx,wy,wh,ww
-        'decimals' : 4
+        'decimals' : 4,
+        // maximum pixel ratio for hi-dpi displays
+        'maxPixelRatio' : 2
         };
 
     // list of plugins
@@ -184,14 +186,14 @@ function($) {
                     // setup $elem.data, needs "deep copy" because of nesting
                     elemSettings = $.extend(true, {}, settings, params);
                     data = {
-                            // let $(this) know about $(this) :-)
-                            $elem : $elem,
-                            // let $elem have its own copy of settings
-                            settings : elemSettings,
-		               		// keep options
-							options : options,
-                            // and of the URL query parameters
-                            queryParams : params
+                        // let $(this) know about $(this) :-)
+                        $elem : $elem,
+                        // let $elem have its own copy of settings
+                        settings : elemSettings,
+                        // keep options
+                        options: options,
+                        // and of the URL query parameters
+                        queryParams : params
                     };
                     // store in jQuery data element
                     $elem.data('digilib', data);
@@ -208,6 +210,8 @@ function($) {
                 data.hasAsyncReload = (typeof history.replaceState === 'function');
                 // check if browser sets complete on cached images
                 data.hasCachedComplete = false; //FIXME: ! $.browser.mozilla;
+                // check screen subpixel resolution
+                data.hasPixelRatio = window.devicePixelRatio;
                 // check digilib base URL
                 if (elemSettings.digilibBaseUrl == null) {
                     if (isFullscreen) {
@@ -264,12 +268,12 @@ function($) {
                 setupScalerDiv(data);
                 // additional initializations before setup (e.g. for single nested settings)
                 if (settings.showZoomInfo) {
-                  actions.zoomInfo(data);
-                  loadImageInfo(data);
+                    actions.zoomInfo(data);
+                    loadImageInfo(data);
                 }
                 if (typeof hook === 'function') {
-                  hook(data);
-                  console.debug('init hook', hook, data);
+                    hook(data);
+                    console.debug('init hook', hook, data);
                 }
                 // send setup event
                 $(data).trigger('setup');
@@ -792,7 +796,7 @@ function($) {
     /** returns URL for preview background image
      * 
      */
-    var getPreviewImgUrl = function (data, moreParams) {
+    var getPreviewImgUrl = function (data) {
         var settings = data.settings;
         var bgOptions = {
                 dw : settings.previewImgWidth,
@@ -813,6 +817,26 @@ function($) {
         var params = getParamString(bgSettings, settings.previewImgParamNames, defaults);
         var url = settings.scalerBaseUrl + '?' + params;
         return url;
+    };
+
+    /**
+     * returns img srcset string for high density displays.
+     * Based on devicePixelRatio in browser.
+     */
+    var getSrcset = function (data) {
+        const settings = data.settings;
+        if (data.hasPixelRatio) {
+            const scale = Math.min(data.hasPixelRatio, settings.maxPixelRatio);
+            const options = {
+                dw : settings.dw * scale,
+                dh : settings.dh * scale
+            };
+            const imgSettings = $.extend({}, settings, options);
+            const params = getParamString(imgSettings, settings.scalerParamNames, defaults);
+            const url = settings.scalerBaseUrl + '?' + params + ' ' + scale + 'x';
+            return url;
+        }
+        return null;
     };
 
     /** 
@@ -1018,7 +1042,11 @@ function($) {
                     data.$scaler.css('cursor', 'progress');
                     // change img src
                     var $img = data.$img;
-                    var imgurl = getScalerUrl(data);
+                    const srcset = getSrcset(data);
+                    if (srcset) {
+                      $img.attr('srcset', srcset);
+                    }
+                    const imgurl = getScalerUrl(data);
                     $img.attr('src', imgurl);
                     // trigger load event if image is cached. Doesn't work with Firefox!!
                     if (data.hasCachedComplete && $img.prop('complete')) {
@@ -1034,12 +1062,6 @@ function($) {
                             loadImageInfo(data);
                         }
                     }
-                    // update if we have a preview 
-                    // --- too early here, 'update' is triggered by scalerImgLoadedHandler
-                    // if (data.hasPreviewBg) {
-                        // $(data).trigger('update');
-                    // }
-                    // FIXME: highlightButtons(data);
                     // send event
                     $(data).trigger('redisplay');
                 } catch (e) {
@@ -1217,6 +1239,11 @@ function($) {
         // set up image load handler before setting the src attribute
         $img.on('load', scalerImgLoadedHandler(data));
         $img.on('error', function (evt, a, b) { handleScalerImgError(data, evt, a, b); });
+        const srcset = getSrcset(data);
+        if (srcset) {
+            $img.attr('srcset', srcset);
+        }
+        // set src attribute and start loading
         $img.attr('src', scalerUrl);
     };
 
