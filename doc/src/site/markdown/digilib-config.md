@@ -204,6 +204,13 @@ The prefix (after `Scaler`) that leads to the IIIF API.
 
 The character that replaces a slash in the identifier of IIIF requests.
 
+```xml
+<parameter name="iiif-image-base-url" value="" />
+```
+
+The base URL used in constructing IIIF information resource URLs (needs to include servlet name and iiif-prefix).
+This is only necessary in some cases behind a proxy.
+
 
 ### Threading options
 
