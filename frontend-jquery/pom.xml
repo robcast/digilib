@@ -52,6 +52,14 @@
         <groupId>com.samaxes.maven</groupId>
         <artifactId>minify-maven-plugin</artifactId>
         <version>1.7.6</version>
+        <dependencies>
+            <!-- plexus-utils for Maven 3.9 -->
+            <dependency>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-utils</artifactId>
+                <version>4.0.0</version>
+            </dependency>
+        </dependencies>
         <executions>
           <execution>
             <id>digilib-basic-minify</id>
