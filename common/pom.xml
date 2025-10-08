@@ -108,5 +108,10 @@
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.github.usefulness</groupId>
+      <artifactId>webp-imageio</artifactId>
+      <version>0.10.2</version>
+    </dependency>
   </dependencies>
 </project>

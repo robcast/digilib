@@ -79,7 +79,7 @@ public interface DocuImage {
      * The image is encoded to the mime-type <code>mt</code> and sent to the
      * output stream <code>ostream</code>.
      * 
-     * Currently only mime-types "image/jpeg" and "image/png" are supported.
+     * Currently only mime-types "image/jpeg", "image/png" and "image/webp" are supported.
      * 
      * @param mt
      *            mime-type of the image to be sent.
