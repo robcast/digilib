@@ -7,7 +7,7 @@ package digilib.servlet;
  * Worker class for the asynchronous Servlet API.
  * 
  * %%
- * Copyright (C) 2011 - 2013 MPIWG Berlin
+ * Copyright (C) 2011 - 2025 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -38,7 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import digilib.conf.DigilibConfiguration;
-import digilib.conf.DigilibOption;
 import digilib.image.DocuImage;
 import digilib.image.ImageJobDescription;
 import digilib.image.ImageOpException;
@@ -108,14 +107,10 @@ public class AsyncServletWorker implements Runnable, AsyncListener {
                 return;
             }
             /*
-             * set forced destination image type
+             * get destination image type
              */
-            String mt = null;
-            if (jobinfo.getRequest().hasOption(DigilibOption.jpg)) {
-                mt = "image/jpeg";
-            } else if (jobinfo.getRequest().hasOption(DigilibOption.png)) {
-                mt = "image/png";
-            }
+            String mt = jobinfo.getOutputMimeType();
+            
             /*
              *  send the image
              */
