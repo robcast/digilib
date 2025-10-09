@@ -35,7 +35,6 @@ public class DocuDirentFactory {
 
     public static Class<? extends DocuDirent> imageFileClass = ImageFileSet.class;
     public static Class<? extends DocuDirent> textFileClass = TextFile.class;
-    public static Class<? extends DocuDirent> svgFileClass = SVGFile.class;
 
     /**
      * Factory for DocuDirents based on file class.
@@ -61,10 +60,6 @@ public class DocuDirentFactory {
                 // text file
                 return textFileClass.getConstructor(File.class).newInstance(file);
 
-            case SVG:
-                // text file
-                return svgFileClass.getConstructor(File.class).newInstance(file);
-
             default:
                 return null;
             }
@@ -77,7 +72,7 @@ public class DocuDirentFactory {
     /**
      * Factory for DocuDirents based on file class.
      * 
-     * Returns an ImageFileSet, TextFile or SVGFile. scaleDirs are
+     * Returns an ImageFileSet or TextFile. scaleDirs are
      * only used for ImageFilesets.
      * 
      * @param fc the FileClass
@@ -93,7 +88,7 @@ public class DocuDirentFactory {
     /**
      * Factory for DocuDirents based on file class.
      * 
-     * Returns an ImageFileSet, TextFile or SVGFile. scaleDirs are
+     * Returns an ImageFileSet or TextFile. scaleDirs are
      * only used for ImageFilesets.
      * 
      * @param fc the FileClass
@@ -120,11 +115,6 @@ public class DocuDirentFactory {
         case TEXT:
             // text file
             textFileClass = clazz;
-            break;
-
-        case SVG:
-            // text file
-            svgFileClass = clazz;
             break;
 
         default:

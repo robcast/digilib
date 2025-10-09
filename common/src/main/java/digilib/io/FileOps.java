@@ -45,11 +45,10 @@ public class FileOps {
 			{ "jpeg", "image/jpeg" }, { "jp2", "image/jp2" },
 			{ "png", "image/png" }, { "gif", "image/gif" },
 			{ "tif", "image/tiff" }, { "tiff", "image/tiff" },
-            { "fpx", "image/fpx" }, { "svg", "image/svg+xml" },
+            { "fpx", "image/fpx" }, { "webp", "image/webp" } ,
 			{ "txt", "text/plain" }, { "html", "text/html" },
 			{ "htm", "text/html" }, { "xml", "text/xml" },
 			{ "meta", "text/xml" }, { "json", "application/json" },
-			{ "webp", "image/webp" }
 			};
 
 	public static Map<String, String> fileTypes;
@@ -58,9 +57,7 @@ public class FileOps {
 
 	public static List<String> textExtensions;
 
-	public static List<String> svgExtensions;
-
-	public static enum FileClass {NONE, IMAGE, TEXT, SVG}
+	public static enum FileClass {NONE, IMAGE, TEXT}
 
 	public static final Integer HINT_BASEDIRS = Integer.valueOf(1);
 
@@ -75,7 +72,6 @@ public class FileOps {
 		fileTypes = new HashMap<String, String>();
 		imageExtensions = new ArrayList<String>();
 		textExtensions = new ArrayList<String>();
-		svgExtensions = new ArrayList<String>();
 		// iterate through file types in ft and fill the Map and Lists
 		for (int i = 0; i < ft.length; i++) {
 			String ext = ft[i][0];
@@ -85,8 +81,6 @@ public class FileOps {
 				imageExtensions.add(ext);
 			} else if (classForMimetype(mt) == FileClass.TEXT) {
 				textExtensions.add(ext);
-			} else if (classForMimetype(mt) == FileClass.SVG) {
-				svgExtensions.add(ext);
 			}
 		}
 	}
@@ -101,9 +95,7 @@ public class FileOps {
 		if (mt == null) {
 			return FileClass.NONE;
 		}
-		if (mt.equals("image/svg")) {
-			return FileClass.SVG;
-		} else if (mt.equals("application/json")) {
+		if (mt.equals("application/json")) {
 			return FileClass.TEXT;
 		} else if (mt.startsWith("image")) {
 			return FileClass.IMAGE;
@@ -163,21 +155,6 @@ public class FileOps {
 	public static List<String> getTextExtensions() {
         return textExtensions;
     }
-
-    /**
-     * @return the extensions
-     */
-    public static Iterator<String> getSVGExtensionIterator() {
-		return svgExtensions.iterator();
-	}
-
-    /**
-     * @return the extensions
-     */
-    public static List<String> getSvgExtensions() {
-        return svgExtensions;
-    }
-
 
 	/**
 	 * convert a string with a list of pathnames into an array of strings using
@@ -382,30 +359,6 @@ public class FileOps {
 	}
 
 	/**
-	 * FileFilter for svg types (helper class for getFile).
-	 *  
-	 */
-	static class SVGFileFilter implements FileFilter, Predicate<Path> {
-
-        public boolean accept(File f) {
-            String fn = f.getName();
-            if (isValidFilename(fn)) {
-                return (classForFilename(fn) == FileClass.SVG);
-            }
-            return false;
-        }
-
-        @Override
-        public boolean test(Path entry) {
-            String fn = entry.getFileName().toString();
-            if (isValidFilename(fn)) {
-                return (classForFilename(fn) == FileClass.SVG);
-            }
-            return false;
-        }
-	}
-
-	/**
 	 * Factory for FileFilters (image or text).
 	 * 
 	 * @param fileClass the FileClass
@@ -417,9 +370,6 @@ public class FileOps {
 		}
 		if (fileClass == FileClass.TEXT) {
 			return new TextFileFilter();
-		}
-		if (fileClass == FileClass.SVG) {
-			return new SVGFileFilter();
 		}
 		return null;
 	}
@@ -436,9 +386,6 @@ public class FileOps {
         }
         if (fileClass == FileClass.TEXT) {
             return new TextFileFilter();
-        }
-        if (fileClass == FileClass.SVG) {
-            return new SVGFileFilter();
         }
         return null;
     }
@@ -463,9 +410,6 @@ public class FileOps {
 		} else if (fileClass == FileClass.TEXT) {
 			// text file
 			return new TextFile(file);
-		} else if (fileClass == FileClass.SVG) {
-			// text file
-			return new SVGFile(file);
 		}
 		return null;
 	}
