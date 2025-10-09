@@ -855,6 +855,11 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
                 logger.debug("ImageIO: writer: {}", writer.getClass());
                 writer.setOutput(imgout);
                 writePng(writer);
+            } else if (mt == "image/webp") {
+                writer = getWriter(mt);
+                logger.debug("ImageIO: writer: {}", writer.getClass());
+                writer.setOutput(imgout);
+                writeWebp(writer);
             } else {
                 // unknown mime type
                 throw new ImageOpException("Unknown output mime type: " + mt);
@@ -953,6 +958,18 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
         }
         // render output
         logger.debug("writing JPEG");
+        writer.write(null, new IIOImage(img, null, null), param);
+    }
+
+    /**
+     * Write the current image to the given ImageWriter as WEBP.
+     *
+     * @param writer
+     * @throws IOException
+     */
+    protected void writeWebp(ImageWriter writer) throws IOException {
+        ImageWriteParam param = writer.getDefaultWriteParam();
+        logger.debug("writing WEBP");
         writer.write(null, new IIOImage(img, null, null), param);
     }
 

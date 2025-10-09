@@ -113,6 +113,10 @@ public enum DigilibOption {
 	 */
 	png,
 	/**
+	 * the resulting image is always sent as webp
+	 */
+	webp,
+	/**
 	 * interpret wx, wy, ww, wh as pixel coordinates on the highest resolution
 	 * image.
 	 */

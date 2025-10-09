@@ -686,6 +686,9 @@ public class DigilibRequest extends ParameterMap {
             } else if (format.equals("png")) {
                 // force png
                 options.setOption(DigilibOption.png);
+            } else if (format.equals("webp")) {
+                // force webp
+                options.setOption(DigilibOption.webp);
             } else {
                 errorMessage = "Invalid format parameter in IIIF path!";
                 logger.error(errorMessage);

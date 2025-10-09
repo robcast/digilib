@@ -522,6 +522,8 @@ public class ImageJobDescription {
             return "image/jpeg";
         } else if (request.hasOption(DigilibOption.png)) {
             return "image/png";
+        } else if (request.hasOption(DigilibOption.webp)) {
+            return "image/webp";
         }
         // use input image type
         try {
