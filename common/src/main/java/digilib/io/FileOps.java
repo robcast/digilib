@@ -530,7 +530,8 @@ public class FileOps {
         return (mimeType != null
                 && (mimeType.equals("image/jpeg") 
                         || mimeType.equals("image/png") 
-                        || mimeType.equals("image/gif")));
+                        || mimeType.equals("image/gif")
+                        || mimeType.equals("image/webp")));
     }
 
 }

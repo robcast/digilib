@@ -1134,10 +1134,7 @@ public class ImageJobDescription {
             		// input image is browser compatible
                     && input.hasTag(ImageInput.InputTag.SENDABLE)
                     // no forced type conversion
-                    // TODO: use getOutputMimeType
-                    && !(request.hasOption(DigilibOption.jpg) && !mimeType.equals("image/jpeg"))
-                    && !(request.hasOption(DigilibOption.png) && !mimeType.equals("image/png"))
-                    && !(request.hasOption(DigilibOption.webp) && !mimeType.equals("image/webp"))
+                    && mimeType.equals(getOutputMimeType())
                     // no zooming
                     && !isZoomRequested()
                     // no other image operations

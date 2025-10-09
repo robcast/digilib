@@ -970,6 +970,8 @@ public class ImageLoaderDocuImage extends ImageInfoDocuImage {
     protected void writeWebp(ImageWriter writer) throws IOException {
         ImageWriteParam param = writer.getDefaultWriteParam();
         logger.debug("writing WEBP");
+        // TODO: set compression quality
+        // TODO: write color profile
         writer.write(null, new IIOImage(img, null, null), param);
     }
 
