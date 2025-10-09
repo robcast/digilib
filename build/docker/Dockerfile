@@ -1,5 +1,5 @@
 # build stage
-FROM maven:3-jdk-11 AS buildstage
+FROM maven:3-eclipse-temurin-21-alpine AS buildstage
 COPY . /usr/src/digilib
 WORKDIR /usr/src/digilib
 ARG MVN_ARGS
@@ -9,7 +9,7 @@ RUN mvn $MVN_ARGS package
 RUN rm /usr/src/digilib/frontend-jquery/target/digilib-frontend-jquery-*.war
 
 # runnable container stage
-FROM tomcat:9-jdk11 AS runstage
+FROM tomcat:9-jdk21 AS runstage
 # copy entry script
 COPY build/docker/entrypoint.sh /entrypoint.sh
 RUN chmod 755 /entrypoint.sh

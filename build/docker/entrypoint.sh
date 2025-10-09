@@ -38,5 +38,5 @@ cat <<EOF > $DL_CONFIG
 EOF
 fi
 
-# run the command given in the origin Dockerfile at CMD 
+# run the same command as the Tomcat Dockerfile CMD 
 exec catalina.sh run
