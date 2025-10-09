@@ -48,7 +48,8 @@ public class FileOps {
             { "fpx", "image/fpx" }, { "svg", "image/svg+xml" },
 			{ "txt", "text/plain" }, { "html", "text/html" },
 			{ "htm", "text/html" }, { "xml", "text/xml" },
-			{ "meta", "text/xml" }, { "json", "application/json" }
+			{ "meta", "text/xml" }, { "json", "application/json" },
+			{ "webp", "image/webp" }
 			};
 
 	public static Map<String, String> fileTypes;

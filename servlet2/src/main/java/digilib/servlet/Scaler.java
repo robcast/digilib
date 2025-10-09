@@ -291,13 +291,8 @@ public class Scaler extends HttpServlet {
             Future<DocuImage> jobResult = imageJobCenter.submit(job);
             // wait for result
             DocuImage img = jobResult.get();
-            // forced destination image type
-            String mt = null;
-            if (jobTicket.getRequest().hasOption(DigilibOption.jpg)) {
-                mt = "image/jpeg";
-            } else if (jobTicket.getRequest().hasOption(DigilibOption.png)) {
-                mt = "image/png";
-            }
+            // get destination image type
+            String mt = jobTicket.getOutputMimeType();
             // send image
             ServletOps.sendImage(img, mt, response, logger);
             logger.debug("Job Processing Time: " + (System.currentTimeMillis() - startTime) + "ms");

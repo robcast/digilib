@@ -313,22 +313,9 @@ public class ServletOps {
             return;
         }
         try {
-            /*
-             * determine the content-type: if mime type is set use that otherwise if source
-             * is JPG then dest will be JPG else it's PNG
-             */
             if (mimeType == null) {
-                mimeType = img.getMimetype();
-                if (mimeType == null) {
-                    // still no mime-type
-                    logger.warn("sendImage without mime-type! using image/jpeg.");
-                    mimeType = "image/jpeg";
-                }
-            }
-            if ((mimeType.equals("image/jpeg") || mimeType.equals("image/jp2") || mimeType.equals("image/fpx"))) {
+                logger.warn("sendImage without mime-type! using image/jpeg.");
                 mimeType = "image/jpeg";
-            } else {
-                mimeType = "image/png";
             }
             // set the content type
             response.setContentType(mimeType);
