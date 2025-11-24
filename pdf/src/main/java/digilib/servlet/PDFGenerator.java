@@ -24,15 +24,13 @@ package digilib.servlet;
  */
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.file.FileAlreadyExistsException;
 import java.util.Base64;
 import java.util.concurrent.Future;
 
-import jakarta.json.Json;
-import jakarta.json.stream.JsonGenerator;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -53,6 +51,8 @@ import digilib.image.DocuImage;
 import digilib.image.ImageOpException;
 import digilib.pdf.PDFFileWorker;
 import digilib.util.DigilibJobCenter;
+import jakarta.json.Json;
+import jakarta.json.stream.JsonGenerator;
 
 /**
  * A class for handling user requests for pdf documents made from digilib
@@ -223,12 +223,18 @@ public class PDFGenerator extends HttpServlet {
                     // start PDF creation thread
                     createNewPdfDocument(pdfji, docid);
                     // redirect client with docid parameter
-                    String url = "";
-                    url += "?docid=" + encodeDocid(docid);
+                    String url = "?docid=" + encodeDocid(docid);
                     logger.debug("redirecting to {}", url);
                     response.sendRedirect(url);
                     return;
-                } catch (FileNotFoundException e) {
+                } catch (FileAlreadyExistsException e) {
+                    // temp file actually exists - assume WIP
+                    logger.warn("Temp file seems to exist: {} - assume WIP.", e.getMessage());
+                    String url = "?docid=" + encodeDocid(docid);
+                    logger.debug("redirecting to {}", url);
+                    response.sendRedirect(url);
+                    return;
+                } catch (IOException e) {
                     // error in pdf creation
                     logger.error(e.getMessage());
                     notifyUser(PDFStatus.ERROR, docid, request, response);
@@ -365,16 +371,19 @@ public class PDFGenerator extends HttpServlet {
     }
 
     /**
-     * create new thread for pdf generation.
+     * Create new thread for pdf generation.
      * 
      * @param pdfji
      * @param filename
      * @return
-     * @throws FileNotFoundException
+     * @throws IOException 
      */
-    public Future<File> createNewPdfDocument(PDFRequest pdfji, String filename) throws FileNotFoundException {
+    public Future<File> createNewPdfDocument(PDFRequest pdfji, String filename) throws IOException {
         // start new worker
         File tempf = this.getTempFile(filename);
+        if (!tempf.createNewFile()) {
+            throw new FileAlreadyExistsException(tempf.toString());
+        }
         File finalf = this.getCacheFile(filename);
         PDFFileWorker job = new PDFFileWorker(dlConfig, tempf, finalf, pdfji, pdfImageJobCenter);
         // start job

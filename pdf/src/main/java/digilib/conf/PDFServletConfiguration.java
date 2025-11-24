@@ -15,12 +15,12 @@ import digilib.util.DigilibJobCenter;
 
 /*
  * #%L
- * DigilibConfiguration -- Holding all parameters for digilib servlet.
+ * PDFServletConfiguration -- Holding all parameters for digilib PDF servlet.
  * 
  * Digital Image Library servlet components
  * 
  * %%
- * Copyright (C) 2001 MPIWG Berlin
+ * Copyright (C) 2009 MPIWG Berlin
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -36,7 +36,7 @@ import digilib.util.DigilibJobCenter;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
- * Author: Robert Casties (robcast@berlios.de)
+ * Author: Robert Casties (casties@mpiwg-berlin.mpg.de)
  */
 
 /**
