@@ -161,6 +161,7 @@ public class PDFGenerator extends HttpServlet {
             // create and check PDF request (may throw exception)
             PDFRequest pdfji = new PDFRequest(request, dlConfig);
             docid = pdfji.getDocumentId();
+            logger.debug("POST for docid: {}", docid);
             // status URL for this document
             String statusUrl = "?docid=" + encodeDocid(docid);
 
@@ -262,6 +263,7 @@ public class PDFGenerator extends HttpServlet {
             notifyUser(PDFStatus.ERROR, "[invalid docid]", null, request, response);
             return;
         }
+        logger.debug("GET for docid: {}", docid);
 
         PDFStatus status = getStatus(docid);
         if (status == PDFStatus.NONEXISTENT) {
