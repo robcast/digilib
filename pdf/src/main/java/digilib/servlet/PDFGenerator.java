@@ -136,65 +136,13 @@ public class PDFGenerator extends HttpServlet {
         context.setAttribute(INSTANCE_KEY, this);
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * POST starts PDF generation.
+     * Parameters in request specify digilib path, resolution, etc., 
+     * and metadata for title page.
      * 
-     * @see
-     * javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest ,
-     * javax.servlet.http.HttpServletResponse)
-     */
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException {
-        accountlog.info("GET from " + request.getRemoteAddr());
-
-        // GET must have (encoded) docid from POST
-        String docid = request.getParameter("docid");
-        if (docid == null || docid.isEmpty()) {
-            notifyUser(PDFStatus.ERROR, "[missing docid]", null, request, response);
-            return;
-        }
-        try {
-            docid = decodeDocid(docid);
-        } catch (Exception e) {
-            notifyUser(PDFStatus.ERROR, "[invalid docid]", null, request, response);
-            return;
-        }
-
-        PDFStatus status = getStatus(docid);
-        if (status == PDFStatus.NONEXISTENT) {
-            // no file -- should not happen
-            logger.error("Nonexistent file for docid!");
-            notifyUser(PDFStatus.ERROR, docid, "Nonexistent file for docid!", request, response);
-            return;
-
-        } else if (status == PDFStatus.DONE) {
-            // pdf created
-            if (isJsonRequest(request)) {
-                // send json status
-                notifyUser(status, docid, null, request, response);
-                return;
-            } else {
-                // send file
-                try {
-                    logger.debug("PDF docid={} DONE", docid);
-                    ServletOps.sendFile(getCacheFile(docid), "application/pdf", getDownloadFilename(docid), 
-                            response, logger);
-                    return;
-                } catch (Exception e) {
-                    // sending didn't work
-                    logger.error(e.getMessage());
-                    return;
-                }
-            }
-
-        } else {
-            // should be work in progress
-            notifyUser(status, docid, null, request, response);
-            return;
-        }
-    }
-
-    /*
-     * (non-Javadoc)
+     * Returns redirect to URL including docid for status GET.
+     * Returns PDF if it was already generated.
      * 
      * @see
      * javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest ,
@@ -289,12 +237,73 @@ public class PDFGenerator extends HttpServlet {
     }
 
     /**
-     * depending on the documents status, redirect the user to the appropriate
+     * GET returns status of PDF generation and generated file.
+     * 
+     * Requires docid parameter.
+     * Returns HTML or JSON status depending on conneg.
+     * Returns PDF file when done.
+     * 
+     * @see
+     * javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest ,
+     * javax.servlet.http.HttpServletResponse)
+     */
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException {
+        accountlog.info("GET from " + request.getRemoteAddr());
+
+        // GET must have (encoded) docid from POST
+        String docid = request.getParameter("docid");
+        if (docid == null || docid.isEmpty()) {
+            notifyUser(PDFStatus.ERROR, "[missing docid]", null, request, response);
+            return;
+        }
+        try {
+            docid = decodeDocid(docid);
+        } catch (Exception e) {
+            notifyUser(PDFStatus.ERROR, "[invalid docid]", null, request, response);
+            return;
+        }
+
+        PDFStatus status = getStatus(docid);
+        if (status == PDFStatus.NONEXISTENT) {
+            // no file -- should not happen
+            logger.error("Nonexistent file for docid!");
+            notifyUser(PDFStatus.IOERROR, docid, "docid not found!", request, response);
+            return;
+
+        } else if (status == PDFStatus.DONE) {
+            // pdf created
+            if (isJsonRequest(request)) {
+                // send json status
+                notifyUser(status, docid, null, request, response);
+                return;
+            } else {
+                // send file
+                try {
+                    logger.debug("PDF docid={} DONE", docid);
+                    ServletOps.sendFile(getCacheFile(docid), "application/pdf", getDownloadFilename(docid), 
+                            response, logger);
+                    return;
+                } catch (Exception e) {
+                    // sending didn't work
+                    logger.error(e.getMessage());
+                    return;
+                }
+            }
+
+        } else {
+            // should be work in progress
+            notifyUser(status, docid, null, request, response);
+            return;
+        }
+    }
+
+    /**
+     * Depending on the document status, redirect the user to the appropriate
      * waiting or download page.
      * 
      * @param status
      * @param documentid
-     * @param message TODO
+     * @param message
      * @param request
      * @param response
      */
@@ -396,6 +405,8 @@ public class PDFGenerator extends HttpServlet {
 
     /**
      * Create new thread for pdf generation.
+     * 
+     * Throws FileAlreadyExistsException if tempfile already exists.
      * 
      * @param pdfji
      * @param filename
