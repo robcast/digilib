@@ -81,7 +81,7 @@ public class PDFFileWorker implements Callable<File> {
             tempFile.renameTo(finalFile);
         } catch (Exception e) {
             // remove broken temp file TODO: better error handling?
-            logger.error("Error creating file: {}! Removing file.", e.toString());
+            logger.error("Error creating PDF file! Removing file.", e);
             tempFile.delete();
         } finally {
             if (outstream != null) {
