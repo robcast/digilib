@@ -178,7 +178,8 @@ public class PDFGenerator extends HttpServlet {
                 // PDF not there -- start creation
                 try {
                     // start PDF creation thread
-                    createNewPdfDocument(pdfji, docid);
+                    Future<File> job = createNewPdfDocument(pdfji, docid);
+                    logger.debug("PDF job started: {}", job);
                     // redirect client to status
                     logger.debug("redirecting to {}", statusUrl);
                     response.sendRedirect(statusUrl);
