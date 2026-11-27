@@ -137,8 +137,8 @@ public class PDFTitlePage {
                 Image logo = new Image(ImageDataFactory.create(new URL(url)));
                 return logo;
             }
-        } catch (MalformedURLException e) {
-            logger.error(e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error creating logo: {}", e.getMessage());
         }
         return null;
     }
